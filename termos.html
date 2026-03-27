@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InkFlow — Termos de Uso e Política de Privacidade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#1a1a1a;--ink2:#444;--ink3:#888;--surface:#fff;--surface2:#f7f6f3;--border:rgba(0,0,0,0.08)}
+body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);line-height:1.7}
+
+header{background:var(--ink);padding:20px 24px;display:flex;align-items:center;gap:16px}
+.h-logo{font-size:18px;font-weight:700;color:#fff}
+.h-tag{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);font-family:'DM Mono',monospace}
+
+.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}
+
+.doc-title{font-size:28px;font-weight:700;margin-bottom:8px}
+.doc-date{font-size:12px;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:40px}
+
+h2{font-size:16px;font-weight:700;margin:36px 0 12px;letter-spacing:.3px}
+h3{font-size:14px;font-weight:600;margin:20px 0 8px;color:var(--ink2)}
+p{font-size:14px;color:var(--ink2);margin-bottom:12px}
+ul{padding-left:20px;margin-bottom:12px}
+li{font-size:14px;color:var(--ink2);margin-bottom:6px;line-height:1.6}
+
+.divider{border:none;border-top:1px solid var(--border);margin:40px 0}
+.highlight{background:#f0efe9;border-left:3px solid var(--ink);padding:14px 18px;border-radius:0 8px 8px 0;margin:16px 0;font-size:13px;color:var(--ink2);line-height:1.6}
+.contact-box{background:var(--ink);color:#fff;border-radius:12px;padding:24px;margin-top:40px}
+.contact-box p{color:rgba(255,255,255,.7);font-size:13px;margin-bottom:6px}
+.contact-box a{color:#fff}
+
+.tabs{display:flex;gap:0;margin-bottom:40px;border-bottom:1px solid var(--border)}
+.tab{padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--ink3);transition:all .15s;font-family:'Syne',sans-serif}
+.tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+@media(max-width:600px){.container{padding:32px 16px 60px}.doc-title{font-size:22px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="h-logo">InkFlow</div>
+    <div class="h-tag">Documentos Legais</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('termos')">Termos de Uso</div>
+    <div class="tab" onclick="showTab('privacidade')">Política de Privacidade</div>
+  </div>
+
+  <!-- ══════════ TERMOS DE USO ══════════ -->
+  <div class="tab-content active" id="tab-termos">
+    <div class="doc-title">Termos de Uso</div>
+    <div class="doc-date">Última atualização: março de 2026</div>
+
+    <p>Estes Termos de Uso regulam a relação entre a <strong>InkFlow</strong> (serviço operado por Leandro Marques Ferreira, Foz do Iguaçu — PR, CNPJ a atualizar) e o <strong>Contratante</strong> (estúdio de tatuagem ou profissional autônomo que contrata o serviço).</p>
+
+    <p>Ao contratar o InkFlow ou ao completar o processo de onboarding, o Contratante declara ter lido e concordado integralmente com estes termos.</p>
+
+    <h2>1. O que é o InkFlow</h2>
+    <p>O InkFlow é uma plataforma de automação de atendimento via WhatsApp, voltada para estúdios de tatuagem. O serviço inclui:</p>
+    <ul>
+      <li>Atendimento automático via WhatsApp com inteligência artificial</li>
+      <li>Agendamento e gestão de conversas com clientes do estúdio</li>
+      <li>Integração com Google Calendar (planos Growth e Enterprise)</li>
+      <li>Painel de configuração e notificações de grupo</li>
+    </ul>
+
+    <div class="highlight">O InkFlow não é um produto da Meta (WhatsApp). A automação é realizada via Evolution API, que utiliza o protocolo do WhatsApp Web. O Contratante é responsável pelo uso do seu número de WhatsApp e pelo conteúdo das mensagens enviadas.</div>
+
+    <h2>2. Cadastro e Responsabilidades</h2>
+    <p>O Contratante deve fornecer informações verídicas durante o cadastro. É de responsabilidade exclusiva do Contratante:</p>
+    <ul>
+      <li>Garantir que o número de WhatsApp utilizado pertence legitimamente ao estúdio</li>
+      <li>Não utilizar o serviço para envio de spam, mensagens em massa não solicitadas ou qualquer prática que viole os Termos de Serviço do WhatsApp</li>
+      <li>Manter o sigilo das credenciais de acesso</li>
+      <li>Obter consentimento dos clientes do estúdio para receber mensagens automatizadas, conforme exigido pela LGPD</li>
+    </ul>
+
+    <h2>3. Planos e Pagamento</h2>
+    <p>O InkFlow oferece os seguintes planos de assinatura mensal:</p>
+    <ul>
+      <li><strong>Free Trial:</strong> 7 dias gratuitos, limitado a 5 conversas por dia</li>
+      <li><strong>Essencial:</strong> R$199/mês — até 50 leads/mês</li>
+      <li><strong>Growth:</strong> R$399/mês — até 200 leads/mês</li>
+      <li><strong>Enterprise:</strong> R$999/mês — sem limite de leads</li>
+    </ul>
+    <p>O pagamento é realizado mensalmente por recorrência. O não pagamento na data de vencimento resultará na suspensão do serviço após 3 dias de carência, sem exclusão dos dados.</p>
+    <p>Não há reembolso de mensalidades já pagas, exceto nos casos previstos no Código de Defesa do Consumidor.</p>
+
+    <h2>4. Disponibilidade e Suporte</h2>
+    <p>O InkFlow se compromete com uma disponibilidade mínima de 95% ao mês. Eventos fora do controle do InkFlow — incluindo instabilidades do WhatsApp, Evolution API ou provedores de infraestrutura — não são contabilizados como indisponibilidade.</p>
+    <p>O suporte é prestado por e-mail e/ou WhatsApp conforme o plano contratado, com prazo de resposta de até 24 horas úteis no plano Essencial e 8 horas úteis nos planos Growth e Enterprise.</p>
+
+    <h2>5. Propriedade Intelectual</h2>
+    <p>Todo o código, design, textos e lógica de automação do InkFlow são de propriedade exclusiva de Leandro Marques Ferreira. O Contratante recebe uma licença de uso não exclusiva e intransferível durante o período de vigência do contrato.</p>
+
+    <h2>6. Limitação de Responsabilidade</h2>
+    <p>O InkFlow não se responsabiliza por:</p>
+    <ul>
+      <li>Banimento do número de WhatsApp do Contratante por uso inadequado ou violação dos termos da Meta</li>
+      <li>Perda de leads ou receita decorrente de indisponibilidade do serviço</li>
+      <li>Conteúdo das mensagens gerado pela IA que não tenha sido revisado pelo Contratante</li>
+      <li>Danos indiretos, lucros cessantes ou danos morais além do valor pago no mês em questão</li>
+    </ul>
+
+    <h2>7. Cancelamento e Rescisão</h2>
+    <p>O Contratante pode cancelar o serviço a qualquer momento através dos canais de suporte. O cancelamento entra em vigor no próximo ciclo de cobrança. Os dados são mantidos por 90 dias após o cancelamento e então excluídos, conforme a LGPD.</p>
+    <p>O InkFlow reserva-se o direito de rescindir o contrato imediatamente em caso de uso fraudulento, abusivo ou em violação destes termos, sem direito a reembolso.</p>
+
+    <h2>8. Alterações nos Termos</h2>
+    <p>Estes termos podem ser alterados a qualquer momento. As alterações serão comunicadas por e-mail com 15 dias de antecedência. O uso continuado do serviço após esse prazo implica aceitação dos novos termos.</p>
+
+    <h2>9. Foro</h2>
+    <p>Fica eleito o foro da Comarca de Foz do Iguaçu, Estado do Paraná, para dirimir quaisquer controvérsias decorrentes destes termos, com renúncia a qualquer outro, por mais privilegiado que seja.</p>
+  </div>
+
+  <!-- ══════════ POLÍTICA DE PRIVACIDADE ══════════ -->
+  <div class="tab-content" id="tab-privacidade">
+    <div class="doc-title">Política de Privacidade</div>
+    <div class="doc-date">Última atualização: março de 2026 — Em conformidade com a LGPD (Lei 13.709/2018)</div>
+
+    <p>Esta Política descreve como o InkFlow coleta, utiliza, armazena e protege os dados pessoais dos Contratantes e dos clientes finais dos estúdios atendidos pela plataforma.</p>
+
+    <h2>1. Dados Coletados</h2>
+    <h3>1.1 Dados do Contratante (estúdio)</h3>
+    <ul>
+      <li>Nome do responsável e nome do estúdio</li>
+      <li>Número de WhatsApp conectado à plataforma</li>
+      <li>Cidade e endereço do estúdio</li>
+      <li>E-mail de cadastro</li>
+      <li>Plano contratado</li>
+    </ul>
+    <h3>1.2 Dados dos clientes finais do estúdio</h3>
+    <ul>
+      <li>Número de telefone (via WhatsApp)</li>
+      <li>Histórico de conversas com o assistente virtual</li>
+      <li>Informações fornecidas voluntariamente durante o atendimento (nome, data de agendamento, tipo de tatuagem, etc.)</li>
+    </ul>
+
+    <h2>2. Base Legal para o Tratamento (LGPD)</h2>
+    <p>O tratamento dos dados é realizado com base nas seguintes hipóteses legais previstas na LGPD:</p>
+    <ul>
+      <li><strong>Execução de contrato</strong> (Art. 7º, V): dados do Contratante necessários para prestação do serviço</li>
+      <li><strong>Legítimo interesse</strong> (Art. 7º, IX): melhoria da plataforma e prevenção de fraudes</li>
+      <li><strong>Consentimento</strong> (Art. 7º, I): para comunicações de marketing, quando aplicável</li>
+    </ul>
+
+    <div class="highlight">⚠️ Responsabilidade do Contratante: O estúdio que utiliza o InkFlow é também um controlador dos dados dos seus clientes finais, nos termos da LGPD. É responsabilidade do estúdio obter o consentimento dos seus clientes para receber mensagens automatizadas via WhatsApp.</div>
+
+    <h2>3. Como os Dados são Usados</h2>
+    <ul>
+      <li>Operação e personalização do assistente virtual</li>
+      <li>Geração de respostas automáticas contextualizadas</li>
+      <li>Notificações sobre o status do serviço</li>
+      <li>Melhoria dos modelos de IA utilizados na plataforma</li>
+      <li>Cumprimento de obrigações legais</li>
+    </ul>
+
+    <h2>4. Compartilhamento de Dados</h2>
+    <p>O InkFlow não vende dados pessoais. Os dados podem ser compartilhados com:</p>
+    <ul>
+      <li><strong>Supabase</strong> (banco de dados — servidores no Brasil, us-east-2)</li>
+      <li><strong>Evolution API</strong> (operação do WhatsApp)</li>
+      <li><strong>n8n</strong> (plataforma de automação de workflows)</li>
+      <li><strong>Google</strong> (Calendar e Drive, quando habilitados pelo Contratante)</li>
+    </ul>
+    <p>Todos os fornecedores são contratualmente obrigados a proteger os dados conforme a legislação aplicável.</p>
+
+    <h2>5. Armazenamento e Segurança</h2>
+    <p>Os dados são armazenados em infraestrutura segura hospedada no Brasil e nos EUA (Supabase us-east-2). São adotadas medidas técnicas e organizacionais para proteger os dados contra acesso não autorizado, incluindo criptografia em trânsito (HTTPS/TLS) e controle de acesso por autenticação.</p>
+
+    <h2>6. Retenção de Dados</h2>
+    <ul>
+      <li><strong>Durante o contrato ativo:</strong> todos os dados são mantidos para operação do serviço</li>
+      <li><strong>Após cancelamento:</strong> dados mantidos por 90 dias e então excluídos permanentemente</li>
+      <li><strong>Dados fiscais:</strong> mantidos pelo prazo legal exigido (5 anos)</li>
+    </ul>
+
+    <h2>7. Direitos do Titular (LGPD)</h2>
+    <p>O Contratante e os clientes finais têm direito a:</p>
+    <ul>
+      <li>Confirmação de tratamento e acesso aos dados (Art. 18, I e II)</li>
+      <li>Correção de dados incompletos ou desatualizados (Art. 18, III)</li>
+      <li>Anonimização, bloqueio ou eliminação de dados desnecessários (Art. 18, IV)</li>
+      <li>Portabilidade dos dados (Art. 18, V)</li>
+      <li>Eliminação dos dados após revogação do consentimento (Art. 18, VI)</li>
+      <li>Informação sobre com quem os dados são compartilhados (Art. 18, VII)</li>
+    </ul>
+    <p>Para exercer esses direitos, entre em contato pelo e-mail abaixo. O prazo de resposta é de 15 dias.</p>
+
+    <h2>8. Cookies</h2>
+    <p>O InkFlow não utiliza cookies de rastreamento ou publicidade. Os dados de sessão são armazenados apenas localmente no navegador do usuário (localStorage) para fins de funcionamento da plataforma.</p>
+
+    <h2>9. Encarregado de Dados (DPO)</h2>
+    <p>Nos termos do Art. 41 da LGPD, o encarregado pelo tratamento de dados pessoais do InkFlow é o próprio titular, Leandro Marques Ferreira, acessível pelo e-mail abaixo.</p>
+
+    <h2>10. Alterações nesta Política</h2>
+    <p>Esta política pode ser atualizada periodicamente. Alterações relevantes serão comunicadas por e-mail com 15 dias de antecedência.</p>
+  </div>
+
+  <hr class="divider"/>
+
+  <div class="contact-box">
+    <p style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace;color:rgba(255,255,255,.35);margin-bottom:12px">Contato & Suporte</p>
+    <p><strong style="color:#fff">InkFlow</strong> — Operado por Leandro Marques Ferreira</p>
+    <p>Foz do Iguaçu, Paraná — Brasil</p>
+    <p>E-mail: <a href="mailto:lmf4200@gmail.com">lmf4200@gmail.com</a></p>
+    <p style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.4)">CNPJ: a atualizar após abertura da ME</p>
+  </div>
+
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id)?.classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
