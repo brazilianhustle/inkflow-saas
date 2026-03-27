@@ -599,7 +599,7 @@ async function startOnboarding() {
 
     try {
       await evoFetch('POST', '/webhook/set/' + instanceSlug, {
-        url: N8N_BASE + instanceSlug,
+        url: N8N_BASE + 'inkflow',
         webhook_by_events: true,
         events: [
           'MESSAGES_UPSERT',
