@@ -279,7 +279,7 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
     </button>
 
     <div style="margin-top:16px;font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;text-align:center;line-height:1.6">
-      Ao continuar, você concorda com os termos de uso do InkFlow.<br/>
+      Ao continuar, você concorda com os <a href="termos.html" target="_blank" style="color:var(--ink2);text-decoration:underline">termos de uso</a> do InkFlow.<br/>
       Seus dados são armazenados com segurança no Brasil.
     </div>
   </div>
@@ -751,6 +751,18 @@ async function checkConnection() {
 
       // Ativar tenant no Supabase
       await sbFetch('PATCH', '/rest/v1/tenants?id=eq.' + tenantId, { ativo: true });
+
+      // Log do signup para painel admin
+      try {
+        await sbFetch('POST', '/rest/v1/signups_log', {
+          tenant_id:    tenantId,
+          evo_instance: instanceSlug,
+          nome_estudio: document.getElementById('f-estudio').value.trim(),
+          nome:         document.getElementById('f-nome').value.trim(),
+          cidade:       document.getElementById('f-cidade').value.trim() || null,
+          plano:        selectedPlan
+        });
+      } catch (logErr) { console.warn('signup log failed:', logErr); }
 
       // Preencher tela de sucesso
       document.getElementById('suc-estudio').textContent = document.getElementById('f-estudio').value;
