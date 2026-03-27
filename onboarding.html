@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>InkFlow â Configurar Meu EstÃºdio</title>
+<title>InkFlow — Configurar Meu Estúdio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
@@ -18,11 +18,11 @@
 }
 body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);min-height:100vh}
 
-/* ââ Steps ââ */
+/* ── Steps ── */
 .step{display:none;min-height:100vh}
 .step.active{display:flex;flex-direction:column}
 
-/* ââ Step 1: Welcome ââ */
+/* ── Step 1: Welcome ── */
 #s1{background:var(--ink);align-items:center;justify-content:center;text-align:center;padding:40px 20px}
 .w-logo{font-size:28px;font-weight:700;color:#fff;margin-bottom:4px}
 .w-tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.35);font-family:'DM Mono',monospace;margin-bottom:48px}
@@ -37,7 +37,7 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .w-btn:hover{background:#f0f0f0;transform:translateY(-1px)}
 .w-plan{display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:4px 12px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;margin-bottom:48px;letter-spacing:1px;text-transform:uppercase}
 
-/* ââ Step 2: Form ââ */
+/* ── Step 2: Form ── */
 #s2{background:var(--surface2);justify-content:flex-start}
 .form-header{background:var(--ink);padding:20px 24px;display:flex;align-items:center;gap:12px}
 .form-logo{font-size:16px;font-weight:700;color:#fff}
@@ -66,7 +66,7 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .divider{border:none;border-top:1px solid var(--border);margin:20px 0}
 .fsec{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);font-family:'DM Mono',monospace;margin-bottom:14px}
 
-/* ââ Step 3: Processing ââ */
+/* ── Step 3: Processing ── */
 #s3{background:var(--ink);align-items:center;justify-content:center;padding:40px 20px;text-align:center}
 .proc-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:40px;width:100%;max-width:400px}
 .proc-title{font-size:20px;font-weight:700;color:#fff;margin-bottom:8px}
@@ -77,9 +77,9 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .proc-dot.wait{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15)}
 .proc-dot.active{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);animation:spin 1s linear infinite}
 .proc-dot.done{background:#2d7a4f;border-color:#2d7a4f;color:#fff}
-.proc-dot.done::after{content:'â';font-size:11px}
+.proc-dot.done::after{content:'✓';font-size:11px}
 .proc-dot.err{background:#c0392b;border-color:#c0392b;color:#fff}
-.proc-dot.err::after{content:'â';font-size:11px}
+.proc-dot.err::after{content:'✕';font-size:11px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .proc-msg{font-size:13px;color:rgba(255,255,255,.6);flex:1;font-family:'DM Mono',monospace}
 .proc-msg.done{color:rgba(255,255,255,.9)}
@@ -87,7 +87,7 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .proc-err-txt{font-size:13px;color:#e74c3c;font-family:'DM Mono',monospace;line-height:1.5}
 .proc-retry{margin-top:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Mono',monospace}
 
-/* ââ Step 4: QR Code ââ */
+/* ── Step 4: QR Code ── */
 #s4{background:var(--surface2);align-items:center;justify-content:center;padding:32px 20px}
 .qr-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;max-width:420px;width:100%;text-align:center}
 .qr-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
@@ -108,7 +108,7 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .qr-poll-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 1.5s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* ââ Step 5: Success ââ */
+/* ── Step 5: Success ── */
 #s5{background:var(--surface2);align-items:center;justify-content:center;padding:32px 20px}
 .suc-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 32px;max-width:460px;width:100%;text-align:center}
 .suc-icon{font-size:48px;margin-bottom:16px}
@@ -121,7 +121,7 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .suc-val{font-weight:600;color:var(--ink);font-size:13px}
 .suc-next{font-size:12px;color:var(--ink3);font-family:'DM Mono',monospace;line-height:1.7}
 
-/* ââ Error overlay ââ */
+/* ── Error overlay ── */
 #err-overlay{display:none;position:fixed;inset:0;background:var(--ink);align-items:center;justify-content:center;z-index:100;padding:24px;text-align:center;flex-direction:column}
 #err-overlay.show{display:flex}
 .err-icon{font-size:40px;margin-bottom:16px}
@@ -138,22 +138,22 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 </head>
 <body>
 
-<!-- ââââââââââ STEP 1: BOAS-VINDAS ââââââââââ -->
+<!-- ══════════ STEP 1: BOAS-VINDAS ══════════ -->
 <div class="step active" id="s1">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:48px 24px">
     <div class="w-logo">InkFlow</div>
-    <div class="w-tag">AutomaÃ§Ã£o WhatsApp para Tatuadores</div>
+    <div class="w-tag">Automação WhatsApp para Tatuadores</div>
     <div id="w-plano" class="w-plan">plano basic</div>
-    <div class="w-title">Configure seu estÃºdio em menos de 3 minutos</div>
-    <div class="w-sub">Vamos criar seu assistente virtual de WhatsApp. Nenhum conhecimento tÃ©cnico necessÃ¡rio.</div>
+    <div class="w-title">Configure seu estúdio em menos de 3 minutos</div>
+    <div class="w-sub">Vamos criar seu assistente virtual de WhatsApp. Nenhum conhecimento técnico necessário.</div>
     <div class="w-steps">
       <div class="w-step hi">
         <div class="w-num">1</div>
-        <span>Dados do estÃºdio</span>
+        <span>Dados do estúdio</span>
       </div>
       <div class="w-step hi">
         <div class="w-num">2</div>
-        <span>ConfiguraÃ§Ã£o automÃ¡tica</span>
+        <span>Configuração automática</span>
       </div>
       <div class="w-step hi">
         <div class="w-num">3</div>
@@ -161,28 +161,28 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
       </div>
     </div>
     <button class="w-btn" onclick="goStep(2)">
-      ComeÃ§ar configuraÃ§Ã£o
+      Começar configuração
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l7 7-7 7-1.4-1.4 4.6-4.6H1V9.9h10.2L6.6 14.5 8 16l7-7-7-7z"/></svg>
     </button>
     <div id="w-err" style="display:none;margin-top:24px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:10px;padding:14px 18px;font-size:13px;color:#e74c3c;font-family:'DM Mono',monospace;max-width:380px;line-height:1.5;text-align:center"></div>
   </div>
 </div>
 
-<!-- ââââââââââ STEP 2: FORMULÃRIO ââââââââââ -->
+<!-- ══════════ STEP 2: FORMULÁRIO ══════════ -->
 <div class="step" id="s2">
   <div class="form-header">
     <div>
       <div class="form-logo">InkFlow</div>
-      <div class="form-badge">ConfiguraÃ§Ã£o do EstÃºdio</div>
+      <div class="form-badge">Configuração do Estúdio</div>
     </div>
   </div>
   <div class="form-body">
-    <div class="form-title">Dados do seu estÃºdio</div>
-    <div class="form-sub">Essas informaÃ§Ãµes serÃ£o usadas pelo seu assistente virtual.</div>
+    <div class="form-title">Dados do seu estúdio</div>
+    <div class="form-sub">Essas informações serão usadas pelo seu assistente virtual.</div>
 
     <div class="form-err" id="form-err"></div>
 
-    <div class="fsec">ProprietÃ¡rio</div>
+    <div class="fsec">Proprietário</div>
     <div class="fgrid">
       <div class="fg">
         <label class="fl">Seu nome <span>*</span></label>
@@ -196,18 +196,18 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
     </div>
 
     <hr class="divider"/>
-    <div class="fsec">EstÃºdio</div>
+    <div class="fsec">Estúdio</div>
     <div class="fg">
-      <label class="fl">Nome do estÃºdio <span>*</span></label>
+      <label class="fl">Nome do estúdio <span>*</span></label>
       <input class="fi" id="f-estudio" type="text" placeholder="Ex: Dark Ink Studio"/>
     </div>
     <div class="fgrid">
       <div class="fg">
         <label class="fl">Cidade</label>
-        <input class="fi" id="f-cidade" type="text" placeholder="Ex: SÃ£o Paulo - SP"/>
+        <input class="fi" id="f-cidade" type="text" placeholder="Ex: São Paulo - SP"/>
       </div>
       <div class="fg">
-        <label class="fl">EndereÃ§o</label>
+        <label class="fl">Endereço</label>
         <input class="fi" id="f-endereco" type="text" placeholder="Ex: Av. Paulista, 1000"/>
       </div>
     </div>
@@ -217,35 +217,35 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
     <div class="plan-sel" id="plan-sel">
       <div class="plan-opt active" id="plan-basic" onclick="selectPlan('basic')">
         <div class="po-name">Basic</div>
-        <div class="po-price">R$ 199/mÃªs</div>
+        <div class="po-price">R$ 199/mês</div>
       </div>
       <div class="plan-opt" id="plan-pro" onclick="selectPlan('pro')">
         <div class="po-name">Pro</div>
-        <div class="po-price">R$ 399/mÃªs</div>
+        <div class="po-price">R$ 399/mês</div>
       </div>
       <div class="plan-opt" id="plan-enterprise" onclick="selectPlan('enterprise')">
         <div class="po-name">Enterprise</div>
-        <div class="po-price">R$ 799/mÃªs</div>
+        <div class="po-price">R$ 799/mês</div>
       </div>
     </div>
-    <div class="fi-hint" style="margin-top:8px">Plano prÃ©-selecionado conforme combinado</div>
+    <div class="fi-hint" style="margin-top:8px">Plano pré-selecionado conforme combinado</div>
 
     <button class="sbtn" id="form-btn" onclick="startOnboarding()">
-      Configurar meu WhatsApp â
+      Configurar meu WhatsApp →
     </button>
 
     <div style="margin-top:16px;font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;text-align:center;line-height:1.6">
-      Ao continuar, vocÃª concorda com os termos de uso do InkFlow.<br/>
-      Seus dados sÃ£o armazenados com seguranÃ§a no Brasil.
+      Ao continuar, você concorda com os termos de uso do InkFlow.<br/>
+      Seus dados são armazenados com segurança no Brasil.
     </div>
   </div>
 </div>
 
-<!-- ââââââââââ STEP 3: PROCESSANDO ââââââââââ -->
+<!-- ══════════ STEP 3: PROCESSANDO ══════════ -->
 <div class="step" id="s3">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
     <div class="proc-card">
-      <div class="proc-title">Configurando seu estÃºdio</div>
+      <div class="proc-title">Configurando seu estúdio</div>
       <div class="proc-sub">Aguarde, isso leva alguns segundos...</div>
       <div class="proc-list">
         <div class="proc-item" id="pi-0">
@@ -254,7 +254,7 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
         </div>
         <div class="proc-item" id="pi-1">
           <div class="proc-dot wait" id="pd-1"></div>
-          <div class="proc-msg" id="pm-1">Criando instÃ¢ncia WhatsApp...</div>
+          <div class="proc-msg" id="pm-1">Criando instância WhatsApp...</div>
         </div>
         <div class="proc-item" id="pi-2">
           <div class="proc-dot wait" id="pd-2"></div>
@@ -271,13 +271,13 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
       </div>
       <div class="proc-err-box" id="proc-err-box">
         <div class="proc-err-txt" id="proc-err-txt"></div>
-        <button class="proc-retry" onclick="goStep(2)">â Voltar e tentar novamente</button>
+        <button class="proc-retry" onclick="goStep(2)">← Voltar e tentar novamente</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ââââââââââ STEP 4: QR CODE ââââââââââ -->
+<!-- ══════════ STEP 4: QR CODE ══════════ -->
 <div class="step" id="s4">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
     <div class="qr-card">
@@ -297,86 +297,86 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
       <div class="qr-steps">
         <div class="qr-step">
           <div class="qr-step-num">1</div>
-          <span>Abra o <strong>WhatsApp</strong> no celular do estÃºdio</span>
+          <span>Abra o <strong>WhatsApp</strong> no celular do estúdio</span>
         </div>
         <div class="qr-step">
           <div class="qr-step-num">2</div>
-          <span>Toque em <strong>Dispositivos conectados</strong> â Conectar dispositivo</span>
+          <span>Toque em <strong>Dispositivos conectados</strong> → Conectar dispositivo</span>
         </div>
         <div class="qr-step">
           <div class="qr-step-num">3</div>
-          <span>Aponte a cÃ¢mera para o <strong>QR Code</strong> acima</span>
+          <span>Aponte a câmera para o <strong>QR Code</strong> acima</span>
         </div>
       </div>
 
       <div style="display:flex;gap:10px;justify-content:center">
-        <button class="qr-refresh" onclick="refreshQR()">âº Novo QR Code</button>
+        <button class="qr-refresh" onclick="refreshQR()">↺ Novo QR Code</button>
       </div>
       <div class="qr-timer" id="qr-timer"></div>
       <div class="qr-poll">
         <div class="qr-poll-dot"></div>
-        verificando conexÃ£o automaticamente...
+        verificando conexão automaticamente...
       </div>
     </div>
   </div>
 </div>
 
-<!-- ââââââââââ STEP 5: SUCESSO ââââââââââ -->
+<!-- ══════════ STEP 5: SUCESSO ══════════ -->
 <div class="step" id="s5">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
     <div class="suc-card">
-      <div class="suc-icon">ð</div>
+      <div class="suc-icon">🎉</div>
       <div class="suc-title">WhatsApp Conectado!</div>
-      <div class="suc-sub">Seu assistente virtual jÃ¡ estÃ¡ ativo e pronto para atender os clientes do seu estÃºdio automaticamente.</div>
+      <div class="suc-sub">Seu assistente virtual já está ativo e pronto para atender os clientes do seu estúdio automaticamente.</div>
 
       <div class="suc-info">
         <div class="suc-row">
-          <span class="suc-key">estÃºdio</span>
-          <span class="suc-val" id="suc-estudio">â</span>
+          <span class="suc-key">estúdio</span>
+          <span class="suc-val" id="suc-estudio">—</span>
         </div>
         <div class="suc-row">
           <span class="suc-key">agente</span>
-          <span class="suc-val" id="suc-agente">â</span>
+          <span class="suc-val" id="suc-agente">—</span>
         </div>
         <div class="suc-row">
-          <span class="suc-key">instÃ¢ncia</span>
-          <span class="suc-val" id="suc-inst" style="font-family:'DM Mono',monospace;font-size:12px">â</span>
+          <span class="suc-key">instância</span>
+          <span class="suc-val" id="suc-inst" style="font-family:'DM Mono',monospace;font-size:12px">—</span>
         </div>
         <div class="suc-row">
           <span class="suc-key">plano</span>
-          <span class="suc-val" id="suc-plano">â</span>
+          <span class="suc-val" id="suc-plano">—</span>
         </div>
         <div class="suc-row" style="border-bottom:none">
           <span class="suc-key">status</span>
-          <span style="background:var(--green-bg);color:var(--green);padding:3px 10px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;font-weight:600">â ativo</span>
+          <span style="background:var(--green-bg);color:var(--green);padding:3px 10px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;font-weight:600">● ativo</span>
         </div>
       </div>
 
       <div class="suc-next">
-        â Seu WhatsApp jÃ¡ recebe mensagens automaticamente<br/>
-        â O assistente responde agendamentos e dÃºvidas<br/>
-        â VocÃª recebe alertas no grupo de notificaÃ§Ã£o<br/><br/>
-        Em caso de dÃºvidas, entre em contato com o suporte InkFlow.
+        ✓ Seu WhatsApp já recebe mensagens automaticamente<br/>
+        ✓ O assistente responde agendamentos e dúvidas<br/>
+        ✓ Você recebe alertas no grupo de notificação<br/><br/>
+        Em caso de dúvidas, entre em contato com o suporte InkFlow.
       </div>
     </div>
   </div>
 </div>
 
-<!-- Error overlay para link invÃ¡lido -->
+<!-- Error overlay para link inválido -->
 <div id="err-overlay">
-  <div class="err-icon">â ï¸</div>
-  <div class="err-title">Link invÃ¡lido</div>
-  <div class="err-msg" id="err-msg">Este link de onboarding Ã© invÃ¡lido ou expirou. Solicite um novo link ao suporte InkFlow.</div>
+  <div class="err-icon">⚠️</div>
+  <div class="err-title">Link inválido</div>
+  <div class="err-msg" id="err-msg">Este link de onboarding é inválido ou expirou. Solicite um novo link ao suporte InkFlow.</div>
 </div>
 
 <script>
-// ââ ConfiguraÃ§Ãµes ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Configurações ──────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenV4eHVzY3lwbGZvaW12b21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMTg3NjAsImV4cCI6MjA4ODg5NDc2MH0.GSw2qzM9RgEQT6xTNBElBv-4AAuSavZe-_C-CljMvdA';
 const EVO_BASE    = 'https://evolutionapi.vps1170.panel.speedfy.host';
 const N8N_BASE    = 'https://n8n.vps1170.panel.speedfy.host/webhook/';
 
-// ââ Estado ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Estado ────────────────────────────────────────────────────────────────
 let gConfig      = { globalKey: '', plano: 'basic' };
 let tenantId     = null;
 let instanceKey  = null;
@@ -385,7 +385,7 @@ let pollInterval = null;
 let qrRefreshInterval = null;
 let selectedPlan = 'basic';
 
-// ââ Init âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Init ───────────────────────────────────────────────────────────────────
 function init() {
   const hash   = window.location.hash.substring(1);
   const params = new URLSearchParams(hash);
@@ -395,7 +395,7 @@ function init() {
   gConfig = { globalKey: key, plano };
 
   if (!key) {
-    showErrOverlay('Link de onboarding invÃ¡lido ou expirado. Solicite um novo link ao suporte InkFlow.');
+    showErrOverlay('Link de onboarding inválido ou expirado. Solicite um novo link ao suporte InkFlow.');
     return;
   }
 
@@ -405,7 +405,7 @@ function init() {
   selectPlan(plano);
 }
 
-// ââ Helpers ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Helpers ────────────────────────────────────────────────────────────────
 function goStep(n) {
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   document.getElementById('s' + n).classList.add('active');
@@ -460,23 +460,23 @@ function showErrOverlay(msg) {
 }
 
 function generatePrompt(agente, estudio, cidade, endereco) {
-  return `# Quem vocÃª Ã©
-VocÃª Ã© ${agente}, assistente virtual do ${estudio}.
+  return `# Quem você é
+Você é ${agente}, assistente virtual do ${estudio}.
 
 # Seu papel
-VocÃª atende clientes via WhatsApp respondendo dÃºvidas sobre tatuagens, agendamentos e orÃ§amentos de forma Ã¡gil e profissional.
+Você atende clientes via WhatsApp respondendo dúvidas sobre tatuagens, agendamentos e orçamentos de forma ágil e profissional.
 
-# EstÃºdio
-- Nome: ${estudio}${cidade ? '\n- Cidade: ' + cidade : ''}${endereco ? '\n- EndereÃ§o: ' + endereco : ''}
+# Estúdio
+- Nome: ${estudio}${cidade ? '\n- Cidade: ' + cidade : ''}${endereco ? '\n- Endereço: ' + endereco : ''}
 
 # Como responder
-- Seja simpÃ¡tico e profissional
+- Seja simpático e profissional
 - Use linguagem informal mas respeitosa
 - Para agendamentos, colete: nome, tatuagem desejada, data preferida e tamanho aproximado
-- Quando nÃ£o souber algo, consulte o FAQ abaixo`;
+- Quando não souber algo, consulte o FAQ abaixo`;
 }
 
-// ââ API Calls ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── API Calls ──────────────────────────────────────────────────────────────
 async function sbFetch(method, path, body) {
   const opts = {
     method,
@@ -505,7 +505,7 @@ async function evoFetch(method, path, body, key) {
   return r.json();
 }
 
-// ââ Main onboarding flow âââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Main onboarding flow ───────────────────────────────────────────────────
 async function startOnboarding() {
   const nome     = document.getElementById('f-nome').value.trim();
   const estudio  = document.getElementById('f-estudio').value.trim();
@@ -514,7 +514,7 @@ async function startOnboarding() {
   const endereco = document.getElementById('f-endereco').value.trim();
 
   if (!nome || !estudio) {
-    showFormError('Preencha o nome e o nome do estÃºdio.');
+    showFormError('Preencha o nome e o nome do estúdio.');
     return;
   }
 
@@ -525,12 +525,12 @@ async function startOnboarding() {
   for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
 
   try {
-    // ââ 1. Gerar slug Ãºnico ââââââââââââââââââââââââââââââââââââââââââââââ
+    // ── 1. Gerar slug único ─────────────────────────────────────────────
     const base   = makeSlug(estudio) || makeSlug(nome);
     const suffix = Math.floor(Math.random() * 900) + 100;
     instanceSlug = base + suffix;
 
-    // ââ 2. Criar tenant no Supabase âââââââââââââââââââââââââââââââââââââ
+    // ── 2. Criar tenant no Supabase ─────────────────────────────────────
     setStatus(0, 'Criando seu perfil no sistema...', 'active');
 
     const prompt = generatePrompt(agente, estudio, cidade, endereco);
@@ -551,7 +551,7 @@ async function startOnboarding() {
 
     let sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
 
-    // Tratar colisÃ£o de slug (unique constraint)
+    // Tratar colisão de slug (unique constraint)
     if (!sbRes.ok) {
       const errBody = await sbRes.text();
       if (errBody.includes('unique') || errBody.includes('duplicate') || errBody.includes('23505')) {
@@ -569,12 +569,12 @@ async function startOnboarding() {
 
     const sbData = await sbRes.json();
     tenantId = Array.isArray(sbData) ? sbData[0]?.id : sbData?.id;
-    if (!tenantId) throw new Error('NÃ£o foi possÃ­vel obter o ID do tenant.');
+    if (!tenantId) throw new Error('Não foi possível obter o ID do tenant.');
 
     setStatus(0, 'Perfil criado!', 'done');
 
-    // ââ 3. Criar instÃ¢ncia na Evolution API âââââââââââââââââââââââââââââ
-    setStatus(1, 'Criando instÃ¢ncia WhatsApp...', 'active');
+    // ── 3. Criar instância na Evolution API ─────────────────────────────
+    setStatus(1, 'Criando instância WhatsApp...', 'active');
 
     const evo = await evoFetch('POST', '/instance/create', {
       instanceName: instanceSlug,
@@ -583,18 +583,18 @@ async function startOnboarding() {
     }, gConfig.globalKey);
 
     instanceKey = evo?.hash?.apikey || evo?.instance?.apikey || evo?.Apikey?.apikey;
-    if (!instanceKey) throw new Error('Resposta invÃ¡lida da Evolution API. Contate o suporte.');
+    if (!instanceKey) throw new Error('Resposta inválida da Evolution API. Contate o suporte.');
 
-    setStatus(1, 'InstÃ¢ncia WhatsApp criada!', 'done');
+    setStatus(1, 'Instância WhatsApp criada!', 'done');
 
-    // ââ 4. Salvar apikey real no tenant âââââââââââââââââââââââââââââââââ
+    // ── 4. Salvar apikey real no tenant ─────────────────────────────────
     setStatus(2, 'Salvando credenciais...', 'active');
 
     await sbFetch('PATCH', '/rest/v1/tenants?id=eq.' + tenantId, { evo_apikey: instanceKey });
 
     setStatus(2, 'Credenciais salvas!', 'done');
 
-    // ââ 5. Configurar webhook para n8n âââââââââââââââââââââââââââââââââââ
+    // ── 5. Configurar webhook para n8n ───────────────────────────────────
     setStatus(3, 'Configurando webhook n8n...', 'active');
 
     try {
@@ -610,13 +610,13 @@ async function startOnboarding() {
         ]
       }, instanceKey);
     } catch (webhookErr) {
-      // NÃ£o Ã© fatal â o webhook pode ser configurado depois pelo admin
+      // Não é fatal — o webhook pode ser configurado depois pelo admin
       console.warn('Webhook setup failed:', webhookErr);
     }
 
     setStatus(3, 'Webhook configurado!', 'done');
 
-    // ââ 6. Ir para QR Code âââââââââââââââââââââââââââââââââââââââââââââââ
+    // ── 6. Ir para QR Code ───────────────────────────────────────────────
     setStatus(4, 'Gerando QR Code...', 'active');
     await new Promise(r => setTimeout(r, 1500)); // EVO precisa de um instante
     setStatus(4, 'QR Code pronto!', 'done');
@@ -633,7 +633,7 @@ async function startOnboarding() {
     console.error('Onboarding error:', err);
     let msg = err.message || 'Erro inesperado.';
     if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-      msg = 'Erro de rede ao conectar com a API. Verifique sua conexÃ£o e tente novamente.';
+      msg = 'Erro de rede ao conectar com a API. Verifique sua conexão e tente novamente.';
     }
     showProcError(msg);
     // Marcar o step atual como erro
@@ -646,7 +646,7 @@ async function startOnboarding() {
   }
 }
 
-// ââ QR Code ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── QR Code ────────────────────────────────────────────────────────────────
 async function loadQR() {
   document.getElementById('qr-loading').style.display = 'flex';
   document.getElementById('qr-img').style.display = 'none';
@@ -686,11 +686,11 @@ function startQRTimer() {
 }
 function updateTimer() {
   document.getElementById('qr-timer').textContent = qrTimerSec > 0
-    ? `QR expira em ${qrTimerSec}s â serÃ¡ atualizado automaticamente`
+    ? `QR expira em ${qrTimerSec}s — será atualizado automaticamente`
     : 'Atualizando QR Code...';
 }
 
-// ââ Poll conexÃ£o âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Poll conexão ───────────────────────────────────────────────────────────
 async function checkConnection() {
   try {
     const data = await evoFetch('GET',
