@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InkFlow — Reconectar WhatsApp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a1a1a;--ink2:#555;--ink3:#999;
+  --surface:#fff;--surface2:#f7f6f3;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);
+  --green:#2d7a4f;--green-bg:#eaf5ef;
+  --red:#c0392b;--red-bg:#fdf0ee;
+}
+body{font-family:'Syne',sans-serif;background:var(--ink);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:40px 32px;width:100%;max-width:420px;text-align:center}
+
+/* Logo */
+.logo{font-size:20px;font-weight:700;color:#fff;margin-bottom:4px}
+.logo-tag{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;margin-bottom:32px}
+
+/* States */
+.state{display:none}
+.state.active{display:block}
+
+/* Loading */
+.spinner{width:36px;height:36px;border:2px solid rgba(255,255,255,.1);border-top-color:rgba(255,255,255,.6);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:rgba(255,255,255,.5);font-family:'DM Mono',monospace}
+
+/* QR state */
+.qr-title{font-size:20px;font-weight:700;margin-bottom:6px}
+.qr-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px;line-height:1.6}
+.status-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);margin-bottom:24px}
+.status-badge.scanning{border-color:#f59e0b;color:#f59e0b}
+.status-badge.connected{border-color:#2d7a4f;color:#4ade80}
+.status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+.qr-wrap{background:rgba(255,255,255,.08);border-radius:12px;padding:20px;margin-bottom:24px;min-height:160px;display:flex;align-items:center;justify-content:center}
+.qr-wrap img{max-width:180px;border-radius:8px}
+.qr-loading{display:flex;flex-direction:column;align-items:center;gap:10px;color:rgba(255,255,255,.4);font-size:12px;font-family:'DM Mono',monospace}
+
+.steps-list{text-align:left;display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.step-row{display:flex;align-items:flex-start;gap:12px;font-size:13px;color:rgba(255,255,255,.6);line-height:1.5}
+.step-num{width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;color:rgba(255,255,255,.4);flex-shrink:0;margin-top:1px}
+
+.btn-refresh{width:100%;padding:12px;background:transparent;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15);border-radius:8px;font-size:13px;font-family:'Syne',sans-serif;cursor:pointer;transition:all .15s}
+.btn-refresh:hover{border-color:rgba(255,255,255,.4);color:#fff}
+
+/* Success */
+.success-icon{font-size:48px;margin-bottom:16px}
+.success-title{font-size:22px;font-weight:700;margin-bottom:8px}
+.success-sub{font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:28px}
+.studio-name{font-family:'DM Mono',monospace;color:rgba(255,255,255,.8);font-size:12px;background:rgba(255,255,255,.08);padding:8px 16px;border-radius:8px;display:inline-block;margin-bottom:28px}
+
+/* Error */
+.error-icon{font-size:40px;margin-bottom:16px}
+.error-title{font-size:20px;font-weight:700;margin-bottom:8px}
+.error-msg{font-size:13px;color:rgba(255,255,255,.5);font-family:'DM Mono',monospace;line-height:1.6}
+
+@media(max-width:480px){.card{padding:28px 20px}}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">InkFlow</div>
+  <div class="logo-tag">Reconexão WhatsApp</div>
+
+  <!-- ESTADO: Carregando -->
+  <div class="state active" id="st-loading">
+    <div class="spinner"></div>
+    <div class="loading-text">buscando dados do estúdio...</div>
+  </div>
+
+  <!-- ESTADO: QR Code -->
+  <div class="state" id="st-qr">
+    <div class="qr-title">Reconectar WhatsApp</div>
+    <div class="qr-sub">Seu WhatsApp foi desconectado.<br/>Escaneie o código abaixo para reconectar.</div>
+
+    <div class="status-badge scanning" id="status-badge">
+      <span class="status-dot"></span>
+      <span id="status-text">aguardando scan</span>
+    </div>
+
+    <div class="qr-wrap" id="qr-wrap">
+      <div class="qr-loading" id="qr-loading">
+        <div class="spinner" style="width:28px;height:28px"></div>
+        <span>gerando qr code...</span>
+      </div>
+      <img id="qr-img" alt="QR Code" style="display:none"/>
+    </div>
+
+    <div class="steps-list">
+      <div class="step-row">
+        <div class="step-num">1</div>
+        <span>Abra o <strong>WhatsApp</strong> no celular do estúdio</span>
+      </div>
+      <div class="step-row">
+        <div class="step-num">2</div>
+        <span>Toque em <strong>Dispositivos conectados</strong> → Conectar dispositivo</span>
+      </div>
+      <div class="step-row">
+        <div class="step-num">3</div>
+        <span>Aponte a câmera para o <strong>QR Code</strong> acima</span>
+      </div>
+    </div>
+
+    <button class="btn-refresh" onclick="refreshQR()">↺ Gerar novo QR Code</button>
+  </div>
+
+  <!-- ESTADO: Conectado -->
+  <div class="state" id="st-success">
+    <div class="success-icon">✅</div>
+    <div class="success-title">WhatsApp Reconectado!</div>
+    <div class="studio-name" id="suc-studio"></div>
+    <div class="success-sub">Seu assistente virtual está ativo novamente e atendendo seus clientes.</div>
+  </div>
+
+  <!-- ESTADO: Erro -->
+  <div class="state" id="st-error">
+    <div class="error-icon">⚠️</div>
+    <div class="error-title">Link inválido</div>
+    <div class="error-msg" id="error-msg">Este link de reconexão é inválido ou expirou. Entre em contato com o suporte InkFlow.</div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenV4eHVzY3lwbGZvaW12b21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMTg3NjAsImV4cCI6MjA4ODg5NDc2MH0.GSw2qzM9RgEQT6xTNBElBv-4AAuSavZe-_C-CljMvdA';
+
+let tenant = null;
+let pollTimer = null;
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const params = new URLSearchParams(location.search);
+  const slug = params.get('slug') || params.get('instance');
+
+  if (!slug) {
+    showError('Nenhum estúdio identificado neste link. Solicite um novo link ao suporte InkFlow.');
+    return;
+  }
+
+  // Fetch tenant from Supabase
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/tenants?evo_instance=eq.${encodeURIComponent(slug)}&select=nome_estudio,nome_agente,evo_instance,evo_base_url,evo_apikey&limit=1`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    const data = await r.json();
+    if (!data || data.length === 0) {
+      showError('Estúdio não encontrado. Verifique o link ou entre em contato com o suporte InkFlow.');
+      return;
+    }
+    tenant = data[0];
+  } catch (e) {
+    showError('Erro ao buscar dados do estúdio. Verifique sua conexão e tente novamente.');
+    return;
+  }
+
+  showState('st-qr');
+  await loadQR();
+  startPolling();
+}
+
+// ── Load QR Code ──────────────────────────────────────────────────────────────
+async function loadQR() {
+  document.getElementById('qr-img').style.display = 'none';
+  document.getElementById('qr-loading').style.display = 'flex';
+
+  try {
+    const r = await fetch(
+      `${tenant.evo_base_url}/instance/connect/${tenant.evo_instance}`,
+      { headers: { 'apikey': tenant.evo_apikey } }
+    );
+    const data = await r.json();
+
+    // Evolution API returns base64 QR
+    const base64 = data.base64 || data.qrcode?.base64 || data.code;
+    if (base64) {
+      const img = document.getElementById('qr-img');
+      img.src = base64.startsWith('data:') ? base64 : `data:image/png;base64,${base64}`;
+      img.style.display = 'block';
+      document.getElementById('qr-loading').style.display = 'none';
+    }
+  } catch (e) {
+    document.getElementById('qr-loading').innerHTML = '<span style="color:rgba(255,255,255,.4);font-size:12px;font-family:\'DM Mono\',monospace">Erro ao gerar QR Code.<br/>Tente novamente.</span>';
+  }
+}
+
+// ── Refresh QR ────────────────────────────────────────────────────────────────
+async function refreshQR() {
+  await loadQR();
+}
+
+// ── Poll connection status ────────────────────────────────────────────────────
+function startPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(checkStatus, 3000);
+}
+
+async function checkStatus() {
+  try {
+    const r = await fetch(
+      `${tenant.evo_base_url}/instance/fetchInstances`,
+      { headers: { 'apikey': tenant.evo_apikey } }
+    );
+    const data = await r.json();
+    const instances = Array.isArray(data) ? data : (data.data || []);
+    const inst = instances.find(i =>
+      (i.instance?.instanceName || i.instanceName) === tenant.evo_instance
+    );
+
+    if (!inst) return;
+
+    const state = inst.instance?.state || inst.state || inst.connectionStatus;
+
+    if (state === 'open') {
+      clearInterval(pollTimer);
+      showSuccess();
+    } else if (state === 'connecting') {
+      updateStatus('conectando...', 'scanning');
+    }
+  } catch (e) {
+    // Silently ignore polling errors
+  }
+}
+
+// ── Show states ───────────────────────────────────────────────────────────────
+function showState(id) {
+  document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+}
+
+function showSuccess() {
+  document.getElementById('suc-studio').textContent = tenant.nome_estudio || tenant.evo_instance;
+  showState('st-success');
+}
+
+function showError(msg) {
+  document.getElementById('error-msg').textContent = msg;
+  showState('st-error');
+}
+
+function updateStatus(text, cls) {
+  const badge = document.getElementById('status-badge');
+  badge.className = `status-badge ${cls}`;
+  document.getElementById('status-text').textContent = text;
+}
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
