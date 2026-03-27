@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
@@ -52,13 +52,21 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .fi:focus{border-color:var(--ink)}
 .fi-hint{font-size:11px;color:var(--ink3);margin-top:5px;font-family:'DM Mono',monospace}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.plan-sel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
-.plan-opt{border:1px solid var(--border2);border-radius:8px;padding:12px;cursor:pointer;transition:all .15s;text-align:center}
+.plan-sel{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px}
+.plan-opt{border:1px solid var(--border2);border-radius:8px;padding:14px 13px;cursor:pointer;transition:all .15s;text-align:left;position:relative}
 .plan-opt:hover{border-color:var(--ink2)}
 .plan-opt.active{border-color:var(--ink);background:var(--ink);color:#fff}
-.plan-opt .po-name{font-weight:700;font-size:14px;margin-bottom:4px}
+.plan-opt .po-name{font-weight:700;font-size:14px;margin-bottom:3px}
 .plan-opt .po-price{font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3)}
 .plan-opt.active .po-price{color:rgba(255,255,255,.5)}
+.po-tag{display:inline-block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace;background:var(--ink);color:#fff;border-radius:4px;padding:2px 6px;margin-bottom:6px}
+.plan-opt.active .po-tag{background:rgba(255,255,255,.25)}
+.po-features{list-style:none;padding:0;margin:10px 0 0;border-top:1px solid var(--border);padding-top:10px}
+.plan-opt.active .po-features{border-top-color:rgba(255,255,255,.2)}
+.po-feat{font-size:11px;color:var(--ink2);font-family:'DM Mono',monospace;padding:2px 0;display:flex;gap:5px;align-items:baseline;line-height:1.5}
+.po-feat::before{content:'✓';color:var(--ink3);flex-shrink:0;font-size:10px}
+.plan-opt.active .po-feat{color:rgba(255,255,255,.75)}
+.plan-opt.active .po-feat::before{color:rgba(255,255,255,.45)}
 .form-err{background:var(--red-bg);color:var(--red);border-radius:8px;padding:12px 14px;font-size:13px;margin-bottom:16px;display:none;font-family:'DM Mono',monospace}
 .sbtn{width:100%;padding:13px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .15s;margin-top:8px}
 .sbtn:hover:not(:disabled){background:#333}
@@ -215,18 +223,54 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
     <hr class="divider"/>
     <div class="fsec">Plano</div>
     <div class="plan-sel" id="plan-sel">
+
+      <div class="plan-opt" id="plan-free" onclick="selectPlan('free')">
+        <div class="po-name">Free Trial</div>
+        <div class="po-price">7 dias grátis</div>
+        <ul class="po-features">
+          <li class="po-feat">5 conversas por dia</li>
+          <li class="po-feat">Atendimento automático 24/7</li>
+          <li class="po-feat">Histórico básico</li>
+          <li class="po-feat">Sem agendamento automático</li>
+        </ul>
+      </div>
+
       <div class="plan-opt active" id="plan-basic" onclick="selectPlan('basic')">
-        <div class="po-name">Basic</div>
+        <div class="po-name">Essencial</div>
         <div class="po-price">R$ 199/mês</div>
+        <ul class="po-features">
+          <li class="po-feat">Até 50 leads/mês</li>
+          <li class="po-feat">Agendamento automático</li>
+          <li class="po-feat">IA personalizada para seu estúdio</li>
+          <li class="po-feat">Histórico completo</li>
+          <li class="po-feat">Suporte por e-mail</li>
+        </ul>
       </div>
+
       <div class="plan-opt" id="plan-pro" onclick="selectPlan('pro')">
-        <div class="po-name">Pro</div>
+        <div class="po-tag">Mais popular</div>
+        <div class="po-name">Growth</div>
         <div class="po-price">R$ 399/mês</div>
+        <ul class="po-features">
+          <li class="po-feat">Até 200 leads/mês</li>
+          <li class="po-feat">Tudo do Essencial</li>
+          <li class="po-feat">Google Calendar integrado</li>
+          <li class="po-feat">Notificações de grupo</li>
+          <li class="po-feat">Suporte por chat prioritário</li>
+        </ul>
       </div>
+
       <div class="plan-opt" id="plan-enterprise" onclick="selectPlan('enterprise')">
         <div class="po-name">Enterprise</div>
-        <div class="po-price">R$ 799/mês</div>
+        <div class="po-price">R$ 999/mês</div>
+        <ul class="po-features">
+          <li class="po-feat">Leads ilimitados</li>
+          <li class="po-feat">Tudo do Growth</li>
+          <li class="po-feat">Configuração de IA dedicada</li>
+          <li class="po-feat">Suporte via WhatsApp com SLA</li>
+        </ul>
       </div>
+
     </div>
     <div class="fi-hint" style="margin-top:8px">Plano pré-selecionado conforme combinado</div>
 
@@ -401,7 +445,8 @@ function init() {
 
   // Set plan display
   selectedPlan = plano;
-  document.getElementById('w-plano').textContent = 'plano ' + plano;
+  const planLabels = { free:'free trial', basic:'essencial', pro:'growth', enterprise:'enterprise' };
+  document.getElementById('w-plano').textContent = 'plano ' + (planLabels[plano] || plano);
   selectPlan(plano);
 }
 
@@ -428,7 +473,7 @@ function autoAgent() {
 
 function selectPlan(plan) {
   selectedPlan = plan;
-  ['basic','pro','enterprise'].forEach(p => {
+  ['free','basic','pro','enterprise'].forEach(p => {
     document.getElementById('plan-' + p)?.classList.toggle('active', p === plan);
   });
 }
