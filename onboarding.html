@@ -24,27 +24,29 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .step.active{display:flex;flex-direction:column}
 
 /* ── Step 1: Welcome ── */
-#s1{background:radial-gradient(ellipse 75% 45% at 50% -5%,rgba(0,210,195,0.07) 0%,transparent 65%),radial-gradient(ellipse 40% 35% at 90% 75%,rgba(0,180,170,0.04) 0%,transparent 55%),linear-gradient(170deg,#091515 0%,#050d0d 100%);align-items:center;justify-content:center;text-align:center;padding:40px 20px}
-.w-logo{font-size:28px;font-weight:700;color:#fff;margin-bottom:4px;text-decoration:none}
+#s1{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg stroke='%2300c8b9' stroke-width='1' fill='none'%3E%3Cpath d='M0 80 L40 80 L40 40 L100 40' stroke-opacity='.1'/%3E%3Cpath d='M120 0 L120 60 L160 60' stroke-opacity='.08'/%3E%3Cpath d='M0 130 L30 130 L30 100 L80 100 L80 160' stroke-opacity='.09'/%3E%3Cpath d='M140 160 L140 110 L100 110 L100 40' stroke-opacity='.1'/%3E%3C/g%3E%3Cg fill='%2300c8b9'%3E%3Ccircle cx='40' cy='80' r='2.5' fill-opacity='.28'/%3E%3Ccircle cx='40' cy='40' r='2' fill-opacity='.2'/%3E%3Ccircle cx='100' cy='40' r='3' fill-opacity='.35'/%3E%3Ccircle cx='80' cy='100' r='2.5' fill-opacity='.25'/%3E%3Ccircle cx='100' cy='110' r='2' fill-opacity='.2'/%3E%3Ccircle cx='120' cy='60' r='2.5' fill-opacity='.22'/%3E%3C/g%3E%3C/svg%3E") repeat,radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,210,195,0.1) 0%,transparent 65%),linear-gradient(170deg,#091515 0%,#050d0d 100%);align-items:center;justify-content:center;text-align:center;padding:40px 20px}
+.w-logo{font-size:28px;font-weight:700;color:#fff;margin-bottom:4px;text-decoration:none;text-shadow:0 0 20px rgba(0,210,195,.22),0 0 40px rgba(0,210,195,.08)}
 .w-tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;margin-bottom:48px}
 .w-title{font-size:32px;font-weight:700;color:#fff;line-height:1.2;max-width:420px;margin:0 auto 16px}
 .w-sub{font-size:15px;color:rgba(255,255,255,.45);max-width:360px;margin:0 auto 40px;line-height:1.6}
 .w-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:44px;width:100%;max-width:340px;margin-left:auto;margin-right:auto}
-.w-step{width:100%;border-radius:10px;border:1px solid rgba(0,200,185,0.18);background:rgba(0,0,0,0.22);overflow:hidden;transition:border-color .25s ease}
-.w-step:hover{border-color:rgba(0,200,185,0.35)}
+.w-step{width:100%;border-radius:10px;border:1px solid rgba(0,200,185,0.18);background:rgba(0,0,0,0.28);overflow:hidden;transition:border-color .3s ease,box-shadow .3s ease}
+.w-step:hover{border-color:rgba(0,200,185,0.45);box-shadow:0 0 16px rgba(0,200,185,0.1)}
+.w-step.open{border-color:rgba(0,200,185,0.7);box-shadow:0 0 24px rgba(0,200,185,0.2),0 0 48px rgba(0,200,185,0.06),inset 0 0 24px rgba(0,200,185,0.04)}
 .w-step-hd{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;color:rgba(255,255,255,.75);font-size:14px;font-weight:500;user-select:none;text-align:left}
-.w-step-icon{flex-shrink:0;color:rgba(0,200,185,0.65);display:flex;align-items:center;justify-content:center}
+.w-step-icon{flex-shrink:0;color:rgba(0,210,195,0.85);display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 4px rgba(0,200,185,.4))}
 .w-step-label{flex:1}
 .w-step-hd:hover{color:#fff}
 .w-step-arrow{flex-shrink:0;color:rgba(0,200,185,0.4);font-size:15px;transition:transform .35s cubic-bezier(.4,0,.2,1);line-height:1}
-.w-step.open .w-step-arrow{transform:rotate(90deg);color:rgba(0,200,185,0.75)}
+.w-step.open .w-step-arrow{transform:rotate(90deg);color:rgba(0,210,195,0.95);text-shadow:0 0 8px rgba(0,200,185,.6)}
 .w-step-desc{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1),opacity .3s ease}
 .w-step-desc-inner{overflow:hidden;font-size:11.5px;color:rgba(255,255,255,.38);line-height:1.75;font-family:'DM Mono',monospace;opacity:0;padding:0 16px;transition:opacity .3s ease .05s,padding .35s ease}
 .w-step.open .w-step-desc{grid-template-rows:1fr}
 .w-step.open .w-step-desc-inner{opacity:1;padding:0 16px 14px}
-.w-btn{display:inline-flex;align-items:center;gap:10px;background:#fff;color:var(--ink);padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:'Syne',sans-serif;transition:all .15s}
-.w-btn:hover{background:#f0f0f0;transform:translateY(-1px)}
-.w-plan{display:inline-block;background:transparent;border:1px solid rgba(0,200,185,0.35);color:rgba(0,200,185,0.8);padding:5px 14px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;margin-bottom:48px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 0 10px rgba(0,200,185,0.08)}
+.w-btn{display:inline-flex;align-items:center;gap:10px;background:#fff;color:var(--ink);padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:'Syne',sans-serif;transition:all .2s;box-shadow:0 0 20px rgba(0,200,185,.1)}
+.w-btn:hover{background:#f0f0f0;transform:translateY(-1px);box-shadow:0 0 32px rgba(0,200,185,.22)}
+@keyframes np{0%,100%{box-shadow:0 0 8px rgba(0,200,185,.18)}50%{box-shadow:0 0 18px rgba(0,200,185,.4),0 0 32px rgba(0,200,185,.12)}}
+.w-plan{display:inline-block;background:transparent;border:1px solid rgba(0,200,185,0.4);color:rgba(0,200,185,0.9);padding:5px 14px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;margin-bottom:48px;letter-spacing:1.5px;text-transform:uppercase;animation:np 3s ease-in-out infinite}
 
 /* ── Step 2: Form ── */
 #s2{background:url('https://raw.githubusercontent.com/brazilianhustle/inkflow-saas/main/images/dragon-white.png') center/cover no-repeat;justify-content:flex-start}
