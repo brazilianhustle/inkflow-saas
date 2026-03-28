@@ -29,14 +29,15 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .w-tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.35);font-family:'DM Mono',monospace;margin-bottom:48px}
 .w-title{font-size:32px;font-weight:700;color:#fff;line-height:1.2;max-width:420px;margin:0 auto 16px}
 .w-sub{font-size:15px;color:rgba(255,255,255,.5);max-width:360px;margin:0 auto 48px;line-height:1.6}
-.w-steps{display:flex;flex-direction:column;align-items:center;gap:0;margin-bottom:48px;width:100%;max-width:320px}
-.w-step{display:flex;align-items:center;gap:14px;width:100%;padding:12px 18px;background:rgba(255,255,255,.06);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);font-size:13px;transition:all .2s}
-.w-step:first-child{border-radius:10px 10px 0 0}
-.w-step:last-child{border-radius:0 0 10px 10px}
-.w-step + .w-step{border-top:none}
-.w-roman{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);letter-spacing:1px;min-width:20px}
-.w-step.hi{color:rgba(255,255,255,.85);background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18)}
-.w-step.hi .w-roman{color:rgba(255,255,255,.5)}
+.w-steps{display:flex;flex-direction:column;align-items:stretch;gap:0;margin-bottom:48px;width:100%;max-width:340px}
+.w-step{width:100%;border-bottom:1px solid rgba(255,255,255,.1)}
+.w-step:first-child{border-top:1px solid rgba(255,255,255,.1)}
+.w-step-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 0;cursor:pointer;color:rgba(255,255,255,.65);font-size:14px;font-weight:500;gap:12px;user-select:none}
+.w-step-hd:hover{color:#fff}
+.w-step-arrow{flex-shrink:0;width:18px;height:18px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.25);font-size:16px;transition:transform .25s;line-height:1}
+.w-step.open .w-step-arrow{transform:rotate(90deg);color:rgba(255,255,255,.5)}
+.w-step-desc{display:none;padding:0 0 14px;font-size:12px;color:rgba(255,255,255,.4);line-height:1.7;font-family:'DM Mono',monospace;max-width:300px}
+.w-step.open .w-step-desc{display:block}
 .w-btn{display:inline-flex;align-items:center;gap:10px;background:#fff;color:var(--ink);padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:'Syne',sans-serif;transition:all .15s}
 .w-btn:hover{background:#f0f0f0;transform:translateY(-1px)}
 .w-plan{display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:4px 12px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;margin-bottom:48px;letter-spacing:1px;text-transform:uppercase}
@@ -176,22 +177,34 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
     <div id="w-plano" class="w-plan">plano basic</div>
     <div class="w-title">Configure seu est&uacute;dio em menos de 3 minutos</div>
     <div class="w-sub">Vamos criar seu assistente virtual de WhatsApp. Nenhum conhecimento t&eacute;cnico necess&aacute;rio.</div>
-        <div class="w-steps">
-      <div class="w-step hi">
-        <span class="w-roman">I</span>
-        <span>Dados do estúdio</span>
+            <div class="w-steps">
+      <div class="w-step" onclick="this.classList.toggle('open')">
+        <div class="w-step-hd">
+          <span>Dados do estúdio</span>
+          <span class="w-step-arrow">›</span>
+        </div>
+        <div class="w-step-desc">Preencha os dados do seu estúdio com endereço e contato comercial. Essas informações serão usadas para treinar a sua assistente virtual.</div>
       </div>
-      <div class="w-step hi">
-        <span class="w-roman">II</span>
-        <span>Configuração automática</span>
+      <div class="w-step" onclick="this.classList.toggle('open')">
+        <div class="w-step-hd">
+          <span>Configuração automática</span>
+          <span class="w-step-arrow">›</span>
+        </div>
+        <div class="w-step-desc">Sua instância WhatsApp e assistente virtual são criados automaticamente. Nenhuma ação técnica necessária da sua parte.</div>
       </div>
-      <div class="w-step hi">
-        <span class="w-roman">III</span>
-        <span>Conectar WhatsApp</span>
+      <div class="w-step" onclick="this.classList.toggle('open')">
+        <div class="w-step-hd">
+          <span>Conectar WhatsApp</span>
+          <span class="w-step-arrow">›</span>
+        </div>
+        <div class="w-step-desc">Escaneie o QR Code para vincular o número do seu estúdio. Em segundos seu WhatsApp estará ativo e pronto para atender clientes.</div>
       </div>
-      <div class="w-step hi">
-        <span class="w-roman">IV</span>
-        <span>Pagamento</span>
+      <div class="w-step" onclick="this.classList.toggle('open')">
+        <div class="w-step-hd">
+          <span>Pagamento</span>
+          <span class="w-step-arrow">›</span>
+        </div>
+        <div class="w-step-desc">Escolha o plano ideal para o seu estúdio. O pagamento é processado com segurança via Mercado Pago — sem surpresas, cancele quando quiser.</div>
       </div>
     </div>
     <button class="w-btn" onclick="goStep(2)">
