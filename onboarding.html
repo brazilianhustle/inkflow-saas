@@ -3,147 +3,180 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>InkFlow  Configurar Meu Estï¿½dio</title>
+<title>InkFlow — Configurar Meu Est&uacute;dio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--ink:#fff;--ink2:rgba(255,255,255,.65);--ink3:rgba(255,255,255,.35);--surface:#111;--surface2:#0a0a0a;--surface3:#161616;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.18);--green:#4ade80;--green-bg:rgba(74,222,128,.12);--red:#f87171;--red-bg:rgba(248,113,113,.12);--amber:#d4d4d4;--amber-bg:rgba(212,212,212,.1);--mp:#009ee3;--silver:#e8e8e8}
+:root{
+  --ink:#1a1a1a;--ink2:#555;--ink3:#999;
+  --surface:#fff;--surface2:#f7f6f3;--surface3:#f0efe9;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);
+  --green:#2d7a4f;--green-bg:#eaf5ef;
+  --red:#c0392b;--red-bg:#fdf0ee;
+  --amber:#8a5c00;--amber-bg:#fef7e0;
+  --mp:#009ee3;
+}
 body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);min-height:100vh}
-@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-@keyframes spin{to{transform:rotate(360deg)}}
-.step{display:none;min-height:100vh}.step.active{display:flex;flex-direction:column}
-#s1{background:#000;align-items:center;justify-content:center;text-align:center;padding:40px 20px;position:relative;overflow:hidden}
-.s1-dragon{position:absolute;inset:0;background:url('images/dragon-bg.jpg') center top/cover no-repeat;opacity:.55;-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,.75) 45%,rgba(0,0,0,.2) 80%,rgba(0,0,0,0) 100%);mask-image:linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,.75) 45%,rgba(0,0,0,.2) 80%,rgba(0,0,0,0) 100%)}
-.s1-inner{position:relative;z-index:2;width:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:48px 24px}
-.w-logo{font-size:32px;font-weight:700;background:linear-gradient(90deg,#777 0%,#bbb 20%,#fff 40%,#eee 55%,#bbb 75%,#777 90%,#ccc 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite;margin-bottom:4px;letter-spacing:3px}
-.w-tag{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;margin-bottom:44px}
-.w-title{font-size:36px;font-weight:700;line-height:1.15;max-width:380px;margin:0 auto 16px;background:linear-gradient(135deg,#b0b0b0 0%,#fff 30%,#e8e8e8 50%,#a0a0a0 65%,#fff 85%,#c8c8c8 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 5s ease infinite}
-.w-sub{font-size:14px;color:rgba(255,255,255,.4);max-width:340px;margin:0 auto 44px;line-height:1.7}
-.w-steps{display:flex;gap:16px;justify-content:center;margin-bottom:48px;flex-wrap:wrap}
-.w-step{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.3);font-size:12px}
-.w-num{width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;color:rgba(255,255,255,.25);flex-shrink:0}
-.w-step.hi .w-num{border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.8);background:rgba(255,255,255,.05)}
-.w-step.hi{color:rgba(255,255,255,.6)}
-.w-btn{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.12));color:#fff;padding:14px 36px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.2);font-family:'Syne',sans-serif;transition:all .2s;backdrop-filter:blur(4px);box-shadow:0 0 24px rgba(255,255,255,.04),inset 0 1px 0 rgba(255,255,255,.15)}
-.w-btn:hover{background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.2));border-color:rgba(255,255,255,.4);box-shadow:0 0 32px rgba(255,255,255,.08),inset 0 1px 0 rgba(255,255,255,.25);transform:translateY(-1px)}
-.w-plan{display:inline-block;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);padding:4px 14px;border-radius:20px;font-size:10px;font-family:'DM Mono',monospace;margin-bottom:48px;letter-spacing:2px;text-transform:uppercase}
+
+/* ── Steps ── */
+.step{display:none;min-height:100vh}
+.step.active{display:flex;flex-direction:column}
+
+/* ── Step 1: Welcome ── */
+#s1{background:linear-gradient(rgba(0,0,0,0.72),rgba(0,0,0,0.82)),url('https://raw.githubusercontent.com/brazilianhustle/inkflow-saas/main/images/dragon-bg.jpg') center/cover no-repeat;align-items:center;justify-content:center;text-align:center;padding:40px 20px}
+.w-logo{font-size:28px;font-weight:700;color:#fff;margin-bottom:4px}
+.w-tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.35);font-family:'DM Mono',monospace;margin-bottom:48px}
+.w-title{font-size:32px;font-weight:700;color:#fff;line-height:1.2;max-width:420px;margin:0 auto 16px}
+.w-sub{font-size:15px;color:rgba(255,255,255,.5);max-width:360px;margin:0 auto 48px;line-height:1.6}
+.w-steps{display:flex;gap:24px;justify-content:center;margin-bottom:48px;flex-wrap:wrap}
+.w-step{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.5);font-size:13px}
+.w-num{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-family:'DM Mono',monospace;color:rgba(255,255,255,.4);flex-shrink:0}
+.w-step.hi .w-num{border-color:rgba(255,255,255,.6);color:#fff;background:rgba(255,255,255,.1)}
+.w-step.hi{color:rgba(255,255,255,.8)}
+.w-btn{display:inline-flex;align-items:center;gap:10px;background:#fff;color:var(--ink);padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:'Syne',sans-serif;transition:all .15s}
+.w-btn:hover{background:#f0f0f0;transform:translateY(-1px)}
+.w-plan{display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:4px 12px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;margin-bottom:48px;letter-spacing:1px;text-transform:uppercase}
+
+/* ── Step 2: Form ── */
 #s2{background:var(--surface2);justify-content:flex-start}
-.form-header{background:#000;padding:20px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
-.form-logo{font-size:16px;font-weight:700;background:linear-gradient(90deg,#888,#fff,#bbb);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite}
-.form-badge{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace}
+.form-header{background:var(--ink);padding:20px 24px;display:flex;align-items:center;gap:12px}
+.form-logo{font-size:16px;font-weight:700;color:#fff}
+.form-badge{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);font-family:'DM Mono',monospace}
 .form-body{padding:32px 24px;max-width:560px;margin:0 auto;width:100%}
-.form-title{font-size:22px;font-weight:700;margin-bottom:6px;color:#fff}
+.form-title{font-size:22px;font-weight:700;margin-bottom:6px}
 .form-sub{font-size:13px;color:var(--ink3);margin-bottom:28px;font-family:'DM Mono',monospace}
-.fg{margin-bottom:18px}.fl{display:block;font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:6px}.fl span{color:var(--red)}
-.fi{width:100%;padding:10px 13px;border:1px solid var(--border2);border-radius:8px;font-size:14px;font-family:'Syne',sans-serif;background:rgba(255,255,255,.04);color:#fff;outline:none;transition:border .15s}
-.fi::placeholder{color:rgba(255,255,255,.22)}.fi:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.06)}
+.fg{margin-bottom:18px}
+.fl{display:block;font-size:11px;font-family:'DM Mono',monospace;color:var(--ink2);margin-bottom:6px}
+.fl span{color:var(--red)}
+.fi{width:100%;padding:10px 13px;border:1px solid var(--border2);border-radius:8px;font-size:14px;font-family:'Syne',sans-serif;background:var(--surface);color:var(--ink);outline:none;transition:border .15s}
+.fi:focus{border-color:var(--ink)}
 .fi-hint{font-size:11px;color:var(--ink3);margin-top:5px;font-family:'DM Mono',monospace}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .plan-sel{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px}
-.plan-opt{border:1px solid var(--border2);border-radius:8px;padding:14px 13px;cursor:pointer;transition:all .15s;text-align:left;position:relative;background:rgba(255,255,255,.03)}
-.plan-opt:hover{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.06)}
-.plan-opt.active{border-color:rgba(255,255,255,.35);background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.04))}
-.plan-opt .po-name{font-weight:700;font-size:14px;margin-bottom:3px;color:#fff}
+.plan-opt{border:1px solid var(--border2);border-radius:8px;padding:14px 13px;cursor:pointer;transition:all .15s;text-align:left;position:relative}
+.plan-opt:hover{border-color:var(--ink2)}
+.plan-opt.active{border-color:var(--ink);background:var(--ink);color:#fff}
+.plan-opt .po-name{font-weight:700;font-size:14px;margin-bottom:3px}
 .plan-opt .po-price{font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3)}
-.plan-opt.active .po-price{color:rgba(255,255,255,.55)}
-.po-tag{display:inline-block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace;background:rgba(255,255,255,.12);color:#fff;border-radius:4px;padding:2px 6px;margin-bottom:6px}
+.plan-opt.active .po-price{color:rgba(255,255,255,.5)}
+.po-tag{display:inline-block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace;background:var(--ink);color:#fff;border-radius:4px;padding:2px 6px;margin-bottom:6px}
+.plan-opt.active .po-tag{background:rgba(255,255,255,.25)}
 .po-features{list-style:none;padding:0;margin:10px 0 0;border-top:1px solid var(--border);padding-top:10px}
-.plan-opt.active .po-features{border-top-color:rgba(255,255,255,.12)}
-.po-feat{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;padding:2px 0;display:flex;gap:5px;align-items:baseline;line-height:1.5}
-.po-feat::before{content:'Â·';color:rgba(255,255,255,.25);flex-shrink:0}
-.plan-opt.active .po-feat{color:rgba(255,255,255,.6)}
+.plan-opt.active .po-features{border-top-color:rgba(255,255,255,.2)}
+.po-feat{font-size:11px;color:var(--ink2);font-family:'DM Mono',monospace;padding:2px 0;display:flex;gap:5px;align-items:baseline;line-height:1.5}
+.po-feat::before{content:'✓';color:var(--ink3);flex-shrink:0;font-size:10px}
+.plan-opt.active .po-feat{color:rgba(255,255,255,.75)}
+.plan-opt.active .po-feat::before{color:rgba(255,255,255,.45)}
 .form-err{background:var(--red-bg);color:var(--red);border-radius:8px;padding:12px 14px;font-size:13px;margin-bottom:16px;display:none;font-family:'DM Mono',monospace}
-.sbtn{width:100%;padding:13px;background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.14));color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .15s;margin-top:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
-.sbtn:hover:not(:disabled){background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.22));border-color:rgba(255,255,255,.38)}
-.sbtn:disabled{opacity:.4;cursor:default}
+.sbtn{width:100%;padding:13px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .15s;margin-top:8px}
+.sbtn:hover:not(:disabled){background:#333}
+.sbtn:disabled{opacity:.5;cursor:default}
 .divider{border:none;border-top:1px solid var(--border);margin:20px 0}
 .fsec{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);font-family:'DM Mono',monospace;margin-bottom:14px}
+
+/* ── Step 3: Pagamento ── */
 #s3{background:var(--surface2);justify-content:flex-start}
-.pay-card{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:16px;padding:36px 28px;max-width:460px;width:100%;text-align:center}
-.pay-title{font-size:20px;font-weight:700;margin-bottom:6px;color:#fff}
+.pay-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 28px;max-width:460px;width:100%;text-align:center}
+.pay-title{font-size:20px;font-weight:700;margin-bottom:6px}
 .pay-sub{font-size:13px;color:var(--ink3);font-family:'DM Mono',monospace;margin-bottom:24px}
-.pay-plan-box{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px;text-align:left}
-.pay-plan-name{font-size:16px;font-weight:700;margin-bottom:4px;color:#fff}
-.pay-plan-price{font-size:30px;font-weight:700;margin:6px 0 4px;background:linear-gradient(90deg,#aaa,#fff,#ccc);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite}
+.pay-plan-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px;text-align:left}
+.pay-plan-name{font-size:16px;font-weight:700;margin-bottom:4px}
+.pay-plan-price{font-size:30px;font-weight:700;color:var(--ink);margin:6px 0 4px}
 .pay-plan-cycle{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace}
-.pay-btn{width:100%;padding:14px;background:var(--mp);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;margin-bottom:10px;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:10px}
-.pay-btn:hover:not(:disabled){background:#007ab8}.pay-btn:disabled{opacity:.6;cursor:default}
+.pay-btn{width:100%;padding:14px;background:var(--mp);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;margin-bottom:10px;transition:all .15s;lisplay:flex;align-items:center;justify-content:center;gap:10px}
+.pay-btn:hover:not(:disabled){background:#007ab8}
+.pay-btn:disabled{opacity:.6;cursor:default}
 .pay-hint{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;line-height:1.6;margin-bottom:14px}
 .pay-or{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;margin:8px 0;text-align:center}
 .pay-free-btn{width:100%;padding:12px;background:none;color:var(--ink2);border:1px solid var(--border2);border-radius:8px;font-size:14px;cursor:pointer;font-family:'Syne',sans-serif;transition:all .15s;margin-bottom:16px}
-.pay-free-btn:hover{background:rgba(255,255,255,.05)}
+.pay-free-btn:hover{background:var(--surface2)}
 .pay-back{font-size:12px;color:var(--ink3);font-family:'DM Mono',monospace;cursor:pointer;text-decoration:underline}
-#s4{background:#000;align-items:center;justify-content:center;padding:40px 20px;text-align:center}
-.proc-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:400px}
+
+/* ── Step 4: Processing ── */
+#s4{background:var(--ink);align-items:center;justify-content:center;padding:40px 20px;text-align:center}
+.proc-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:40px;width:100%;max-width:400px}
 .proc-title{font-size:20px;font-weight:700;color:#fff;margin-bottom:8px}
-.proc-sub{font-size:12px;color:var(--ink3);font-family:'DM Mono',monospace;margin-bottom:32px}
+.proc-sub{font-size:12px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;margin-bottom:32px}
 .proc-list{text-align:left;display:flex;flex-direction:column;gap:16px}
 .proc-item{display:flex;align-items:center;gap:14px}
 .proc-dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .3s}
-.proc-dot.wait{background:rgba(255,255,255,.04);border:1px solid var(--border)}
-.proc-dot.active{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);animation:spin 1s linear infinite}
+.proc-dot.wait{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15)}
+.proc-dot.active{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);animation:spin 1s linear infinite}
 .proc-dot.done{background:#2d7a4f;border-color:#2d7a4f;color:#fff}
-.proc-dot.done::after{content:'â';font-size:11px}
+.proc-dot.done::after{content:'✓';font-size:11px}
 .proc-dot.err{background:#c0392b;border-color:#c0392b;color:#fff}
-.proc-dot.err::after{content:'â';font-size:11px}
-.proc-msg{font-size:13px;color:var(--ink3);flex:1;font-family:'DM Mono',monospace}
-.proc-msg.done{color:rgba(255,255,255,.8)}
-.proc-err-box{background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.25);border-radius:10px;padding:16px;margin-top:24px;display:none}
+.proc-dot.err::after{content:'✕';font-size:11px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proc-msg{font-size:13px;color:rgba(255,255,255,.6);flex:1;font-family:'DM Mono',monospace}
+.proc-msg.done{color:rgba(255,255,255,.9)}
+.proc-err-box{background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:10px;padding:16px;margin-top:24px;display:none}
 .proc-err-txt{font-size:13px;color:#e74c3c;font-family:'DM Mono',monospace;line-height:1.5}
-.proc-retry{margin-top:12px;background:rgba(255,255,255,.07);border:1px solid var(--border2);color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Mono',monospace}
+.proc-retry{margin-top:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Mono',monospace}
+
+/* ── Step 5: QR Code ── */
 #s5{background:var(--surface2);align-items:center;justify-content:center;padding:32px 20px}
-.qr-card{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:16px;padding:32px 28px;max-width:420px;width:100%;text-align:center}
+.qr-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;max-width:420px;width:100%;text-align:center}
 .qr-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
-.qr-title{font-size:18px;font-weight:700;color:#fff}
+.qr-title{font-size:18px;font-weight:700}
 .qr-badge{font-size:10px;font-family:'DM Mono',monospace;color:var(--amber);background:var(--amber-bg);padding:4px 10px;border-radius:20px}
 .qr-badge.conn{color:var(--green);background:var(--green-bg)}
-.qr-box{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;min-height:220px;display:flex;align-items:center;justify-content:center;position:relative}
+.qr-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;min-height:220px;display:flex;align-items:center;justify-content:center;position:relative}
 #qr-img{max-width:200px;max-height:200px;border-radius:8px;display:none}
 .qr-loading{font-size:12px;color:var(--ink3);font-family:'DM Mono',monospace;display:flex;flex-direction:column;align-items:center;gap:10px}
 .qr-spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--ink3);border-radius:50%;animation:spin 1s linear infinite}
 .qr-steps{text-align:left;display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
 .qr-step{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink2);line-height:1.4}
-.qr-step-num{background:rgba(255,255,255,.07);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0;margin-top:1px}
+.qr-step-num{background:var(--surface3);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0;margin-top:1px}
 .qr-refresh{background:none;border:1px solid var(--border2);color:var(--ink2);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Mono',monospace;transition:all .15s}
-.qr-refresh:hover{background:rgba(255,255,255,.05)}
+.qr-refresh:hover{background:var(--surface2)}
 .qr-timer{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:10px}
 .qr-poll{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px;justify-content:center;margin-top:12px}
-.qr-poll-dot{width:6px;height:6px;border-radius:50%;background:var(--silver);animation:pulse 1.5s ease-in-out infinite}
+.qr-poll-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── Step 6: Success ── */
 #s6{background:var(--surface2);align-items:center;justify-content:center;padding:32px 20px}
-.suc-card{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:16px;padding:40px 32px;max-width:460px;width:100%;text-align:center}
+.suc-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 32px;max-width:460px;width:100%;text-align:center}
 .suc-icon{font-size:48px;margin-bottom:16px}
 .suc-title{font-size:24px;font-weight:700;color:var(--green);margin-bottom:8px}
 .suc-sub{font-size:14px;color:var(--ink2);margin-bottom:32px;line-height:1.6}
-.suc-info{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.12);border-radius:10px;padding:16px 18px;text-align:left;margin-bottom:24px}
-.suc-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid rgba(74,222,128,.08)}
+.suc-info{background:var(--green-bg);border:1px solid rgba(45,122,79,.2);border-radius:10px;padding:16px 18px;text-align:left;margin-bottom:24px}
+.suc-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid rgba(45,122,79,.1)}
 .suc-row:last-child{border-bottom:none}
 .suc-key{color:var(--green);font-family:'DM Mono',monospace;font-size:11px}
-.suc-val{font-weight:600;color:#fff;font-size:13px}
+.suc-val{font-weight:600;color:var(--ink);font-size:13px}
 .suc-next{font-size:12px;color:var(--ink3);font-family:'DM Mono',monospace;line-height:1.7}
-#err-overlay{display:none;position:fixed;inset:0;background:#000;align-items:center;justify-content:center;z-index:100;padding:24px;text-align:center;flex-direction:column}
+
+/* ── Error overlay ── */
+#err-overlay{display:none;position:fixed;inset:0;background:var(--ink);align-items:center;justify-content:center;z-index:100;padding:24px;text-align:center;flex-direction:column}
 #err-overlay.show{display:flex}
 .err-icon{font-size:40px;margin-bottom:16px}
 .err-title{font-size:20px;font-weight:700;color:#fff;margin-bottom:8px}
-.err-msg{font-size:13px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;max-width:360px;line-height:1.6}
-@media(max-width:600px){.fgrid{grid-template-columns:1fr}.plan-sel{grid-template-columns:1fr}.w-steps{flex-direction:column;align-items:center}.qr-header{flex-direction:column;gap:8px;text-align:left;align-items:flex-start}.w-title{font-size:28px}}
+.err-msg{font-size:13px;color:rgba(255,255,255,.5);font-family:'DM Mono',monospace;max-width:360px;line-height:1.6}
+
+@media(max-width:600px){
+  .fgrid{grid-template-columns:1fr}
+  .plan-sel{grid-template-columns:1fr}
+  .w-steps{flex-direction:column;align-items:center}
+  .qr-header{flex-direction:column;gap:8px;text-align:left;align-items:flex-start}
+}
 </style>
 </head>
 <body>
 
-<!-- PPPPPPPPPP STEP 1: BOAS-VINDAS PPPPPPPPPP -->
+<!-- ══════════ STEP 1: BOAS-VINDAS ══════════ -->
 <div class="step active" id="s1">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:48px 24px">
     <div class="w-logo">InkFlow</div>
-    <div class="w-tag">Automaï¿½ï¿½o WhatsApp para Tatuadores</div>
+    <div class="w-tag">Automa&ccedil;&atilde;o WhatsApp para Tatuadores</div>
     <div id="w-plano" class="w-plan">plano basic</div>
-    <div class="w-title">Configure seu estï¿½dio em menos de 3 minutos</div>
-    <div class="w-sub">Vamos criar seu assistente virtual de WhatsApp. Nenhum conhecimento tï¿½cnico necessï¿½rio.</div>
+    <div class="w-title">Configure seu est&uacute;dio em menos de 3 minutos</div>
+    <div class="w-sub">Vamos criar seu assistente virtual de WhatsApp. Nenhum conhecimento t&eacute;cnico necess&aacute;rio.</div>
     <div class="w-steps">
       <div class="w-step hi">
         <div class="w-num">1</div>
-        <span>Dados do estï¿½dio</span>
+        <span>Dados do est&uacute;dio</span>
       </div>
       <div class="w-step hi">
         <div class="w-num">2</div>
@@ -151,7 +184,7 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
       </div>
       <div class="w-step hi">
         <div class="w-num">3</div>
-        <span>Configuraï¿½ï¿½o automï¿½tica</span>
+        <span>Configura&ccedil;&atilde;o autom&aacute;tica</span>
       </div>
       <div class="w-step hi">
         <div class="w-num">4</div>
@@ -159,28 +192,28 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
       </div>
     </div>
     <button class="w-btn" onclick="goStep(2)">
-      Comeï¿½ar configuraï¿½ï¿½o
+      Come&ccedil;ar configura&ccedil;&atilde;o
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l7 7-7 7-1.4-1.4 4.6-4.6H1V9.9h10.2L6.6 14.5 8 16l7-7-7-7z"/></svg>
     </button>
     <div id="w-err" style="display:none;margin-top:24px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:10px;padding:14px 18px;font-size:13px;color:#e74c3c;font-family:'DM Mono',monospace;max-width:380px;line-height:1.5;text-align:center"></div>
   </div>
 </div>
 
-<!-- PPPPPPPPPP STEP 2: FORMULï¿½RIO PPPPPPPPPP -->
+<!-- ══════════ STEP 2: FORMUL&Aacute;RIO ══════════ -->
 <div class="step" id="s2">
   <div class="form-header">
     <div>
       <div class="form-logo">InkFlow</div>
-      <div class="form-badge">Configuraï¿½ï¿½o do Estï¿½dio</div>
+      <div class="form-badge">Configura&ccedil;&atilde;o do Est&uacute;dio</div>
     </div>
   </div>
   <div class="form-body">
-    <div class="form-title">Dados do seu estï¿½dio</div>
-    <div class="form-sub">Essas informaï¿½ï¿½es serï¿½o usadas pelo seu assistente virtual.</div>
+    <div class="form-title">Dados do seu est&uacute;dio</div>
+    <div class="form-sub">Essas informa&ccedil;&otilde;es ser&atilde;o usadas pelo seu assistente virtual.</div>
 
     <div class="form-err" id="form-err"></div>
 
-    <div class="fsec">Proprietï¿½rio</div>
+    <div class="fsec">Propriet&aacute;rio</div>
     <div class="fgrid">
       <div class="fg">
         <label class="fl">Seu nome <span>*</span></label>
@@ -196,22 +229,22 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
     <div class="fg">
       <label class="fl">Seu e-mail <span>*</span></label>
       <input class="fi" id="f-email" type="email" placeholder="Ex: carlos@darkinkstudio.com"/>
-      <div class="fi-hint">Para notificaï¿½ï¿½es, suporte e cobranï¿½a</div>
+      <div class="fi-hint">Para notifica&ccedil;&otilde;es, suporte e cobran&ccedil;a</div>
     </div>
 
     <hr class="divider"/>
-    <div class="fsec">Estï¿½dio</div>
+    <div class="fsec">Est&uacute;dio</div>
     <div class="fg">
-      <label class="fl">Nome do estï¿½dio <span>*</span></label>
+      <label class="fl">Nome do est&uacute;dio <span>*</span></label>
       <input class="fi" id="f-estudio" type="text" placeholder="Ex: Dark Ink Studio"/>
     </div>
     <div class="fgrid">
       <div class="fg">
         <label class="fl">Cidade</label>
-        <input class="fi" id="f-cidade" type="text" placeholder="Ex: Sï¿½o Paulo - SP"/>
+        <input class="fi" id="f-cidade" type="text" placeholder="Ex: S&atilde;o Paulo - SP"/>
       </div>
       <div class="fg">
-        <label class="fl">Endereï¿½o</label>
+        <label class="fl">Endere&ccedil;o</label>
         <input class="fi" id="f-endereco" type="text" placeholder="Ex: Av. Paulista, 1000"/>
       </div>
     </div>
@@ -222,23 +255,23 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 
       <div class="plan-opt" id="plan-free" onclick="selectPlan('free')">
         <div class="po-name">Free Trial</div>
-        <div class="po-price">7 dias grï¿½tis</div>
+        <div class="po-price">7 dias gr&aacute;tis</div>
         <ul class="po-features">
           <li class="po-feat">5 conversas por dia</li>
-          <li class="po-feat">Atendimento automï¿½tico 24/7</li>
-          <li class="po-feat">Histï¿½rico bï¿½sico</li>
-          <li class="po-feat">Sem agendamento automï¿½tico</li>
+          <li class="po-feat">Atendimento autom&aacute;tico 24/7</li>
+          <li class="po-feat">Hist&oacute;rico b&aacute;sico</li>
+          <li class="po-feat">Sem agendamento autom&aacute;tico</li>
         </ul>
       </div>
 
       <div class="plan-opt active" id="plan-basic" onclick="selectPlan('basic')">
         <div class="po-name">Essencial</div>
-        <div class="po-price">R$ 199/mï¿½s</div>
+        <div class="po-price">R$ 199/m&ecirc;s</div>
         <ul class="po-features">
-          <li class="po-feat">Atï¿½ 50 leads/mï¿½s</li>
-          <li class="po-feat">Agendamento automï¿½tico</li>
-          <li class="po-feat">IA personalizada para seu estï¿½dio</li>
-          <li class="po-feat">Histï¿½rico completo</li>
+          <li class="po-feat">At&eacute; 50 leads/m&ecirc;s</li>
+          <li class="po-feat">Agendamento autom&aacute;tico</li>
+          <li class="po-feat">IA personalizada para seu est&uacute;dio</li>
+          <li class="po-feat">Hist&oacute;rico completo</li>
           <li class="po-feat">Suporte por e-mail</li>
         </ul>
       </div>
@@ -246,42 +279,42 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
       <div class="plan-opt" id="plan-pro" onclick="selectPlan('pro')">
         <div class="po-tag">Mais popular</div>
         <div class="po-name">Growth</div>
-        <div class="po-price">R$ 399/mï¿½s</div>
+        <div class="po-price">R$ 399/m&ecirc;s</div>
         <ul class="po-features">
-          <li class="po-feat">Atï¿½ 200 leads/mï¿½s</li>
+          <li class="po-feat">At&eacute; 200 leads/m&ecirc;s</li>
           <li class="po-feat">Tudo do Essencial</li>
           <li class="po-feat">Google Calendar integrado</li>
-          <li class="po-feat">Notificaï¿½ï¿½es de grupo</li>
-          <li class="po-feat">Suporte por chat prioritï¿½rio</li>
+          <li class="po-feat">Notifica&ccedil;&otilde;es de grupo</li>
+          <li class="po-feat">Suporte por chat priorit&aacute;rio</li>
         </ul>
       </div>
 
       <div class="plan-opt" id="plan-enterprise" onclick="selectPlan('enterprise')">
         <div class="po-name">Enterprise</div>
-        <div class="po-price">R$ 999/mï¿½s</div>
+        <div class="po-price">R$ 999/m&ecirc;s</div>
         <ul class="po-features">
           <li class="po-feat">Leads ilimitados</li>
           <li class="po-feat">Tudo do Growth</li>
-          <li class="po-feat">Configuraï¿½ï¿½o de IA dedicada</li>
+          <li class="po-feat">Configura&ccedil;&atilde;o de IA dedicada</li>
           <li class="po-feat">Suporte via WhatsApp com SLA</li>
         </ul>
       </div>
 
     </div>
-    <div class="fi-hint" style="margin-top:8px">Plano prï¿½-selecionado conforme combinado</div>
+    <div class="fi-hint" style="margin-top:8px">Plano pr&eacute;-selecionado conforme combinado</div>
 
     <button class="sbtn" id="form-btn" onclick="showPaymentStep()">
-      Configurar meu WhatsApp ï¿½
+      Configurar meu WhatsApp →
     </button>
 
     <div style="margin-top:16px;font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;text-align:center;line-height:1.6">
-      Ao continuar, vocï¿½ concorda com os <a href="termos.html" target="_blank" style="color:var(--ink2);text-decoration:underline">termos de uso</a> do InkFlow.<br/>
-      Seus dados sï¿½o armazenados com seguranï¿½a no Brasil.
+      Ao continuar, voc&ecirc; concorda com os <a href="termos.html" target="_blank" style="color:var(--ink2);text-decoration:underline">termos de uso</a> do InkFlow.<br/>
+      Seus dados s&atilde;o armazenados com seguran&ccedil;a no Brasil.
     </div>
   </div>
 </div>
 
-<!-- PPPPPPPPPP STEP 3: PAGAMENTO PPPPPPPPPP -->
+<!-- ══════════ STEP 3: PAGAMENTO ══════════ -->
 <div class="step" id="s3">
   <div class="form-header">
     <div>
@@ -302,26 +335,26 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
         Pagar com Mercado Pago
       </button>
-      <div class="pay-hint" id="pay-hint">Assinatura recorrente mensal ï¿½ cancele a qualquer momento</div>
+      <div class="pay-hint" id="pay-hint">Assinatura recorrente mensal · cancele a qualquer momento</div>
 
       <div class="pay-or" id="pay-or">ou</div>
 
       <button class="pay-free-btn" id="pay-free-btn" onclick="startFreeTrial()">
-        Comeï¿½ar 7 dias grï¿½tis (sem cartï¿½o)
+        Come&ccedil;ar 7 dias gr&aacute;tis (sem cart&atilde;o)
       </button>
 
       <div>
-        <span class="pay-back" onclick="goStep(2)">ï¿½ Voltar e editar</span>
+        <span class="pay-back" onclick="goStep(2)">← Voltar e editar</span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- PPPPPPPPPP STEP 4: PROCESSANDO PPPPPPPPPP -->
+<!-- ══════════ STEP 4: PROCESSANDO ══════════ -->
 <div class="step" id="s4">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
     <div class="proc-card">
-      <div class="proc-title">Configurando seu estï¿½dio</div>
+      <div class="proc-title">Configurando seu est&uacute;dio</div>
       <div class="proc-sub">Aguarde, isso leva alguns segundos...</div>
       <div class="proc-list">
         <div class="proc-item" id="pi-0">
@@ -330,7 +363,7 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
         </div>
         <div class="proc-item" id="pi-1">
           <div class="proc-dot wait" id="pd-1"></div>
-          <div class="proc-msg" id="pm-1">Criando instï¿½ncia WhatsApp...</div>
+          <div class="proc-msg" id="pm-1">Criando inst&acirc;ncia WhatsApp...</div>
         </div>
         <div class="proc-item" id="pi-2">
           <div class="proc-dot wait" id="pd-2"></div>
@@ -347,13 +380,13 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
       </div>
       <div class="proc-err-box" id="proc-err-box">
         <div class="proc-err-txt" id="proc-err-txt"></div>
-        <button class="proc-retry" onclick="goStep(2)">ï¿½ Voltar e tentar novamente</button>
+        <button class="proc-retry" onclick="goStep(2)">← Voltar e tentar novamente</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- PPPPPPPPPP STEP 5: QR CODE PPPPPPPPPP -->
+<!-- ══════════ STEP 5: QR CODE ══════════ -->
 <div class="step" id="s5">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
     <div class="qr-card">
@@ -373,86 +406,86 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
       <div class="qr-steps">
         <div class="qr-step">
           <div class="qr-step-num">1</div>
-          <span>Abra o <strong>WhatsApp</strong> no celular do estï¿½dio</span>
+          <span>Abra o <strong>WhatsApp</strong> no celular do est&uacute;dio</span>
         </div>
         <div class="qr-step">
           <div class="qr-step-num">2</div>
-          <span>Toque em <strong>Dispositivos conectados</strong> ï¿½ Conectar dispositivo</span>
+          <span>Toque em <strong>Dispositivos conectados</strong> → Conectar dispositivo</span>
         </div>
         <div class="qr-step">
           <div class="qr-step-num">3</div>
-          <span>Aponte a cï¿½mera para o <strong>QR Code</strong> acima</span>
+          <span>Aponte a c&acirc;mera para o <strong>QR Code</strong> acima</span>
         </div>
       </div>
 
       <div style="display:flex;gap:10px;justify-content:center">
-        <button class="qr-refresh" onclick="refreshQR()">ï¿½ Novo QR Code</button>
+        <button class="qr-refresh" onclick="refreshQR()">↺ Novo QR Code</button>
       </div>
       <div class="qr-timer" id="qr-timer"></div>
       <div class="qr-poll">
         <div class="qr-poll-dot"></div>
-        verificando conexï¿½o automaticamente...
+        verificando conex&atilde;o automaticamente...
       </div>
     </div>
   </div>
 </div>
 
-<!-- PPPPPPPPPP STEP 6: SUCESSO PPPPPPPPPP -->
+<!-- ══════════ STEP 6: SUCESSO ══════════ -->
 <div class="step" id="s6">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
     <div class="suc-card">
-      <div class="suc-icon"><ï¿½</div>
+      <div class="suc-icon">🎉</div>
       <div class="suc-title">WhatsApp Conectado!</div>
-      <div class="suc-sub">Seu assistente virtual jï¿½ estï¿½ ativo e pronto para atender os clientes do seu estï¿½dio automaticamente.</div>
+      <div class="suc-sub">Seu assistente virtual j&aacute; est&aacute; ativo e pronto para atender os clientes do seu est&uacute;dio automaticamente.</div>
 
       <div class="suc-info">
         <div class="suc-row">
-          <span class="suc-key">estï¿½dio</span>
-          <span class="suc-val" id="suc-estudio"></span>
+          <span class="suc-key">est&uacute;dio</span>
+          <span class="suc-val" id="suc-estudio">—</span>
         </div>
         <div class="suc-row">
           <span class="suc-key">agente</span>
-          <span class="suc-val" id="suc-agente"></span>
+          <span class="suc-val" id="suc-agente">—</span>
         </div>
         <div class="suc-row">
-          <span class="suc-key">instï¿½ncia</span>
-          <span class="suc-val" id="suc-inst" style="font-family:'DM Mono',monospace;font-size:12px"></span>
+          <span class="suc-key">inst&acirc;ncia</span>
+          <span class="suc-val" id="suc-inst" style="font-family:'DM Mono',monospace;font-size:12px">—</span>
         </div>
         <div class="suc-row">
           <span class="suc-key">plano</span>
-          <span class="suc-val" id="suc-plano"></span>
+          <span class="suc-val" id="suc-plano">—</span>
         </div>
         <div class="suc-row" style="border-bottom:none">
           <span class="suc-key">status</span>
-          <span style="background:var(--green-bg);color:var(--green);padding:3px 10px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;font-weight:600">ï¿½ ativo</span>
+          <span style="background:var(--green-bg);color:var(--green);padding:3px 10px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;font-weight:600">● ativo</span>
         </div>
       </div>
 
       <div class="suc-next">
-         Seu WhatsApp jï¿½ recebe mensagens automaticamente<br/>
-         O assistente responde agendamentos e dï¿½vidas<br/>
-         Vocï¿½ recebe alertas no grupo de notificaï¿½ï¿½o<br/><br/>
-        Em caso de dï¿½vidas, entre em contato com o suporte InkFlow.
+        ✓ Seu WhatsApp j&aacute; recebe mensagens automaticamente<br/>
+        ✓ O assistente responde agendamentos e d&uacute;vidas<br/>
+        ✓ Voc&ecirc; recebe alertas no grupo de notifica&ccedil;&atilde;o<br/><br/>
+        Em caso de d&uacute;vidas, entre em contato com o suporte InkFlow.
       </div>
     </div>
   </div>
 </div>
 
-<!-- Error overlay para link invï¿½lido -->
+<!-- Error overlay para link inv&aacute;lido -->
 <div id="err-overlay">
-  <div class="err-icon">ï¿½</div>
-  <div class="err-title">Link invï¿½lido</div>
-  <div class="err-msg" id="err-msg">Este link de onboarding ï¿½ invï¿½lido ou expirou. Solicite um novo link ao suporte InkFlow.</div>
+  <div class="err-icon">⚠️</div>
+  <div class="err-title">Link inv&aacute;lido</div>
+  <div class="err-msg" id="err-msg">Este link de onboarding &eacute; inv&aacute;lido ou expirou. Solicite um novo link ao suporte InkFlow.</div>
 </div>
 
 <script>
-//    Configuraï¿½ï¿½es                                                           
+// ── Configurações ──────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenV4eHVzY3lwbGZvaW12b21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMTg3NjAsImV4cCI6MjA4ODg5NDc2MH0.GSw2qzM9RgEQT6xTNBElBv-4AAuSavZe-_C-CljMvdA';
 const EVO_BASE    = 'https://evolutionapi.vps1170.panel.speedfy.host';
 const N8N_BASE    = 'https://n8n.vps1170.panel.speedfy.host/webhook/';
 
-//    Estado                                                                 
+// ── Estado ────────────────────────────────────────────────────────────────
 let gConfig      = { globalKey: '', plano: 'basic' };
 let tenantId     = null;
 let instanceKey  = null;
@@ -461,7 +494,7 @@ let pollInterval = null;
 let qrRefreshInterval = null;
 let selectedPlan = 'basic';
 
-//    Init                                                                    
+// ── Init ───────────────────────────────────────────────────────────────────
 function init() {
   // Detectar retorno do Mercado Pago (MP adiciona ?preapproval_id=xxx na back_url)
   const urlParams    = new URLSearchParams(window.location.search);
@@ -480,7 +513,7 @@ function init() {
   gConfig = { globalKey: key, plano };
 
   if (!key) {
-    showErrOverlay('Link de onboarding invï¿½lido ou expirado. Solicite um novo link ao suporte InkFlow.');
+    showErrOverlay('Link de onboarding inválido ou expirado. Solicite um novo link ao suporte InkFlow.');
     return;
   }
 
@@ -494,7 +527,7 @@ function init() {
   selectPlan(plano);
 }
 
-//    Helpers                                                                 
+// ── Helpers ────────────────────────────────────────────────────────────────
 function goStep(n) {
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   document.getElementById('s' + n).classList.add('active');
@@ -549,23 +582,23 @@ function showErrOverlay(msg) {
 }
 
 function generatePrompt(agente, estudio, cidade, endereco) {
-  return `# Quem vocï¿½ ï¿½
-Vocï¿½ ï¿½ ${agente}, assistente virtual do ${estudio}.
+  return `# Quem você é
+Você é ${agente}, assistente virtual do ${estudio}.
 
 # Seu papel
-Vocï¿½ atende clientes via WhatsApp respondendo dï¿½vidas sobre tatuagens, agendamentos e orï¿½amentos de forma ï¿½gil e profissional.
+Você atende clientes via WhatsApp respondendo dúvidas sobre tatuagens, agendamentos e orçamentos de forma ágil e profissional.
 
-# Estï¿½dio
-- Nome: ${estudio}${cidade ? '\n- Cidade: ' + cidade : ''}${endereco ? '\n- Endereï¿½o: ' + endereco : ''}
+# Estúdio
+- Nome: ${estudio}${cidade ? '\n- Cidade: ' + cidade : ''}${endereco ? '\n- Endereço: ' + endereco : ''}
 
 # Como responder
-- Seja simpï¿½tico e profissional
+- Seja simpático e profissional
 - Use linguagem informal mas respeitosa
 - Para agendamentos, colete: nome, tatuagem desejada, data preferida e tamanho aproximado
-- Quando nï¿½o souber algo, consulte o FAQ abaixo`;
+- Quando não souber algo, consulte o FAQ abaixo`;
 }
 
-//    API Calls                                                               
+// ── API Calls ──────────────────────────────────────────────────────────────
 async function sbFetch(method, path, body) {
   const opts = {
     method,
@@ -594,7 +627,7 @@ async function evoFetch(method, path, body, key) {
   return r.json();
 }
 
-//    Step 2 ï¿½ Step 3: Validar form, criar tenant, mostrar pagamento          
+// ── Step 2 → Step 3: Validar form, criar tenant, mostrar pagamento ─────────
 async function showPaymentStep() {
   const nome     = document.getElementById('f-nome').value.trim();
   const estudio  = document.getElementById('f-estudio').value.trim();
@@ -604,7 +637,7 @@ async function showPaymentStep() {
   const email    = document.getElementById('f-email').value.trim();
 
   if (!nome || !estudio) {
-    showFormError('Preencha o nome e o nome do estï¿½dio.');
+    showFormError('Preencha o nome e o nome do estúdio.');
     return;
   }
 
@@ -614,12 +647,12 @@ async function showPaymentStep() {
   btn.textContent = 'Aguarde...';
 
   try {
-    //    Gerar slug ï¿½nico                                                     
+    // ── Gerar slug único ────────────────────────────────────────────────────
     const base   = makeSlug(estudio) || makeSlug(nome);
     const suffix = Math.floor(Math.random() * 900) + 100;
     instanceSlug = base + suffix;
 
-    //    Criar tenant no Supabase                                             
+    // ── Criar tenant no Supabase ────────────────────────────────────────────
     const prompt = generatePrompt(agente, estudio, cidade, endereco);
     const tenantData = {
       nome,
@@ -639,7 +672,7 @@ async function showPaymentStep() {
 
     let sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
 
-    // Tratar colisï¿½o de slug (unique constraint)
+    // Tratar colisão de slug (unique constraint)
     if (!sbRes.ok) {
       const errBody = await sbRes.text();
       if (errBody.includes('unique') || errBody.includes('duplicate') || errBody.includes('23505')) {
@@ -657,24 +690,24 @@ async function showPaymentStep() {
 
     const sbData = await sbRes.json();
     tenantId = Array.isArray(sbData) ? sbData[0]?.id : sbData?.id;
-    if (!tenantId) throw new Error('Nï¿½o foi possï¿½vel obter o ID do tenant.');
+    if (!tenantId) throw new Error('Não foi possível obter o ID do tenant.');
 
-    //    Salvar estado no localStorage (sobrevive ao redirect MP)            
+    // ── Salvar estado no localStorage (sobrevive ao redirect MP) ───────────
     localStorage.setItem('inkflow_ob', JSON.stringify({
       tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan
     }));
 
-    //    Preencher card de plano                                              
+    // ── Preencher card de plano ─────────────────────────────────────────────
     const planNames  = { free:'Free Trial', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' };
-    const planPrices = { free:'Grï¿½tis', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' };
-    const planCycles = { free:'7 dias de teste sem compromisso', basic:'/mï¿½s ï¿½ cobranï¿½a recorrente', pro:'/mï¿½s ï¿½ cobranï¿½a recorrente', enterprise:'/mï¿½s ï¿½ cobranï¿½a recorrente' };
+    const planPrices = { free:'Grátis', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' };
+    const planCycles = { free:'7 dias de teste sem compromisso', basic:'/mês · cobrança recorrente', pro:'/mês · cobrança recorrente', enterprise:'/mês · cobrança recorrente' };
     document.getElementById('pay-plan-box').innerHTML = `
       <div class="pay-plan-name">${planNames[selectedPlan] || selectedPlan}</div>
       <div class="pay-plan-price">${planPrices[selectedPlan] || ''}</div>
       <div class="pay-plan-cycle">${planCycles[selectedPlan] || ''}</div>
     `;
 
-    //    Adaptar botï¿½es ao plano selecionado                                 
+    // ── Adaptar botões ao plano selecionado ────────────────────────────────
     const payBtn     = document.getElementById('pay-btn');
     const payOr      = document.getElementById('pay-or');
     const payFreeBtn = document.getElementById('pay-free-btn');
@@ -684,12 +717,12 @@ async function showPaymentStep() {
       payBtn.style.display  = 'none';
       payOr.style.display   = 'none';
       payHint.style.display = 'none';
-      payFreeBtn.textContent = 'Comeï¿½ar perï¿½odo de teste gratuito ï¿½';
+      payFreeBtn.textContent = 'Começar período de teste gratuito →';
     } else {
       payBtn.style.display  = 'flex';
       payOr.style.display   = 'block';
       payHint.style.display = 'block';
-      payFreeBtn.textContent = 'Comeï¿½ar 7 dias grï¿½tis (sem cartï¿½o)';
+      payFreeBtn.textContent = 'Começar 7 dias grátis (sem cartão)';
     }
 
     goStep(3);
@@ -698,16 +731,16 @@ async function showPaymentStep() {
     console.error('showPaymentStep error:', err);
     let msg = err.message || 'Erro inesperado. Tente novamente.';
     if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-      msg = 'Erro de conexï¿½o. Verifique sua internet e tente novamente.';
+      msg = 'Erro de conexão. Verifique sua internet e tente novamente.';
     }
     showFormError(msg);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Configurar meu WhatsApp ï¿½';
+    btn.textContent = 'Configurar meu WhatsApp →';
   }
 }
 
-//    Iniciar pagamento Mercado Pago                                          
+// ── Iniciar pagamento Mercado Pago ─────────────────────────────────────────
 async function initiatePayment() {
   const btn = document.getElementById('pay-btn');
   btn.disabled = true;
@@ -729,7 +762,7 @@ async function initiatePayment() {
     }
 
     if (data.trial) {
-      // Funï¿½ï¿½o retornou trial (plan=free)
+      // Função retornou trial (plan=free)
       await startFreeTrial();
       return;
     }
@@ -745,25 +778,25 @@ async function initiatePayment() {
   }
 }
 
-//    Comeï¿½ar trial gratuito (sem pagamento)                                  
+// ── Começar trial gratuito (sem pagamento) ─────────────────────────────────
 async function startFreeTrial() {
   goStep(4); // processing
   for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
   await doEvoSetup();
 }
 
-//    Retorno do Mercado Pago                                                  
+// ── Retorno do Mercado Pago ─────────────────────────────────────────────────
 async function continueAfterPayment(preapprovalId) {
   // Restaurar estado do localStorage
   let state = {};
   try { state = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
 
   if (!state.tenantId || !state.instanceSlug) {
-    showErrOverlay('Sessï¿½o expirada. Por favor, acesse seu link de onboarding novamente para recomeï¿½ar o cadastro.');
+    showErrOverlay('Sessão expirada. Por favor, acesse seu link de onboarding novamente para recomeçar o cadastro.');
     return;
   }
 
-  // Restaurar variï¿½veis globais
+  // Restaurar variáveis globais
   tenantId          = state.tenantId;
   instanceSlug      = state.instanceSlug;
   selectedPlan      = state.plano || 'basic';
@@ -784,20 +817,20 @@ async function continueAfterPayment(preapprovalId) {
     } catch (e) { console.warn('MP subscription update failed:', e); }
   }
 
-  // Continuar com setup da instï¿½ncia EVO
+  // Continuar com setup da instância EVO
   goStep(4); // processing
   for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
   await doEvoSetup();
 }
 
-//    Setup Evolution API (sem criar tenant  jï¿½ existe)                      
+// ── Setup Evolution API (sem criar tenant — já existe) ─────────────────────
 async function doEvoSetup() {
   try {
-    //    1. Tenant jï¿½ existe                                               
+    // ── 1. Tenant já existe ──────────────────────────────────────────────
     setStatus(0, 'Perfil verificado!', 'done');
 
-    //    2. Criar instï¿½ncia na Evolution API                              
-    setStatus(1, 'Criando instï¿½ncia WhatsApp...', 'active');
+    // ── 2. Criar instância na Evolution API ─────────────────────────────
+    setStatus(1, 'Criando instância WhatsApp...', 'active');
 
     const evo = await evoFetch('POST', '/instance/create', {
       instanceName: instanceSlug,
@@ -806,18 +839,18 @@ async function doEvoSetup() {
     }, gConfig.globalKey);
 
     instanceKey = evo?.hash?.apikey || evo?.instance?.apikey || evo?.Apikey?.apikey;
-    if (!instanceKey) throw new Error('Resposta invï¿½lida da Evolution API. Contate o suporte.');
+    if (!instanceKey) throw new Error('Resposta inválida da Evolution API. Contate o suporte.');
 
-    setStatus(1, 'Instï¿½ncia WhatsApp criada!', 'done');
+    setStatus(1, 'Instância WhatsApp criada!', 'done');
 
-    //    3. Salvar apikey real no tenant                                  
+    // ── 3. Salvar apikey real no tenant ─────────────────────────────────
     setStatus(2, 'Salvando credenciais...', 'active');
 
     await sbFetch('PATCH', '/rest/v1/tenants?id=eq.' + tenantId, { evo_apikey: instanceKey });
 
     setStatus(2, 'Credenciais salvas!', 'done');
 
-    //    4. Configurar webhook para n8n                                    
+    // ── 4. Configurar webhook para n8n ───────────────────────────────────
     setStatus(3, 'Configurando webhook n8n...', 'active');
 
     try {
@@ -833,13 +866,13 @@ async function doEvoSetup() {
         ]
       }, instanceKey);
     } catch (webhookErr) {
-      // Nï¿½o ï¿½ fatal  pode ser configurado depois pelo admin
+      // Não é fatal — pode ser configurado depois pelo admin
       console.warn('Webhook setup failed:', webhookErr);
     }
 
     setStatus(3, 'Webhook configurado!', 'done');
 
-    //    5. Ir para QR Code                                                
+    // ── 5. Ir para QR Code ───────────────────────────────────────────────
     setStatus(4, 'Gerando QR Code...', 'active');
     await new Promise(r => setTimeout(r, 1500));
     setStatus(4, 'QR Code pronto!', 'done');
@@ -849,14 +882,14 @@ async function doEvoSetup() {
 
     // Polling a cada 5 segundos
     pollInterval = setInterval(checkConnection, 5000);
-    // QR refresh automï¿½tico (QR expira em ~30s)
+    // QR refresh automático (QR expira em ~30s)
     startQRTimer();
 
   } catch (err) {
     console.error('doEvoSetup error:', err);
     let msg = err.message || 'Erro inesperado.';
     if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-      msg = 'Erro de rede ao conectar com a API. Verifique sua conexï¿½o e tente novamente.';
+      msg = 'Erro de rede ao conectar com a API. Verifique sua conexão e tente novamente.';
     }
     showProcError(msg);
     for (let i = 0; i < 5; i++) {
@@ -868,7 +901,7 @@ async function doEvoSetup() {
   }
 }
 
-//    QR Code                                                                 
+// ── QR Code ────────────────────────────────────────────────────────────────
 async function loadQR() {
   document.getElementById('qr-loading').style.display = 'flex';
   document.getElementById('qr-img').style.display = 'none';
@@ -908,11 +941,11 @@ function startQRTimer() {
 }
 function updateTimer() {
   document.getElementById('qr-timer').textContent = qrTimerSec > 0
-    ? `QR expira em ${qrTimerSec}s  serï¿½ atualizado automaticamente`
+    ? `QR expira em ${qrTimerSec}s — será atualizado automaticamente`
     : 'Atualizando QR Code...';
 }
 
-//    Poll conexï¿½o                                                            
+// ── Poll conexão ───────────────────────────────────────────────────────────
 async function checkConnection() {
   try {
     const data = await evoFetch('GET',
@@ -951,7 +984,7 @@ async function checkConnection() {
       document.getElementById('suc-inst').textContent    = instanceSlug;
       document.getElementById('suc-plano').textContent   = selectedPlan;
 
-      // Limpar estado temporï¿½rio
+      // Limpar estado temporário
       localStorage.removeItem('inkflow_ob');
 
       goStep(6); // success
