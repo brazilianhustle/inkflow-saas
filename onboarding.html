@@ -227,6 +227,10 @@ select.fi option{background:#091515;color:#fff}
 .pay-free-btn{border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.45);background:transparent}
 .pay-free-btn:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.2)}
 .pay-back{color:rgba(255,255,255,.28)}
+.pay-divider{color:rgba(255,255,255,.22)}
+.pay-divider::before,.pay-divider::after{border-top-color:rgba(255,255,255,.1)}
+.pay-mp-alt{border-color:rgba(0,200,185,.2);color:rgba(255,255,255,.45);background:transparent}
+.pay-mp-alt:hover{border-color:rgba(0,200,185,.45);color:rgba(255,255,255,.8);background:rgba(0,200,185,.05)}
 /* Processing */
 .proc-card{background:rgba(0,0,0,.32);border-color:rgba(0,200,185,.18)}
 .proc-dot.wait{background:rgba(0,0,0,.3);border-color:rgba(0,200,185,.2)}
@@ -256,7 +260,15 @@ select.fi option{background:#091515;color:#fff}
 .suc-val{color:rgba(255,255,255,.9)}
 .suc-row{border-bottom-color:rgba(0,200,185,.1)}
 .suc-next{color:rgba(255,255,255,.3)}
+.pay-divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--ink3);font-size:11px;font-family:'DM Mono',monospace}
+.pay-divider::before,.pay-divider::after{content:'';flex:1;border-top:1px solid var(--border)}
+.pay-mp-alt{width:100%;padding:11px;background:transparent;color:var(--ink2);border:1px solid var(--border2);border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;transition:all .15s}
+.pay-mp-alt:hover{border-color:var(--ink2);color:var(--ink)}
+.card-brick-wrap{margin-bottom:8px;min-height:340px}
+/* Brick dark overrides */
+#cardPaymentBrick_container iframe{border-radius:10px!important}
 </style>
+<script src="https://sdk.mercadopago.com/js/v2"></script>
 </head>
 <body>
 
@@ -434,34 +446,39 @@ select.fi option{background:#091515;color:#fff}
     </div>
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
-    <div class="pay-card">
-      <div class="pay-title">Confirmar plano</div>
-      <div class="pay-sub">Revise seu plano antes de continuar</div>
+    <div class="pay-card" style="max-width:500px">
+      <div class="pay-title">Finalizar assinatura</div>
+      <div class="pay-sub">Pagamento seguro · cancele a qualquer momento</div>
 
-      <div class="pay-plan-box" id="pay-plan-box">
-        <!-- preenchido pelo JS -->
+      <!-- resumo do plano -->
+      <div class="pay-plan-box" id="pay-plan-box"></div>
+
+      <!-- CardPayment Brick (cartão direto) -->
+      <div class="card-brick-wrap" id="card-brick-wrap">
+        <div id="cardPaymentBrick_container"></div>
       </div>
 
-      <button class="pay-btn" id="pay-btn" onclick="initiatePayment()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-        Pagar com Mercado Pago
-      </button>
-      <div class="pay-hint" id="pay-hint">Assinatura recorrente mensal · cancele a qualquer momento</div>
+      <!-- alternativa: redirect MP (Pix / Boleto) -->
+      <div class="pay-divider" id="pay-divider">ou pague com</div>
 
-      <div class="pay-or" id="pay-or">ou</div>
+      <button class="pay-mp-alt" id="pay-btn" onclick="initiatePayment()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+        Pix · Boleto · Saldo Mercado Pago
+      </button>
+
+      <div class="pay-divider" id="pay-or">ou</div>
 
       <button class="pay-free-btn" id="pay-free-btn" onclick="startFreeTrial()">
-        Come&ccedil;ar 7 dias gr&aacute;tis (sem cart&atilde;o)
+        Começar 7 dias grátis (sem cartão)
       </button>
 
-      <div>
+      <div style="margin-top:12px">
         <span class="pay-back" onclick="goStep(2)">← Voltar e editar</span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════ STEP 4: PROCESSANDO ══════════ -->
 <div class="step" id="s4">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
     <div class="proc-card">
@@ -604,6 +621,8 @@ let instanceSlug = null;
 let pollInterval = null;
 let qrRefreshInterval = null;
 let selectedPlan = 'basic';
+const MP_PUBLIC_KEY = 'APP_USR-36990647-ad0a-4978-a672-499f635f9b03';
+let mpBrickController = null;
 
 // ── Init ───────────────────────────────────────────────────────────────────
 function init() {
@@ -738,6 +757,69 @@ async function evoFetch(method, path, body, key) {
   return r.json();
 }
 
+// ── Inicializar CardPayment Brick do Mercado Pago ──────────────────────────
+async function initCardBrick(amount) {
+  if (mpBrickController) {
+    try { await mpBrickController.unmount(); } catch {}
+    mpBrickController = null;
+  }
+  const mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'pt-BR' });
+  const bricksBuilder = mp.bricks();
+  mpBrickController = await bricksBuilder.create('cardPayment', 'cardPaymentBrick_container', {
+    initialization: { amount, payer: { email: '' } },
+    customization: {
+      paymentMethods: { maxInstallments: 1 },
+      visual: {
+        style: {
+          theme: 'dark',
+          customVariables: {
+            baseColor: '#00c8b9', buttonBackground: 'rgba(0,200,185,.9)',
+            buttonTextColor: '#060e0e', formBackgroundColor: 'transparent',
+            inputBackgroundColor: 'rgba(0,0,0,.42)', inputBorderColor: 'rgba(0,200,185,.22)',
+            inputFocusedBorderColor: 'rgba(0,200,185,.7)', labelTextColor: 'rgba(255,255,255,.45)',
+            inputTextColor: '#ffffff', buttonBorderRadius: '8px', inputBorderRadius: '8px',
+          },
+        },
+        hideFormTitle: true,
+      },
+      labels: { confirmButton: 'Assinar agora →' },
+    },
+    callbacks: {
+      onReady: () => { document.getElementById('card-brick-wrap').style.minHeight = 'unset'; },
+      onSubmit: async ({ formData }) => { await chargeCard(formData); },
+      onError: (err) => { console.error('MP Brick error:', err); },
+    },
+  });
+}
+
+// ── Cobrar com cartão (via Brick token) ────────────────────────────────────────
+async function chargeCard(formData) {
+  let stored = {};
+  try { stored = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
+  goStep(4);
+  for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
+  try {
+    const res = await fetch('/api/create-subscription', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenant_id: tenantId, plano: selectedPlan,
+        email: formData.payer?.email || stored.email || '',
+        card_token: formData.token,
+        payment_method_id: formData.payment_method_id,
+        issuer_id: formData.issuer_id,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Erro ao processar pagamento');
+    try { await sbFetch('PATCH', '/rest/v1/tenants?id=eq.' + tenantId, { ativo: true, plano: selectedPlan }); } catch {}
+    await doEvoSetup();
+  } catch (err) {
+    console.error('chargeCard error:', err);
+    goStep(3);
+    alert('Erro no pagamento: ' + (err.message || 'tente novamente'));
+  }
+}
+
 // ── Step 2 → Step 3: Validar form, criar tenant, mostrar pagamento ─────────
 async function showPaymentStep() {
   const nome     = document.getElementById('f-nome').value.trim();
@@ -837,6 +919,13 @@ async function showPaymentStep() {
     }
 
     goStep(3);
+
+    // ── Inicializar CardPayment Brick com o valor do plano ─────────────────
+    if (selectedPlan !== 'free') {
+      const planAmounts = { basic: 199.00, pro: 399.00, enterprise: 999.00 };
+      const amount = planAmounts[selectedPlan] || 199.00;
+      initCardBrick(amount);
+    }
 
   } catch (err) {
     console.error('showPaymentStep error:', err);
