@@ -171,6 +171,91 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
   .w-steps{align-items:center}
   .qr-header{flex-direction:column;gap:8px;text-align:left;align-items:flex-start}
 }
+
+/* ══════════ DARK THEME — Steps 2-6 ══════════ */
+#s2,#s3,#s4,#s5,#s6{
+  background:
+    radial-gradient(ellipse 65% 70% at 50% 50%,rgba(9,21,21,.97) 0%,rgba(9,21,21,.78) 35%,rgba(9,21,21,.32) 62%,transparent 76%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg stroke='%2300c8b9' stroke-width='1' fill='none'%3E%3Cpath d='M0 80 L40 80 L40 40 L100 40' stroke-opacity='.1'/%3E%3Cpath d='M120 0 L120 60 L160 60' stroke-opacity='.08'/%3E%3Cpath d='M0 130 L30 130 L30 100 L80 100 L80 160' stroke-opacity='.09'/%3E%3Cpath d='M140 160 L140 110 L100 110 L100 40' stroke-opacity='.1'/%3E%3C/g%3E%3Cg fill='%2300c8b9'%3E%3Ccircle cx='40' cy='80' r='2.5' fill-opacity='.28'/%3E%3Ccircle cx='40' cy='40' r='2' fill-opacity='.2'/%3E%3Ccircle cx='100' cy='40' r='3' fill-opacity='.35'/%3E%3Ccircle cx='80' cy='100' r='2.5' fill-opacity='.25'/%3E%3Ccircle cx='100' cy='110' r='2' fill-opacity='.2'/%3E%3Ccircle cx='120' cy='60' r='2.5' fill-opacity='.22'/%3E%3C/g%3E%3C/svg%3E") repeat,
+    radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,210,195,.08) 0%,transparent 65%),
+    linear-gradient(170deg,#091515 0%,#050d0d 100%);
+}
+/* Form header */
+.form-logo{color:rgba(255,255,255,.92)}
+.form-badge{color:rgba(0,200,185,.65);letter-spacing:2px}
+.form-title{color:#fff}
+.form-sub{color:rgba(255,255,255,.4)}
+/* Labels e inputs */
+.fl{color:rgba(255,255,255,.45)}
+.fi{background:rgba(0,0,0,.42);border-color:rgba(0,200,185,.22);color:#fff}
+.fi::placeholder{color:rgba(255,255,255,.2)}
+.fi:focus{border-color:rgba(0,200,185,.65);box-shadow:0 0 0 3px rgba(0,200,185,.07)}
+select.fi option{background:#091515;color:#fff}
+.fi-hint{color:rgba(255,255,255,.28)}
+.fsec{color:rgba(0,200,185,.62);border-top-color:rgba(255,255,255,.07)}
+.divider{border-top-color:rgba(255,255,255,.07)}
+.form-err{background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);color:#e74c3c}
+/* Botao submit */
+.sbtn{background:rgba(0,200,185,.9);color:#060e0e;box-shadow:0 0 18px rgba(0,200,185,.15)}
+.sbtn:hover:not(:disabled){background:rgba(0,220,205,1);box-shadow:0 0 28px rgba(0,200,185,.28)}
+/* Cards de plano */
+.plan-opt{border-color:rgba(0,200,185,.2);background:rgba(0,0,0,.25);color:rgba(255,255,255,.65)}
+.plan-opt .po-name{color:rgba(255,255,255,.85)}
+.plan-opt .po-price,.plan-opt .po-feat{color:rgba(255,255,255,.32)}
+.plan-opt .po-feat::before{color:rgba(255,255,255,.18)}
+.po-features{border-top-color:rgba(255,255,255,.08)}
+.po-tag{background:rgba(0,200,185,.14);color:rgba(0,200,185,.9)}
+.plan-opt:hover{border-color:rgba(0,200,185,.45);background:rgba(0,0,0,.35)}
+.plan-opt.active{border-color:rgba(0,200,185,.75);background:rgba(0,200,185,.1);color:#fff;box-shadow:0 0 18px rgba(0,200,185,.12)}
+.plan-opt.active .po-price{color:rgba(0,210,195,.75)}
+.plan-opt.active .po-feat{color:rgba(255,255,255,.7)}
+.plan-opt.active .po-feat::before{color:rgba(0,200,185,.7)}
+.plan-opt.active .po-features{border-top-color:rgba(0,200,185,.18)}
+.plan-opt.active .po-tag{background:rgba(0,200,185,.22);color:rgba(0,210,195,1)}
+/* Pagamento */
+.pay-card{background:rgba(0,0,0,.32);border-color:rgba(0,200,185,.2);color:#fff;box-shadow:0 0 32px rgba(0,200,185,.06)}
+.pay-title{color:#fff}
+.pay-sub{color:rgba(255,255,255,.38)}
+.pay-plan-box{background:rgba(0,0,0,.28);border-color:rgba(0,200,185,.22)}
+.pay-plan-name{color:#fff}
+.pay-plan-price{color:rgba(0,210,195,.95)}
+.pay-plan-cycle{color:rgba(255,255,255,.32)}
+.pay-btn{background:rgba(0,200,185,.9);color:#060e0e;box-shadow:0 0 20px rgba(0,200,185,.18)}
+.pay-btn:hover:not(:disabled){background:rgba(0,220,205,1);box-shadow:0 0 32px rgba(0,200,185,.32)}
+.pay-hint{color:rgba(255,255,255,.28)}
+.pay-or{color:rgba(255,255,255,.25)}
+.pay-free-btn{border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.45);background:transparent}
+.pay-free-btn:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.2)}
+.pay-back{color:rgba(255,255,255,.28)}
+/* Processing */
+.proc-card{background:rgba(0,0,0,.32);border-color:rgba(0,200,185,.18)}
+.proc-dot.wait{background:rgba(0,0,0,.3);border-color:rgba(0,200,185,.2)}
+.proc-dot.active{background:rgba(0,200,185,.1);border-color:rgba(0,200,185,.55)}
+.proc-dot.done{background:rgba(0,200,185,.85);border-color:rgba(0,200,185,1);box-shadow:0 0 10px rgba(0,200,185,.35)}
+.proc-msg.done{color:rgba(0,210,195,.9)}
+/* QR Code */
+.qr-card{background:rgba(0,0,0,.32);border-color:rgba(0,200,185,.2);color:#fff}
+.qr-title{color:#fff}
+.qr-box{background:rgba(0,0,0,.35);border-color:rgba(0,200,185,.2)}
+.qr-loading{color:rgba(255,255,255,.35)}
+.qr-spinner{border-color:rgba(0,200,185,.15);border-top-color:rgba(0,200,185,.75)}
+.qr-badge{color:rgba(220,150,0,.9);background:rgba(200,130,0,.12);border-color:rgba(200,130,0,.3)}
+.qr-badge.conn{color:rgba(0,210,195,.9);background:rgba(0,200,185,.1);border-color:rgba(0,200,185,.3)}
+.qr-step{color:rgba(255,255,255,.55)}
+.qr-step-num{background:rgba(0,200,185,.1);color:rgba(0,200,185,.75);border-color:rgba(0,200,185,.2)}
+.qr-refresh{border-color:rgba(0,200,185,.28);color:rgba(0,200,185,.7);background:transparent}
+.qr-refresh:hover{background:rgba(0,200,185,.08);border-color:rgba(0,200,185,.5)}
+.qr-timer,.qr-poll{color:rgba(255,255,255,.28)}
+.qr-poll-dot{background:rgba(0,200,185,.75)}
+/* Sucesso */
+.suc-card{background:rgba(0,0,0,.32);border-color:rgba(0,200,185,.2);color:#fff}
+.suc-title{color:rgba(0,210,195,.95);text-shadow:0 0 20px rgba(0,200,185,.3)}
+.suc-sub{color:rgba(255,255,255,.45)}
+.suc-info{background:rgba(0,200,185,.07);border-color:rgba(0,200,185,.18)}
+.suc-key{color:rgba(0,200,185,.75)}
+.suc-val{color:rgba(255,255,255,.9)}
+.suc-row{border-bottom-color:rgba(0,200,185,.1)}
+.suc-next{color:rgba(255,255,255,.3)}
 </style>
 </head>
 <body>
