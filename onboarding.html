@@ -24,25 +24,27 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .step.active{display:flex;flex-direction:column}
 
 /* ── Step 1: Welcome ── */
-#s1{background:url('https://raw.githubusercontent.com/brazilianhustle/inkflow-saas/main/images/dragon-dark.png') center/cover no-repeat;align-items:center;justify-content:center;text-align:center;padding:40px 20px}
-.w-logo{font-size:28px;font-weight:700;color:#fff;margin-bottom:4px}
-.w-tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.35);font-family:'DM Mono',monospace;margin-bottom:48px}
+#s1{background:radial-gradient(ellipse 75% 45% at 50% -5%,rgba(0,210,195,0.07) 0%,transparent 65%),radial-gradient(ellipse 40% 35% at 90% 75%,rgba(0,180,170,0.04) 0%,transparent 55%),linear-gradient(170deg,#091515 0%,#050d0d 100%);align-items:center;justify-content:center;text-align:center;padding:40px 20px}
+.w-logo{font-size:28px;font-weight:700;color:#fff;margin-bottom:4px;text-decoration:none}
+.w-tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;margin-bottom:48px}
 .w-title{font-size:32px;font-weight:700;color:#fff;line-height:1.2;max-width:420px;margin:0 auto 16px}
-.w-sub{font-size:15px;color:rgba(255,255,255,.5);max-width:360px;margin:0 auto 48px;line-height:1.6}
-.w-steps{display:flex;flex-direction:column;align-items:stretch;gap:0;margin-bottom:48px;width:100%;max-width:320px;margin-left:auto;margin-right:auto}
-.w-step{width:100%;border-bottom:1px solid rgba(255,255,255,.1)}
-.w-step:first-child{border-top:1px solid rgba(255,255,255,.1)}
-.w-step-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 0;cursor:pointer;color:rgba(255,255,255,.65);font-size:14px;font-weight:500;gap:12px;user-select:none;text-align:left}
+.w-sub{font-size:15px;color:rgba(255,255,255,.45);max-width:360px;margin:0 auto 40px;line-height:1.6}
+.w-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:44px;width:100%;max-width:340px;margin-left:auto;margin-right:auto}
+.w-step{width:100%;border-radius:10px;border:1px solid rgba(0,200,185,0.18);background:rgba(0,0,0,0.22);overflow:hidden;transition:border-color .25s ease}
+.w-step:hover{border-color:rgba(0,200,185,0.35)}
+.w-step-hd{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;color:rgba(255,255,255,.75);font-size:14px;font-weight:500;user-select:none;text-align:left}
+.w-step-icon{flex-shrink:0;color:rgba(0,200,185,0.65);display:flex;align-items:center;justify-content:center}
+.w-step-label{flex:1}
 .w-step-hd:hover{color:#fff}
-.w-step-arrow{flex-shrink:0;width:18px;height:18px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.25);font-size:16px;transition:transform .35s cubic-bezier(.4,0,.2,1);line-height:1}
-.w-step.open .w-step-arrow{transform:rotate(90deg);color:rgba(255,255,255,.5)}
+.w-step-arrow{flex-shrink:0;color:rgba(0,200,185,0.4);font-size:15px;transition:transform .35s cubic-bezier(.4,0,.2,1);line-height:1}
+.w-step.open .w-step-arrow{transform:rotate(90deg);color:rgba(0,200,185,0.75)}
 .w-step-desc{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1),opacity .3s ease}
-.w-step-desc-inner{overflow:hidden;font-size:12px;color:rgba(255,255,255,.4);line-height:1.7;font-family:'DM Mono',monospace;opacity:0;transition:opacity .3s ease .05s,padding .35s ease}
+.w-step-desc-inner{overflow:hidden;font-size:11.5px;color:rgba(255,255,255,.38);line-height:1.75;font-family:'DM Mono',monospace;opacity:0;padding:0 16px;transition:opacity .3s ease .05s,padding .35s ease}
 .w-step.open .w-step-desc{grid-template-rows:1fr}
-.w-step.open .w-step-desc-inner{opacity:1;padding-bottom:14px}
+.w-step.open .w-step-desc-inner{opacity:1;padding:0 16px 14px}
 .w-btn{display:inline-flex;align-items:center;gap:10px;background:#fff;color:var(--ink);padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:'Syne',sans-serif;transition:all .15s}
 .w-btn:hover{background:#f0f0f0;transform:translateY(-1px)}
-.w-plan{display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:4px 12px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;margin-bottom:48px;letter-spacing:1px;text-transform:uppercase}
+.w-plan{display:inline-block;background:transparent;border:1px solid rgba(0,200,185,0.35);color:rgba(0,200,185,0.8);padding:5px 14px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;margin-bottom:48px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 0 10px rgba(0,200,185,0.08)}
 
 /* ── Step 2: Form ── */
 #s2{background:url('https://raw.githubusercontent.com/brazilianhustle/inkflow-saas/main/images/dragon-white.png') center/cover no-repeat;justify-content:flex-start}
@@ -179,31 +181,35 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
     <div id="w-plano" class="w-plan">plano basic</div>
     <div class="w-title">Configure seu est&uacute;dio em menos de 3 minutos</div>
     <div class="w-sub">Vamos criar seu assistente virtual de WhatsApp. Nenhum conhecimento t&eacute;cnico necess&aacute;rio.</div>
-            <div class="w-steps">
+                <div class="w-steps">
       <div class="w-step" onclick="this.classList.toggle('open')">
         <div class="w-step-hd">
-          <span>Dados do estúdio</span>
+          <span class="w-step-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-5 9a5 5 0 0 1 10 0v1H3v-1z"/></svg></span>
+          <span class="w-step-label">Dados do estúdio</span>
           <span class="w-step-arrow">›</span>
         </div>
         <div class="w-step-desc"><div class="w-step-desc-inner">Preencha os dados do seu estúdio com endereço e contato comercial. Essas informações serão usadas para treinar a sua assistente virtual.</div></div>
       </div>
       <div class="w-step" onclick="this.classList.toggle('open')">
         <div class="w-step-hd">
-          <span>Configuração automática</span>
+          <span class="w-step-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.94.94l-.92-.53a4.6 4.6 0 0 0 0-1.06l.92-.53a.42.42 0 0 0 .15-.57l-.84-1.45a.42.42 0 0 0-.57-.15l-.92.53A4.58 4.58 0 0 0 9 1.42V.42A.42.42 0 0 0 8.58 0H7.42A.42.42 0 0 0 7 .42v1A4.58 4.58 0 0 0 5.24 2.3l-.92-.53a.42.42 0 0 0-.57.15L2.91 3.37a.42.42 0 0 0 .15.57l.92.53a4.6 4.6 0 0 0 0 1.06l-.92.53a.42.42 0 0 0-.15.57l.84 1.45a.42.42 0 0 0 .57.15l.92-.53c.54.37 1.14.65 1.76.82v1c0 .23.19.42.42.42h1.16c.23 0 .42-.19.42-.42v-1a4.58 4.58 0 0 0 1.76-.82l.92.53a.42.42 0 0 0 .57-.15l.84-1.45a.42.42 0 0 0-.15-.57z"/></svg></span>
+          <span class="w-step-label">Configuração automática</span>
           <span class="w-step-arrow">›</span>
         </div>
         <div class="w-step-desc"><div class="w-step-desc-inner">Sua instância WhatsApp e assistente virtual são criados automaticamente. Nenhuma ação técnica necessária da sua parte.</div></div>
       </div>
       <div class="w-step" onclick="this.classList.toggle('open')">
         <div class="w-step-hd">
-          <span>Conectar WhatsApp</span>
+          <span class="w-step-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.1 1 1 4.1 1 8c0 1.2.3 2.4.9 3.4L1 15l3.7-1c1 .5 2.1.8 3.3.8 3.9 0 7-3.1 7-7S11.9 1 8 1zm3.6 9.8c-.2.4-.9.8-1.2.8-.3.1-.7.1-1-.1-.3-.1-.7-.3-1.2-.5-1.8-.8-3-2.6-3.1-2.7-.1-.1-.8-1-.8-1.9 0-.9.5-1.4.7-1.5.2-.2.4-.2.5-.2h.3c.1 0 .3 0 .4.3l.6 1.4c.1.1.1.2 0 .3l-.2.4-.3.4c-.1.1-.2.2-.1.5.1.2.6 1 1.3 1.6.9.8 1.6 1 1.8 1.1.2.1.4.1.5-.1l.8-.9c.1-.2.3-.1.4-.1l1.4.7c.2.1.3.1.3.2.1.1.1.5-.1.9z"/></svg></span>
+          <span class="w-step-label">Conectar WhatsApp</span>
           <span class="w-step-arrow">›</span>
         </div>
         <div class="w-step-desc"><div class="w-step-desc-inner">Escaneie o QR Code para vincular o número do seu estúdio. Em segundos seu WhatsApp estará ativo e pronto para atender clientes.</div></div>
       </div>
       <div class="w-step" onclick="this.classList.toggle('open')">
         <div class="w-step-hd">
-          <span>Pagamento</span>
+          <span class="w-step-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M1 4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4zm13 2H2v6a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V6zm-9 3h3v1H5V9z"/></svg></span>
+          <span class="w-step-label">Pagamento</span>
           <span class="w-step-arrow">›</span>
         </div>
         <div class="w-step-desc"><div class="w-step-desc-inner">Escolha o plano ideal para o seu estúdio. O pagamento é processado com segurança via Mercado Pago — sem surpresas, cancele quando quiser.</div></div>
