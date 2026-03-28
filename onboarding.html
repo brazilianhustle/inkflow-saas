@@ -909,12 +909,12 @@ async function showPaymentStep() {
     if (selectedPlan === 'free') {
       payBtn.style.display  = 'none';
       payOr.style.display   = 'none';
-      payHint.style.display = 'none';
+      if (payHint) payHint.style.display = 'none';
       payFreeBtn.textContent = 'Começar período de teste gratuito →';
     } else {
       payBtn.style.display  = 'flex';
       payOr.style.display   = 'block';
-      payHint.style.display = 'block';
+      if (payHint) payHint.style.display = 'block';
       payFreeBtn.textContent = 'Começar 7 dias grátis (sem cartão)';
     }
 
@@ -1198,3 +1198,4 @@ init();
 </script>
 </body>
 </html>
+
