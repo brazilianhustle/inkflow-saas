@@ -29,11 +29,14 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .w-tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.35);font-family:'DM Mono',monospace;margin-bottom:48px}
 .w-title{font-size:32px;font-weight:700;color:#fff;line-height:1.2;max-width:420px;margin:0 auto 16px}
 .w-sub{font-size:15px;color:rgba(255,255,255,.5);max-width:360px;margin:0 auto 48px;line-height:1.6}
-.w-steps{display:flex;gap:24px;justify-content:center;margin-bottom:48px;flex-wrap:wrap}
-.w-step{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.5);font-size:13px}
-.w-num{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-family:'DM Mono',monospace;color:rgba(255,255,255,.4);flex-shrink:0}
-.w-step.hi .w-num{border-color:rgba(255,255,255,.6);color:#fff;background:rgba(255,255,255,.1)}
-.w-step.hi{color:rgba(255,255,255,.8)}
+.w-steps{display:flex;flex-direction:column;align-items:center;gap:0;margin-bottom:48px;width:100%;max-width:320px}
+.w-step{display:flex;align-items:center;gap:14px;width:100%;padding:12px 18px;background:rgba(255,255,255,.06);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);font-size:13px;transition:all .2s}
+.w-step:first-child{border-radius:10px 10px 0 0}
+.w-step:last-child{border-radius:0 0 10px 10px}
+.w-step + .w-step{border-top:none}
+.w-roman{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);letter-spacing:1px;min-width:20px}
+.w-step.hi{color:rgba(255,255,255,.85);background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18)}
+.w-step.hi .w-roman{color:rgba(255,255,255,.5)}
 .w-btn{display:inline-flex;align-items:center;gap:10px;background:#fff;color:var(--ink);padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:'Syne',sans-serif;transition:all .15s}
 .w-btn:hover{background:#f0f0f0;transform:translateY(-1px)}
 .w-plan{display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:4px 12px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;margin-bottom:48px;letter-spacing:1px;text-transform:uppercase}
@@ -158,7 +161,7 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 @media(max-width:600px){
   .fgrid{grid-template-columns:1fr}
   .plan-sel{grid-template-columns:1fr}
-  .w-steps{flex-direction:column;align-items:center}
+  .w-steps{align-items:center}
   .qr-header{flex-direction:column;gap:8px;text-align:left;align-items:flex-start}
 }
 </style>
@@ -173,18 +176,22 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
     <div id="w-plano" class="w-plan">plano basic</div>
     <div class="w-title">Configure seu est&uacute;dio em menos de 3 minutos</div>
     <div class="w-sub">Vamos criar seu assistente virtual de WhatsApp. Nenhum conhecimento t&eacute;cnico necess&aacute;rio.</div>
-    <div class="w-steps">
+        <div class="w-steps">
       <div class="w-step hi">
-        <span>Dados do est&uacute;dio</span>
+        <span class="w-roman">I</span>
+        <span>Dados do estúdio</span>
       </div>
       <div class="w-step hi">
-        <span>Pagamento</span>
+        <span class="w-roman">II</span>
+        <span>Configuração automática</span>
       </div>
       <div class="w-step hi">
-        <span>Configura&ccedil;&atilde;o autom&aacute;tica</span>
-      </div>
-      <div class="w-step hi">
+        <span class="w-roman">III</span>
         <span>Conectar WhatsApp</span>
+      </div>
+      <div class="w-step hi">
+        <span class="w-roman">IV</span>
+        <span>Pagamento</span>
       </div>
     </div>
     <button class="w-btn" onclick="goStep(2)">
