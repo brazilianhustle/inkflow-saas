@@ -63,6 +63,37 @@ body{font-family:'Syne',sans-serif;background:var(--ink);color:#fff;min-height:1
 .error-msg{font-size:13px;color:rgba(255,255,255,.5);font-family:'DM Mono',monospace;line-height:1.6}
 
 @media(max-width:480px){.card{padding:28px 20px}}
+
+/* ══════════ DARK THEME — Reconnect ══════════ */
+body{
+  background:
+    radial-gradient(ellipse 65% 70% at 50% 50%,rgba(9,21,21,.97) 0%,rgba(9,21,21,.78) 35%,rgba(9,21,21,.32) 62%,transparent 76%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg stroke='%2300c8b9' stroke-width='1' fill='none'%3E%3Cpath d='M0 80 L40 80 L40 40 L100 40' stroke-opacity='.1'/%3E%3Cpath d='M120 0 L120 60 L160 60' stroke-opacity='.08'/%3E%3Cpath d='M0 130 L30 130 L30 100 L80 100 L80 160' stroke-opacity='.09'/%3E%3Cpath d='M140 160 L140 110 L100 110 L100 40' stroke-opacity='.1'/%3E%3C/g%3E%3Cg fill='%2300c8b9'%3E%3Ccircle cx='40' cy='80' r='2.5' fill-opacity='.28'/%3E%3Ccircle cx='40' cy='40' r='2' fill-opacity='.2'/%3E%3Ccircle cx='100' cy='40' r='3' fill-opacity='.35'/%3E%3Ccircle cx='80' cy='100' r='2.5' fill-opacity='.25'/%3E%3Ccircle cx='100' cy='110' r='2' fill-opacity='.2'/%3E%3Ccircle cx='120' cy='60' r='2.5' fill-opacity='.22'/%3E%3C/g%3E%3C/svg%3E") repeat,
+    radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,210,195,.08) 0%,transparent 65%),
+    linear-gradient(170deg,#091515 0%,#050d0d 100%);
+}
+.logo{text-shadow:0 0 18px rgba(0,200,185,.28)}
+.logo-tag{color:rgba(0,200,185,.55);letter-spacing:2.5px}
+.card{border-color:rgba(0,200,185,.18);box-shadow:0 0 40px rgba(0,200,185,.06),0 0 80px rgba(0,200,185,.03)}
+/* Loading */
+.spinner{border-color:rgba(0,200,185,.12);border-top-color:rgba(0,200,185,.8)}
+/* QR state */
+.status-badge{border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.4)}
+.status-badge.scanning{border-color:rgba(0,200,185,.5);color:rgba(0,200,185,.85)}
+.status-badge.connected{border-color:rgba(0,200,185,.75);color:rgba(0,210,195,1)}
+.qr-wrap{background:rgba(0,0,0,.35);border:1px solid rgba(0,200,185,.18)}
+.qr-loading{color:rgba(255,255,255,.35)}
+.step-num{border-color:rgba(0,200,185,.2);color:rgba(0,200,185,.55);background:rgba(0,200,185,.06)}
+.step-row{color:rgba(255,255,255,.65)}
+.btn-refresh{border-color:rgba(0,200,185,.25);color:rgba(0,200,185,.7);background:transparent}
+.btn-refresh:hover{border-color:rgba(0,200,185,.55);color:rgba(0,200,185,1);background:rgba(0,200,185,.06)}
+/* Success */
+.success-title{color:rgba(0,210,195,.95);text-shadow:0 0 20px rgba(0,200,185,.3)}
+.studio-name{background:rgba(0,200,185,.1);border:1px solid rgba(0,200,185,.2);color:rgba(0,210,195,.9)}
+.success-sub{color:rgba(255,255,255,.45)}
+/* Error */
+.error-title{color:rgba(255,255,255,.9)}
+.error-msg{color:rgba(255,255,255,.4)}
 </style>
 </head>
 <body>
