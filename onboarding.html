@@ -626,7 +626,6 @@ let instanceSlug = null;
 let pollInterval = null;
 let qrRefreshInterval = null;
 let selectedPlan = 'basic';
-  if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan});
 const MP_PUBLIC_KEY = 'APP_USR-36990647-ad0a-4978-a672-499f635f9b03';
 let mpBrickController = null;
 
@@ -689,6 +688,7 @@ function selectPlan(plan) {
   ['free','basic','pro','enterprise'].forEach(p => {
     document.getElementById('plan-' + p)?.classList.toggle('active', p === plan);
   });
+  if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan});
 }
 
 function setStatus(idx, msg, state = 'active') {
@@ -1194,6 +1194,7 @@ async function checkConnection() {
 
       // Limpar estado temporário
       localStorage.removeItem('inkflow_ob');
+      localStorage.removeItem('inkflow_gk');
 
       goStep(6); // success
     }
