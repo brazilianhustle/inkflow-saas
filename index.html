@@ -1,659 +1,424 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>InkFlow Admin</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>InkFlow &mdash; Admin</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f0f0f;
-  --bg2:#161616;
-  --bg3:#1e1e1e;
-  --card:rgba(255,255,255,.04);
-  --card2:rgba(255,255,255,.07);
-  --border:rgba(255,255,255,.08);
-  --border2:rgba(255,255,255,.14);
-  --text:#fff;
-  --text2:rgba(255,255,255,.6);
-  --text3:rgba(255,255,255,.3);
-  --text4:rgba(255,255,255,.15);
-  --green:#2d7a4f;
-  --green-glow:#4ade80;
-  --amber:#f59e0b;
-  --red:#ef4444;
-  --blue:#60a5fa;
+  --bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;
+  --card:rgba(255,255,255,.04);--border:rgba(255,255,255,.08);
+  --green:#2d7a4f;--glow:#4ade80;--amber:#f59e0b;--red:#ef4444;--blue:#60a5fa;
+  --text:#e5e7eb;--text2:#9ca3af;--text3:#6b7280;
+  --r:8px;--r2:12px;
 }
-body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-
-/* ââ Login ââ */
-.login-screen{
-  display:flex;align-items:center;justify-content:center;
-  min-height:100vh;
-  background:var(--bg);
-  background-image:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px);
-  background-size:28px 28px;
-}
-.login-box{
-  background:rgba(255,255,255,.05);
-  border:1px solid var(--border2);
-  border-radius:20px;
-  padding:40px 36px;
-  width:360px;
-  text-align:center;
-}
-.login-logo{font-size:24px;font-weight:700;color:#fff;margin-bottom:4px}
-.login-sub{
-  font-size:9px;letter-spacing:2.5px;text-transform:uppercase;
-  color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:36px;
-}
-.lbl{display:block;font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);margin-bottom:6px;text-align:left;letter-spacing:1px;text-transform:uppercase}
-.linput{
-  width:100%;padding:10px 14px;
-  border:1px solid var(--border2);border-radius:8px;
-  font-size:13px;font-family:'Syne',sans-serif;
-  background:rgba(255,255,255,.06);color:#fff;
-  outline:none;margin-bottom:14px;transition:border .15s;
-}
-.linput:focus{border-color:rgba(255,255,255,.4)}
-.linput::placeholder{color:var(--text4)}
-.lbtn{
-  width:100%;padding:12px;
-  background:#fff;color:#1a1a1a;
-  border:none;border-radius:8px;
-  font-size:14px;font-family:'Syne',sans-serif;font-weight:700;
-  cursor:pointer;transition:all .15s;
-}
-.lbtn:hover{background:#e8e8e8}
-.lerr{font-size:11px;color:#ef4444;font-family:'DM Mono',monospace;margin-top:12px;display:none}
-
-/* ââ App shell ââ */
-.app{display:none;grid-template-columns:220px 1fr;min-height:100vh}
-.app.v{display:grid}
-
-/* ââ Sidebar ââ */
-.sidebar{
-  background:var(--bg2);
-  border-right:1px solid var(--border);
-  position:sticky;top:0;height:100vh;
-  display:flex;flex-direction:column;overflow-y:auto;
-}
-.logo{padding:24px 20px 18px;border-bottom:1px solid var(--border)}
-.logo-mark{font-size:17px;font-weight:700;color:#fff}
-.logo-sub{font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-top:3px;font-family:'DM Mono',monospace}
-nav{padding:16px 10px;flex:1}
-.nl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text4);padding:0 8px;margin:18px 0 6px;font-family:'DM Mono',monospace}
-.ni{
-  display:flex;align-items:center;gap:10px;
-  padding:9px 10px;border-radius:7px;
-  cursor:pointer;font-size:13px;color:var(--text2);
-  transition:all .15s;margin-bottom:2px;text-decoration:none;
-}
-.ni:hover{background:rgba(255,255,255,.07);color:#fff}
-.ni.active{background:rgba(255,255,255,.1);color:#fff;font-weight:500}
-.ni svg{opacity:.6;flex-shrink:0}
-.ni.active svg,.ni:hover svg{opacity:1}
-.sf{padding:16px 12px;border-top:1px solid var(--border)}
-.ss{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
-.dl{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green-glow);margin-right:6px;animation:pulse 2s infinite;vertical-align:middle}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.logout-btn{
-  margin-top:12px;background:transparent;
-  border:1px solid var(--border2);color:var(--text3);
-  padding:7px 12px;border-radius:6px;cursor:pointer;
-  font-size:11px;font-family:'DM Mono',monospace;width:100%;
-  transition:all .15s;text-align:left;
-}
-.logout-btn:hover{border-color:rgba(255,255,255,.3);color:var(--text2)}
-
-/* ââ Main ââ */
-.main{overflow-y:auto;background:var(--bg)}
-.topbar{
-  background:var(--bg2);border-bottom:1px solid var(--border);
-  padding:0 28px;height:60px;
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:10;
-}
-.pt{font-size:15px;font-weight:600;color:#fff}
-.ps{font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace}
-.ta{display:flex;gap:8px;align-items:center}
-
-/* ââ Buttons ââ */
-.btn{
-  padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;
-  cursor:pointer;font-family:'Syne',sans-serif;
-  border:1px solid var(--border2);background:transparent;
-  color:var(--text2);transition:all .15s;
-}
-.btn:hover{background:rgba(255,255,255,.08);color:#fff}
-.btn-p{background:#fff;color:#111;border-color:#fff;font-weight:600}
-.btn-p:hover{background:#e8e8e8}
-.btn-d{background:rgba(239,68,68,.15);color:#ef4444;border-color:rgba(239,68,68,.3)}
-.btn-d:hover{background:rgba(239,68,68,.25)}
-.btn-g{background:rgba(74,222,128,.1);color:var(--green-glow);border-color:rgba(74,222,128,.2)}
-.btn-g:hover{background:rgba(74,222,128,.2)}
-
-/* ââ Content ââ */
-.content{padding:28px}
-.st{
-  font-size:9px;letter-spacing:2px;text-transform:uppercase;
-  color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:16px;
-}
-.view{display:none}
-.view.active{display:block}
-
-/* ââ Metric cards ââ */
-.mg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px}
-.mc{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:10px;padding:18px;
-}
-.ml{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:.5px}
-.mv{font-size:28px;font-weight:700;line-height:1;margin:10px 0 5px;letter-spacing:-1px;color:#fff}
-.md{font-size:10px;color:var(--green-glow);font-family:'DM Mono',monospace}
-.md.dim{color:var(--text3)}
-
-/* ââ Card ââ */
-.card{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:12px;overflow:hidden;margin-bottom:16px;
-}
-.ch{
-  padding:14px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-}
-.ct{font-size:13px;font-weight:600;color:#fff}
-.si{
-  padding:6px 12px;border:1px solid var(--border2);border-radius:6px;
-  font-size:12px;font-family:'DM Mono',monospace;
-  background:rgba(255,255,255,.06);color:#fff;outline:none;width:200px;
-}
-.si::placeholder{color:var(--text4)}
-.si:focus{border-color:rgba(255,255,255,.3)}
-
-/* ââ Table ââ */
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{
-  padding:10px 16px;text-align:left;
-  font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--text3);font-family:'DM Mono',monospace;font-weight:400;
-  background:rgba(255,255,255,.03);border-bottom:1px solid var(--border);
-}
-td{padding:13px 16px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text2)}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(255,255,255,.03)}
-
-/* ââ Badges ââ */
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:500;font-family:'DM Mono',monospace}
-.bg{background:rgba(74,222,128,.1);color:var(--green-glow);border:1px solid rgba(74,222,128,.2)}
-.ba{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
-.br{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
-.bb{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
-.bgr{background:rgba(255,255,255,.08);color:var(--text2);border:1px solid var(--border2)}
-
-/* ââ Tenant list row ââ */
-.tn{font-weight:600;font-size:13px;color:#fff}
-.tm{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
-.av{
-  width:34px;height:34px;border-radius:8px;
-  background:rgba(255,255,255,.08);
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;color:var(--text2);flex-shrink:0;
-  border:1px solid var(--border);
-}
+html,body{height:100%;font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+/* LOGIN */
+#ls{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:100}
+.lc{width:360px;display:flex;flex-direction:column;gap:12px}
+.lc .llogo{font-size:30px;font-weight:800;color:var(--glow);letter-spacing:-.5px;text-align:center}
+.lc .lsub{text-align:center;color:var(--text3);font-size:13px;margin-top:-6px;margin-bottom:12px}
+.lc input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;color:var(--text);font-size:14px;outline:none;transition:border .2s}
+.lc input:focus{border-color:var(--green)}
+.lc .lerr{color:var(--red);font-size:13px;display:none;text-align:center;padding:8px;background:rgba(239,68,68,.08);border-radius:var(--r);border:1px solid rgba(239,68,68,.2)}
+.lc .lbtn{background:var(--green);color:#fff;border:none;border-radius:var(--r);padding:12px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:4px}
+.lc .lbtn:hover{opacity:.85}
+.lc .lbtn:disabled{opacity:.5;cursor:not-allowed}
+/* APP */
+#app{display:none;flex-direction:column;min-height:100vh}
+#app.v{display:flex}
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;flex-shrink:0}
+.hlogo{font-size:18px;font-weight:700;color:var(--glow)}
+.hlogo span{font-size:13px;font-weight:400;color:var(--text3);margin-left:8px}
+.hbtn{background:transparent;border:1px solid var(--border);border-radius:var(--r);padding:6px 14px;color:var(--text2);font-size:13px;cursor:pointer;transition:all .2s}
+.hbtn:hover{background:var(--card);color:var(--text)}
+/* Main */
+.main{flex:1;padding:24px;max-width:1400px;width:100%;margin:0 auto}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.stats{grid-template-columns:1fr}}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:16px 20px}
+.sc .sl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;font-weight:500}
+.sc .sv{font-size:28px;font-weight:700;color:var(--text)}
+.sc .sv.green{color:var(--glow)}
+.sc .sv.amber{color:var(--amber)}
+.sc .sv.sm{font-size:14px;padding-top:6px}
+.sc .sd{font-size:12px;color:var(--text3);margin-top:6px}
+/* Tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.tab{background:none;border:none;padding:10px 18px;color:var(--text3);font-size:14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap}
+.tab.act{color:var(--glow);border-bottom-color:var(--glow);font-weight:500}
+.tab:hover:not(.act){color:var(--text)}
+/* Toolbar */
+.tlb{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.tlb input{flex:1;min-width:200px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--text);font-size:13px;outline:none;transition:border .2s}
+.tlb input:focus{border-color:var(--green)}
+.btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:9px 16px;color:var(--text2);font-size:13px;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:inherit}
+.btn:hover{background:var(--card);color:var(--text)}
+.btn.p{background:var(--green);border-color:var(--green);color:#fff}
+.btn.p:hover{opacity:.85}
+.btn.d{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--red)}
+.btn.d:hover{background:rgba(239,68,68,.18)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+/* Table */
+.tw{overflow-x:auto;border-radius:var(--r2);border:1px solid var(--border);background:var(--bg2)}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th{background:var(--bg3);padding:10px 14px;text-align:left;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+td{padding:12px 14px;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.02)}
 .ti{display:flex;align-items:center;gap:10px}
-.ab{
-  padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;
-  font-family:'DM Mono',monospace;border:1px solid var(--border2);
-  background:transparent;color:var(--text3);transition:all .15s;margin-right:4px;
-}
-.ab:hover{background:rgba(255,255,255,.08);color:#fff}
-.ab.d:hover{background:rgba(239,68,68,.15);color:var(--red);border-color:rgba(239,68,68,.3)}
-.ab.s:hover{background:rgba(74,222,128,.1);color:var(--green-glow);border-color:rgba(74,222,128,.2)}
-.ab.x{color:var(--red);border-color:rgba(239,68,68,.2)}
-.ab.x:hover{background:rgba(239,68,68,.15);border-color:var(--red)}
-
-/* ââ Two-col grid ââ */
-.bg2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-
-/* ââ Panel body ââ */
-.pb{padding:18px 20px}
-.sr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
-.sr:last-child{border-bottom:none}
-.sk{color:var(--text3);font-family:'DM Mono',monospace;font-size:11px}
-.sv{font-weight:500;font-family:'DM Mono',monospace;font-size:12px;color:var(--text2)}
-
-/* ââ Plan bars ââ */
-.plb{margin-bottom:14px}
-.plbl{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'DM Mono',monospace}
-.bt{height:4px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
-.bf{height:100%;border-radius:3px;background:#fff;transition:width .5s ease}
-
-/* ââ Empty/loading states ââ */
-.es{text-align:center;padding:48px;color:var(--text3);font-size:12px;font-family:'DM Mono',monospace}
-.ld{text-align:center;padding:32px;color:var(--text3);font-size:12px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:8px}
-.ld::before{content:'';width:14px;height:14px;border:1.5px solid var(--text4);border-top-color:var(--text2);border-radius:50%;animation:spin .8s linear infinite}
+.av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green),#1a5c38);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;color:#fff}
+.tn{font-weight:500;font-size:13px;color:var(--text)}
+.tm{font-size:11px;color:var(--text3);margin-top:1px}
+.es{text-align:center;padding:48px 20px;color:var(--text3);font-size:13px}
+.ld{display:flex;align-items:center;justify-content:center;gap:12px;padding:48px 20px;color:var(--text3);font-size:13px}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ââ Modal ââ */
-.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.mo.open{display:flex}
-.mbox{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:580px;max-height:88vh;overflow-y:auto}
-.mh{
-  padding:20px 24px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;background:var(--bg2);z-index:1;
-}
-.mtitle{font-size:15px;font-weight:600;color:#fff}
-.mc2{
-  width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);
-  background:none;cursor:pointer;font-size:16px;
-  display:flex;align-items:center;justify-content:center;color:var(--text2);
-}
-.mc2:hover{background:rgba(255,255,255,.08);color:#fff}
-.mb{padding:24px}
-.fg{margin-bottom:16px}
-.fl{display:block;font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
-.fi{
-  width:100%;padding:9px 12px;
-  border:1px solid var(--border2);border-radius:7px;
-  font-size:13px;font-family:'Syne',sans-serif;
-  background:rgba(255,255,255,.05);color:#fff;
-  outline:none;transition:border .15s;
-}
-.fi:focus{border-color:rgba(255,255,255,.35)}
-.fi::placeholder{color:var(--text4)}
-textarea.fi{resize:vertical;font-size:12px;font-family:'DM Mono',monospace;line-height:1.6}
-select.fi{cursor:pointer}
-select.fi option{background:#1e1e1e;color:#fff}
-.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.fsec{
-  font-size:9px;letter-spacing:2px;text-transform:uppercase;
-  color:var(--text3);font-family:'DM Mono',monospace;
-  padding:16px 0 10px;border-top:1px solid var(--border);margin-top:4px;
-}
-.fsec:first-child{border-top:none;padding-top:0}
-.mf{
-  padding:16px 24px;border-top:1px solid var(--border);
-  display:flex;justify-content:flex-end;gap:10px;
-  position:sticky;bottom:0;background:var(--bg2);
-}
-
-/* ââ Confirm ââ */
-.cov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.cov.open{display:flex}
-.cbox{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:30px;width:360px;text-align:center}
-.ctitle{font-size:15px;font-weight:600;margin-bottom:8px;color:#fff}
-.cmsg{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5;font-family:'DM Mono',monospace}
-.cact{display:flex;gap:10px;justify-content:center}
-
-/* ââ Toast ââ */
-.toast{
-  position:fixed;bottom:24px;right:24px;
-  background:var(--bg3);border:1px solid var(--border2);
-  color:var(--text);padding:12px 20px;border-radius:8px;
-  font-size:12px;z-index:300;
-  transform:translateY(80px);opacity:0;transition:all .3s;
-  font-family:'DM Mono',monospace;
-}
-.toast.show{transform:translateY(0);opacity:1}
-.toast.ok{background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3);color:var(--green-glow)}
-.toast.err{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--red)}
-
-/* ââ Config inputs ââ */
-.fi-hint{font-size:11px;color:var(--text3);margin-top:5px;font-family:'DM Mono',monospace}
-
-/* ââ Onboarding ââ */
-.onb-link-box{
-  background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.2);
-  border-radius:8px;padding:14px;font-size:12px;font-family:'DM Mono',monospace;
-  word-break:break-all;color:var(--blue);margin:14px 0;line-height:1.5;display:none;
-}
-.onb-step{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2)}
-.onb-step:last-child{border-bottom:none}
-.onb-num{
-  width:22px;height:22px;border-radius:50%;
-  background:rgba(255,255,255,.06);border:1px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);flex-shrink:0;margin-top:1px;
-}
-
-@media(max-width:768px){
-  .app{grid-template-columns:1fr}
-  .sidebar{display:none}
-  .mg{grid-template-columns:1fr 1fr}
-  .bg2{grid-template-columns:1fr}
-  .fgrid{grid-template-columns:1fr}
-}
+.sp{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--glow);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+/* Badges */
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+.bg{background:rgba(74,222,128,.12);color:#4ade80}
+.br{background:rgba(239,68,68,.12);color:#ef4444}
+.ba{background:rgba(245,158,11,.12);color:#f59e0b}
+.bb{background:rgba(96,165,250,.12);color:#60a5fa}
+.bgr{background:rgba(255,255,255,.06);color:var(--text3)}
+/* Row buttons */
+.ab{background:transparent;border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:11px;color:var(--text3);cursor:pointer;transition:all .15s;font-family:inherit}
+.ab:hover{background:var(--card);color:var(--text);border-color:rgba(255,255,255,.15)}
+.ab.s:hover{background:rgba(74,222,128,.1);color:var(--glow);border-color:rgba(74,222,128,.3)}
+.ab.d:hover{background:rgba(245,158,11,.1);color:var(--amber);border-color:rgba(245,158,11,.3)}
+.ab.x:hover{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.3)}
+/* Detail panel */
+#det{border-radius:var(--r2);border:1px solid var(--border);background:var(--bg2);overflow:hidden;margin-top:20px}
+#det:empty{display:none}
+.dhead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 24px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.dh{font-size:16px;font-weight:600}
+.duid{font-size:11px;color:var(--text3);margin-top:3px;font-family:monospace}
+.da{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dbody{padding:20px 24px}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.sr{padding:10px 14px;background:var(--card);border-radius:var(--r);border:1px solid var(--border)}
+.sk{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:4px}
+.sv2{font-size:13px;word-break:break-all;color:var(--text)}
+.prm{margin-top:16px;padding:14px 16px;background:var(--card);border-radius:var(--r);border:1px solid var(--border)}
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-start;justify-content:center;z-index:200;padding:20px;overflow-y:auto}
+.md{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);width:100%;max-width:680px;margin:auto;display:flex;flex-direction:column;max-height:90vh}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);flex-shrink:0}
+.mh h2{font-size:16px;font-weight:600}
+.mhx{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1;padding:4px 8px;border-radius:4px;transition:all .15s}
+.mhx:hover{color:var(--text);background:var(--card)}
+.mb{overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:0}
+.mf{display:flex;gap:10px;justify-content:flex-end;padding:16px 24px;border-top:1px solid var(--border);flex-shrink:0}
+.sec{margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+.sec.first{margin-top:0;padding-top:0;border-top:none}
+.sec h3{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:12px;color:var(--text2);font-weight:500}
+.fg input,.fg select,.fg textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--text);font-size:13px;outline:none;width:100%;transition:border .2s;font-family:inherit}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--green)}
+.fg textarea{resize:vertical;min-height:80px}
+.fg select option{background:var(--bg3)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.fg2{grid-template-columns:1fr}}
+.ck{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text);padding:9px 0}
+.ck input[type=checkbox]{width:16px;height:16px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
+/* Confirm */
+.cd{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:28px;max-width:420px;width:100%;margin:auto}
+.cd p{color:var(--text2);line-height:1.65;margin-bottom:24px;font-size:14px}
+.cd strong{color:var(--text)}
+.ca{display:flex;gap:10px;justify-content:flex-end}
+/* Config / Onb */
+.cf{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:28px;display:flex;flex-direction:column;gap:0;max-width:640px}
+.ot{display:flex;flex-direction:column;gap:20px;max-width:640px}
+.olink{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;font-family:monospace;font-size:12px;word-break:break-all;color:var(--glow);line-height:1.6}
+.orow{display:flex;gap:10px;align-items:flex-start}
+.info{font-size:13px;color:var(--text2);line-height:2}
+.info div{display:flex;align-items:center;gap:8px}
+.info div::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+/* Toast */
+#toast{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999;pointer-events:none}
+.t{padding:12px 16px;border-radius:var(--r);font-size:13px;pointer-events:auto;animation:tslide .3s ease;max-width:340px;line-height:1.4}
+.t.ok{background:#0d2e1c;border:1px solid rgba(74,222,128,.35);color:#4ade80}
+.t.err{background:#2e0d0d;border:1px solid rgba(239,68,68,.35);color:#ef4444}
+.t.inf{background:var(--bg3);border:1px solid var(--border);color:var(--text2)}
+@keyframes tslide{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
 
-<!-- ââ LOGIN ââ -->
-<div class="login-screen" id="ls">
-  <div class="login-box">
-    <div class="login-logo">InkFlow</div>
-    <div class="login-sub">Admin Â· SaaS</div>
-    <label class="lbl">e-mail</label>
-    <input class="linput" id="lu" type="email" placeholder="lmf4200@gmail.com" autocomplete="email"/>
-    <label class="lbl">senha</label>
-    <input class="linput" id="lp" type="password" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" autocomplete="current-password"/>
-    <button class="lbtn" onclick="doLogin()">Entrar â</button>
-    <div class="lerr" id="le">UsuÃ¡rio ou senha incorretos</div>
+<!-- LOGIN -->
+<div id="ls">
+  <div class="lc">
+    <div class="llogo">InkFlow</div>
+    <div class="lsub">Admin &middot; SaaS</div>
+    <input id="lu" type="email" placeholder="E-mail" autocomplete="username">
+    <input id="lp" type="password" placeholder="Senha" autocomplete="current-password">
+    <div id="le" class="lerr">E-mail ou senha incorretos</div>
+    <button class="lbtn" onclick="doLogin()">Entrar &rarr;</button>
   </div>
 </div>
 
-<!-- ââ APP ââ -->
-<div class="app" id="app">
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="hlogo">InkFlow <span>Admin &middot; SaaS</span></div>
+    <button class="hbtn" onclick="doLogout()">Sair</button>
+  </header>
+  <div class="main">
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-mark">InkFlow</div>
-      <div class="logo-sub">Admin Panel</div>
-    </div>
-    <nav>
-      <div class="nl">Principal</div>
-      <a class="ni active" href="#" onclick="showView('tenants',this)">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
-        Tenants
-      </a>
-      <a class="ni" href="#" onclick="showView('analytics',this)">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 13h2V8H1v5zm4 0h2V5H5v8zm4 0h2V3H9v10zm4 0h2V1h-2v12z"/></svg>
-        Analytics
-      </a>
-      <a class="ni" href="#" onclick="showView('onboarding',this)">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1v6H2v2h6v6h2V9h6V7H10V1H8z"/></svg>
-        Onboarding
-      </a>
-      <a class="ni" href="#" onclick="showView('config',this)">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 100 6A3 3 0 008 5zm5.94 1.06l-.92-.53a4.6 4.6 0 000-1.06l.92-.53a.42.42 0 00.15-.57l-.84-1.45a.42.42 0 00-.57-.15l-.92.53A4.58 4.58 0 009 1.42V.42A.42.42 0 008.58 0H6.84a.42.42 0 00-.42.42v1a4.58 4.58 0 00-1.76.88l-.92-.53a.42.42 0 00-.57.15L2.33 3.37a.42.42 0 00.15.57l.92.53a4.6 4.6 0 000 1.06l-.92.53a.42.42 0 00-.15.57l.84 1.45a.42.42 0 00.57.15l.92-.53c.54.37 1.14.65 1.76.82v1a.42.42 0 00.42.42h1.74a.42.42 0 00.42-.42v-1a4.58 4.58 0 001.76-.82l.92.53a.42.42 0 00.57-.15l.84-1.45a.42.42 0 00-.15-.57z"/></svg>
-        ConfiguraÃ§Ãµes
-      </a>
-    </nav>
-    <div class="sf">
-      <div class="ss"><span class="dl"></span>sistema online</div>
-      <div class="ss" style="margin-top:4px;font-size:10px;color:var(--text4)">n8n Â· supabase Â· evo api</div>
-      <button class="logout-btn" onclick="doLogout()">â© sair</button>
-    </div>
-  </aside>
-
-  <!-- Main -->
-  <main class="main">
-    <div class="topbar">
-      <div>
-        <div class="pt" id="page-title">Tenants</div>
-        <div class="ps" id="page-sub">gestÃ£o de clientes do saas</div>
+    <!-- Stats -->
+    <div class="stats">
+      <div class="sc">
+        <div class="sl">Total Tenants</div>
+        <div class="sv" id="stTotal">&mdash;</div>
+        <div class="sd" id="stDesc">carregando...</div>
       </div>
-      <div class="ta">
-        <button class="btn" onclick="loadTenants()">â» Atualizar</button>
-        <button class="btn btn-p" onclick="openModal()">+ Novo Tenant</button>
+      <div class="sc">
+        <div class="sl">Ativos</div>
+        <div class="sv green" id="stAtivos">&mdash;</div>
+        <div class="sd" id="stInat">inativos: &mdash;</div>
+      </div>
+      <div class="sc">
+        <div class="sl">MRR Estimado</div>
+        <div class="sv amber" id="stMrr">&mdash;</div>
+        <div class="sd">tenants ativos &amp; pagantes</div>
+      </div>
+      <div class="sc">
+        <div class="sl">Planos</div>
+        <div class="sv sm" id="stPlanos">&mdash;</div>
+        <div class="sd" id="stPlanosD"></div>
       </div>
     </div>
 
-    <!-- â TENANTS â -->
-    <div class="view active content" id="view-tenants">
-      <div class="st">visÃ£o geral</div>
-      <div class="mg">
-        <div class="mc">
-          <div class="ml">total tenants</div>
-          <div class="mv" id="m1">â</div>
-          <div class="md" id="m1s">carregando...</div>
-        </div>
-        <div class="mc">
-          <div class="ml">clientes atendidos</div>
-          <div class="mv" id="m2">â</div>
-          <div class="md dim">total</div>
-        </div>
-        <div class="mc">
-          <div class="ml">conversas ativas</div>
-          <div class="mv" id="m3">â</div>
-          <div class="md dim">em andamento</div>
-        </div>
-        <div class="mc">
-          <div class="ml">mensagens</div>
-          <div class="mv" id="m4">â</div>
-          <div class="md dim">histÃ³rico total</div>
-        </div>
-      </div>
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab act" onclick="showTab(0)">Tenants</button>
+      <button class="tab" onclick="showTab(1)">Configura&ccedil;&otilde;es</button>
+      <button class="tab" onclick="showTab(2)">Onboarding</button>
+    </div>
 
-      <div class="st">tenants</div>
-      <div class="card">
-        <div class="ch">
-          <div class="ct">Todos os tenants</div>
-          <input class="si" placeholder="buscar..." id="search" oninput="filter(this.value)"/>
-        </div>
-        <div class="ld" id="tld">carregando tenants</div>
-        <div id="tw" style="display:none;overflow-x:auto">
+    <!-- TAB 0: Tenants -->
+    <div id="tp0">
+      <div class="tlb">
+        <input type="search" id="srch" placeholder="Buscar por nome, est&uacute;dio, inst&acirc;ncia..." oninput="filter(this.value)">
+        <button class="btn p" onclick="openModal(null)">+ Novo Tenant</button>
+        <button class="btn" onclick="loadTenants()">&#8635; Atualizar</button>
+      </div>
+      <div class="tw">
+        <div id="tld" class="ld"><div class="sp"></div>&nbsp;Carregando tenants...</div>
+        <div id="tbl" style="display:none">
           <table>
             <thead><tr>
-              <th>EstÃºdio</th><th>InstÃ¢ncia EVO</th><th>Plano</th>
-              <th>Clientes</th><th>Chats</th><th>Msgs</th><th>Status</th><th>AÃ§Ãµes</th>
+              <th>Tenant</th>
+              <th>Inst&acirc;ncia EVO</th>
+              <th>Plano</th>
+              <th style="text-align:center">Clientes</th>
+              <th style="text-align:center">Chats</th>
+              <th style="text-align:center">Msgs</th>
+              <th>Pgto</th>
+              <th>Status</th>
+              <th>A&ccedil;&otilde;es</th>
             </tr></thead>
             <tbody id="tb"></tbody>
           </table>
         </div>
       </div>
+      <div id="det"></div>
+    </div>
 
-      <div class="bg2">
-        <div class="card">
-          <div class="ch"><div class="ct">Detalhes</div></div>
-          <div class="pb" id="det"><div class="es">selecione um tenant</div></div>
-        </div>
-        <div class="card">
-          <div class="ch"><div class="ct">Planos &amp; Receita</div></div>
-          <div class="pb">
-            <div class="plb"><div class="plbl"><span>Enterprise</span><span id="pe">0</span></div><div class="bt"><div class="bf" id="peb" style="width:0%"></div></div></div>
-            <div class="plb"><div class="plbl"><span>Pro</span><span id="pp">0</span></div><div class="bt"><div class="bf" id="ppb" style="width:0%"></div></div></div>
-            <div class="plb"><div class="plbl"><span>Basic</span><span id="pb2">0</span></div><div class="bt"><div class="bf" id="pbb" style="width:0%"></div></div></div>
-            <div style="margin-top:18px">
-              <div class="sr"><span class="sk">MRR estimado</span><span class="sv" id="mrr">R$ 0</span></div>
-              <div class="sr"><span class="sk">Ativos</span><span class="sv" id="ac">0</span></div>
-              <div class="sr"><span class="sk">Inativos</span><span class="sv" id="ic">0</span></div>
-            </div>
+    <!-- TAB 1: Config -->
+    <div id="tp1" style="display:none">
+      <div class="cf">
+        <div class="sec first">
+          <h3>Supabase</h3>
+          <div class="fg2">
+            <div class="fg"><label>URL do Projeto</label><input id="cfUrl" type="text" placeholder="https://xxx.supabase.co"></div>
+            <div class="fg"><label>Anon Key</label><input id="cfKey" type="text" placeholder="eyJ..."></div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- â ANALYTICS â -->
-    <div class="view content" id="view-analytics">
-      <div class="st">analytics</div>
-      <div class="mg" id="am"></div>
-      <div class="card">
-        <div class="ch"><div class="ct">Ranking por Atividade</div></div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th>#</th><th>EstÃºdio</th><th>Clientes</th><th>Chats</th><th>Mensagens</th><th>Plano</th><th>Status</th></tr></thead>
-            <tbody id="ab"></tbody>
-          </table>
+        <div class="sec">
+          <h3>Pre&ccedil;os dos Planos (R$)</h3>
+          <div class="fg2">
+            <div class="fg"><label>Basic</label><input id="cfPb" type="number" value="199" min="0"></div>
+            <div class="fg"><label>Pro</label><input id="cfPp" type="number" value="399" min="0"></div>
+          </div>
+          <div class="fg" style="margin-top:12px"><label>Enterprise</label><input id="cfPe" type="number" value="799" min="0"></div>
+        </div>
+        <div class="sec">
+          <button class="btn p" onclick="saveCfg()">Salvar Configura&ccedil;&otilde;es</button>
         </div>
       </div>
     </div>
 
-    <!-- â ONBOARDING â -->
-    <div class="view content" id="view-onboarding">
-      <div class="st">onboarding de novos clientes</div>
-      <div class="bg2">
-        <div class="card">
-          <div class="ch"><div class="ct">Gerar Link de Onboarding</div></div>
-          <div class="pb">
-            <div class="fg">
-              <label class="fl">chave global evolution api</label>
-              <input class="fi" id="onb-gk" type="password" placeholder="API Key do servidor EVO"/>
-              <div class="fi-hint">Usada para criar novas instÃ¢ncias automaticamente</div>
-            </div>
-            <div class="fg">
-              <label class="fl">plano padrÃ£o do link</label>
-              <select class="fi" id="onb-plano">
-                <option value="basic">Basic â R$ 199/mÃªs</option>
-                <option value="pro">Pro â R$ 399/mÃªs</option>
-                <option value="enterprise">Enterprise â R$ 799/mÃªs</option>
+    <!-- TAB 2: Onboarding -->
+    <div id="tp2" style="display:none">
+      <div class="ot">
+        <div class="cf">
+          <div class="sec first">
+            <h3>Gerar Link de Onboarding</h3>
+            <div class="fg"><label>Token personalizado (opcional)</label><input id="onbTok" type="text" placeholder="ex: studio-cliente-2026"></div>
+            <div class="fg" style="margin-top:12px">
+              <label>Plano padr&atilde;o</label>
+              <select id="onbPlan">
+                <option value="basic">Basic</option>
+                <option value="pro">Pro</option>
+                <option value="enterprise">Enterprise</option>
               </select>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn btn-p" onclick="genOnbLink()">Gerar Link</button>
-              <button class="btn" onclick="copyOnbLink()">Copiar Link</button>
-              <button class="btn" onclick="saveOnbKey()">Salvar Chave</button>
-            </div>
-            <div class="onb-link-box" id="onb-link-box">
-              <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">link para enviar ao cliente:</div>
-              <div id="onb-link-txt" style="color:var(--blue)"></div>
+            <div style="margin-top:18px"><button class="btn p" onclick="genOnbLink()">Gerar Link</button></div>
+          </div>
+          <div id="onbOut" style="display:none">
+            <div class="sec">
+              <h3>Link Gerado</h3>
+              <div class="orow">
+                <div class="olink" id="onbLink" style="flex:1"></div>
+                <button class="btn" onclick="copyOnbLink()" style="flex-shrink:0">Copiar</button>
+              </div>
+              <div style="margin-top:8px;font-size:12px;color:var(--text3)">Envie este link ao cliente. &Eacute; de uso &uacute;nico.</div>
             </div>
           </div>
         </div>
-        <div class="card">
-          <div class="ch"><div class="ct">Como funciona</div></div>
-          <div class="pb">
-            <div class="onb-step"><div class="onb-num">1</div><span>Gere o link e copie para enviar ao novo cliente</span></div>
-            <div class="onb-step"><div class="onb-num">2</div><span>O cliente preenche os dados do estÃºdio no formulÃ¡rio</span></div>
-            <div class="onb-step"><div class="onb-num">3</div><span>Tenant Ã© criado no Supabase automaticamente</span></div>
-            <div class="onb-step"><div class="onb-num">4</div><span>InstÃ¢ncia WhatsApp criada na Evolution API</span></div>
-            <div class="onb-step"><div class="onb-num">5</div><span>Cliente escaneia o QR Code e conecta o WhatsApp</span></div>
-            <div class="onb-step"><div class="onb-num">6</div><span>Tenant aparece abaixo â ative manualmente se necessÃ¡rio</span></div>
+        <div class="cf">
+          <div class="sec first">
+            <h3>Fluxo de Onboarding</h3>
+            <div class="info">
+              <div>Cliente acessa o link e preenche dados do est&uacute;dio</div>
+              <div>Tenant criado automaticamente no Supabase</div>
+              <div>Inst&acirc;ncia Evolution API criada com o nome do tenant</div>
+              <div>QR Code exibido para conectar o WhatsApp</div>
+              <div>Ap&oacute;s conex&atilde;o, o n8n come&ccedil;a a atender automaticamente</div>
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="st" style="margin-top:8px">aguardando ativaÃ§Ã£o</div>
-      <div class="card">
-        <div class="ch">
-          <div class="ct">Clientes em Onboarding</div>
-          <button class="btn" onclick="loadPendingOnb()" style="font-size:11px">â» Atualizar</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th>EstÃºdio</th><th>InstÃ¢ncia EVO</th><th>Plano</th><th>Cadastrado em</th><th>AÃ§Ãµes</th></tr></thead>
-            <tbody id="onb-tb"><tr><td colspan="5"><div class="ld">carregando</div></td></tr></tbody>
-          </table>
         </div>
       </div>
     </div>
 
-    <!-- â CONFIG â -->
-    <div class="view content" id="view-config">
-      <div class="st">configuraÃ§Ãµes</div>
-      <div class="card" style="max-width:480px">
-        <div class="ch"><div class="ct">Credenciais Supabase</div></div>
-        <div class="pb">
-          <div class="fg"><label class="fl">supabase url</label><input class="fi" id="cu" type="text"/></div>
-          <div class="fg"><label class="fl">anon key</label><input class="fi" id="ck" type="text"/></div>
-          <button class="btn btn-p" onclick="saveConf()">Salvar</button>
-        </div>
-      </div>
-      <div class="card" style="max-width:480px;margin-top:14px">
-        <div class="ch"><div class="ct">PreÃ§os por Plano (R$/mÃªs)</div></div>
-        <div class="pb">
-          <div class="fgrid">
-            <div class="fg"><label class="fl">basic</label><input class="fi" id="prb" type="number"/></div>
-            <div class="fg"><label class="fl">pro</label><input class="fi" id="prp" type="number"/></div>
-          </div>
-          <div class="fg" style="max-width:220px"><label class="fl">enterprise</label><input class="fi" id="pre" type="number"/></div>
-          <button class="btn btn-p" onclick="savePrices()">Salvar PreÃ§os</button>
-        </div>
-      </div>
-    </div>
-
-  </main>
+  </div>
 </div>
 
-<!-- ââ MODAL: Tenant ââ -->
-<div class="mo" id="mo" onclick="closeMoBg(event)">
-  <div class="mbox">
+<!-- MODAL TENANT -->
+<div id="modal" class="overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="md">
     <div class="mh">
-      <div class="mtitle" id="mt">Novo Tenant</div>
-      <button class="mc2" onclick="closeMo()">â</button>
+      <h2 id="mt">Tenant</h2>
+      <button class="mhx" onclick="closeModal()">&#10005;</button>
     </div>
     <div class="mb">
-      <div class="fsec">Dados do EstÃºdio</div>
-      <div class="fgrid">
-        <div class="fg"><label class="fl">nome do proprietÃ¡rio *</label><input class="fi" id="fn" placeholder="Ex: Carlos Silva"/></div>
-        <div class="fg"><label class="fl">nome do agente IA *</label><input class="fi" id="fa" placeholder="Ex: Carlos"/></div>
-      </div>
-      <div class="fgrid">
-        <div class="fg"><label class="fl">nome do estÃºdio *</label><input class="fi" id="fe" placeholder="Ex: Dark Ink Studio"/></div>
-        <div class="fg"><label class="fl">cidade</label><input class="fi" id="fc" placeholder="Ex: SÃ£o Paulo"/></div>
-      </div>
-      <div class="fg"><label class="fl">endereÃ§o</label><input class="fi" id="fad" placeholder="Ex: Av. Paulista 1000"/></div>
-      <div class="fsec">Evolution API</div>
-      <div class="fgrid">
-        <div class="fg"><label class="fl">instÃ¢ncia EVO *</label><input class="fi" id="fi2" placeholder="Ex: carlostattoo"/></div>
-        <div class="fg"><label class="fl">webhook path *</label><input class="fi" id="fw" placeholder="Ex: Carlos"/></div>
-      </div>
-      <div class="fg"><label class="fl">evo base url</label><input class="fi" id="fu" placeholder="https://evolutionapi.seuservidor.com"/></div>
-      <div class="fg"><label class="fl">api key evolution *</label><input class="fi" id="fk" placeholder="XXXX-YYYY-ZZZZ"/></div>
-      <div class="fgrid">
-        <div class="fg"><label class="fl">grupo notificaÃ§Ã£o</label><input class="fi" id="fgn" placeholder="120363...@g.us"/></div>
-        <div class="fg"><label class="fl">grupo orÃ§amento</label><input class="fi" id="fgo" placeholder="120363...@g.us"/></div>
-      </div>
-      <div class="fsec">Google</div>
-      <div class="fgrid">
-        <div class="fg"><label class="fl">google calendar id</label><input class="fi" id="fca" placeholder="...@group.calendar.google.com"/></div>
-        <div class="fg"><label class="fl">google drive folder id</label><input class="fi" id="fdr" placeholder="1FAAUCd2S8qT..."/></div>
-      </div>
-      <div class="fsec">Plano &amp; Status</div>
-      <div class="fgrid">
-        <div class="fg"><label class="fl">plano</label>
-          <select class="fi" id="fpl"><option value="basic">Basic</option><option value="pro">Pro</option><option value="enterprise">Enterprise</option></select>
+      <div class="sec first">
+        <h3>Informa&ccedil;&otilde;es B&aacute;sicas</h3>
+        <div class="fg2">
+          <div class="fg"><label>Nome do Propriet&aacute;rio *</label><input id="fNome" type="text" placeholder="Nome completo"></div>
+          <div class="fg"><label>Nome do Est&uacute;dio *</label><input id="fEst" type="text" placeholder="Nome do est&uacute;dio"></div>
         </div>
-        <div class="fg"><label class="fl">status</label>
-          <select class="fi" id="fst"><option value="true">Ativo</option><option value="false">Inativo</option></select>
+        <div class="fg2" style="margin-top:12px">
+          <div class="fg"><label>E-mail</label><input id="fEmail" type="email" placeholder="email@exemplo.com"></div>
+          <div class="fg"><label>Cidade</label><input id="fCid" type="text" placeholder="S&atilde;o Paulo &mdash; SP"></div>
+        </div>
+        <div class="fg" style="margin-top:12px"><label>Endere&ccedil;o</label><input id="fEnd" type="text" placeholder="Rua, n&uacute;mero, bairro"></div>
+      </div>
+      <div class="sec">
+        <h3>Evolution API</h3>
+        <div class="fg"><label>Nome da Inst&acirc;ncia</label><input id="fEvoInst" type="text" placeholder="nome-instancia-unico"></div>
+        <div class="fg2" style="margin-top:12px">
+          <div class="fg"><label>API Key</label><input id="fEvoKey" type="text" placeholder="chave_api_evo"></div>
+          <div class="fg"><label>URL Base</label><input id="fEvoUrl" type="text"></div>
         </div>
       </div>
-      <div class="fsec">IA do EstÃºdio</div>
-      <div class="fg"><label class="fl">prompt sistema</label><textarea class="fi" id="fps" rows="4" placeholder="# Quem vocÃª Ã©&#10;VocÃª Ã© [Nome], tatuador de [EstÃºdio]..."></textarea></div>
-      <div class="fg"><label class="fl">faq (cÃ©rebro)</label><textarea class="fi" id="ffq" rows="3" placeholder="P: Qual endereÃ§o?&#10;R: Rua..."></textarea></div>
+      <div class="sec">
+        <h3>WhatsApp &mdash; Grupos</h3>
+        <div class="fg2">
+          <div class="fg"><label>Grupo Notifica&ccedil;&atilde;o</label><input id="fGrpN" type="text" placeholder="ID do grupo JID"></div>
+          <div class="fg"><label>Grupo Or&ccedil;amento</label><input id="fGrpO" type="text" placeholder="ID do grupo JID"></div>
+        </div>
+      </div>
+      <div class="sec">
+        <h3>Integra&ccedil;&otilde;es Google</h3>
+        <div class="fg"><label>Google Calendar ID</label><input id="fGCal" type="text" placeholder="calendario@gmail.com"></div>
+        <div class="fg" style="margin-top:12px"><label>Google Drive Folder ID</label><input id="fGDrv" type="text" placeholder="1xABCDEF..."></div>
+      </div>
+      <div class="sec">
+        <h3>Agente IA</h3>
+        <div class="fg"><label>Nome do Agente</label><input id="fAgt" type="text" placeholder="Assistente"></div>
+        <div class="fg" style="margin-top:12px"><label>Prompt do Sistema</label><textarea id="fPrm" rows="4" placeholder="Voc&#234; &#233; um assistente virtual do est&#250;dio de tatuagem..."></textarea></div>
+        <div class="fg" style="margin-top:12px"><label>FAQ do Est&uacute;dio</label><textarea id="fFaq" rows="3" placeholder="Perguntas e respostas frequentes..."></textarea></div>
+      </div>
+      <div class="sec">
+        <h3>Plano &amp; Status</h3>
+        <div class="fg2">
+          <div class="fg"><label>Plano</label>
+            <select id="fPlan"><option value="basic">Basic</option><option value="pro">Pro</option><option value="enterprise">Enterprise</option></select>
+          </div>
+          <div class="fg"><label>Status de Pagamento</label>
+            <select id="fPgto"><option value="pendente">Pendente</option><option value="pago">Pago</option><option value="cancelado">Cancelado</option></select>
+          </div>
+        </div>
+        <div class="fg2" style="margin-top:12px">
+          <div class="fg"><label>Trial at&eacute;</label><input id="fTrial" type="date"></div>
+          <div class="fg"><label>MP Subscription ID</label><input id="fMpSub" type="text" placeholder="ID da assinatura MP"></div>
+        </div>
+        <div class="fg2" style="margin-top:12px">
+          <div class="fg"><label>Webhook Path</label><input id="fWh" type="text" placeholder="nome-estudio123"></div>
+          <div class="fg" style="justify-content:flex-end">
+            <label class="ck"><input id="fAtv" type="checkbox"> Tenant ativo</label>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="mf">
-      <button class="btn" onclick="closeMo()">Cancelar</button>
-      <button class="btn btn-p" id="sbtn" onclick="saveTenant()">Salvar Tenant</button>
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn p" id="mSave" onclick="saveModal()">Salvar</button>
     </div>
   </div>
 </div>
 
-<!-- ââ CONFIRM ââ -->
-<div class="cov" id="cov">
-  <div class="cbox">
-    <div class="ctitle" id="ctitle">Confirmar</div>
-    <div class="cmsg" id="cmsg">Tem certeza?</div>
-    <div class="cact">
-      <button class="btn" onclick="closeCov()">Cancelar</button>
-      <button class="btn btn-d" id="cok" onclick="doConfirm()">Confirmar</button>
+<!-- CONFIRM -->
+<div id="cov" class="overlay" style="display:none" onclick="if(event.target===this)closeConf()">
+  <div class="cd">
+    <p id="cm"></p>
+    <div class="ca">
+      <button class="btn" onclick="closeConf()">Cancelar</button>
+      <button class="btn d" id="cok" onclick="doConfirm()">Confirmar</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- TOAST -->
+<div id="toast"></div>
 
 <script>
 let accessToken = null;
 let CFG = {
   url: 'https://bfzuxxuscyplfoimvomh.supabase.co',
   key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenV4eHVzY3lwbGZvaW12b21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMTg3NjAsImV4cCI6MjA4ODg5NDc2MH0.GSw2qzM9RgEQT6xTNBElBv-4AAuSavZe-_C-CljMvdA',
-  prices: {basic:199, pro:399, enterprise:799}
+  prices: { basic: 199, pro: 399, enterprise: 799 }
 };
 let tenants = [], allT = [], editId = null, pending = null;
 
 function init() {
   const s = localStorage.getItem('ikf');
-  if (s) { try { CFG = {...CFG, ...JSON.parse(s)}; } catch(e) {} }
+  if (s) { try { CFG = { ...CFG, ...JSON.parse(s) }; } catch(e) {} }
   const t = sessionStorage.getItem('ikf_token');
   if (t) { accessToken = t; showApp(); }
-  document.getElementById('lp').onkeydown = e => { if (e.key === 'Enter') doLogin(); };
-  document.getElementById('lu').onkeydown = e => { if (e.key === 'Enter') document.getElementById('lp').focus(); };
+  document.getElementById('lp').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('lu').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('lp').focus(); });
 }
 
 async function doLogin() {
   const email = document.getElementById('lu').value.trim();
   const pass  = document.getElementById('lp').value;
   const errEl = document.getElementById('le');
+  const btn   = document.querySelector('.lbtn');
   errEl.style.display = 'none';
+  if (!email || !pass) { errEl.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Entrando...';
   try {
     const r = await fetch(CFG.url + '/auth/v1/token?grant_type=password', {
       method: 'POST',
-      headers: {'apikey': CFG.key, 'Content-Type': 'application/json'},
-      body: JSON.stringify({email, password: pass})
+      headers: { 'apikey': CFG.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
     });
     const d = await r.json();
     if (!r.ok || !d.access_token) {
@@ -667,6 +432,9 @@ async function doLogin() {
   } catch(e) {
     errEl.style.display = 'block';
     document.getElementById('lp').value = '';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Entrar &rarr;';
   }
 }
 
@@ -677,14 +445,15 @@ function doLogout() {
   document.getElementById('ls').style.display = 'flex';
   document.getElementById('lu').value = '';
   document.getElementById('lp').value = '';
+  document.getElementById('det').innerHTML = '';
+  tenants = []; allT = [];
 }
 
 function showApp() {
   document.getElementById('ls').style.display = 'none';
   document.getElementById('app').classList.add('v');
-  loadTenants();
   loadCfgForm();
-  initOnbView();
+  loadTenants();
 }
 
 async function api(method, path, body) {
@@ -697,71 +466,72 @@ async function api(method, path, body) {
       'Prefer': method === 'GET' ? '' : 'return=minimal'
     }
   };
-  if (body) opts.body = JSON.stringify(body);
+  if (body !== undefined) opts.body = JSON.stringify(body);
   const r = await fetch(CFG.url + path, opts);
-  if (!r.ok && r.status === 401) {
-    // Token expired â return to login
-    doLogout();
-    throw new Error('SessÃ£o expirada');
-  }
+  if (r.status === 401) { doLogout(); throw new Error('Sess\u00e3o expirada. Fa\u00e7a login novamente.'); }
   if (method === 'GET') return r.json();
   return r;
 }
 
 async function loadTenants() {
   document.getElementById('tld').style.display = 'flex';
-  document.getElementById('tw').style.display = 'none';
+  document.getElementById('tbl').style.display = 'none';
+  document.getElementById('srch').value = '';
   try {
-    const t = await api('GET', '/rest/v1/tenants?select=*&order=created_at.desc');
-    const tArr = Array.isArray(t) ? t : [];
-
-    // These tables may not exist yet â handle individually
-    let dc = [], c = [], cm = [];
+    const list = await api('GET', '/rest/v1/tenants?select=*&order=created_at.desc');
+    const tArr = Array.isArray(list) ? list : [];
+    let dc = [], ch = [], cm = [];
     try { const r = await api('GET', '/rest/v1/dados_cliente?select=tenant_id'); dc = Array.isArray(r) ? r : []; } catch(e) {}
-    try { const r = await api('GET', '/rest/v1/chats?select=tenant_id'); c = Array.isArray(r) ? r : []; } catch(e) {}
+    try { const r = await api('GET', '/rest/v1/chats?select=tenant_id');         ch = Array.isArray(r) ? r : []; } catch(e) {}
     try { const r = await api('GET', '/rest/v1/chat_messages?select=tenant_id'); cm = Array.isArray(r) ? r : []; } catch(e) {}
-
-    tenants = tArr.map(x => ({...x,
+    tenants = tArr.map(x => ({
+      ...x,
       tc: dc.filter(y => y.tenant_id === x.id).length,
-      th: c.filter(y => y.tenant_id === x.id).length,
+      th: ch.filter(y => y.tenant_id === x.id).length,
       tm: cm.filter(y => y.tenant_id === x.id).length
     }));
   } catch(e) {
     tenants = [];
-    if (!e.message?.includes('SessÃ£o')) toast('Erro ao carregar tenants', 'err');
+    if (e.message && !e.message.includes('Sess')) toast('Erro ao carregar: ' + e.message, 'err');
   }
   allT = [...tenants];
-  render(tenants);
-  updateM();
-  updateP();
-  updateA();
+  render(allT);
+  updateStats();
   document.getElementById('tld').style.display = 'none';
-  document.getElementById('tw').style.display = 'block';
+  document.getElementById('tbl').style.display = 'block';
 }
 
 function render(list) {
   const tb = document.getElementById('tb');
   if (!list.length) {
-    tb.innerHTML = '<tr><td colspan="8"><div class="es">nenhum tenant encontrado</div></td></tr>';
+    tb.innerHTML = '<tr><td colspan="9"><div class="es">Nenhum tenant encontrado</div></td></tr>';
     return;
   }
   tb.innerHTML = list.map(t => {
-    const ini = (t.nome_estudio || t.nome || '??').split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase();
-    const pl  = t.plano || 'basic';
-    const pb2 = pl === 'enterprise' ? 'ba' : pl === 'pro' ? 'bb' : 'bgr';
-    const sb  = t.ativo ? 'bg' : 'br';
-    return `<tr style="cursor:pointer" onclick="selT('${t.id}')">
-      <td><div class="ti"><div class="av">${esc(ini)}</div><div><div class="tn">${esc(t.nome_estudio || t.nome || '-')}</div><div class="tm">${esc(t.nome || '')}${t.cidade ? ' Â· ' + esc(t.cidade) : ''}</div></div></div></td>
-      <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text3)">${esc(t.evo_instance || '-')}</td>
-      <td><span class="badge ${pb2}">${pl}</span></td>
-      <td style="font-family:'DM Mono',monospace;color:var(--text2)">${t.tc || 0}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--text2)">${t.th || 0}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--text2)">${t.tm || 0}</td>
-      <td><span class="badge ${sb}">${t.ativo ? 'ativo' : 'inativo'}</span></td>
-      <td>
-        <button class="ab" onclick="event.stopPropagation();openModal('${t.id}')">editar</button>
-        <button class="ab ${t.ativo ? 'd' : 's'}" onclick="event.stopPropagation();askT('${t.id}',${t.ativo})">${t.ativo ? 'pausar' : 'ativar'}</button>
-        <button class="ab x" onclick="event.stopPropagation();deleteTenant('${t.id}','${esc(t.nome_estudio || t.nome || '')}')">excluir</button>
+    const ini  = (t.nome_estudio || t.nome || '??').split(' ').slice(0,2).map(w => w[0]||'').join('').toUpperCase();
+    const pl   = t.plano || 'basic';
+    const plc  = pl === 'enterprise' ? 'ba' : pl === 'pro' ? 'bb' : 'bgr';
+    const pgto = t.status_pagamento || 'pendente';
+    const pgc  = pgto === 'pago' ? 'bg' : pgto === 'cancelado' ? 'br' : 'ba';
+    const stc  = t.ativo ? 'bg' : 'br';
+    const sid  = esc(t.id);
+    const sat  = t.ativo ? 'true' : 'false';
+    return `<tr style="cursor:pointer" onclick="selT('${sid}')">
+      <td><div class="ti"><div class="av">${esc(ini)}</div><div>
+        <div class="tn">${esc(t.nome_estudio||t.nome||'-')}</div>
+        <div class="tm">${esc(t.nome||'')}${t.cidade?' &middot; '+esc(t.cidade):''}</div>
+      </div></div></td>
+      <td style="font-family:monospace;font-size:11px;color:var(--text3)">${esc(t.evo_instance||'-')}</td>
+      <td><span class="badge ${plc}">${pl}</span></td>
+      <td style="text-align:center;font-family:monospace;color:var(--text2)">${t.tc||0}</td>
+      <td style="text-align:center;font-family:monospace;color:var(--text2)">${t.th||0}</td>
+      <td style="text-align:center;font-family:monospace;color:var(--text2)">${t.tm||0}</td>
+      <td><span class="badge ${pgc}">${pgto}</span></td>
+      <td><span class="badge ${stc}">${t.ativo?'ativo':'inativo'}</span></td>
+      <td style="white-space:nowrap">
+        <button class="ab" onclick="event.stopPropagation();openModal('${sid}')">editar</button>
+        <button class="ab ${t.ativo?'d':'s'}" onclick="event.stopPropagation();askT('${sid}',${sat})">${t.ativo?'pausar':'ativar'}</button>
+        <button class="ab x" onclick="event.stopPropagation();delT('${sid}','${esc(t.nome_estudio||t.nome||'')}')">excluir</button>
       </td>
     </tr>`;
   }).join('');
@@ -771,312 +541,277 @@ function filter(q) {
   if (!q) { render(allT); return; }
   const ql = q.toLowerCase();
   render(allT.filter(t =>
-    (t.nome || '').toLowerCase().includes(ql) ||
-    (t.nome_estudio || '').toLowerCase().includes(ql) ||
-    (t.evo_instance || '').toLowerCase().includes(ql)
+    (t.nome||'').toLowerCase().includes(ql) ||
+    (t.nome_estudio||'').toLowerCase().includes(ql) ||
+    (t.evo_instance||'').toLowerCase().includes(ql) ||
+    (t.email||'').toLowerCase().includes(ql) ||
+    (t.cidade||'').toLowerCase().includes(ql) ||
+    (t.plano||'').toLowerCase().includes(ql)
   ));
 }
 
 function selT(id) {
   const t = allT.find(x => x.id === id);
   if (!t) return;
+  const pl   = t.plano||'basic';
+  const plc  = pl==='enterprise'?'ba':pl==='pro'?'bb':'bgr';
+  const pgto = t.status_pagamento||'pendente';
+  const pgc  = pgto==='pago'?'bg':pgto==='cancelado'?'br':'ba';
+  const stc  = t.ativo?'bg':'br';
   document.getElementById('det').innerHTML = `
-    <div class="sr"><span class="sk">proprietÃ¡rio</span><span class="sv">${esc(t.nome || '-')}</span></div>
-    <div class="sr"><span class="sk">estÃºdio</span><span class="sv">${esc(t.nome_estudio || '-')}</span></div>
-    <div class="sr"><span class="sk">agente IA</span><span class="sv">${esc(t.nome_agente || '-')}</span></div>
-    <div class="sr"><span class="sk">cidade</span><span class="sv">${esc(t.cidade || '-')}</span></div>
-    <div class="sr"><span class="sk">instÃ¢ncia EVO</span><span class="sv" style="font-size:11px">${esc(t.evo_instance || '-')}</span></div>
-    <div class="sr"><span class="sk">webhook</span><span class="sv" style="font-size:11px">/webhook/${esc(t.webhook_path || '-')}</span></div>
-    <div class="sr"><span class="sk">plano</span><span class="sv">${t.plano || '-'}</span></div>
-    <div class="sr"><span class="sk">clientes</span><span class="sv">${t.tc || 0}</span></div>
-    <div class="sr"><span class="sk">chats</span><span class="sv">${t.th || 0}</span></div>
-    <div class="sr"><span class="sk">mensagens</span><span class="sv">${t.tm || 0}</span></div>
-    <div class="sr"><span class="sk">calendar</span><span class="sv">${t.google_calendar_id ? 'â configurado' : 'â'}</span></div>
-    <div class="sr"><span class="sk">drive</span><span class="sv">${t.google_drive_folder ? 'â configurado' : 'â'}</span></div>
-    <div style="margin-top:14px"><button class="btn" onclick="openModal('${t.id}')">Editar Tenant</button></div>`;
+    <div class="dhead">
+      <div>
+        <div class="dh">${esc(t.nome_estudio||t.nome||'Tenant')}</div>
+        <div class="duid">${esc(t.id)}</div>
+      </div>
+      <div class="da">
+        <span class="badge ${plc}">${pl}</span>
+        <span class="badge ${pgc}">${pgto}</span>
+        <span class="badge ${stc}">${t.ativo?'ativo':'inativo'}</span>
+        <button class="btn" onclick="openModal('${esc(t.id)}')">Editar</button>
+        <button class="btn ${t.ativo?'d':'p'}" onclick="askT('${esc(t.id)}',${t.ativo})">${t.ativo?'Pausar':'Ativar'}</button>
+      </div>
+    </div>
+    <div class="dbody">
+      <div class="sg">
+        <div class="sr"><div class="sk">Propriet&aacute;rio</div><div class="sv2">${esc(t.nome||'-')}</div></div>
+        <div class="sr"><div class="sk">E-mail</div><div class="sv2">${esc(t.email||'-')}</div></div>
+        <div class="sr"><div class="sk">Est&uacute;dio</div><div class="sv2">${esc(t.nome_estudio||'-')}</div></div>
+        <div class="sr"><div class="sk">Agente IA</div><div class="sv2">${esc(t.nome_agente||'-')}</div></div>
+        <div class="sr"><div class="sk">Cidade</div><div class="sv2">${esc(t.cidade||'-')}</div></div>
+        <div class="sr"><div class="sk">Inst&acirc;ncia EVO</div><div class="sv2" style="font-size:11px;font-family:monospace">${esc(t.evo_instance||'-')}</div></div>
+        <div class="sr"><div class="sk">Webhook</div><div class="sv2" style="font-size:11px">/webhook/${esc(t.webhook_path||'-')}</div></div>
+        <div class="sr"><div class="sk">Trial at&eacute;</div><div class="sv2">${t.trial_ate?new Date(t.trial_ate).toLocaleDateString('pt-BR'):'-'}</div></div>
+        <div class="sr"><div class="sk">Clientes</div><div class="sv2" style="font-size:22px;font-weight:700;color:var(--glow)">${t.tc||0}</div></div>
+        <div class="sr"><div class="sk">Chats</div><div class="sv2" style="font-size:22px;font-weight:700;color:var(--blue)">${t.th||0}</div></div>
+        <div class="sr"><div class="sk">Mensagens</div><div class="sv2" style="font-size:22px;font-weight:700;color:var(--amber)">${t.tm||0}</div></div>
+        <div class="sr"><div class="sk">Assinatura MP</div><div class="sv2" style="font-size:11px;font-family:monospace">${esc(t.mp_subscription_id||'-')}</div></div>
+      </div>
+      ${t.prompt_sistema?`<div class="prm" style="margin-top:16px"><div class="sk" style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:8px">Prompt do Sistema</div><div style="font-size:12px;color:var(--text2);white-space:pre-wrap;max-height:100px;overflow-y:auto;line-height:1.6">${esc(t.prompt_sistema)}</div></div>`:''}
+    </div>`;
+  document.getElementById('det').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-function updateM() {
-  const at = allT.filter(t => t.ativo).length;
-  document.getElementById('m1').textContent = allT.length;
-  document.getElementById('m1s').textContent = at + ' ativo' + (at !== 1 ? 's' : '');
-  document.getElementById('m2').textContent = allT.reduce((a, t) => a + (t.tc || 0), 0);
-  document.getElementById('m3').textContent = allT.reduce((a, t) => a + (t.th || 0), 0);
-  document.getElementById('m4').textContent = allT.reduce((a, t) => a + (t.tm || 0), 0);
-}
-
-function updateP() {
-  const pr = allT.filter(t => t.plano === 'pro').length;
-  const ba = allT.filter(t => t.plano === 'basic' || !t.plano).length;
-  const en = allT.filter(t => t.plano === 'enterprise').length;
-  const tot = allT.length || 1;
-  document.getElementById('pp').textContent  = pr;
-  document.getElementById('pb2').textContent = ba;
-  document.getElementById('pe').textContent  = en;
-  document.getElementById('ppb').style.width = Math.round(pr / tot * 100) + '%';
-  document.getElementById('pbb').style.width = Math.round(ba / tot * 100) + '%';
-  document.getElementById('peb').style.width = Math.round(en / tot * 100) + '%';
-  const mrr = allT.filter(t => t.ativo).reduce((a, t) => a + (CFG.prices[t.plano || 'basic'] || 0), 0);
-  document.getElementById('mrr').textContent = 'R$ ' + mrr.toLocaleString('pt-BR');
-  document.getElementById('ac').textContent  = allT.filter(t => t.ativo).length;
-  document.getElementById('ic').textContent  = allT.filter(t => !t.ativo).length;
-}
-
-function updateA() {
-  const s = [...allT].sort((a, b) => (b.tm || 0) - (a.tm || 0));
-  const mrr = allT.filter(t => t.ativo).reduce((a, t) => a + (CFG.prices[t.plano || 'basic'] || 0), 0);
-  document.getElementById('am').innerHTML = `
-    <div class="mc"><div class="ml">total tenants</div><div class="mv">${allT.length}</div><div class="md">${allT.filter(t => t.ativo).length} ativos</div></div>
-    <div class="mc"><div class="ml">total clientes</div><div class="mv">${allT.reduce((a, t) => a + (t.tc || 0), 0)}</div><div class="md dim">todos os estÃºdios</div></div>
-    <div class="mc"><div class="ml">total chats</div><div class="mv">${allT.reduce((a, t) => a + (t.th || 0), 0)}</div><div class="md dim">conversas</div></div>
-    <div class="mc"><div class="ml">MRR</div><div class="mv" style="font-size:20px">R$ ${mrr.toLocaleString('pt-BR')}</div><div class="md">receita mensal</div></div>`;
-  document.getElementById('ab').innerHTML = s.map((t, i) => {
-    const pb2 = t.plano === 'enterprise' ? 'ba' : t.plano === 'pro' ? 'bb' : 'bgr';
-    const sb  = t.ativo ? 'bg' : 'br';
-    return `<tr>
-      <td style="font-family:'DM Mono',monospace;color:var(--text3)">${i + 1}</td>
-      <td><strong style="color:#fff">${esc(t.nome_estudio || t.nome || '-')}</strong><br><span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${esc(t.evo_instance || '')}</span></td>
-      <td style="font-family:'DM Mono',monospace">${t.tc || 0}</td>
-      <td style="font-family:'DM Mono',monospace">${t.th || 0}</td>
-      <td style="font-family:'DM Mono',monospace">${t.tm || 0}</td>
-      <td><span class="badge ${pb2}">${t.plano || 'basic'}</span></td>
-      <td><span class="badge ${sb}">${t.ativo ? 'ativo' : 'inativo'}</span></td>
-    </tr>`;
-  }).join('');
+function updateStats() {
+  const total  = allT.length;
+  const ativos = allT.filter(t => t.ativo).length;
+  const mrr    = allT.filter(t => t.ativo && t.status_pagamento === 'pago')
+                     .reduce((s,t) => s + (CFG.prices[t.plano]||0), 0);
+  const cnt = { basic:0, pro:0, enterprise:0 };
+  allT.forEach(t => { if (t.plano in cnt) cnt[t.plano]++; });
+  document.getElementById('stTotal').textContent = total;
+  document.getElementById('stDesc').textContent  = total + ' tenant' + (total!==1?'s':'') + ' cadastrado' + (total!==1?'s':'');
+  document.getElementById('stAtivos').textContent = ativos;
+  document.getElementById('stInat').textContent   = 'inativos: ' + (total - ativos);
+  document.getElementById('stMrr').textContent    = 'R$\u00a0' + mrr.toLocaleString('pt-BR');
+  document.getElementById('stPlanos').innerHTML   =
+    '<span class="badge bgr">B:'+cnt.basic+'</span> '+
+    '<span class="badge bb">P:'+cnt.pro+'</span> '+
+    '<span class="badge ba">E:'+cnt.enterprise+'</span>';
 }
 
 function openModal(id) {
-  editId = id || null;
+  editId = id;
   document.getElementById('mt').textContent = id ? 'Editar Tenant' : 'Novo Tenant';
-  if (id) {
-    const t = allT.find(x => x.id === id);
-    if (t) {
-      document.getElementById('fn').value  = t.nome || '';
-      document.getElementById('fa').value  = t.nome_agente || '';
-      document.getElementById('fe').value  = t.nome_estudio || '';
-      document.getElementById('fc').value  = t.cidade || '';
-      document.getElementById('fad').value = t.endereco || '';
-      document.getElementById('fi2').value = t.evo_instance || '';
-      document.getElementById('fw').value  = t.webhook_path || '';
-      document.getElementById('fu').value  = t.evo_base_url || '';
-      document.getElementById('fk').value  = t.evo_apikey || '';
-      document.getElementById('fgn').value = t.grupo_notificacao || '';
-      document.getElementById('fgo').value = t.grupo_orcamento || '';
-      document.getElementById('fca').value = t.google_calendar_id || '';
-      document.getElementById('fdr').value = t.google_drive_folder || '';
-      document.getElementById('fpl').value = t.plano || 'basic';
-      document.getElementById('fst').value = String(t.ativo !== false);
-      document.getElementById('fps').value = t.prompt_sistema || '';
-      document.getElementById('ffq').value = t.faq_texto || '';
-    }
+  const fields = ['fNome','fEst','fEmail','fCid','fEnd','fEvoInst','fEvoKey','fGrpN','fGrpO','fGCal','fGDrv','fAgt','fPrm','fFaq','fWh','fMpSub','fTrial'];
+  if (!id) {
+    fields.forEach(f => { const el = document.getElementById(f); if (el) el.value = ''; });
+    document.getElementById('fEvoUrl').value = 'https://evolutionapi.vps1170.panel.speedfy.host';
+    document.getElementById('fPlan').value  = 'basic';
+    document.getElementById('fPgto').value  = 'pendente';
+    document.getElementById('fAtv').checked = true;
+    document.getElementById('fAgt').value   = 'Assistente';
   } else {
-    ['fn','fa','fe','fc','fad','fi2','fw','fk','fgn','fgo','fca','fdr','fps','ffq'].forEach(f => document.getElementById(f).value = '');
-    document.getElementById('fu').value  = 'https://evolutionapi.vps1170.panel.speedfy.host';
-    document.getElementById('fpl').value = 'basic';
-    document.getElementById('fst').value = 'true';
+    const t = allT.find(x => x.id === id);
+    if (!t) return;
+    document.getElementById('fNome').value    = t.nome||'';
+    document.getElementById('fEst').value     = t.nome_estudio||'';
+    document.getElementById('fEmail').value   = t.email||'';
+    document.getElementById('fCid').value     = t.cidade||'';
+    document.getElementById('fEnd').value     = t.endereco||'';
+    document.getElementById('fEvoInst').value = t.evo_instance||'';
+    document.getElementById('fEvoKey').value  = t.evo_apikey||'';
+    document.getElementById('fEvoUrl').value  = t.evo_base_url||'https://evolutionapi.vps1170.panel.speedfy.host';
+    document.getElementById('fGrpN').value    = t.grupo_notificacao||'';
+    document.getElementById('fGrpO').value    = t.grupo_orcamento||'';
+    document.getElementById('fGCal').value    = t.google_calendar_id||'';
+    document.getElementById('fGDrv').value    = t.google_drive_folder||'';
+    document.getElementById('fAgt').value     = t.nome_agente||'Assistente';
+    document.getElementById('fPrm').value     = t.prompt_sistema||'';
+    document.getElementById('fFaq').value     = t.faq_texto||'';
+    document.getElementById('fPlan').value    = t.plano||'basic';
+    document.getElementById('fPgto').value    = t.status_pagamento||'pendente';
+    document.getElementById('fAtv').checked   = !!t.ativo;
+    document.getElementById('fWh').value      = t.webhook_path||'';
+    document.getElementById('fMpSub').value   = t.mp_subscription_id||'';
+    document.getElementById('fTrial').value   = t.trial_ate ? t.trial_ate.split('T')[0] : '';
   }
-  document.getElementById('mo').classList.add('open');
+  document.getElementById('modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('fNome').focus(), 60);
 }
 
-function closeMo() { document.getElementById('mo').classList.remove('open'); }
-function closeMoBg(e) { if (e.target === document.getElementById('mo')) closeMo(); }
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+  editId = null;
+}
 
-async function saveTenant() {
-  const nome = document.getElementById('fn').value.trim();
-  const inst = document.getElementById('fi2').value.trim();
-  const est  = document.getElementById('fe').value.trim();
-  if (!nome || !inst || !est) { toast('Preencha nome, estÃºdio e instÃ¢ncia EVO', 'err'); return; }
-  const d = {
-    nome, nome_agente: document.getElementById('fa').value.trim(),
-    nome_estudio: est, cidade: document.getElementById('fc').value.trim(),
-    endereco: document.getElementById('fad').value.trim(),
-    evo_instance: inst, webhook_path: document.getElementById('fw').value.trim(),
-    evo_base_url: document.getElementById('fu').value.trim() || 'https://evolutionapi.vps1170.panel.speedfy.host',
-    evo_apikey: document.getElementById('fk').value.trim(),
-    grupo_notificacao: document.getElementById('fgn').value.trim(),
-    grupo_orcamento: document.getElementById('fgo').value.trim(),
-    google_calendar_id: document.getElementById('fca').value.trim(),
-    google_drive_folder: document.getElementById('fdr').value.trim(),
-    plano: document.getElementById('fpl').value,
-    ativo: document.getElementById('fst').value === 'true',
-    prompt_sistema: document.getElementById('fps').value.trim(),
-    faq_texto: document.getElementById('ffq').value.trim()
+async function saveModal() {
+  const nome = document.getElementById('fNome').value.trim();
+  const est  = document.getElementById('fEst').value.trim();
+  if (!nome || !est) {
+    toast('Nome e nome do est\u00fadio s\u00e3o obrigat\u00f3rios', 'err');
+    return;
+  }
+  const data = {
+    nome, nome_estudio: est,
+    email:             document.getElementById('fEmail').value.trim()||null,
+    cidade:            document.getElementById('fCid').value.trim()||null,
+    endereco:          document.getElementById('fEnd').value.trim()||null,
+    evo_instance:      document.getElementById('fEvoInst').value.trim()||null,
+    evo_apikey:        document.getElementById('fEvoKey').value.trim()||null,
+    evo_base_url:      document.getElementById('fEvoUrl').value.trim()||null,
+    grupo_notificacao: document.getElementById('fGrpN').value.trim()||null,
+    grupo_orcamento:   document.getElementById('fGrpO').value.trim()||null,
+    google_calendar_id:document.getElementById('fGCal').value.trim()||null,
+    google_drive_folder:document.getElementById('fGDrv').value.trim()||null,
+    nome_agente:       document.getElementById('fAgt').value.trim()||'Assistente',
+    prompt_sistema:    document.getElementById('fPrm').value.trim()||null,
+    faq_texto:         document.getElementById('fFaq').value.trim()||null,
+    plano:             document.getElementById('fPlan').value,
+    status_pagamento:  document.getElementById('fPgto').value,
+    ativo:             document.getElementById('fAtv').checked,
+    webhook_path:      document.getElementById('fWh').value.trim()||null,
+    mp_subscription_id:document.getElementById('fMpSub').value.trim()||null,
+    trial_ate:         document.getElementById('fTrial').value||null,
+    updated_at:        new Date().toISOString()
   };
-  const btn = document.getElementById('sbtn');
-  btn.textContent = 'Salvando...'; btn.disabled = true;
+  const btn = document.getElementById('mSave');
+  btn.disabled = true; btn.textContent = 'Salvando...';
   try {
-    if (editId) await api('PATCH', '/rest/v1/tenants?id=eq.' + editId, d);
-    else        await api('POST',  '/rest/v1/tenants', d);
-    toast(editId ? 'Tenant atualizado' : 'Tenant criado', 'ok');
-    closeMo(); await loadTenants();
-  } catch(e) { toast('Erro ao salvar', 'err'); }
-  btn.textContent = 'Salvar Tenant'; btn.disabled = false;
+    if (editId) {
+      await api('PATCH', '/rest/v1/tenants?id=eq.' + editId, data);
+    } else {
+      await api('POST', '/rest/v1/tenants', data);
+    }
+    toast(editId ? 'Tenant atualizado!' : 'Tenant criado!', 'ok');
+    closeModal();
+    await loadTenants();
+  } catch(e) {
+    toast('Erro ao salvar: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Salvar';
+  }
 }
 
-function askT(id, cur) {
-  const t = allT.find(x => x.id === id);
-  const a = cur ? 'pausar' : 'ativar';
-  document.getElementById('ctitle').textContent = a.charAt(0).toUpperCase() + a.slice(1) + ' tenant';
-  document.getElementById('cmsg').textContent   = `Deseja ${a} "${t?.nome_estudio || t?.nome || id}"?`;
-  document.getElementById('cok').textContent    = a.charAt(0).toUpperCase() + a.slice(1);
-  pending = {id, cur};
-  document.getElementById('cov').classList.add('open');
+function askT(id, ativo) {
+  const isAt = ativo === true || ativo === 'true';
+  const t    = allT.find(x => x.id === id);
+  const nome = t ? esc(t.nome_estudio||t.nome||id) : id;
+  document.getElementById('cm').innerHTML = isAt
+    ? 'Pausar o tenant <strong>"' + nome + '"</strong>?<br><br>O atendimento via WhatsApp ser\u00e1 interrompido para este cliente.'
+    : 'Ativar o tenant <strong>"' + nome + '"</strong>?<br><br>O atendimento via WhatsApp ser\u00e1 retomado.';
+  document.getElementById('cok').textContent = isAt ? 'Pausar' : 'Ativar';
+  document.getElementById('cok').className   = isAt ? 'btn d' : 'btn p';
+  pending = async () => {
+    await api('PATCH', '/rest/v1/tenants?id=eq.' + id, { ativo: !isAt, updated_at: new Date().toISOString() });
+    toast(isAt ? 'Tenant pausado.' : 'Tenant ativado!', isAt ? 'inf' : 'ok');
+    await loadTenants();
+  };
+  document.getElementById('cov').style.display = 'flex';
 }
 
-function closeCov() { document.getElementById('cov').classList.remove('open'); pending = null; }
+function delT(id, nome) {
+  document.getElementById('cm').innerHTML =
+    'Excluir <strong>"' + esc(nome) + '"</strong>?<br><br>' +
+    'Esta a\u00e7\u00e3o \u00e9 permanente e n\u00e3o pode ser desfeita.';
+  document.getElementById('cok').textContent = 'Excluir permanentemente';
+  document.getElementById('cok').className   = 'btn d';
+  pending = async () => {
+    await api('DELETE', '/rest/v1/tenants?id=eq.' + id);
+    toast('Tenant exclu\u00eddo.', 'inf');
+    document.getElementById('det').innerHTML = '';
+    await loadTenants();
+  };
+  document.getElementById('cov').style.display = 'flex';
+}
 
 async function doConfirm() {
   if (!pending) return;
-  const {id, cur, del} = pending;
-  closeCov();
-  try {
-    if (del) {
-      await Promise.allSettled([
-        api('DELETE', '/rest/v1/dados_cliente?tenant_id=eq.' + id),
-        api('DELETE', '/rest/v1/chat_messages?tenant_id=eq.' + id),
-        api('DELETE', '/rest/v1/chats?tenant_id=eq.' + id)
-      ]);
-      await api('DELETE', '/rest/v1/tenants?id=eq.' + id);
-      toast('Tenant excluÃ­do', 'ok');
-    } else {
-      await api('PATCH', '/rest/v1/tenants?id=eq.' + id, {ativo: !cur});
-      toast(cur ? 'Tenant pausado' : 'Tenant ativado', 'ok');
-    }
-    await loadTenants();
-  } catch(e) { toast('Erro ao realizar aÃ§Ã£o', 'err'); }
+  const fn = pending; pending = null;
+  closeConf();
+  try { await fn(); } catch(e) { toast('Erro: ' + e.message, 'err'); }
+}
+
+function closeConf() {
+  document.getElementById('cov').style.display = 'none';
+  pending = null;
+}
+
+function showTab(n) {
+  [0,1,2].forEach(i => {
+    document.getElementById('tp'+i).style.display = i===n ? '' : 'none';
+    document.querySelectorAll('.tab')[i].classList.toggle('act', i===n);
+  });
 }
 
 function loadCfgForm() {
-  document.getElementById('cu').value  = CFG.url;
-  document.getElementById('ck').value  = CFG.key;
-  document.getElementById('prb').value = CFG.prices.basic;
-  document.getElementById('prp').value = CFG.prices.pro;
-  document.getElementById('pre').value = CFG.prices.enterprise;
+  document.getElementById('cfUrl').value = CFG.url;
+  document.getElementById('cfKey').value = CFG.key;
+  document.getElementById('cfPb').value  = (CFG.prices||{}).basic||199;
+  document.getElementById('cfPp').value  = (CFG.prices||{}).pro||399;
+  document.getElementById('cfPe').value  = (CFG.prices||{}).enterprise||799;
 }
 
-function saveConf() {
-  CFG.url = document.getElementById('cu').value.trim();
-  CFG.key = document.getElementById('ck').value.trim();
-  localStorage.setItem('ikf', JSON.stringify(CFG));
-  toast('ConfiguraÃ§Ãµes salvas', 'ok');
-}
-
-function savePrices() {
-  CFG.prices.basic      = parseInt(document.getElementById('prb').value) || 199;
-  CFG.prices.pro        = parseInt(document.getElementById('prp').value) || 399;
-  CFG.prices.enterprise = parseInt(document.getElementById('pre').value) || 799;
-  localStorage.setItem('ikf', JSON.stringify(CFG));
-  updateP(); updateA(); toast('PreÃ§os atualizados', 'ok');
-}
-
-/* ââ Onboarding ââ */
-function initOnbView() {
-  document.getElementById('onb-gk').value = CFG.evo_gk || '';
-  loadPendingOnb();
-}
-
-function getOnbBase() {
-  const loc = window.location;
-  return loc.origin + loc.pathname.replace(/index\.html$/, '');
+function saveCfg() {
+  const url = document.getElementById('cfUrl').value.trim();
+  const key = document.getElementById('cfKey').value.trim();
+  if (!url||!key) { toast('URL e Key s\u00e3o obrigat\u00f3rios', 'err'); return; }
+  CFG.url = url; CFG.key = key;
+  CFG.prices = {
+    basic:      parseInt(document.getElementById('cfPb').value)||199,
+    pro:        parseInt(document.getElementById('cfPp').value)||399,
+    enterprise: parseInt(document.getElementById('cfPe').value)||799
+  };
+  localStorage.setItem('ikf', JSON.stringify({ url:CFG.url, key:CFG.key, prices:CFG.prices }));
+  toast('Configura\u00e7\u00f5es salvas!', 'ok');
+  updateStats();
 }
 
 function genOnbLink() {
-  const gk = document.getElementById('onb-gk').value.trim();
-  const pl = document.getElementById('onb-plano').value;
-  if (!gk) { toast('Informe a chave global EVO', 'err'); return; }
-  const link = getOnbBase() + 'onboarding.html#k=' + encodeURIComponent(gk) + '&p=' + pl;
-  document.getElementById('onb-link-txt').textContent = link;
-  document.getElementById('onb-link-box').style.display = 'block';
+  let tok = document.getElementById('onbTok').value.trim();
+  if (!tok) tok = Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+  const plan = document.getElementById('onbPlan').value;
+  const link = 'https://inkflowbrasil.com/onboarding.html?token=' + tok + '&plano=' + plan;
+  document.getElementById('onbLink').textContent = link;
+  document.getElementById('onbOut').style.display = 'block';
 }
 
 function copyOnbLink() {
-  genOnbLink();
-  const txt = document.getElementById('onb-link-txt').textContent;
-  if (!txt) return;
-  navigator.clipboard.writeText(txt)
-    .then(() => toast('Link copiado!', 'ok'))
-    .catch(() => toast('Selecione o link manualmente e copie', ''));
+  const link = document.getElementById('onbLink').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(link).then(() => toast('Link copiado!', 'ok')).catch(() => fbCopy(link));
+  } else { fbCopy(link); }
 }
 
-function saveOnbKey() {
-  const gk = document.getElementById('onb-gk').value.trim();
-  CFG.evo_gk = gk;
-  localStorage.setItem('ikf', JSON.stringify(CFG));
-  toast('Chave salva!', 'ok');
-}
-
-async function loadPendingOnb() {
-  const tbody = document.getElementById('onb-tb');
-  tbody.innerHTML = '<tr><td colspan="5"><div class="ld">carregando</div></td></tr>';
-  try {
-    const r = await api('GET', '/rest/v1/tenants?ativo=eq.false&order=created_at.desc&select=*');
-    if (!Array.isArray(r) || !r.length) {
-      tbody.innerHTML = '<tr><td colspan="5"><div class="es">nenhum cliente aguardando ativaÃ§Ã£o</div></td></tr>';
-      return;
-    }
-    tbody.innerHTML = r.map(t => {
-      const ini = (t.nome_estudio || t.nome || '??').split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase();
-      const pl  = t.plano || 'basic';
-      const pb2 = pl === 'enterprise' ? 'ba' : pl === 'pro' ? 'bb' : 'bgr';
-      const dt  = t.created_at ? new Date(t.created_at).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'â';
-      return `<tr>
-        <td><div class="ti"><div class="av">${esc(ini)}</div><div><div class="tn">${esc(t.nome_estudio || t.nome || '-')}</div><div class="tm">${esc(t.nome || '')}${t.cidade ? ' Â· ' + esc(t.cidade) : ''}</div></div></div></td>
-        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text3)">${esc(t.evo_instance || '-')}</td>
-        <td><span class="badge ${pb2}">${pl}</span></td>
-        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)">${dt}</td>
-        <td>
-          <button class="ab s" onclick="activateTenant('${t.id}')">ativar</button>
-          <button class="ab x" onclick="deleteTenant('${t.id}','${esc(t.nome_estudio || t.nome || '')}')">excluir</button>
-        </td>
-      </tr>`;
-    }).join('');
-  } catch(e) { toast('Erro ao carregar pendentes', 'err'); }
-}
-
-async function activateTenant(id) {
-  try {
-    await api('PATCH', '/rest/v1/tenants?id=eq.' + id, {ativo: true});
-    toast('Tenant ativado!', 'ok');
-    await loadPendingOnb();
-    await loadTenants();
-  } catch(e) { toast('Erro ao ativar', 'err'); }
-}
-
-function deleteTenant(id, nome) {
-  document.getElementById('ctitle').textContent = 'Excluir tenant';
-  document.getElementById('cmsg').textContent   = 'Deseja excluir "' + nome + '"? Esta aÃ§Ã£o nÃ£o pode ser desfeita.';
-  document.getElementById('cok').textContent    = 'Excluir';
-  pending = {id, cur: null, del: true};
-  document.getElementById('cov').classList.add('open');
-}
-
-function showView(v, el) {
-  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.ni').forEach(x => x.classList.remove('active'));
-  document.getElementById('view-' + v).classList.add('active');
-  if (el) (el.closest ? el.closest('.ni') : el).classList.add('active');
-  const map = {
-    tenants:    ['Tenants',       'gestÃ£o de clientes do saas'],
-    analytics:  ['Analytics',     'mÃ©tricas e desempenho'],
-    onboarding: ['Onboarding',    'fluxo de entrada de novos clientes'],
-    config:     ['ConfiguraÃ§Ãµes', 'ajustes do painel']
-  };
-  const [t, s] = map[v] || ['', ''];
-  document.getElementById('page-title').textContent = t;
-  document.getElementById('page-sub').textContent   = s;
-  if (v === 'onboarding') loadPendingOnb();
+function fbCopy(text) {
+  const el = document.createElement('textarea');
+  el.value = text; el.style.position = 'fixed'; el.style.opacity = '0';
+  document.body.appendChild(el); el.select();
+  document.execCommand('copy'); document.body.removeChild(el);
+  toast('Link copiado!', 'ok');
 }
 
 function toast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast' + (type ? ' ' + type : '');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3200);
+  const el = document.createElement('div');
+  el.className = 't ' + (type||'inf');
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3500);
 }
 
 function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  if (s===null||s===undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 init();
