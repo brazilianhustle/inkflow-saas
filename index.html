@@ -1,17 +1,1085 @@
-<!DOCTYPE html> <html lang="pt-BR"> <head> <meta charset="UTF-8"/> <meta name="viewport" content="width=device-width, initial-scale=1.0"/> <title>InkFlow Admin</title> <link rel="preconnect" href="https://fonts.googleapis.com"/> <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/> <style> *{box-sizing:border-box;margin:0;padding:0} :root{--ink:#1a1a1a;--ink2:#555;--ink3:#999;--surface:#fff;--surface2:#f7f6f3;--surface3:#f0efe9;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);--green:#2d7a4f;--green-bg:#eaf5ef;--amber:#8a5c00;--amber-bg:#fef7e0;--red:#c0392b;--red-bg:#fdf0ee;--blue:#1a5fa0;--blue-bg:#e8f2fb} body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);min-height:100vh} .login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--ink)} .login-box{background:#fff;border-radius:16px;padding:40px;width:360px} .login-logo{font-size:22px;font-weight:700;margin-bottom:4px} .login-sub{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;margin-bottom:32px} .lbl{display:block;font-size:11px;font-family:'DM Mono',monospace;color:var(--ink2);margin-bottom:6px} .linput{width:100%;padding:10px 12px;border:1px solid var(--border2);border-radius:7px;font-size:14px;font-family:'Syne',sans-serif;outline:none;margin-bottom:16px;transition:border .15s} .linput:focus{border-color:var(--ink)} .lbtn{width:100%;padding:11px;background:var(--ink);color:#fff;border:none;border-radius:7px;font-size:14px;font-family:'Syne',sans-serif;font-weight:600;cursor:pointer} .lbtn:hover{background:#333} .lerr{font-size:12px;color:var(--red);font-family:'DM Mono',monospace;margin-top:10px;display:none} .app{display:none;grid-template-columns:220px 1fr;min-height:100vh} .app.v{display:grid} .sidebar{background:var(--ink);color:#fff;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;overflow-y:auto} .logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.08)} .logo-mark{font-size:18px;font-weight:700} .logo-sub{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-top:2px;font-family:'DM Mono',monospace} nav{padding:16px 12px;flex:1} .nl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);padding:0 8px;margin:16px 0 6px;font-family:'DM Mono',monospace} .ni{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:6px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.6);transition:all .15s;margin-bottom:2px;text-decoration:none} .ni:hover{background:rgba(255,255,255,.08);color:#fff} .ni.active{background:rgba(255,255,255,.12);color:#fff;font-weight:500} .sf{padding:16px 12px;border-top:1px solid rgba(255,255,255,.08)} .ss{font-size:11px;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace} .dl{display:inline-block;width:6px;height:6px;border-radius:50%;background:#4ade80;margin-right:6px;animation:pulse 2s infinite} @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}} .main{overflow-y:auto} .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10} .pt{font-size:15px;font-weight:600} .ps{font-size:12px;color:var(--ink3);margin-top:1px;font-family:'DM Mono',monospace} .ta{display:flex;gap:10px;align-items:center} .btn{padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Syne',sans-serif;border:1px solid var(--border2);background:var(--surface);color:var(--ink);transition:all .15s} .btn:hover{background:var(--surface2)} .btn-p{background:var(--ink);color:#fff;border-color:var(--ink)} .btn-p:hover{background:#333} .btn-d{background:var(--red-bg);color:var(--red);border-color:var(--red)} .content{padding:28px 32px} .st{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);font-family:'DM Mono',monospace;margin-bottom:16px} .mg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px} .mc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px} .ml{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace} .mv{font-size:28px;font-weight:700;line-height:1;margin:8px 0 4px;letter-spacing:-1px} .md{font-size:11px;color:var(--green);font-family:'DM Mono',monospace} .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px} .ch{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between} .ct{font-size:13px;font-weight:600} .si{padding:6px 12px;border:1px solid var(--border2);border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;background:var(--surface2);color:var(--ink);outline:none;width:200px} .si:focus{border-color:var(--ink)} table{width:100%;border-collapse:collapse;font-size:13px} th{padding:10px 16px;text-align:left;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);font-family:'DM Mono',monospace;font-weight:400;background:var(--surface2);border-bottom:1px solid var(--border)} td{padding:14px 16px;border-bottom:1px solid var(--border);vertical-align:middle} tr:last-child td{border-bottom:none} tr:hover td{background:var(--surface2)} .badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:500;font-family:'DM Mono',monospace} .bg{background:var(--green-bg);color:var(--green)} .ba{background:var(--amber-bg);color:var(--amber)} .br{background:var(--red-bg);color:var(--red)} .bb{background:var(--blue-bg);color:var(--blue)} .bgr{background:var(--surface3);color:var(--ink2)} .tn{font-weight:600;font-size:13px} .tm{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px} .av{width:34px;height:34px;border-radius:8px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--ink2);flex-shrink:0;border:1px solid var(--border)} .ti{display:flex;align-items:center;gap:10px} .ab{padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-family:'DM Mono',monospace;border:1px solid var(--border2);background:transparent;color:var(--ink2);transition:all .15s;margin-right:4px} .ab:hover{background:var(--surface2)} .ab.d:hover{background:var(--red-bg);color:var(--red);border-color:var(--red)} .ab.s:hover{background:var(--green-bg);color:var(--green);border-color:var(--green)} .ab.x{color:var(--red);border-color:rgba(192,57,43,.25)}.ab.x:hover{background:var(--red-bg);border-color:var(--red)} .bg2{display:grid;grid-template-columns:1fr 1fr;gap:16px} .pb{padding:16px 18px} .sr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px} .sr:last-child{border-bottom:none} .sk{color:var(--ink2)} .sv{font-weight:500;font-family:'DM Mono',monospace;font-size:12px} .plb{margin-bottom:12px} .plbl{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-bottom:5px;font-family:'DM Mono',monospace} .bt{height:5px;background:var(--surface3);border-radius:3px;overflow:hidden} .bf{height:100%;border-radius:3px;background:var(--ink);transition:width .5s ease} .es{text-align:center;padding:48px;color:var(--ink3);font-size:12px;font-family:'DM Mono',monospace} .ld{text-align:center;padding:32px;color:var(--ink3);font-size:12px;font-family:'DM Mono',monospace} .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center} .mo.open{display:flex} .mbox{background:var(--surface);border-radius:14px;border:1px solid var(--border2);width:560px;max-height:88vh;overflow-y:auto} .mh{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1} .mtitle{font-size:15px;font-weight:600} .mc2{width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--ink2)} .mc2:hover{background:var(--surface2)} .mb{padding:24px} .fg{margin-bottom:16px} .fl{display:block;font-size:11px;font-family:'DM Mono',monospace;color:var(--ink2);margin-bottom:6px} .fi{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:7px;font-size:13px;font-family:'Syne',sans-serif;background:var(--surface);color:var(--ink);outline:none;transition:border .15s} .fi:focus{border-color:var(--ink)} textarea.fi{resize:vertical;font-size:12px;font-family:'DM Mono',monospace;line-height:1.6} .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px} .fsec{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);font-family:'DM Mono',monospace;padding:16px 0 10px;border-top:1px solid var(--border);margin-top:4px} .fsec:first-child{border-top:none;padding-top:0} .mf{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;position:sticky;bottom:0;background:var(--surface)} .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;z-index:200;transform:translateY(80px);opacity:0;transition:all .3s;font-family:'DM Mono',monospace} .toast.show{transform:translateY(0);opacity:1} .toast.ok{background:#166534} .toast.err{background:var(--red)} .cov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center} .cov.open{display:flex} .cbox{background:var(--surface);border-radius:12px;border:1px solid var(--border2);padding:28px;width:360px;text-align:center} .ctitle{font-size:15px;font-weight:600;margin-bottom:8px} .cmsg{font-size:13px;color:var(--ink2);margin-bottom:24px;line-height:1.5} .cact{display:flex;gap:10px;justify-content:center} .view{display:none} .view.active{display:block}
-/* â”€â”€ Onboarding extras â”€â”€ */
-.onb-link-box{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;font-size:12px;font-family:'DM Mono',monospace;word-break:break-all;color:var(--ink2);margin:12px 0;line-height:1.5;display:none}
-.onb-step{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--ink2)}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InkFlow Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;
+  --bg2:#161616;
+  --bg3:#1e1e1e;
+  --card:rgba(255,255,255,.04);
+  --card2:rgba(255,255,255,.07);
+  --border:rgba(255,255,255,.08);
+  --border2:rgba(255,255,255,.14);
+  --text:#fff;
+  --text2:rgba(255,255,255,.6);
+  --text3:rgba(255,255,255,.3);
+  --text4:rgba(255,255,255,.15);
+  --green:#2d7a4f;
+  --green-glow:#4ade80;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --blue:#60a5fa;
+}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Login Ã¢Â”Â€Ã¢Â”Â€ */
+.login-screen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;
+  background:var(--bg);
+  background-image:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+.login-box{
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  padding:40px 36px;
+  width:360px;
+  text-align:center;
+}
+.login-logo{font-size:24px;font-weight:700;color:#fff;margin-bottom:4px}
+.login-sub{
+  font-size:9px;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:36px;
+}
+.lbl{display:block;font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);margin-bottom:6px;text-align:left;letter-spacing:1px;text-transform:uppercase}
+.linput{
+  width:100%;padding:10px 14px;
+  border:1px solid var(--border2);border-radius:8px;
+  font-size:13px;font-family:'Syne',sans-serif;
+  background:rgba(255,255,255,.06);color:#fff;
+  outline:none;margin-bottom:14px;transition:border .15s;
+}
+.linput:focus{border-color:rgba(255,255,255,.4)}
+.linput::placeholder{color:var(--text4)}
+.lbtn{
+  width:100%;padding:12px;
+  background:#fff;color:#1a1a1a;
+  border:none;border-radius:8px;
+  font-size:14px;font-family:'Syne',sans-serif;font-weight:700;
+  cursor:pointer;transition:all .15s;
+}
+.lbtn:hover{background:#e8e8e8}
+.lerr{font-size:11px;color:#ef4444;font-family:'DM Mono',monospace;margin-top:12px;display:none}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ App shell Ã¢Â”Â€Ã¢Â”Â€ */
+.app{display:none;grid-template-columns:220px 1fr;min-height:100vh}
+.app.v{display:grid}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Sidebar Ã¢Â”Â€Ã¢Â”Â€ */
+.sidebar{
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+.logo{padding:24px 20px 18px;border-bottom:1px solid var(--border)}
+.logo-mark{font-size:17px;font-weight:700;color:#fff}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-top:3px;font-family:'DM Mono',monospace}
+nav{padding:16px 10px;flex:1}
+.nl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text4);padding:0 8px;margin:18px 0 6px;font-family:'DM Mono',monospace}
+.ni{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:7px;
+  cursor:pointer;font-size:13px;color:var(--text2);
+  transition:all .15s;margin-bottom:2px;text-decoration:none;
+}
+.ni:hover{background:rgba(255,255,255,.07);color:#fff}
+.ni.active{background:rgba(255,255,255,.1);color:#fff;font-weight:500}
+.ni svg{opacity:.6;flex-shrink:0}
+.ni.active svg,.ni:hover svg{opacity:1}
+.sf{padding:16px 12px;border-top:1px solid var(--border)}
+.ss{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
+.dl{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green-glow);margin-right:6px;animation:pulse 2s infinite;vertical-align:middle}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.logout-btn{
+  margin-top:12px;background:transparent;
+  border:1px solid var(--border2);color:var(--text3);
+  padding:7px 12px;border-radius:6px;cursor:pointer;
+  font-size:11px;font-family:'DM Mono',monospace;width:100%;
+  transition:all .15s;text-align:left;
+}
+.logout-btn:hover{border-color:rgba(255,255,255,.3);color:var(--text2)}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Main Ã¢Â”Â€Ã¢Â”Â€ */
+.main{overflow-y:auto;background:var(--bg)}
+.topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:0 28px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:10;
+}
+.pt{font-size:15px;font-weight:600;color:#fff}
+.ps{font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace}
+.ta{display:flex;gap:8px;align-items:center}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Buttons Ã¢Â”Â€Ã¢Â”Â€ */
+.btn{
+  padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;
+  cursor:pointer;font-family:'Syne',sans-serif;
+  border:1px solid var(--border2);background:transparent;
+  color:var(--text2);transition:all .15s;
+}
+.btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.btn-p{background:#fff;color:#111;border-color:#fff;font-weight:600}
+.btn-p:hover{background:#e8e8e8}
+.btn-d{background:rgba(239,68,68,.15);color:#ef4444;border-color:rgba(239,68,68,.3)}
+.btn-d:hover{background:rgba(239,68,68,.25)}
+.btn-g{background:rgba(74,222,128,.1);color:var(--green-glow);border-color:rgba(74,222,128,.2)}
+.btn-g:hover{background:rgba(74,222,128,.2)}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Content Ã¢Â”Â€Ã¢Â”Â€ */
+.content{padding:28px}
+.st{
+  font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:16px;
+}
+.view{display:none}
+.view.active{display:block}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Metric cards Ã¢Â”Â€Ã¢Â”Â€ */
+.mg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px}
+.mc{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:18px;
+}
+.ml{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:.5px}
+.mv{font-size:28px;font-weight:700;line-height:1;margin:10px 0 5px;letter-spacing:-1px;color:#fff}
+.md{font-size:10px;color:var(--green-glow);font-family:'DM Mono',monospace}
+.md.dim{color:var(--text3)}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Card Ã¢Â”Â€Ã¢Â”Â€ */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;margin-bottom:16px;
+}
+.ch{
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ct{font-size:13px;font-weight:600;color:#fff}
+.si{
+  padding:6px 12px;border:1px solid var(--border2);border-radius:6px;
+  font-size:12px;font-family:'DM Mono',monospace;
+  background:rgba(255,255,255,.06);color:#fff;outline:none;width:200px;
+}
+.si::placeholder{color:var(--text4)}
+.si:focus{border-color:rgba(255,255,255,.3)}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Table Ã¢Â”Â€Ã¢Â”Â€ */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{
+  padding:10px 16px;text-align:left;
+  font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text3);font-family:'DM Mono',monospace;font-weight:400;
+  background:rgba(255,255,255,.03);border-bottom:1px solid var(--border);
+}
+td{padding:13px 16px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text2)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.03)}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Badges Ã¢Â”Â€Ã¢Â”Â€ */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:500;font-family:'DM Mono',monospace}
+.bg{background:rgba(74,222,128,.1);color:var(--green-glow);border:1px solid rgba(74,222,128,.2)}
+.ba{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.br{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.bb{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+.bgr{background:rgba(255,255,255,.08);color:var(--text2);border:1px solid var(--border2)}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Tenant list row Ã¢Â”Â€Ã¢Â”Â€ */
+.tn{font-weight:600;font-size:13px;color:#fff}
+.tm{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
+.av{
+  width:34px;height:34px;border-radius:8px;
+  background:rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--text2);flex-shrink:0;
+  border:1px solid var(--border);
+}
+.ti{display:flex;align-items:center;gap:10px}
+.ab{
+  padding:5px 10px;border-radius:5px;font-size:11px;cursor:pointer;
+  font-family:'DM Mono',monospace;border:1px solid var(--border2);
+  background:transparent;color:var(--text3);transition:all .15s;margin-right:4px;
+}
+.ab:hover{background:rgba(255,255,255,.08);color:#fff}
+.ab.d:hover{background:rgba(239,68,68,.15);color:var(--red);border-color:rgba(239,68,68,.3)}
+.ab.s:hover{background:rgba(74,222,128,.1);color:var(--green-glow);border-color:rgba(74,222,128,.2)}
+.ab.x{color:var(--red);border-color:rgba(239,68,68,.2)}
+.ab.x:hover{background:rgba(239,68,68,.15);border-color:var(--red)}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Two-col grid Ã¢Â”Â€Ã¢Â”Â€ */
+.bg2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Panel body Ã¢Â”Â€Ã¢Â”Â€ */
+.pb{padding:18px 20px}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.sr:last-child{border-bottom:none}
+.sk{color:var(--text3);font-family:'DM Mono',monospace;font-size:11px}
+.sv{font-weight:500;font-family:'DM Mono',monospace;font-size:12px;color:var(--text2)}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Plan bars Ã¢Â”Â€Ã¢Â”Â€ */
+.plb{margin-bottom:14px}
+.plbl{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'DM Mono',monospace}
+.bt{height:4px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.bf{height:100%;border-radius:3px;background:#fff;transition:width .5s ease}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Empty/loading states Ã¢Â”Â€Ã¢Â”Â€ */
+.es{text-align:center;padding:48px;color:var(--text3);font-size:12px;font-family:'DM Mono',monospace}
+.ld{text-align:center;padding:32px;color:var(--text3);font-size:12px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:8px}
+.ld::before{content:'';width:14px;height:14px;border:1.5px solid var(--text4);border-top-color:var(--text2);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Modal Ã¢Â”Â€Ã¢Â”Â€ */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.mo.open{display:flex}
+.mbox{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:580px;max-height:88vh;overflow-y:auto}
+.mh{
+  padding:20px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--bg2);z-index:1;
+}
+.mtitle{font-size:15px;font-weight:600;color:#fff}
+.mc2{
+  width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);
+  background:none;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;color:var(--text2);
+}
+.mc2:hover{background:rgba(255,255,255,.08);color:#fff}
+.mb{padding:24px}
+.fg{margin-bottom:16px}
+.fl{display:block;font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
+.fi{
+  width:100%;padding:9px 12px;
+  border:1px solid var(--border2);border-radius:7px;
+  font-size:13px;font-family:'Syne',sans-serif;
+  background:rgba(255,255,255,.05);color:#fff;
+  outline:none;transition:border .15s;
+}
+.fi:focus{border-color:rgba(255,255,255,.35)}
+.fi::placeholder{color:var(--text4)}
+textarea.fi{resize:vertical;font-size:12px;font-family:'DM Mono',monospace;line-height:1.6}
+select.fi{cursor:pointer}
+select.fi option{background:#1e1e1e;color:#fff}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fsec{
+  font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text3);font-family:'DM Mono',monospace;
+  padding:16px 0 10px;border-top:1px solid var(--border);margin-top:4px;
+}
+.fsec:first-child{border-top:none;padding-top:0}
+.mf{
+  padding:16px 24px;border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;gap:10px;
+  position:sticky;bottom:0;background:var(--bg2);
+}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Confirm Ã¢Â”Â€Ã¢Â”Â€ */
+.cov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.cov.open{display:flex}
+.cbox{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:30px;width:360px;text-align:center}
+.ctitle{font-size:15px;font-weight:600;margin-bottom:8px;color:#fff}
+.cmsg{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5;font-family:'DM Mono',monospace}
+.cact{display:flex;gap:10px;justify-content:center}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Toast Ã¢Â”Â€Ã¢Â”Â€ */
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text);padding:12px 20px;border-radius:8px;
+  font-size:12px;z-index:300;
+  transform:translateY(80px);opacity:0;transition:all .3s;
+  font-family:'DM Mono',monospace;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3);color:var(--green-glow)}
+.toast.err{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--red)}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Config inputs Ã¢Â”Â€Ã¢Â”Â€ */
+.fi-hint{font-size:11px;color:var(--text3);margin-top:5px;font-family:'DM Mono',monospace}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Onboarding Ã¢Â”Â€Ã¢Â”Â€ */
+.onb-link-box{
+  background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.2);
+  border-radius:8px;padding:14px;font-size:12px;font-family:'DM Mono',monospace;
+  word-break:break-all;color:var(--blue);margin:14px 0;line-height:1.5;display:none;
+}
+.onb-step{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2)}
 .onb-step:last-child{border-bottom:none}
-.onb-num{width:22px;height:22px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0;margin-top:1px}
-@media(max-width:768px){.app{grid-template-columns:1fr}.sidebar{display:none}.mg{grid-template-columns:1fr 1fr}.bg2{grid-template-columns:1fr}.fgrid{grid-template-columns:1fr}} </style> </head> <body> <div class="login-screen" id="ls"> <div class="login-box"> <div class="login-logo">InkFlow</div> <div class="login-sub">Admin Â· SaaS</div> <label class="lbl">e-mail</label> <input class="linput" id="lu" type="email" placeholder="lmf4200@gmail.com" autocomplete="email"/> <label class="lbl">senha</label> <input class="linput" id="lp" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢""WFö6ö×ÆWFSÒ&7W'&VçB×77v÷&B"óâÆ'WGFöâ6Æ73Ò&Æ'Fâ"öæ6Æ–6³Ò&FôÆöv–â‚’#äVçG&#Âö'WGFöãâÆF—b6Æ73Ò&ÆW'""–CÒ&ÆR#åW7\:&–ò÷R6Væ†–æ6÷'&WF÷3ÂöF—câÂöF—câÂöF—câÆF—b6Æ73Ò&"–CÒ&#âÆ6–FR6Æ73Ò'6–FV&"#âÆF—b6Æ73Ò&Æövò#âÆF—b6Æ73Ò&ÆövòÖÖ&²#ä–æ´fÆ÷sÂöF—câÆF—b6Æ73Ò&Æövò×7V"#äFÖ–âæVÃÂöF—câÂöF—câÆæcâÆF—b6Æ73Ò&æÂ#å&–æ6—ÃÂöF—câÆ6Æ73Ò&æ’7F—fR"‡&VcÒ"2"öæ6Æ–6³Ò'6†÷uf–Wr‚wFVæçG2rÇF†—2’#âÇ7frv–GFƒÒ#R"†V–v‡CÒ#R"f–Wt&÷ƒÒ#bb"f–ÆÃÒ&7W'&VçD6öÆ÷"#ãÇ&V7BƒÒ#"“Ò#"v–GFƒÒ#b"†V–v‡CÒ#b"'ƒÒ#ãR"óãÇ&V7BƒÒ#’"“Ò#"v–GFƒÒ#b"†V–v‡CÒ#b"'ƒÒ#ãR"óãÇ&V7BƒÒ#"“Ò#’"v–GFƒÒ#b"†V–v‡CÒ#b"'ƒÒ#ãR"óãÇ&V7BƒÒ#’"“Ò#’"v–GFƒÒ#b"†V–v‡CÒ#b"'ƒÒ#ãR"óãÂ÷7fsâFVæçG2ÂöâÆ6Æ73Ò&æ’"‡&VcÒ"2"öæ6Æ–6³Ò'6†÷uf–Wr‚vöæ&ö&F–ærrÇF†—2’#âÇ7frv–GFƒÒ#R"†V–v‡CÒ#R"f–Wt&÷ƒÒ#bb"f–ÆÃÒ&7W'&VçD6öÆ÷"#ãÇF‚CÒ$ÓRRBã’dƒgc&‚ÒãRR$ƒ—cDƒwbÓDƒ&""Ó"Ó%cf"""Ó&ƒUcƒG¦Ó$ƒ—c&ƒ&22dƒ—c&ƒ&RRÓ¢"óãÂ÷7fsâöæ&ö&F–ærÂöâÆF—b6Æ73Ò&æÂ#ä:|;VW3ÂöF—câÆ6Æ73Ò&æ’"‡&VcÒ"2"öæ6Æ–6³Ò&÷VäÖöFÂ‚’#âÇ7frv–GFƒÒ#R"†V–v‡CÒ#R"f–Wt&÷ƒÒ#bb"f–ÆÃÒ&7W'&VçD6öÆ÷"#ãÇF‚CÒ$Ó‚cdƒ'c&ƒgcfƒ%c–ƒectƒcƒ‡¢"óãÂ÷7fsâæ÷fòFVæçBÂöâÂöæcâÆF—b6Æ73Ò'6b#âÆF—b6Æ73Ò'72#ãÇ7â6Æ73Ò&FÂ#ãÂ÷7ãç6—7FVÖöæÆ–æSÂöF—câÆF—b6Æ73Ò'72"7G–ÆSÒ&Ö&v–â×F÷£Gƒ¶föçB×6—¦S£‚#æã†â+r7W&6R+rWfò“ÂöF—câÆF—b7G–ÆSÒ&Ö&v–â×F÷£'‚#âÆ'WGFöâöæ6Æ–6³Ò&FôÆöv÷WB‚’"7G–ÆSÒ&&6¶w&÷VæC¦æöæS¶&÷&FW#£‚6öÆ–B&v&ƒ#SRÃ#SRÃ#SRÂãR“¶6öÆ÷#§&v&ƒ#SRÃ#SRÃ#SRÂãB“·FF–æs£g‚'ƒ¶&÷&FW"×&F—W3£Wƒ¶7W'6÷#§ö–çFW#¶föçB×6—¦S£ƒ¶föçBÖfÖ–Ç“¢tDÒÖöæòrÆÖöæ÷76S·v–GFƒ£R#ç6—#ÂöÖ'WGFöãâÂöF—câÂöF—câÂö6–FSâÆÖ–â6Æ73Ò&Ö–â#âÆF—b6Æ73Ò'F÷&"#âÆF—câÆF—b6Æ73Ò'B"–CÒ'vR×F—FÆR#åFVæçG3ÂöF—câÆF—b6Æ73Ò'2"–CÒ'vR×7V"#ævW7L:6òFR6Æ–VçFW2Fò63ÂöF—câÂöF—câÆF—b6Æ73Ò'F#âÆ'WGFöâ6Æ73Ò&'Fâ"öæ6Æ–6³Ò&ÆöEFVæçG2‚’#î(k² class="nl">AÃ§Ãµes</div> <a class="ni" href="#" onclick="openModal()"> <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1v6H2v2h6v6h2V9h6V7H10V1H8z"/></svg> Novo Tenant </a> </nav> <div class="sf"> <div class="ss"><span class="dl"></span>sistema online</div> <div class="ss" style="margin-top:4px;font-size:10px">n8n Â· supabase Â· evo api</div> <div style="margin-top:12px"> <button onclick="doLogout()" style="background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);padding:6px 12px;border-radius:5px;cursor:pointer;font-size:11px;font-family:'DM Mono',monospace;width:100%">sair</button> </div> </div> </aside> <main class="main"> <div class="topbar"> <div> <div class="pt" id="page-title">Tenants</div> <div class="ps" id="page-sub">gestÃ£o de clientes do saas</div> </div> <div class="ta"> <button class="btn" onclick="loadTenants()">â†» Atualizar</button> <button class="btn btn-p" onclick="openModal()">+ Novo Tenant</button> </div> </div> <!-- TENANTS --> <div class="view active content" id="view-tenants"> <div class="st">visÃ£o geral</div> <div class="mg"> <div class="mc"><div class="ml">total tenants</div><div class="mv" id="m1">â€”</div><div class="md" id="m1s">carregando...</div></div> <div class="mc"><div class="ml">clientes atendidos</div><div class="mv" id="m2">â€”</div><div class="md">total</div></div> <div class="mc"><div class="ml">conversas ativas</div><div class="mv" id="m3">â€”</div><div class="md">em andamento</div></div> <div class="mc"><div class="ml">mensagens</div><div class="mv" id="m4">â€”</div><div class="md">histÃ³rico total</div></div> </div> <div class="st">tenants</div> <div class="card"> <div class="ch"> <div class="ct">Todos os tenants</div> <input class="si" placeholder="buscar..." id="search" oninput="filter(this.value)"/> </div> <div class="ld" id="tld">carregando...</div> <div id="tw" style="display:none;overflow-x:auto"> <table> <thead><tr><th>EstÃºdio</th><th>InstÃ¢ncia EVO</th><th>Plano</th><th>Clientes</th><th>Chats</th><th>Msgs</th><th>Status</th><th>AÃ§Ãµes</th></tr></thead> <tbody id="tb"></tbody> </table> </div> </div> <div class="bg2"> <div class="card"> <div class="ch"><div class="ct">Detalhes</div></div> <div class="pb" id="det"><div class="es">selecione um tenant</div></div> </div> <div class="card"> <div class="ch"><div class="ct">Planos & Receita</div></div> <div class="pb"> <div class="plb"><div class="plbl"><span>Enterprise</span><span id="pe">0</span></div><div class="bt"><div class="bf" id="peb" style="width:0%"></div></div></div> <div class="plb"><div class="plbl"><span>Pro</span><span id="pp">0</span></div><div class="bt"><div class="bf" id="ppb" style="width:0%"></div></div></div> <div class="plb"><div class="plbl"><span>Basic</span><span id="pb2">0</span></div><div class="bt"><div class="bf" id="pbb" style="width:0%"></div></div></div> <div style="margin-top:20px"> <div class="sr"><span class="sk">MRR estimado</span><span class="sv" id="mrr">R$ 0</span></div> <div class="sr"><span class="sk">Ativos</span><span class="sv" id="ac">0</span></div> <div class="sr"><span class="sk">Inativos</span><span class="sv" id="ic">0</span></div> </div> </div> </div> </div> </div> <!-- ANALYTICS --> <div class="view content" id="view-analytics"> <div class="st">analytics</div> <div class="mg" id="am"></div> <div class="card"> <div class="ch"><div class="ct">Ranking por Atividade</div></div> <div style="overflow-x:auto"> <table> <thead><tr><th>#</th><th>EstÃºdio</th><th>Clientes</th><th>Chats</th><th>Mensagens</th><th>Plano</th><th>Status</th></tr></thead> <tbody id="ab"></tbody> </table> </div> </div> </div> <!-- CONFIG --> <div class="view content" id="view-config"> <div class="st">configuraÃ§Ãµes</div> <div class="card" style="max-width:480px"> <div class="ch"><div class="ct">Credenciais Supabase</div></div> <div class="pb"> <div class="fg"><label class="fl">supabase url</label><input class="fi" id="cu" type="text"/></div> <div class="fg"><label class="fl">service role key</label><input class="fi" id="ck" type="text"/></div> <div class="fg"><label class="fl">senha do painel (nova)</label><input class="fi" id="cp" type="password" placeholder="deixe em branco para manter"/></div> <button class="btn btn-p" onclick="saveConf()">Salvar</button> </div> </div> <div class="card" style="max-width:480px;margin-top:16px"> <div class="ch"><div class="ct">PreÃ§os por Plano (R$/mÃªs)</div></div> <div class="pb"> <div class="fgrid"> <div class="fg"><label class="fl">basic</label><input class="fi" id="prb" type="number"/></div> <div class="fg"><label class="fl">pro</label><input class="fi" id="prp" type="number"/></div> </div> <div class="fg" style="max-width:220px"><label class="fl">enterprise</label><input class="fi" id="pre" type="number"/></div> <button class="btn btn-p" onclick="savePrices()">Salvar PreÃ§os</button> </div> </div> </div> <!-- ONBOARDING --> <div class="view content" id="view-onboarding"> <div class="st">onboarding de novos clientes</div> <div class="bg2"> <div class="card"> <div class="ch"><div class="ct">Gerar Link de Onboarding</div></div> <div class="pb"> <div class="fg"><label class="fl">chave global evolution api</label><input class="fi" id="onb-gk" type="password" placeholder="API Key do servidor EVO"/><div style="font-size:11px;color:var(--ink3);margin-top:5px;font-family:'DM Mono',monospace">Usada para criar novas instÃ¢ncias automaticamente</div></div> <div class="fg"><label class="fl">plano padrÃ£o do link</label> <select class="fi" id="onb-plano"><option value="basic">Basic â€” R$ 199/mÃªs</option><option value="pro">Pro â€” R$ 399/mÃªs</option><option value="enterprise">Enterprise â€” R$ 799/mÃªs</option></select></div> <div style="display:flex;gap:8px;flex-wrap:wrap"> <button class="btn btn-p" onclick="genOnbLink()">Gerar Link</button> <button class="btn" onclick="copyOnbLink()">ðŸ“‹ Copiar Link</button> <button class="btn" onclick="saveOnbKey()">Salvar Chave</button> </div> <div class="onb-link-box" id="onb-link-box" id="onb-link-txt-wrap"> <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);font-family:'DM Mono',monospace;margin-bottom:6px">link para enviar ao cliente:</div> <div id="onb-link-txt" style="color:var(--blue);word-break:break-all"></div> </div> </div> </div> <div class="card"> <div class="ch"><div class="ct">Como funciona</div></div> <div class="pb"> <div class="onb-step"><div class="onb-num">1</div><span>Gere o link e copie para enviar ao novo cliente</span></div> <div class="onb-step"><div class="onb-num">2</div><span>O cliente preenche os dados do estÃºdio no formulÃ¡rio</span></div> <div class="onb-step"><div class="onb-num">3</div><span>Tenant Ã© criado no Supabase automaticamente</span></div> <div class="onb-step"><div class="onb-num">4</div><span>InstÃ¢ncia WhatsApp criada na Evolution API</span></div> <div class="onb-step"><div class="onb-num">5</div><span>Cliente escaneia o QR Code e conecta o WhatsApp</span></div> <div class="onb-step"><div class="onb-num">6</div><span>Tenant aparece abaixo â€” ative manualmente se necessÃ¡rio</span></div> </div> </div> </div> <div class="st" style="margin-top:8px">aguardando ativaÃ§Ã£o</div> <div class="card"> <div class="ch"> <div class="ct">Clientes em Onboarding</div> <button class="btn" onclick="loadPendingOnb()" style="font-size:11px">â†» Atualizar</button> </div> <div style="overflow-x:auto"> <table> <thead><tr><th>EstÃºdio</th><th>InstÃ¢ncia EVO</th><th>Plano</th><th>Cadastrado em</th><th>AÃ§Ãµes</th></tr></thead> <tbody id="onb-tb"><tr><td colspan="5"><div class="es">carregando...</div></td></tr></tbody> </table> </div> </div> </div> </main> </div> <!-- MODAL --> <div class="mo" id="mo" onclick="closeMoBg(event)"> <div class="mbox"> <div class="mh"> <div class="mtitle" id="mt">Novo Tenant</div> <button class="mc2" onclick="closeMo()">âœ•</button> </div> <div class="mb"> <div class="fsec">Dados do EstÃºdio</div> <div class="fgrid"> <div class="fg"><label class="fl">nome do proprietÃ¡rio *</label><input class="fi" id="fn" placeholder="Ex: Carlos Silva"/></div> <div class="fg"><label class="fl">nome do agente IA *</label><input class="fi" id="fa" placeholder="Ex: Carlos"/></div> </div> <div class="fgrid"> <div class="fg"><label class="fl">nome do estÃºdio *</label><input class="fi" id="fe" placeholder="Ex: Dark Ink Studio"/></div> <div class="fg"><label class="fl">cidade</label><input class="fi" id="fc" placeholder="Ex: SÃ£o Paulo"/></div> </div> <div class="fg"><label class="fl">endereÃ§o</label><input class="fi" id="fad" placeholder="Ex: Av. Paulista 1000"/></div> <div class="fsec">Evolution API</div> <div class="fgrid"> <div class="fg"><label class="fl">instÃ¢ncia EVO *</label><input class="fi" id="fi2" placeholder="Ex: carlostattoo"/></div> <div class="fg"><label class="fl">webhook path *</label><input class="fi" id="fw" placeholder="Ex: Carlos"/></div> </div> <div class="fg"><label class="fl">evo base url</label><input class="fi" id="fu" placeholder="https://evolutionapi.seuservidor.com"/></div> <div class="fg"><label class="fl">api key evolution *</label><input class="fi" id="fk" placeholder="XXXX-YYYY-ZZZZ"/></div> <div class="fgrid"> <div class="fg"><label class="fl">grupo notificaÃ§Ã£o</label><input class="fi" id="fgn" placeholder="120363...@g.us"/></div> <div class="fg"><label class="fl">grupo orÃ§amento</label><input class="fi" id="fgo" placeholder="120363...@g.us"/></div> </div> <div class="fsec">Google</div> <div class="fgrid"> <div class="fg"><label class="fl">google calendar id</label><input class="fi" id="fca" placeholder="...@group.calendar.google.com"/></div> <div class="fg"><label class="fl">google drive folder id</label><input class="fi" id="fdr" placeholder="1FAAUCd2S8qT..."/></div> </div> <div class="fsec">Plano & Status</div> <div class="fgrid"> <div class="fg"><label class="fl">plano</label> <select class="fi" id="fpl"><option value="basic">Basic</option><option value="pro">Pro</option><option value="enterprise">Enterprise</option></select> </div> <div class="fg"><label class="fl">status</label> <select class="fi" id="fst"><option value="true">Ativo</option><option value="false">Inativo</option></select> </div> </div> <div class="fsec">IA do EstÃºdio</div> <div class="fg"><label class="fl">prompt sistema</label><textarea class="fi" id="fps" rows="4" placeholder="# Quem vocÃª Ã©&#10;VocÃª Ã© [Nome], tatuador de [EstÃºdio]..."></textarea></div> <div class="fg"><label class="fl">faq (cerebro)</label><textarea class="fi" id="ffq" rows="3" placeholder="P: Qual endereÃ§o?&#10;R: Rua..."></textarea></div> </div> <div class="mf"> <button class="btn" onclick="closeMo()">Cancelar</button> <button class="btn btn-p" id="sbtn" onclick="saveTenant()">Salvar Tenant</button> </div> </div> </div> <!-- CONFIRM --> <div class="cov" id="cov"> <div class="cbox"> <div class="ctitle" id="ctitle">Confirmar</div> <div class="cmsg" id="cmsg">Tem certeza?</div> <div class="cact"> <button class="btn" onclick="closeCov()">Cancelar</button> <button class="btn btn-d" id="cok" onclick="doConfirm()">Confirmar</button> </div> </div> </div> <div class="toast" id="toast"></div> <script> let accessToken=null; let CFG={url:'https://bfzuxxuscyplfoimvomh.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenV4eHVzY3lwbGZvaW12b21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMTg3NjAsImV4cCI6MjA4ODg5NDc2MH0.GSw2qzM9RgEQT6xTNBElBv-4AAuSavZe-_C-CljMvdA',prices:{basic:199,pro:399,enterprise:799},evo_gk:'tERJGnwYMBB7MNrdz365ZSW3MtB3G8hC'}; let tenants=[],allT=[],editId=null,pending=null; function init(){ const s=localStorage.getItem('ikf');if(s){try{CFG={...CFG,...JSON.parse(s)};}catch(e){}} const t=sessionStorage.getItem('ikf_token');if(t){accessToken=t;showApp();} document.getElementById('lp').onkeydown=e=>{if(e.key==='Enter')doLogin();}; document.getElementById('lu').onkeydown=e=>{if(e.key==='Enter')document.getElementById('lp').focus();}; } async function doLogin(){ const email=document.getElementById('lu').value.trim(); const pass=document.getElementById('lp').value; document.getElementById('le').style.display='none'; try{ const r=await fetch(CFG.url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':CFG.key,'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})}); const d=await r.json(); if(!r.ok||!d.access_token){document.getElementById('le').style.display='block';document.getElementById('lp').value='';return;} accessToken=d.access_token; sessionStorage.setItem('ikf_token',accessToken); showApp(); }catch(e){document.getElementById('le').style.display='block';document.getElementById('lp').value='';} } function doLogout(){accessToken=null;sessionStorage.removeItem('ikf_token');document.getElementById('app').classList.remove('v',);document.getElementById('ls').style.display='flex';dmcument.getElementById('lu').value='';document.getElementById('lp').value='';} function showApp(){document.getElementById('ls').style.display='none';document.getElementById('app').classList.add('v',);loadTenants();loadCfgForm();initOnbView();} async function api(method,path,body){ const opts={method,headers:{'Authorization':'Bearer '+(accessToken||CFG.key),'apikey':CFG.key,'Content-Type':'application/json','Prefer':method==='GET'?'':'};}; if(body)opts.body=JSON.stringify(body); const r=await fetch(CFG.url+path,opts); if(method==='GET')return r.json(); return r; } async function loadTenants(){ document.getElementById('tld').style.display='block'; document.getElementById('tw').style.display='none'; try{ const[t,dc,c,cm]=await Promise.all([ api('GET','/rest/v1/tenants?select=*&order=created_at.desc'), api('GET','/rest/v1/dados_cliente?select=tenant_id'), api('GET','/rest/v1/chats?select=tenant_id'), api('GET','/rest/v1/chat_messages?select=tenant_id') ]); tenants=(Array.isArray(t)?t:[]).map(x=>({...x, tc:(Array.isArray(dc)?dc:[]).filter(y=>y.tenant_id===x.id).length, th:(Array.isArray(c)?c:[]).filter(y=>y.tenant_id===x.id).length, tm:(Array.isArray(cm)?cm:[]).filter(y=>y.tenant_id===x.id).length })); }catch(e){tenants=[];toast('Erro ao carregar','err');} allT=[...tenants]; render(tenants);updateM();updateP();updateA(); document.getElementById('tld').style.display='none'; document.getElementById('tw').style.display='block'; } function render(list){ const tb=document.getElementById('tb'); if(!list.length){tb.innerHTML='<tr><td colspan="8"><div class="es">nenhum tenant encontrado</div></td></tr>';return;} tb.innerHTML=list.map(t=>{ const ini=(t.nome_estudio||t.nome||'??').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase(); const pl=t.plano||'basic'; const pb2=pl==='enterprise'?'ba':pl==='pro'?'bb':'bgr'; const sb=t.ativo?'bg':'br'; return`<tr style="cursor:pointer" onclick="selT('${t.id}')"> <td><div class="ti"><div class="av">${esc(ini)}</div><div><div class="tn">${esc(t.nome_estudio||t.nome||'-')}</div><div class="tm">${esc(t.nome||'')}${t.cidade?' Â· '+esc(t.cidade):''}</div></div></div></td> <td style="font-family:'DM Mono',monospace;font-size:12ront-size:12px;color:var(--ink2)">${esc(t.evo_instance||'-')}</td> <td><span class="badge ${pb2}">${pl}</span></td> <td style="font-family:'DM Mono',monospace">${t.tc||0}</td> <td style="font-family:'DM Mono',monospace">${t.th||0}</td> <td style="font-family:'DM Mono',monospace">${t.tm||0}</td> <td><span class="badge ${sb}">${t.ativo?'ativo':'inativo'}</span></td> <td><button class="ab" onclick="event.stopPropagation();openModal('${t.id}')">editar</button><button class="ab ${t.ativo?'d':'s'}" onclick="event.stopPropagation();askT('${t.id}',${t.ativo})">${t.ativo?'pausar':'ativar'}</button><button class="ab x" onclick="event.stopPropagation();deleteTenant('${t.id}','${esc(t.nome_estudio||t.nome||'')}')">excluir</button></td> </tr>`; }).join(''); } function filter(q){if(!q){render(allT);return;}const ql=q.toLowerCase();render(allT.filter(t=>(t.nome||'').toLowerCase().includes(ql)||(t.nome_estudio||'').toLowerCase().includes(ql)||(t.evo_instance||'').toLowerCase().includes(ql)));} function selT(id){ const t=allT.find(x=>x.id===id);if(!t)return; document.getElementById('det').innerHTML=` <div class="sr"><span class="sk">proprietÃ¡rio</span><span class="sv">${esc(t.nome||'-')}</span></div> <div class="sr"><span class="sk">estÃºdio</span><span class="sv">${esc(t.nome_estudio||'-')}</span></div> <div class="sr"><span class="sk">agente IA</span><span class="sv">${esc(t.nome_agente||'-')}</span></div> <div class="sr"><span class="sk">cidade</span><span class="sv">${esc(t.cidade||'-')}</span></div> <div class="sr"><span class="sk">instÃ¢ncia EVO</span><span class="sv" style="font-size:11px">${esc(t.evo_instance||'-')}</span></div> <div class="sr"><span class="sk">webhook</span><span class="sv" style="font-size:11px">/webhook/${esc(t.webhook_path||'-')}</span></div> <div class="sr"><span class="sk">plano</span><span class="sv">${t.plano||'-'}</span></div> <div class="sr"><span class="sk">clientes</span><span class="sv">${t.tc||0}</span></div> <div class="sr"><span class="sk">chats</span><span class="sv">${t.th||0}</span></div> <div class="sr"><span class="sk">mensagens</span><span class="sv">${t.tm||0}</span></div> <div class="sr"><span class="sk">calendar</span><span class="sv">${t.google_calendar_id?'âœ“ configurado':'â€”'}</span></div> <div class="sr"><span class="sk">drive</span><span class="sv">${t.google_drive_folder?'âœ“ configurado':'â€”'}</span></div> <div style="margin-top:14px"><button class="btn" onclick="openModal('${t.id}')">Editar Tenant</button></div>`; } function updateM(){ const at=allT.filter(t=>t.ativo).length; document.getElementById('m1').textContent=allT.length; document.getElementById('m1s').textContent=at+' ativo'+(at!==1?'s':''); document.getElementById('m2').textContent=allT.reduce((a,t)=>a+(t.tc||0),0); document.getElementById('m3').textContent=allT.reduce((a,t)=>a+(t.th||0),0); document.getElementById('m4').textContent=allT.reduce((a,t)=>a+(t.tm||0),0); } function updateP(){ const pr=allT.filter(t=>t.plano==='pro').length; const ba=allT.filter(t=>t.plano==='basic').length; const en=allT.filter(t=>t.plano==='enterprise').length; const tot=allT.length||1; document.getElementById('pp').textContent=pr;document.getElementById('pb2').textContent=ba;document.getElementById('pe').textContent=en; document.getElementById('ppb').style.width=Math.round(pr/tot*100)+'%'; document.getElementById('pbb').style.width=Math.round(ba/tot*100)+'%'; document.getElementById('peb').style.width=Math.round(en/tot*100)+'%'; const mrr=allT.filter(t=>t.ativo).reduce((a,t)=>a+(CFG.prices[t.plano||'basic']||0),0); document.getElementById('mrr').textContent='R$ '+mrr.toLocaleString('pt-BR'); document.getElementById('ac').textContent=allT.filter(t=>t.ativo).length; document.getElementById('ic').textContent=allT.filter(t=>!t.ativo).length; } function updateA(){ const s=[...allT].sort((a,b)=>(b.tm||0)-(a.tm||0)); const mrr=allT.filter(t=>t.ativo).reduce((a,t)=>a+(CFG.prices[t.plano||'basic']||0),0); document.getElementById('am').innerHTML=` <div class="mc"><div class="ml">total tenants</div><div class="mv">${allT.length}</div><div class="md">${allT.filter(t=>t.ativo).length} ativos</div></div> <div class="mc"><div class="ml">total clientes</div><div class="mv">${allT.reduce((a,t)=>a+(t.tc||0),0)}</div><div class="md">todos os estÃºdios</div></div> <div class="mc"><div class="ml">total chats</div><div class="mv">${allT.reduce((a,t)=>a+(t.th||0),0)}</div><div class="md">conversas</div></div> <div class="mc"><div class="ml">MRR</div><div class="mv" style="font-size:20px">R$ ${mrr.toLocaleString('pt-BR')}</div><div class="md">receita mensal</div></div>`; document.getElementById('ab').innerHTML=s.map((t,i)=>{ const pb2=t.plano==='enterprise'?'ba':t.plano==='pro'?'bb':'bgr'; const sb=t.ativo?'bg':'br'; return`<tr><td style="font-family:'DM Mono',monospace;color:var(--ink3)">${i+1}</td><td><strong>${esc(t.nome_estudio||t.nome||'-')}</strong><br><span style="font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace">${esc(t.evo_instance||'')}</span></td><td style="font-family:'DM!Mono',monospace">${t.tc||0}</td><td style="font-family:'DM Mono',monospace">${t.th||0}</td><td style="font-family:'DM Mono',monospace">${t.tm||0}</td><td><span class="badge ${pb2}">${t.plano||'basic'}</span></td><td><span class="badge ${sb}">${t.ativo?'ativo':'inativo'}</span></td></tr>`; }).join(''); } function openModal(id){ editId=id||null; document.getElementById('mt').textContent=id?'Editar Tenant':'Novo Tenant'; const fs=['fn','fa','fe','fc','fad','fi2','fw','fu','fk','fgn','fgo','fca','fdr','fps','ffq']; if(id){ const t=allT.find(x=>x.id===id); if(t){ document.getElementById('fn').value=t.nome||'';document.getElementById('fa').value=t.nome_agente||''; document.getElementById('fe').value=t.nome_estudio||'';document.getElementById('fc').value=t.cidade||''; document.getElementById('fad').value=t.endereco||'';document.getElementById('fi2').value=t.evo_instance||''; document.getElementById('fw').value=t.webhook_path||'';document.getElementById('fu').value=t.evo_base_url||''; document.getElementById('fk').value=t.evo_apikey||'';document.getElementById('fgn').value=t.grupo_notificacao||''; document.getElementById('fgo').value=t.grupo_orcamento||'';document.getElementById('fca').value=t.google_calendar_id||''; document.getElementById('fdr').value=t.google_drive_folder||'';document.getElementById('fpl').value=t.plano||'basic'; document.getElementById('fst').value=String(t.ativo!==false);document.getElementById('fps').value=t.prompt_sistema||''; document.getElementById('ffq').value=t.faq_texto||''; } }else{ fs.forEach(f=>document.getElementById(f).value=''); document.getElementById('fu').value='https://evolutionapi.vps1170.panel.speedfy.host'; document.getElementById('fpl').value='basic';document.getElementById('fst').value='true'; } document.getElementById('mo').classList.add('open'); } function closeMo(){document.getElementById('mo').classList.remove('open');} function closeMoBg(e){if(e.target===document.getElementById('mo'))closeMo();} async function saveTenant(){ const nome=document.getElementById('fn').value.trim(); const inst=document.getElementById('fi2').value.trim(); const est=document.getElementById('fe').value.trim(); if(!nome||!inst||!est){toast('Preencha nome, estÃºdio e instÃ¢ncia EVO','err');return;} const d={ nome,nome_agente:document.getElementById('fa').value.trim(),nome_estudio:est, cidade:document.getElementById('fc').value.trim(),endereco:document.getElementById('fad').value.trim(), evo_instance:inst,webhook_path:document.getElementById('fw').value.trim(), evo_base_url:document.getElementById('fu').value.trim()||'https://evolutionapi.vps1170.panel.speedfy.host', evo_apikey:document.getElementById('fk').value.trim(), grupo_notificacao:document.getElementById('fgn').value.trim(),grupo_orcamento:document.getElementById('fgo').value.trim(), google_calendar_id:document.getElementById('fca').value.trim(),google_drive_folder:document.getElementById('fdr').value.trim(), plano:document.getElementById('fpl').value,ativo:document.getElementById('fst').value==='true', prompt_sistema:document.getElementById('fps').value.trim(),faq_texto:document.getElementById('ffq').value.trim() }; const btn=document.getElementById('sbtn');btn.textContent='Salvando...';btn.disabled=true; try{ if(editId)await api('PATCH','/rest/v1/tenants?id=eq.'+editId,d); else await api('POST','/rest/v1/tenants',d); toast(editId?'Tenant atualizado':'Tenant criado','ok'); closeMo();await loadTenants(); }catch(e){toast('Erro ao salvar','err');} btn.textContent='Salvar Tenant';btn.disabled=false; } function askT(id,cur){ const t=allT.find(x=>x.id===id);const a=cur?'pausar':'ativar'; document.getElementById('ctitle').textContent=a.charAt(0).toUpperCase()+a.slice(1)+' tenant'; document.getElementById('cmsg').textContent=`Deseja ${a} "${t?.nome_estudio||t?.nome||id}"?`; document.getElementById('cok').textContent=a.charAt(0).toUpperCase()+a.slice(1); pending={id,cur};document.getElementById('cov').classList.add('open'); } function closeCov(){document.getElementById('cov').classList.remove('open');pending=null;} async function doConfirm(){ if(!pending)return;const{id,cur,del}=pending;closeCov(); try{ if(del){ await Promise.all([api('DELETE','/rest/v1/dados_cliente?tenant_id=eq.'+id),api('DELETE','/rest/v1/chat_messages?tenant_id=eq.'+id),api('DELETE','/rest/v1/chats?tenant_id=eq.'+id)]); await api('DELETE','/rest/v1/tenants?id=eq.'+id); toast('Tenant excluÃ­do','ok'); }else{ await api('PATCH','/rest/v1/tenants?id=eq.'+id,{ativo:!cur});toast(cur?'Tenant pausado':'Tenant ativado','ok'); } await loadTenants(); }catch(e){toast('Erro ao realizar aÃ§Ã£o','err');} } function loadCfgForm(){ document.getElementById('cu').value=CFG.url; document.getElementById('ck').value=CFG.key; document.getElementById('prb').value=CFG.prices.basic; document.getElementById('prp').value=CFG.prices.pro; document.getElementById('pre').value=CFG.prices.enterprise; } function saveConf(){ CFG.url=document.getElementById('cu').value.trim(); CFG.key=document.getElementById('ck').value.trim(); const np=document.getElementById('cp').value;if(np)CFG.pass=np; localStorage.setItem('ikf',JSON.stringify(CFG)); toast('ConfiguraÃ§Ãµes salvas','ok');document.getElementById('cp').value=''; } function savePrices(){ CFG.prices.basic=parseInt(document.getElementById('prb').value)||199; CFG.prices.pro=parseInt(document.getElementById('prp').value)||399; CFG.prices.enterprise=parseInt(document.getElementById('pre').value)||799; localStorage.setItem('ikf',JSON.stringify(CFG)); updateP();updateA();toast('PreÃ§os atualizados','ok'); }
-/* â”€â”€ Onboarding functions â”€â”€ */
-function initOnbView(){ const gk=CFG.evo_gk||''; document.getElementById('onb-gk').value=gk; loadPendingOnb(); }
-function getOnbBase(){ const loc=window.location; return loc.origin+loc.pathname.replace(/index\.html$/,''); }
-function genOnbLink(){ const gk=document.getElementById('onb-gk').value.trim(); const pl=document.getElementById('onb-plano').value; if(!gk){toast('Informe a chave global EVO','err');return;} const link=getOnbBase()+'onboarding.html#k='+encodeURIComponent(gk)+'&p='+pl; document.getElementById('onb-link-txt').textContent=link; document.getElementById('onb-link-box').style.display='block'; }
-function copyOnbLink(){ genOnbLink(); const txt=document.getElementById('onb-link-txt').textContent; if(!txt)return; navigator.clipboard.writeText(txt).then(()=>toast('Link copiado!','ok')).catch(()=>{ const el=document.getElementById('onb-link-txt'); el.style.userSelect='all'; const sel=window.getSelection(); const range=document.createRange(); range.selectNodeContents(el); sel.removeAllRanges(); sel.addRange(range); toast('Selecione o link acima e copie manualmente',''); }); }
-function saveOnbKey(){ const gk=document.getElementById('onb-gk').value.trim(); CFG.evo_gk=gk; localStorage.setItem('ikf',JSON.stringify(CFG)); toast('Chave salva!','ok'); }
-async function loadPendingOnb(){ const tbody=document.getElementById('onb-tb'); tbody.innerHTML='<tr><td colspan="5"><div class="ld">carregando...</div></td></tr>'; try{ const r=await api('GET','/rest/v1/tenants?ativo=eq.false&order=created_at.desc&select=*'); if(!Array.isArray(r)||!r.length){ tbody.innerHTML='<tr><td colspan="5"><div class="es">nenhum cliente aguardando ativaÃ§Ã£o</div></td></tr>'; return; } tbody.innerHTML=r.map(t=>{ const ini=(t.nome_estudio||t.nome||'??').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase(); const pl=t.plano||'basic'; const pb2=pl==='enterprise'?'ba':pl==='pro'?'bb':'bgr'; const dt=t.created_at?new Date(t.created_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'â€”'; return`<tr><td><div class="ti"><div class="av">${esc(ini)}</div><div><div class="tn">${esc(t.nome_estudio||t.nome||'-')}</div><div class="tm">${esc(t.nome||'')}${t.cidade?' Â· '+esc(t.cidade):''}</div></div></div></td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--ink2)">${esc(t.evo_instance||'-')}</td><td><span class="badge ${pb2}">${pl}</span></td><td style="font-family:'DM!Mono',monospace;font-size:11px;color:var(--ink3)">${dt}</td><td><button class="ab s" onclick="activateTenant('${t.id}')">ativar</button><button class="ab d" onclick="deleteTenant('${t.id}','${esc(t.nome_estudio||t.nome||'')}')">excluir</button></td></tr>`; }).join(''); }catch(e){toast('Erro ao carregar pendentes','err');console.error(e);} }
-async function activateTenant(id){ try{ await api('PATCH','/rest/v1/tenants?id=eq.'+id,{ativo:true}); toast('Tenant ativado!','ok'); await loadPendingOnb(); await loadTenants(); }catch(e){toast('Erro ao ativar','err');} }
-function deleteTenant(id,nome){ document.getElementById('ctitle').textContent='Excluir tenant'; document.getElementById('cmsg').textContent='Deseja excluir "'+nome+'"? Esta aÃ§Ã£o nÃ£o pode ser desfeita.'; document.getElementById('cok').textContent='Excluir'; pending={id,cur:null,del:true}; document.getElementById('cov').classList.add('open'); }
-function showView(v,el){ document.querySelectorAll('.view').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active')); document.getElementById('view-'+v).classList.add('active'); if(el)el.closest?el.closest('.ni').classList.add('active'):el.classList.add('active'); const map={tenants:['Tenants','gestÃ£o de clientes do saas'],analytics:['Analytics','mÃ©tricas e desempenho'],config:['ConfiguraÃ§Ãµes','ajustes do painel'],onboarding:['Onboarding','fluxo de entrada de novos clientes']}; const[t,s]=map[v]||['','']; document.getElementById('page-title').textContent=t; document.getElementById('page-sub').textContent=s; if(v==='onboarding')loadPendingOnb(); } function toast(msg,type){ const t=document.getElementById('toast'); t.textContent=msg;t.className='toast'+(type?' '+type:''); t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200); } function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');} init(); </script> </body> </html>
+.onb-num{
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(255,255,255,.06);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);flex-shrink:0;margin-top:1px;
+}
+
+@media(max-width:768px){
+  .app{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .mg{grid-template-columns:1fr 1fr}
+  .bg2{grid-template-columns:1fr}
+  .fgrid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Ã¢Â•ÂÃ¢Â•Â LOGIN Ã¢Â•ÂÃ¢Â•Â -->
+<div class="login-screen" id="ls">
+  <div class="login-box">
+    <div class="login-logo">InkFlow</div>
+    <div class="login-sub">Admin Ã‚Â· SaaS</div>
+    <label class="lbl">e-mail</label>
+    <input class="linput" id="lu" type="email" placeholder="lmf4200@gmail.com" autocomplete="email"/>
+    <label class="lbl">senha</label>
+    <input class="linput" id="lp" type="password" placeholder="Ã¢Â€Â¢Ã¢Â€Â¢Ã¢Â€Â¢Ã¢Â€Â¢Ã¢Â€Â¢Ã¢Â€Â¢Ã¢Â€Â¢Ã¢Â€Â¢" autocomplete="current-password"/>
+    <button class="lbtn" onclick="doLogin()">Entrar Ã¢Â†Â’</button>
+    <div class="lerr" id="le">UsuÃƒÂ¡rio ou senha incorretos</div>
+  </div>
+</div>
+
+<!-- Ã¢Â•ÂÃ¢Â•Â APP Ã¢Â•ÂÃ¢Â•Â -->
+<div class="app" id="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">InkFlow</div>
+      <div class="logo-sub">Admin Panel</div>
+    </div>
+    <nav>
+      <div class="nl">Principal</div>
+      <a class="ni active" href="#" onclick="showView('tenants',this)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+        Tenants
+      </a>
+      <a class="ni" href="#" onclick="showView('analytics',this)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 13h2V8H1v5zm4 0h2V5H5v8zm4 0h2V3H9v10zm4 0h2V1h-2v12z"/></svg>
+        Analytics
+      </a>
+      <a class="ni" href="#" onclick="showView('onboarding',this)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1v6H2v2h6v6h2V9h6V7H10V1H8z"/></svg>
+        Onboarding
+      </a>
+      <a class="ni" href="#" onclick="showView('config',this)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 100 6A3 3 0 008 5zm5.94 1.06l-.92-.53a4.6 4.6 0 000-1.06l.92-.53a.42.42 0 00.15-.57l-.84-1.45a.42.42 0 00-.57-.15l-.92.53A4.58 4.58 0 009 1.42V.42A.42.42 0 008.58 0H6.84a.42.42 0 00-.42.42v1a4.58 4.58 0 00-1.76.88l-.92-.53a.42.42 0 00-.57.15L2.33 3.37a.42.42 0 00.15.57l.92.53a4.6 4.6 0 000 1.06l-.92.53a.42.42 0 00-.15.57l.84 1.45a.42.42 0 00.57.15l.92-.53c.54.37 1.14.65 1.76.82v1a.42.42 0 00.42.42h1.74a.42.42 0 00.42-.42v-1a4.58 4.58 0 001.76-.82l.92.53a.42.42 0 00.57-.15l.84-1.45a.42.42 0 00-.15-.57z"/></svg>
+        ConfiguraÃƒÂ§ÃƒÂµes
+      </a>
+    </nav>
+    <div class="sf">
+      <div class="ss"><span class="dl"></span>sistema online</div>
+      <div class="ss" style="margin-top:4px;font-size:10px;color:var(--text4)">n8n Ã‚Â· supabase Ã‚Â· evo api</div>
+      <button class="logout-btn" onclick="doLogout()">Ã¢Â†Â© sair</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="pt" id="page-title">Tenants</div>
+        <div class="ps" id="page-sub">gestÃƒÂ£o de clientes do saas</div>
+      </div>
+      <div class="ta">
+        <button class="btn" onclick="loadTenants()">Ã¢Â†Â» Atualizar</button>
+        <button class="btn btn-p" onclick="openModal()">+ Novo Tenant</button>
+      </div>
+    </div>
+
+    <!-- Ã¢Â”Â€ TENANTS Ã¢Â”Â€ -->
+    <div class="view active content" id="view-tenants">
+      <div class="st">visÃƒÂ£o geral</div>
+      <div class="mg">
+        <div class="mc">
+          <div class="ml">total tenants</div>
+          <div class="mv" id="m1">Ã¢Â€Â”</div>
+          <div class="md" id="m1s">carregando...</div>
+        </div>
+        <div class="mc">
+          <div class="ml">clientes atendidos</div>
+          <div class="mv" id="m2">Ã¢Â€Â”</div>
+          <div class="md dim">total</div>
+        </div>
+        <div class="mc">
+          <div class="ml">conversas ativas</div>
+          <div class="mv" id="m3">Ã¢Â€Â”</div>
+          <div class="md dim">em andamento</div>
+        </div>
+        <div class="mc">
+          <div class="ml">mensagens</div>
+          <div class="mv" id="m4">Ã¢Â€Â”</div>
+          <div class="md dim">histÃƒÂ³rico total</div>
+        </div>
+      </div>
+
+      <div class="st">tenants</div>
+      <div class="card">
+        <div class="ch">
+          <div class="ct">Todos os tenants</div>
+          <input class="si" placeholder="buscar..." id="search" oninput="filter(this.value)"/>
+        </div>
+        <div class="ld" id="tld">carregando tenants</div>
+        <div id="tw" style="display:none;overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>EstÃƒÂºdio</th><th>InstÃƒÂ¢ncia EVO</th><th>Plano</th>
+              <th>Clientes</th><th>Chats</th><th>Msgs</th><th>Status</th><th>AÃƒÂ§ÃƒÂµes</th>
+            </tr></thead>
+            <tbody id="tb"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg2">
+        <div class="card">
+          <div class="ch"><div class="ct">Detalhes</div></div>
+          <div class="pb" id="det"><div class="es">selecione um tenant</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct">Planos &amp; Receita</div></div>
+          <div class="pb">
+            <div class="plb"><div class="plbl"><span>Enterprise</span><span id="pe">0</span></div><div class="bt"><div class="bf" id="peb" style="width:0%"></div></div></div>
+            <div class="plb"><div class="plbl"><span>Pro</span><span id="pp">0</span></div><div class="bt"><div class="bf" id="ppb" style="width:0%"></div></div></div>
+            <div class="plb"><div class="plbl"><span>Basic</span><span id="pb2">0</span></div><div class="bt"><div class="bf" id="pbb" style="width:0%"></div></div></div>
+            <div style="margin-top:18px">
+              <div class="sr"><span class="sk">MRR estimado</span><span class="sv" id="mrr">R$ 0</span></div>
+              <div class="sr"><span class="sk">Ativos</span><span class="sv" id="ac">0</span></div>
+              <div class="sr"><span class="sk">Inativos</span><span class="sv" id="ic">0</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ã¢Â”Â€ ANALYTICS Ã¢Â”Â€ -->
+    <div class="view content" id="view-analytics">
+      <div class="st">analytics</div>
+      <div class="mg" id="am"></div>
+      <div class="card">
+        <div class="ch"><div class="ct">Ranking por Atividade</div></div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>#</th><th>EstÃƒÂºdio</th><th>Clientes</th><th>Chats</th><th>Mensagens</th><th>Plano</th><th>Status</th></tr></thead>
+            <tbody id="ab"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ã¢Â”Â€ ONBOARDING Ã¢Â”Â€ -->
+    <div class="view content" id="view-onboarding">
+      <div class="st">onboarding de novos clientes</div>
+      <div class="bg2">
+        <div class="card">
+          <div class="ch"><div class="ct">Gerar Link de Onboarding</div></div>
+          <div class="pb">
+            <div class="fg">
+              <label class="fl">chave global evolution api</label>
+              <input class="fi" id="onb-gk" type="password" placeholder="API Key do servidor EVO"/>
+              <div class="fi-hint">Usada para criar novas instÃƒÂ¢ncias automaticamente</div>
+            </div>
+            <div class="fg">
+              <label class="fl">plano padrÃƒÂ£o do link</label>
+              <select class="fi" id="onb-plano">
+                <option value="basic">Basic Ã¢Â€Â” R$ 199/mÃƒÂªs</option>
+                <option value="pro">Pro Ã¢Â€Â” R$ 399/mÃƒÂªs</option>
+                <option value="enterprise">Enterprise Ã¢Â€Â” R$ 799/mÃƒÂªs</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-p" onclick="genOnbLink()">Gerar Link</button>
+              <button class="btn" onclick="copyOnbLink()">Copiar Link</button>
+              <button class="btn" onclick="saveOnbKey()">Salvar Chave</button>
+            </div>
+            <div class="onb-link-box" id="onb-link-box">
+              <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">link para enviar ao cliente:</div>
+              <div id="onb-link-txt" style="color:var(--blue)"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct">Como funciona</div></div>
+          <div class="pb">
+            <div class="onb-step"><div class="onb-num">1</div><span>Gere o link e copie para enviar ao novo cliente</span></div>
+            <div class="onb-step"><div class="onb-num">2</div><span>O cliente preenche os dados do estÃƒÂºdio no formulÃƒÂ¡rio</span></div>
+            <div class="onb-step"><div class="onb-num">3</div><span>Tenant ÃƒÂ© criado no Supabase automaticamente</span></div>
+            <div class="onb-step"><div class="onb-num">4</div><span>InstÃƒÂ¢ncia WhatsApp criada na Evolution API</span></div>
+            <div class="onb-step"><div class="onb-num">5</div><span>Cliente escaneia o QR Code e conecta o WhatsApp</span></div>
+            <div class="onb-step"><div class="onb-num">6</div><span>Tenant aparece abaixo Ã¢Â€Â” ative manualmente se necessÃƒÂ¡rio</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="st" style="margin-top:8px">aguardando ativaÃƒÂ§ÃƒÂ£o</div>
+      <div class="card">
+        <div class="ch">
+          <div class="ct">Clientes em Onboarding</div>
+          <button class="btn" onclick="loadPendingOnb()" style="font-size:11px">Ã¢Â†Â» Atualizar</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>EstÃƒÂºdio</th><th>InstÃƒÂ¢ncia EVO</th><th>Plano</th><th>Cadastrado em</th><th>AÃƒÂ§ÃƒÂµes</th></tr></thead>
+            <tbody id="onb-tb"><tr><td colspan="5"><div class="ld">carregando</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ã¢Â”Â€ CONFIG Ã¢Â”Â€ -->
+    <div class="view content" id="view-config">
+      <div class="st">configuraÃƒÂ§ÃƒÂµes</div>
+      <div class="card" style="max-width:480px">
+        <div class="ch"><div class="ct">Credenciais Supabase</div></div>
+        <div class="pb">
+          <div class="fg"><label class="fl">supabase url</label><input class="fi" id="cu" type="text"/></div>
+          <div class="fg"><label class="fl">anon key</label><input class="fi" id="ck" type="text"/></div>
+          <button class="btn btn-p" onclick="saveConf()">Salvar</button>
+        </div>
+      </div>
+      <div class="card" style="max-width:480px;margin-top:14px">
+        <div class="ch"><div class="ct">PreÃƒÂ§os por Plano (R$/mÃƒÂªs)</div></div>
+        <div class="pb">
+          <div class="fgrid">
+            <div class="fg"><label class="fl">basic</label><input class="fi" id="prb" type="number"/></div>
+            <div class="fg"><label class="fl">pro</label><input class="fi" id="prp" type="number"/></div>
+          </div>
+          <div class="fg" style="max-width:220px"><label class="fl">enterprise</label><input class="fi" id="pre" type="number"/></div>
+          <button class="btn btn-p" onclick="savePrices()">Salvar PreÃƒÂ§os</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Ã¢Â•ÂÃ¢Â•Â MODAL: Tenant Ã¢Â•ÂÃ¢Â•Â -->
+<div class="mo" id="mo" onclick="closeMoBg(event)">
+  <div class="mbox">
+    <div class="mh">
+      <div class="mtitle" id="mt">Novo Tenant</div>
+      <button class="mc2" onclick="closeMo()">Ã¢ÂœÂ•</button>
+    </div>
+    <div class="mb">
+      <div class="fsec">Dados do EstÃƒÂºdio</div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">nome do proprietÃƒÂ¡rio *</label><input class="fi" id="fn" placeholder="Ex: Carlos Silva"/></div>
+        <div class="fg"><label class="fl">nome do agente IA *</label><input class="fi" id="fa" placeholder="Ex: Carlos"/></div>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">nome do estÃƒÂºdio *</label><input class="fi" id="fe" placeholder="Ex: Dark Ink Studio"/></div>
+        <div class="fg"><label class="fl">cidade</label><input class="fi" id="fc" placeholder="Ex: SÃƒÂ£o Paulo"/></div>
+      </div>
+      <div class="fg"><label class="fl">endereÃƒÂ§o</label><input class="fi" id="fad" placeholder="Ex: Av. Paulista 1000"/></div>
+      <div class="fsec">Evolution API</div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">instÃƒÂ¢ncia EVO *</label><input class="fi" id="fi2" placeholder="Ex: carlostattoo"/></div>
+        <div class="fg"><label class="fl">webhook path *</label><input class="fi" id="fw" placeholder="Ex: Carlos"/></div>
+      </div>
+      <div class="fg"><label class="fl">evo base url</label><input class="fi" id="fu" placeholder="https://evolutionapi.seuservidor.com"/></div>
+      <div class="fg"><label class="fl">api key evolution *</label><input class="fi" id="fk" placeholder="XXXX-YYYY-ZZZZ"/></div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">grupo notificaÃƒÂ§ÃƒÂ£o</label><input class="fi" id="fgn" placeholder="120363...@g.us"/></div>
+        <div class="fg"><label class="fl">grupo orÃƒÂ§amento</label><input class="fi" id="fgo" placeholder="120363...@g.us"/></div>
+      </div>
+      <div class="fsec">Google</div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">google calendar id</label><input class="fi" id="fca" placeholder="...@group.calendar.google.com"/></div>
+        <div class="fg"><label class="fl">google drive folder id</label><input class="fi" id="fdr" placeholder="1FAAUCd2S8qT..."/></div>
+      </div>
+      <div class="fsec">Plano &amp; Status</div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">plano</label>
+          <select class="fi" id="fpl"><option value="basic">Basic</option><option value="pro">Pro</option><option value="enterprise">Enterprise</option></select>
+        </div>
+        <div class="fg"><label class="fl">status</label>
+          <select class="fi" id="fst"><option value="true">Ativo</option><option value="false">Inativo</option></select>
+        </div>
+      </div>
+      <div class="fsec">IA do EstÃƒÂºdio</div>
+      <div class="fg"><label class="fl">prompt sistema</label><textarea class="fi" id="fps" rows="4" placeholder="# Quem vocÃƒÂª ÃƒÂ©&#10;VocÃƒÂª ÃƒÂ© [Nome], tatuador de [EstÃƒÂºdio]..."></textarea></div>
+      <div class="fg"><label class="fl">faq (cÃƒÂ©rebro)</label><textarea class="fi" id="ffq" rows="3" placeholder="P: Qual endereÃƒÂ§o?&#10;R: Rua..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn" onclick="closeMo()">Cancelar</button>
+      <button class="btn btn-p" id="sbtn" onclick="saveTenant()">Salvar Tenant</button>
+    </div>
+  </div>
+</div>
+
+<!-- Ã¢Â•ÂÃ¢Â•Â CONFIRM Ã¢Â•ÂÃ¢Â•Â -->
+<div class="cov" id="cov">
+  <div class="cbox">
+    <div class="ctitle" id="ctitle">Confirmar</div>
+    <div class="cmsg" id="cmsg">Tem certeza?</div>
+    <div class="cact">
+      <button class="btn" onclick="closeCov()">Cancelar</button>
+      <button class="btn btn-d" id="cok" onclick="doConfirm()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let accessToken = null;
+let CFG = {
+  url: 'https://bfzuxxuscyplfoimvomh.supabase.co',
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenV4eHVzY3lwbGZvaW12b21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMTg3NjAsImV4cCI6MjA4ODg5NDc2MH0.GSw2qzM9RgEQT6xTNBElBv-4AAuSavZe-_C-CljMvdA',
+  prices: {basic:199, pro:399, enterprise:799}
+};
+let tenants = [], allT = [], editId = null, pending = null;
+
+function init() {
+  const s = localStorage.getItem('ikf');
+  if (s) { try { CFG = {...CFG, ...JSON.parse(s)}; } catch(e) {} }
+  const t = sessionStorage.getItem('ikf_token');
+  if (t) { accessToken = t; showApp(); }
+  document.getElementById('lp').onkeydown = e => { if (e.key === 'Enter') doLogin(); };
+  document.getElementById('lu').onkeydown = e => { if (e.key === 'Enter') document.getElementById('lp').focus(); };
+}
+
+async function doLogin() {
+  const email = document.getElementById('lu').value.trim();
+  const pass  = document.getElementById('lp').value;
+  const errEl = document.getElementById('le');
+  errEl.style.display = 'none';
+  try {
+    const r = await fetch(CFG.url + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: {'apikey': CFG.key, 'Content-Type': 'application/json'},
+      body: JSON.stringify({email, password: pass})
+    });
+    const d = await r.json();
+    if (!r.ok || !d.access_token) {
+      errEl.style.display = 'block';
+      document.getElementById('lp').value = '';
+      return;
+    }
+    accessToken = d.access_token;
+    sessionStorage.setItem('ikf_token', accessToken);
+    showApp();
+  } catch(e) {
+    errEl.style.display = 'block';
+    document.getElementById('lp').value = '';
+  }
+}
+
+function doLogout() {
+  accessToken = null;
+  sessionStorage.removeItem('ikf_token');
+  document.getElementById('app').classList.remove('v');
+  document.getElementById('ls').style.display = 'flex';
+  document.getElementById('lu').value = '';
+  document.getElementById('lp').value = '';
+}
+
+function showApp() {
+  document.getElementById('ls').style.display = 'none';
+  document.getElementById('app').classList.add('v');
+  loadTenants();
+  loadCfgForm();
+  initOnbView();
+}
+
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: {
+      'apikey': CFG.key,
+      'Authorization': 'Bearer ' + (accessToken || CFG.key),
+      'Content-Type': 'application/json',
+      'Prefer': method === 'GET' ? '' : 'return=minimal'
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(CFG.url + path, opts);
+  if (!r.ok && r.status === 401) {
+    // Token expired Ã¢Â€Â” return to login
+    doLogout();
+    throw new Error('SessÃƒÂ£o expirada');
+  }
+  if (method === 'GET') return r.json();
+  return r;
+}
+
+async function loadTenants() {
+  document.getElementById('tld').style.display = 'flex';
+  document.getElementById('tw').style.display = 'none';
+  try {
+    const t = await api('GET', '/rest/v1/tenants?select=*&order=created_at.desc');
+    const tArr = Array.isArray(t) ? t : [];
+
+    // These tables may not exist yet Ã¢Â€Â” handle individually
+    let dc = [], c = [], cm = [];
+    try { const r = await api('GET', '/rest/v1/dados_cliente?select=tenant_id'); dc = Array.isArray(r) ? r : []; } catch(e) {}
+    try { const r = await api('GET', '/rest/v1/chats?select=tenant_id'); c = Array.isArray(r) ? r : []; } catch(e) {}
+    try { const r = await api('GET', '/rest/v1/chat_messages?select=tenant_id'); cm = Array.isArray(r) ? r : []; } catch(e) {}
+
+    tenants = tArr.map(x => ({...x,
+      tc: dc.filter(y => y.tenant_id === x.id).length,
+      th: c.filter(y => y.tenant_id === x.id).length,
+      tm: cm.filter(y => y.tenant_id === x.id).length
+    }));
+  } catch(e) {
+    tenants = [];
+    if (!e.message?.includes('SessÃƒÂ£o')) toast('Erro ao carregar tenants', 'err');
+  }
+  allT = [...tenants];
+  render(tenants);
+  updateM();
+  updateP();
+  updateA();
+  document.getElementById('tld').style.display = 'none';
+  document.getElementById('tw').style.display = 'block';
+}
+
+function render(list) {
+  const tb = document.getElementById('tb');
+  if (!list.length) {
+    tb.innerHTML = '<tr><td colspan="8"><div class="es">nenhum tenant encontrado</div></td></tr>';
+    return;
+  }
+  tb.innerHTML = list.map(t => {
+    const ini = (t.nome_estudio || t.nome || '??').split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase();
+    const pl  = t.plano || 'basic';
+    const pb2 = pl === 'enterprise' ? 'ba' : pl === 'pro' ? 'bb' : 'bgr';
+    const sb  = t.ativo ? 'bg' : 'br';
+    return `<tr style="cursor:pointer" onclick="selT('${t.id}')">
+      <td><div class="ti"><div class="av">${esc(ini)}</div><div><div class="tn">${esc(t.nome_estudio || t.nome || '-')}</div><div class="tm">${esc(t.nome || '')}${t.cidade ? ' Ã‚Â· ' + esc(t.cidade) : ''}</div></div></div></td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text3)">${esc(t.evo_instance || '-')}</td>
+      <td><span class="badge ${pb2}">${pl}</span></td>
+      <td style="font-family:'DM Mono',monospace;color:var(--text2)">${t.tc || 0}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--text2)">${t.th || 0}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--text2)">${t.tm || 0}</td>
+      <td><span class="badge ${sb}">${t.ativo ? 'ativo' : 'inativo'}</span></td>
+      <td>
+        <button class="ab" onclick="event.stopPropagation();openModal('${t.id}')">editar</button>
+        <button class="ab ${t.ativo ? 'd' : 's'}" onclick="event.stopPropagation();askT('${t.id}',${t.ativo})">${t.ativo ? 'pausar' : 'ativar'}</button>
+        <button class="ab x" onclick="event.stopPropagation();deleteTenant('${t.id}','${esc(t.nome_estudio || t.nome || '')}')">excluir</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filter(q) {
+  if (!q) { render(allT); return; }
+  const ql = q.toLowerCase();
+  render(allT.filter(t =>
+    (t.nome || '').toLowerCase().includes(ql) ||
+    (t.nome_estudio || '').toLowerCase().includes(ql) ||
+    (t.evo_instance || '').toLowerCase().includes(ql)
+  ));
+}
+
+function selT(id) {
+  const t = allT.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('det').innerHTML = `
+    <div class="sr"><span class="sk">proprietÃƒÂ¡rio</span><span class="sv">${esc(t.nome || '-')}</span></div>
+    <div class="sr"><span class="sk">estÃƒÂºdio</span><span class="sv">${esc(t.nome_estudio || '-')}</span></div>
+    <div class="sr"><span class="sk">agente IA</span><span class="sv">${esc(t.nome_agente || '-')}</span></div>
+    <div class="sr"><span class="sk">cidade</span><span class="sv">${esc(t.cidade || '-')}</span></div>
+    <div class="sr"><span class="sk">instÃƒÂ¢ncia EVO</span><span class="sv" style="font-size:11px">${esc(t.evo_instance || '-')}</span></div>
+    <div class="sr"><span class="sk">webhook</span><span class="sv" style="font-size:11px">/webhook/${esc(t.webhook_path || '-')}</span></div>
+    <div class="sr"><span class="sk">plano</span><span class="sv">${t.plano || '-'}</span></div>
+    <div class="sr"><span class="sk">clientes</span><span class="sv">${t.tc || 0}</span></div>
+    <div class="sr"><span class="sk">chats</span><span class="sv">${t.th || 0}</span></div>
+    <div class="sr"><span class="sk">mensagens</span><span class="sv">${t.tm || 0}</span></div>
+    <div class="sr"><span class="sk">calendar</span><span class="sv">${t.google_calendar_id ? 'Ã¢ÂœÂ“ configurado' : 'Ã¢Â€Â”'}</span></div>
+    <div class="sr"><span class="sk">drive</span><span class="sv">${t.google_drive_folder ? 'Ã¢ÂœÂ“ configurado' : 'Ã¢Â€Â”'}</span></div>
+    <div style="margin-top:14px"><button class="btn" onclick="openModal('${t.id}')">Editar Tenant</button></div>`;
+}
+
+function updateM() {
+  const at = allT.filter(t => t.ativo).length;
+  document.getElementById('m1').textContent = allT.length;
+  document.getElementById('m1s').textContent = at + ' ativo' + (at !== 1 ? 's' : '');
+  document.getElementById('m2').textContent = allT.reduce((a, t) => a + (t.tc || 0), 0);
+  document.getElementById('m3').textContent = allT.reduce((a, t) => a + (t.th || 0), 0);
+  document.getElementById('m4').textContent = allT.reduce((a, t) => a + (t.tm || 0), 0);
+}
+
+function updateP() {
+  const pr = allT.filter(t => t.plano === 'pro').length;
+  const ba = allT.filter(t => t.plano === 'basic' || !t.plano).length;
+  const en = allT.filter(t => t.plano === 'enterprise').length;
+  const tot = allT.length || 1;
+  document.getElementById('pp').textContent  = pr;
+  document.getElementById('pb2').textContent = ba;
+  document.getElementById('pe').textContent  = en;
+  document.getElementById('ppb').style.width = Math.round(pr / tot * 100) + '%';
+  document.getElementById('pbb').style.width = Math.round(ba / tot * 100) + '%';
+  document.getElementById('peb').style.width = Math.round(en / tot * 100) + '%';
+  const mrr = allT.filter(t => t.ativo).reduce((a, t) => a + (CFG.prices[t.plano || 'basic'] || 0), 0);
+  document.getElementById('mrr').textContent = 'R$ ' + mrr.toLocaleString('pt-BR');
+  document.getElementById('ac').textContent  = allT.filter(t => t.ativo).length;
+  document.getElementById('ic').textContent  = allT.filter(t => !t.ativo).length;
+}
+
+function updateA() {
+  const s = [...allT].sort((a, b) => (b.tm || 0) - (a.tm || 0));
+  const mrr = allT.filter(t => t.ativo).reduce((a, t) => a + (CFG.prices[t.plano || 'basic'] || 0), 0);
+  document.getElementById('am').innerHTML = `
+    <div class="mc"><div class="ml">total tenants</div><div class="mv">${allT.length}</div><div class="md">${allT.filter(t => t.ativo).length} ativos</div></div>
+    <div class="mc"><div class="ml">total clientes</div><div class="mv">${allT.reduce((a, t) => a + (t.tc || 0), 0)}</div><div class="md dim">todos os estÃƒÂºdios</div></div>
+    <div class="mc"><div class="ml">total chats</div><div class="mv">${allT.reduce((a, t) => a + (t.th || 0), 0)}</div><div class="md dim">conversas</div></div>
+    <div class="mc"><div class="ml">MRR</div><div class="mv" style="font-size:20px">R$ ${mrr.toLocaleString('pt-BR')}</div><div class="md">receita mensal</div></div>`;
+  document.getElementById('ab').innerHTML = s.map((t, i) => {
+    const pb2 = t.plano === 'enterprise' ? 'ba' : t.plano === 'pro' ? 'bb' : 'bgr';
+    const sb  = t.ativo ? 'bg' : 'br';
+    return `<tr>
+      <td style="font-family:'DM Mono',monospace;color:var(--text3)">${i + 1}</td>
+      <td><strong style="color:#fff">${esc(t.nome_estudio || t.nome || '-')}</strong><br><span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${esc(t.evo_instance || '')}</span></td>
+      <td style="font-family:'DM Mono',monospace">${t.tc || 0}</td>
+      <td style="font-family:'DM Mono',monospace">${t.th || 0}</td>
+      <td style="font-family:'DM Mono',monospace">${t.tm || 0}</td>
+      <td><span class="badge ${pb2}">${t.plano || 'basic'}</span></td>
+      <td><span class="badge ${sb}">${t.ativo ? 'ativo' : 'inativo'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function openModal(id) {
+  editId = id || null;
+  document.getElementById('mt').textContent = id ? 'Editar Tenant' : 'Novo Tenant';
+  if (id) {
+    const t = allT.find(x => x.id === id);
+    if (t) {
+      document.getElementById('fn').value  = t.nome || '';
+      document.getElementById('fa').value  = t.nome_agente || '';
+      document.getElementById('fe').value  = t.nome_estudio || '';
+      document.getElementById('fc').value  = t.cidade || '';
+      document.getElementById('fad').value = t.endereco || '';
+      document.getElementById('fi2').value = t.evo_instance || '';
+      document.getElementById('fw').value  = t.webhook_path || '';
+      document.getElementById('fu').value  = t.evo_base_url || '';
+      document.getElementById('fk').value  = t.evo_apikey || '';
+      document.getElementById('fgn').value = t.grupo_notificacao || '';
+      document.getElementById('fgo').value = t.grupo_orcamento || '';
+      document.getElementById('fca').value = t.google_calendar_id || '';
+      document.getElementById('fdr').value = t.google_drive_folder || '';
+      document.getElementById('fpl').value = t.plano || 'basic';
+      document.getElementById('fst').value = String(t.ativo !== false);
+      document.getElementById('fps').value = t.prompt_sistema || '';
+      document.getElementById('ffq').value = t.faq_texto || '';
+    }
+  } else {
+    ['fn','fa','fe','fc','fad','fi2','fw','fk','fgn','fgo','fca','fdr','fps','ffq'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('fu').value  = 'https://evolutionapi.vps1170.panel.speedfy.host';
+    document.getElementById('fpl').value = 'basic';
+    document.getElementById('fst').value = 'true';
+  }
+  document.getElementById('mo').classList.add('open');
+}
+
+function closeMo() { document.getElementById('mo').classList.remove('open'); }
+function closeMoBg(e) { if (e.target === document.getElementById('mo')) closeMo(); }
+
+async function saveTenant() {
+  const nome = document.getElementById('fn').value.trim();
+  const inst = document.getElementById('fi2').value.trim();
+  const est  = document.getElementById('fe').value.trim();
+  if (!nome || !inst || !est) { toast('Preencha nome, estÃƒÂºdio e instÃƒÂ¢ncia EVO', 'err'); return; }
+  const d = {
+    nome, nome_agente: document.getElementById('fa').value.trim(),
+    nome_estudio: est, cidade: document.getElementById('fc').value.trim(),
+    endereco: document.getElementById('fad').value.trim(),
+    evo_instance: inst, webhook_path: document.getElementById('fw').value.trim(),
+    evo_base_url: document.getElementById('fu').value.trim() || 'https://evolutionapi.vps1170.panel.speedfy.host',
+    evo_apikey: document.getElementById('fk').value.trim(),
+    grupo_notificacao: document.getElementById('fgn').value.trim(),
+    grupo_orcamento: document.getElementById('fgo').value.trim(),
+    google_calendar_id: document.getElementById('fca').value.trim(),
+    google_drive_folder: document.getElementById('fdr').value.trim(),
+    plano: document.getElementById('fpl').value,
+    ativo: document.getElementById('fst').value === 'true',
+    prompt_sistema: document.getElementById('fps').value.trim(),
+    faq_texto: document.getElementById('ffq').value.trim()
+  };
+  const btn = document.getElementById('sbtn');
+  btn.textContent = 'Salvando...'; btn.disabled = true;
+  try {
+    if (editId) await api('PATCH', '/rest/v1/tenants?id=eq.' + editId, d);
+    else        await api('POST',  '/rest/v1/tenants', d);
+    toast(editId ? 'Tenant atualizado' : 'Tenant criado', 'ok');
+    closeMo(); await loadTenants();
+  } catch(e) { toast('Erro ao salvar', 'err'); }
+  btn.textContent = 'Salvar Tenant'; btn.disabled = false;
+}
+
+function askT(id, cur) {
+  const t = allT.find(x => x.id === id);
+  const a = cur ? 'pausar' : 'ativar';
+  document.getElementById('ctitle').textContent = a.charAt(0).toUpperCase() + a.slice(1) + ' tenant';
+  document.getElementById('cmsg').textContent   = `Deseja ${a} "${t?.nome_estudio || t?.nome || id}"?`;
+  document.getElementById('cok').textContent    = a.charAt(0).toUpperCase() + a.slice(1);
+  pending = {id, cur};
+  document.getElementById('cov').classList.add('open');
+}
+
+function closeCov() { document.getElementById('cov').classList.remove('open'); pending = null; }
+
+async function doConfirm() {
+  if (!pending) return;
+  const {id, cur, del} = pending;
+  closeCov();
+  try {
+    if (del) {
+      await Promise.allSettled([
+        api('DELETE', '/rest/v1/dados_cliente?tenant_id=eq.' + id),
+        api('DELETE', '/rest/v1/chat_messages?tenant_id=eq.' + id),
+        api('DELETE', '/rest/v1/chats?tenant_id=eq.' + id)
+      ]);
+      await api('DELETE', '/rest/v1/tenants?id=eq.' + id);
+      toast('Tenant excluÃƒÂ­do', 'ok');
+    } else {
+      await api('PATCH', '/rest/v1/tenants?id=eq.' + id, {ativo: !cur});
+      toast(cur ? 'Tenant pausado' : 'Tenant ativado', 'ok');
+    }
+    await loadTenants();
+  } catch(e) { toast('Erro ao realizar aÃƒÂ§ÃƒÂ£o', 'err'); }
+}
+
+function loadCfgForm() {
+  document.getElementById('cu').value  = CFG.url;
+  document.getElementById('ck').value  = CFG.key;
+  document.getElementById('prb').value = CFG.prices.basic;
+  document.getElementById('prp').value = CFG.prices.pro;
+  document.getElementById('pre').value = CFG.prices.enterprise;
+}
+
+function saveConf() {
+  CFG.url = document.getElementById('cu').value.trim();
+  CFG.key = document.getElementById('ck').value.trim();
+  localStorage.setItem('ikf', JSON.stringify(CFG));
+  toast('ConfiguraÃƒÂ§ÃƒÂµes salvas', 'ok');
+}
+
+function savePrices() {
+  CFG.prices.basic      = parseInt(document.getElementById('prb').value) || 199;
+  CFG.prices.pro        = parseInt(document.getElementById('prp').value) || 399;
+  CFG.prices.enterprise = parseInt(document.getElementById('pre').value) || 799;
+  localStorage.setItem('ikf', JSON.stringify(CFG));
+  updateP(); updateA(); toast('PreÃƒÂ§os atualizados', 'ok');
+}
+
+/* Ã¢Â”Â€Ã¢Â”Â€ Onboarding Ã¢Â”Â€Ã¢Â”Â€ */
+function initOnbView() {
+  document.getElementById('onb-gk').value = CFG.evo_gk || '';
+  loadPendingOnb();
+}
+
+function getOnbBase() {
+  const loc = window.location;
+  return loc.origin + loc.pathname.replace(/index\.html$/, '');
+}
+
+function genOnbLink() {
+  const gk = document.getElementById('onb-gk').value.trim();
+  const pl = document.getElementById('onb-plano').value;
+  if (!gk) { toast('Informe a chave global EVO', 'err'); return; }
+  const link = getOnbBase() + 'onboarding.html#k=' + encodeURIComponent(gk) + '&p=' + pl;
+  document.getElementById('onb-link-txt').textContent = link;
+  document.getElementById('onb-link-box').style.display = 'block';
+}
+
+function copyOnbLink() {
+  genOnbLink();
+  const txt = document.getElementById('onb-link-txt').textContent;
+  if (!txt) return;
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('Link copiado!', 'ok'))
+    .catch(() => toast('Selecione o link manualmente e copie', ''));
+}
+
+function saveOnbKey() {
+  const gk = document.getElementById('onb-gk').value.trim();
+  CFG.evo_gk = gk;
+  localStorage.setItem('ikf', JSON.stringify(CFG));
+  toast('Chave salva!', 'ok');
+}
+
+async function loadPendingOnb() {
+  const tbody = document.getElementById('onb-tb');
+  tbody.innerHTML = '<tr><td colspan="5"><div class="ld">carregando</div></td></tr>';
+  try {
+    const r = await api('GET', '/rest/v1/tenants?ativo=eq.false&order=created_at.desc&select=*');
+    if (!Array.isArray(r) || !r.length) {
+      tbody.innerHTML = '<tr><td colspan="5"><div class="es">nenhum cliente aguardando ativaÃƒÂ§ÃƒÂ£o</div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = r.map(t => {
+      const ini = (t.nome_estudio || t.nome || '??').split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase();
+      const pl  = t.plano || 'basic';
+      const pb2 = pl === 'enterprise' ? 'ba' : pl === 'pro' ? 'bb' : 'bgr';
+      const dt  = t.created_at ? new Date(t.created_at).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Ã¢Â€Â”';
+      return `<tr>
+        <td><div class="ti"><div class="av">${esc(ini)}</div><div><div class="tn">${esc(t.nome_estudio || t.nome || '-')}</div><div class="tm">${esc(t.nome || '')}${t.cidade ? ' Ã‚Â· ' + esc(t.cidade) : ''}</div></div></div></td>
+        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text3)">${esc(t.evo_instance || '-')}</td>
+        <td><span class="badge ${pb2}">${pl}</span></td>
+        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)">${dt}</td>
+        <td>
+          <button class="ab s" onclick="activateTenant('${t.id}')">ativar</button>
+          <button class="ab x" onclick="deleteTenant('${t.id}','${esc(t.nome_estudio || t.nome || '')}')">excluir</button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) { toast('Erro ao carregar pendentes', 'err'); }
+}
+
+async function activateTenant(id) {
+  try {
+    await api('PATCH', '/rest/v1/tenants?id=eq.' + id, {ativo: true});
+    toast('Tenant ativado!', 'ok');
+    await loadPendingOnb();
+    await loadTenants();
+  } catch(e) { toast('Erro ao ativar', 'err'); }
+}
+
+function deleteTenant(id, nome) {
+  document.getElementById('ctitle').textContent = 'Excluir tenant';
+  document.getElementById('cmsg').textContent   = 'Deseja excluir "' + nome + '"? Esta aÃƒÂ§ÃƒÂ£o nÃƒÂ£o pode ser desfeita.';
+  document.getElementById('cok').textContent    = 'Excluir';
+  pending = {id, cur: null, del: true};
+  document.getElementById('cov').classList.add('open');
+}
+
+function showView(v, el) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(x => x.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  if (el) (el.closest ? el.closest('.ni') : el).classList.add('active');
+  const map = {
+    tenants:    ['Tenants',       'gestÃƒÂ£o de clientes do saas'],
+    analytics:  ['Analytics',     'mÃƒÂ©tricas e desempenho'],
+    onboarding: ['Onboarding',    'fluxo de entrada de novos clientes'],
+    config:     ['ConfiguraÃƒÂ§ÃƒÂµes', 'ajustes do painel']
+  };
+  const [t, s] = map[v] || ['', ''];
+  document.getElementById('page-title').textContent = t;
+  document.getElementById('page-sub').textContent   = s;
+  if (v === 'onboarding') loadPendingOnb();
+}
+
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+init();
+</script>
+</body>
+</html>
