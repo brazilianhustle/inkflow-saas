@@ -30,7 +30,7 @@ export async function onRequest(context) {
   try {
     const tenantRes = await fetch(
       SUPABASE_URL + '/rest/v1/tenants?evo_instance=eq.' + encodeURIComponent(instance) +
-      '&select=evo_base_url,evo_apikey&limit=1',
+      '&select=evo_base_url,evo_apikey,ativo&limit=1',
       { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY } }
     );
     const tenants = await tenantRes.json();
@@ -38,7 +38,8 @@ export async function onRequest(context) {
       return json({ error: 'Instancia nao encontrada' }, 404);
     }
 
-    const { evo_base_url, evo_apikey } = tenants[0];
+    const { evo_base_url, evo_apikey, ativo } = tenants[0];
+    if (!ativo) return json({ error: 'Tenant inativo' }, 403);
 
     const evoRes = await fetch(
       evo_base_url + '/instance/fetchInstances',
