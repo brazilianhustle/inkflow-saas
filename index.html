@@ -352,7 +352,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <select id="fPlan"><option value="basic">Basic</option><option value="pro">Pro</option><option value="enterprise">Enterprise</option></select>
           </div>
           <div class="fg"><label>Status de Pagamento</label>
-            <select id="fPgto"><option value="pendente">Pendente</option><option value="pago">Pago</option><option value="cancelado">Cancelado</option></select>
+            <select id="fPgto"><option value="pendente">Pendente</option><option value="authorized">Autorizado</option><option value="cancelled">Cancelado</option></select>
           </div>
         </div>
         <div class="fg2" style="margin-top:12px">
@@ -512,7 +512,7 @@ function render(list) {
     const pl   = t.plano || 'basic';
     const plc  = pl === 'enterprise' ? 'ba' : pl === 'pro' ? 'bb' : 'bgr';
     const pgto = t.status_pagamento || 'pendente';
-    const pgc  = pgto === 'pago' ? 'bg' : pgto === 'cancelado' ? 'br' : 'ba';
+    const pgc  = pgto === 'authorized' ? 'bg' : pgto === 'cancelled' ? 'br' : 'ba';
     const stc  = t.ativo ? 'bg' : 'br';
     const sid  = esc(t.id);
     const sat  = t.ativo ? 'true' : 'false';
@@ -595,7 +595,7 @@ function selT(id) {
 function updateStats() {
   const total  = allT.length;
   const ativos = allT.filter(t => t.ativo).length;
-  const mrr    = allT.filter(t => t.ativo && t.status_pagamento === 'pago')
+  const mrr    = allT.filter(t => t.ativo && t.status_pagamento === 'authorized')
                      .reduce((s,t) => s + (CFG.prices[t.plano]||0), 0);
   const cnt = { basic:0, pro:0, enterprise:0 };
   allT.forEach(t => { if (t.plano in cnt) cnt[t.plano]++; });
