@@ -624,7 +624,6 @@ let tenantId     = null;
 let instanceKey  = null;
 let instanceSlug = null;
 let pollInterval = null;
-let qrRefreshInterval = null;
 let selectedPlan = 'basic';
 const MP_PUBLIC_KEY = 'APP_USR-36990647-ad0a-4978-a672-499f635f9b03';
 let mpBrickController = null;
@@ -817,8 +816,14 @@ async function chargeCard(formData) {
     });
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || 'Erro ao processar pagamento');
-    try { await sbFetch('PATCH', '/rest/v1/tenants?id=eq.' + tenantId, { ativo: true, plano: selectedPlan, mp_subscription_id: data.subscription_id || null, status_pagamento: data.status || 'authorized', }); } catch {}
-    await doEvoSetup();
+    try {
+      const pRes = await sbFetch('PATCH', '/rest/v1/tenants?id=eq.' + tenantId, {
+        ativo: true, plano: selectedPlan,
+        mp_subscription_id: data.subscription_id || null,
+        status_pagamento: data.status || 'authorized',
+      });
+      if (!pRes.ok) console.error('Tenant update after payment failed:', await pRes.text());
+    } catch (e) { console.error('Tenant update after payment error:', e); }
     if(window.posthog) posthog.capture('payment_success',{plan:selectedPlan,tenant:tenantId});
   } catch (err) {
     console.error('chargeCard error:', err);
@@ -874,7 +879,7 @@ async function showPaymentStep() {
     let sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
 
     // Tratar colisão de slug (unique constraint)
-    if (!sbRes.ok) {
+  if (!sbRes.ok) {
       const errBody = await sbRes.text();
       if (errBody.includes('unique') || errBody.includes('duplicate') || errBody.includes('23505')) {
         const suffix2 = Date.now().toString().slice(-5);
@@ -882,10 +887,12 @@ async function showPaymentStep() {
         tenantData.evo_instance = instanceSlug;
         tenantData.webhook_path = instanceSlug;
         sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
-      }
-      if (!sbRes.ok) {
-        const e2 = await sbRes.text();
-        throw new Error('Erro ao criar perfil: ' + e2);
+        if (!sbRes.ok) {
+          const e2 = await sbRes.text();
+          throw new Error('Erro ao criar perfil: ' + e2);
+        }
+      } else {
+        throw new Error('Erro ao criar perfil: ' + errBody);
       }
     }
 
@@ -1040,6 +1047,38 @@ async function doEvoSetup() {
     // ── 2. Criar instância na Evolution API ─────────────────────────────
     setStatus(1, 'Criando instância WhatsApp...', 'active');
 
+    // Verificar se instância já existe (proteção contra reload)
+    try {
+      const existing = await evoFetch('GET',
+        '/instance/fetchInstances?instanceName=' + instanceSlug,
+        null, gConfig.globalKey);
+      const inst = Array.isArray(existing) ? existing[0] : existing;
+      const existingKey = inst?.instance?.apikey || inst?.Apikey?.apikey;
+      if (existingKey) {
+        instanceKey = existingKey;
+        setStatus(1, 'Instância WhatsApp reconectada!', 'done');
+        setStatus(2, 'Credenciais já salvas!', 'done');
+        setStatus(3, 'Configurando webhook n8n...', 'active');
+        // Pular direto para webhook (step 4)
+        try {
+          await evoFetch('POST', '/webhook/set/' + instanceSlug, {
+            url: N8N_BASE + 'inkflow',
+            webhook_by_events: true,
+            events: ['MESSAGES_UPSERT','CONNECTION_UPDATE','QRCODE_UPDATED','MESSAGES_UPDATE','CONTACTS_UPSERT']
+          }, instanceKey);
+        } catch (wErr) { console.warn('Webhook setup failed:', wErr); }
+        setStatus(3, 'Webhook configurado!', 'done');
+        setStatus(4, 'Gerando QR Code...', 'active');
+        await new Promise(r => setTimeout(r, 1000));
+        setStatus(4, 'QR Code pronto!', 'done');
+        goStep(5);
+        await loadQR();
+        pollInterval = setInterval(checkConnection, 5000);
+        startQRTimer();
+        return; // Sai da função — não cria instância duplicada
+      }
+    } catch (e) { /* Instância não existe, criar normalmente */ }
+
     const evo = await evoFetch('POST', '/instance/create', {
       instanceName: instanceSlug,
       qrcode: true,
@@ -1054,7 +1093,8 @@ async function doEvoSetup() {
     // ── 3. Salvar apikey real no tenant ─────────────────────────────────
     setStatus(2, 'Salvando credenciais...', 'active');
 
-    await sbFetch('PATCH', '/rest/v1/tenants?id=eq.' + tenantId, { evo_apikey: instanceKey });
+   const patchRes = await sbFetch('PATCH', '/rest/v1/tenants?id=eq.' + tenantId, { evo_apikey: instanceKey });
+      if (!patchRes.ok) throw new Error('Falha ao salvar credenciais. Contate o suporte.');
 
     setStatus(2, 'Credenciais salvas!', 'done');
 
@@ -1127,7 +1167,7 @@ async function loadQR() {
 }
 
 async function refreshQR() {
-  clearTimeout(qrRefreshInterval);
+  clearInterval(qrTimerHandle);
   await loadQR();
   startQRTimer();
 }
