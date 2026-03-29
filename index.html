@@ -556,7 +556,7 @@ function selT(id) {
   const pl   = t.plano||'basic';
   const plc  = pl==='enterprise'?'ba':pl==='pro'?'bb':'bgr';
   const pgto = t.status_pagamento||'pendente';
-  const pgc  = pgto==='pago'?'bg':pgto==='cancelado'?'br':'ba';
+  const pgc  = pgto==='authorized'?'bg':pgto==='cancelled'?'br':'ba';
   const stc  = t.ativo?'bg':'br';
   document.getElementById('det').innerHTML = `
     <div class="dhead">
@@ -759,7 +759,7 @@ function loadCfgForm() {
   document.getElementById('cfKey').value = CFG.key;
   document.getElementById('cfPb').value  = (CFG.prices||{}).basic||199;
   document.getElementById('cfPp').value  = (CFG.prices||{}).pro||399;
-  document.getElementById('cfPe').value  = (CFG.prices||{}).enterprise||799;
+  document.getElementById('cfPe').value  = (CFG.prices||{}).enterprise||999;
 }
 
 function saveCfg() {
