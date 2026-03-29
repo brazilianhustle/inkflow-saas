@@ -352,7 +352,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <select id="fPlan"><option value="basic">Basic</option><option value="pro">Pro</option><option value="enterprise">Enterprise</option></select>
           </div>
           <div class="fg"><label>Status de Pagamento</label>
-            <select id="fPgto"><option value="pendente">Pendente</option><option value="authorized">Autorizado</option><option value="cancelled">Cancelado</option></select>
+            <select id="fPgto"><option value="pendente">Pendente</option><option value="authorized">Autorizado</option><option value="cancelled">Cancelado</option><option value="paused">Pausado</option></select>
           </div>
         </div>
         <div class="fg2" style="margin-top:12px">
@@ -770,7 +770,7 @@ function saveCfg() {
   CFG.prices = {
     basic:      parseInt(document.getElementById('cfPb').value)||199,
     pro:        parseInt(document.getElementById('cfPp').value)||399,
-    enterprise: parseInt(document.getElementById('cfPe').value)||799
+    enterprise: parseInt(document.getElementById('cfPe').value)||999
   };
   localStorage.setItem('ikf', JSON.stringify({ url:CFG.url, key:CFG.key, prices:CFG.prices }));
   toast('Configura\u00e7\u00f5es salvas!', 'ok');
