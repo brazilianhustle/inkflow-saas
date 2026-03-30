@@ -140,6 +140,35 @@ export async function onRequest(context) {
       // Adiciona cliente ao MailerLite
       await addToMailerLite(env, email, plano, tenant_id);
 
+      // ── Opção C: atualiza tenant com dados da assinatura (server-side) ──
+    const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+    const SB_KEY = env.SUPABASE_SERVICE_KEY;
+    if (SB_KEY) {
+      try {
+        const patchRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}`,
+          {
+            method: 'PATCH',
+            headers: {
+              apikey: SB_KEY,
+              Authorization: `Bearer ${SB_KEY}`,
+              'Content-Type': 'application/json',
+              Prefer: 'return=minimal',
+            },
+            body: JSON.stringify({
+              mp_subscription_id: data.id,
+              status_pagamento: data.status,
+            }),
+          }
+        );
+        if (!patchRes.ok) {
+          console.error('create-subscription: falha ao atualizar tenant (card):', await patchRes.text());
+        }
+      } catch (e) {
+        console.error('create-subscription: erro ao atualizar tenant (card):', e);
+      }
+    }
+
       return json({ subscription_id: data.id, status: data.status });
 
     } catch (err) {
@@ -184,6 +213,34 @@ export async function onRequest(context) {
     // Adiciona cliente ao MailerLite (cadastro antecipado; confirmação vem pelo IPN)
     await addToMailerLite(env, email, plano, tenant_id);
 
+    // -- Opcao C: atualiza tenant com dados da assinatura (server-side) --
+    const SUPABASE_URL2 = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+    const SB_KEY2 = env.SUPABASE_SERVICE_KEY;
+    if (SB_KEY2) {
+      try {
+        const patchRes = await fetch(
+          `${SUPABASE_URL2}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}`,
+          {
+            method: 'PATCH',
+            headers: {
+              apikey: SB_KEY2,
+              Authorization: `Bearer ${SB_KEY2}`,
+              'Content-Type': 'application/json',
+              Prefer: 'return=minimal',
+            },
+            body: JSON.stringify({
+              mp_subscription_id: data.id,
+              status_pagamento: 'pendente',
+            }),
+          }
+        );
+        if (!patchRes.ok) {
+          console.error('create-subscription: falha ao atualizar tenant (redirect):', await patchRes.text());
+        }
+      } catch (e) {
+        console.error('create-subscription: erro ao atualizar tenant (redirect):', e);
+      }
+    }
     return json({ init_point: data.init_point, subscription_id: data.id });
 
   } catch (err) {
