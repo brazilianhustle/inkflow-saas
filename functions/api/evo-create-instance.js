@@ -44,7 +44,13 @@ export async function onRequestPost(context) {
       const checkData = await checkRes.json();
       if (Array.isArray(checkData) && checkData.length > 0) {
         const existing = checkData[0];
-        const apikey = (typeof existing.hash === 'string' ? existing.hash : existing.hash?.apikey) || existing.instance?.apikey || existing.apikey || null;
+        const apikey = (typeof existing.hash === 'string' ? existing.hash : existing.hash?.apikey) || existing.instance?.apikey || existing.apikey || existing.token || null;
+        if (!apikey) {
+          return new Response(
+            JSON.stringify({ error: 'apikey nao encontrada em instancia existente', raw: existing }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
         return new Response(
           JSON.stringify({ apikey, instanceName, already_existed: true }),
           { status: 200, headers: { 'Content-Type': 'application/json' } }
