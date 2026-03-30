@@ -791,7 +791,7 @@ async function initCardBrick(amount) {
     },
     callbacks: {
       onReady: () => { document.getElementById('card-brick-wrap').style.minHeight = 'unset'; },
-      onSubmit: async ({ formData }) => { await chargeCard(formData); },
+      onSubmit: async (cardFormData) => { await chargeCard(cardFormData); },
       onError: (err) => { console.error('MP Brick error:', err); },
     },
   });
