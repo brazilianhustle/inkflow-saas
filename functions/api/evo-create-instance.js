@@ -79,7 +79,15 @@ export async function onRequestPost(context) {
     );
   }
 
-  const apikey = createData.hash?.apikey || createData.apikey || null;
+  const apikey = createData.hash?.apikey || createData.instance?.apikey || createData.apikey || null;
+
+  // Debug: se apikey ainda for null, retornar resposta completa
+  if (!apikey) {
+    return new Response(
+      JSON.stringify({ error: 'apikey nao encontrada na resposta', raw: createData }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 
   return new Response(
     JSON.stringify({ apikey, instanceName, already_existed: false }),
