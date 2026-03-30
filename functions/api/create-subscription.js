@@ -107,6 +107,7 @@ export async function onRequest(context) {
       external_reference: tenant_id,
       payer_email:        email || `tenant_${tenant_id}@inkflow.temp`,
       card_token_id:      card_token,
+      back_url:           `${SITE_URL}/onboarding`,
       auto_recurring: {
         frequency:          1,
         frequency_type:     'months',
