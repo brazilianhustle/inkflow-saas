@@ -44,7 +44,7 @@ export async function onRequestPost(context) {
       const checkData = await checkRes.json();
       if (Array.isArray(checkData) && checkData.length > 0) {
         const existing = checkData[0];
-        const apikey = existing.instance?.apikey || existing.apikey || null;
+        const apikey = (typeof existing.hash === 'string' ? existing.hash : existing.hash?.apikey) || existing.instance?.apikey || existing.apikey || null;
         return new Response(
           JSON.stringify({ apikey, instanceName, already_existed: true }),
           { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -79,7 +79,7 @@ export async function onRequestPost(context) {
     );
   }
 
-  const apikey = createData.hash?.apikey || createData.instance?.apikey || createData.apikey || null;
+  const apikey = (typeof createData.hash === 'string' ? createData.hash : createData.hash?.apikey) || createData.instance?.apikey || createData.apikey || null;
 
   // Debug: se apikey ainda for null, retornar resposta completa
   if (!apikey) {
