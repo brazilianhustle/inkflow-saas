@@ -771,7 +771,7 @@ async function initCardBrick(amount) {
   const mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'pt-BR' });
   const bricksBuilder = mp.bricks();
   mpBrickController = await bricksBuilder.create('cardPayment', 'cardPaymentBrick_container', {
-    initialization: { amount, payer: { email: '' } },
+    initialization: { amount, payer: { email: document.getElementById('f-email').value.trim() || '' } },
     customization: {
       paymentMethods: { maxInstallments: 1 },
       visual: {
@@ -791,13 +791,47 @@ async function initCardBrick(amount) {
     },
     callbacks: {
       onReady: () => { document.getElementById('card-brick-wrap').style.minHeight = 'unset'; },
-      onSubmit: async (cardFormData) => { await chargeCard(cardFormData); },
+      onSubmit: async (cardFormData) => {
+        if (window._paymentInProgress) return;
+        window._paymentInProgress = true;
+        try { await chargeCard(cardFormData); } finally { window._paymentInProgress = false; }
+      },
       onError: (err) => { console.error('MP Brick error:', err); },
     },
   });
 }
 
 // ── Cobrar com cartão (via Brick token) ────────────────────────────────────────
+// ── [FIX #6] Mapa de erros MP → mensagens em PT-BR ──────────────────────────
+const MP_ERROR_MAP = {
+  'cc_rejected_bad_filled_card_number': 'Número do cartão inválido. Verifique e tente novamente.',
+  'cc_rejected_bad_filled_date': 'Data de validade incorreta.',
+  'cc_rejected_bad_filled_other': 'Dados do cartão incorretos. Verifique e tente novamente.',
+  'cc_rejected_bad_filled_security_code': 'Código de segurança incorreto.',
+  'cc_rejected_call_for_authorize': 'Pagamento não autorizado. Ligue para o banco emissor do seu cartão e autorize o pagamento para o Mercado Pago.',
+  'cc_rejected_card_disabled': 'Cartão desabilitado. Ligue para o banco para ativar compras online.',
+  'cc_rejected_insufficient_amount': 'Saldo insuficiente no cartão. Tente outro cartão.',
+  'cc_rejected_max_attempts': 'Limite de tentativas excedido. Tente outro cartão.',
+  'cc_rejected_other_reason': 'Pagamento recusado pelo banco. Tente outro cartão ou entre em contato com seu banco.',
+  'cc_rejected_card_type_not_allowed': 'Esse tipo de cartão não é aceito. Tente outro cartão.',
+  'cc_rejected_high_risk': 'Pagamento recusado por política de segurança. Tente outro cartão.',
+  'back_url is required': 'Erro de configuração do sistema. Contate o suporte InkFlow.',
+  'credit card validation has failed': 'Validação do cartão falhou. Verifique os dados e tente novamente.',
+  'card token service not found': 'Erro ao processar cartão. Recarregue a página e tente novamente.',
+};
+
+function friendlyPaymentError(msg) {
+  const lower = (msg || '').toLowerCase();
+  for (const [key, val] of Object.entries(MP_ERROR_MAP)) {
+    if (lower.includes(key)) return val;
+  }
+  if (lower.includes('network') || lower.includes('fetch') || lower.includes('failed to fetch')) {
+    return 'Erro de conexão. Verifique sua internet e tente novamente.';
+  }
+  return 'Erro ao processar pagamento. Verifique os dados do cartão e tente novamente.';
+}
+
+// ── Cobrar com cartão (via Brick token) ──────────────────────────────────────
 async function chargeCard(formData) {
   let stored = {};
   try { stored = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
@@ -812,32 +846,30 @@ async function chargeCard(formData) {
         card_token: formData.token,
         payment_method_id: formData.payment_method_id,
         issuer_id: formData.issuer_id,
+        installments: formData.installments || 1,
       }),
     });
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || 'Erro ao processar pagamento');
-    // Opcao C: mp_subscription_id e status_pagamento agora sao atualizados
-    // pelo create-subscription.js no server-side. Aqui so ativamos o tenant.
-    try {
-      const pRes = await fetch('/api/update-tenant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_id: tenantId,
-          ativo: true,
-          plano: selectedPlan,
-        }),
-      });
-      if (!pRes.ok) console.error('Tenant update after payment failed:', await pRes.text());
-    } catch (e) { console.error('Tenant update after payment error:', e); }
-    // Continuar com setup da instancia EVO
-    await doEvoSetup();
-    if(window.posthog) posthog.capture('payment_success',{plan:selectedPlan,tenant:tenantId});
+    // [FIX #3] Verificar status antes de prosseguir
+    if (data.status === 'authorized') {
+      // Pagamento aprovado — continuar com setup EVO
+      // [FIX #7] NÃO ativar tenant aqui — IPN e checkConnection() cuidam disso
+      await doEvoSetup();
+      if (window.posthog) posthog.capture('payment_success', { plan: selectedPlan, tenant: tenantId });
+    } else if (data.status === 'pending') {
+      // Banco pediu verificação extra ou processando
+      setStatus(0, 'Pagamento em processamento...', 'active');
+      showProcError('Seu banco está verificando o pagamento. Isso pode levar alguns minutos. Você receberá uma confirmação por email (' + (formData.payer?.email || stored.email || '') + ') quando o pagamento for aprovado. Após a confirmação, acesse seu link de onboarding novamente para concluir a configuração.');
+      if (window.posthog) posthog.capture('payment_pending', { plan: selectedPlan, tenant: tenantId });
+    } else {
+      throw new Error('Status inesperado do pagamento: ' + (data.status || 'desconhecido'));
+    }
   } catch (err) {
     console.error('chargeCard error:', err);
-    if(window.posthog) posthog.capture('payment_failed',{error:err.message});
+    if (window.posthog) posthog.capture('payment_failed', { error: err.message });
     goStep(3);
-    alert('Erro no pagamento: ' + (err.message || 'tente novamente'));
+    alert(friendlyPaymentError(err.message));
   }
 }
 
@@ -850,8 +882,12 @@ async function showPaymentStep() {
   const endereco = document.getElementById('f-endereco').value.trim();
   const email    = document.getElementById('f-email').value.trim();
 
-  if (!nome || !estudio) {
+ if (!nome || !estudio) {
     showFormError('Preencha o nome e o nome do estúdio.');
+    return;
+  }
+  if (!email || !email.includes('@')) {
+    showFormError('Email válido é obrigatório para o pagamento e suporte.');
     return;
   }
 

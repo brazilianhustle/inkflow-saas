@@ -8,13 +8,13 @@ const CORS = {
   'Content-Type': 'application/json',
 };
 
+const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: CORS });
 }
 
 // ── Verificação de assinatura X-Signature do Mercado Pago ────────────────────
-// Protege contra requisições forjadas (item 1.10 do checklist de segurança)
-// Env var necessária: MP_WEBHOOK_SECRET (segredo gerado no painel MP)
 async function verifyMPSignature(request, env, rawBody) {
   const secret = env.MP_WEBHOOK_SECRET;
   if (!secret) return true;
@@ -43,6 +43,33 @@ async function verifyMPSignature(request, env, rawBody) {
     .map(b => b.toString(16).padStart(2, '0')).join('');
 
   return computed === hash;
+}
+
+// ── [FIX #14] Log de evento IPN no Supabase ─────────────────────────────────
+async function logIPNEvent(env, tenantId, eventType, data = {}) {
+  const SB_KEY = env.SUPABASE_SERVICE_KEY;
+  if (!SB_KEY) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/payment_logs`, {
+      method: 'POST',
+      headers: {
+        apikey: SB_KEY,
+        Authorization: `Bearer ${SB_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({
+        tenant_id: tenantId || null,
+        event_type: eventType,
+        mp_subscription_id: data.subscriptionId || null,
+        status: data.status || null,
+        error_message: data.error || null,
+        raw_response: data.raw || null,
+      }),
+    });
+  } catch (e) {
+    console.error('logIPNEvent error:', e);
+  }
 }
 
 export async function onRequest(context) {
@@ -82,7 +109,6 @@ export async function onRequest(context) {
   }
 
   const ACCESS_TOKEN  = env.MP_ACCESS_TOKEN;
-  const SUPABASE_URL  = 'https://bfzuxxuscyplfoimvomh.supabase.co';
   const SUPABASE_KEY  = env.SUPABASE_SERVICE_KEY;
 
   if (!ACCESS_TOKEN || !SUPABASE_KEY) return json({ error: 'Env vars não configuradas' }, 503);
@@ -92,7 +118,15 @@ export async function onRequest(context) {
       headers: { Authorization: 'Bearer ' + ACCESS_TOKEN },
     });
     const sub = await mpRes.json();
-    if (!mpRes.ok) return json({ error: 'Falha ao buscar assinatura MP' }, 500);
+    if (!mpRes.ok) {
+      // [FIX #14] Log erro
+      await logIPNEvent(env, null, 'ipn_error', {
+        subscriptionId: id,
+        error: 'Falha ao buscar assinatura MP',
+        raw: sub,
+      });
+      return json({ error: 'Falha ao buscar assinatura MP' }, 500);
+    }
 
     const tenantId  = sub.external_reference;
     const mpStatus  = sub.status;
@@ -106,10 +140,23 @@ export async function onRequest(context) {
       body: JSON.stringify({ ativo, status_pagamento: statusPagamento, mp_subscription_id: id }),
     });
 
+    // [FIX #14] Log do IPN processado
+    await logIPNEvent(env, tenantId, 'ipn_processed', {
+      subscriptionId: id,
+      status: mpStatus,
+      raw: { status: mpStatus, ativo, payer_email: sub.payer_email || null },
+    });
+
     console.log('IPN: tenant ' + tenantId + ' -> ' + mpStatus + ' (ativo=' + ativo + ')');
     return json({ ok: true, tenant: tenantId, status: mpStatus });
   } catch (err) {
     console.error('mp-ipn error:', err);
+
+    await logIPNEvent(env, null, 'ipn_error', {
+      subscriptionId: id,
+      error: err.message || 'Erro interno',
+    });
+
     return json({ error: 'Erro interno' }, 500);
   }
 }
