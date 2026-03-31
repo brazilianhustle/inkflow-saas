@@ -1225,9 +1225,24 @@ async function checkConnection() {
     const instances = Array.isArray(data) ? data : [data];
     const state = instances[0]?.instance?.state || instances[0]?.state;
 
-    if (state === 'open') {
+   if (state === 'open') {
       clearInterval(pollInterval);
       clearInterval(qrTimerHandle);
+
+      // ── Feedback visual imediato na tela do QR ───────────────────────────
+      const badge = document.getElementById('qr-status');
+      if (badge) { badge.textContent = 'conectado ✓'; badge.className = 'qr-badge conn'; }
+      const qrBox = document.getElementById('qr-box');
+      if (qrBox) {
+        qrBox.innerHTML = `
+          <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px">
+            <div style="font-size:52px;animation:pulse 1s ease-in-out 3">✅</div>
+            <div style="color:rgba(0,210,195,.95);font-weight:700;font-size:16px">WhatsApp Conectado!</div>
+            <div style="color:rgba(255,255,255,.4);font-size:12px;font-family:'DM Mono',monospace">configurando seu estúdio...</div>
+          </div>`;
+      }
+      // Aguardar 2s para o cliente ver a confirmação antes de avançar
+      await new Promise(r => setTimeout(r, 2000));
 
       // Ativar tenant no Supabase
       await fetch('/api/update-tenant', {
