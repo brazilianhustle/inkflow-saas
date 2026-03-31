@@ -1140,7 +1140,7 @@ async function startFreeTrial() {
   // Bug 3+6: Gravar trial_ate via endpoint server-side (RLS bloqueia anon UPDATE)
   try {
     const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + 14);
+    trialEnd.setDate(trialEnd.getDate() + 7);
     const trialRes = await fetch('/api/update-tenant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
