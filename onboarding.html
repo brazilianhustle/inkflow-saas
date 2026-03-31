@@ -1177,8 +1177,9 @@ async function loadQR() {
   document.getElementById('qr-img').style.display = 'none';
   try {
     const data = await evoFetch('GET', '/instance/connect/' + instanceSlug, null, instanceKey);
-    if (data?.base64) {
-      document.getElementById('qr-img').src = data.base64;
+    const qrBase64 = data?.base64 || data?.qrcode?.base64 || data?.qr?.base64;
+    if (qrBase64) {
+      document.getElementById('qr-img').src = qrBase64;
       document.getElementById('qr-img').style.display = 'block';
       document.getElementById('qr-loading').style.display = 'none';
     }
@@ -1223,7 +1224,8 @@ async function checkConnection() {
       null, instanceKey);
 
     const instances = Array.isArray(data) ? data : [data];
-    const state = instances[0]?.instance?.state || instances[0]?.state;
+    const inst = instances[0]?.instance || instances[0];
+    const state = inst?.connectionStatus || inst?.state || inst?.status;
 
    if (state === 'open') {
       clearInterval(pollInterval);
