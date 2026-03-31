@@ -271,7 +271,7 @@ select.fi option{background:#091515;color:#fff}
 <script src="https://sdk.mercadopago.com/js/v2"></script>
   <!-- Sentry -->
   <script src="https://browser.sentry-cdn.com/7.119.0/bundle.min.js" crossorigin="anonymous"></script>
-  <script>Sentry.onLoad(function(){Sentry.init({dsn:"https://c658b9d1be28f744f2aef5c552ef1b4f@o4511123798687744.ingest.us.sentry.io/4511123944505344",environment:"production",tracesSampleRate:0.1});});</script>
+  <script>if(typeof Sentry!=="undefined"&&Sentry.init){Sentry.init({dsn:"https://c658b9d1be28f744f2aef5c552ef1b4f@o4511123798687744.ingest.us.sentry.io/4511123944505344",environment:"production",tracesSampleRate:0.1});}</script>
   <!-- PostHog -->
   <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys getNextSurveyStep onSessionId setPersonPropertiesForFlags".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init("phc_g6yiGtySvzygKQwuDQqQBp9jI0slWkJ4bc1VsPuWOvM",{api_host:"https://us.i.posthog.com",person_profiles:"identified_only"});</script>
 </head>
@@ -629,7 +629,7 @@ const MP_PUBLIC_KEY = 'APP_USR-36990647-ad0a-4978-a672-499f635f9b03';
 let mpBrickController = null;
 
 // ── Init ───────────────────────────────────────────────────────────────────
-function init() {
+async function init() {
   // Detectar retorno do Mercado Pago (MP adiciona ?preapproval_id=xxx na back_url)
   const urlParams    = new URLSearchParams(window.location.search);
   const preapprovalId = urlParams.get('preapproval_id');
@@ -642,14 +642,39 @@ function init() {
   const hash   = window.location.hash.substring(1);
   const params = new URLSearchParams(hash);
   const key    = params.get('k') || localStorage.getItem('inkflow_gk') || '';
-  const plano  = params.get('p') || 'basic';
-
-  gConfig = { globalKey: key, plano };
 
   if (!key) {
     showErrOverlay('Link de onboarding inválido ou expirado. Solicite um novo link ao suporte InkFlow.');
     return;
   }
+
+  // Bug 9 fix: Validar key server-side contra tabela onboarding_links
+  let plano = 'basic';
+  try {
+    const valRes = await fetch('/api/validate-onboarding-key', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key })
+    });
+    const valData = await valRes.json();
+    if (!valData.valid) {
+      showErrOverlay(valData.error || 'Link de onboarding inválido ou expirado.');
+      return;
+    }
+    plano = valData.plano || 'basic';
+  } catch (valErr) {
+    // Fail-open: se endpoint indisponível, usar plano do hash (com validação XSS)
+    console.warn('Key validation failed, falling back:', valErr);
+    const hashPlano = params.get('p') || 'basic';
+    const allowedPlans = ['free','basic','pro','enterprise'];
+    plano = allowedPlans.includes(hashPlano) ? hashPlano : 'basic';
+  }
+
+  // Bug 7 fix: Validar plano contra whitelist (previne XSS)
+  const allowedPlans = ['free','basic','pro','enterprise'];
+  if (!allowedPlans.includes(plano)) plano = 'basic';
+
+  gConfig = { globalKey: key, plano };
 
   // Guardar a chave para sobreviver ao redirect do MP
   localStorage.setItem('inkflow_gk', key);
@@ -912,7 +937,7 @@ async function showPaymentStep() {
       cidade:        cidade   || null,
       endereco:      endereco || null,
       evo_instance:  instanceSlug,
-      webhook_path:  instanceSlug,
+      webhook_path:  'inkflow',
       evo_base_url:  EVO_BASE,
       evo_apikey:    'pending',
       plano:         selectedPlan,
@@ -920,20 +945,89 @@ async function showPaymentStep() {
       prompt_sistema: prompt
     };
 
+    // Bug 10: Idempotency — verificar se já existe tenant com este email
+    const existCheck = await sbFetch('GET',
+      '/rest/v1/tenants?email=eq.' + encodeURIComponent(email) + '&select=id,evo_apikey,ativo');
+    if (existCheck.ok) {
+      const existing = await existCheck.json();
+      if (existing && existing.length > 0) {
+        const ex = existing[0];
+        if (ex.ativo && ex.evo_apikey && ex.evo_apikey !== 'pending') {
+          throw new Error('Este email já está cadastrado em um estúdio ativo. Use outro email ou entre em contato com o suporte.');
+        }
+        // Tenant pendente: reutilizar
+        if (ex.evo_apikey === 'pending') {
+          tenantId = ex.id;
+          // Atualizar dados do tenant pendente
+          await fetch('/api/update-tenant', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tenant_id: ex.id,
+              nome_agente: agente,
+              nome_estudio: estudio,
+              evo_instance: instanceSlug,
+              webhook_path: 'inkflow',
+              plano: selectedPlan
+            })
+          });
+          // Pular INSERT, ir direto para salvar estado
+          const sbData = [{ id: ex.id }];
+          tenantId = ex.id;
+          // Salvar estado no localStorage
+          localStorage.setItem('inkflow_ob', JSON.stringify({
+            tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan
+          }));
+          // Continuar para card de plano (pula INSERT)
+          const planNames  = { free:'Free Trial', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' };
+          const planPrices = { free:'Grátis', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' };
+          const planCycles = { free:'7 dias de teste sem compromisso', basic:'/mês \u00b7 cobran\u00e7a recorrente', pro:'/mês \u00b7 cobran\u00e7a recorrente', enterprise:'/mês \u00b7 cobran\u00e7a recorrente' };
+          document.getElementById('pay-plan-box').innerHTML = 
+            '<div class="pay-plan-name">' + (planNames[selectedPlan] || selectedPlan) + '</div>' +
+            '<div class="pay-plan-price">' + (planPrices[selectedPlan] || '') + '</div>' +
+            '<div class="pay-plan-cycle">' + (planCycles[selectedPlan] || '') + '</div>';
+          // Adaptar botoes
+          const payBtn2 = document.getElementById('pay-btn');
+          const payOr2 = document.getElementById('pay-or');
+          const payFreeBtn2 = document.getElementById('pay-free-btn');
+          const payHint2 = document.getElementById('pay-hint');
+          if (selectedPlan === 'free') {
+            payBtn2.style.display = 'none'; payOr2.style.display = 'none';
+            if (payHint2) payHint2.style.display = 'none';
+            payFreeBtn2.textContent = 'Come\u00e7ar per\u00edodo de teste gratuito \u2192';
+          } else {
+            payBtn2.style.display = 'flex'; payOr2.style.display = 'block';
+            if (payHint2) payHint2.style.display = 'block';
+            payFreeBtn2.textContent = 'Come\u00e7ar 7 dias gr\u00e1tis (sem cart\u00e3o)';
+          }
+          goStep(3);
+          if (selectedPlan !== 'free') {
+            const planAmounts2 = { basic: 199.00, pro: 399.00, enterprise: 999.00 };
+            initCardBrick(planAmounts2[selectedPlan] || 199.00);
+          }
+          return; // Tenant reutilizado, pular INSERT
+        }
+      }
+    }
+
     let sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
 
-    // Tratar colisão de slug (unique constraint)
-  if (!sbRes.ok) {
+    // Tratar colisão de slug (unique constraint) — até 5 tentativas
+    if (!sbRes.ok) {
       const errBody = await sbRes.text();
       if (errBody.includes('unique') || errBody.includes('duplicate') || errBody.includes('23505')) {
-        const suffix2 = Date.now().toString().slice(-5);
-        instanceSlug = base + suffix2;
-        tenantData.evo_instance = instanceSlug;
-        tenantData.webhook_path = instanceSlug;
-        sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
-        if (!sbRes.ok) {
+        let retryOk = false;
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const suffixRetry = Date.now().toString().slice(-5) + attempt;
+          instanceSlug = base + suffixRetry;
+          tenantData.evo_instance = instanceSlug;
+          tenantData.webhook_path = 'inkflow';
+          sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
+          if (sbRes.ok) { retryOk = true; break; }
+        }
+        if (!retryOk) {
           const e2 = await sbRes.text();
-          throw new Error('Erro ao criar perfil: ' + e2);
+          throw new Error('Erro ao criar perfil após várias tentativas: ' + e2);
         }
       } else {
         throw new Error('Erro ao criar perfil: ' + errBody);
@@ -1039,6 +1133,23 @@ async function initiatePayment() {
 
 // ── Começar trial gratuito (sem pagamento) ─────────────────────────────────
 async function startFreeTrial() {
+  // Bug 3+6: Gravar trial_ate via endpoint server-side (RLS bloqueia anon UPDATE)
+  try {
+    const trialEnd = new Date();
+    trialEnd.setDate(trialEnd.getDate() + 14);
+    const trialRes = await fetch('/api/update-tenant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenant_id: tenantId,
+        trial_ate: trialEnd.toISOString(),
+        ativo: true
+      })
+    });
+    if (!trialRes.ok) console.warn('trial_ate update failed:', await trialRes.text());
+  } catch (trialErr) {
+    console.warn('trial_ate update error:', trialErr);
+  }
   goStep(4); // processing
   for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
   await doEvoSetup();
@@ -1068,9 +1179,25 @@ async function continueAfterPayment(preapprovalId) {
 
   // Opcao C: mp_subscription_id e status_pagamento agora sao atualizados
   // pelo create-subscription.js no server-side (fluxo redirect).
-  // Nenhum PATCH necessario aqui.
 
-  // Continuar com setup da instância EVO
+  // Bug 8: Verificar que preapproval_id corresponde ao tenant no Supabase
+  try {
+    const checkRes = await sbFetch('GET',
+      '/rest/v1/tenants?id=eq.' + tenantId + '&select=mp_subscription_id');
+    if (checkRes.ok) {
+      const checkData = await checkRes.json();
+      const dbSubId = checkData?.[0]?.mp_subscription_id;
+      if (dbSubId && dbSubId !== preapprovalId) {
+        showErrOverlay('ID de pagamento n\u00e3o corresponde. Acesse seu link de onboarding novamente.');
+        return;
+      }
+    }
+    // Se Supabase indispon\u00edvel, fail-open para n\u00e3o bloquear cliente
+  } catch (checkErr) {
+    console.warn('Payment verification skipped:', checkErr);
+  }
+
+  // Continuar com setup da inst\u00e2ncia EVO
   goStep(4); // processing
   for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
   await doEvoSetup();
@@ -1125,15 +1252,19 @@ async function doEvoSetup() {
 
     try {
       await evoFetch('POST', '/webhook/set/' + instanceSlug, {
-        url: N8N_BASE + 'inkflow',
-        webhook_by_events: true,
-        events: [
-          'MESSAGES_UPSERT',
-          'CONNECTION_UPDATE',
-          'QRCODE_UPDATED',
-          'MESSAGES_UPDATE',
-          'CONTACTS_UPSERT'
-        ]
+        webhook: {
+          enabled: true,
+          url: N8N_BASE + 'inkflow',
+          webhookByEvents: false,
+          webhookBase64: false,
+          events: [
+            'MESSAGES_UPSERT',
+            'CONNECTION_UPDATE',
+            'QRCODE_UPDATED',
+            'MESSAGES_UPDATE',
+            'CONTACTS_UPSERT'
+          ]
+        }
       }, instanceKey);
     } catch (webhookErr) {
       // Não é fatal — pode ser configurado depois pelo admin
