@@ -197,14 +197,15 @@ export async function onRequest(context) {
     const payload = {
       reason:             planoConfig.nome,
       external_reference: tenant_id,
-      payer_email:        email,                          // [FIX #1] Sem fallback fake
+      payer_email:        email,
       card_token_id:      card_token,
-      back_url:           `${SITE_URL}/onboarding`,       // [FIX #4] Padronizado
+      back_url:           `${SITE_URL}/onboarding`,
       auto_recurring: {
         frequency:          1,
         frequency_type:     'months',
         transaction_amount: planoConfig.valor,
         currency_id:        'BRL',
+        start_date:         new Date(Date.now() + 5 * 60 * 1000).toISOString(), // [FIX] cobrar em 5 min
       },
       status: 'authorized',
     };
@@ -227,42 +228,26 @@ export async function onRequest(context) {
       if (!mpRes.ok) {
         console.error('MP card error:', JSON.stringify(data));
         const msg = data?.cause?.[0]?.description || data.message || 'Erro no Mercado Pago';
-
-        // [FIX #14] Log do erro
-        await logPaymentEvent(env, tenant_id, 'subscription_error', {
-          error: msg,
-          raw: data,
-        });
-
+        await logPaymentEvent(env, tenant_id, 'subscription_error', { error: msg, raw: data });
         return json({ error: msg }, mpRes.status);
       }
 
-      // Adiciona cliente ao MailerLite
       await addToMailerLite(env, email, plano, tenant_id);
-
-      // Atualiza tenant com dados da assinatura (server-side)
       await updateTenant(env, tenant_id, {
         mp_subscription_id: data.id,
         status_pagamento: data.status,
       });
-
-      // [FIX #14] Log de sucesso
       await logPaymentEvent(env, tenant_id, 'subscription_created', {
         subscriptionId: data.id,
         status: data.status,
         raw: { id: data.id, status: data.status, payer_email: email, plano },
       });
 
-      // [FIX #3] Retornar status para o frontend decidir o que fazer
       return json({ subscription_id: data.id, status: data.status });
 
     } catch (err) {
       console.error('create-subscription (card) error:', err);
-
-      await logPaymentEvent(env, tenant_id, 'subscription_error', {
-        error: err.message || 'Erro interno',
-      });
-
+      await logPaymentEvent(env, tenant_id, 'subscription_error', { error: err.message || 'Erro interno' });
       return json({ error: 'Erro interno ao processar cartão' }, 500);
     }
   }
@@ -271,14 +256,15 @@ export async function onRequest(context) {
   const payload = {
     reason:             planoConfig.nome,
     external_reference: tenant_id,
-    payer_email:        email,                            // [FIX #1] Sem fallback fake
+    payer_email:        email,
     auto_recurring: {
       frequency:          1,
       frequency_type:     'months',
       transaction_amount: planoConfig.valor,
       currency_id:        'BRL',
+      start_date:         new Date(Date.now() + 5 * 60 * 1000).toISOString(), // [FIX] cobrar em 5 min
     },
-    back_url: `${SITE_URL}/onboarding`,                   // [FIX #4] Padronizado (era /onboarding.html)
+    back_url: `${SITE_URL}/onboarding`,
     status:   'pending',
   };
 
@@ -296,25 +282,18 @@ export async function onRequest(context) {
 
     if (!mpRes.ok) {
       console.error('MP redirect error:', JSON.stringify(data));
-
       await logPaymentEvent(env, tenant_id, 'subscription_error', {
         error: data.message || 'Erro na API do Mercado Pago',
         raw: data,
       });
-
       return json({ error: data.message || 'Erro na API do Mercado Pago' }, mpRes.status);
     }
 
-    // Adiciona cliente ao MailerLite (cadastro antecipado; confirmação vem pelo IPN)
     await addToMailerLite(env, email, plano, tenant_id);
-
-    // Atualiza tenant com dados da assinatura (server-side)
     await updateTenant(env, tenant_id, {
       mp_subscription_id: data.id,
       status_pagamento: 'pendente',
     });
-
-    // [FIX #14] Log
     await logPaymentEvent(env, tenant_id, 'subscription_redirect', {
       subscriptionId: data.id,
       status: 'pendente',
@@ -324,11 +303,7 @@ export async function onRequest(context) {
 
   } catch (err) {
     console.error('create-subscription (redirect) error:', err);
-
-    await logPaymentEvent(env, tenant_id, 'subscription_error', {
-      error: err.message || 'Erro interno',
-    });
-
+    await logPaymentEvent(env, tenant_id, 'subscription_error', { error: err.message || 'Erro interno' });
     return json({ error: 'Erro interno ao criar assinatura' }, 500);
   }
 }
