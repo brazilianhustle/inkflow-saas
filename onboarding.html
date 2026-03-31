@@ -945,11 +945,15 @@ async function showPaymentStep() {
       prompt_sistema: prompt
     };
 
-    // Bug 10: Idempotency — verificar se já existe tenant com este email
-    const existCheck = await sbFetch('GET',
-      '/rest/v1/tenants?email=eq.' + encodeURIComponent(email) + '&select=id,evo_apikey,ativo');
+    // Bug 10: Idempotency — verificar se já existe tenant com este email (via server-side)
+    const existCheck = await fetch('/api/get-tenant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, fields: 'id,evo_apikey,ativo' })
+    });
     if (existCheck.ok) {
-      const existing = await existCheck.json();
+      const existData = await existCheck.json();
+      const existing = existData.tenants || [];
       if (existing && existing.length > 0) {
         const ex = existing[0];
         if (ex.ativo && ex.evo_apikey && ex.evo_apikey !== 'pending') {
@@ -1180,13 +1184,16 @@ async function continueAfterPayment(preapprovalId) {
   // Opcao C: mp_subscription_id e status_pagamento agora sao atualizados
   // pelo create-subscription.js no server-side (fluxo redirect).
 
-  // Bug 8: Verificar que preapproval_id corresponde ao tenant no Supabase
+  // Bug 8: Verificar que preapproval_id corresponde ao tenant no Supabase (via server-side)
   try {
-    const checkRes = await sbFetch('GET',
-      '/rest/v1/tenants?id=eq.' + tenantId + '&select=mp_subscription_id');
+    const checkRes = await fetch('/api/get-tenant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenant_id: tenantId, fields: 'mp_subscription_id' })
+    });
     if (checkRes.ok) {
       const checkData = await checkRes.json();
-      const dbSubId = checkData?.[0]?.mp_subscription_id;
+      const dbSubId = checkData?.tenants?.[0]?.mp_subscription_id;
       if (dbSubId && dbSubId !== preapprovalId) {
         showErrOverlay('ID de pagamento n\u00e3o corresponde. Acesse seu link de onboarding novamente.');
         return;

@@ -12,7 +12,7 @@
 // (esses só são alterados via IPN ou pelo painel admin)
 
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
@@ -43,6 +43,11 @@ export async function onRequest(context) {
   const { tenant_id, ...fields } = body;
 
   if (!tenant_id) return json({ error: 'tenant_id obrigatório' }, 400);
+
+  // Validar formato UUID para prevenir injection
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenant_id)) {
+    return json({ error: 'tenant_id inválido' }, 400);
+  }
 
   // Filtra apenas campos permitidos
   const safeFields = {};

@@ -3,7 +3,7 @@
 // URL configurada no painel MP: https://inkflowbrasil.com/api/mp-ipn
 
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Content-Type': 'application/json',
 };
