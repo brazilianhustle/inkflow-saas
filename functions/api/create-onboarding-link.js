@@ -1,5 +1,6 @@
 export async function onRequest(context) {
-  const SUPABASE_URL = context.env.SUPABASE_URL;
+  // [FIX Bug #10] Hardcoded para consistencia com demais endpoints
+  const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
   const SUPABASE_SERVICE_KEY = context.env.SUPABASE_SERVICE_KEY;
   const ALLOWED_ORIGIN = 'https://inkflowbrasil.com';
 

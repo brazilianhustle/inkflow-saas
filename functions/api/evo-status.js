@@ -2,9 +2,11 @@
 // GET /api/evo-status?instance=<evo_instance>
 // Verifica status da conexao WhatsApp mantendo evo_apikey no servidor.
 // Retorna apenas o estado: open / connecting / close / unknown.
+// [FIX Bug #6] CORS trancado para inkflowbrasil.com
+// [FIX Bug #11] Checar .ok ANTES de chamar .json()
 
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Content-Type': 'application/json',
 };
@@ -45,11 +47,12 @@ export async function onRequest(context) {
       evo_base_url + '/instance/fetchInstances',
       { headers: { apikey: evo_apikey } }
     );
-    const evoData = await evoRes.json();
+    // [FIX Bug #11] Checar .ok ANTES de .json()
     if (!evoRes.ok) {
       console.error('evo-status: Evolution API error', evoRes.status);
       return json({ error: 'Erro ao verificar status' }, 502);
     }
+    const evoData = await evoRes.json();
 
     const instances = Array.isArray(evoData) ? evoData : (evoData.data || []);
     const inst = instances.find(i =>

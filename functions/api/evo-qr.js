@@ -2,9 +2,10 @@
 // GET /api/evo-qr?instance=<evo_instance>
 // Busca o QR code da Evolution API mantendo evo_apikey no servidor.
 // O browser nunca ve as credenciais do tenant.
+// [FIX Bug #6] CORS trancado para inkflowbrasil.com
 
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Content-Type': 'application/json',
 };
@@ -45,11 +46,11 @@ export async function onRequest(context) {
       evo_base_url + '/instance/connect/' + instance,
       { headers: { apikey: evo_apikey } }
     );
-    const evoData = await evoRes.json();
     if (!evoRes.ok) {
       console.error('evo-qr: Evolution API error', evoRes.status);
       return json({ error: 'Erro ao gerar QR code' }, 502);
     }
+    const evoData = await evoRes.json();
 
     const base64 = evoData.base64 || evoData.qrcode?.base64 || evoData.code;
     if (!base64) return json({ error: 'QR code nao disponivel' }, 404);

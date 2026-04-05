@@ -514,7 +514,7 @@ async function loadTenants() {
   document.getElementById('tbl').style.display = 'none';
   document.getElementById('srch').value = '';
   try {
-    const list = await api('GET', '/rest/v1/tenants?select=*&order=created_at.desc');
+    const list = await api('GET', '/rest/v1/tenants?select=id,nome,nome_estudio,email,cidade,endereco,evo_instance,evo_base_url,plano,status_pagamento,ativo,nome_agente,prompt_sistema,faq_texto,webhook_path,mp_subscription_id,trial_ate,grupo_notificacao,grupo_orcamento,google_calendar_id,google_drive_folder,created_at&order=created_at.desc');
     const tArr = Array.isArray(list) ? list : [];
     let stats = [];
 try { const r = await api('GET', '/rest/v1/tenant_stats?select=*'); stats = Array.isArray(r) ? r : []; } catch(e) {}
@@ -750,7 +750,13 @@ function askT(id, ativo) {
   document.getElementById('cok').textContent = isAt ? 'Pausar' : 'Ativar';
   document.getElementById('cok').className   = isAt ? 'btn d' : 'btn p';
   pending = async () => {
-    await api('PATCH', '/rest/v1/tenants?id=eq.' + id, { ativo: !isAt, updated_at: new Date().toISOString() });
+    // [FIX Bug #5] Usar endpoint server-side em vez de PATCH direto ao Supabase
+    const r = await fetch('https://inkflowbrasil.com/api/update-tenant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenant_id: id, ativo: !isAt })
+    });
+    if (!r.ok) throw new Error('Falha ao atualizar tenant');
     toast(isAt ? 'Tenant pausado.' : 'Tenant ativado!', isAt ? 'inf' : 'ok');
     await loadTenants();
   };
@@ -764,10 +770,13 @@ function delT(id, nome) {
   document.getElementById('cok').textContent = 'Excluir permanentemente';
   document.getElementById('cok').className   = 'btn d';
   pending = async () => {
-    await api('DELETE', '/rest/v1/chat_messages?tenant_id=eq.' + id);
-    await api('DELETE', '/rest/v1/chats?tenant_id=eq.' + id);
-    await api('DELETE', '/rest/v1/dados_cliente?tenant_id=eq.' + id);
-    await api('DELETE', '/rest/v1/tenants?id=eq.' + id);
+    // [FIX Bug #5] Usar endpoint server-side em vez de DELETE direto ao Supabase
+    const r = await fetch('https://inkflowbrasil.com/api/delete-tenant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (accessToken || '') },
+      body: JSON.stringify({ tenant_id: id })
+    });
+    if (!r.ok) throw new Error('Falha ao excluir tenant');
     toast('Tenant e dados relacionados exclu\u00eddos.', 'inf');
     document.getElementById('det').innerHTML = '';
     await loadTenants();

@@ -92,9 +92,9 @@
   <script>
     // Nenhuma chave ou credencial armazenada no front-end.
     // Todas as chamadas Evolution API passam pelos proxies server-side:
-    //   GET /api/get-tenant  -- dados basicos do tenant (sem evo_apikey)
-    //   GET /api/evo-qr      -- QR code gerado no servidor
-    //   GET /api/evo-status  -- status da conexao verificado no servidor
+    //   POST /api/get-tenant  -- dados basicos do tenant (sem evo_apikey)
+    //   GET  /api/evo-qr      -- QR code gerado no servidor
+    //   GET  /api/evo-status   -- status da conexao verificado no servidor
 
     let tenant = null;
     let pollTimer = null;
@@ -104,7 +104,12 @@
       const slug = params.get('slug') || params.get('instance');
       if (!slug) { showError('Nenhum estudio identificado neste link. Solicite um novo link ao suporte InkFlow.'); return; }
       try {
-        const r = await fetch('/api/get-tenant?slug=' + encodeURIComponent(slug));
+        // [FIX Bug #3] get-tenant aceita POST, nao GET
+        const r = await fetch('/api/get-tenant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ evo_instance: slug, fields: 'id,evo_instance,ativo,nome_estudio' })
+        });
         const data = await r.json();
         if (!r.ok || data.error) {
           showError(data.error === 'Estudio nao encontrado'
@@ -112,7 +117,10 @@
             : 'Erro ao buscar dados do estudio. Verifique sua conexao e tente novamente.');
           return;
         }
-        tenant = data;
+        // get-tenant retorna { tenants: [...] }
+        const tenants = data.tenants || [data];
+        if (!tenants.length) { showError('Estudio nao encontrado.'); return; }
+        tenant = tenants[0];
       } catch (e) { showError('Erro ao buscar dados do estudio. Verifique sua conexao e tente novamente.'); return; }
       showState('st-qr');
       await loadQR();

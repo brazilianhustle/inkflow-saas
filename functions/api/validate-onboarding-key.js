@@ -68,10 +68,10 @@ export async function onRequest(context) {
       return json({ valid: false, error: 'Link de onboarding expirado. Solicite um novo link ao suporte InkFlow.' });
     }
 
-    // Verificar se já foi usado (opcional — se quiser links de uso único, descomentar)
-    // if (link.used) {
-    //   return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
-    // }
+    // [FIX Bug #7] Verificar se já foi usado — links de uso único
+    if (link.used) {
+      return json({ valid: false, error: 'Este link de onboarding j\u00e1 foi utilizado.' });
+    }
 
     // Key válida — retornar plano associado
     console.log('validate-onboarding-key: key válida, plano:', link.plano);

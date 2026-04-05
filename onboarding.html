@@ -621,7 +621,7 @@ const N8N_BASE    = 'https://n8n.vps1170.panel.speedfy.host/webhook/';
 // ── Estado ────────────────────────────────────────────────────────────────
 let gConfig      = { globalKey: '', plano: 'basic' };
 let tenantId     = null;
-let instanceKey  = null;
+// instanceKey removida — apikey fica apenas no servidor (Fix Bug #2)
 let instanceSlug = null;
 let pollInterval = null;
 let selectedPlan = 'basic';
@@ -639,7 +639,6 @@ async function init() {
     return;
   }
 
-  const urlParams = new URLSearchParams(window.location.search);
   const key = urlParams.get('token') || localStorage.getItem('inkflow_gk') || '';
 
   if (!key) {
@@ -772,19 +771,7 @@ async function sbFetch(method, path, body) {
   return fetch(SUPABASE_URL + path, opts);
 }
 
-async function evoFetch(method, path, body, key) {
-  const opts = {
-    method,
-    headers: { 'apikey': key, 'Content-Type': 'application/json' }
-  };
-  if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(EVO_BASE + path, opts);
-  if (!r.ok) {
-    let errTxt = await r.text();
-    throw new Error(`EVO API ${r.status}: ${errTxt}`);
-  }
-  return r.json();
-}
+// evoFetch removida — todas as chamadas Evolution passam por proxies server-side (Fix Bug #2)
 
 // ── Inicializar CardPayment Brick do Mercado Pago ──────────────────────────
 async function initCardBrick(amount) {
@@ -985,7 +972,7 @@ async function showPaymentStep() {
           const planNames  = { free:'Free Trial', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' };
           const planPrices = { free:'Grátis', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' };
           const planCycles = { free:'7 dias de teste sem compromisso', basic:'/mês \u00b7 cobran\u00e7a recorrente', pro:'/mês \u00b7 cobran\u00e7a recorrente', enterprise:'/mês \u00b7 cobran\u00e7a recorrente' };
-          document.getElementById('pay-plan-box').innerHTML = 
+          document.getElementById('pay-plan-box').innerHTML =
             '<div class="pay-plan-name">' + (planNames[selectedPlan] || selectedPlan) + '</div>' +
             '<div class="pay-plan-price">' + (planPrices[selectedPlan] || '') + '</div>' +
             '<div class="pay-plan-cycle">' + (planCycles[selectedPlan] || '') + '</div>';
@@ -1229,8 +1216,8 @@ async function doEvoSetup() {
       throw new Error(evoErr.error || 'Falha ao criar inst\u00e2ncia');
     }
     const evoData = await evoRes.json();
-    instanceKey = evoData.apikey;
-    if (!instanceKey) throw new Error('Resposta inv\u00e1lida da Evolution API. Contate o suporte.');
+    // apikey nao e mais retornada ao frontend — servidor salva direto (Fix Bug #2)
+    if (!evoData.instanceName) throw new Error('Resposta inv\u00e1lida da Evolution API. Contate o suporte.');
 
     if (evoData.already_existed) {
       setStatus(1, 'Inst\u00e2ncia WhatsApp reconectada!', 'done');
@@ -1238,45 +1225,10 @@ async function doEvoSetup() {
       setStatus(1, 'Inst\u00e2ncia WhatsApp criada!', 'done');
     }
 
-    // ── 3. Salvar apikey real no tenant ─────────────────────────────────
-    setStatus(2, 'Salvando credenciais...', 'active');
-
-  const patchRes = await fetch('/api/update-tenant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_id: tenantId,
-          evo_apikey: instanceKey,
-        }),
-      });
-      if (!patchRes.ok) throw new Error('Falha ao salvar credenciais. Contate o suporte.');
-
+    // ── 3. Credenciais salvas pelo servidor (evo-create-instance.js) ────
     setStatus(2, 'Credenciais salvas!', 'done');
 
-    // ── 4. Configurar webhook para n8n ───────────────────────────────────
-    setStatus(3, 'Configurando webhook n8n...', 'active');
-
-    try {
-      await evoFetch('POST', '/webhook/set/' + instanceSlug, {
-        webhook: {
-          enabled: true,
-          url: N8N_BASE + 'inkflow',
-          webhookByEvents: false,
-          webhookBase64: false,
-          events: [
-            'MESSAGES_UPSERT',
-            'CONNECTION_UPDATE',
-            'QRCODE_UPDATED',
-            'MESSAGES_UPDATE',
-            'CONTACTS_UPSERT'
-          ]
-        }
-      }, instanceKey);
-    } catch (webhookErr) {
-      // Não é fatal — pode ser configurado depois pelo admin
-      console.warn('Webhook setup failed:', webhookErr);
-    }
-
+    // ── 4. Webhook configurado pelo servidor (evo-create-instance.js) ───
     setStatus(3, 'Webhook configurado!', 'done');
 
     // ── 5. Ir para QR Code ───────────────────────────────────────────────
@@ -1313,10 +1265,12 @@ async function loadQR() {
   document.getElementById('qr-loading').style.display = 'flex';
   document.getElementById('qr-img').style.display = 'none';
   try {
-    const data = await evoFetch('GET', '/instance/connect/' + instanceSlug, null, instanceKey);
-    const qrBase64 = data?.base64 || data?.qrcode?.base64 || data?.qr?.base64;
+    // [FIX Bug #2B] Usa proxy server-side em vez de evoFetch direto
+    const r = await fetch('/api/evo-qr?instance=' + encodeURIComponent(instanceSlug));
+    const data = await r.json();
+    const qrBase64 = data?.base64;
     if (qrBase64) {
-      document.getElementById('qr-img').src = qrBase64;
+      document.getElementById('qr-img').src = qrBase64.startsWith('data:') ? qrBase64 : 'data:image/png;base64,' + qrBase64;
       document.getElementById('qr-img').style.display = 'block';
       document.getElementById('qr-loading').style.display = 'none';
     }
@@ -1356,13 +1310,10 @@ function updateTimer() {
 // ── Poll conexão ───────────────────────────────────────────────────────────
 async function checkConnection() {
   try {
-    const data = await evoFetch('GET',
-      '/instance/fetchInstances?instanceName=' + instanceSlug,
-      null, instanceKey);
-
-    const instances = Array.isArray(data) ? data : [data];
-    const inst = instances[0]?.instance || instances[0];
-    const state = inst?.connectionStatus || inst?.state || inst?.status;
+    // [FIX Bug #2C] Usa proxy server-side em vez de evoFetch direto
+    const r = await fetch('/api/evo-status?instance=' + encodeURIComponent(instanceSlug));
+    const data = await r.json();
+    const state = data?.state || 'unknown';
 
    if (state === 'open') {
       clearInterval(pollInterval);
