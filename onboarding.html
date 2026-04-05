@@ -639,9 +639,8 @@ async function init() {
     return;
   }
 
-  const hash   = window.location.hash.substring(1);
-  const params = new URLSearchParams(hash);
-  const key    = params.get('k') || localStorage.getItem('inkflow_gk') || '';
+  const urlParams = new URLSearchParams(window.location.search);
+  const key = urlParams.get('token') || localStorage.getItem('inkflow_gk') || '';
 
   if (!key) {
     showErrOverlay('Link de onboarding inválido ou expirado. Solicite um novo link ao suporte InkFlow.');
@@ -665,7 +664,7 @@ async function init() {
   } catch (valErr) {
     // Fail-open: se endpoint indisponível, usar plano do hash (com validação XSS)
     console.warn('Key validation failed, falling back:', valErr);
-    const hashPlano = params.get('p') || 'basic';
+    const hashPlano = urlParams.get('plano') || 'basic';
     const allowedPlans = ['free','basic','pro','enterprise'];
     plano = allowedPlans.includes(hashPlano) ? hashPlano : 'basic';
   }

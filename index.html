@@ -235,8 +235,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="sec first">
           <h3>Supabase</h3>
           <div class="fg2">
-            <div class="fg"><label>URL do Projeto</label><input id="cfUrl" type="text" placeholder="https://xxx.supabase.co"></div>
-            <div class="fg"><label>Anon Key</label><input id="cfKey" type="text" placeholder="eyJ..."></div>
+            <div class="fg"><label>URL do Projeto</label><input id="cfUrl" type="text" readonly style="opacity:.6;cursor:not-allowed"></div>
+            <div class="fg"><label>Anon Key</label><input id="cfKey" type="text" readonly style="opacity:.6;cursor:not-allowed"></div>
           </div>
         </div>
         <div class="sec">
@@ -397,11 +397,31 @@ let CFG = {
 };
 let tenants = [], allT = [], editId = null, pending = null;
 
+async function refreshSession(rt) {
+  try {
+    const r = await fetch(CFG.url + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'apikey': CFG.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: rt })
+    });
+    const d = await r.json();
+    if (r.ok && d.access_token) {
+      accessToken = d.access_token;
+      sessionStorage.setItem('ikf_token', d.access_token);
+      sessionStorage.setItem('ikf_refresh', d.refresh_token);
+      showApp();
+    } else { doLogout(); }
+  } catch(e) { doLogout(); }
+}
 function init() {
   const s = localStorage.getItem('ikf');
   if (s) { try { CFG = { ...CFG, ...JSON.parse(s) }; } catch(e) {} }
   const t = sessionStorage.getItem('ikf_token');
-  if (t) { accessToken = t; showApp(); }
+if (t) { accessToken = t; showApp(); }
+else {
+  const rt = sessionStorage.getItem('ikf_refresh');
+  if (rt) refreshSession(rt);
+}
   document.getElementById('lp').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   document.getElementById('lu').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('lp').focus(); });
 }
@@ -427,7 +447,15 @@ async function doLogin() {
       return;
     }
     accessToken = d.access_token;
+    const ADMINS = ['lmf4200@gmail.com'];
+if (!ADMINS.includes(email.toLowerCase())) {
+  errEl.textContent = 'Acesso n\u00e3o autorizado';
+  errEl.style.display = 'block';
+  accessToken = null;
+  return;
+}
     sessionStorage.setItem('ikf_token', accessToken);
+    sessionStorage.setItem('ikf_refresh', d.refresh_token);
     showApp();
   } catch(e) {
     errEl.style.display = 'block';
@@ -460,15 +488,23 @@ async function api(method, path, body) {
   const opts = {
     method,
     headers: {
-      'apikey': CFG.key,
-      'Authorization': 'Bearer ' + (accessToken || CFG.key),
-      'Content-Type': 'application/json',
-      'Prefer': method === 'GET' ? '' : 'return=minimal'
-    }
+  'apikey': CFG.key,
+  'Authorization': 'Bearer ' + (accessToken || CFG.key),
+  'Content-Type': 'application/json',
+  ...(method !== 'GET' && { 'Prefer': 'return=minimal' })
+}
   };
   if (body !== undefined) opts.body = JSON.stringify(body);
   const r = await fetch(CFG.url + path, opts);
-  if (r.status === 401) { doLogout(); throw new Error('Sess\u00e3o expirada. Fa\u00e7a login novamente.'); }
+  if (r.status === 401) {
+  const rt = sessionStorage.getItem('ikf_refresh');
+  if (rt) {
+    await refreshSession(rt);
+    if (accessToken) return api(method, path, body);
+  }
+  doLogout();
+  throw new Error('Sess\u00e3o expirada. Fa\u00e7a login novamente.');
+}
   if (method === 'GET') return r.json();
   return r;
 }
@@ -480,16 +516,12 @@ async function loadTenants() {
   try {
     const list = await api('GET', '/rest/v1/tenants?select=*&order=created_at.desc');
     const tArr = Array.isArray(list) ? list : [];
-    let dc = [], ch = [], cm = [];
-    try { const r = await api('GET', '/rest/v1/dados_cliente?select=tenant_id'); dc = Array.isArray(r) ? r : []; } catch(e) {}
-    try { const r = await api('GET', '/rest/v1/chats?select=tenant_id');         ch = Array.isArray(r) ? r : []; } catch(e) {}
-    try { const r = await api('GET', '/rest/v1/chat_messages?select=tenant_id'); cm = Array.isArray(r) ? r : []; } catch(e) {}
-    tenants = tArr.map(x => ({
-      ...x,
-      tc: dc.filter(y => y.tenant_id === x.id).length,
-      th: ch.filter(y => y.tenant_id === x.id).length,
-      tm: cm.filter(y => y.tenant_id === x.id).length
-    }));
+    let stats = [];
+try { const r = await api('GET', '/rest/v1/tenant_stats?select=*'); stats = Array.isArray(r) ? r : []; } catch(e) {}
+tenants = tArr.map(x => {
+  const s = stats.find(y => y.tenant_id === x.id) || {};
+  return { ...x, tc: s.total_clientes || 0, th: s.total_chats || 0, tm: s.total_msgs || 0 };
+});
   } catch(e) {
     tenants = [];
     if (e.message && !e.message.includes('Sess')) toast('Erro ao carregar: ' + e.message, 'err');
@@ -511,7 +543,7 @@ function render(list) {
     const ini  = (t.nome_estudio || t.nome || '??').split(' ').slice(0,2).map(w => w[0]||'').join('').toUpperCase();
     const pl   = t.plano || 'basic';
     const plc  = pl === 'enterprise' ? 'ba' : pl === 'pro' ? 'bb' : 'bgr';
-    const link = 'https://inkflowbrasil.com/onboarding#k=' + tok + '&p=' + plan;
+     const pgto = t.status_pagamento || 'pendente';
     const pgc  = pgto === 'authorized' ? 'bg' : pgto === 'cancelled' ? 'br' : 'ba';
     const stc  = t.ativo ? 'bg' : 'br';
     const sid  = esc(t.id);
@@ -630,7 +662,8 @@ function openModal(id) {
     document.getElementById('fCid').value     = t.cidade||'';
     document.getElementById('fEnd').value     = t.endereco||'';
     document.getElementById('fEvoInst').value = t.evo_instance||'';
-    document.getElementById('fEvoKey').value  = t.evo_apikey||'';
+    document.getElementById('fEvoKey').value  = '';
+  document.getElementById('fEvoKey').placeholder = t.evo_apikey ? '(chave salva \u2014 deixe vazio para manter)' : 'chave_api_evo';
     document.getElementById('fEvoUrl').value  = t.evo_base_url||'https://evolutionapi.vps1170.panel.speedfy.host';
     document.getElementById('fGrpN').value    = t.grupo_notificacao||'';
     document.getElementById('fGrpO').value    = t.grupo_orcamento||'';
@@ -668,7 +701,7 @@ async function saveModal() {
     cidade:            document.getElementById('fCid').value.trim()||null,
     endereco:          document.getElementById('fEnd').value.trim()||null,
     evo_instance:      document.getElementById('fEvoInst').value.trim()||null,
-    evo_apikey:        document.getElementById('fEvoKey').value.trim()||null,
+    ...(document.getElementById('fEvoKey').value.trim() ? { evo_apikey: document.getElementById('fEvoKey').value.trim() } : {}),
     evo_base_url:      document.getElementById('fEvoUrl').value.trim()||null,
     grupo_notificacao: document.getElementById('fGrpN').value.trim()||null,
     grupo_orcamento:   document.getElementById('fGrpO').value.trim()||null,
@@ -689,7 +722,11 @@ async function saveModal() {
   btn.disabled = true; btn.textContent = 'Salvando...';
   try {
     if (editId) {
-      await api('PATCH', '/rest/v1/tenants?id=eq.' + editId, data);
+      await fetch('https://inkflowbrasil.com/api/update-tenant', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
+    body: JSON.stringify({ tenant_id: editId, ...data })
+  });
     } else {
       await api('POST', '/rest/v1/tenants', data);
     }
@@ -727,8 +764,11 @@ function delT(id, nome) {
   document.getElementById('cok').textContent = 'Excluir permanentemente';
   document.getElementById('cok').className   = 'btn d';
   pending = async () => {
+    await api('DELETE', '/rest/v1/chat_messages?tenant_id=eq.' + id);
+    await api('DELETE', '/rest/v1/chats?tenant_id=eq.' + id);
+    await api('DELETE', '/rest/v1/dados_cliente?tenant_id=eq.' + id);
     await api('DELETE', '/rest/v1/tenants?id=eq.' + id);
-    toast('Tenant exclu\u00eddo.', 'inf');
+    toast('Tenant e dados relacionados exclu\u00eddos.', 'inf');
     document.getElementById('det').innerHTML = '';
     await loadTenants();
   };
@@ -777,13 +817,32 @@ function saveCfg() {
   updateStats();
 }
 
-function genOnbLink() {
+async function genOnbLink() {
+  const btn = document.querySelector('#tp2 .btn.p');
+  btn.disabled = true; btn.textContent = 'Gerando...';
   let tok = document.getElementById('onbTok').value.trim();
   if (!tok) tok = Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
   const plan = document.getElementById('onbPlan').value;
-  const link = 'https://inkflowbrasil.com/onboarding.html?token=' + tok + '&plano=' + plan;
-  document.getElementById('onbLink').textContent = link;
-  document.getElementById('onbOut').style.display = 'block';
+  try {
+    const r = await fetch('https://inkflowbrasil.com/api/create-onboarding-link', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + accessToken
+      },
+      body: JSON.stringify({ key: tok, plano: plan })
+    });
+    const d = await r.json();
+    if (!r.ok) { toast(d.error || 'Erro ao gerar link', 'err'); return; }
+    const link = 'https://inkflowbrasil.com/onboarding.html?token=' + tok + '&plano=' + plan;
+    document.getElementById('onbLink').textContent = link;
+    document.getElementById('onbOut').style.display = 'block';
+    toast('Link gerado e salvo no banco!', 'ok');
+  } catch(e) {
+    toast('Erro de rede ao gerar link', 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Gerar Link';
+  }
 }
 
 function copyOnbLink() {
