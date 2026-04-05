@@ -1000,33 +1000,19 @@ async function showPaymentStep() {
       }
     }
 
-    let sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
-
-    // Tratar colisão de slug (unique constraint) — até 5 tentativas
-    if (!sbRes.ok) {
-      const errBody = await sbRes.text();
-      if (errBody.includes('unique') || errBody.includes('duplicate') || errBody.includes('23505')) {
-        let retryOk = false;
-        for (let attempt = 0; attempt < 5; attempt++) {
-          const suffixRetry = Date.now().toString().slice(-5) + attempt;
-          instanceSlug = base + suffixRetry;
-          tenantData.evo_instance = instanceSlug;
-          tenantData.webhook_path = 'inkflow';
-          sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
-          if (sbRes.ok) { retryOk = true; break; }
-        }
-        if (!retryOk) {
-          const e2 = await sbRes.text();
-          throw new Error('Erro ao criar perfil após várias tentativas: ' + e2);
-        }
-      } else {
-        throw new Error('Erro ao criar perfil: ' + errBody);
-      }
+    // ── INSERT via endpoint server-side (nunca mais direto no Supabase) ────
+    const createRes = await fetch('/api/create-tenant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tenantData),
+    });
+    if (!createRes.ok) {
+      const errData = await createRes.json().catch(() => ({}));
+      throw new Error(errData.error || 'Erro ao criar perfil');
     }
-
-    const sbData = await sbRes.json();
-    tenantId = Array.isArray(sbData) ? sbData[0]?.id : sbData?.id;
-    if (!tenantId) throw new Error('Não foi possível obter o ID do tenant.');
+    const createData = await createRes.json();
+    tenantId = createData.tenant.id;
+    instanceSlug = createData.tenant.evo_instance || instanceSlug;
 
     // ── Salvar estado no localStorage (sobrevive ao redirect MP) ───────────
     localStorage.setItem('inkflow_ob', JSON.stringify({
