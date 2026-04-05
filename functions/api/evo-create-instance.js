@@ -22,12 +22,13 @@ export async function onRequest(context) {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
-  const EVO_BASE_URL = 'https://evolutionapi.vps1170.panel.speedfy.host';
-  const N8N_WEBHOOK  = 'https://n8n.vps1170.panel.speedfy.host/webhook/inkflow';
-  const GLOBAL_KEY = env.EVO_GLOBAL_KEY;
+  const EVO_BASE_URL = env.EVO_BASE_URL;
+  const N8N_WEBHOOK  = env.N8N_WEBHOOK_URL;
+  const GLOBAL_KEY   = env.EVO_GLOBAL_KEY;
 
-  if (!GLOBAL_KEY) {
-    return json({ error: 'EVO_GLOBAL_KEY nao configurada no servidor' }, 500);
+  if (!GLOBAL_KEY || !EVO_BASE_URL || !N8N_WEBHOOK) {
+    console.error('evo-create-instance: env vars ausentes', { EVO_BASE_URL: !!EVO_BASE_URL, N8N_WEBHOOK: !!N8N_WEBHOOK, GLOBAL_KEY: !!GLOBAL_KEY });
+    return json({ error: 'Configuração interna ausente' }, 503);
   }
 
   let body;
