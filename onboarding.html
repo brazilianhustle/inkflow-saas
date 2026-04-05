@@ -935,18 +935,18 @@ async function showPaymentStep() {
     const existCheck = await fetch('/api/get-tenant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, fields: 'id,evo_apikey,ativo' })
+      body: JSON.stringify({ email, fields: 'id,ativo' })
     });
     if (existCheck.ok) {
       const existData = await existCheck.json();
       const existing = existData.tenants || [];
       if (existing && existing.length > 0) {
         const ex = existing[0];
-        if (ex.ativo && ex.evo_apikey && ex.evo_apikey !== 'pending') {
+        if (ex.ativo) {
           throw new Error('Este email já está cadastrado em um estúdio ativo. Use outro email ou entre em contato com o suporte.');
         }
-        // Tenant pendente: reutilizar
-        if (ex.evo_apikey === 'pending') {
+        // Tenant pendente (ativo=false): reutilizar
+        if (!ex.ativo) {
           tenantId = ex.id;
           // Atualizar dados do tenant pendente
           await fetch('/api/update-tenant', {
@@ -954,6 +954,7 @@ async function showPaymentStep() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               tenant_id: ex.id,
+              email,
               nome_agente: agente,
               nome_estudio: estudio,
               evo_instance: instanceSlug,
@@ -1118,6 +1119,7 @@ async function startFreeTrial() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         tenant_id: tenantId,
+        email: document.getElementById('f-email').value.trim(),
         trial_ate: trialEnd.toISOString(),
         ativo: true
       })
@@ -1161,7 +1163,7 @@ async function continueAfterPayment(preapprovalId) {
     const checkRes = await fetch('/api/get-tenant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenantId, fields: 'mp_subscription_id' })
+      body: JSON.stringify({ tenant_id: tenantId, email: document.getElementById('f-email').value.trim(), fields: 'mp_subscription_id' })
     });
     if (checkRes.ok) {
       const checkData = await checkRes.json();
@@ -1324,7 +1326,7 @@ async function checkConnection() {
       await fetch('/api/update-tenant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenant_id: tenantId, ativo: true }),
+        body: JSON.stringify({ tenant_id: tenantId, email: document.getElementById('f-email').value.trim(), ativo: true }),
       });
 
       // Ler dados do localStorage antes de limpar

@@ -1,34 +1,41 @@
 // ── InkFlow — Consulta segura de tenant (server-side) ──────────────────────
-// Substitui os sbFetch('GET', '/rest/v1/tenants?...') do frontend
-// que foram bloqueados ao remover anon SELECT em tenants.
-//
 // POST /api/get-tenant
-// Body: { tenant_id, fields: "id,email,evo_apikey,ativo,mp_subscription_id" }
-// Retorna apenas os campos solicitados (filtrados por whitelist)
+// Body: { tenant_id?, email?, fields: "id,ativo,..." }
 //
-// Também suporta busca por email (para idempotency check):
-// Body: { email: "x@y.com", fields: "id,evo_apikey,ativo" }
+// AUTH: Requer uma das formas:
+//   1. Busca por email → retorna só dados daquele email (self-service)
+//   2. Busca por tenant_id + email → verifica que email é dono do tenant
+//   3. Header Authorization: Bearer <supabase_jwt> de admin → acesso total
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+const ADMIN_EMAIL  = 'lmf4200@gmail.com';
 
 const CORS = {
   'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
 };
 
-// Campos que o frontend pode consultar (NUNCA expor prompt_sistema, faq_texto, evo_apikey completo)
-// evo_apikey incluido porque o frontend precisa checar se é 'pending'
-// CORS restrito a inkflowbrasil.com protege contra acesso externo
+// Campos que o frontend pode consultar (evo_apikey REMOVIDO — passo 4)
 const READABLE_FIELDS = new Set([
   'id', 'email', 'ativo', 'plano', 'mp_subscription_id',
   'status_pagamento', 'nome_estudio', 'nome_agente',
-  'evo_instance', 'evo_apikey', 'trial_ate',
+  'evo_instance', 'trial_ate',
 ]);
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: CORS });
+}
+
+// Decodifica JWT do Supabase Auth e extrai o email
+function extractEmailFromJwt(authHeader) {
+  try {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+    const token = authHeader.split(' ')[1];
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.email || null;
+  } catch { return null; }
 }
 
 export async function onRequest(context) {
@@ -47,17 +54,26 @@ export async function onRequest(context) {
     return json({ error: 'tenant_id ou email obrigatório' }, 400);
   }
 
-  // Validar tenant_id formato UUID se fornecido
+  // Validar tenant_id formato UUID
   if (tenant_id && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenant_id)) {
     return json({ error: 'tenant_id inválido' }, 400);
   }
 
-  // Validar email se fornecido
+  // Validar email
   if (email && (!email.includes('@') || email.length > 254)) {
     return json({ error: 'email inválido' }, 400);
   }
 
-  // Filtrar campos solicitados pela whitelist
+  // ── AUTH: verificar identidade ────────────────────────────────────────────
+  const jwtEmail = extractEmailFromJwt(request.headers.get('Authorization'));
+  const isAdmin  = jwtEmail === ADMIN_EMAIL;
+
+  // Se busca por tenant_id sem email e sem JWT admin → bloqueado
+  if (tenant_id && !email && !isAdmin) {
+    return json({ error: 'email obrigatório para consulta por tenant_id' }, 403);
+  }
+
+  // Filtrar campos pela whitelist
   const requestedFields = (fields || 'id,ativo').split(',').map(f => f.trim());
   const safeFields = requestedFields.filter(f => READABLE_FIELDS.has(f));
   if (safeFields.length === 0) safeFields.push('id');
@@ -87,12 +103,27 @@ export async function onRequest(context) {
     );
 
     if (!res.ok) {
-      const err = await res.text();
-      console.error('get-tenant error:', err);
+      console.error('get-tenant error:', await res.text());
       return json({ error: 'Erro ao consultar tenant' }, 500);
     }
 
     const data = await res.json();
+
+    // Se busca por tenant_id + email (não admin): verificar ownership
+    if (tenant_id && email && !isAdmin && data.length > 0) {
+      // Buscar email real do tenant pra comparar
+      const ownerRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=email`,
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+      );
+      if (ownerRes.ok) {
+        const ownerData = await ownerRes.json();
+        if (ownerData.length > 0 && ownerData[0].email !== email) {
+          return json({ error: 'Acesso negado' }, 403);
+        }
+      }
+    }
+
     return json({ tenants: data });
 
   } catch (err) {
