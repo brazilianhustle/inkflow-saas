@@ -15,7 +15,7 @@ const CORS = {
   'Content-Type': 'application/json',
 };
 
-const PLANOS = 
+const PLANOS =  {
     teste:      { nome: 'InkFlow Teste',      valor: 1.00 },   // TEMPORARIO: remover apos teste
   basic:      { nome: 'InkFlow Essencial',  valor: 199.00 },
   pro:        { nome: 'InkFlow Growth',     valor: 399.00 },
