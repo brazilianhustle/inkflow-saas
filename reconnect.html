@@ -47,6 +47,9 @@
     .error-msg{font-size:13px;color:rgba(255,255,255,.5);font-family:'DM Mono',monospace;line-height:1.6}
     @media(max-width:480px){.card{padding:28px 20px}}
   </style>
+  <!-- Sentry -->
+  <script src="https://browser.sentry-cdn.com/7.119.0/bundle.min.js" crossorigin="anonymous"></script>
+  <script>if(typeof Sentry!=="undefined"&&Sentry.init){Sentry.init({dsn:"https://c658b9d1be28f744f2aef5c552ef1b4f@o4511123798687744.ingest.us.sentry.io/4511123944505344",environment:"production",tracesSampleRate:1.0});Sentry.setTag("page","reconnect");}</script>
 </head>
 <body>
   <div class="card">

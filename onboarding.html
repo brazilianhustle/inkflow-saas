@@ -271,7 +271,7 @@ select.fi option{background:#091515;color:#fff}
 <script src="https://sdk.mercadopago.com/js/v2"></script>
   <!-- Sentry -->
   <script src="https://browser.sentry-cdn.com/7.119.0/bundle.min.js" crossorigin="anonymous"></script>
-  <script>if(typeof Sentry!=="undefined"&&Sentry.init){Sentry.init({dsn:"https://c658b9d1be28f744f2aef5c552ef1b4f@o4511123798687744.ingest.us.sentry.io/4511123944505344",environment:"production",tracesSampleRate:0.1});}</script>
+  <script>if(typeof Sentry!=="undefined"&&Sentry.init){Sentry.init({dsn:"https://c658b9d1be28f744f2aef5c552ef1b4f@o4511123798687744.ingest.us.sentry.io/4511123944505344",environment:"production",tracesSampleRate:1.0});Sentry.setTag("page","onboarding");}</script>
   <!-- PostHog -->
   <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys getNextSurveyStep onSessionId setPersonPropertiesForFlags".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init("phc_g6yiGtySvzygKQwuDQqQBp9jI0slWkJ4bc1VsPuWOvM",{api_host:"https://us.i.posthog.com",person_profiles:"identified_only"});</script>
 </head>
@@ -935,18 +935,18 @@ async function showPaymentStep() {
     const existCheck = await fetch('/api/get-tenant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, fields: 'id,evo_apikey,ativo' })
+      body: JSON.stringify({ email, fields: 'id,ativo' })
     });
     if (existCheck.ok) {
       const existData = await existCheck.json();
       const existing = existData.tenants || [];
       if (existing && existing.length > 0) {
         const ex = existing[0];
-        if (ex.ativo && ex.evo_apikey && ex.evo_apikey !== 'pending') {
+        if (ex.ativo) {
           throw new Error('Este email já está cadastrado em um estúdio ativo. Use outro email ou entre em contato com o suporte.');
         }
-        // Tenant pendente: reutilizar
-        if (ex.evo_apikey === 'pending') {
+        // Tenant pendente (ativo=false): reutilizar
+        if (!ex.ativo) {
           tenantId = ex.id;
           // Atualizar dados do tenant pendente
           await fetch('/api/update-tenant', {
@@ -954,6 +954,7 @@ async function showPaymentStep() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               tenant_id: ex.id,
+              email,
               nome_agente: agente,
               nome_estudio: estudio,
               evo_instance: instanceSlug,
@@ -1000,33 +1001,19 @@ async function showPaymentStep() {
       }
     }
 
-    let sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
-
-    // Tratar colisão de slug (unique constraint) — até 5 tentativas
-    if (!sbRes.ok) {
-      const errBody = await sbRes.text();
-      if (errBody.includes('unique') || errBody.includes('duplicate') || errBody.includes('23505')) {
-        let retryOk = false;
-        for (let attempt = 0; attempt < 5; attempt++) {
-          const suffixRetry = Date.now().toString().slice(-5) + attempt;
-          instanceSlug = base + suffixRetry;
-          tenantData.evo_instance = instanceSlug;
-          tenantData.webhook_path = 'inkflow';
-          sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
-          if (sbRes.ok) { retryOk = true; break; }
-        }
-        if (!retryOk) {
-          const e2 = await sbRes.text();
-          throw new Error('Erro ao criar perfil após várias tentativas: ' + e2);
-        }
-      } else {
-        throw new Error('Erro ao criar perfil: ' + errBody);
-      }
+    // ── INSERT via endpoint server-side (nunca mais direto no Supabase) ────
+    const createRes = await fetch('/api/create-tenant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tenantData),
+    });
+    if (!createRes.ok) {
+      const errData = await createRes.json().catch(() => ({}));
+      throw new Error(errData.error || 'Erro ao criar perfil');
     }
-
-    const sbData = await sbRes.json();
-    tenantId = Array.isArray(sbData) ? sbData[0]?.id : sbData?.id;
-    if (!tenantId) throw new Error('Não foi possível obter o ID do tenant.');
+    const createData = await createRes.json();
+    tenantId = createData.tenant.id;
+    instanceSlug = createData.tenant.evo_instance || instanceSlug;
 
     // ── Salvar estado no localStorage (sobrevive ao redirect MP) ───────────
     localStorage.setItem('inkflow_ob', JSON.stringify({
@@ -1132,6 +1119,7 @@ async function startFreeTrial() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         tenant_id: tenantId,
+        email: document.getElementById('f-email').value.trim(),
         trial_ate: trialEnd.toISOString(),
         ativo: true
       })
@@ -1175,7 +1163,7 @@ async function continueAfterPayment(preapprovalId) {
     const checkRes = await fetch('/api/get-tenant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenantId, fields: 'mp_subscription_id' })
+      body: JSON.stringify({ tenant_id: tenantId, email: document.getElementById('f-email').value.trim(), fields: 'mp_subscription_id' })
     });
     if (checkRes.ok) {
       const checkData = await checkRes.json();
@@ -1262,21 +1250,25 @@ async function doEvoSetup() {
 
 // ── QR Code ────────────────────────────────────────────────────────────────
 async function loadQR() {
-  document.getElementById('qr-loading').style.display = 'flex';
-  document.getElementById('qr-img').style.display = 'none';
+  // [FIX INKFLOW-SAAS-1] Null-check para evitar TypeError quando elementos ainda nao existem no DOM
+  const qrLoading = document.getElementById('qr-loading');
+  const qrImg = document.getElementById('qr-img');
+  if (!qrLoading || !qrImg) { console.warn('loadQR: elementos QR ainda nao estao no DOM'); return; }
+  qrLoading.style.display = 'flex';
+  qrImg.style.display = 'none';
   try {
     // [FIX Bug #2B] Usa proxy server-side em vez de evoFetch direto
     const r = await fetch('/api/evo-qr?instance=' + encodeURIComponent(instanceSlug));
     const data = await r.json();
     const qrBase64 = data?.base64;
     if (qrBase64) {
-      document.getElementById('qr-img').src = qrBase64.startsWith('data:') ? qrBase64 : 'data:image/png;base64,' + qrBase64;
-      document.getElementById('qr-img').style.display = 'block';
-      document.getElementById('qr-loading').style.display = 'none';
+      qrImg.src = qrBase64.startsWith('data:') ? qrBase64 : 'data:image/png;base64,' + qrBase64;
+      qrImg.style.display = 'block';
+      qrLoading.style.display = 'none';
     }
   } catch (e) {
     console.error('QR load error:', e);
-    document.getElementById('qr-loading').innerHTML = '<span style="font-size:12px;color:var(--ink3);font-family:\'DM Mono\',monospace">Erro ao carregar QR. Clique em "Novo QR Code".</span>';
+    if (qrLoading) qrLoading.innerHTML = '<span style="font-size:12px;color:var(--ink3);font-family:\'DM Mono\',monospace">Erro ao carregar QR. Clique em "Novo QR Code".</span>';
   }
 }
 
@@ -1338,7 +1330,7 @@ async function checkConnection() {
       await fetch('/api/update-tenant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenant_id: tenantId, ativo: true }),
+        body: JSON.stringify({ tenant_id: tenantId, email: document.getElementById('f-email').value.trim(), ativo: true }),
       });
 
       // Ler dados do localStorage antes de limpar
