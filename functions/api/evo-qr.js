@@ -44,8 +44,12 @@ export async function onRequest(context) {
       return json({ error: 'Instancia nao encontrada' }, 404);
     }
 
-    const { evo_base_url, evo_apikey, ativo } = tenants[0];
-    if (!ativo) return json({ error: 'Tenant inativo' }, 403);
+    const { evo_base_url, evo_apikey } = tenants[0];
+    // Bug 1 fix: removido check de 'ativo' — durante o onboarding o tenant ainda nao esta ativo,
+    // mas precisa gerar QR para conectar o WhatsApp. Verificamos apenas se a apikey e valida.
+    if (!evo_apikey || evo_apikey === 'pending') {
+      return json({ error: 'Instancia ainda nao configurada. Aguarde alguns segundos e tente novamente.' }, 425);
+    }
 
     const evoRes = await fetch(
       evo_base_url + '/instance/connect/' + instance,
