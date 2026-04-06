@@ -935,18 +935,18 @@ async function showPaymentStep() {
     const existCheck = await fetch('/api/get-tenant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, fields: 'id,ativo' })
+      body: JSON.stringify({ email, fields: 'id,evo_apikey,ativo' })
     });
     if (existCheck.ok) {
       const existData = await existCheck.json();
       const existing = existData.tenants || [];
       if (existing && existing.length > 0) {
         const ex = existing[0];
-        if (ex.ativo) {
+        if (ex.ativo && ex.evo_apikey && ex.evo_apikey !== 'pending') {
           throw new Error('Este email já está cadastrado em um estúdio ativo. Use outro email ou entre em contato com o suporte.');
         }
-        // Tenant pendente (ativo=false): reutilizar
-        if (!ex.ativo) {
+        // Tenant pendente: reutilizar
+        if (ex.evo_apikey === 'pending') {
           tenantId = ex.id;
           // Atualizar dados do tenant pendente
           await fetch('/api/update-tenant', {
@@ -954,7 +954,6 @@ async function showPaymentStep() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               tenant_id: ex.id,
-              email,
               nome_agente: agente,
               nome_estudio: estudio,
               evo_instance: instanceSlug,
@@ -1001,19 +1000,33 @@ async function showPaymentStep() {
       }
     }
 
-    // ── INSERT via endpoint server-side (nunca mais direto no Supabase) ────
-    const createRes = await fetch('/api/create-tenant', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tenantData),
-    });
-    if (!createRes.ok) {
-      const errData = await createRes.json().catch(() => ({}));
-      throw new Error(errData.error || 'Erro ao criar perfil');
+    let sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
+
+    // Tratar colisão de slug (unique constraint) — até 5 tentativas
+    if (!sbRes.ok) {
+      const errBody = await sbRes.text();
+      if (errBody.includes('unique') || errBody.includes('duplicate') || errBody.includes('23505')) {
+        let retryOk = false;
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const suffixRetry = Date.now().toString().slice(-5) + attempt;
+          instanceSlug = base + suffixRetry;
+          tenantData.evo_instance = instanceSlug;
+          tenantData.webhook_path = 'inkflow';
+          sbRes = await sbFetch('POST', '/rest/v1/tenants', tenantData);
+          if (sbRes.ok) { retryOk = true; break; }
+        }
+        if (!retryOk) {
+          const e2 = await sbRes.text();
+          throw new Error('Erro ao criar perfil após várias tentativas: ' + e2);
+        }
+      } else {
+        throw new Error('Erro ao criar perfil: ' + errBody);
+      }
     }
-    const createData = await createRes.json();
-    tenantId = createData.tenant.id;
-    instanceSlug = createData.tenant.evo_instance || instanceSlug;
+
+    const sbData = await sbRes.json();
+    tenantId = Array.isArray(sbData) ? sbData[0]?.id : sbData?.id;
+    if (!tenantId) throw new Error('Não foi possível obter o ID do tenant.');
 
     // ── Salvar estado no localStorage (sobrevive ao redirect MP) ───────────
     localStorage.setItem('inkflow_ob', JSON.stringify({
@@ -1119,7 +1132,6 @@ async function startFreeTrial() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         tenant_id: tenantId,
-        email: document.getElementById('f-email').value.trim(),
         trial_ate: trialEnd.toISOString(),
         ativo: true
       })
@@ -1163,7 +1175,7 @@ async function continueAfterPayment(preapprovalId) {
     const checkRes = await fetch('/api/get-tenant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenantId, email: document.getElementById('f-email').value.trim(), fields: 'mp_subscription_id' })
+      body: JSON.stringify({ tenant_id: tenantId, fields: 'mp_subscription_id' })
     });
     if (checkRes.ok) {
       const checkData = await checkRes.json();
@@ -1326,7 +1338,7 @@ async function checkConnection() {
       await fetch('/api/update-tenant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenant_id: tenantId, email: document.getElementById('f-email').value.trim(), ativo: true }),
+        body: JSON.stringify({ tenant_id: tenantId, ativo: true }),
       });
 
       // Ler dados do localStorage antes de limpar

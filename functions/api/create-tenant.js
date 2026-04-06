@@ -3,16 +3,10 @@
 // Usa service_role para INSERT, eliminando necessidade de anon INSERT via RLS.
 //
 // POST /api/create-tenant
-// Body: { nome, nome_agente, nome_estudio, nome_agente, email, cidade, endereco,
+// Body: { nome, nome_agente, nome_estudio, email, cidade, endereco,
 //         evo_instance, plano, prompt_sistema }
 // Resposta sucesso: { tenant: { id, evo_instance } }
 // Resposta falha:   { error: "..." }
-//
-// BACKUP PRÉ-CORREÇÃO — 2026-04-05
-// Issues originais:
-//   🔴 evo_instance pode ser undefined no retry → .replace() em undefined = throw
-//   🟡 nome_agente não validado como obrigatório
-//   🟡 Sem rate limiting (mitigar via Cloudflare WAF rules por IP)
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 
@@ -51,10 +45,6 @@ export async function onRequest(context) {
   }
   if (!nome_estudio || typeof nome_estudio !== 'string' || nome_estudio.trim().length < 2) {
     return json({ error: 'Nome do estúdio é obrigatório' }, 400);
-  }
-  // FIX: nome_agente agora validado como obrigatório
-  if (!nome_agente || typeof nome_agente !== 'string' || nome_agente.trim().length < 2) {
-    return json({ error: 'Nome do agente é obrigatório (mín. 2 caracteres)' }, 400);
   }
   if (!email || !email.includes('@') || email.length > 254) {
     return json({ error: 'Email válido é obrigatório' }, 400);
@@ -98,8 +88,7 @@ export async function onRequest(context) {
       const errText = await res.text();
       if (errText.includes('unique') || errText.includes('duplicate') || errText.includes('23505')) {
         let retryOk = false;
-        // FIX: fallback 'inkflow' evita .replace() em undefined
-        const base = (tenantData.evo_instance || 'inkflow').replace(/\d+$/, '');
+        const base = tenantData.evo_instance.replace(/\d+$/, '');
         for (let attempt = 0; attempt < 5; attempt++) {
           const suffix = Date.now().toString().slice(-5) + attempt;
           tenantData.evo_instance = base + suffix;

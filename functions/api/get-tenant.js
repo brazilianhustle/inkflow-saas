@@ -1,11 +1,12 @@
 // ── InkFlow — Consulta segura de tenant (server-side) ──────────────────────
 // POST /api/get-tenant
-// Body: { tenant_id?, email?, fields: "id,ativo,..." }
+// Body: { tenant_id?, email?, evo_instance?, fields: "id,ativo,..." }
 //
 // AUTH: Requer uma das formas:
 //   1. Busca por email → retorna só dados daquele email (self-service)
 //   2. Busca por tenant_id + email → verifica que email é dono do tenant
-//   3. Header Authorization: Bearer <supabase_jwt> de admin → acesso total
+//   3. Busca por evo_instance → retorna dados públicos (para reconnect.html)
+//   4. Header Authorization: Bearer <supabase_jwt> de admin → acesso total
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const ADMIN_EMAIL  = 'lmf4200@gmail.com';
@@ -48,10 +49,10 @@ export async function onRequest(context) {
   try { body = await request.json(); }
   catch { return json({ error: 'JSON inválido' }, 400); }
 
-  const { tenant_id, email, fields } = body;
+  const { tenant_id, email, evo_instance, fields } = body;
 
-  if (!tenant_id && !email) {
-    return json({ error: 'tenant_id ou email obrigatório' }, 400);
+  if (!tenant_id && !email && !evo_instance) {
+    return json({ error: 'tenant_id, email ou evo_instance obrigatório' }, 400);
   }
 
   // Validar tenant_id formato UUID
@@ -64,6 +65,11 @@ export async function onRequest(context) {
     return json({ error: 'email inválido' }, 400);
   }
 
+  // [FIX AUDIT] Validar evo_instance (alfanumerico + hifen, max 64)
+  if (evo_instance && !/^[a-zA-Z0-9_-]{1,64}$/.test(evo_instance)) {
+    return json({ error: 'evo_instance inválido' }, 400);
+  }
+
   // ── AUTH: verificar identidade ────────────────────────────────────────────
   const jwtEmail = extractEmailFromJwt(request.headers.get('Authorization'));
   const isAdmin  = jwtEmail === ADMIN_EMAIL;
@@ -72,6 +78,9 @@ export async function onRequest(context) {
   if (tenant_id && !email && !isAdmin) {
     return json({ error: 'email obrigatório para consulta por tenant_id' }, 403);
   }
+
+  // Busca por evo_instance: retorna apenas campos públicos (para reconnect.html)
+  // Sem auth requerido — evo_instance já é público na URL de reconexão
 
   // Filtrar campos pela whitelist
   const requestedFields = (fields || 'id,ativo').split(',').map(f => f.trim());
@@ -88,8 +97,11 @@ export async function onRequest(context) {
     let queryParam;
     if (tenant_id) {
       queryParam = `id=eq.${encodeURIComponent(tenant_id)}`;
-    } else {
+    } else if (email) {
       queryParam = `email=eq.${encodeURIComponent(email)}`;
+    } else {
+      // [FIX AUDIT] Busca por evo_instance (para reconnect.html)
+      queryParam = `evo_instance=eq.${encodeURIComponent(evo_instance)}`;
     }
 
     const res = await fetch(

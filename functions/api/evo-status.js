@@ -25,6 +25,11 @@ export async function onRequest(context) {
   const instance = url.searchParams.get('instance')?.trim();
   if (!instance) return json({ error: 'instance obrigatorio' }, 400);
 
+  // [FIX AUDIT] Validar formato do parametro instance
+  if (!/^[a-zA-Z0-9_-]{1,64}$/.test(instance)) {
+    return json({ error: 'instance invalido' }, 400);
+  }
+
   const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
   const SUPABASE_KEY = env.SUPABASE_SERVICE_KEY;
   if (!SUPABASE_KEY) return json({ error: 'Configuracao interna ausente' }, 503);
