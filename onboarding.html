@@ -1271,11 +1271,29 @@ async function loadQR() {
     // [FIX Bug #2B] Usa proxy server-side em vez de evoFetch direto
     const r = await fetch('/api/evo-qr?instance=' + encodeURIComponent(instanceSlug));
     const data = await r.json();
+
+    // Bug 1 fix: tratar erros da API em vez de deixar spinner infinito
+    if (!r.ok) {
+      const errMsg = data?.error || 'Erro ao gerar QR Code';
+      console.error('evo-qr error:', r.status, errMsg);
+      // Se instancia ainda nao configurada (425), tentar novamente em 3s automaticamente
+      if (r.status === 425) {
+        qrLoading.innerHTML = '<span style="font-size:12px;color:var(--ink3);font-family:\'DM Mono\',monospace">Configurando instância... tentando novamente em 3s</span>';
+        setTimeout(() => loadQR(), 3000);
+        return;
+      }
+      qrLoading.innerHTML = '<span style="font-size:12px;color:var(--ink3);font-family:\'DM Mono\',monospace">' + errMsg + '. Clique em "Novo QR Code".</span>';
+      return;
+    }
+
     const qrBase64 = data?.base64;
     if (qrBase64) {
       qrImg.src = qrBase64.startsWith('data:') ? qrBase64 : 'data:image/png;base64,' + qrBase64;
       qrImg.style.display = 'block';
       qrLoading.style.display = 'none';
+    } else {
+      // QR vazio — pode acontecer se instancia ja esta conectada
+      qrLoading.innerHTML = '<span style="font-size:12px;color:var(--ink3);font-family:\'DM Mono\',monospace">QR não disponível. Se já escaneou, aguarde a conexão...</span>';
     }
   } catch (e) {
     console.error('QR load error:', e);
