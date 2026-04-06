@@ -59,7 +59,7 @@ export async function onRequest(context) {
   if (!email || !email.includes('@') || email.length > 254) {
     return json({ error: 'Email válido é obrigatório' }, 400);
   }
-  if (!plano || !['free', 'teste', 'basic', 'pro', 'enterprise'].includes(plano)) {
+  if (!plano || !['free', 'teste', 'basic', 'pro', 'enterprise'].includes(plano)) {  // TEMPORARIO: 'teste' adicionado para teste R$1
     return json({ error: 'Plano inválido' }, 400);
   }
 
@@ -77,6 +77,7 @@ export async function onRequest(context) {
 
     // ── Campos forçados pelo server (não confia no frontend) ────────────────
     tenantData.ativo = false;
+    tenantData.status_pagamento = 'rascunho';   // Bug 3 fix: marca como rascunho até pagamento ser confirmado
     tenantData.evo_apikey = 'pending';
     tenantData.webhook_path = tenantData.webhook_path || 'inkflow';
     tenantData.evo_base_url = tenantData.evo_base_url || env.EVO_BASE_URL || 'https://evolutionapi.vps1170.panel.speedfy.host';
