@@ -67,6 +67,7 @@ export async function onRequest(context) {
 
   // Cria nova instancia se nao existir
   if (!apikey) {
+    // Bug 2 fix: enviar configuracoes completas na criacao da instancia
     const createRes = await fetch(`${EVO_BASE_URL}/instance/create`, {
       method: 'POST',
       headers: {
@@ -77,6 +78,13 @@ export async function onRequest(context) {
         instanceName,
         qrcode: false,
         integration: 'WHATSAPP-BAILEYS',
+        // Settings corretos para o InkFlow
+        rejectCall: true,           // rejeitar ligacoes automaticamente
+        groupsIgnore: true,         // ignorar mensagens de grupo
+        alwaysOnline: true,         // aparecer sempre online
+        readMessages: false,        // nao marcar como lido automaticamente
+        readStatus: false,          // nao ler status/stories
+        syncFullHistory: false,     // nao sincronizar historico antigo
       }),
     });
 
@@ -99,24 +107,41 @@ export async function onRequest(context) {
     await fetch(`${EVO_BASE_URL}/webhook/set/${instanceName}`, {
       method: 'POST',
       headers: { apikey, 'Content-Type': 'application/json' },
+      // Bug 2 fix: apenas MESSAGES_UPSERT e necessario para o workflow n8n.
+      // CONNECTION_UPDATE, CONTACTS_UPSERT, QRCODE_UPDATED e MESSAGES_UPDATE
+      // geram trafego desnecessario e podem causar execucoes extras no n8n.
       body: JSON.stringify({
         webhook: {
           enabled: true,
           url: N8N_WEBHOOK,
           webhookByEvents: false,
-          webhookBase64: false,
+          webhookBase64: true,    // necessario para n8n receber audio/imagem em base64
           events: [
-            'MESSAGES_UPSERT',
-            'CONNECTION_UPDATE',
-            'QRCODE_UPDATED',
-            'MESSAGES_UPDATE',
-            'CONTACTS_UPSERT'
+            'MESSAGES_UPSERT'
           ]
         }
       })
     });
   } catch (webhookErr) {
     console.warn('evo-create-instance: webhook setup failed (nao fatal):', webhookErr);
+  }
+
+  // Bug 2 fix: garantir settings corretos mesmo para instancias que ja existiam
+  try {
+    await fetch(`${EVO_BASE_URL}/settings/set/${instanceName}`, {
+      method: 'POST',
+      headers: { apikey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        rejectCall: true,
+        groupsIgnore: true,
+        alwaysOnline: true,
+        readMessages: false,
+        readStatus: false,
+        syncFullHistory: false,
+      })
+    });
+  } catch (settingsErr) {
+    console.warn('evo-create-instance: settings update failed (nao fatal):', settingsErr);
   }
 
   // [FIX Bug #8] Salvar evo_apikey e evo_instance no tenant via Supabase
