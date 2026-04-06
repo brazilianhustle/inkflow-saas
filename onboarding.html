@@ -392,6 +392,17 @@ select.fi option{background:#091515;color:#fff}
         </ul>
       </div>
 
+      <!-- TEMPORARIO: plano teste R$1 — remover apos teste -->
+      <div class="plan-opt" id="plan-teste" onclick="selectPlan('teste')" style="border:2px solid #ff4444">
+        <div class="po-tag" style="background:#ff4444">TESTE</div>
+        <div class="po-name">Teste R$1</div>
+        <div class="po-price">R$ 1/m&ecirc;s</div>
+        <ul class="po-features">
+          <li class="po-feat">Apenas para teste interno</li>
+          <li class="po-feat">Remover antes do lan&ccedil;amento</li>
+        </ul>
+      </div>
+
       <div class="plan-opt active" id="plan-basic" onclick="selectPlan('basic')">
         <div class="po-name">Essencial</div>
         <div class="po-price">R$ 199/m&ecirc;s</div>
@@ -664,12 +675,12 @@ async function init() {
     // Fail-open: se endpoint indisponível, usar plano do hash (com validação XSS)
     console.warn('Key validation failed, falling back:', valErr);
     const hashPlano = urlParams.get('plano') || 'basic';
-    const allowedPlans = ['free','basic','pro','enterprise'];
+    const allowedPlans = ['free','teste','basic','pro','enterprise'];
     plano = allowedPlans.includes(hashPlano) ? hashPlano : 'basic';
   }
 
   // Bug 7 fix: Validar plano contra whitelist (previne XSS)
-  const allowedPlans = ['free','basic','pro','enterprise'];
+  const allowedPlans = ['free','teste','basic','pro','enterprise'];
   if (!allowedPlans.includes(plano)) plano = 'basic';
 
   gConfig = { globalKey: key, plano };
@@ -679,7 +690,7 @@ async function init() {
 
   // Set plan display
   selectedPlan = plano;
-  const planLabels = { free:'free trial', basic:'essencial', pro:'growth', enterprise:'enterprise' };
+  const planLabels = { free:'free trial', teste:'teste R$1', basic:'essencial', pro:'growth', enterprise:'enterprise' };
   document.getElementById('w-plano').textContent = 'plano ' + (planLabels[plano] || plano);
   selectPlan(plano);
 }
@@ -707,7 +718,7 @@ function autoAgent() {
 
 function selectPlan(plan) {
   selectedPlan = plan;
-  ['free','basic','pro','enterprise'].forEach(p => {
+  ['free','teste','basic','pro','enterprise'].forEach(p => {
     document.getElementById('plan-' + p)?.classList.toggle('active', p === plan);
   });
   if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan});
@@ -970,9 +981,9 @@ async function showPaymentStep() {
             tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan
           }));
           // Continuar para card de plano (pula INSERT)
-          const planNames  = { free:'Free Trial', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' };
-          const planPrices = { free:'Grátis', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' };
-          const planCycles = { free:'7 dias de teste sem compromisso', basic:'/mês \u00b7 cobran\u00e7a recorrente', pro:'/mês \u00b7 cobran\u00e7a recorrente', enterprise:'/mês \u00b7 cobran\u00e7a recorrente' };
+          const planNames  = { free:'Free Trial', teste:'Teste R$1', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' };
+          const planPrices = { free:'Grátis', teste:'R$ 1', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' };
+          const planCycles = { free:'7 dias de teste sem compromisso', teste:'/mês · teste de pagamento', basic:'/mês \u00b7 cobran\u00e7a recorrente', pro:'/mês \u00b7 cobran\u00e7a recorrente', enterprise:'/mês \u00b7 cobran\u00e7a recorrente' };
           document.getElementById('pay-plan-box').innerHTML =
             '<div class="pay-plan-name">' + (planNames[selectedPlan] || selectedPlan) + '</div>' +
             '<div class="pay-plan-price">' + (planPrices[selectedPlan] || '') + '</div>' +
@@ -993,7 +1004,7 @@ async function showPaymentStep() {
           }
           goStep(3);
           if (selectedPlan !== 'free') {
-            const planAmounts2 = { basic: 199.00, pro: 399.00, enterprise: 999.00 };
+            const planAmounts2 = { teste: 1.00, basic: 199.00, pro: 399.00, enterprise: 999.00 };
             initCardBrick(planAmounts2[selectedPlan] || 199.00);
           }
           return; // Tenant reutilizado, pular INSERT
@@ -1021,9 +1032,9 @@ async function showPaymentStep() {
     }));
 
     // ── Preencher card de plano ─────────────────────────────────────────────
-    const planNames  = { free:'Free Trial', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' };
-    const planPrices = { free:'Grátis', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' };
-    const planCycles = { free:'7 dias de teste sem compromisso', basic:'/mês · cobrança recorrente', pro:'/mês · cobrança recorrente', enterprise:'/mês · cobrança recorrente' };
+    const planNames  = { free:'Free Trial', teste:'Teste R$1', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' };
+    const planPrices = { free:'Grátis', teste:'R$ 1', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' };
+    const planCycles = { free:'7 dias de teste sem compromisso', teste:'/mês · teste de pagamento', basic:'/mês · cobrança recorrente', pro:'/mês · cobrança recorrente', enterprise:'/mês · cobrança recorrente' };
     document.getElementById('pay-plan-box').innerHTML = `
       <div class="pay-plan-name">${planNames[selectedPlan] || selectedPlan}</div>
       <div class="pay-plan-price">${planPrices[selectedPlan] || ''}</div>
@@ -1052,7 +1063,7 @@ async function showPaymentStep() {
 
     // ── Inicializar CardPayment Brick com o valor do plano ─────────────────
     if (selectedPlan !== 'free') {
-      const planAmounts = { basic: 199.00, pro: 399.00, enterprise: 999.00 };
+      const planAmounts = { teste: 1.00, basic: 199.00, pro: 399.00, enterprise: 999.00 };
       const amount = planAmounts[selectedPlan] || 199.00;
       initCardBrick(amount);
     }
