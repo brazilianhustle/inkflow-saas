@@ -123,7 +123,7 @@ export async function onRequest(context) {
           events: [
             'MESSAGES_UPSERT'
           ],
-          ...(WEBHOOK_SECRET ? { secret: WEBHOOK_SECRET } : {})
+          ...(WEBHOOK_SECRET ? { headers: { 'x-webhook-secret': WEBHOOK_SECRET } } : {})
         }
       })
     });
