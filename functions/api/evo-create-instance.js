@@ -22,9 +22,10 @@ export async function onRequest(context) {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
-  const EVO_BASE_URL = env.EVO_BASE_URL;
-  const N8N_WEBHOOK  = env.N8N_WEBHOOK_URL;
-  const GLOBAL_KEY   = env.EVO_GLOBAL_KEY;
+  const EVO_BASE_URL    = env.EVO_BASE_URL;
+  const N8N_WEBHOOK     = env.N8N_WEBHOOK_URL;
+  const GLOBAL_KEY      = env.EVO_GLOBAL_KEY;
+  const WEBHOOK_SECRET  = env.N8N_WEBHOOK_SECRET;
 
   if (!GLOBAL_KEY || !EVO_BASE_URL || !N8N_WEBHOOK) {
     console.error('evo-create-instance: env vars ausentes', { EVO_BASE_URL: !!EVO_BASE_URL, N8N_WEBHOOK: !!N8N_WEBHOOK, GLOBAL_KEY: !!GLOBAL_KEY });
@@ -110,6 +111,9 @@ export async function onRequest(context) {
       // Bug 2 fix: apenas MESSAGES_UPSERT e necessario para o workflow n8n.
       // CONNECTION_UPDATE, CONTACTS_UPSERT, QRCODE_UPDATED e MESSAGES_UPDATE
       // geram trafego desnecessario e podem causar execucoes extras no n8n.
+      // [FIX Bug #6] Incluir webhook secret para autenticacao no n8n (headerAuth)
+      // Sem o secret, o n8n rejeita silenciosamente o webhook e nenhuma execucao e criada.
+      // O secret deve ser configurado como N8N_WEBHOOK_SECRET nas env vars do Cloudflare.
       body: JSON.stringify({
         webhook: {
           enabled: true,
@@ -118,7 +122,8 @@ export async function onRequest(context) {
           webhookBase64: true,    // necessario para n8n receber audio/imagem em base64
           events: [
             'MESSAGES_UPSERT'
-          ]
+          ],
+          ...(WEBHOOK_SECRET ? { secret: WEBHOOK_SECRET } : {})
         }
       })
     });
