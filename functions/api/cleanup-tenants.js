@@ -1,15 +1,23 @@
 // ── InkFlow — Cleanup de tenants rascunho (Cloudflare Pages Function) ────────
 // Deleta tenants com status_pagamento='rascunho' e sem mp_subscription_id
 // que foram criados há mais de 48 horas.
+// Também deleta a instância correspondente na Evolution API para evitar órfãs.
 //
 // POST /api/cleanup-tenants
 // Header: Authorization: Bearer <CLEANUP_SECRET>
+//
+// Env vars necessárias:
+//   - SUPABASE_SERVICE_KEY
+//   - CLEANUP_SECRET
+//   - EVO_BASE_URL (opcional, default: https://evolutionapi.vps1170.panel.speedfy.host)
+//   - EVO_GLOBAL_KEY (API key global da Evolution API)
 //
 // Pode ser chamado por:
 //   - Cron job externo (ex: n8n scheduled workflow, UptimeRobot, etc.)
 //   - Manualmente pelo admin
 //
 // Bug 3 fix: evita acúmulo de tenants órfãos criados antes do pagamento.
+// Bug 2 fix: agora também deleta instância na Evolution API.
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 
@@ -71,8 +79,34 @@ export async function onRequest(context) {
     // ── 2. Deletar cada tenant rascunho ────────────────────────────────────
     const results = [];
 
+    const EVO_BASE_URL = env.EVO_BASE_URL || 'https://evolutionapi.vps1170.panel.speedfy.host';
+    const EVO_GLOBAL_KEY = env.EVO_GLOBAL_KEY || '';
+
     for (const tenant of staleTeams) {
-      // Deletar do Supabase
+      let evoDeleted = false;
+
+      // ── 2a. Deletar instância na Evolution API (se existir) ──────────────
+      if (tenant.evo_instance) {
+        try {
+          const evoRes = await fetch(
+            `${EVO_BASE_URL}/instance/delete/${encodeURIComponent(tenant.evo_instance)}`,
+            {
+              method: 'DELETE',
+              headers: { apikey: EVO_GLOBAL_KEY },
+            }
+          );
+          evoDeleted = evoRes.ok;
+          if (evoRes.ok) {
+            console.log(`cleanup-tenants: deleted EVO instance '${tenant.evo_instance}'`);
+          } else {
+            console.warn(`cleanup-tenants: EVO delete failed for '${tenant.evo_instance}':`, await evoRes.text());
+          }
+        } catch (evoErr) {
+          console.warn(`cleanup-tenants: EVO delete error for '${tenant.evo_instance}':`, evoErr.message);
+        }
+      }
+
+      // ── 2b. Deletar do Supabase ──────────────────────────────────────────
       const delRes = await fetch(
         `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant.id)}`,
         {
@@ -91,7 +125,8 @@ export async function onRequest(context) {
         email: tenant.email,
         created_at: tenant.created_at,
         evo_instance: tenant.evo_instance,
-        deleted: delRes.ok,
+        evo_deleted: evoDeleted,
+        db_deleted: delRes.ok,
       });
 
       if (delRes.ok) {
@@ -101,10 +136,12 @@ export async function onRequest(context) {
       }
     }
 
-    const cleaned = results.filter(r => r.deleted).length;
+    const cleaned = results.filter(r => r.db_deleted).length;
+    const evoCleanedCount = results.filter(r => r.evo_deleted).length;
 
     return json({
       cleaned,
+      evo_cleaned: evoCleanedCount,
       total_found: staleTeams.length,
       details: results,
     });
