@@ -53,7 +53,7 @@ export async function onRequest(context) {
     }
 
     const evoRes = await fetch(
-      evo_base_url + '/instance/fetchInstances',
+      evo_base_url + '/instance/fetchInstances?instanceName=' + encodeURIComponent(instance),
       { headers: { apikey: evo_apikey } }
     );
     // [FIX Bug #11] Checar .ok ANTES de .json()

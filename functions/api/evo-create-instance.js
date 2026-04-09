@@ -80,9 +80,9 @@ export async function onRequest(context) {
         qrcode: false,
         integration: 'WHATSAPP-BAILEYS',
         // Settings corretos para o InkFlow
-        rejectCall: true,           // rejeitar ligacoes automaticamente
+        rejectCall: false,          // NAO rejeitar ligacoes
         groupsIgnore: true,         // ignorar mensagens de grupo
-        alwaysOnline: true,         // aparecer sempre online
+        alwaysOnline: false,        // NAO mostrar sempre online
         readMessages: false,        // nao marcar como lido automaticamente
         readStatus: false,          // nao ler status/stories
         syncFullHistory: false,     // nao sincronizar historico antigo
@@ -137,9 +137,9 @@ export async function onRequest(context) {
       method: 'POST',
       headers: { apikey, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        rejectCall: true,
+        rejectCall: false,
         groupsIgnore: true,
-        alwaysOnline: true,
+        alwaysOnline: false,
         readMessages: false,
         readStatus: false,
         syncFullHistory: false,
