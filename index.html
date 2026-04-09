@@ -731,7 +731,16 @@ async function saveModal() {
     body: JSON.stringify({ tenant_id: editId, ...data })
   });
     } else {
-      await api('POST', '/rest/v1/tenants', data);
+      // FIX AUDIT #1: Usar endpoint server-side em vez de POST direto ao Supabase
+      const r = await fetch('https://inkflowbrasil.com/api/create-tenant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
+        body: JSON.stringify(data)
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({ error: 'Erro desconhecido' }));
+        throw new Error(err.error || 'Falha ao criar tenant');
+      }
     }
     toast(editId ? 'Tenant atualizado!' : 'Tenant criado!', 'ok');
     closeModal();
@@ -754,9 +763,10 @@ function askT(id, ativo) {
   document.getElementById('cok').className   = isAt ? 'btn d' : 'btn p';
   pending = async () => {
     // [FIX Bug #5] Usar endpoint server-side em vez de PATCH direto ao Supabase
+    // [FIX AUDIT #2] Adicionado Authorization header (faltava)
     const r = await fetch('https://inkflowbrasil.com/api/update-tenant', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (accessToken || '') },
       body: JSON.stringify({ tenant_id: id, ativo: !isAt })
     });
     if (!r.ok) throw new Error('Falha ao atualizar tenant');

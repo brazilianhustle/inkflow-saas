@@ -52,13 +52,15 @@ export async function onRequest(context) {
     const key = body.key;
     const plano = body.plano || 'basic';
 
-    if (!key || typeof key !== 'string' || key.length < 6) {
-      return new Response(JSON.stringify({ error: 'Key invalida (min 6 caracteres)' }), {
+    // FIX AUDIT #3: Unificado min 8 (era 6) — consistente com validate-onboarding-key.js
+    if (!key || typeof key !== 'string' || key.length < 8) {
+      return new Response(JSON.stringify({ error: 'Key invalida (min 8 caracteres)' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    const validPlans = ['basic', 'pro', 'enterprise'];
+    // FIX AUDIT #7: Adicionado 'teste' para permitir links de onboarding no plano teste (R$1)
+    const validPlans = ['teste', 'basic', 'pro', 'enterprise'];
     if (!validPlans.includes(plano)) {
       return new Response(JSON.stringify({ error: 'Plano invalido' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }

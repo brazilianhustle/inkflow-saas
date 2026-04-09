@@ -6,7 +6,8 @@
 //   2. Header Authorization: Bearer <supabase_jwt> de admin → acesso total
 //
 // Body: { tenant_id, email, ...campos }
-// Campos BLOQUEADOS: status_pagamento, mp_subscription_id, prompt_sistema, faq_texto
+// Campos BLOQUEADOS (para não-admin): status_pagamento, mp_subscription_id, prompt_sistema, faq_texto
+// FIX AUDIT #4: Admin pode editar campos adicionais (nome, email, cidade, etc.)
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const ADMIN_EMAIL  = 'lmf4200@gmail.com';
@@ -24,6 +25,13 @@ const ALLOWED_FIELDS = new Set([
   'grupo_notificacao', 'grupo_orcamento',
   'google_calendar_id', 'google_drive_folder',
   'nome_agente', 'nome_estudio', 'ativo', 'plano', 'trial_ate',
+]);
+
+// FIX AUDIT #4: Campos adicionais que o admin pode editar via dashboard
+const ADMIN_EXTRA_FIELDS = new Set([
+  'nome', 'email', 'cidade', 'endereco',
+  'prompt_sistema', 'faq_texto',
+  'status_pagamento', 'mp_subscription_id',
 ]);
 
 function json(data, status = 200) {
@@ -89,10 +97,10 @@ export async function onRequest(context) {
     }
   }
 
-  // Filtra apenas campos permitidos
+  // Filtra apenas campos permitidos (admin tem acesso expandido)
   const safeFields = {};
   for (const [k, v] of Object.entries(fields)) {
-    if (ALLOWED_FIELDS.has(k)) safeFields[k] = v;
+    if (ALLOWED_FIELDS.has(k) || (isAdmin && ADMIN_EXTRA_FIELDS.has(k))) safeFields[k] = v;
   }
 
   if (Object.keys(safeFields).length === 0) {

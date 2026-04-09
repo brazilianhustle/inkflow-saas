@@ -1184,9 +1184,11 @@ async function continueAfterPayment(preapprovalId) {
         return;
       }
     }
-    // Se Supabase indispon\u00edvel, fail-open para n\u00e3o bloquear cliente
+    // FIX AUDIT #5: fail-closed — se Supabase indispon\u00edvel, bloquear em vez de pular
   } catch (checkErr) {
-    console.warn('Payment verification skipped:', checkErr);
+    console.warn('Payment verification failed:', checkErr);
+    showErrOverlay('Servi\u00e7o temporariamente indispon\u00edvel. Tente novamente em alguns minutos.');
+    return;
   }
 
   // Continuar com setup da inst\u00e2ncia EVO
