@@ -80,7 +80,7 @@ export async function onRequest(context) {
     tenantData.status_pagamento = 'rascunho';   // Bug 3 fix: marca como rascunho até pagamento ser confirmado
     tenantData.evo_apikey = 'pending';
     tenantData.webhook_path = tenantData.webhook_path || 'inkflow';
-    tenantData.evo_base_url = tenantData.evo_base_url || env.EVO_BASE_URL || 'https://evolutionapi.vps1170.panel.speedfy.host';
+    tenantData.evo_base_url = tenantData.evo_base_url || env.EVO_BASE_URL || 'https://evo.inkflowbrasil.com';
 
     // ── INSERT no Supabase ──────────────────────────────────────────────────
     let res = await fetch(`${SUPABASE_URL}/rest/v1/tenants`, {
