@@ -9,7 +9,7 @@
 // Env vars necessárias:
 //   - SUPABASE_SERVICE_KEY
 //   - CLEANUP_SECRET
-//   - EVO_BASE_URL (opcional, default: https://evolutionapi.vps1170.panel.speedfy.host)
+//   - EVO_BASE_URL (opcional, default: https://evo.inkflowbrasil.com)
 //   - EVO_GLOBAL_KEY (API key global da Evolution API)
 //
 // Pode ser chamado por:
@@ -79,7 +79,7 @@ export async function onRequest(context) {
     // ── 2. Deletar cada tenant rascunho ────────────────────────────────────
     const results = [];
 
-    const EVO_BASE_URL = env.EVO_BASE_URL || 'https://evolutionapi.vps1170.panel.speedfy.host';
+    const EVO_BASE_URL = env.EVO_BASE_URL || 'https://evo.inkflowbrasil.com';
     const EVO_GLOBAL_KEY = env.EVO_GLOBAL_KEY || '';
 
     for (const tenant of staleTeams) {
