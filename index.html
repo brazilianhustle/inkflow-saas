@@ -651,7 +651,7 @@ function openModal(id) {
   const fields = ['fNome','fEst','fEmail','fCid','fEnd','fEvoInst','fEvoKey','fGrpN','fGrpO','fGCal','fGDrv','fAgt','fPrm','fFaq','fWh','fMpSub','fTrial'];
   if (!id) {
     fields.forEach(f => { const el = document.getElementById(f); if (el) el.value = ''; });
-    document.getElementById('fEvoUrl').value = 'https://evolutionapi.vps1170.panel.speedfy.host';
+    document.getElementById('fEvoUrl').value = 'https://evo.inkflowbrasil.com';
     document.getElementById('fPlan').value  = 'basic';
     document.getElementById('fPgto').value  = 'pendente';
     document.getElementById('fAtv').checked = true;
@@ -667,7 +667,7 @@ function openModal(id) {
     document.getElementById('fEvoInst').value = t.evo_instance||'';
     document.getElementById('fEvoKey').value  = '';
   document.getElementById('fEvoKey').placeholder = t.evo_apikey ? '(chave salva \u2014 deixe vazio para manter)' : 'chave_api_evo';
-    document.getElementById('fEvoUrl').value  = t.evo_base_url||'https://evolutionapi.vps1170.panel.speedfy.host';
+    document.getElementById('fEvoUrl').value  = t.evo_base_url||'https://evo.inkflowbrasil.com';
     document.getElementById('fGrpN').value    = t.grupo_notificacao||'';
     document.getElementById('fGrpO').value    = t.grupo_orcamento||'';
     document.getElementById('fGCal').value    = t.google_calendar_id||'';
