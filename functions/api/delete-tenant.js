@@ -64,6 +64,9 @@ export async function onRequest(context) {
       { table: 'chat_messages', filter: 'tenant_id=eq.' + tenant_id },
       { table: 'chats', filter: 'tenant_id=eq.' + tenant_id },
       { table: 'dados_cliente', filter: 'tenant_id=eq.' + tenant_id },
+      { table: 'logs', filter: 'tenant_id=eq.' + tenant_id },
+      { table: 'signups_log', filter: 'tenant_id=eq.' + tenant_id },
+      { table: 'payment_logs', filter: 'tenant_id=eq.' + tenant_id },
       { table: 'tenants', filter: 'id=eq.' + tenant_id },
     ];
 

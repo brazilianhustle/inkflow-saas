@@ -48,6 +48,10 @@ export async function onRequest(context) {
     return json({ error: 'instanceName e tenant_id sao obrigatorios' }, 400);
   }
 
+  if (!/^[a-zA-Z0-9_-]{1,64}$/.test(instanceName)) {
+    return json({ error: 'instanceName invalido (apenas letras, numeros, hifen e underscore)' }, 400);
+  }
+
   let apikey = null;
   let already_existed = false;
 

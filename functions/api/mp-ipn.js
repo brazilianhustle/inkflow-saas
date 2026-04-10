@@ -86,16 +86,13 @@ export async function onRequest(context) {
 
   let rawBody = '';
   let body = {};
-  if (request.method === 'POST') {
-    try {
-      rawBody = await request.text();
-      body = rawBody ? JSON.parse(rawBody) : {};
-    } catch {}
-  }
+  try {
+    rawBody = await request.text();
+    body = rawBody ? JSON.parse(rawBody) : {};
+  } catch {}
 
   // [FIX AUDIT4 #4] Alertar quando webhook secret nao esta configurado
-  if (request.method === 'POST') {
-    if (!env.MP_WEBHOOK_SECRET) {
+  if (!env.MP_WEBHOOK_SECRET) {
       console.warn('mp-ipn: MP_WEBHOOK_SECRET nao configurado — assinatura nao verificada. Configure a env var para seguranca.');
     } else {
       const valid = await verifyMPSignature(request, env, rawBody);
@@ -104,7 +101,6 @@ export async function onRequest(context) {
         return json({ error: 'Assinatura invalida' }, 401);
       }
     }
-  }
 
   const url    = new URL(request.url);
   const topic  = url.searchParams.get('topic')  || url.searchParams.get('type');
@@ -124,7 +120,7 @@ export async function onRequest(context) {
   if (!ACCESS_TOKEN || !SUPABASE_KEY) return json({ error: 'Env vars não configuradas' }, 503);
 
   try {
-    const mpRes = await fetch('https://api.mercadopago.com/preapproval/' + id, {
+    const mpRes = await fetch('https://api.mercadopago.com/preapproval/' + encodeURIComponent(id), {
       headers: { Authorization: 'Bearer ' + ACCESS_TOKEN },
     });
     const sub = await mpRes.json();

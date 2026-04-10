@@ -7,6 +7,7 @@
 const CORS = {
   'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
   'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Content-Type': 'application/json',
 };
 
