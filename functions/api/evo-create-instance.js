@@ -192,19 +192,20 @@ export async function onRequest(context) {
   }
 
   // Bug 2 fix: garantir settings corretos mesmo para instancias que ja existiam
+  // [FIX] settings/set usa formato nested { settings: {...} } igual ao webhook/set
   try {
     await fetch(`${EVO_BASE_URL}/settings/set/${instanceName}`, {
       method: 'POST',
       headers: { apikey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      body: JSON.stringify({ settings: {
         rejectCall: false,
         groupsIgnore: true,
         alwaysOnline: false,
         readMessages: false,
         readStatus: false,
         syncFullHistory: false,
-        webhookBase64: true,    // [FIX Bug #1 Onboarding] fallback: garante base64 tambem via settings
-      })
+        webhookBase64: true,    // [FIX Bug #1 Onboarding] garante base64 via settings
+      }})
     });
   } catch (settingsErr) {
     console.warn('evo-create-instance: settings update failed (nao fatal):', settingsErr);
