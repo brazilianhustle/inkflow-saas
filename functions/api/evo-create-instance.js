@@ -127,17 +127,18 @@ export async function onRequest(context) {
       // [FIX Bug #6] Incluir webhook secret para autenticacao no n8n (headerAuth)
       // Sem o secret, o n8n rejeita silenciosamente o webhook e nenhuma execucao e criada.
       // O secret deve ser configurado como N8N_WEBHOOK_SECRET nas env vars do Cloudflare.
+      // [FIX Bug #1 Onboarding] Payload FLAT (sem wrapper "webhook")
+      // A Evolution API v2 ignora webhookBase64 quando aninhado dentro de { webhook: {...} }
+      // mas aplica url/enabled. Formato flat garante que TODOS os campos sao aplicados.
       body: JSON.stringify({
-        webhook: {
-          enabled: true,
-          url: N8N_WEBHOOK,
-          webhookByEvents: false,
-          webhookBase64: true,    // necessario para n8n receber audio/imagem em base64
-          events: [
-            'MESSAGES_UPSERT'
-          ],
-          ...(WEBHOOK_SECRET ? { headers: { 'x-webhook-secret': WEBHOOK_SECRET } } : {})
-        }
+        enabled: true,
+        url: N8N_WEBHOOK,
+        webhookByEvents: false,
+        webhookBase64: true,    // necessario para n8n receber audio/imagem em base64
+        events: [
+          'MESSAGES_UPSERT'
+        ],
+        ...(WEBHOOK_SECRET ? { headers: { 'x-webhook-secret': WEBHOOK_SECRET } } : {})
       })
     });
   } catch (webhookErr) {
@@ -156,6 +157,7 @@ export async function onRequest(context) {
         readMessages: false,
         readStatus: false,
         syncFullHistory: false,
+        webhookBase64: true,    // [FIX Bug #1 Onboarding] fallback: garante base64 tambem via settings
       })
     });
   } catch (settingsErr) {

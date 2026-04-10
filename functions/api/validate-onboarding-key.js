@@ -68,9 +68,60 @@ export async function onRequest(context) {
       return json({ valid: false, error: 'Link de onboarding expirado. Solicite um novo link ao suporte InkFlow.' });
     }
 
-    // [FIX Bug #7] Verificar se já foi usado — links de uso único
+    // [FIX Bug #7 + Bug #2 Onboarding] Links de uso único COM retry inteligente
+    // Se o link está marcado como usado, verifica se o tenant associado já completou
+    // o onboarding (ativo=true). Se NÃO completou (ex: cartão recusado), permite retry.
     if (link.used) {
-      return json({ valid: false, error: 'Este link de onboarding j\u00e1 foi utilizado.' });
+      // Verificar se existe tenant ativo com este email
+      if (link.email) {
+        try {
+          const tenantCheck = await fetch(
+            `${SUPABASE_URL}/rest/v1/tenants?email=eq.${encodeURIComponent(link.email)}&select=ativo&order=created_at.desc&limit=1`,
+            {
+              headers: {
+                apikey: SB_KEY,
+                Authorization: `Bearer ${SB_KEY}`,
+              },
+            }
+          );
+          if (tenantCheck.ok) {
+            const tenants = await tenantCheck.json();
+            const tenant = tenants[0];
+            if (!tenant || tenant.ativo !== true) {
+              // Tenant não existe ou não está ativo → permitir retry
+              // Resetar flag used para estado limpo
+              await fetch(
+                `${SUPABASE_URL}/rest/v1/onboarding_links?id=eq.${link.id}`,
+                {
+                  method: 'PATCH',
+                  headers: {
+                    apikey: SB_KEY,
+                    Authorization: `Bearer ${SB_KEY}`,
+                    'Content-Type': 'application/json',
+                    Prefer: 'return=minimal',
+                  },
+                  body: JSON.stringify({ used: false }),
+                }
+              );
+              console.log('validate-onboarding-key: link reativado para retry (tenant não ativo)');
+              // Não retornar erro — continuar validação normalmente
+            } else {
+              // Tenant ESTÁ ativo → link realmente já foi usado com sucesso
+              return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
+            }
+          } else {
+            // Falha na verificação → bloquear por segurança
+            return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
+          }
+        } catch (e) {
+          console.warn('validate-onboarding-key: erro ao verificar tenant para retry:', e);
+          // Em caso de erro, bloquear por segurança
+          return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
+        }
+      } else {
+        // Link sem email → não consegue verificar tenant, bloquear
+        return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
+      }
     }
 
     // Key válida — retornar plano associado

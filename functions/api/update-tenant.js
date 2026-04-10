@@ -130,6 +130,49 @@ export async function onRequest(context) {
       return json({ error: 'Erro ao atualizar tenant' }, 500);
     }
 
+    // [FIX Bug #2 Onboarding] Quando tenant é ativado (ativo=true),
+    // marcar o onboarding_link associado como used=true.
+    // Isso garante que o link só é invalidado APÓS o onboarding completar com sucesso.
+    // Se o pagamento falhar, o link continua disponível para retry.
+    if (safeFields.ativo === true) {
+      try {
+        // Buscar email do tenant para encontrar o link associado
+        const tenantRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=email`,
+          {
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${SUPABASE_KEY}`,
+            },
+          }
+        );
+        if (tenantRes.ok) {
+          const tenantData = await tenantRes.json();
+          const tenantEmail = tenantData?.[0]?.email;
+          if (tenantEmail) {
+            await fetch(
+              `${SUPABASE_URL}/rest/v1/onboarding_links?email=eq.${encodeURIComponent(tenantEmail)}&used=eq.false`,
+              {
+                method: 'PATCH',
+                headers: {
+                  apikey: SUPABASE_KEY,
+                  Authorization: `Bearer ${SUPABASE_KEY}`,
+                  'Content-Type': 'application/json',
+                  Prefer: 'return=minimal',
+                },
+                body: JSON.stringify({ used: true }),
+              }
+            );
+            console.log('update-tenant: onboarding link marcado como used para:', tenantEmail);
+          }
+        }
+      } catch (linkErr) {
+        // Não-fatal: se falhar, o link pode ser reutilizado mas o tenant já está ativo
+        // então validate-onboarding-key vai bloquear de qualquer forma (tenant.ativo=true)
+        console.warn('update-tenant: falha ao marcar onboarding link como used:', linkErr.message);
+      }
+    }
+
     return json({ ok: true, updated: Object.keys(safeFields) });
 
   } catch (err) {
