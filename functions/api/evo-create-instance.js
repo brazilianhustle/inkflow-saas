@@ -96,7 +96,7 @@ export async function onRequest(context) {
 
     if (!createRes.ok) {
       console.error('evo-create-instance: falha ao criar instancia:', JSON.stringify(createData));
-      return json({ error: 'Falha ao criar instancia na Evolution API', details: createData }, createRes.status);
+      return json({ error: 'Falha ao criar instancia na Evolution API' }, createRes.status);
     }
 
     apikey = (typeof createData.hash === 'string' ? createData.hash : createData.hash?.apikey) || createData.instance?.apikey || createData.apikey || null;

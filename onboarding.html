@@ -626,8 +626,8 @@ select.fi option{background:#091515;color:#fff}
 // ── Configurações ──────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenV4eHVzY3lwbGZvaW12b21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMTg3NjAsImV4cCI6MjA4ODg5NDc2MH0.GSw2qzM9RgEQT6xTNBElBv-4AAuSavZe-_C-CljMvdA';
-const EVO_BASE    = 'https://evo.inkflowbrasil.com';
-// N8N_BASE removido (código morto) — webhook n8n é configurado server-side via evo-create-instance.js
+// [FIX AUDIT3 #4] EVO_BASE removido — server (create-tenant.js) usa env.EVO_BASE_URL
+// N8N_BASE removido (codigo morto) — webhook n8n e configurado server-side via evo-create-instance.js
 
 // ── Estado ────────────────────────────────────────────────────────────────
 let gConfig      = { globalKey: '', plano: 'basic' };
@@ -672,11 +672,10 @@ async function init() {
     }
     plano = valData.plano || 'basic';
   } catch (valErr) {
-    // Fail-open: se endpoint indisponível, usar plano do hash (com validação XSS)
-    console.warn('Key validation failed, falling back:', valErr);
-    const hashPlano = urlParams.get('plano') || 'basic';
-    const allowedPlans = ['free','teste','basic','pro','enterprise'];
-    plano = allowedPlans.includes(hashPlano) ? hashPlano : 'basic';
+    // [FIX AUDIT3 #1] Fail-closed: se endpoint indisponivel, bloquear onboarding
+    console.error('Key validation network error:', valErr);
+    showErrOverlay('Erro ao validar link de onboarding. Verifique sua conexao e tente novamente.');
+    return;
   }
 
   // Bug 7 fix: Validar plano contra whitelist (previne XSS)
@@ -935,7 +934,7 @@ async function showPaymentStep() {
       endereco:      endereco || null,
       evo_instance:  instanceSlug,
       webhook_path:  'inkflow',
-      evo_base_url:  EVO_BASE,
+      // evo_base_url definido server-side via env.EVO_BASE_URL
       evo_apikey:    'pending',
       plano:         selectedPlan,
       ativo:         false,
@@ -1369,6 +1368,8 @@ async function checkConnection() {
       try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
 
       // Log do signup para painel admin
+      // TODO [AUDIT3 #6]: migrar para endpoint /api/log-signup (evitar INSERT direto via anon key)
+      // Atualmente protegido por RLS (anon so pode INSERT, nao SELECT/UPDATE/DELETE)
       try {
         await sbFetch('POST', '/rest/v1/signups_log', {
           tenant_id:    tenantId,

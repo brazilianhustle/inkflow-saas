@@ -512,6 +512,8 @@ async function api(method, path, body) {
   return r;
 }
 
+// TODO: migrar para endpoint /api/list-tenants (consistencia com padrao server-side proxy)
+// Atualmente seguro via RLS + token autenticado do admin, mas foge do padrao /api/*
 async function loadTenants() {
   document.getElementById('tld').style.display = 'flex';
   document.getElementById('tbl').style.display = 'none';
