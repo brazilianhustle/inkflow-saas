@@ -76,27 +76,33 @@ export async function onRequest(context) {
   // Cria nova instancia se nao existir
   if (!apikey) {
     // Bug 2 fix: enviar configuracoes completas na criacao da instancia
-    const createRes = await fetch(`${EVO_BASE_URL}/instance/create`, {
-      method: 'POST',
-      headers: {
-        apikey: GLOBAL_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        instanceName,
-        qrcode: false,
-        integration: 'WHATSAPP-BAILEYS',
-        // Settings corretos para o InkFlow
-        rejectCall: false,          // NAO rejeitar ligacoes
-        groupsIgnore: true,         // ignorar mensagens de grupo
-        alwaysOnline: false,        // NAO mostrar sempre online
-        readMessages: false,        // nao marcar como lido automaticamente
-        readStatus: false,          // nao ler status/stories
-        syncFullHistory: false,     // nao sincronizar historico antigo
-      }),
-    });
-
-    const createData = await createRes.json();
+    // [FIX AUDIT5 #4] try/catch no fetch de criacao de instancia
+    let createRes, createData;
+    try {
+      createRes = await fetch(`${EVO_BASE_URL}/instance/create`, {
+        method: 'POST',
+        headers: {
+          apikey: GLOBAL_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          instanceName,
+          qrcode: false,
+          integration: 'WHATSAPP-BAILEYS',
+          // Settings corretos para o InkFlow
+          rejectCall: false,          // NAO rejeitar ligacoes
+          groupsIgnore: true,         // ignorar mensagens de grupo
+          alwaysOnline: false,        // NAO mostrar sempre online
+          readMessages: false,        // nao marcar como lido automaticamente
+          readStatus: false,          // nao ler status/stories
+          syncFullHistory: false,     // nao sincronizar historico antigo
+        }),
+      });
+      createData = await createRes.json();
+    } catch (fetchErr) {
+      console.error('evo-create-instance: erro de rede ao criar instancia:', fetchErr);
+      return json({ error: 'Erro de conexao com a Evolution API. Tente novamente.' }, 502);
+    }
 
     if (!createRes.ok) {
       console.error('evo-create-instance: falha ao criar instancia:', JSON.stringify(createData));

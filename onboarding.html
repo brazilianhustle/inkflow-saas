@@ -938,7 +938,9 @@ async function showPaymentStep() {
       evo_apikey:    'pending',
       plano:         selectedPlan,
       ativo:         false,
-      prompt_sistema: prompt
+      prompt_sistema: prompt,
+      // [FIX AUDIT5 #2] Enviar key para create-tenant marcar como usada
+      onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || null
     };
 
     // Bug 10: Idempotency — verificar se já existe tenant com este email (via server-side)

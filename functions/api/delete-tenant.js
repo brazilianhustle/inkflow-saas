@@ -59,6 +59,59 @@ export async function onRequest(context) {
   };
 
   try {
+    // [FIX AUDIT5 #3] Buscar dados do tenant para cancelar MP e deletar EVO
+    const tenantRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=mp_subscription_id,evo_instance,evo_apikey,evo_base_url`,
+      { headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY } }
+    );
+    let tenantInfo = null;
+    if (tenantRes.ok) {
+      const tenants = await tenantRes.json();
+      if (tenants.length > 0) tenantInfo = tenants[0];
+    }
+
+    // Cancelar assinatura no Mercado Pago (se existir)
+    if (tenantInfo?.mp_subscription_id && env.MP_ACCESS_TOKEN) {
+      try {
+        const mpRes = await fetch(
+          `https://api.mercadopago.com/preapproval/${encodeURIComponent(tenantInfo.mp_subscription_id)}`,
+          {
+            method: 'PUT',
+            headers: {
+              Authorization: 'Bearer ' + env.MP_ACCESS_TOKEN,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: 'cancelled' }),
+          }
+        );
+        if (!mpRes.ok) console.warn('delete-tenant: falha ao cancelar assinatura MP:', await mpRes.text());
+        else console.log('delete-tenant: assinatura MP cancelada:', tenantInfo.mp_subscription_id);
+      } catch (mpErr) {
+        console.warn('delete-tenant: erro ao cancelar MP (nao fatal):', mpErr);
+      }
+    }
+
+    // Deletar instancia na Evolution API (se existir)
+    if (tenantInfo?.evo_instance) {
+      try {
+        const evoBase = tenantInfo.evo_base_url || env.EVO_BASE_URL || 'https://evo.inkflowbrasil.com';
+        const evoKey = env.EVO_GLOBAL_KEY;
+        if (evoKey) {
+          const evoRes = await fetch(
+            `${evoBase}/instance/delete/${encodeURIComponent(tenantInfo.evo_instance)}`,
+            {
+              method: 'DELETE',
+              headers: { apikey: evoKey },
+            }
+          );
+          if (!evoRes.ok) console.warn('delete-tenant: falha ao deletar instancia EVO:', await evoRes.text());
+          else console.log('delete-tenant: instancia EVO deletada:', tenantInfo.evo_instance);
+        }
+      } catch (evoErr) {
+        console.warn('delete-tenant: erro ao deletar EVO (nao fatal):', evoErr);
+      }
+    }
+
     // Deletar em cascata: chat_messages → chats → dados_cliente → tenants
     const tables = [
       { table: 'chat_messages', filter: 'tenant_id=eq.' + tenant_id },

@@ -91,16 +91,22 @@ export async function onRequest(context) {
     body = rawBody ? JSON.parse(rawBody) : {};
   } catch {}
 
-  // [FIX AUDIT4 #4] Alertar quando webhook secret nao esta configurado
+  // [FIX AUDIT5 #1] Validacao HMAC — rejeitar sempre que secret configurado, alertar quando ausente
   if (!env.MP_WEBHOOK_SECRET) {
-      console.warn('mp-ipn: MP_WEBHOOK_SECRET nao configurado — assinatura nao verificada. Configure a env var para seguranca.');
-    } else {
-      const valid = await verifyMPSignature(request, env, rawBody);
-      if (!valid) {
-        console.warn('mp-ipn: assinatura invalida rejeitada');
-        return json({ error: 'Assinatura invalida' }, 401);
-      }
+    console.warn('mp-ipn: MP_WEBHOOK_SECRET nao configurado — assinatura nao verificada. Configure a env var para seguranca.');
+    await logIPNEvent(env, null, 'ipn_warning_no_secret', {
+      error: 'MP_WEBHOOK_SECRET nao configurado — webhook aceito sem validacao HMAC',
+    });
+  } else {
+    const valid = await verifyMPSignature(request, env, rawBody);
+    if (!valid) {
+      console.warn('mp-ipn: assinatura HMAC invalida — rejeitando request');
+      await logIPNEvent(env, null, 'ipn_hmac_rejected', {
+        error: 'Assinatura HMAC invalida',
+      });
+      return json({ error: 'Assinatura invalida' }, 401);
     }
+  }
 
   const url    = new URL(request.url);
   const topic  = url.searchParams.get('topic')  || url.searchParams.get('type');

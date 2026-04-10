@@ -133,6 +133,28 @@ export async function onRequest(context) {
       return json({ error: 'Não foi possível obter o ID do tenant' }, 500);
     }
 
+    // [FIX AUDIT5 #2] Marcar onboarding key como usada (uso unico)
+    const onboardingKey = body.onboarding_key;
+    if (onboardingKey && typeof onboardingKey === 'string' && onboardingKey.length >= 8) {
+      try {
+        await fetch(
+          `${SUPABASE_URL}/rest/v1/onboarding_links?key=eq.${encodeURIComponent(onboardingKey)}`,
+          {
+            method: 'PATCH',
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json',
+              Prefer: 'return=minimal',
+            },
+            body: JSON.stringify({ used: true }),
+          }
+        );
+      } catch (keyErr) {
+        console.warn('create-tenant: falha ao marcar onboarding key como usada:', keyErr);
+      }
+    }
+
     // Retorna apenas id e evo_instance (nunca retornar dados sensíveis)
     return json({
       tenant: {
