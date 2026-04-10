@@ -121,7 +121,7 @@ export async function onRequest(context) {
   // Antes, falhas silenciosas deixavam instancia criada sem webhook → IA nao respondia.
   let webhookOk = false;
   try {
-    const webhookPayload = {
+    const webhookInner = {
       enabled: true,
       url: N8N_WEBHOOK,
       webhookByEvents: false,
@@ -133,7 +133,7 @@ export async function onRequest(context) {
     const whRes = await fetch(`${EVO_BASE_URL}/webhook/set/${instanceName}`, {
       method: 'POST',
       headers: { apikey, 'Content-Type': 'application/json' },
-      body: JSON.stringify(webhookPayload)
+      body: JSON.stringify({ webhook: webhookInner })
     });
 
     if (!whRes.ok) {
@@ -171,14 +171,14 @@ export async function onRequest(context) {
       const retryRes = await fetch(`${EVO_BASE_URL}/webhook/set/${instanceName}`, {
         method: 'POST',
         headers: { apikey: GLOBAL_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: JSON.stringify({ webhook: {
           enabled: true,
           url: N8N_WEBHOOK,
           webhookByEvents: false,
           webhookBase64: true,
           events: ['MESSAGES_UPSERT'],
           ...(WEBHOOK_SECRET ? { headers: { 'x-webhook-secret': WEBHOOK_SECRET } } : {})
-        })
+        }})
       });
       if (retryRes.ok) {
         webhookOk = true;
