@@ -79,6 +79,11 @@ export async function onRequest(context) {
     return new Response(null, { status: 204, headers: CORS });
   }
 
+  // FIX AUDIT-2 #4: Rejeitar métodos que não sejam POST
+  if (request.method !== 'POST') {
+    return json({ error: 'Method not allowed' }, 405);
+  }
+
   let rawBody = '';
   let body = {};
   if (request.method === 'POST') {

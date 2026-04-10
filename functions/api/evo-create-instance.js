@@ -5,6 +5,9 @@
 // [FIX] Bug #8: Salva evo_apikey no tenant via Supabase (server-side)
 // [FIX] Bug #2A: Configura webhook n8n (server-side, removido do frontend)
 
+// FIX AUDIT-2 #6: SUPABASE_URL extraído para constante (era hardcoded na linha 156)
+const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+
 const CORS = {
   'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -153,7 +156,7 @@ export async function onRequest(context) {
   const SB_KEY = env.SUPABASE_SERVICE_KEY;
   if (SB_KEY && tenant_id) {
     try {
-      await fetch('https://bfzuxxuscyplfoimvomh.supabase.co/rest/v1/tenants?id=eq.' + encodeURIComponent(tenant_id), {
+      await fetch(SUPABASE_URL + '/rest/v1/tenants?id=eq.' + encodeURIComponent(tenant_id), {
         method: 'PATCH',
         headers: {
           apikey: SB_KEY,

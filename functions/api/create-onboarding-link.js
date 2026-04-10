@@ -89,7 +89,9 @@ export async function onRequest(context) {
 
     if (!insertRes.ok) {
       const err = await insertRes.text();
-      return new Response(JSON.stringify({ error: 'Erro ao criar link', details: err }), {
+      // FIX AUDIT-2 #5: Log interno apenas — não expor detalhes do Supabase na resposta
+      console.error('create-onboarding-link: insert error:', err);
+      return new Response(JSON.stringify({ error: 'Erro ao criar link' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
