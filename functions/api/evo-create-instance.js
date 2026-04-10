@@ -117,32 +117,78 @@ export async function onRequest(context) {
   }
 
   // [FIX Bug #2A] Configurar webhook n8n (server-side)
+  // [FIX Bug #3 Onboarding] Verificacao pos-set: confirma que webhook ficou enabled.
+  // Antes, falhas silenciosas deixavam instancia criada sem webhook → IA nao respondia.
+  let webhookOk = false;
   try {
-    await fetch(`${EVO_BASE_URL}/webhook/set/${instanceName}`, {
+    const webhookPayload = {
+      enabled: true,
+      url: N8N_WEBHOOK,
+      webhookByEvents: false,
+      webhookBase64: true,
+      events: ['MESSAGES_UPSERT'],
+      ...(WEBHOOK_SECRET ? { headers: { 'x-webhook-secret': WEBHOOK_SECRET } } : {})
+    };
+
+    const whRes = await fetch(`${EVO_BASE_URL}/webhook/set/${instanceName}`, {
       method: 'POST',
       headers: { apikey, 'Content-Type': 'application/json' },
-      // Bug 2 fix: apenas MESSAGES_UPSERT e necessario para o workflow n8n.
-      // CONNECTION_UPDATE, CONTACTS_UPSERT, QRCODE_UPDATED e MESSAGES_UPDATE
-      // geram trafego desnecessario e podem causar execucoes extras no n8n.
-      // [FIX Bug #6] Incluir webhook secret para autenticacao no n8n (headerAuth)
-      // Sem o secret, o n8n rejeita silenciosamente o webhook e nenhuma execucao e criada.
-      // O secret deve ser configurado como N8N_WEBHOOK_SECRET nas env vars do Cloudflare.
-      // [FIX Bug #1 Onboarding] Payload FLAT (sem wrapper "webhook")
-      // A Evolution API v2 ignora webhookBase64 quando aninhado dentro de { webhook: {...} }
-      // mas aplica url/enabled. Formato flat garante que TODOS os campos sao aplicados.
-      body: JSON.stringify({
-        enabled: true,
-        url: N8N_WEBHOOK,
-        webhookByEvents: false,
-        webhookBase64: true,    // necessario para n8n receber audio/imagem em base64
-        events: [
-          'MESSAGES_UPSERT'
-        ],
-        ...(WEBHOOK_SECRET ? { headers: { 'x-webhook-secret': WEBHOOK_SECRET } } : {})
-      })
+      body: JSON.stringify(webhookPayload)
     });
+
+    if (!whRes.ok) {
+      console.error('evo-create-instance: webhook/set retornou', whRes.status, await whRes.text().catch(() => ''));
+    } else {
+      webhookOk = true;
+    }
   } catch (webhookErr) {
-    console.warn('evo-create-instance: webhook setup failed (nao fatal):', webhookErr);
+    console.error('evo-create-instance: webhook/set falhou:', webhookErr);
+  }
+
+  // Verificacao: confirma que o webhook foi realmente aplicado
+  if (webhookOk) {
+    try {
+      const verifyRes = await fetch(`${EVO_BASE_URL}/webhook/find/${instanceName}`, {
+        headers: { apikey }
+      });
+      if (verifyRes.ok) {
+        const whData = await verifyRes.json();
+        // Evolution API pode retornar objeto ou array
+        const wh = Array.isArray(whData) ? whData[0] : whData;
+        if (!wh || wh.enabled !== true) {
+          console.error('evo-create-instance: webhook/find mostra enabled=false apos set. Tentando novamente...');
+          webhookOk = false;
+        }
+      }
+    } catch (verifyErr) {
+      console.warn('evo-create-instance: webhook/find falhou (nao fatal):', verifyErr);
+    }
+  }
+
+  // Retry com global key se falhou com instance key
+  if (!webhookOk) {
+    try {
+      const retryRes = await fetch(`${EVO_BASE_URL}/webhook/set/${instanceName}`, {
+        method: 'POST',
+        headers: { apikey: GLOBAL_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          enabled: true,
+          url: N8N_WEBHOOK,
+          webhookByEvents: false,
+          webhookBase64: true,
+          events: ['MESSAGES_UPSERT'],
+          ...(WEBHOOK_SECRET ? { headers: { 'x-webhook-secret': WEBHOOK_SECRET } } : {})
+        })
+      });
+      if (retryRes.ok) {
+        webhookOk = true;
+        console.log('evo-create-instance: webhook configurado com global key (retry)');
+      } else {
+        console.error('evo-create-instance: retry webhook/set falhou:', retryRes.status);
+      }
+    } catch (retryErr) {
+      console.error('evo-create-instance: retry webhook/set erro:', retryErr);
+    }
   }
 
   // Bug 2 fix: garantir settings corretos mesmo para instancias que ja existiam
@@ -183,5 +229,5 @@ export async function onRequest(context) {
     }
   }
 
-  return json({ instanceName, already_existed });
+  return json({ instanceName, already_existed, webhook_configured: webhookOk });
 }
