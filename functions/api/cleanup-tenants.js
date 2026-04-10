@@ -119,11 +119,9 @@ export async function onRequest(context) {
         }
       );
 
+      // [FIX AUDIT4 #5] Removido email e nome_estudio da resposta (PII)
       results.push({
         id: tenant.id,
-        estudio: tenant.nome_estudio,
-        email: tenant.email,
-        created_at: tenant.created_at,
         evo_instance: tenant.evo_instance,
         evo_deleted: evoDeleted,
         db_deleted: delRes.ok,

@@ -93,11 +93,16 @@ export async function onRequest(context) {
     } catch {}
   }
 
-  if (request.method === 'POST' && env.MP_WEBHOOK_SECRET) {
-    const valid = await verifyMPSignature(request, env, rawBody);
-    if (!valid) {
-      console.warn('mp-ipn: assinatura inválida rejeitada');
-      return json({ error: 'Assinatura inválida' }, 401);
+  // [FIX AUDIT4 #4] Alertar quando webhook secret nao esta configurado
+  if (request.method === 'POST') {
+    if (!env.MP_WEBHOOK_SECRET) {
+      console.warn('mp-ipn: MP_WEBHOOK_SECRET nao configurado — assinatura nao verificada. Configure a env var para seguranca.');
+    } else {
+      const valid = await verifyMPSignature(request, env, rawBody);
+      if (!valid) {
+        console.warn('mp-ipn: assinatura invalida rejeitada');
+        return json({ error: 'Assinatura invalida' }, 401);
+      }
     }
   }
 
@@ -139,7 +144,8 @@ export async function onRequest(context) {
     const STATUS_MAP = { authorized: 'authorized', paused: 'paused', cancelled: 'cancelled', pending: 'pendente' };
     const statusPagamento = STATUS_MAP[mpStatus] || mpStatus;
 
-    await fetch(SUPABASE_URL + '/rest/v1/tenants?id=eq.' + tenantId, {
+    // [FIX AUDIT4 #3] encodeURIComponent para consistencia defensiva
+    await fetch(SUPABASE_URL + '/rest/v1/tenants?id=eq.' + encodeURIComponent(tenantId), {
       method:  'PATCH',
       headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify({ ativo, status_pagamento: statusPagamento, mp_subscription_id: id }),

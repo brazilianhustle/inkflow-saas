@@ -29,14 +29,17 @@ function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: CORS });
 }
 
-// Decodifica JWT do Supabase Auth e extrai o email
-function extractEmailFromJwt(authHeader) {
+// [FIX AUDIT4 #1] Verifica JWT via Supabase Auth API (antes apenas decodificava sem verificar assinatura)
+async function verifyAdmin(authHeader, supabaseKey) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
   try {
-    if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
-    const token = authHeader.split(' ')[1];
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.email || null;
-  } catch { return null; }
+    const userRes = await fetch(SUPABASE_URL + '/auth/v1/user', {
+      headers: { apikey: supabaseKey, Authorization: authHeader }
+    });
+    if (!userRes.ok) return false;
+    const user = await userRes.json();
+    return user.email === ADMIN_EMAIL;
+  } catch { return false; }
 }
 
 export async function onRequest(context) {
@@ -71,8 +74,10 @@ export async function onRequest(context) {
   }
 
   // ── AUTH: verificar identidade ────────────────────────────────────────────
-  const jwtEmail = extractEmailFromJwt(request.headers.get('Authorization'));
-  const isAdmin  = jwtEmail === ADMIN_EMAIL;
+  const SUPABASE_KEY = env.SUPABASE_SERVICE_KEY;
+  if (!SUPABASE_KEY) return json({ error: 'Configuração interna ausente' }, 503);
+
+  const isAdmin = await verifyAdmin(request.headers.get('Authorization'), SUPABASE_KEY);
 
   // Se busca por tenant_id sem email e sem JWT admin → bloqueado
   if (tenant_id && !email && !isAdmin) {
@@ -88,9 +93,6 @@ export async function onRequest(context) {
   if (safeFields.length === 0) safeFields.push('id');
 
   const selectStr = safeFields.join(',');
-
-  const SUPABASE_KEY = env.SUPABASE_SERVICE_KEY;
-  if (!SUPABASE_KEY) return json({ error: 'Configuração interna ausente' }, 503);
 
   try {
     // Construir query
