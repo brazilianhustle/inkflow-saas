@@ -72,6 +72,59 @@ async function logIPNEvent(env, tenantId, eventType, data = {}) {
   }
 }
 
+// ── Adiciona subscriber ao MailerLite no grupo "Clientes InkFlow" ─────────────
+async function addSubscriberToMailerLite(env, tenantId, supabaseKey) {
+  const mlKey = env.MAILERLITE_API_KEY;
+  if (!mlKey) {
+    console.warn('mp-ipn: MAILERLITE_API_KEY não configurado — subscriber não adicionado');
+    return;
+  }
+  try {
+    // Busca email e nome do tenant no Supabase
+    const tenantRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenantId)}&select=email,nome`,
+      {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+        },
+      }
+    );
+    if (!tenantRes.ok) {
+      console.warn('mp-ipn: falha ao buscar tenant para MailerLite');
+      return;
+    }
+    const tenants = await tenantRes.json();
+    const tenant = tenants[0];
+    if (!tenant?.email) {
+      console.warn('mp-ipn: tenant sem email — subscriber não adicionado ao MailerLite');
+      return;
+    }
+    // Adiciona/atualiza subscriber no grupo "Clientes InkFlow" (ID: 184387920768009398)
+    const mlRes = await fetch('https://connect.mailerlite.com/api/subscribers', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${mlKey}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        email: tenant.email,
+        fields: { name: tenant.nome || '' },
+        groups: ['184387920768009398'],
+      }),
+    });
+    if (mlRes.ok) {
+      console.log('mp-ipn: subscriber adicionado ao MailerLite:', tenant.email);
+    } else {
+      const err = await mlRes.text();
+      console.warn('mp-ipn: erro MailerLite:', err);
+    }
+  } catch (e) {
+    console.warn('mp-ipn: exceção ao adicionar subscriber ao MailerLite:', e.message);
+  }
+}
+
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -152,6 +205,11 @@ export async function onRequest(context) {
       headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify({ ativo, status_pagamento: statusPagamento, mp_subscription_id: id }),
     });
+
+    // Boas-vindas: adiciona subscriber ao MailerLite quando pagamento é autorizado
+    if (ativo) {
+      await addSubscriberToMailerLite(env, tenantId, SUPABASE_KEY);
+    }
 
     // [FIX #14] Log do IPN processado
     await logIPNEvent(env, tenantId, 'ipn_processed', {
