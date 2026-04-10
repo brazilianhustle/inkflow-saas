@@ -124,7 +124,7 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .proc-err-txt{font-size:13px;color:#e74c3c;font-family:'DM Mono',monospace;line-height:1.5}
 .proc-retry{margin-top:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Mono',monospace}
 
-/* ── Step 5: QR Code ── */
+/* ── Step 5: QR Code / Pairing Code ── */
 #s5{background:var(--surface2);align-items:center;justify-content:center;padding:32px 20px}
 .qr-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;max-width:420px;width:100%;text-align:center}
 .qr-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
@@ -144,6 +144,25 @@ body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);m
 .qr-poll{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px;justify-content:center;margin-top:12px}
 .qr-poll-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 1.5s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* ── Pairing Code (mobile) ── */
+.conn-toggle{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border2);border-radius:8px;overflow:hidden}
+.conn-toggle-btn{flex:1;padding:10px 8px;font-size:12px;font-family:'DM Mono',monospace;cursor:pointer;border:none;background:transparent;color:var(--ink3);transition:all .15s;font-weight:500}
+.conn-toggle-btn.active{background:var(--ink);color:#fff}
+.pairing-box{display:none;flex-direction:column;align-items:center;gap:16px;margin-bottom:20px}
+.pairing-box.active{display:flex}
+.pairing-phone-wrap{width:100%;text-align:left}
+.pairing-phone-label{font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:6px;display:block}
+.pairing-phone-row{display:flex;gap:8px}
+.pairing-phone-input{flex:1;padding:10px 13px;border:1px solid var(--border2);border-radius:8px;font-size:14px;font-family:'Syne',sans-serif;background:var(--surface);color:var(--ink);outline:none}
+.pairing-phone-input:focus{border-color:var(--ink)}
+.pairing-phone-btn{padding:10px 18px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;transition:all .15s}
+.pairing-phone-btn:hover:not(:disabled){background:#333}
+.pairing-phone-btn:disabled{opacity:.5;cursor:default}
+.pairing-code-display{background:var(--surface2);border:2px dashed var(--border2);border-radius:12px;padding:24px;width:100%;text-align:center}
+.pairing-code-value{font-size:32px;font-weight:700;letter-spacing:6px;font-family:'DM Mono',monospace;color:var(--ink);margin-bottom:8px}
+.pairing-code-hint{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;line-height:1.6}
+#qr-area{display:block}
+#pairing-area{display:none}
 
 /* ── Step 6: Success ── */
 #s6{background:var(--surface2);align-items:center;justify-content:center;padding:32px 20px}
@@ -251,6 +270,20 @@ select.fi option{background:#091515;color:#fff}
 .qr-refresh:hover{background:rgba(0,200,185,.08);border-color:rgba(0,200,185,.5)}
 .qr-timer,.qr-poll{color:rgba(255,255,255,.28)}
 .qr-poll-dot{background:rgba(0,200,185,.75)}
+/* Pairing Code dark */
+.conn-toggle{border-color:rgba(0,200,185,.25)}
+.conn-toggle-btn{color:rgba(255,255,255,.4)}
+.conn-toggle-btn.active{background:rgba(0,200,185,.85);color:#060e0e}
+.conn-toggle-btn:hover:not(.active){color:rgba(255,255,255,.7)}
+.pairing-phone-label{color:rgba(255,255,255,.35)}
+.pairing-phone-input{background:rgba(0,0,0,.42);border-color:rgba(0,200,185,.22);color:#fff}
+.pairing-phone-input::placeholder{color:rgba(255,255,255,.2)}
+.pairing-phone-input:focus{border-color:rgba(0,200,185,.65);box-shadow:0 0 0 3px rgba(0,200,185,.07)}
+.pairing-phone-btn{background:rgba(0,200,185,.9);color:#060e0e}
+.pairing-phone-btn:hover:not(:disabled){background:rgba(0,220,205,1)}
+.pairing-code-display{background:rgba(0,0,0,.35);border-color:rgba(0,200,185,.3)}
+.pairing-code-value{color:rgba(0,210,195,.95);text-shadow:0 0 20px rgba(0,200,185,.3)}
+.pairing-code-hint{color:rgba(255,255,255,.35)}
 /* Sucesso */
 .suc-card{background:rgba(0,0,0,.32);border-color:rgba(0,200,185,.2);color:#fff}
 .suc-title{color:rgba(0,210,195,.95);text-shadow:0 0 20px rgba(0,200,185,.3)}
@@ -530,42 +563,93 @@ select.fi option{background:#091515;color:#fff}
   </div>
 </div>
 
-<!-- ══════════ STEP 5: QR CODE ══════════ -->
+<!-- ══════════ STEP 5: QR CODE / PAIRING CODE ══════════ -->
 <div class="step" id="s5">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
     <div class="qr-card">
       <div class="qr-header">
         <div class="qr-title">Conectar WhatsApp</div>
-        <div class="qr-badge" id="qr-status">aguardando scan</div>
+        <div class="qr-badge" id="qr-status">aguardando conex&atilde;o</div>
       </div>
 
-      <div class="qr-box" id="qr-box">
-        <div class="qr-loading" id="qr-loading">
-          <div class="qr-spinner"></div>
-          <span>gerando qr code...</span>
-        </div>
-        <img id="qr-img" alt="QR Code WhatsApp" style="display:none;max-width:200px;border-radius:8px"/>
+      <!-- Toggle QR Code / Pairing Code -->
+      <div class="conn-toggle" id="conn-toggle">
+        <button class="conn-toggle-btn active" id="toggle-qr" onclick="switchConnMode('qr')">QR Code</button>
+        <button class="conn-toggle-btn" id="toggle-pairing" onclick="switchConnMode('pairing')">C&oacute;digo no celular</button>
       </div>
 
-      <div class="qr-steps">
-        <div class="qr-step">
-          <div class="qr-step-num">1</div>
-          <span>Abra o <strong>WhatsApp</strong> no celular do est&uacute;dio</span>
+      <!-- === QR Code area === -->
+      <div id="qr-area">
+        <div class="qr-box" id="qr-box">
+          <div class="qr-loading" id="qr-loading">
+            <div class="qr-spinner"></div>
+            <span>gerando qr code...</span>
+          </div>
+          <img id="qr-img" alt="QR Code WhatsApp" style="display:none;max-width:200px;border-radius:8px"/>
         </div>
-        <div class="qr-step">
-          <div class="qr-step-num">2</div>
-          <span>Toque em <strong>Dispositivos conectados</strong> → Conectar dispositivo</span>
+        <div class="qr-steps" id="qr-steps">
+          <div class="qr-step">
+            <div class="qr-step-num">1</div>
+            <span>Abra o <strong>WhatsApp</strong> no celular do est&uacute;dio</span>
+          </div>
+          <div class="qr-step">
+            <div class="qr-step-num">2</div>
+            <span>Toque em <strong>Dispositivos conectados</strong> &rarr; Conectar dispositivo</span>
+          </div>
+          <div class="qr-step">
+            <div class="qr-step-num">3</div>
+            <span>Aponte a c&acirc;mera para o <strong>QR Code</strong> acima</span>
+          </div>
         </div>
-        <div class="qr-step">
-          <div class="qr-step-num">3</div>
-          <span>Aponte a c&acirc;mera para o <strong>QR Code</strong> acima</span>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button class="qr-refresh" onclick="refreshQR()">&#8634; Novo QR Code</button>
+        </div>
+        <div class="qr-timer" id="qr-timer"></div>
+      </div>
+
+      <!-- === Pairing Code area === -->
+      <div id="pairing-area">
+        <div class="pairing-box active" id="pairing-phone-box">
+          <div class="pairing-phone-wrap">
+            <label class="pairing-phone-label">N&uacute;mero do WhatsApp do est&uacute;dio (com DDD)</label>
+            <div class="pairing-phone-row">
+              <input type="tel" class="pairing-phone-input" id="pairing-phone" placeholder="11999999999" maxlength="15"/>
+              <button class="pairing-phone-btn" id="pairing-btn" onclick="requestPairingCode()">Gerar c&oacute;digo</button>
+            </div>
+          </div>
+        </div>
+        <div class="pairing-box" id="pairing-code-box">
+          <div class="pairing-code-display">
+            <div class="pairing-code-value" id="pairing-code-value">----</div>
+            <div class="pairing-code-hint">
+              Digite este c&oacute;digo no seu WhatsApp:<br/>
+              <strong>Configura&ccedil;&otilde;es</strong> &rarr; <strong>Dispositivos conectados</strong> &rarr; <strong>Conectar dispositivo</strong> &rarr; <strong>Conectar com n&uacute;mero de telefone</strong>
+            </div>
+          </div>
+        </div>
+        <div class="qr-steps" id="pairing-steps">
+          <div class="qr-step">
+            <div class="qr-step-num">1</div>
+            <span>Digite o n&uacute;mero do WhatsApp do est&uacute;dio acima</span>
+          </div>
+          <div class="qr-step">
+            <div class="qr-step-num">2</div>
+            <span>No WhatsApp: <strong>Dispositivos conectados</strong> &rarr; <strong>Conectar dispositivo</strong></span>
+          </div>
+          <div class="qr-step">
+            <div class="qr-step-num">3</div>
+            <span>Toque em <strong>&ldquo;Conectar com n&uacute;mero de telefone&rdquo;</strong> (link pequeno embaixo da c&acirc;mera)</span>
+          </div>
+          <div class="qr-step">
+            <div class="qr-step-num">4</div>
+            <span>Digite o <strong>c&oacute;digo</strong> que apareceu acima</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button class="qr-refresh" onclick="requestPairingCode()">&#8634; Novo c&oacute;digo</button>
         </div>
       </div>
 
-      <div style="display:flex;gap:10px;justify-content:center">
-        <button class="qr-refresh" onclick="refreshQR()">↺ Novo QR Code</button>
-      </div>
-      <div class="qr-timer" id="qr-timer"></div>
       <div class="qr-poll">
         <div class="qr-poll-dot"></div>
         verificando conex&atilde;o automaticamente...
@@ -1236,18 +1320,16 @@ async function doEvoSetup() {
     // ── 4. Webhook configurado pelo servidor (evo-create-instance.js) ───
     setStatus(3, 'Webhook configurado!', 'done');
 
-    // ── 5. Ir para QR Code ───────────────────────────────────────────────
-    setStatus(4, 'Gerando QR Code...', 'active');
+    // ── 5. Ir para conexao WhatsApp ──────────────────────────────────────
+    setStatus(4, 'Preparando conex\u00e3o...', 'active');
     await new Promise(r => setTimeout(r, 1500));
-    setStatus(4, 'QR Code pronto!', 'done');
+    setStatus(4, 'Pronto para conectar!', 'done');
 
-    goStep(5); // QR
-    await loadQR();
+    goStep(5); // QR / Pairing
+    initConnectStep();
 
-    // Polling a cada 5 segundos
+    // Polling a cada 5 segundos (funciona tanto para QR quanto pairing)
     pollInterval = setInterval(checkConnection, 5000);
-    // QR refresh automático (QR expira em ~30s)
-    startQRTimer();
 
   } catch (err) {
     console.error('doEvoSetup error:', err);
@@ -1265,30 +1347,126 @@ async function doEvoSetup() {
   }
 }
 
+// ── Detectar mobile ─────────────────────────────────────────────────────
+function isMobile() {
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent) || window.innerWidth <= 768;
+}
+
+// ── Inicializar Step 5 — escolhe QR ou Pairing baseado no dispositivo ───
+let currentConnMode = 'qr'; // 'qr' ou 'pairing'
+
+function initConnectStep() {
+  if (isMobile()) {
+    switchConnMode('pairing');
+  } else {
+    switchConnMode('qr');
+  }
+}
+
+function switchConnMode(mode) {
+  currentConnMode = mode;
+  const qrArea = document.getElementById('qr-area');
+  const pairingArea = document.getElementById('pairing-area');
+  const toggleQR = document.getElementById('toggle-qr');
+  const togglePairing = document.getElementById('toggle-pairing');
+
+  if (mode === 'pairing') {
+    qrArea.style.display = 'none';
+    pairingArea.style.display = 'block';
+    toggleQR.classList.remove('active');
+    togglePairing.classList.add('active');
+    clearInterval(qrTimerHandle);
+    document.getElementById('qr-status').textContent = 'aguardando c\u00f3digo';
+  } else {
+    qrArea.style.display = 'block';
+    pairingArea.style.display = 'none';
+    toggleQR.classList.add('active');
+    togglePairing.classList.remove('active');
+    loadQR();
+    startQRTimer();
+    document.getElementById('qr-status').textContent = 'aguardando scan';
+  }
+}
+
+// ── Pairing Code ────────────────────────────────────────────────────────
+async function requestPairingCode() {
+  const phoneInput = document.getElementById('pairing-phone');
+  const btn = document.getElementById('pairing-btn');
+  const phoneBox = document.getElementById('pairing-phone-box');
+  const codeBox = document.getElementById('pairing-code-box');
+  const codeValue = document.getElementById('pairing-code-value');
+
+  let number = phoneInput.value.replace(/\D/g, '');
+  if (number.length <= 11 && !number.startsWith('55')) {
+    number = '55' + number;
+  }
+
+  if (number.length < 12) {
+    phoneInput.style.borderColor = '#c0392b';
+    phoneInput.focus();
+    return;
+  }
+  phoneInput.style.borderColor = '';
+
+  btn.disabled = true;
+  btn.textContent = 'Gerando...';
+
+  try {
+    const r = await fetch('/api/evo-pairing-code?instance=' + encodeURIComponent(instanceSlug) + '&number=' + encodeURIComponent(number));
+    const data = await r.json();
+
+    if (!r.ok) {
+      const errMsg = data?.error || 'Erro ao gerar c\u00f3digo';
+      if (r.status === 425) {
+        codeValue.textContent = '...';
+        codeBox.classList.add('active');
+        setTimeout(() => requestPairingCode(), 3000);
+        return;
+      }
+      alert(errMsg);
+      btn.disabled = false;
+      btn.textContent = 'Gerar c\u00f3digo';
+      return;
+    }
+
+    const code = data?.pairingCode;
+    if (code) {
+      codeValue.textContent = code;
+      phoneBox.classList.remove('active');
+      codeBox.classList.add('active');
+      document.getElementById('qr-status').textContent = 'c\u00f3digo gerado';
+    } else {
+      alert('C\u00f3digo n\u00e3o dispon\u00edvel. Tente usar o QR Code.');
+    }
+  } catch (e) {
+    console.error('Pairing code error:', e);
+    alert('Erro de rede. Verifique sua conex\u00e3o e tente novamente.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Gerar c\u00f3digo';
+  }
+}
+
 // ── QR Code ────────────────────────────────────────────────────────────────
 async function loadQR() {
-  // [FIX INKFLOW-SAAS-1] Null-check para evitar TypeError quando elementos ainda nao existem no DOM
   const qrLoading = document.getElementById('qr-loading');
   const qrImg = document.getElementById('qr-img');
   if (!qrLoading || !qrImg) { console.warn('loadQR: elementos QR ainda nao estao no DOM'); return; }
   qrLoading.style.display = 'flex';
   qrImg.style.display = 'none';
   try {
-    // [FIX Bug #2B] Usa proxy server-side em vez de evoFetch direto
     const r = await fetch('/api/evo-qr?instance=' + encodeURIComponent(instanceSlug));
     const data = await r.json();
 
-    // Bug 1 fix: tratar erros da API em vez de deixar spinner infinito
     if (!r.ok) {
       const errMsg = data?.error || 'Erro ao gerar QR Code';
       console.error('evo-qr error:', r.status, errMsg);
-      // Se instancia ainda nao configurada (425), tentar novamente em 3s automaticamente
       if (r.status === 425) {
-        qrLoading.innerHTML = '<span style="font-size:12px;color:var(--ink3);font-family:\'DM Mono\',monospace">Configurando instância... tentando novamente em 3s</span>';
+        qrLoading.innerHTML = '<span style="font-size:12px;color:rgba(255,255,255,.35);font-family:\'DM Mono\',monospace">Configurando inst\u00e2ncia... tentando novamente em 3s</span>';
         setTimeout(() => loadQR(), 3000);
         return;
       }
-      qrLoading.innerHTML = '<span style="font-size:12px;color:var(--ink3);font-family:\'DM Mono\',monospace">' + errMsg + '. Clique em "Novo QR Code".</span>';
+      qrLoading.innerHTML = '<span style="font-size:12px;color:rgba(255,255,255,.35);font-family:\'DM Mono\',monospace">' + errMsg + '. Clique em "Novo QR Code".</span>';
       return;
     }
 
@@ -1298,12 +1476,11 @@ async function loadQR() {
       qrImg.style.display = 'block';
       qrLoading.style.display = 'none';
     } else {
-      // QR vazio — pode acontecer se instancia ja esta conectada
-      qrLoading.innerHTML = '<span style="font-size:12px;color:var(--ink3);font-family:\'DM Mono\',monospace">QR não disponível. Se já escaneou, aguarde a conexão...</span>';
+      qrLoading.innerHTML = '<span style="font-size:12px;color:rgba(255,255,255,.35);font-family:\'DM Mono\',monospace">QR n\u00e3o dispon\u00edvel. Se j\u00e1 escaneou, aguarde a conex\u00e3o...</span>';
     }
   } catch (e) {
     console.error('QR load error:', e);
-    if (qrLoading) qrLoading.innerHTML = '<span style="font-size:12px;color:var(--ink3);font-family:\'DM Mono\',monospace">Erro ao carregar QR. Clique em "Novo QR Code".</span>';
+    if (qrLoading) qrLoading.innerHTML = '<span style="font-size:12px;color:rgba(255,255,255,.35);font-family:\'DM Mono\',monospace">Erro ao carregar QR. Clique em "Novo QR Code".</span>';
   }
 }
 
@@ -1329,8 +1506,9 @@ function startQRTimer() {
   }, 1000);
 }
 function updateTimer() {
-  document.getElementById('qr-timer').textContent = qrTimerSec > 0
-    ? `QR expira em ${qrTimerSec}s — será atualizado automaticamente`
+  const el = document.getElementById('qr-timer');
+  if (el) el.textContent = qrTimerSec > 0
+    ? 'QR expira em ' + qrTimerSec + 's \u2014 ser\u00e1 atualizado automaticamente'
     : 'Atualizando QR Code...';
 }
 
@@ -1346,17 +1524,22 @@ async function checkConnection() {
       clearInterval(pollInterval);
       clearInterval(qrTimerHandle);
 
-      // ── Feedback visual imediato na tela do QR ───────────────────────────
+      // ── Feedback visual imediato (funciona tanto com QR quanto Pairing) ──
       const badge = document.getElementById('qr-status');
-      if (badge) { badge.textContent = 'conectado ✓'; badge.className = 'qr-badge conn'; }
-      const qrBox = document.getElementById('qr-box');
-      if (qrBox) {
-        qrBox.innerHTML = `
-          <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px">
-            <div style="font-size:52px;animation:pulse 1s ease-in-out 3">✅</div>
-            <div style="color:rgba(0,210,195,.95);font-weight:700;font-size:16px">WhatsApp Conectado!</div>
-            <div style="color:rgba(255,255,255,.4);font-size:12px;font-family:'DM Mono',monospace">configurando seu estúdio...</div>
-          </div>`;
+      if (badge) { badge.textContent = 'conectado \u2713'; badge.className = 'qr-badge conn'; }
+
+      const successHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px">' +
+        '<div style="font-size:52px;animation:pulse 1s ease-in-out 3">\u2705</div>' +
+        '<div style="color:rgba(0,210,195,.95);font-weight:700;font-size:16px">WhatsApp Conectado!</div>' +
+        '<div style="color:rgba(255,255,255,.4);font-size:12px;font-family:\'DM Mono\',monospace">configurando seu est\u00fadio...</div>' +
+        '</div>';
+
+      if (currentConnMode === 'pairing') {
+        const pairingArea = document.getElementById('pairing-area');
+        if (pairingArea) pairingArea.innerHTML = successHTML;
+      } else {
+        const qrBox = document.getElementById('qr-box');
+        if (qrBox) qrBox.innerHTML = successHTML;
       }
       // Aguardar 2s para o cliente ver a confirmação antes de avançar
       await new Promise(r => setTimeout(r, 2000));
