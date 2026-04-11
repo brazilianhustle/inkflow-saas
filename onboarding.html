@@ -213,6 +213,20 @@ select.fi option{background:var(--card);color:var(--t1)}
 .suc-val{font-weight:600;color:var(--t1);font-size:13px}
 .suc-next{font-size:12px;color:var(--t3);line-height:1.7}
 
+/* ── Invite artists (success screen) ── */
+.invite-section{background:var(--card2);border:1px solid rgba(0,212,170,.15);border-radius:12px;padding:20px;margin-top:20px;text-align:center;display:none}
+.invite-section.show{display:block}
+.invite-title{font-size:14px;font-weight:700;color:var(--teal);margin-bottom:6px}
+.invite-sub{font-size:12px;color:var(--t3);margin-bottom:16px;line-height:1.5}
+.invite-slots{font-size:11px;color:var(--t2);margin-bottom:12px;background:rgba(0,0,0,.3);border-radius:8px;padding:8px 12px}
+.invite-btn{background:var(--teal);color:#111;border:none;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.invite-btn:hover:not(:disabled){opacity:.9}
+.invite-btn:disabled{opacity:.4;cursor:default}
+.invite-link-box{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:12px;display:none;word-break:break-all}
+.invite-link-url{font-size:12px;color:var(--teal);font-weight:500;display:block;margin-bottom:8px}
+.invite-copy-btn{background:var(--card2);border:1px solid var(--border2);color:var(--t2);padding:6px 14px;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
+.invite-copy-btn:hover{border-color:var(--teal-mid);color:var(--teal)}
+
 /* ── Error overlay ── */
 #err-overlay{display:none;position:fixed;inset:0;background:var(--bg);align-items:center;justify-content:center;z-index:100;padding:24px;text-align:center;flex-direction:column}
 #err-overlay.show{display:flex}
@@ -519,10 +533,22 @@ select.fi option{background:var(--card);color:var(--t1)}
         <div class="suc-row" style="border-bottom:none"><span class="suc-key">status</span><span style="background:var(--teal-dim);color:var(--teal);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">● ativo</span></div>
       </div>
       <div class="suc-next">
-        ✓ Seu WhatsApp já recebe mensagens automaticamente<br/>
-        ✓ O assistente responde agendamentos e dúvidas<br/>
-        ✓ Você recebe alertas no grupo de notificação<br/><br/>
-        Em caso de dúvidas, entre em contato com o suporte InkFlow.
+        &#10003; Seu WhatsApp j&#225; recebe mensagens automaticamente<br/>
+        &#10003; O assistente responde agendamentos e d&#250;vidas<br/>
+        &#10003; Voc&#234; recebe alertas no grupo de notifica&#231;&#227;o<br/><br/>
+        Em caso de d&#250;vidas, entre em contato com o suporte InkFlow.
+      </div>
+
+      <!-- Se&#231;&#227;o de convite de artistas (s&#243; aparece para planos estudio/premium) -->
+      <div class="invite-section" id="invite-section">
+        <div class="invite-title">&#127912; Convidar Artistas</div>
+        <div class="invite-sub">Seu plano permite adicionar artistas ao est&#250;dio.<br/>Cada artista conecta seu pr&#243;prio WhatsApp.</div>
+        <div class="invite-slots" id="invite-slots">Carregando slots...</div>
+        <button class="invite-btn" id="invite-btn" onclick="generateArtistInvite()">Gerar link de convite</button>
+        <div class="invite-link-box" id="invite-link-box">
+          <span class="invite-link-url" id="invite-link-url"></span>
+          <button class="invite-copy-btn" onclick="copyInviteLink()">Copiar link</button>
+        </div>
       </div>
     </div>
   </div>
@@ -548,6 +574,10 @@ let selectedPlan = 'individual';
 const MP_PUBLIC_KEY = 'APP_USR-36990647-ad0a-4978-a672-499f635f9b03';
 let mpBrickController = null;
 
+// ── Multi-artista: dados do convite ──
+let isArtistInvite = false;
+let artistInviteData = {};
+
 async function init() {
   const urlParams    = new URLSearchParams(window.location.search);
   const preapprovalId = urlParams.get('preapproval_id');
@@ -558,8 +588,19 @@ async function init() {
   try {
     const valRes = await fetch('/api/validate-onboarding-key', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
     const valData = await valRes.json();
-    if (!valData.valid) { showErrOverlay(valData.error || 'Link de onboarding inválido ou expirado.'); return; }
+    if (!valData.valid) { showErrOverlay(valData.error || 'Link de onboarding inv\u00e1lido ou expirado.'); return; }
     plano = valData.plano || 'individual';
+
+    // ── Detectar convite de artista ──
+    if (valData.is_artist_invite && valData.parent_tenant_id) {
+      isArtistInvite = true;
+      artistInviteData = {
+        parent_tenant_id: valData.parent_tenant_id,
+        parent_google_calendar_id: valData.parent_google_calendar_id || null,
+        parent_nome_estudio: valData.parent_nome_estudio || '',
+        parent_evo_base_url: valData.parent_evo_base_url || '',
+      };
+    }
   } catch (valErr) {
     console.error('Key validation network error:', valErr);
     showErrOverlay('Erro ao validar link de onboarding. Verifique sua conexao e tente novamente.');
@@ -570,12 +611,59 @@ async function init() {
   gConfig = { globalKey: key, plano };
   localStorage.setItem('inkflow_gk', key);
   selectedPlan = plano;
-  const planLabels = { teste:'teste R$1', individual:'individual', estudio:'estúdio', premium:'estúdio vip' };
-  document.getElementById('w-plano').textContent = 'plano ' + (planLabels[plano] || plano);
+
+  if (isArtistInvite) {
+    // Artista: adaptar tela de boas-vindas
+    document.getElementById('w-plano').textContent = 'convite de artista';
+    document.getElementById('w-plano').style.borderColor = 'rgba(0,212,170,.5)';
+    document.querySelector('.w-title').textContent = 'Configure seu assistente virtual';
+    document.querySelector('.w-sub').textContent = 'Voc\u00ea foi convidado para o est\u00fadio ' + (artistInviteData.parent_nome_estudio || '') + '. Conecte seu WhatsApp para ativar seu assistente pessoal.';
+    // Esconder steps de pagamento na lista de boas-vindas
+    const welcomeSteps = document.querySelectorAll('.w-step');
+    if (welcomeSteps[3]) welcomeSteps[3].style.display = 'none'; // Pagamento
+    // Adaptar formulario
+    setupArtistForm();
+  } else {
+    const planLabels = { teste:'teste R$1', individual:'individual', estudio:'est\u00fadio', premium:'est\u00fadio vip' };
+    document.getElementById('w-plano').textContent = 'plano ' + (planLabels[plano] || plano);
+  }
   selectPlan(plano);
 }
 
 function goStep(n) { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('s' + n).classList.add('active'); window.scrollTo(0, 0); }
+
+function setupArtistForm() {
+  // Esconder secao de plano
+  const planSec = document.querySelector('.fsec:last-of-type');
+  // Esconder todo o bloco de planos
+  const planSelEl = document.getElementById('plan-sel');
+  if (planSelEl) planSelEl.style.display = 'none';
+  // Esconder os dividers e labels de plano
+  const planHints = document.querySelectorAll('.fi-hint');
+  planHints.forEach(h => { if (h.textContent.includes('Plano pr')) h.style.display = 'none'; });
+  // Esconder dividers e secao "Plano"
+  const fsecs = document.querySelectorAll('.fsec');
+  fsecs.forEach(s => { if (s.textContent.trim() === 'Plano') s.style.display = 'none'; });
+  // Esconder divider antes de Plano (ultimo hr.divider)
+  const dividers = document.querySelectorAll('hr.divider');
+  if (dividers.length >= 2) dividers[dividers.length - 1].style.display = 'none';
+  // Esconder campos de estudio (artista herda do pai)
+  const estudioField = document.getElementById('f-estudio');
+  if (estudioField) estudioField.closest('.fg').style.display = 'none';
+  // Mudar titulo e subtitulo do form
+  const formTitle = document.querySelector('.form-title');
+  const formSub = document.querySelector('.form-sub');
+  if (formTitle) formTitle.textContent = 'Seus dados de artista';
+  if (formSub) formSub.textContent = 'Essas informa\u00e7\u00f5es configuram seu assistente virtual pessoal.';
+  // Mudar badge
+  const formBadge = document.querySelector('.form-badge');
+  if (formBadge) formBadge.textContent = 'Convite de Artista';
+  // Mudar label do campo nome
+  const nomeLabel = document.querySelector('label[for="f-nome"], #f-nome')?.closest('.fg')?.querySelector('.fl');
+  // Mudar texto do botao
+  const formBtn = document.getElementById('form-btn');
+  if (formBtn) formBtn.textContent = 'Conectar meu WhatsApp \u2192';
+}
 function makeSlug(text) { return (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').substring(0, 16); }
 function autoAgent() { const nome = document.getElementById('f-nome').value.trim(); const agente = document.getElementById('f-agente'); if (!agente.value && nome) agente.value = nome.split(' ')[0]; }
 function selectPlan(plan) { selectedPlan = plan; ['teste','individual','estudio','premium'].forEach(p => { document.getElementById('plan-' + p)?.classList.toggle('active', p === plan); }); if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan}); }
@@ -645,15 +733,30 @@ async function chargeCard(formData) {
 }
 
 async function showPaymentStep() {
-  const nome = document.getElementById('f-nome').value.trim(); const estudio = document.getElementById('f-estudio').value.trim(); const agente = document.getElementById('f-agente').value.trim() || nome.split(' ')[0]; const cidade = document.getElementById('f-cidade').value.trim(); const endereco = document.getElementById('f-endereco').value.trim(); const email = document.getElementById('f-email').value.trim();
-  if (!nome || !estudio) { showFormError('Preencha o nome e o nome do estúdio.'); return; }
-  if (!email || !email.includes('@')) { showFormError('Email válido é obrigatório para o pagamento e suporte.'); return; }
+  const nome = document.getElementById('f-nome').value.trim(); const estudio = (document.getElementById('f-estudio').value || '').trim(); const agente = document.getElementById('f-agente').value.trim() || nome.split(' ')[0]; const cidade = document.getElementById('f-cidade').value.trim(); const endereco = document.getElementById('f-endereco').value.trim(); const email = document.getElementById('f-email').value.trim();
+  // Artista nao precisa de nome_estudio
+  if (!isArtistInvite && (!nome || !estudio)) { showFormError('Preencha o nome e o nome do est\u00fadio.'); return; }
+  if (isArtistInvite && !nome) { showFormError('Preencha seu nome.'); return; }
+  if (!email || !email.includes('@')) { showFormError('Email v\u00e1lido \u00e9 obrigat\u00f3rio.'); return; }
   document.getElementById('form-err').style.display = 'none';
   const btn = document.getElementById('form-btn'); btn.disabled = true; btn.textContent = 'Aguarde...';
   try {
-    const base = makeSlug(estudio) || makeSlug(nome); const suffix = Math.floor(Math.random() * 900) + 100; instanceSlug = base + suffix;
-    const prompt = generatePrompt(agente, estudio, cidade, endereco);
-    const tenantData = { nome, nome_agente: agente, nome_estudio: estudio, email: email || null, cidade: cidade || null, endereco: endereco || null, evo_instance: instanceSlug, webhook_path: 'inkflow', evo_apikey: 'pending', plano: selectedPlan, ativo: false, prompt_sistema: prompt, onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || null };
+    const slugBase = makeSlug(estudio || nome); const suffix = Math.floor(Math.random() * 900) + 100; instanceSlug = slugBase + suffix;
+    const promptEstudio = isArtistInvite ? (artistInviteData.parent_nome_estudio || 'Est\u00fadio') : estudio;
+    const prompt = generatePrompt(agente, promptEstudio, cidade, endereco);
+    const tenantData = { nome, nome_agente: agente, nome_estudio: estudio || (isArtistInvite ? artistInviteData.parent_nome_estudio : ''), email: email || null, cidade: cidade || null, endereco: endereco || null, evo_instance: instanceSlug, webhook_path: 'inkflow', evo_apikey: 'pending', plano: selectedPlan, ativo: false, prompt_sistema: prompt, onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || null };
+    // Artista: incluir dados de vinculacao ao estudio pai
+    if (isArtistInvite && artistInviteData.parent_tenant_id) {
+      tenantData.parent_tenant_id = artistInviteData.parent_tenant_id;
+      tenantData.is_artist_slot = true;
+      if (artistInviteData.parent_google_calendar_id) {
+        tenantData.google_calendar_id = artistInviteData.parent_google_calendar_id;
+        tenantData.parent_google_calendar_id = artistInviteData.parent_google_calendar_id;
+      }
+      if (artistInviteData.parent_evo_base_url) {
+        tenantData.evo_base_url = artistInviteData.parent_evo_base_url;
+      }
+    }
     const existCheck = await fetch('/api/get-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, fields: 'id,ativo' }) });
     if (existCheck.ok) {
       const existData = await existCheck.json(); const existing = existData.tenants || [];
@@ -678,8 +781,17 @@ async function showPaymentStep() {
     const createRes = await fetch('/api/create-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tenantData) });
     if (!createRes.ok) { const errData = await createRes.json().catch(() => ({})); throw new Error(errData.error || 'Erro ao criar perfil'); }
     const createData = await createRes.json(); tenantId = createData.tenant.id; instanceSlug = createData.tenant.evo_instance || instanceSlug;
-    localStorage.setItem('inkflow_ob', JSON.stringify({ tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan }));
-    const planNames = { teste:'Teste R$1', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' }; const planPrices = { teste:'R$ 1', individual:'R$ 197', estudio:'R$ 497', premium:'R$ 997' }; const planCycles = { teste:'/mês · teste de pagamento', individual:'/mês · cobrança recorrente', estudio:'/mês · cobrança recorrente', premium:'/mês · cobrança recorrente' };
+    localStorage.setItem('inkflow_ob', JSON.stringify({ tenantId, instanceSlug, nome, estudio: estudio || artistInviteData?.parent_nome_estudio || '', agente, cidade, email, plano: selectedPlan, isArtist: isArtistInvite }));
+
+    // ── Artista: pular pagamento, ir direto para setup WhatsApp ──
+    if (isArtistInvite) {
+      goStep(4); for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
+      await doEvoSetup();
+      if (window.posthog) posthog.capture('artist_onboarding_started', { plan: selectedPlan, tenant: tenantId, parent: artistInviteData.parent_tenant_id });
+      return;
+    }
+
+    const planNames = { teste:'Teste R$1', individual:'Individual', estudio:'Est\u00fadio', premium:'Est\u00fadio VIP' }; const planPrices = { teste:'R$ 1', individual:'R$ 197', estudio:'R$ 497', premium:'R$ 997' }; const planCycles = { teste:'/m\u00eas \u00b7 teste de pagamento', individual:'/m\u00eas \u00b7 cobran\u00e7a recorrente', estudio:'/m\u00eas \u00b7 cobran\u00e7a recorrente', premium:'/m\u00eas \u00b7 cobran\u00e7a recorrente' };
     document.getElementById('pay-plan-box').innerHTML = `<div class="pay-plan-name">${planNames[selectedPlan] || selectedPlan}</div><div class="pay-plan-price">${planPrices[selectedPlan] || ''}</div><div class="pay-plan-cycle">${planCycles[selectedPlan] || ''}</div>`;
     const payBtn = document.getElementById('pay-btn'); const payOr = document.getElementById('pay-or'); const payFreeBtn = document.getElementById('pay-free-btn'); const payHint = document.getElementById('pay-hint');
     { payBtn.style.display = 'flex'; payOr.style.display = 'block'; if (payHint) payHint.style.display = 'block'; if (payFreeBtn) payFreeBtn.style.display = 'none'; }
@@ -809,12 +921,84 @@ async function checkConnection() {
       document.getElementById('suc-estudio').textContent = ob.estudio || instanceSlug;
       document.getElementById('suc-agente').textContent = ob.agente || '';
       document.getElementById('suc-inst').textContent = instanceSlug;
-      const sucPlanLabels = { teste:'Teste R$1', individual:'Individual · R$197/mês', estudio:'Estúdio · R$497/mês', premium:'Estúdio VIP · R$997/mês' };
+      const sucPlanLabels = { teste:'Teste R$1', individual:'Individual \u00b7 R$197/m\u00eas', estudio:'Est\u00fadio \u00b7 R$497/m\u00eas', premium:'Est\u00fadio VIP \u00b7 R$997/m\u00eas' };
       document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
+      // Adaptar tela de sucesso para artista
+      if (isArtistInvite || ob.isArtist) {
+        document.querySelector('.suc-title').textContent = 'Seu WhatsApp est\u00e1 conectado!';
+        document.querySelector('.suc-sub').textContent = 'Seu assistente virtual pessoal j\u00e1 est\u00e1 ativo. Os clientes que entrarem em contato pelo seu n\u00famero ser\u00e3o atendidos automaticamente.';
+        document.getElementById('suc-plano').textContent = 'artista \u00b7 ' + (ob.estudio || '');
+        document.querySelector('.suc-next').innerHTML = '\u2713 Seu WhatsApp j\u00e1 recebe mensagens automaticamente<br/>\u2713 O assistente responde agendamentos e d\u00favidas<br/>\u2713 Os agendamentos v\u00e3o para o calend\u00e1rio do est\u00fadio<br/><br/>Em caso de d\u00favidas, fale com o dono do est\u00fadio.';
+      }
       localStorage.removeItem('inkflow_ob'); localStorage.removeItem('inkflow_gk');
       goStep(6);
+      showInviteSection();
     }
   } catch (e) { console.warn('Poll error:', e); }
+}
+
+// ── Convite de artistas (tela de sucesso) ──
+async function showInviteSection() {
+  if (isArtistInvite) return; // artista nao convida outros
+  if (!['estudio','premium'].includes(selectedPlan)) return;
+  const section = document.getElementById('invite-section');
+  if (!section) return;
+  section.classList.add('show');
+  // Buscar slots via API (sem endpoint dedicado, fazemos client-side)
+  try {
+    const slotsEl = document.getElementById('invite-slots');
+    const maxSlots = selectedPlan === 'premium' ? 10 : 5;
+    slotsEl.textContent = 'At\u00e9 ' + (maxSlots - 1) + ' artistas podem ser convidados';
+  } catch (e) {
+    console.warn('showInviteSection error:', e);
+  }
+}
+
+async function generateArtistInvite() {
+  const btn = document.getElementById('invite-btn');
+  btn.disabled = true; btn.textContent = 'Gerando...';
+  try {
+    const res = await fetch('/api/create-artist-invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenant_id: tenantId })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      alert(data.error || 'Erro ao gerar convite');
+      btn.disabled = false; btn.textContent = 'Gerar link de convite';
+      return;
+    }
+    // Mostrar link
+    const linkBox = document.getElementById('invite-link-box');
+    const linkUrl = document.getElementById('invite-link-url');
+    linkUrl.textContent = data.link;
+    linkBox.style.display = 'block';
+    // Atualizar slots
+    if (data.slots) {
+      document.getElementById('invite-slots').textContent = data.slots.used + ' artista(s) ativo(s) \u00b7 ' + data.slots.pending_invites + ' convite(s) pendente(s) \u00b7 ' + data.slots.remaining + ' slot(s) restante(s)';
+    }
+    btn.textContent = 'Gerar outro convite';
+    btn.disabled = false;
+  } catch (e) {
+    console.error('generateArtistInvite error:', e);
+    alert('Erro de conex\u00e3o. Tente novamente.');
+    btn.disabled = false; btn.textContent = 'Gerar link de convite';
+  }
+}
+
+function copyInviteLink() {
+  const url = document.getElementById('invite-link-url').textContent;
+  if (url) {
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.querySelector('.invite-copy-btn');
+      btn.textContent = 'Copiado!';
+      setTimeout(() => btn.textContent = 'Copiar link', 2000);
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    });
+  }
 }
 
 init();

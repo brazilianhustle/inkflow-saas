@@ -521,7 +521,7 @@ async function loadTenants() {
   document.getElementById('tbl').style.display = 'none';
   document.getElementById('srch').value = '';
   try {
-    const list = await api('GET', '/rest/v1/tenants?select=id,nome,nome_estudio,email,cidade,endereco,evo_instance,evo_base_url,plano,status_pagamento,ativo,nome_agente,prompt_sistema,faq_texto,webhook_path,mp_subscription_id,trial_ate,grupo_notificacao,grupo_orcamento,google_calendar_id,google_drive_folder,created_at&order=created_at.desc');
+    const list = await api('GET', '/rest/v1/tenants?select=id,nome,nome_estudio,email,cidade,endereco,evo_instance,evo_base_url,plano,status_pagamento,ativo,nome_agente,prompt_sistema,faq_texto,webhook_path,mp_subscription_id,trial_ate,grupo_notificacao,grupo_orcamento,google_calendar_id,google_drive_folder,created_at,parent_tenant_id,max_artists,is_artist_slot&order=created_at.desc');
     const tArr = Array.isArray(list) ? list : [];
     let stats = [];
 try { const r = await api('GET', '/rest/v1/tenant_stats?select=*'); stats = Array.isArray(r) ? r : []; } catch(e) {}
@@ -549,6 +549,8 @@ function render(list) {
   tb.innerHTML = list.map(t => {
     const ini  = (t.nome_estudio || t.nome || '??').split(' ').slice(0,2).map(w => w[0]||'').join('').toUpperCase();
     const pl   = t.plano || 'individual';
+    const isArt = t.is_artist_slot === true;
+    const plLabel = isArt ? '\u{1F3A8} ' + pl : pl;
     const plc  = pl === 'premium' ? 'ba' : pl === 'estudio' ? 'bb' : 'bgr';
      const pgto = t.status_pagamento || 'pendente';
     const pgc  = pgto === 'authorized' ? 'bg' : pgto === 'cancelled' ? 'br' : 'ba';
@@ -561,7 +563,7 @@ function render(list) {
         <div class="tm">${esc(t.nome||'')}${t.cidade?' &middot; '+esc(t.cidade):''}</div>
       </div></div></td>
       <td style="font-family:monospace;font-size:11px;color:var(--text3)">${esc(t.evo_instance||'-')}</td>
-      <td><span class="badge ${plc}">${pl}</span></td>
+      <td><span class="badge ${plc}">${plLabel}</span></td>
       <td style="text-align:center;font-family:monospace;color:var(--text2)">${t.tc||0}</td>
       <td style="text-align:center;font-family:monospace;color:var(--text2)">${t.th||0}</td>
       <td style="text-align:center;font-family:monospace;color:var(--text2)">${t.tm||0}</td>
@@ -627,14 +629,21 @@ function selT(id) {
         <div class="sr"><div class="sk">Assinatura MP</div><div class="sv2" style="font-size:11px;font-family:monospace">${esc(t.mp_subscription_id||'-')}</div></div>
       </div>
       ${t.prompt_sistema?`<div class="prm" style="margin-top:16px"><div class="sk" style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:8px">Prompt do Sistema</div><div style="font-size:12px;color:var(--text2);white-space:pre-wrap;max-height:100px;overflow-y:auto;line-height:1.6">${esc(t.prompt_sistema)}</div></div>`:''}
+      ${t.is_artist_slot?`<div style="margin-top:16px;padding:12px;background:rgba(0,212,170,.05);border:1px solid rgba(0,212,170,.15);border-radius:10px"><div class="sk" style="font-size:10px;text-transform:uppercase;color:var(--glow);font-weight:600;margin-bottom:6px">&#x1F3A8; Artista vinculado</div><div style="font-size:12px;color:var(--text2)">Este tenant \u00e9 um artista filho. Parent: <span style="font-family:monospace;font-size:11px">${esc(t.parent_tenant_id||'-')}</span></div></div>`:''}
+      ${(!t.is_artist_slot && ['estudio','premium'].includes(t.plano))?`<div style="margin-top:16px;padding:12px;background:rgba(0,212,170,.05);border:1px solid rgba(0,212,170,.15);border-radius:10px"><div class="sk" style="font-size:10px;text-transform:uppercase;color:var(--glow);font-weight:600;margin-bottom:6px">&#x1F3A8; Artistas do Est\u00fadio (max: ${t.max_artists||'?'})</div><div id="det-artists" style="font-size:12px;color:var(--text2)">Carregando...</div></div>`:''}
     </div>`;
   document.getElementById('det').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // Se for estudio/premium (dono), carregar artistas filhos
+  if (!t.is_artist_slot && ['estudio','premium'].includes(t.plano)) {
+    loadChildArtists(t.id);
+  }
 }
 
 function updateStats() {
   const total  = allT.length;
   const ativos = allT.filter(t => t.ativo).length;
-  const mrr    = allT.filter(t => t.ativo && t.status_pagamento === 'authorized')
+  // MRR exclui artistas filhos (is_artist_slot) para evitar contagem dupla
+  const mrr    = allT.filter(t => t.ativo && t.status_pagamento === 'authorized' && !t.is_artist_slot)
                      .reduce((s,t) => s + (CFG.prices[t.plano]||0), 0);
   const cnt = { individual:0, estudio:0, premium:0 };
   allT.forEach(t => { if (t.plano in cnt) cnt[t.plano]++; });
@@ -647,6 +656,28 @@ function updateStats() {
     '<span class="badge bgr">I:'+cnt.individual+'</span> '+
     '<span class="badge bb">Est:'+cnt.estudio+'</span> '+
     '<span class="badge ba">VIP:'+cnt.premium+'</span>';
+}
+
+async function loadChildArtists(parentId) {
+  const el = document.getElementById('det-artists');
+  if (!el) return;
+  try {
+    const artists = allT.filter(t => t.parent_tenant_id === parentId && t.is_artist_slot);
+    if (artists.length === 0) {
+      el.textContent = 'Nenhum artista convidado ainda.';
+      return;
+    }
+    el.innerHTML = artists.map(a =>
+      `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+        <span style="color:var(--glow);font-weight:600">${esc(a.nome||'-')}</span>
+        <span style="color:var(--text3);font-size:11px">${esc(a.nome_agente||'')}</span>
+        <span style="font-family:monospace;font-size:10px;color:var(--text3)">${esc(a.evo_instance||'-')}</span>
+        <span class="badge ${a.ativo?'bg':'br'}" style="font-size:9px;margin-left:auto">${a.ativo?'ativo':'inativo'}</span>
+      </div>`
+    ).join('');
+  } catch (e) {
+    el.textContent = 'Erro ao carregar artistas.';
+  }
 }
 
 function openModal(id) {

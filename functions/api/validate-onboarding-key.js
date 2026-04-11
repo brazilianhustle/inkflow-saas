@@ -39,9 +39,9 @@ export async function onRequest(context) {
   if (!SB_KEY) return json({ valid: false, error: 'Configuração interna ausente' }, 503);
 
   try {
-    // Buscar a key na tabela onboarding_links
+    // Buscar a key na tabela onboarding_links (inclui campos de convite artista)
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/onboarding_links?key=eq.${encodeURIComponent(key)}&select=id,key,plano,email,used,expires_at`,
+      `${SUPABASE_URL}/rest/v1/onboarding_links?key=eq.${encodeURIComponent(key)}&select=id,key,plano,email,used,expires_at,parent_tenant_id,is_artist_invite`,
       {
         headers: {
           apikey: SB_KEY,
@@ -124,9 +124,40 @@ export async function onRequest(context) {
       }
     }
 
-    // Key válida — retornar plano associado
-    console.log('validate-onboarding-key: key válida, plano:', link.plano);
-    return json({ valid: true, plano: link.plano, link_id: link.id });
+    // Key válida — retornar plano associado + info de artista se aplicável
+    const response = { valid: true, plano: link.plano, link_id: link.id };
+
+    // Se for convite de artista, buscar google_calendar_id do tenant pai
+    if (link.is_artist_invite && link.parent_tenant_id) {
+      response.is_artist_invite = true;
+      response.parent_tenant_id = link.parent_tenant_id;
+
+      try {
+        const parentRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(link.parent_tenant_id)}&select=google_calendar_id,nome_estudio,evo_base_url`,
+          {
+            headers: {
+              apikey: SB_KEY,
+              Authorization: `Bearer ${SB_KEY}`,
+            },
+          }
+        );
+        if (parentRes.ok) {
+          const parents = await parentRes.json();
+          if (parents && parents[0]) {
+            response.parent_google_calendar_id = parents[0].google_calendar_id;
+            response.parent_nome_estudio = parents[0].nome_estudio;
+            response.parent_evo_base_url = parents[0].evo_base_url;
+          }
+        }
+      } catch (e) {
+        console.warn('validate-onboarding-key: erro ao buscar dados do tenant pai:', e);
+        // Não bloqueia — artista pode prosseguir sem calendar
+      }
+    }
+
+    console.log('validate-onboarding-key: key válida, plano:', link.plano, 'artista:', !!link.is_artist_invite);
+    return json(response);
 
   } catch (err) {
     console.error('validate-onboarding-key exception:', err);

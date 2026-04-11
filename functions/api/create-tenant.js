@@ -27,6 +27,7 @@ const CORS = {
 const ALLOWED_FIELDS = new Set([
   'nome', 'nome_agente', 'nome_estudio', 'email', 'cidade', 'endereco',
   'evo_instance', 'webhook_path', 'evo_base_url', 'plano', 'prompt_sistema',
+  'parent_tenant_id', 'is_artist_slot', 'google_calendar_id',
 ]);
 
 function json(data, status = 200) {
@@ -49,8 +50,12 @@ export async function onRequest(context) {
   if (!nome || typeof nome !== 'string' || nome.trim().length < 2) {
     return json({ error: 'Nome é obrigatório (mín. 2 caracteres)' }, 400);
   }
-  if (!nome_estudio || typeof nome_estudio !== 'string' || nome_estudio.trim().length < 2) {
-    return json({ error: 'Nome do estúdio é obrigatório' }, 400);
+  // nome_estudio obrigatório apenas para donos (artistas herdam)
+  const isArtistRequest = body.is_artist_slot === true && body.parent_tenant_id;
+  if (!isArtistRequest) {
+    if (!nome_estudio || typeof nome_estudio !== 'string' || nome_estudio.trim().length < 2) {
+      return json({ error: 'Nome do est\u00fadio \u00e9 obrigat\u00f3rio' }, 400);
+    }
   }
   // FIX: nome_agente agora validado como obrigatório
   if (!nome_agente || typeof nome_agente !== 'string' || nome_agente.trim().length < 2) {
@@ -76,11 +81,33 @@ export async function onRequest(context) {
     }
 
     // ── Campos forçados pelo server (não confia no frontend) ────────────────
-    tenantData.ativo = false;
-    tenantData.status_pagamento = 'rascunho';   // Bug 3 fix: marca como rascunho até pagamento ser confirmado
     tenantData.evo_apikey = 'pending';
     tenantData.webhook_path = tenantData.webhook_path || 'inkflow';
     tenantData.evo_base_url = tenantData.evo_base_url || env.EVO_BASE_URL || 'https://evo.inkflowbrasil.com';
+
+    // ── Lógica especial para artista convidado ────────────────────────────────
+    const isArtist = tenantData.parent_tenant_id && tenantData.is_artist_slot === true;
+
+    if (isArtist) {
+      // Artista não paga — entra ativo direto após conectar WhatsApp
+      tenantData.ativo = false;  // fica false até conectar WhatsApp (mesma lógica)
+      tenantData.status_pagamento = 'artist_slot';  // status especial: não precisa pagar
+
+      // Herdar google_calendar_id do pai
+      if (body.parent_google_calendar_id) {
+        tenantData.google_calendar_id = body.parent_google_calendar_id;
+      }
+
+      // Forçar is_artist_slot = true (server-side, não confia no frontend)
+      tenantData.is_artist_slot = true;
+    } else {
+      // Tenant normal (dono) — lógica original
+      tenantData.ativo = false;
+      tenantData.status_pagamento = 'rascunho';   // Bug 3 fix: marca como rascunho até pagamento ser confirmado
+      // Limpar campos de artista caso enviados indevidamente
+      delete tenantData.parent_tenant_id;
+      delete tenantData.is_artist_slot;
+    }
 
     // ── INSERT no Supabase ──────────────────────────────────────────────────
     let res = await fetch(`${SUPABASE_URL}/rest/v1/tenants`, {
