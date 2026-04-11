@@ -1,0 +1,3 @@
+# InkFlow — Cloudflare Pages Redirect Rules
+# /start/:token → onboarding sem extensão .html e sem parâmetro plano na URL
+/start/*  /onboarding?token=:splat  302

@@ -859,7 +859,7 @@ async function genOnbLink() {
     });
     const d = await r.json();
     if (!r.ok) { toast(d.error || 'Erro ao gerar link', 'err'); return; }
-    const link = 'https://inkflowbrasil.com/onboarding.html?token=' + tok + '&plano=' + plan;
+    const link = 'https://inkflowbrasil.com/start/' + tok;
     document.getElementById('onbLink').textContent = link;
     document.getElementById('onbOut').style.display = 'block';
     toast('Link gerado e salvo no banco!', 'ok');
