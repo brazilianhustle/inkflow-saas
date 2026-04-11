@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>InkFlow — Configurar Meu Estúdio</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
@@ -261,7 +262,7 @@ select.fi option{background:var(--card);color:var(--t1)}
           <span class="w-step-label">Conectar WhatsApp</span>
           <span class="w-step-arrow">›</span>
         </div>
-        <div class="w-step-desc"><div class="w-step-desc-inner">Escaneie o QR Code para vincular o número do seu estúdio.</div></div>
+        <div class="w-step-desc"><div class="w-step-desc-inner">Conecte pelo código no celular ou escaneie o QR Code para vincular o número do seu estúdio.</div></div>
       </div>
       <div class="w-step" onclick="this.classList.toggle('open')">
         <div class="w-step-hd">
@@ -337,10 +338,10 @@ select.fi option{background:var(--card);color:var(--t1)}
         <div class="po-name">Free Trial</div>
         <div class="po-price">7 dias grátis</div>
         <ul class="po-features">
-          <li class="po-feat">5 conversas por dia</li>
+          <li class="po-feat">Uso ilimitado por 7 dias</li>
           <li class="po-feat">Atendimento automático 24/7</li>
-          <li class="po-feat">Histórico básico</li>
-          <li class="po-feat">Sem agendamento automático</li>
+          <li class="po-feat">Agendamento automático</li>
+          <li class="po-feat">Suporte via WhatsApp</li>
         </ul>
       </div>
       <div class="plan-opt" id="plan-teste" onclick="selectPlan('teste')" style="border:2px solid #ff4444">
@@ -360,7 +361,7 @@ select.fi option{background:var(--card);color:var(--t1)}
           <li class="po-feat">Agendamento automático</li>
           <li class="po-feat">IA personalizada para seu estúdio</li>
           <li class="po-feat">Histórico completo</li>
-          <li class="po-feat">Suporte por e-mail</li>
+          <li class="po-feat">Suporte via WhatsApp</li>
         </ul>
       </div>
       <div class="plan-opt" id="plan-pro" onclick="selectPlan('pro')">
@@ -372,17 +373,21 @@ select.fi option{background:var(--card);color:var(--t1)}
           <li class="po-feat">Tudo do Essencial</li>
           <li class="po-feat">Google Calendar integrado</li>
           <li class="po-feat">Notificações de grupo</li>
-          <li class="po-feat">Suporte por chat prioritário</li>
+          <li class="po-feat">Suporte via WhatsApp prioritário</li>
         </ul>
       </div>
       <div class="plan-opt" id="plan-enterprise" onclick="selectPlan('enterprise')">
+        <div class="po-tag">Premium</div>
         <div class="po-name">Enterprise</div>
-        <div class="po-price">R$ 999/mês</div>
+        <div class="po-price">Sob consulta</div>
         <ul class="po-features">
           <li class="po-feat">Leads ilimitados</li>
           <li class="po-feat">Tudo do Growth</li>
-          <li class="po-feat">Configuração de IA dedicada</li>
-          <li class="po-feat">Suporte via WhatsApp com SLA</li>
+          <li class="po-feat">IA treinada exclusiva para seu estúdio</li>
+          <li class="po-feat">Multi-atendente (vários tatuadores)</li>
+          <li class="po-feat">Relatórios e métricas avançadas</li>
+          <li class="po-feat">Onboarding dedicado com setup guiado</li>
+          <li class="po-feat">Suporte WhatsApp com SLA 4h</li>
         </ul>
       </div>
     </div>
@@ -671,7 +676,7 @@ async function showPaymentStep() {
           await fetch('/api/update-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: ex.id, email, nome_agente: agente, nome_estudio: estudio, evo_instance: instanceSlug, webhook_path: 'inkflow', plano: selectedPlan }) });
           const sbData = [{ id: ex.id }]; tenantId = ex.id;
           localStorage.setItem('inkflow_ob', JSON.stringify({ tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan }));
-          const planNames = { free:'Free Trial', teste:'Teste R$1', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' }; const planPrices = { free:'Grátis', teste:'R$ 1', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' }; const planCycles = { free:'7 dias de teste sem compromisso', teste:'/mês · teste de pagamento', basic:'/mês · cobrança recorrente', pro:'/mês · cobrança recorrente', enterprise:'/mês · cobrança recorrente' };
+          const planNames = { free:'Free Trial', teste:'Teste R$1', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' }; const planPrices = { free:'Grátis', teste:'R$ 1', basic:'R$ 199', pro:'R$ 399', enterprise:'Sob consulta' }; const planCycles = { free:'7 dias de teste sem compromisso', teste:'/mês · teste de pagamento', basic:'/mês · cobrança recorrente', pro:'/mês · cobrança recorrente', enterprise:'valor personalizado' };
           document.getElementById('pay-plan-box').innerHTML = '<div class="pay-plan-name">' + (planNames[selectedPlan] || selectedPlan) + '</div><div class="pay-plan-price">' + (planPrices[selectedPlan] || '') + '</div><div class="pay-plan-cycle">' + (planCycles[selectedPlan] || '') + '</div>';
           const payBtn2 = document.getElementById('pay-btn'); const payOr2 = document.getElementById('pay-or'); const payFreeBtn2 = document.getElementById('pay-free-btn'); const payHint2 = document.getElementById('pay-hint');
           if (selectedPlan === 'free') { payBtn2.style.display = 'none'; payOr2.style.display = 'none'; if (payHint2) payHint2.style.display = 'none'; payFreeBtn2.textContent = 'Começar período de teste gratuito →'; }
@@ -686,7 +691,7 @@ async function showPaymentStep() {
     if (!createRes.ok) { const errData = await createRes.json().catch(() => ({})); throw new Error(errData.error || 'Erro ao criar perfil'); }
     const createData = await createRes.json(); tenantId = createData.tenant.id; instanceSlug = createData.tenant.evo_instance || instanceSlug;
     localStorage.setItem('inkflow_ob', JSON.stringify({ tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan }));
-    const planNames = { free:'Free Trial', teste:'Teste R$1', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' }; const planPrices = { free:'Grátis', teste:'R$ 1', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' }; const planCycles = { free:'7 dias de teste sem compromisso', teste:'/mês · teste de pagamento', basic:'/mês · cobrança recorrente', pro:'/mês · cobrança recorrente', enterprise:'/mês · cobrança recorrente' };
+    const planNames = { free:'Free Trial', teste:'Teste R$1', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' }; const planPrices = { free:'Grátis', teste:'R$ 1', basic:'R$ 199', pro:'R$ 399', enterprise:'Sob consulta' }; const planCycles = { free:'7 dias de teste sem compromisso', teste:'/mês · teste de pagamento', basic:'/mês · cobrança recorrente', pro:'/mês · cobrança recorrente', enterprise:'valor personalizado' };
     document.getElementById('pay-plan-box').innerHTML = `<div class="pay-plan-name">${planNames[selectedPlan] || selectedPlan}</div><div class="pay-plan-price">${planPrices[selectedPlan] || ''}</div><div class="pay-plan-cycle">${planCycles[selectedPlan] || ''}</div>`;
     const payBtn = document.getElementById('pay-btn'); const payOr = document.getElementById('pay-or'); const payFreeBtn = document.getElementById('pay-free-btn'); const payHint = document.getElementById('pay-hint');
     if (selectedPlan === 'free') { payBtn.style.display = 'none'; payOr.style.display = 'none'; if (payHint) payHint.style.display = 'none'; payFreeBtn.textContent = 'Começar período de teste gratuito →'; }
