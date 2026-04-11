@@ -190,7 +190,21 @@ export async function onRequest(context) {
   // ── [FIX #5] Verificar assinatura existente ────────────────────────────────
   const existing = await checkExistingSubscription(env, tenant_id);
   if (existing) {
-    return json({ error: 'Este estúdio já possui uma assinatura ativa.' }, 409);
+    return json({ error: 'Este est\u00fadio j\u00e1 possui uma assinatura ativa.' }, 409);
+  }
+
+  // ── Guard: artistas n\u00e3o pagam — bloquear tentativa de assinatura ───────────
+  try {
+    const artCheck = await fetch(
+      `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=is_artist_slot`,
+      { headers: { apikey: env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}` } }
+    );
+    const artData = await artCheck.json();
+    if (artData[0]?.is_artist_slot === true) {
+      return json({ error: 'Artistas vinculados a um est\u00fadio n\u00e3o precisam de assinatura.' }, 403);
+    }
+  } catch (e) {
+    console.error('create-subscription: artist guard check failed:', e);
   }
 
   // ── FLUXO 1: Cartão direto (CardPayment Brick) ────────────────────────────

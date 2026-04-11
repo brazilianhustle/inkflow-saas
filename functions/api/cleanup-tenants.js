@@ -1,7 +1,9 @@
-// ── InkFlow — Cleanup de tenants rascunho (Cloudflare Pages Function) ────────
-// Deleta tenants com status_pagamento='rascunho' e sem mp_subscription_id
-// que foram criados há mais de 48 horas.
-// Também deleta a instância correspondente na Evolution API para evitar órfãs.
+// ── InkFlow — Cleanup de tenants orfaos (Cloudflare Pages Function) ──────────
+// Deleta tenants abandonados em 3 categorias:
+//   1. rascunho (>48h) — criou perfil mas nunca foi ao pagamento
+//   2. pendente (>72h, inativo, sem assinatura) — foi ao pagamento mas nao pagou
+//   3. artist_slot (>7d, inativo) — convite de artista nao aceito
+// Tambem deleta a instancia correspondente na Evolution API para evitar orfas.
 //
 // POST /api/cleanup-tenants
 // Header: Authorization: Bearer <CLEANUP_SECRET>
@@ -51,26 +53,47 @@ export async function onRequest(context) {
   if (!SUPABASE_KEY) return json({ error: 'Configuração interna ausente' }, 503);
 
   try {
-    // ── 1. Buscar tenants rascunho com mais de 48h ─────────────────────────
-    const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+    const sbHeaders = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
 
-    const searchRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/tenants?status_pagamento=eq.rascunho&mp_subscription_id=is.null&created_at=lt.${encodeURIComponent(cutoff)}&select=id,nome_estudio,email,created_at,evo_instance`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-      }
+    // ── 1. Buscar tenants orfaos em 3 categorias ─────────────────────────
+    const cutoff48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+    const cutoff72h = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+    const cutoff7d  = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Cat 1: rascunho sem pagamento (>48h) — fluxo original
+    const q1 = fetch(
+      `${SUPABASE_URL}/rest/v1/tenants?status_pagamento=eq.rascunho&mp_subscription_id=is.null&created_at=lt.${encodeURIComponent(cutoff48h)}&select=id,nome_estudio,email,created_at,evo_instance,status_pagamento`,
+      { headers: sbHeaders }
     );
 
-    if (!searchRes.ok) {
-      const errText = await searchRes.text();
+    // Cat 2: pendente, inativo, sem assinatura (>72h) — abandonou pagamento
+    const q2 = fetch(
+      `${SUPABASE_URL}/rest/v1/tenants?status_pagamento=eq.pendente&ativo=eq.false&mp_subscription_id=is.null&created_at=lt.${encodeURIComponent(cutoff72h)}&select=id,nome_estudio,email,created_at,evo_instance,status_pagamento`,
+      { headers: sbHeaders }
+    );
+
+    // Cat 3: artist_slot inativo sem WhatsApp conectado (>7d) — convite nao aceito
+    const q3 = fetch(
+      `${SUPABASE_URL}/rest/v1/tenants?status_pagamento=eq.artist_slot&ativo=eq.false&created_at=lt.${encodeURIComponent(cutoff7d)}&select=id,nome_estudio,email,created_at,evo_instance,status_pagamento`,
+      { headers: sbHeaders }
+    );
+
+    const [res1, res2, res3] = await Promise.all([q1, q2, q3]);
+
+    if (!res1.ok || !res2.ok || !res3.ok) {
+      const errText = (!res1.ok ? await res1.text() : '') || (!res2.ok ? await res2.text() : '') || await res3.text();
       console.error('cleanup-tenants: search error:', errText);
       return json({ error: 'Erro ao buscar tenants' }, 500);
     }
 
-    const staleTeams = await searchRes.json();
+    const [list1, list2, list3] = await Promise.all([res1.json(), res2.json(), res3.json()]);
+
+    // Deduplicar por id (caso raro de overlap)
+    const seen = new Set();
+    const staleTeams = [];
+    for (const t of [...list1, ...list2, ...list3]) {
+      if (!seen.has(t.id)) { seen.add(t.id); staleTeams.push(t); }
+    }
 
     if (!staleTeams || staleTeams.length === 0) {
       return json({ cleaned: 0, message: 'Nenhum rascunho antigo encontrado' });
@@ -119,16 +142,16 @@ export async function onRequest(context) {
         }
       );
 
-      // [FIX AUDIT4 #5] Removido email e nome_estudio da resposta (PII)
       results.push({
         id: tenant.id,
         evo_instance: tenant.evo_instance,
+        categoria: tenant.status_pagamento,
         evo_deleted: evoDeleted,
         db_deleted: delRes.ok,
       });
 
       if (delRes.ok) {
-        console.log(`cleanup-tenants: deleted stale draft tenant ${tenant.id} (${tenant.nome_estudio})`);
+        console.log(`cleanup-tenants: deleted orphan tenant ${tenant.id} (${tenant.nome_estudio}, status=${tenant.status_pagamento})`);
       } else {
         console.error(`cleanup-tenants: failed to delete ${tenant.id}:`, await delRes.text());
       }
@@ -141,6 +164,11 @@ export async function onRequest(context) {
       cleaned,
       evo_cleaned: evoCleanedCount,
       total_found: staleTeams.length,
+      by_category: {
+        rascunho: results.filter(r => r.categoria === 'rascunho').length,
+        pendente: results.filter(r => r.categoria === 'pendente').length,
+        artist_slot: results.filter(r => r.categoria === 'artist_slot').length,
+      },
       details: results,
     });
 
