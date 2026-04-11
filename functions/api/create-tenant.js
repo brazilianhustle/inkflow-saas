@@ -59,7 +59,7 @@ export async function onRequest(context) {
   if (!email || !email.includes('@') || email.length > 254) {
     return json({ error: 'Email válido é obrigatório' }, 400);
   }
-  if (!plano || !['free', 'teste', 'basic', 'pro', 'enterprise'].includes(plano)) {  // TEMPORARIO: 'teste' adicionado para teste R$1
+  if (!plano || !['teste', 'individual', 'estudio', 'premium'].includes(plano)) {
     return json({ error: 'Plano inválido' }, 400);
   }
 

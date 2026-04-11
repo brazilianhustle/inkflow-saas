@@ -50,7 +50,7 @@ export async function onRequest(context) {
 
     const body = await context.request.json();
     const key = body.key;
-    const plano = body.plano || 'basic';
+    const plano = body.plano || 'individual';
 
     // FIX AUDIT #3: Unificado min 8 (era 6) — consistente com validate-onboarding-key.js
     if (!key || typeof key !== 'string' || key.length < 8) {
@@ -60,7 +60,7 @@ export async function onRequest(context) {
     }
 
     // FIX AUDIT #7: Adicionado 'teste' para permitir links de onboarding no plano teste (R$1)
-    const validPlans = ['teste', 'basic', 'pro', 'enterprise'];
+    const validPlans = ['teste', 'individual', 'estudio', 'premium'];
     if (!validPlans.includes(plano)) {
       return new Response(JSON.stringify({ error: 'Plano invalido' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
