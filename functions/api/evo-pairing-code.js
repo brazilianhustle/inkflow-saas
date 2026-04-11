@@ -60,6 +60,36 @@ export async function onRequest(context) {
       return json({ error: 'Instancia ainda nao configurada. Aguarde alguns segundos e tente novamente.' }, 425);
     }
 
+    // Verificar status atual da instancia
+    // Pairing code so funciona quando status e "close" (desconectada)
+    // Se estiver em "connecting", fazer logout para resetar antes de pedir o codigo
+    try {
+      const statusRes = await fetch(
+        evo_base_url + '/instance/connectionState/' + instance,
+        { headers: { apikey: evo_apikey } }
+      );
+      if (statusRes.ok) {
+        const statusData = await statusRes.json();
+        const connState = statusData?.instance?.state || statusData?.state || '';
+        console.log('evo-pairing-code: connectionState =', connState);
+        if (connState === 'open') {
+          return json({ error: 'Este WhatsApp j\u00e1 est\u00e1 conectado. Recarregue a p\u00e1gina.' }, 409);
+        }
+        if (connState === 'connecting') {
+          // Resetar instancia para estado limpo antes de gerar pairing code
+          console.log('evo-pairing-code: instancia em connecting — fazendo logout para resetar');
+          await fetch(evo_base_url + '/instance/logout/' + instance, {
+            method: 'DELETE',
+            headers: { apikey: evo_apikey }
+          }).catch(() => {});
+          // Aguardar breve momento para a instancia resetar
+          await new Promise(r => setTimeout(r, 1500));
+        }
+      }
+    } catch (stateErr) {
+      console.warn('evo-pairing-code: nao foi possivel checar estado da instancia (nao fatal):', stateErr.message);
+    }
+
     // Chamar Evolution API passando o numero para receber o pairing code
     // O endpoint /instance/connect/{instance} retorna pairingCode quando ?number= e fornecido
     const evoRes = await fetch(
@@ -67,17 +97,17 @@ export async function onRequest(context) {
       { headers: { apikey: evo_apikey } }
     );
     if (!evoRes.ok) {
-      console.error('evo-pairing-code: Evolution API error', evoRes.status);
       const errBody = await evoRes.text().catch(() => '');
-      console.error('evo-pairing-code: response body:', errBody);
+      console.error('evo-pairing-code: Evolution API error', evoRes.status, errBody);
       return json({ error: 'Erro ao gerar codigo de pareamento' }, 502);
     }
     const evoData = await evoRes.json();
+    console.log('evo-pairing-code: evo response keys =', Object.keys(evoData).join(','));
 
     const pairingCode = evoData.pairingCode || null;
     if (!pairingCode) {
-      console.error('evo-pairing-code: pairingCode nao retornado', JSON.stringify(evoData));
-      return json({ error: 'Codigo de pareamento nao disponivel. Tente novamente ou use o QR Code.' }, 404);
+      console.error('evo-pairing-code: pairingCode nao retornado. Response:', JSON.stringify(evoData));
+      return json({ error: 'Codigo de pareamento nao disponivel. Tente novamente.', debug_keys: Object.keys(evoData) }, 404);
     }
 
     // Formatar o codigo no padrao XXXX-XXXX para facilitar leitura
