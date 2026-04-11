@@ -3,329 +3,249 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>InkFlow — Configurar Meu Est&uacute;dio</title>
+<title>InkFlow — Configurar Meu Estúdio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --ink:#1a1a1a;--ink2:#555;--ink3:#999;
-  --surface:#fff;--surface2:#f7f6f3;--surface3:#f0efe9;
-  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);
-  --green:#2d7a4f;--green-bg:#eaf5ef;
-  --red:#c0392b;--red-bg:#fdf0ee;
-  --amber:#8a5c00;--amber-bg:#fef7e0;
+  --bg:#0d0d0d;--card:#111;--card2:rgba(255,255,255,.03);
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.12);
+  --teal:#00d4aa;--teal-dim:rgba(0,212,170,.15);--teal-mid:rgba(0,212,170,.5);
+  --red:#e74c3c;--red-bg:rgba(231,76,60,.1);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,.1);
+  --t1:#e5e5e5;--t2:rgba(255,255,255,.5);--t3:rgba(255,255,255,.3);
   --mp:#009ee3;
 }
-body{font-family:'Syne',sans-serif;background:var(--surface2);color:var(--ink);min-height:100vh}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;-webkit-font-smoothing:antialiased}
 
 /* ── Steps ── */
 .step{display:none;min-height:100vh}
 .step.active{display:flex;flex-direction:column}
 
-/* ── Step 1: Welcome ── */
-#s1{background:radial-gradient(ellipse 65% 70% at 50% 50%,rgba(9,21,21,.96) 0%,rgba(9,21,21,.75) 35%,rgba(9,21,21,.3) 60%,transparent 75%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg stroke='%2300c8b9' stroke-width='1' fill='none'%3E%3Cpath d='M0 80 L40 80 L40 40 L100 40' stroke-opacity='.1'/%3E%3Cpath d='M120 0 L120 60 L160 60' stroke-opacity='.08'/%3E%3Cpath d='M0 130 L30 130 L30 100 L80 100 L80 160' stroke-opacity='.09'/%3E%3Cpath d='M140 160 L140 110 L100 110 L100 40' stroke-opacity='.1'/%3E%3C/g%3E%3Cg fill='%2300c8b9'%3E%3Ccircle cx='40' cy='80' r='2.5' fill-opacity='.28'/%3E%3Ccircle cx='40' cy='40' r='2' fill-opacity='.2'/%3E%3Ccircle cx='100' cy='40' r='3' fill-opacity='.35'/%3E%3Ccircle cx='80' cy='100' r='2.5' fill-opacity='.25'/%3E%3Ccircle cx='100' cy='110' r='2' fill-opacity='.2'/%3E%3Ccircle cx='120' cy='60' r='2.5' fill-opacity='.22'/%3E%3C/g%3E%3C/svg%3E") repeat,radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,210,195,0.1) 0%,transparent 65%),linear-gradient(170deg,#091515 0%,#050d0d 100%);align-items:center;justify-content:center;text-align:center;padding:40px 20px}
-.w-logo{font-size:28px;font-weight:700;color:#fff;margin-bottom:4px;text-decoration:none;text-shadow:0 0 20px rgba(0,210,195,.22),0 0 40px rgba(0,210,195,.08)}
-.w-tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;margin-bottom:48px}
-.w-title{font-size:32px;font-weight:700;color:#fff;line-height:1.2;max-width:420px;margin:0 auto 16px}
-.w-sub{font-size:15px;color:rgba(255,255,255,.45);max-width:360px;margin:0 auto 40px;line-height:1.6}
-.w-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:44px;width:100%;max-width:340px;margin-left:auto;margin-right:auto}
-.w-step{width:100%;border-radius:10px;border:1px solid rgba(0,200,185,0.18);background:rgba(0,0,0,0.28);overflow:hidden;transition:border-color .3s ease,box-shadow .3s ease}
-.w-step:hover{border-color:rgba(0,200,185,0.45);box-shadow:0 0 16px rgba(0,200,185,0.1)}
-.w-step.open{border-color:rgba(0,200,185,0.7);box-shadow:0 0 24px rgba(0,200,185,0.2),0 0 48px rgba(0,200,185,0.06),inset 0 0 24px rgba(0,200,185,0.04)}
-.w-step-hd{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;color:rgba(255,255,255,.75);font-size:14px;font-weight:500;user-select:none;text-align:left}
-.w-step-icon{flex-shrink:0;color:rgba(0,210,195,0.85);display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 4px rgba(0,200,185,.4))}
+/* ── Logo lockup ── */
+.logo-lockup{display:flex;align-items:center;gap:10px}
+.logo-lockup svg{color:var(--teal)}
+.logo-lockup .logo-text{font-size:18px;font-weight:800;letter-spacing:-.3px}
+.logo-lockup .logo-text .ink{color:var(--teal)}
+
+/* ── Shared ── */
+.page-center{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px;text-align:center}
+.page-card{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:32px 24px;width:100%;max-width:460px}
+
+/* ════════ STEP 1: WELCOME ════════ */
+#s1{background:radial-gradient(ellipse 60% 60% at 50% 40%,rgba(0,212,170,.06) 0%,transparent 70%),var(--bg)}
+.w-icon{margin-bottom:24px;color:var(--teal);filter:drop-shadow(0 0 24px rgba(0,212,170,.2))}
+.w-logo{font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:2px}
+.w-logo .ink{color:var(--teal)}
+.w-tag{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:32px;font-weight:500}
+#w-plano{display:inline-block;border:1px solid var(--teal-mid);color:var(--teal);padding:5px 16px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:32px;animation:np 3s ease-in-out infinite}
+@keyframes np{0%,100%{box-shadow:0 0 8px rgba(0,212,170,.15)}50%{box-shadow:0 0 20px rgba(0,212,170,.3)}}
+.w-title{font-size:26px;font-weight:700;line-height:1.25;max-width:380px;margin:0 auto 12px}
+.w-sub{font-size:14px;color:var(--t2);max-width:340px;margin:0 auto 36px;line-height:1.6}
+
+/* Accordion steps */
+.w-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:36px;width:100%;max-width:360px}
+.w-step{border-radius:12px;border:1px solid var(--border2);background:var(--card2);overflow:hidden;transition:border-color .2s}
+.w-step:hover{border-color:rgba(0,212,170,.25)}
+.w-step.open{border-color:var(--teal-mid);background:rgba(0,212,170,.04)}
+.w-step-hd{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;color:var(--t2);font-size:14px;font-weight:500;user-select:none}
+.w-step-icon{flex-shrink:0;color:var(--teal);display:flex;align-items:center;justify-content:center}
 .w-step-label{flex:1}
-.w-step-hd:hover{color:#fff}
-.w-step-arrow{flex-shrink:0;color:rgba(0,200,185,0.4);font-size:15px;transition:transform .35s cubic-bezier(.4,0,.2,1);line-height:1}
-.w-step.open .w-step-arrow{transform:rotate(90deg);color:rgba(0,210,195,0.95);text-shadow:0 0 8px rgba(0,200,185,.6)}
-.w-step-desc{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1),opacity .3s ease}
-.w-step-desc-inner{overflow:hidden;font-size:11.5px;color:rgba(255,255,255,.38);line-height:1.75;font-family:'DM Mono',monospace;opacity:0;padding:0 16px;transition:opacity .3s ease .05s,padding .35s ease}
+.w-step-arrow{flex-shrink:0;color:var(--t3);font-size:15px;transition:transform .25s}
+.w-step.open .w-step-arrow{transform:rotate(90deg);color:var(--teal)}
+.w-step.open .w-step-hd{color:var(--t1)}
+.w-step-desc{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s}
+.w-step-desc-inner{overflow:hidden;font-size:12px;color:var(--t3);line-height:1.7;opacity:0;padding:0 16px;transition:opacity .25s,padding .3s}
 .w-step.open .w-step-desc{grid-template-rows:1fr}
 .w-step.open .w-step-desc-inner{opacity:1;padding:0 16px 14px}
-.w-btn{display:inline-flex;align-items:center;gap:10px;background:#fff;color:var(--ink);padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:'Syne',sans-serif;transition:all .2s;box-shadow:0 0 20px rgba(0,200,185,.1)}
-.w-btn:hover{background:#f0f0f0;transform:translateY(-1px);box-shadow:0 0 32px rgba(0,200,185,.22)}
-@keyframes np{0%,100%{box-shadow:0 0 8px rgba(0,200,185,.18)}50%{box-shadow:0 0 18px rgba(0,200,185,.4),0 0 32px rgba(0,200,185,.12)}}
-.w-plan{display:inline-block;background:transparent;border:1px solid rgba(0,200,185,0.4);color:rgba(0,200,185,0.9);padding:5px 14px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;margin-bottom:48px;letter-spacing:1.5px;text-transform:uppercase;animation:np 3s ease-in-out infinite}
 
-/* ── Step 2: Form ── */
-#s2{background:url('https://raw.githubusercontent.com/brazilianhustle/inkflow-saas/main/images/dragon-white.png') center/cover no-repeat;justify-content:flex-start}
-.form-header{background:transparent;padding:20px 24px;display:flex;align-items:center;gap:12px}
-.form-logo{font-size:16px;font-weight:700;color:var(--ink)}
-.form-badge{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);font-family:'DM Mono',monospace}
-.form-body{padding:32px 24px;max-width:560px;margin:0 auto;width:100%}
+/* CTA */
+.w-btn{display:inline-flex;align-items:center;gap:10px;background:var(--teal);color:#111;padding:14px 32px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .2s}
+.w-btn:hover{opacity:.9;transform:translateY(-1px)}
+
+/* ════════ STEP 2: FORM ════════ */
+#s2{background:var(--bg)}
+.form-header{padding:20px 24px;display:flex;align-items:center;gap:12px}
+.form-badge{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);font-weight:500;margin-left:auto}
+.form-body{padding:0 24px 32px;max-width:560px;margin:0 auto;width:100%}
 .form-title{font-size:22px;font-weight:700;margin-bottom:6px}
-.form-sub{font-size:13px;color:var(--ink3);margin-bottom:28px;font-family:'DM Mono',monospace}
+.form-sub{font-size:13px;color:var(--t2);margin-bottom:28px}
 .fg{margin-bottom:18px}
-.fl{display:block;font-size:11px;font-family:'DM Mono',monospace;color:var(--ink2);margin-bottom:6px}
+.fl{display:block;font-size:11px;color:var(--t2);margin-bottom:6px;font-weight:500;letter-spacing:.3px}
 .fl span{color:var(--red)}
-.fi{width:100%;padding:10px 13px;border:1px solid var(--border2);border-radius:8px;font-size:14px;font-family:'Syne',sans-serif;background:var(--surface);color:var(--ink);outline:none;transition:border .15s}
-.fi:focus{border-color:var(--ink)}
-.fi-hint{font-size:11px;color:var(--ink3);margin-top:5px;font-family:'DM Mono',monospace}
-.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.plan-sel{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px}
-.plan-opt{border:1px solid var(--border2);border-radius:8px;padding:14px 13px;cursor:pointer;transition:all .15s;text-align:left;position:relative}
-.plan-opt:hover{border-color:var(--ink2)}
-.plan-opt.active{border-color:var(--ink);background:var(--ink);color:#fff}
-.plan-opt .po-name{font-weight:700;font-size:14px;margin-bottom:3px}
-.plan-opt .po-price{font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3)}
-.plan-opt.active .po-price{color:rgba(255,255,255,.5)}
-.po-tag{display:inline-block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace;background:var(--ink);color:#fff;border-radius:4px;padding:2px 6px;margin-bottom:6px}
-.plan-opt.active .po-tag{background:rgba(255,255,255,.25)}
-.po-features{list-style:none;padding:0;margin:10px 0 0;border-top:1px solid var(--border);padding-top:10px}
-.plan-opt.active .po-features{border-top-color:rgba(255,255,255,.2)}
-.po-feat{font-size:11px;color:var(--ink2);font-family:'DM Mono',monospace;padding:2px 0;display:flex;gap:5px;align-items:baseline;line-height:1.5}
-.po-feat::before{content:'✓';color:var(--ink3);flex-shrink:0;font-size:10px}
-.plan-opt.active .po-feat{color:rgba(255,255,255,.75)}
-.plan-opt.active .po-feat::before{color:rgba(255,255,255,.45)}
-.form-err{background:var(--red-bg);color:var(--red);border-radius:8px;padding:12px 14px;font-size:13px;margin-bottom:16px;display:none;font-family:'DM Mono',monospace}
-.sbtn{width:100%;padding:13px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .15s;margin-top:8px}
-.sbtn:hover:not(:disabled){background:#333}
-.sbtn:disabled{opacity:.5;cursor:default}
+.fi{width:100%;padding:11px 14px;border:1px solid var(--border2);border-radius:10px;font-size:14px;font-family:inherit;background:rgba(0,0,0,.4);color:var(--t1);outline:none;transition:border .15s}
+.fi::placeholder{color:var(--t3)}
+.fi:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-dim)}
+select.fi option{background:var(--card);color:var(--t1)}
+.fi-hint{font-size:11px;color:var(--t3);margin-top:5px}
+.fgrid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:601px){.fgrid{grid-template-columns:1fr 1fr}}
 .divider{border:none;border-top:1px solid var(--border);margin:20px 0}
-.fsec{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);font-family:'DM Mono',monospace;margin-bottom:14px}
+.fsec{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);font-weight:600;margin-bottom:14px}
+.form-err{background:var(--red-bg);border:1px solid rgba(231,76,60,.25);color:var(--red);border-radius:10px;padding:12px 14px;font-size:13px;margin-bottom:16px;display:none}
 
-/* ── Step 3: Pagamento ── */
-#s3{background:var(--surface2);justify-content:flex-start}
-.pay-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 28px;max-width:460px;width:100%;text-align:center}
+/* Plans */
+.plan-sel{display:grid;grid-template-columns:1fr;gap:10px;margin-top:6px}
+@media(min-width:601px){.plan-sel{grid-template-columns:repeat(2,1fr)}}
+.plan-opt{border:1px solid var(--border2);border-radius:12px;padding:16px;cursor:pointer;transition:all .15s;text-align:left;background:var(--card2)}
+.plan-opt:hover{border-color:rgba(0,212,170,.3)}
+.plan-opt.active{border-color:var(--teal);background:rgba(0,212,170,.06);box-shadow:0 0 16px rgba(0,212,170,.08)}
+.plan-opt .po-name{font-weight:700;font-size:14px;margin-bottom:3px;color:var(--t1)}
+.plan-opt .po-price{font-size:12px;color:var(--t3)}
+.plan-opt.active .po-price{color:var(--teal)}
+.po-tag{display:inline-block;font-size:9px;letter-spacing:1px;text-transform:uppercase;font-weight:600;background:var(--teal-dim);color:var(--teal);border-radius:4px;padding:2px 8px;margin-bottom:6px}
+.plan-opt.active .po-tag{background:rgba(0,212,170,.2)}
+.po-features{list-style:none;padding:0;margin:10px 0 0;border-top:1px solid var(--border);padding-top:10px}
+.po-feat{font-size:11px;color:var(--t3);padding:2px 0;display:flex;gap:6px;align-items:baseline;line-height:1.5}
+.po-feat::before{content:'✓';color:var(--t3);flex-shrink:0;font-size:10px}
+.plan-opt.active .po-feat{color:var(--t2)}
+.plan-opt.active .po-feat::before{color:var(--teal)}
+.plan-opt.active .po-features{border-top-color:rgba(0,212,170,.15)}
+
+/* Submit */
+.sbtn{width:100%;padding:14px;background:var(--teal);color:#111;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;margin-top:8px}
+.sbtn:hover:not(:disabled){opacity:.9}
+.sbtn:disabled{opacity:.4;cursor:default}
+
+/* ════════ STEP 3: PAYMENT ════════ */
+#s3{background:var(--bg)}
+.form-logo{color:var(--t1)}
+.pay-card{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:32px 24px;max-width:500px;width:100%;text-align:center}
 .pay-title{font-size:20px;font-weight:700;margin-bottom:6px}
-.pay-sub{font-size:13px;color:var(--ink3);font-family:'DM Mono',monospace;margin-bottom:24px}
-.pay-plan-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px;text-align:left}
+.pay-sub{font-size:13px;color:var(--t3);margin-bottom:24px}
+.pay-plan-box{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;text-align:left}
 .pay-plan-name{font-size:16px;font-weight:700;margin-bottom:4px}
-.pay-plan-price{font-size:30px;font-weight:700;color:var(--ink);margin:6px 0 4px}
-.pay-plan-cycle{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace}
-.pay-btn{width:100%;padding:14px;background:var(--mp);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;margin-bottom:10px;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:10px}
-.pay-btn:hover:not(:disabled){background:#007ab8}
-.pay-btn:disabled{opacity:.6;cursor:default}
-.pay-hint{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;line-height:1.6;margin-bottom:14px}
-.pay-or{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;margin:8px 0;text-align:center}
-.pay-free-btn{width:100%;padding:12px;background:none;color:var(--ink2);border:1px solid var(--border2);border-radius:8px;font-size:14px;cursor:pointer;font-family:'Syne',sans-serif;transition:all .15s;margin-bottom:16px}
-.pay-free-btn:hover{background:var(--surface2)}
-.pay-back{font-size:12px;color:var(--ink3);font-family:'DM Mono',monospace;cursor:pointer;text-decoration:underline}
+.pay-plan-price{font-size:28px;font-weight:700;color:var(--teal);margin:6px 0 4px}
+.pay-plan-cycle{font-size:11px;color:var(--t3)}
+.pay-btn{width:100%;padding:14px;background:transparent;color:var(--t2);border:1px solid var(--border2);border-radius:10px;font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s}
+.pay-btn:hover:not(:disabled){border-color:var(--teal-mid);color:var(--t1)}
+.pay-btn:disabled{opacity:.5;cursor:default}
+.pay-hint{font-size:11px;color:var(--t3);line-height:1.6;margin-bottom:14px}
+.pay-or{font-size:11px;color:var(--t3);margin:8px 0;text-align:center}
+.pay-free-btn{width:100%;padding:12px;background:none;color:var(--t2);border:1px solid var(--border2);border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit;transition:all .15s;margin-bottom:16px}
+.pay-free-btn:hover{background:var(--card2);border-color:var(--teal-mid)}
+.pay-back{font-size:12px;color:var(--t3);cursor:pointer;text-decoration:underline}
+.pay-divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--t3);font-size:11px}
+.pay-divider::before,.pay-divider::after{content:'';flex:1;border-top:1px solid var(--border)}
+.pay-mp-alt{width:100%;padding:11px;background:transparent;color:var(--t2);border:1px solid var(--border2);border-radius:10px;font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;transition:all .15s}
+.pay-mp-alt:hover{border-color:var(--teal-mid);color:var(--t1)}
+.card-brick-wrap{margin-bottom:8px;min-height:340px}
+#cardPaymentBrick_container iframe{border-radius:10px!important}
 
-/* ── Step 4: Processing ── */
-#s4{background:var(--ink);align-items:center;justify-content:center;padding:40px 20px;text-align:center}
-.proc-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:40px;width:100%;max-width:400px}
-.proc-title{font-size:20px;font-weight:700;color:#fff;margin-bottom:8px}
-.proc-sub{font-size:12px;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;margin-bottom:32px}
+/* ════════ STEP 4: PROCESSING ════════ */
+#s4{background:var(--bg)}
+.proc-card{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:36px 28px;width:100%;max-width:400px}
+.proc-title{font-size:20px;font-weight:700;margin-bottom:6px}
+.proc-sub{font-size:12px;color:var(--t3);margin-bottom:28px}
 .proc-list{text-align:left;display:flex;flex-direction:column;gap:16px}
 .proc-item{display:flex;align-items:center;gap:14px}
 .proc-dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .3s}
-.proc-dot.wait{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15)}
-.proc-dot.active{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);animation:spin 1s linear infinite}
-.proc-dot.done{background:#2d7a4f;border-color:#2d7a4f;color:#fff}
+.proc-dot.wait{background:rgba(255,255,255,.04);border:1px solid var(--border2)}
+.proc-dot.active{background:var(--teal-dim);border:1px solid var(--teal-mid);animation:spin 1s linear infinite}
+.proc-dot.done{background:var(--teal);border-color:var(--teal);color:#111}
 .proc-dot.done::after{content:'✓';font-size:11px}
-.proc-dot.err{background:#c0392b;border-color:#c0392b;color:#fff}
+.proc-dot.err{background:var(--red);border-color:var(--red);color:#fff}
 .proc-dot.err::after{content:'✕';font-size:11px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.proc-msg{font-size:13px;color:rgba(255,255,255,.6);flex:1;font-family:'DM Mono',monospace}
-.proc-msg.done{color:rgba(255,255,255,.9)}
-.proc-err-box{background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:10px;padding:16px;margin-top:24px;display:none}
-.proc-err-txt{font-size:13px;color:#e74c3c;font-family:'DM Mono',monospace;line-height:1.5}
-.proc-retry{margin-top:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Mono',monospace}
+.proc-msg{font-size:13px;color:var(--t2);flex:1}
+.proc-msg.done{color:var(--teal)}
+.proc-err-box{background:var(--red-bg);border:1px solid rgba(231,76,60,.25);border-radius:10px;padding:16px;margin-top:24px;display:none}
+.proc-err-txt{font-size:13px;color:var(--red);line-height:1.5}
+.proc-retry{margin-top:12px;background:var(--card2);border:1px solid var(--border2);color:var(--t1);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit}
 
-/* ── Step 5: QR Code / Pairing Code ── */
-#s5{background:var(--surface2);align-items:center;justify-content:center;padding:32px 20px}
-.qr-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;max-width:420px;width:100%;text-align:center}
-.qr-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+/* ════════ STEP 5: QR / PAIRING ════════ */
+#s5{background:var(--bg)}
+.qr-card{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;max-width:420px;width:100%;text-align:center}
+.qr-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px}
 .qr-title{font-size:18px;font-weight:700}
-.qr-badge{font-size:10px;font-family:'DM Mono',monospace;color:var(--amber);background:var(--amber-bg);padding:4px 10px;border-radius:20px}
-.qr-badge.conn{color:var(--green);background:var(--green-bg)}
-.qr-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;min-height:220px;display:flex;align-items:center;justify-content:center;position:relative}
+.qr-badge{font-size:10px;color:var(--amber);background:var(--amber-bg);padding:4px 10px;border-radius:20px;font-weight:500}
+.qr-badge.conn{color:var(--teal);background:var(--teal-dim)}
+.qr-box{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;min-height:220px;display:flex;align-items:center;justify-content:center;position:relative}
 #qr-img{max-width:200px;max-height:200px;border-radius:8px;display:none}
-.qr-loading{font-size:12px;color:var(--ink3);font-family:'DM Mono',monospace;display:flex;flex-direction:column;align-items:center;gap:10px}
-.qr-spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--ink3);border-radius:50%;animation:spin 1s linear infinite}
+.qr-loading{font-size:12px;color:var(--t3);display:flex;flex-direction:column;align-items:center;gap:10px}
+.qr-spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite}
 .qr-steps{text-align:left;display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-.qr-step{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink2);line-height:1.4}
-.qr-step-num{background:var(--surface3);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0;margin-top:1px}
-.qr-refresh{background:none;border:1px solid var(--border2);color:var(--ink2);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Mono',monospace;transition:all .15s}
-.qr-refresh:hover{background:var(--surface2)}
-.qr-timer{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:10px}
-.qr-poll{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px;justify-content:center;margin-top:12px}
-.qr-poll-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 1.5s ease-in-out infinite}
+.qr-step{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--t2);line-height:1.4}
+.qr-step-num{background:var(--teal-dim);color:var(--teal);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px;font-weight:600}
+.qr-refresh{background:none;border:1px solid var(--border2);color:var(--t2);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .15s}
+.qr-refresh:hover{background:var(--card2);border-color:var(--teal-mid);color:var(--teal)}
+.qr-timer{font-size:11px;color:var(--t3);margin-top:10px}
+.qr-poll{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:6px;justify-content:center;margin-top:12px}
+.qr-poll-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1.5s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-/* ── Pairing Code (mobile) ── */
-.conn-toggle{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border2);border-radius:8px;overflow:hidden}
-.conn-toggle-btn{flex:1;padding:10px 8px;font-size:12px;font-family:'DM Mono',monospace;cursor:pointer;border:none;background:transparent;color:var(--ink3);transition:all .15s;font-weight:500}
-.conn-toggle-btn.active{background:var(--ink);color:#fff}
-.pairing-box{display:none;flex-direction:column;align-items:center;gap:16px;margin-bottom:20px}
+
+/* Toggle QR / Pairing */
+.conn-toggle{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border2);border-radius:10px;overflow:hidden}
+.conn-toggle-btn{flex:1;padding:10px 8px;font-size:12px;cursor:pointer;border:none;background:transparent;color:var(--t3);transition:all .15s;font-weight:600;font-family:inherit}
+.conn-toggle-btn.active{background:var(--teal);color:#111}
+.conn-toggle-btn:hover:not(.active){color:var(--t1)}
+
+/* Pairing Code */
+.pairing-box{display:none;flex-direction:column;align-items:center;gap:16px;margin-bottom:20px;width:100%}
 .pairing-box.active{display:flex}
 .pairing-phone-wrap{width:100%;text-align:left}
-.pairing-phone-label{font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:6px;display:block}
+.pairing-phone-label{font-size:11px;color:var(--t3);margin-bottom:6px;display:block;font-weight:500}
 .pairing-phone-row{display:flex;gap:8px}
-.pairing-phone-input{flex:1;padding:10px 13px;border:1px solid var(--border2);border-radius:8px;font-size:14px;font-family:'Syne',sans-serif;background:var(--surface);color:var(--ink);outline:none}
-.pairing-phone-input:focus{border-color:var(--ink)}
-.pairing-phone-btn{padding:10px 18px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;transition:all .15s}
-.pairing-phone-btn:hover:not(:disabled){background:#333}
-.pairing-phone-btn:disabled{opacity:.5;cursor:default}
-.pairing-code-display{background:var(--surface2);border:2px dashed var(--border2);border-radius:12px;padding:24px;width:100%;text-align:center}
-.pairing-code-value{font-size:32px;font-weight:700;letter-spacing:6px;font-family:'DM Mono',monospace;color:var(--ink);margin-bottom:8px}
-.pairing-code-hint{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;line-height:1.6}
+.pairing-phone-input{flex:1;padding:10px 13px;border:1px solid var(--border2);border-radius:10px;font-size:14px;font-family:inherit;background:rgba(0,0,0,.4);color:var(--t1);outline:none}
+.pairing-phone-input::placeholder{color:var(--t3)}
+.pairing-phone-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-dim)}
+.pairing-phone-btn{padding:10px 18px;background:var(--teal);color:#111;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+.pairing-phone-btn:hover:not(:disabled){opacity:.9}
+.pairing-phone-btn:disabled{opacity:.4;cursor:default}
+.pairing-code-display{background:rgba(0,0,0,.3);border:2px dashed var(--teal-mid);border-radius:12px;padding:24px;width:100%;text-align:center}
+.pairing-code-value{font-size:32px;font-weight:700;letter-spacing:6px;color:var(--teal);margin-bottom:8px;text-shadow:0 0 20px rgba(0,212,170,.3)}
+.pairing-code-hint{font-size:11px;color:var(--t3);line-height:1.6}
 #qr-area{display:block}
 #pairing-area{display:none}
 
-/* ── Step 6: Success ── */
-#s6{background:var(--surface2);align-items:center;justify-content:center;padding:32px 20px}
-.suc-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 32px;max-width:460px;width:100%;text-align:center}
+/* ════════ STEP 6: SUCCESS ════════ */
+#s6{background:var(--bg)}
+.suc-card{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:36px 28px;max-width:460px;width:100%;text-align:center}
 .suc-icon{font-size:48px;margin-bottom:16px}
-.suc-title{font-size:24px;font-weight:700;color:var(--green);margin-bottom:8px}
-.suc-sub{font-size:14px;color:var(--ink2);margin-bottom:32px;line-height:1.6}
-.suc-info{background:var(--green-bg);border:1px solid rgba(45,122,79,.2);border-radius:10px;padding:16px 18px;text-align:left;margin-bottom:24px}
-.suc-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid rgba(45,122,79,.1)}
+.suc-title{font-size:24px;font-weight:700;color:var(--teal);margin-bottom:8px}
+.suc-sub{font-size:14px;color:var(--t2);margin-bottom:28px;line-height:1.6}
+.suc-info{background:var(--teal-dim);border:1px solid rgba(0,212,170,.15);border-radius:12px;padding:16px 18px;text-align:left;margin-bottom:24px}
+.suc-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid rgba(0,212,170,.1)}
 .suc-row:last-child{border-bottom:none}
-.suc-key{color:var(--green);font-family:'DM Mono',monospace;font-size:11px}
-.suc-val{font-weight:600;color:var(--ink);font-size:13px}
-.suc-next{font-size:12px;color:var(--ink3);font-family:'DM Mono',monospace;line-height:1.7}
+.suc-key{color:var(--teal);font-size:11px;font-weight:500}
+.suc-val{font-weight:600;color:var(--t1);font-size:13px}
+.suc-next{font-size:12px;color:var(--t3);line-height:1.7}
 
 /* ── Error overlay ── */
-#err-overlay{display:none;position:fixed;inset:0;background:var(--ink);align-items:center;justify-content:center;z-index:100;padding:24px;text-align:center;flex-direction:column}
+#err-overlay{display:none;position:fixed;inset:0;background:var(--bg);align-items:center;justify-content:center;z-index:100;padding:24px;text-align:center;flex-direction:column}
 #err-overlay.show{display:flex}
 .err-icon{font-size:40px;margin-bottom:16px}
-.err-title{font-size:20px;font-weight:700;color:#fff;margin-bottom:8px}
-.err-msg{font-size:13px;color:rgba(255,255,255,.5);font-family:'DM Mono',monospace;max-width:360px;line-height:1.6}
-
-@media(max-width:600px){
-  .fgrid{grid-template-columns:1fr}
-  .plan-sel{grid-template-columns:1fr}
-  .w-steps{align-items:center}
-  .qr-header{flex-direction:column;gap:8px;text-align:left;align-items:flex-start}
-}
-
-/* ══════════ DARK THEME — Steps 2-6 ══════════ */
-#s2,#s3,#s4,#s5,#s6{
-  background:
-    radial-gradient(ellipse 65% 70% at 50% 50%,rgba(9,21,21,.97) 0%,rgba(9,21,21,.78) 35%,rgba(9,21,21,.32) 62%,transparent 76%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg stroke='%2300c8b9' stroke-width='1' fill='none'%3E%3Cpath d='M0 80 L40 80 L40 40 L100 40' stroke-opacity='.1'/%3E%3Cpath d='M120 0 L120 60 L160 60' stroke-opacity='.08'/%3E%3Cpath d='M0 130 L30 130 L30 100 L80 100 L80 160' stroke-opacity='.09'/%3E%3Cpath d='M140 160 L140 110 L100 110 L100 40' stroke-opacity='.1'/%3E%3C/g%3E%3Cg fill='%2300c8b9'%3E%3Ccircle cx='40' cy='80' r='2.5' fill-opacity='.28'/%3E%3Ccircle cx='40' cy='40' r='2' fill-opacity='.2'/%3E%3Ccircle cx='100' cy='40' r='3' fill-opacity='.35'/%3E%3Ccircle cx='80' cy='100' r='2.5' fill-opacity='.25'/%3E%3Ccircle cx='100' cy='110' r='2' fill-opacity='.2'/%3E%3Ccircle cx='120' cy='60' r='2.5' fill-opacity='.22'/%3E%3C/g%3E%3C/svg%3E") repeat,
-    radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,210,195,.08) 0%,transparent 65%),
-    linear-gradient(170deg,#091515 0%,#050d0d 100%);
-}
-/* Form header */
-.form-logo{color:rgba(255,255,255,.92)}
-.form-badge{color:rgba(0,200,185,.65);letter-spacing:2px}
-.form-title{color:#fff}
-.form-sub{color:rgba(255,255,255,.4)}
-/* Labels e inputs */
-.fl{color:rgba(255,255,255,.45)}
-.fi{background:rgba(0,0,0,.42);border-color:rgba(0,200,185,.22);color:#fff}
-.fi::placeholder{color:rgba(255,255,255,.2)}
-.fi:focus{border-color:rgba(0,200,185,.65);box-shadow:0 0 0 3px rgba(0,200,185,.07)}
-select.fi option{background:#091515;color:#fff}
-.fi-hint{color:rgba(255,255,255,.28)}
-.fsec{color:rgba(0,200,185,.62);border-top-color:rgba(255,255,255,.07)}
-.divider{border-top-color:rgba(255,255,255,.07)}
-.form-err{background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);color:#e74c3c}
-/* Botao submit */
-.sbtn{background:rgba(0,200,185,.9);color:#060e0e;box-shadow:0 0 18px rgba(0,200,185,.15)}
-.sbtn:hover:not(:disabled){background:rgba(0,220,205,1);box-shadow:0 0 28px rgba(0,200,185,.28)}
-/* Cards de plano */
-.plan-opt{border-color:rgba(0,200,185,.2);background:rgba(0,0,0,.25);color:rgba(255,255,255,.65)}
-.plan-opt .po-name{color:rgba(255,255,255,.85)}
-.plan-opt .po-price,.plan-opt .po-feat{color:rgba(255,255,255,.32)}
-.plan-opt .po-feat::before{color:rgba(255,255,255,.18)}
-.po-features{border-top-color:rgba(255,255,255,.08)}
-.po-tag{background:rgba(0,200,185,.14);color:rgba(0,200,185,.9)}
-.plan-opt:hover{border-color:rgba(0,200,185,.45);background:rgba(0,0,0,.35)}
-.plan-opt.active{border-color:rgba(0,200,185,.75);background:rgba(0,200,185,.1);color:#fff;box-shadow:0 0 18px rgba(0,200,185,.12)}
-.plan-opt.active .po-price{color:rgba(0,210,195,.75)}
-.plan-opt.active .po-feat{color:rgba(255,255,255,.7)}
-.plan-opt.active .po-feat::before{color:rgba(0,200,185,.7)}
-.plan-opt.active .po-features{border-top-color:rgba(0,200,185,.18)}
-.plan-opt.active .po-tag{background:rgba(0,200,185,.22);color:rgba(0,210,195,1)}
-/* Pagamento */
-.pay-card{background:rgba(0,0,0,.32);border-color:rgba(0,200,185,.2);color:#fff;box-shadow:0 0 32px rgba(0,200,185,.06)}
-.pay-title{color:#fff}
-.pay-sub{color:rgba(255,255,255,.38)}
-.pay-plan-box{background:rgba(0,0,0,.28);border-color:rgba(0,200,185,.22)}
-.pay-plan-name{color:#fff}
-.pay-plan-price{color:rgba(0,210,195,.95)}
-.pay-plan-cycle{color:rgba(255,255,255,.32)}
-.pay-btn{background:rgba(0,200,185,.9);color:#060e0e;box-shadow:0 0 20px rgba(0,200,185,.18)}
-.pay-btn:hover:not(:disabled){background:rgba(0,220,205,1);box-shadow:0 0 32px rgba(0,200,185,.32)}
-.pay-hint{color:rgba(255,255,255,.28)}
-.pay-or{color:rgba(255,255,255,.25)}
-.pay-free-btn{border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.45);background:transparent}
-.pay-free-btn:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.2)}
-.pay-back{color:rgba(255,255,255,.28)}
-.pay-divider{color:rgba(255,255,255,.22)}
-.pay-divider::before,.pay-divider::after{border-top-color:rgba(255,255,255,.1)}
-.pay-mp-alt{border-color:rgba(0,200,185,.2);color:rgba(255,255,255,.45);background:transparent}
-.pay-mp-alt:hover{border-color:rgba(0,200,185,.45);color:rgba(255,255,255,.8);background:rgba(0,200,185,.05)}
-/* Processing */
-.proc-card{background:rgba(0,0,0,.32);border-color:rgba(0,200,185,.18)}
-.proc-dot.wait{background:rgba(0,0,0,.3);border-color:rgba(0,200,185,.2)}
-.proc-dot.active{background:rgba(0,200,185,.1);border-color:rgba(0,200,185,.55)}
-.proc-dot.done{background:rgba(0,200,185,.85);border-color:rgba(0,200,185,1);box-shadow:0 0 10px rgba(0,200,185,.35)}
-.proc-msg.done{color:rgba(0,210,195,.9)}
-/* QR Code */
-.qr-card{background:rgba(0,0,0,.32);border-color:rgba(0,200,185,.2);color:#fff}
-.qr-title{color:#fff}
-.qr-box{background:rgba(0,0,0,.35);border-color:rgba(0,200,185,.2)}
-.qr-loading{color:rgba(255,255,255,.35)}
-.qr-spinner{border-color:rgba(0,200,185,.15);border-top-color:rgba(0,200,185,.75)}
-.qr-badge{color:rgba(220,150,0,.9);background:rgba(200,130,0,.12);border-color:rgba(200,130,0,.3)}
-.qr-badge.conn{color:rgba(0,210,195,.9);background:rgba(0,200,185,.1);border-color:rgba(0,200,185,.3)}
-.qr-step{color:rgba(255,255,255,.55)}
-.qr-step-num{background:rgba(0,200,185,.1);color:rgba(0,200,185,.75);border-color:rgba(0,200,185,.2)}
-.qr-refresh{border-color:rgba(0,200,185,.28);color:rgba(0,200,185,.7);background:transparent}
-.qr-refresh:hover{background:rgba(0,200,185,.08);border-color:rgba(0,200,185,.5)}
-.qr-timer,.qr-poll{color:rgba(255,255,255,.28)}
-.qr-poll-dot{background:rgba(0,200,185,.75)}
-/* Pairing Code dark */
-.conn-toggle{border-color:rgba(0,200,185,.25)}
-.conn-toggle-btn{color:rgba(255,255,255,.4)}
-.conn-toggle-btn.active{background:rgba(0,200,185,.85);color:#060e0e}
-.conn-toggle-btn:hover:not(.active){color:rgba(255,255,255,.7)}
-.pairing-phone-label{color:rgba(255,255,255,.35)}
-.pairing-phone-input{background:rgba(0,0,0,.42);border-color:rgba(0,200,185,.22);color:#fff}
-.pairing-phone-input::placeholder{color:rgba(255,255,255,.2)}
-.pairing-phone-input:focus{border-color:rgba(0,200,185,.65);box-shadow:0 0 0 3px rgba(0,200,185,.07)}
-.pairing-phone-btn{background:rgba(0,200,185,.9);color:#060e0e}
-.pairing-phone-btn:hover:not(:disabled){background:rgba(0,220,205,1)}
-.pairing-code-display{background:rgba(0,0,0,.35);border-color:rgba(0,200,185,.3)}
-.pairing-code-value{color:rgba(0,210,195,.95);text-shadow:0 0 20px rgba(0,200,185,.3)}
-.pairing-code-hint{color:rgba(255,255,255,.35)}
-/* Sucesso */
-.suc-card{background:rgba(0,0,0,.32);border-color:rgba(0,200,185,.2);color:#fff}
-.suc-title{color:rgba(0,210,195,.95);text-shadow:0 0 20px rgba(0,200,185,.3)}
-.suc-sub{color:rgba(255,255,255,.45)}
-.suc-info{background:rgba(0,200,185,.07);border-color:rgba(0,200,185,.18)}
-.suc-key{color:rgba(0,200,185,.75)}
-.suc-val{color:rgba(255,255,255,.9)}
-.suc-row{border-bottom-color:rgba(0,200,185,.1)}
-.suc-next{color:rgba(255,255,255,.3)}
-.pay-divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--ink3);font-size:11px;font-family:'DM Mono',monospace}
-.pay-divider::before,.pay-divider::after{content:'';flex:1;border-top:1px solid var(--border)}
-.pay-mp-alt{width:100%;padding:11px;background:transparent;color:var(--ink2);border:1px solid var(--border2);border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;transition:all .15s}
-.pay-mp-alt:hover{border-color:var(--ink2);color:var(--ink)}
-.card-brick-wrap{margin-bottom:8px;min-height:340px}
-/* Brick dark overrides */
-#cardPaymentBrick_container iframe{border-radius:10px!important}
+.err-title{font-size:20px;font-weight:700;margin-bottom:8px}
+.err-msg{font-size:13px;color:var(--t2);max-width:360px;line-height:1.6}
 </style>
 <script src="https://sdk.mercadopago.com/js/v2"></script>
-  <!-- Sentry -->
-  <script src="https://browser.sentry-cdn.com/7.119.0/bundle.min.js" crossorigin="anonymous"></script>
-  <script>if(typeof Sentry!=="undefined"&&Sentry.init){Sentry.init({dsn:"https://c658b9d1be28f744f2aef5c552ef1b4f@o4511123798687744.ingest.us.sentry.io/4511123944505344",environment:"production",tracesSampleRate:1.0});Sentry.setTag("page","onboarding");}</script>
-  <!-- PostHog -->
-  <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys getNextSurveyStep onSessionId setPersonPropertiesForFlags".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init("phc_g6yiGtySvzygKQwuDQqQBp9jI0slWkJ4bc1VsPuWOvM",{api_host:"https://us.i.posthog.com",person_profiles:"identified_only"});</script>
+<script src="https://browser.sentry-cdn.com/7.119.0/bundle.min.js" crossorigin="anonymous"></script>
+<script>if(typeof Sentry!=="undefined"&&Sentry.init){Sentry.init({dsn:"https://c658b9d1be28f744f2aef5c552ef1b4f@o4511123798687744.ingest.us.sentry.io/4511123944505344",environment:"production",tracesSampleRate:1.0});Sentry.setTag("page","onboarding");}</script>
+<script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys getNextSurveyStep onSessionId setPersonPropertiesForFlags".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init("phc_g6yiGtySvzygKQwuDQqQBp9jI0slWkJ4bc1VsPuWOvM",{api_host:"https://us.i.posthog.com",person_profiles:"identified_only"});</script>
 </head>
 <body>
 
 <!-- ══════════ STEP 1: BOAS-VINDAS ══════════ -->
 <div class="step active" id="s1">
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:48px 24px">
-    <div class="w-logo">InkFlow</div>
-    <div class="w-tag">tecnologia e arte lado a lado, ao seu favor.</div>
+  <div class="page-center">
+    <div class="w-icon">
+      <svg width="64" height="86" viewBox="-10 -10 100 130" overflow="visible"><g transform="rotate(-15, 38, 56)" fill="currentColor"><rect x="4" y="8" width="66" height="6" rx="3"/><rect x="8" y="14" width="24" height="34" rx="6"/><rect x="40" y="14" width="24" height="34" rx="6"/><rect x="4" y="46" width="66" height="6" rx="3"/><rect x="6" y="8" width="5" height="54" rx="1"/><rect x="-3" y="59" width="24" height="32" rx="8"/><path d="M1,90 L17,90 L5,110 Z"/></g></svg>
+    </div>
+    <div class="w-logo"><span class="ink">Ink</span>Flow</div>
+    <div class="w-tag">assistente virtual para estúdios</div>
     <div id="w-plano" class="w-plan">plano basic</div>
-    <div class="w-title">Configure seu est&uacute;dio em menos de 3 minutos</div>
-    <div class="w-sub">Vamos criar seu assistente virtual de WhatsApp. Nenhum conhecimento t&eacute;cnico necess&aacute;rio.</div>
-                <div class="w-steps">
+    <div class="w-title">Configure seu estúdio em menos de 3 minutos</div>
+    <div class="w-sub">Vamos criar seu assistente virtual de WhatsApp. Nenhum conhecimento técnico necessário.</div>
+
+    <div class="w-steps">
       <div class="w-step" onclick="this.classList.toggle('open')">
         <div class="w-step-hd">
           <span class="w-step-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-5 9a5 5 0 0 1 10 0v1H3v-1z"/></svg></span>
           <span class="w-step-label">Dados do estúdio</span>
           <span class="w-step-arrow">›</span>
         </div>
-        <div class="w-step-desc"><div class="w-step-desc-inner">Preencha os dados do seu estúdio com endereço e contato comercial. Essas informações serão usadas para treinar a sua assistente virtual.</div></div>
+        <div class="w-step-desc"><div class="w-step-desc-inner">Preencha os dados do seu estúdio com endereço e contato comercial.</div></div>
       </div>
       <div class="w-step" onclick="this.classList.toggle('open')">
         <div class="w-step-hd">
@@ -333,7 +253,7 @@ select.fi option{background:#091515;color:#fff}
           <span class="w-step-label">Configuração automática</span>
           <span class="w-step-arrow">›</span>
         </div>
-        <div class="w-step-desc"><div class="w-step-desc-inner">Sua instância WhatsApp e assistente virtual são criados automaticamente. Nenhuma ação técnica necessária da sua parte.</div></div>
+        <div class="w-step-desc"><div class="w-step-desc-inner">Sua instância WhatsApp e assistente virtual são criados automaticamente.</div></div>
       </div>
       <div class="w-step" onclick="this.classList.toggle('open')">
         <div class="w-step-hd">
@@ -341,7 +261,7 @@ select.fi option{background:#091515;color:#fff}
           <span class="w-step-label">Conectar WhatsApp</span>
           <span class="w-step-arrow">›</span>
         </div>
-        <div class="w-step-desc"><div class="w-step-desc-inner">Escaneie o QR Code para vincular o número do seu estúdio. Em segundos seu WhatsApp estará ativo e pronto para atender clientes.</div></div>
+        <div class="w-step-desc"><div class="w-step-desc-inner">Escaneie o QR Code para vincular o número do seu estúdio.</div></div>
       </div>
       <div class="w-step" onclick="this.classList.toggle('open')">
         <div class="w-step-hd">
@@ -349,32 +269,33 @@ select.fi option{background:#091515;color:#fff}
           <span class="w-step-label">Pagamento</span>
           <span class="w-step-arrow">›</span>
         </div>
-        <div class="w-step-desc"><div class="w-step-desc-inner">Escolha o plano ideal para o seu estúdio. O pagamento é processado com segurança via Mercado Pago — sem surpresas, cancele quando quiser.</div></div>
+        <div class="w-step-desc"><div class="w-step-desc-inner">Escolha o plano ideal. Pagamento seguro via Mercado Pago.</div></div>
       </div>
     </div>
+
     <button class="w-btn" onclick="goStep(2)">
-      Come&ccedil;ar configura&ccedil;&atilde;o
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l7 7-7 7-1.4-1.4 4.6-4.6H1V9.9h10.2L6.6 14.5 8 16l7-7-7-7z"/></svg>
+      Começar configuração
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l7 7-7 7-1.4-1.4 4.6-4.6H1V7h10.2L6.6 2.4z"/></svg>
     </button>
-    <div id="w-err" style="display:none;margin-top:24px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:10px;padding:14px 18px;font-size:13px;color:#e74c3c;font-family:'DM Mono',monospace;max-width:380px;line-height:1.5;text-align:center"></div>
+    <div id="w-err" style="display:none;margin-top:24px;background:var(--red-bg);border:1px solid rgba(231,76,60,.25);border-radius:10px;padding:14px 18px;font-size:13px;color:var(--red);max-width:380px;line-height:1.5;text-align:center"></div>
   </div>
 </div>
 
-<!-- ══════════ STEP 2: FORMUL&Aacute;RIO ══════════ -->
+<!-- ══════════ STEP 2: FORMULÁRIO ══════════ -->
 <div class="step" id="s2">
   <div class="form-header">
-    <div>
-      <div class="form-logo">InkFlow</div>
-      <div class="form-badge">Configura&ccedil;&atilde;o do Est&uacute;dio</div>
+    <div class="logo-lockup">
+      <svg width="22" height="30" viewBox="-10 -10 100 130" overflow="visible"><g transform="rotate(-15, 38, 56)" fill="currentColor"><rect x="4" y="8" width="66" height="6" rx="3"/><rect x="8" y="14" width="24" height="34" rx="6"/><rect x="40" y="14" width="24" height="34" rx="6"/><rect x="4" y="46" width="66" height="6" rx="3"/><rect x="6" y="8" width="5" height="54" rx="1"/><rect x="-3" y="59" width="24" height="32" rx="8"/><path d="M1,90 L17,90 L5,110 Z"/></g></svg>
+      <span class="logo-text"><span class="ink">Ink</span>Flow</span>
     </div>
+    <div class="form-badge">Configuração do Estúdio</div>
   </div>
   <div class="form-body">
-    <div class="form-title">Dados do seu est&uacute;dio</div>
-    <div class="form-sub">Essas informa&ccedil;&otilde;es ser&atilde;o usadas pelo seu assistente virtual.</div>
-
+    <div class="form-title">Dados do seu estúdio</div>
+    <div class="form-sub">Essas informações serão usadas pelo seu assistente virtual.</div>
     <div class="form-err" id="form-err"></div>
 
-    <div class="fsec">Propriet&aacute;rio</div>
+    <div class="fsec">Proprietário</div>
     <div class="fgrid">
       <div class="fg">
         <label class="fl">Seu nome <span>*</span></label>
@@ -386,26 +307,25 @@ select.fi option{background:#091515;color:#fff}
         <div class="fi-hint">Como o assistente se apresenta</div>
       </div>
     </div>
-
     <div class="fg">
       <label class="fl">Seu e-mail <span>*</span></label>
       <input class="fi" id="f-email" type="email" placeholder="Ex: carlos@darkinkstudio.com"/>
-      <div class="fi-hint">Para notifica&ccedil;&otilde;es, suporte e cobran&ccedil;a</div>
+      <div class="fi-hint">Para notificações, suporte e cobrança</div>
     </div>
 
     <hr class="divider"/>
-    <div class="fsec">Est&uacute;dio</div>
+    <div class="fsec">Estúdio</div>
     <div class="fg">
-      <label class="fl">Nome do est&uacute;dio <span>*</span></label>
+      <label class="fl">Nome do estúdio <span>*</span></label>
       <input class="fi" id="f-estudio" type="text" placeholder="Ex: Dark Ink Studio"/>
     </div>
     <div class="fgrid">
       <div class="fg">
         <label class="fl">Cidade</label>
-        <input class="fi" id="f-cidade" type="text" placeholder="Ex: S&atilde;o Paulo - SP"/>
+        <input class="fi" id="f-cidade" type="text" placeholder="Ex: São Paulo - SP"/>
       </div>
       <div class="fg">
-        <label class="fl">Endere&ccedil;o</label>
+        <label class="fl">Endereço</label>
         <input class="fi" id="f-endereco" type="text" placeholder="Ex: Av. Paulista, 1000"/>
       </div>
     </div>
@@ -413,75 +333,66 @@ select.fi option{background:#091515;color:#fff}
     <hr class="divider"/>
     <div class="fsec">Plano</div>
     <div class="plan-sel" id="plan-sel">
-
       <div class="plan-opt" id="plan-free" onclick="selectPlan('free')">
         <div class="po-name">Free Trial</div>
-        <div class="po-price">7 dias gr&aacute;tis</div>
+        <div class="po-price">7 dias grátis</div>
         <ul class="po-features">
           <li class="po-feat">5 conversas por dia</li>
-          <li class="po-feat">Atendimento autom&aacute;tico 24/7</li>
-          <li class="po-feat">Hist&oacute;rico b&aacute;sico</li>
-          <li class="po-feat">Sem agendamento autom&aacute;tico</li>
+          <li class="po-feat">Atendimento automático 24/7</li>
+          <li class="po-feat">Histórico básico</li>
+          <li class="po-feat">Sem agendamento automático</li>
         </ul>
       </div>
-
-      <!-- TEMPORARIO: plano teste R$1 — remover apos teste -->
       <div class="plan-opt" id="plan-teste" onclick="selectPlan('teste')" style="border:2px solid #ff4444">
-        <div class="po-tag" style="background:#ff4444">TESTE</div>
+        <div class="po-tag" style="background:#ff4444;color:#fff">TESTE</div>
         <div class="po-name">Teste R$1</div>
-        <div class="po-price">R$ 1/m&ecirc;s</div>
+        <div class="po-price">R$ 1/mês</div>
         <ul class="po-features">
           <li class="po-feat">Apenas para teste interno</li>
-          <li class="po-feat">Remover antes do lan&ccedil;amento</li>
+          <li class="po-feat">Remover antes do lançamento</li>
         </ul>
       </div>
-
       <div class="plan-opt active" id="plan-basic" onclick="selectPlan('basic')">
         <div class="po-name">Essencial</div>
-        <div class="po-price">R$ 199/m&ecirc;s</div>
+        <div class="po-price">R$ 199/mês</div>
         <ul class="po-features">
-          <li class="po-feat">At&eacute; 50 leads/m&ecirc;s</li>
-          <li class="po-feat">Agendamento autom&aacute;tico</li>
-          <li class="po-feat">IA personalizada para seu est&uacute;dio</li>
-          <li class="po-feat">Hist&oacute;rico completo</li>
+          <li class="po-feat">Até 50 leads/mês</li>
+          <li class="po-feat">Agendamento automático</li>
+          <li class="po-feat">IA personalizada para seu estúdio</li>
+          <li class="po-feat">Histórico completo</li>
           <li class="po-feat">Suporte por e-mail</li>
         </ul>
       </div>
-
       <div class="plan-opt" id="plan-pro" onclick="selectPlan('pro')">
         <div class="po-tag">Mais popular</div>
         <div class="po-name">Growth</div>
-        <div class="po-price">R$ 399/m&ecirc;s</div>
+        <div class="po-price">R$ 399/mês</div>
         <ul class="po-features">
-          <li class="po-feat">At&eacute; 200 leads/m&ecirc;s</li>
+          <li class="po-feat">Até 200 leads/mês</li>
           <li class="po-feat">Tudo do Essencial</li>
           <li class="po-feat">Google Calendar integrado</li>
-          <li class="po-feat">Notifica&ccedil;&otilde;es de grupo</li>
-          <li class="po-feat">Suporte por chat priorit&aacute;rio</li>
+          <li class="po-feat">Notificações de grupo</li>
+          <li class="po-feat">Suporte por chat prioritário</li>
         </ul>
       </div>
-
       <div class="plan-opt" id="plan-enterprise" onclick="selectPlan('enterprise')">
         <div class="po-name">Enterprise</div>
-        <div class="po-price">R$ 999/m&ecirc;s</div>
+        <div class="po-price">R$ 999/mês</div>
         <ul class="po-features">
           <li class="po-feat">Leads ilimitados</li>
           <li class="po-feat">Tudo do Growth</li>
-          <li class="po-feat">Configura&ccedil;&atilde;o de IA dedicada</li>
+          <li class="po-feat">Configuração de IA dedicada</li>
           <li class="po-feat">Suporte via WhatsApp com SLA</li>
         </ul>
       </div>
-
     </div>
-    <div class="fi-hint" style="margin-top:8px">Plano pr&eacute;-selecionado conforme combinado</div>
+    <div class="fi-hint" style="margin-top:8px">Plano pré-selecionado conforme combinado</div>
 
-    <button class="sbtn" id="form-btn" onclick="showPaymentStep()">
-      Configurar meu WhatsApp →
-    </button>
+    <button class="sbtn" id="form-btn" onclick="showPaymentStep()">Configurar meu WhatsApp →</button>
 
-    <div style="margin-top:16px;font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;text-align:center;line-height:1.6">
-      Ao continuar, voc&ecirc; concorda com os <a href="termos.html" target="_blank" style="color:var(--ink2);text-decoration:underline">termos de uso</a> do InkFlow.<br/>
-      Seus dados s&atilde;o armazenados com seguran&ccedil;a no Brasil.
+    <div style="margin-top:16px;font-size:11px;color:var(--t3);text-align:center;line-height:1.6">
+      Ao continuar, você concorda com os <a href="termos.html" target="_blank" style="color:var(--t2);text-decoration:underline">termos de uso</a> do InkFlow.<br/>
+      Seus dados são armazenados com segurança no Brasil.
     </div>
   </div>
 </div>
@@ -489,38 +400,27 @@ select.fi option{background:#091515;color:#fff}
 <!-- ══════════ STEP 3: PAGAMENTO ══════════ -->
 <div class="step" id="s3">
   <div class="form-header">
-    <div>
-      <div class="form-logo">InkFlow</div>
-      <div class="form-badge">Finalizar Assinatura</div>
+    <div class="logo-lockup">
+      <svg width="22" height="30" viewBox="-10 -10 100 130" overflow="visible"><g transform="rotate(-15, 38, 56)" fill="currentColor"><rect x="4" y="8" width="66" height="6" rx="3"/><rect x="8" y="14" width="24" height="34" rx="6"/><rect x="40" y="14" width="24" height="34" rx="6"/><rect x="4" y="46" width="66" height="6" rx="3"/><rect x="6" y="8" width="5" height="54" rx="1"/><rect x="-3" y="59" width="24" height="32" rx="8"/><path d="M1,90 L17,90 L5,110 Z"/></g></svg>
+      <span class="logo-text"><span class="ink">Ink</span>Flow</span>
     </div>
+    <div class="form-badge">Finalizar Assinatura</div>
   </div>
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
-    <div class="pay-card" style="max-width:500px">
+  <div class="page-center">
+    <div class="pay-card">
       <div class="pay-title">Finalizar assinatura</div>
       <div class="pay-sub">Pagamento seguro · cancele a qualquer momento</div>
-
-      <!-- resumo do plano -->
       <div class="pay-plan-box" id="pay-plan-box"></div>
-
-      <!-- CardPayment Brick (cartão direto) -->
       <div class="card-brick-wrap" id="card-brick-wrap">
         <div id="cardPaymentBrick_container"></div>
       </div>
-
-      <!-- alternativa: redirect MP (Pix / Boleto) -->
       <div class="pay-divider" id="pay-divider">ou pague com</div>
-
       <button class="pay-mp-alt" id="pay-btn" onclick="initiatePayment()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
         Pix · Boleto · Saldo Mercado Pago
       </button>
-
       <div class="pay-divider" id="pay-or">ou</div>
-
-      <button class="pay-free-btn" id="pay-free-btn" onclick="startFreeTrial()">
-        Começar 7 dias grátis (sem cartão)
-      </button>
-
+      <button class="pay-free-btn" id="pay-free-btn" onclick="startFreeTrial()">Começar 7 dias grátis (sem cartão)</button>
       <div style="margin-top:12px">
         <span class="pay-back" onclick="goStep(2)">← Voltar e editar</span>
       </div>
@@ -528,32 +428,18 @@ select.fi option{background:#091515;color:#fff}
   </div>
 </div>
 
+<!-- ══════════ STEP 4: PROCESSING ══════════ -->
 <div class="step" id="s4">
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
+  <div class="page-center">
     <div class="proc-card">
-      <div class="proc-title">Configurando seu est&uacute;dio</div>
+      <div class="proc-title">Configurando seu estúdio</div>
       <div class="proc-sub">Aguarde, isso leva alguns segundos...</div>
       <div class="proc-list">
-        <div class="proc-item" id="pi-0">
-          <div class="proc-dot wait" id="pd-0"></div>
-          <div class="proc-msg" id="pm-0">Verificando perfil no sistema...</div>
-        </div>
-        <div class="proc-item" id="pi-1">
-          <div class="proc-dot wait" id="pd-1"></div>
-          <div class="proc-msg" id="pm-1">Criando inst&acirc;ncia WhatsApp...</div>
-        </div>
-        <div class="proc-item" id="pi-2">
-          <div class="proc-dot wait" id="pd-2"></div>
-          <div class="proc-msg" id="pm-2">Salvando credenciais...</div>
-        </div>
-        <div class="proc-item" id="pi-3">
-          <div class="proc-dot wait" id="pd-3"></div>
-          <div class="proc-msg" id="pm-3">Configurando webhook n8n...</div>
-        </div>
-        <div class="proc-item" id="pi-4">
-          <div class="proc-dot wait" id="pd-4"></div>
-          <div class="proc-msg" id="pm-4">Gerando QR Code...</div>
-        </div>
+        <div class="proc-item" id="pi-0"><div class="proc-dot wait" id="pd-0"></div><div class="proc-msg" id="pm-0">Verificando perfil no sistema...</div></div>
+        <div class="proc-item" id="pi-1"><div class="proc-dot wait" id="pd-1"></div><div class="proc-msg" id="pm-1">Criando instância WhatsApp...</div></div>
+        <div class="proc-item" id="pi-2"><div class="proc-dot wait" id="pd-2"></div><div class="proc-msg" id="pm-2">Salvando credenciais...</div></div>
+        <div class="proc-item" id="pi-3"><div class="proc-dot wait" id="pd-3"></div><div class="proc-msg" id="pm-3">Configurando webhook n8n...</div></div>
+        <div class="proc-item" id="pi-4"><div class="proc-dot wait" id="pd-4"></div><div class="proc-msg" id="pm-4">Gerando QR Code...</div></div>
       </div>
       <div class="proc-err-box" id="proc-err-box">
         <div class="proc-err-txt" id="proc-err-txt"></div>
@@ -565,56 +451,38 @@ select.fi option{background:#091515;color:#fff}
 
 <!-- ══════════ STEP 5: QR CODE / PAIRING CODE ══════════ -->
 <div class="step" id="s5">
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
+  <div class="page-center">
     <div class="qr-card">
       <div class="qr-header">
         <div class="qr-title">Conectar WhatsApp</div>
-        <div class="qr-badge" id="qr-status">aguardando conex&atilde;o</div>
+        <div class="qr-badge" id="qr-status">aguardando conexão</div>
       </div>
-
-      <!-- Toggle QR Code / Pairing Code -->
       <div class="conn-toggle" id="conn-toggle">
         <button class="conn-toggle-btn active" id="toggle-qr" onclick="switchConnMode('qr')">QR Code</button>
-        <button class="conn-toggle-btn" id="toggle-pairing" onclick="switchConnMode('pairing')">C&oacute;digo no celular</button>
+        <button class="conn-toggle-btn" id="toggle-pairing" onclick="switchConnMode('pairing')">Código no celular</button>
       </div>
-
-      <!-- === QR Code area === -->
       <div id="qr-area">
         <div class="qr-box" id="qr-box">
-          <div class="qr-loading" id="qr-loading">
-            <div class="qr-spinner"></div>
-            <span>gerando qr code...</span>
-          </div>
+          <div class="qr-loading" id="qr-loading"><div class="qr-spinner"></div><span>gerando qr code...</span></div>
           <img id="qr-img" alt="QR Code WhatsApp" style="display:none;max-width:200px;border-radius:8px"/>
         </div>
         <div class="qr-steps" id="qr-steps">
-          <div class="qr-step">
-            <div class="qr-step-num">1</div>
-            <span>Abra o <strong>WhatsApp</strong> no celular do est&uacute;dio</span>
-          </div>
-          <div class="qr-step">
-            <div class="qr-step-num">2</div>
-            <span>Toque em <strong>Dispositivos conectados</strong> &rarr; Conectar dispositivo</span>
-          </div>
-          <div class="qr-step">
-            <div class="qr-step-num">3</div>
-            <span>Aponte a c&acirc;mera para o <strong>QR Code</strong> acima</span>
-          </div>
+          <div class="qr-step"><div class="qr-step-num">1</div><span>Abra o <strong>WhatsApp</strong> no celular do estúdio</span></div>
+          <div class="qr-step"><div class="qr-step-num">2</div><span>Toque em <strong>Dispositivos conectados</strong> → Conectar dispositivo</span></div>
+          <div class="qr-step"><div class="qr-step-num">3</div><span>Aponte a câmera para o <strong>QR Code</strong> acima</span></div>
         </div>
         <div style="display:flex;gap:10px;justify-content:center">
-          <button class="qr-refresh" onclick="refreshQR()">&#8634; Novo QR Code</button>
+          <button class="qr-refresh" onclick="refreshQR()">↻ Novo QR Code</button>
         </div>
         <div class="qr-timer" id="qr-timer"></div>
       </div>
-
-      <!-- === Pairing Code area === -->
       <div id="pairing-area">
         <div class="pairing-box active" id="pairing-phone-box">
           <div class="pairing-phone-wrap">
-            <label class="pairing-phone-label">N&uacute;mero do WhatsApp do est&uacute;dio (com DDD)</label>
+            <label class="pairing-phone-label">Número do WhatsApp do estúdio (com DDD)</label>
             <div class="pairing-phone-row">
               <input type="tel" class="pairing-phone-input" id="pairing-phone" placeholder="11999999999" maxlength="15"/>
-              <button class="pairing-phone-btn" id="pairing-btn" onclick="requestPairingCode()">Gerar c&oacute;digo</button>
+              <button class="pairing-phone-btn" id="pairing-btn" onclick="requestPairingCode()">Gerar código</button>
             </div>
           </div>
         </div>
@@ -622,292 +490,135 @@ select.fi option{background:#091515;color:#fff}
           <div class="pairing-code-display">
             <div class="pairing-code-value" id="pairing-code-value">----</div>
             <div class="pairing-code-hint">
-              Digite este c&oacute;digo no seu WhatsApp:<br/>
-              <strong>Configura&ccedil;&otilde;es</strong> &rarr; <strong>Dispositivos conectados</strong> &rarr; <strong>Conectar dispositivo</strong> &rarr; <strong>Conectar com n&uacute;mero de telefone</strong>
+              Digite este código no seu WhatsApp:<br/>
+              <strong>Configurações</strong> → <strong>Dispositivos conectados</strong> → <strong>Conectar dispositivo</strong> → <strong>Conectar com número de telefone</strong>
             </div>
           </div>
         </div>
         <div class="qr-steps" id="pairing-steps">
-          <div class="qr-step">
-            <div class="qr-step-num">1</div>
-            <span>Digite o n&uacute;mero do WhatsApp do est&uacute;dio acima</span>
-          </div>
-          <div class="qr-step">
-            <div class="qr-step-num">2</div>
-            <span>No WhatsApp: <strong>Dispositivos conectados</strong> &rarr; <strong>Conectar dispositivo</strong></span>
-          </div>
-          <div class="qr-step">
-            <div class="qr-step-num">3</div>
-            <span>Toque em <strong>&ldquo;Conectar com n&uacute;mero de telefone&rdquo;</strong> (link pequeno embaixo da c&acirc;mera)</span>
-          </div>
-          <div class="qr-step">
-            <div class="qr-step-num">4</div>
-            <span>Digite o <strong>c&oacute;digo</strong> que apareceu acima</span>
-          </div>
+          <div class="qr-step"><div class="qr-step-num">1</div><span>Digite o número do WhatsApp do estúdio acima</span></div>
+          <div class="qr-step"><div class="qr-step-num">2</div><span>No WhatsApp: <strong>Dispositivos conectados</strong> → <strong>Conectar dispositivo</strong></span></div>
+          <div class="qr-step"><div class="qr-step-num">3</div><span>Toque em <strong>"Conectar com número de telefone"</strong></span></div>
+          <div class="qr-step"><div class="qr-step-num">4</div><span>Digite o <strong>código</strong> que apareceu acima</span></div>
         </div>
         <div style="display:flex;gap:10px;justify-content:center">
-          <button class="qr-refresh" onclick="requestPairingCode()">&#8634; Novo c&oacute;digo</button>
+          <button class="qr-refresh" onclick="requestPairingCode()">↻ Novo código</button>
         </div>
       </div>
-
-      <div class="qr-poll">
-        <div class="qr-poll-dot"></div>
-        verificando conex&atilde;o automaticamente...
-      </div>
+      <div class="qr-poll"><div class="qr-poll-dot"></div>verificando conexão automaticamente...</div>
     </div>
   </div>
 </div>
 
 <!-- ══════════ STEP 6: SUCESSO ══════════ -->
 <div class="step" id="s6">
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px">
+  <div class="page-center">
     <div class="suc-card">
       <div class="suc-icon">🎉</div>
       <div class="suc-title">WhatsApp Conectado!</div>
-      <div class="suc-sub">Seu assistente virtual j&aacute; est&aacute; ativo e pronto para atender os clientes do seu est&uacute;dio automaticamente.</div>
-
+      <div class="suc-sub">Seu assistente virtual já está ativo e pronto para atender os clientes do seu estúdio automaticamente.</div>
       <div class="suc-info">
-        <div class="suc-row">
-          <span class="suc-key">est&uacute;dio</span>
-          <span class="suc-val" id="suc-estudio">—</span>
-        </div>
-        <div class="suc-row">
-          <span class="suc-key">agente</span>
-          <span class="suc-val" id="suc-agente">—</span>
-        </div>
-        <div class="suc-row">
-          <span class="suc-key">inst&acirc;ncia</span>
-          <span class="suc-val" id="suc-inst" style="font-family:'DM Mono',monospace;font-size:12px">—</span>
-        </div>
-        <div class="suc-row">
-          <span class="suc-key">plano</span>
-          <span class="suc-val" id="suc-plano">—</span>
-        </div>
-        <div class="suc-row" style="border-bottom:none">
-          <span class="suc-key">status</span>
-          <span style="background:var(--green-bg);color:var(--green);padding:3px 10px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;font-weight:600">● ativo</span>
-        </div>
+        <div class="suc-row"><span class="suc-key">estúdio</span><span class="suc-val" id="suc-estudio">—</span></div>
+        <div class="suc-row"><span class="suc-key">agente</span><span class="suc-val" id="suc-agente">—</span></div>
+        <div class="suc-row"><span class="suc-key">instância</span><span class="suc-val" id="suc-inst" style="font-size:12px">—</span></div>
+        <div class="suc-row"><span class="suc-key">plano</span><span class="suc-val" id="suc-plano">—</span></div>
+        <div class="suc-row" style="border-bottom:none"><span class="suc-key">status</span><span style="background:var(--teal-dim);color:var(--teal);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">● ativo</span></div>
       </div>
-
       <div class="suc-next">
-        ✓ Seu WhatsApp j&aacute; recebe mensagens automaticamente<br/>
-        ✓ O assistente responde agendamentos e d&uacute;vidas<br/>
-        ✓ Voc&ecirc; recebe alertas no grupo de notifica&ccedil;&atilde;o<br/><br/>
-        Em caso de d&uacute;vidas, entre em contato com o suporte InkFlow.
+        ✓ Seu WhatsApp já recebe mensagens automaticamente<br/>
+        ✓ O assistente responde agendamentos e dúvidas<br/>
+        ✓ Você recebe alertas no grupo de notificação<br/><br/>
+        Em caso de dúvidas, entre em contato com o suporte InkFlow.
       </div>
     </div>
   </div>
 </div>
 
-<!-- Error overlay para link inv&aacute;lido -->
+<!-- Error overlay -->
 <div id="err-overlay">
   <div class="err-icon">⚠️</div>
-  <div class="err-title">Link inv&aacute;lido</div>
-  <div class="err-msg" id="err-msg">Este link de onboarding &eacute; inv&aacute;lido ou expirou. Solicite um novo link ao suporte InkFlow.</div>
+  <div class="err-title">Link inválido</div>
+  <div class="err-msg" id="err-msg">Este link de onboarding é inválido ou expirou. Solicite um novo link ao suporte InkFlow.</div>
 </div>
 
 <script>
 // ── Configurações ──────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenV4eHVzY3lwbGZvaW12b21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMTg3NjAsImV4cCI6MjA4ODg5NDc2MH0.GSw2qzM9RgEQT6xTNBElBv-4AAuSavZe-_C-CljMvdA';
-// [FIX AUDIT3 #4] EVO_BASE removido — server (create-tenant.js) usa env.EVO_BASE_URL
-// N8N_BASE removido (codigo morto) — webhook n8n e configurado server-side via evo-create-instance.js
 
-// ── Estado ────────────────────────────────────────────────────────────────
 let gConfig      = { globalKey: '', plano: 'basic' };
 let tenantId     = null;
-// instanceKey removida — apikey fica apenas no servidor (Fix Bug #2)
 let instanceSlug = null;
 let pollInterval = null;
 let selectedPlan = 'basic';
 const MP_PUBLIC_KEY = 'APP_USR-36990647-ad0a-4978-a672-499f635f9b03';
 let mpBrickController = null;
 
-// ── Init ───────────────────────────────────────────────────────────────────
 async function init() {
-  // Detectar retorno do Mercado Pago (MP adiciona ?preapproval_id=xxx na back_url)
   const urlParams    = new URLSearchParams(window.location.search);
   const preapprovalId = urlParams.get('preapproval_id');
-
-  if (preapprovalId) {
-    continueAfterPayment(preapprovalId);
-    return;
-  }
-
+  if (preapprovalId) { continueAfterPayment(preapprovalId); return; }
   const key = urlParams.get('token') || localStorage.getItem('inkflow_gk') || '';
-
-  if (!key) {
-    showErrOverlay('Link de onboarding inválido ou expirado. Solicite um novo link ao suporte InkFlow.');
-    return;
-  }
-
-  // Bug 9 fix: Validar key server-side contra tabela onboarding_links
+  if (!key) { showErrOverlay('Link de onboarding inválido ou expirado. Solicite um novo link ao suporte InkFlow.'); return; }
   let plano = 'basic';
   try {
-    const valRes = await fetch('/api/validate-onboarding-key', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key })
-    });
+    const valRes = await fetch('/api/validate-onboarding-key', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
     const valData = await valRes.json();
-    if (!valData.valid) {
-      showErrOverlay(valData.error || 'Link de onboarding inválido ou expirado.');
-      return;
-    }
+    if (!valData.valid) { showErrOverlay(valData.error || 'Link de onboarding inválido ou expirado.'); return; }
     plano = valData.plano || 'basic';
   } catch (valErr) {
-    // [FIX AUDIT3 #1] Fail-closed: se endpoint indisponivel, bloquear onboarding
     console.error('Key validation network error:', valErr);
     showErrOverlay('Erro ao validar link de onboarding. Verifique sua conexao e tente novamente.');
     return;
   }
-
-  // Bug 7 fix: Validar plano contra whitelist (previne XSS)
   const allowedPlans = ['free','teste','basic','pro','enterprise'];
   if (!allowedPlans.includes(plano)) plano = 'basic';
-
   gConfig = { globalKey: key, plano };
-
-  // Guardar a chave para sobreviver ao redirect do MP
   localStorage.setItem('inkflow_gk', key);
-
-  // Set plan display
   selectedPlan = plano;
   const planLabels = { free:'free trial', teste:'teste R$1', basic:'essencial', pro:'growth', enterprise:'enterprise' };
   document.getElementById('w-plano').textContent = 'plano ' + (planLabels[plano] || plano);
   selectPlan(plano);
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-function goStep(n) {
-  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-  document.getElementById('s' + n).classList.add('active');
-  window.scrollTo(0, 0);
-}
-
-function makeSlug(text) {
-  return (text || '')
-    .toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]/g, '')
-    .substring(0, 16);
-}
-
-function autoAgent() {
-  const nome   = document.getElementById('f-nome').value.trim();
-  const agente = document.getElementById('f-agente');
-  if (!agente.value && nome) agente.value = nome.split(' ')[0];
-}
-
-function selectPlan(plan) {
-  selectedPlan = plan;
-  ['free','teste','basic','pro','enterprise'].forEach(p => {
-    document.getElementById('plan-' + p)?.classList.toggle('active', p === plan);
-  });
-  if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan});
-}
-
-function setStatus(idx, msg, state = 'active') {
-  const dot = document.getElementById('pd-' + idx);
-  const txt = document.getElementById('pm-' + idx);
-  if (!dot) return;
-  dot.className = 'proc-dot ' + state;
-  if (msg) { txt.textContent = msg; txt.className = 'proc-msg' + (state === 'done' ? ' done' : ''); }
-}
-
-function showProcError(msg) {
-  const box = document.getElementById('proc-err-box');
-  document.getElementById('proc-err-txt').textContent = msg;
-  box.style.display = 'block';
-}
-
-function showFormError(msg) {
-  const el = document.getElementById('form-err');
-  el.textContent = msg;
-  el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 5000);
-}
-
-function showErrOverlay(msg) {
-  document.getElementById('err-msg').textContent = msg;
-  document.getElementById('err-overlay').classList.add('show');
-}
+function goStep(n) { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('s' + n).classList.add('active'); window.scrollTo(0, 0); }
+function makeSlug(text) { return (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').substring(0, 16); }
+function autoAgent() { const nome = document.getElementById('f-nome').value.trim(); const agente = document.getElementById('f-agente'); if (!agente.value && nome) agente.value = nome.split(' ')[0]; }
+function selectPlan(plan) { selectedPlan = plan; ['free','teste','basic','pro','enterprise'].forEach(p => { document.getElementById('plan-' + p)?.classList.toggle('active', p === plan); }); if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan}); }
+function setStatus(idx, msg, state = 'active') { const dot = document.getElementById('pd-' + idx); const txt = document.getElementById('pm-' + idx); if (!dot) return; dot.className = 'proc-dot ' + state; if (msg) { txt.textContent = msg; txt.className = 'proc-msg' + (state === 'done' ? ' done' : ''); } }
+function showProcError(msg) { const box = document.getElementById('proc-err-box'); document.getElementById('proc-err-txt').textContent = msg; box.style.display = 'block'; }
+function showFormError(msg) { const el = document.getElementById('form-err'); el.textContent = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 5000); }
+function showErrOverlay(msg) { document.getElementById('err-msg').textContent = msg; document.getElementById('err-overlay').classList.add('show'); }
 
 function generatePrompt(agente, estudio, cidade, endereco) {
-  return `# Quem você é
-Você é ${agente}, assistente virtual do ${estudio}.
-
-# Seu papel
-Você atende clientes via WhatsApp respondendo dúvidas sobre tatuagens, agendamentos e orçamentos de forma ágil e profissional.
-
-# Estúdio
-- Nome: ${estudio}${cidade ? '\n- Cidade: ' + cidade : ''}${endereco ? '\n- Endereço: ' + endereco : ''}
-
-# Como responder
-- Seja simpático e profissional
-- Use linguagem informal mas respeitosa
-- Para agendamentos, colete: nome, tatuagem desejada, data preferida e tamanho aproximado
-- Quando não souber algo, consulte o FAQ abaixo`;
+  return `# Quem você é\nVocê é ${agente}, assistente virtual do ${estudio}.\n\n# Seu papel\nVocê atende clientes via WhatsApp respondendo dúvidas sobre tatuagens, agendamentos e orçamentos de forma ágil e profissional.\n\n# Estúdio\n- Nome: ${estudio}${cidade ? '\n- Cidade: ' + cidade : ''}${endereco ? '\n- Endereço: ' + endereco : ''}\n\n# Como responder\n- Seja simpático e profissional\n- Use linguagem informal mas respeitosa\n- Para agendamentos, colete: nome, tatuagem desejada, data preferida e tamanho aproximado\n- Quando não souber algo, consulte o FAQ abaixo`;
 }
 
-// ── API Calls ──────────────────────────────────────────────────────────────
 async function sbFetch(method, path, body) {
-  const opts = {
-    method,
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'return=representation' : ''
-    }
-  };
+  const opts = { method, headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': method === 'POST' ? 'return=representation' : '' } };
   if (body) opts.body = JSON.stringify(body);
   return fetch(SUPABASE_URL + path, opts);
 }
 
-// evoFetch removida — todas as chamadas Evolution passam por proxies server-side (Fix Bug #2)
-
-// ── Inicializar CardPayment Brick do Mercado Pago ──────────────────────────
 async function initCardBrick(amount) {
-  if (mpBrickController) {
-    try { await mpBrickController.unmount(); } catch {}
-    mpBrickController = null;
-  }
+  if (mpBrickController) { try { await mpBrickController.unmount(); } catch {} mpBrickController = null; }
   const mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'pt-BR' });
   const bricksBuilder = mp.bricks();
   mpBrickController = await bricksBuilder.create('cardPayment', 'cardPaymentBrick_container', {
     initialization: { amount, payer: { email: document.getElementById('f-email').value.trim() || '' } },
     customization: {
       paymentMethods: { maxInstallments: 1 },
-      visual: {
-        style: {
-          theme: 'dark',
-          customVariables: {
-            baseColor: '#00c8b9', buttonBackground: 'rgba(0,200,185,.9)',
-            buttonTextColor: '#060e0e', formBackgroundColor: 'transparent',
-            inputBackgroundColor: 'rgba(0,0,0,.42)', inputBorderColor: 'rgba(0,200,185,.22)',
-            inputFocusedBorderColor: 'rgba(0,200,185,.7)', labelTextColor: 'rgba(255,255,255,.45)',
-            inputTextColor: '#ffffff', buttonBorderRadius: '8px', inputBorderRadius: '8px',
-          },
-        },
-        hideFormTitle: true,
-      },
+      visual: { style: { theme: 'dark', customVariables: { baseColor: '#00d4aa', buttonBackground: '#00d4aa', buttonTextColor: '#111', formBackgroundColor: 'transparent', inputBackgroundColor: 'rgba(0,0,0,.4)', inputBorderColor: 'rgba(0,212,170,.15)', inputFocusedBorderColor: 'rgba(0,212,170,.6)', labelTextColor: 'rgba(255,255,255,.5)', inputTextColor: '#ffffff', buttonBorderRadius: '12px', inputBorderRadius: '10px' } }, hideFormTitle: true },
       labels: { confirmButton: 'Assinar agora →' },
     },
     callbacks: {
       onReady: () => { document.getElementById('card-brick-wrap').style.minHeight = 'unset'; },
-      onSubmit: async (cardFormData) => {
-        if (window._paymentInProgress) return;
-        window._paymentInProgress = true;
-        try { await chargeCard(cardFormData); } finally { window._paymentInProgress = false; }
-      },
+      onSubmit: async (cardFormData) => { if (window._paymentInProgress) return; window._paymentInProgress = true; try { await chargeCard(cardFormData); } finally { window._paymentInProgress = false; } },
       onError: (err) => { console.error('MP Brick error:', err); },
     },
   });
 }
 
-// ── Cobrar com cartão (via Brick token) ────────────────────────────────────────
-// ── [FIX #6] Mapa de erros MP → mensagens em PT-BR ──────────────────────────
 const MP_ERROR_MAP = {
   'cc_rejected_bad_filled_card_number': 'Número do cartão inválido. Verifique e tente novamente.',
   'cc_rejected_bad_filled_date': 'Data de validade incorreta.',
@@ -924,666 +635,193 @@ const MP_ERROR_MAP = {
   'credit card validation has failed': 'Validação do cartão falhou. Verifique os dados e tente novamente.',
   'card token service not found': 'Erro ao processar cartão. Recarregue a página e tente novamente.',
 };
+function friendlyPaymentError(msg) { const lower = (msg || '').toLowerCase(); for (const [key, val] of Object.entries(MP_ERROR_MAP)) { if (lower.includes(key)) return val; } if (lower.includes('network') || lower.includes('fetch') || lower.includes('failed to fetch')) { return 'Erro de conexão. Verifique sua internet e tente novamente.'; } return 'Erro ao processar pagamento. Verifique os dados do cartão e tente novamente.'; }
 
-function friendlyPaymentError(msg) {
-  const lower = (msg || '').toLowerCase();
-  for (const [key, val] of Object.entries(MP_ERROR_MAP)) {
-    if (lower.includes(key)) return val;
-  }
-  if (lower.includes('network') || lower.includes('fetch') || lower.includes('failed to fetch')) {
-    return 'Erro de conexão. Verifique sua internet e tente novamente.';
-  }
-  return 'Erro ao processar pagamento. Verifique os dados do cartão e tente novamente.';
-}
-
-// ── Cobrar com cartão (via Brick token) ──────────────────────────────────────
 async function chargeCard(formData) {
-  let stored = {};
-  try { stored = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-  goStep(4);
-  for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
+  let stored = {}; try { stored = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
+  goStep(4); for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
   try {
-    const res = await fetch('/api/create-subscription', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        tenant_id: tenantId, plano: selectedPlan,
-        email: formData.payer?.email || stored.email || '',
-        card_token: formData.token,
-        payment_method_id: formData.payment_method_id,
-        issuer_id: formData.issuer_id,
-        installments: formData.installments || 1,
-      }),
-    });
+    const res = await fetch('/api/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, plano: selectedPlan, email: formData.payer?.email || stored.email || '', card_token: formData.token, payment_method_id: formData.payment_method_id, issuer_id: formData.issuer_id, installments: formData.installments || 1 }) });
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || 'Erro ao processar pagamento');
-    // [FIX #3] Verificar status antes de prosseguir
-    if (data.status === 'authorized') {
-      // Pagamento aprovado — continuar com setup EVO
-      // [FIX #7] NÃO ativar tenant aqui — IPN e checkConnection() cuidam disso
-      await doEvoSetup();
-      if (window.posthog) posthog.capture('payment_success', { plan: selectedPlan, tenant: tenantId });
-    } else if (data.status === 'pending') {
-      // Banco pediu verificação extra ou processando
-      setStatus(0, 'Pagamento em processamento...', 'active');
-      showProcError('Seu banco está verificando o pagamento. Isso pode levar alguns minutos. Você receberá uma confirmação por email (' + (formData.payer?.email || stored.email || '') + ') quando o pagamento for aprovado. Após a confirmação, acesse seu link de onboarding novamente para concluir a configuração.');
-      if (window.posthog) posthog.capture('payment_pending', { plan: selectedPlan, tenant: tenantId });
-    } else {
-      throw new Error('Status inesperado do pagamento: ' + (data.status || 'desconhecido'));
-    }
-  } catch (err) {
-    console.error('chargeCard error:', err);
-    if (window.posthog) posthog.capture('payment_failed', { error: err.message });
-    goStep(3);
-    alert(friendlyPaymentError(err.message));
-  }
+    if (data.status === 'authorized') { await doEvoSetup(); if (window.posthog) posthog.capture('payment_success', { plan: selectedPlan, tenant: tenantId }); }
+    else if (data.status === 'pending') { setStatus(0, 'Pagamento em processamento...', 'active'); showProcError('Seu banco está verificando o pagamento. Isso pode levar alguns minutos. Você receberá uma confirmação por email (' + (formData.payer?.email || stored.email || '') + ') quando o pagamento for aprovado. Após a confirmação, acesse seu link de onboarding novamente para concluir a configuração.'); if (window.posthog) posthog.capture('payment_pending', { plan: selectedPlan, tenant: tenantId }); }
+    else { throw new Error('Status inesperado do pagamento: ' + (data.status || 'desconhecido')); }
+  } catch (err) { console.error('chargeCard error:', err); if (window.posthog) posthog.capture('payment_failed', { error: err.message }); goStep(3); alert(friendlyPaymentError(err.message)); }
 }
 
-// ── Step 2 → Step 3: Validar form, criar tenant, mostrar pagamento ─────────
 async function showPaymentStep() {
-  const nome     = document.getElementById('f-nome').value.trim();
-  const estudio  = document.getElementById('f-estudio').value.trim();
-  const agente   = document.getElementById('f-agente').value.trim() || nome.split(' ')[0];
-  const cidade   = document.getElementById('f-cidade').value.trim();
-  const endereco = document.getElementById('f-endereco').value.trim();
-  const email    = document.getElementById('f-email').value.trim();
-
- if (!nome || !estudio) {
-    showFormError('Preencha o nome e o nome do estúdio.');
-    return;
-  }
-  if (!email || !email.includes('@')) {
-    showFormError('Email válido é obrigatório para o pagamento e suporte.');
-    return;
-  }
-
+  const nome = document.getElementById('f-nome').value.trim(); const estudio = document.getElementById('f-estudio').value.trim(); const agente = document.getElementById('f-agente').value.trim() || nome.split(' ')[0]; const cidade = document.getElementById('f-cidade').value.trim(); const endereco = document.getElementById('f-endereco').value.trim(); const email = document.getElementById('f-email').value.trim();
+  if (!nome || !estudio) { showFormError('Preencha o nome e o nome do estúdio.'); return; }
+  if (!email || !email.includes('@')) { showFormError('Email válido é obrigatório para o pagamento e suporte.'); return; }
   document.getElementById('form-err').style.display = 'none';
-  const btn = document.getElementById('form-btn');
-  btn.disabled = true;
-  btn.textContent = 'Aguarde...';
-
+  const btn = document.getElementById('form-btn'); btn.disabled = true; btn.textContent = 'Aguarde...';
   try {
-    // ── Gerar slug único ────────────────────────────────────────────────────
-    const base   = makeSlug(estudio) || makeSlug(nome);
-    const suffix = Math.floor(Math.random() * 900) + 100;
-    instanceSlug = base + suffix;
-
-    // ── Criar tenant no Supabase ────────────────────────────────────────────
+    const base = makeSlug(estudio) || makeSlug(nome); const suffix = Math.floor(Math.random() * 900) + 100; instanceSlug = base + suffix;
     const prompt = generatePrompt(agente, estudio, cidade, endereco);
-    const tenantData = {
-      nome,
-      nome_agente:   agente,
-      nome_estudio:  estudio,
-      email:         email    || null,
-      cidade:        cidade   || null,
-      endereco:      endereco || null,
-      evo_instance:  instanceSlug,
-      webhook_path:  'inkflow',
-      // evo_base_url definido server-side via env.EVO_BASE_URL
-      evo_apikey:    'pending',
-      plano:         selectedPlan,
-      ativo:         false,
-      prompt_sistema: prompt,
-      // [FIX AUDIT5 #2] Enviar key para create-tenant marcar como usada
-      onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || null
-    };
-
-    // Bug 10: Idempotency — verificar se já existe tenant com este email (via server-side)
-    const existCheck = await fetch('/api/get-tenant', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, fields: 'id,ativo' })
-    });
+    const tenantData = { nome, nome_agente: agente, nome_estudio: estudio, email: email || null, cidade: cidade || null, endereco: endereco || null, evo_instance: instanceSlug, webhook_path: 'inkflow', evo_apikey: 'pending', plano: selectedPlan, ativo: false, prompt_sistema: prompt, onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || null };
+    const existCheck = await fetch('/api/get-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, fields: 'id,ativo' }) });
     if (existCheck.ok) {
-      const existData = await existCheck.json();
-      const existing = existData.tenants || [];
+      const existData = await existCheck.json(); const existing = existData.tenants || [];
       if (existing && existing.length > 0) {
         const ex = existing[0];
-        if (ex.ativo) {
-          throw new Error('Este email já está cadastrado em um estúdio ativo. Use outro email ou entre em contato com o suporte.');
-        }
-        // Tenant pendente (ativo=false): reutilizar
+        if (ex.ativo) { throw new Error('Este email já está cadastrado em um estúdio ativo. Use outro email ou entre em contato com o suporte.'); }
         if (!ex.ativo) {
           tenantId = ex.id;
-          // Atualizar dados do tenant pendente
-          await fetch('/api/update-tenant', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              tenant_id: ex.id,
-              email,
-              nome_agente: agente,
-              nome_estudio: estudio,
-              evo_instance: instanceSlug,
-              webhook_path: 'inkflow',
-              plano: selectedPlan
-            })
-          });
-          // Pular INSERT, ir direto para salvar estado
-          const sbData = [{ id: ex.id }];
-          tenantId = ex.id;
-          // Salvar estado no localStorage
-          localStorage.setItem('inkflow_ob', JSON.stringify({
-            tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan
-          }));
-          // Continuar para card de plano (pula INSERT)
-          const planNames  = { free:'Free Trial', teste:'Teste R$1', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' };
-          const planPrices = { free:'Grátis', teste:'R$ 1', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' };
-          const planCycles = { free:'7 dias de teste sem compromisso', teste:'/mês · teste de pagamento', basic:'/mês \u00b7 cobran\u00e7a recorrente', pro:'/mês \u00b7 cobran\u00e7a recorrente', enterprise:'/mês \u00b7 cobran\u00e7a recorrente' };
-          document.getElementById('pay-plan-box').innerHTML =
-            '<div class="pay-plan-name">' + (planNames[selectedPlan] || selectedPlan) + '</div>' +
-            '<div class="pay-plan-price">' + (planPrices[selectedPlan] || '') + '</div>' +
-            '<div class="pay-plan-cycle">' + (planCycles[selectedPlan] || '') + '</div>';
-          // Adaptar botoes
-          const payBtn2 = document.getElementById('pay-btn');
-          const payOr2 = document.getElementById('pay-or');
-          const payFreeBtn2 = document.getElementById('pay-free-btn');
-          const payHint2 = document.getElementById('pay-hint');
-          if (selectedPlan === 'free') {
-            payBtn2.style.display = 'none'; payOr2.style.display = 'none';
-            if (payHint2) payHint2.style.display = 'none';
-            payFreeBtn2.textContent = 'Come\u00e7ar per\u00edodo de teste gratuito \u2192';
-          } else {
-            payBtn2.style.display = 'flex'; payOr2.style.display = 'block';
-            if (payHint2) payHint2.style.display = 'block';
-            payFreeBtn2.textContent = 'Come\u00e7ar 7 dias gr\u00e1tis (sem cart\u00e3o)';
-          }
+          await fetch('/api/update-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: ex.id, email, nome_agente: agente, nome_estudio: estudio, evo_instance: instanceSlug, webhook_path: 'inkflow', plano: selectedPlan }) });
+          const sbData = [{ id: ex.id }]; tenantId = ex.id;
+          localStorage.setItem('inkflow_ob', JSON.stringify({ tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan }));
+          const planNames = { free:'Free Trial', teste:'Teste R$1', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' }; const planPrices = { free:'Grátis', teste:'R$ 1', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' }; const planCycles = { free:'7 dias de teste sem compromisso', teste:'/mês · teste de pagamento', basic:'/mês · cobrança recorrente', pro:'/mês · cobrança recorrente', enterprise:'/mês · cobrança recorrente' };
+          document.getElementById('pay-plan-box').innerHTML = '<div class="pay-plan-name">' + (planNames[selectedPlan] || selectedPlan) + '</div><div class="pay-plan-price">' + (planPrices[selectedPlan] || '') + '</div><div class="pay-plan-cycle">' + (planCycles[selectedPlan] || '') + '</div>';
+          const payBtn2 = document.getElementById('pay-btn'); const payOr2 = document.getElementById('pay-or'); const payFreeBtn2 = document.getElementById('pay-free-btn'); const payHint2 = document.getElementById('pay-hint');
+          if (selectedPlan === 'free') { payBtn2.style.display = 'none'; payOr2.style.display = 'none'; if (payHint2) payHint2.style.display = 'none'; payFreeBtn2.textContent = 'Começar período de teste gratuito →'; }
+          else { payBtn2.style.display = 'flex'; payOr2.style.display = 'block'; if (payHint2) payHint2.style.display = 'block'; payFreeBtn2.textContent = 'Começar 7 dias grátis (sem cartão)'; }
           goStep(3);
-          if (selectedPlan !== 'free') {
-            const planAmounts2 = { teste: 1.00, basic: 199.00, pro: 399.00, enterprise: 999.00 };
-            initCardBrick(planAmounts2[selectedPlan] || 199.00);
-          }
-          return; // Tenant reutilizado, pular INSERT
+          if (selectedPlan !== 'free') { const planAmounts2 = { teste: 1.00, basic: 199.00, pro: 399.00, enterprise: 999.00 }; initCardBrick(planAmounts2[selectedPlan] || 199.00); }
+          return;
         }
       }
     }
-
-    // ── INSERT via endpoint server-side (nunca mais direto no Supabase) ────
-    const createRes = await fetch('/api/create-tenant', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tenantData),
-    });
-    if (!createRes.ok) {
-      const errData = await createRes.json().catch(() => ({}));
-      throw new Error(errData.error || 'Erro ao criar perfil');
-    }
-    const createData = await createRes.json();
-    tenantId = createData.tenant.id;
-    instanceSlug = createData.tenant.evo_instance || instanceSlug;
-
-    // ── Salvar estado no localStorage (sobrevive ao redirect MP) ───────────
-    localStorage.setItem('inkflow_ob', JSON.stringify({
-      tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan
-    }));
-
-    // ── Preencher card de plano ─────────────────────────────────────────────
-    const planNames  = { free:'Free Trial', teste:'Teste R$1', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' };
-    const planPrices = { free:'Grátis', teste:'R$ 1', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' };
-    const planCycles = { free:'7 dias de teste sem compromisso', teste:'/mês · teste de pagamento', basic:'/mês · cobrança recorrente', pro:'/mês · cobrança recorrente', enterprise:'/mês · cobrança recorrente' };
-    document.getElementById('pay-plan-box').innerHTML = `
-      <div class="pay-plan-name">${planNames[selectedPlan] || selectedPlan}</div>
-      <div class="pay-plan-price">${planPrices[selectedPlan] || ''}</div>
-      <div class="pay-plan-cycle">${planCycles[selectedPlan] || ''}</div>
-    `;
-
-    // ── Adaptar botões ao plano selecionado ────────────────────────────────
-    const payBtn     = document.getElementById('pay-btn');
-    const payOr      = document.getElementById('pay-or');
-    const payFreeBtn = document.getElementById('pay-free-btn');
-    const payHint    = document.getElementById('pay-hint');
-
-    if (selectedPlan === 'free') {
-      payBtn.style.display  = 'none';
-      payOr.style.display   = 'none';
-      if (payHint) payHint.style.display = 'none';
-      payFreeBtn.textContent = 'Começar período de teste gratuito →';
-    } else {
-      payBtn.style.display  = 'flex';
-      payOr.style.display   = 'block';
-      if (payHint) payHint.style.display = 'block';
-      payFreeBtn.textContent = 'Começar 7 dias grátis (sem cartão)';
-    }
-
+    const createRes = await fetch('/api/create-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tenantData) });
+    if (!createRes.ok) { const errData = await createRes.json().catch(() => ({})); throw new Error(errData.error || 'Erro ao criar perfil'); }
+    const createData = await createRes.json(); tenantId = createData.tenant.id; instanceSlug = createData.tenant.evo_instance || instanceSlug;
+    localStorage.setItem('inkflow_ob', JSON.stringify({ tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan }));
+    const planNames = { free:'Free Trial', teste:'Teste R$1', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' }; const planPrices = { free:'Grátis', teste:'R$ 1', basic:'R$ 199', pro:'R$ 399', enterprise:'R$ 999' }; const planCycles = { free:'7 dias de teste sem compromisso', teste:'/mês · teste de pagamento', basic:'/mês · cobrança recorrente', pro:'/mês · cobrança recorrente', enterprise:'/mês · cobrança recorrente' };
+    document.getElementById('pay-plan-box').innerHTML = `<div class="pay-plan-name">${planNames[selectedPlan] || selectedPlan}</div><div class="pay-plan-price">${planPrices[selectedPlan] || ''}</div><div class="pay-plan-cycle">${planCycles[selectedPlan] || ''}</div>`;
+    const payBtn = document.getElementById('pay-btn'); const payOr = document.getElementById('pay-or'); const payFreeBtn = document.getElementById('pay-free-btn'); const payHint = document.getElementById('pay-hint');
+    if (selectedPlan === 'free') { payBtn.style.display = 'none'; payOr.style.display = 'none'; if (payHint) payHint.style.display = 'none'; payFreeBtn.textContent = 'Começar período de teste gratuito →'; }
+    else { payBtn.style.display = 'flex'; payOr.style.display = 'block'; if (payHint) payHint.style.display = 'block'; payFreeBtn.textContent = 'Começar 7 dias grátis (sem cartão)'; }
     goStep(3);
-
-    // ── Inicializar CardPayment Brick com o valor do plano ─────────────────
-    if (selectedPlan !== 'free') {
-      const planAmounts = { teste: 1.00, basic: 199.00, pro: 399.00, enterprise: 999.00 };
-      const amount = planAmounts[selectedPlan] || 199.00;
-      initCardBrick(amount);
-    }
-
-  } catch (err) {
-    console.error('showPaymentStep error:', err);
-    let msg = err.message || 'Erro inesperado. Tente novamente.';
-    if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-      msg = 'Erro de conexão. Verifique sua internet e tente novamente.';
-    }
-    showFormError(msg);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Configurar meu WhatsApp →';
-  }
+    if (selectedPlan !== 'free') { const planAmounts = { teste: 1.00, basic: 199.00, pro: 399.00, enterprise: 999.00 }; initCardBrick(planAmounts[selectedPlan] || 199.00); }
+  } catch (err) { console.error('showPaymentStep error:', err); let msg = err.message || 'Erro inesperado. Tente novamente.'; if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) { msg = 'Erro de conexão. Verifique sua internet e tente novamente.'; } showFormError(msg); }
+  finally { btn.disabled = false; btn.textContent = 'Configurar meu WhatsApp →'; }
 }
 
-// ── Iniciar pagamento Mercado Pago ─────────────────────────────────────────
 async function initiatePayment() {
-  const btn = document.getElementById('pay-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span>Redirecionando...</span>';
-
-  let email = '';
-  try { email = JSON.parse(localStorage.getItem('inkflow_ob') || '{}').email || ''; } catch {}
-
+  const btn = document.getElementById('pay-btn'); btn.disabled = true; btn.innerHTML = '<span>Redirecionando...</span>';
+  let email = ''; try { email = JSON.parse(localStorage.getItem('inkflow_ob') || '{}').email || ''; } catch {}
   try {
-    const res = await fetch('/api/create-subscription', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenantId, plano: selectedPlan, email })
-    });
+    const res = await fetch('/api/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, plano: selectedPlan, email }) });
     const data = await res.json();
-
-    if (!res.ok || data.error) {
-      throw new Error(data.error || 'Erro ao iniciar pagamento.');
-    }
-
-    if (data.trial) {
-      // Função retornou trial (plan=free)
-      await startFreeTrial();
-      return;
-    }
-
-    // Redirecionar para Mercado Pago
+    if (!res.ok || data.error) { throw new Error(data.error || 'Erro ao iniciar pagamento.'); }
+    if (data.trial) { await startFreeTrial(); return; }
     window.location.href = data.init_point;
-
-  } catch (err) {
-    console.error('initiatePayment error:', err);
-    alert('Erro ao processar pagamento: ' + (err.message || 'tente novamente.'));
-    btn.disabled = false;
-    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>Pagar com Mercado Pago`;
-  }
+  } catch (err) { console.error('initiatePayment error:', err); alert('Erro ao processar pagamento: ' + (err.message || 'tente novamente.')); btn.disabled = false; btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>Pagar com Mercado Pago`; }
 }
 
-// ── Começar trial gratuito (sem pagamento) ─────────────────────────────────
 async function startFreeTrial() {
-  // Bug 3+6: Gravar trial_ate via endpoint server-side (RLS bloqueia anon UPDATE)
-  try {
-    const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + 7);
-    const trialRes = await fetch('/api/update-tenant', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        tenant_id: tenantId,
-        email: document.getElementById('f-email').value.trim(),
-        trial_ate: trialEnd.toISOString(),
-        ativo: true
-      })
-    });
-    if (!trialRes.ok) console.warn('trial_ate update failed:', await trialRes.text());
-  } catch (trialErr) {
-    console.warn('trial_ate update error:', trialErr);
-  }
-  goStep(4); // processing
-  for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
-  await doEvoSetup();
+  try { const trialEnd = new Date(); trialEnd.setDate(trialEnd.getDate() + 7); const trialRes = await fetch('/api/update-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, email: document.getElementById('f-email').value.trim(), trial_ate: trialEnd.toISOString(), ativo: true }) }); if (!trialRes.ok) console.warn('trial_ate update failed:', await trialRes.text()); } catch (trialErr) { console.warn('trial_ate update error:', trialErr); }
+  goStep(4); for (let i = 0; i < 5; i++) setStatus(i, null, 'wait'); await doEvoSetup();
 }
 
-// ── Retorno do Mercado Pago ─────────────────────────────────────────────────
 async function continueAfterPayment(preapprovalId) {
-  // Restaurar estado do localStorage
-  let state = {};
-  try { state = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-
-  if (!state.tenantId || !state.instanceSlug) {
-    showErrOverlay('Sessão expirada. Por favor, acesse seu link de onboarding novamente para recomeçar o cadastro.');
-    return;
-  }
-
-  // Restaurar variáveis globais
-  tenantId          = state.tenantId;
-  instanceSlug      = state.instanceSlug;
-  selectedPlan      = state.plano || 'basic';
-  gConfig.globalKey = localStorage.getItem('inkflow_gk') || '';
-
-  if (!gConfig.globalKey) {
-    showErrOverlay('Link expirado. Solicite um novo link de onboarding ao suporte InkFlow.');
-    return;
-  }
-
-  // Opcao C: mp_subscription_id e status_pagamento agora sao atualizados
-  // pelo create-subscription.js no server-side (fluxo redirect).
-
-  // Bug 8: Verificar que preapproval_id corresponde ao tenant no Supabase (via server-side)
+  let state = {}; try { state = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
+  if (!state.tenantId || !state.instanceSlug) { showErrOverlay('Sessão expirada. Por favor, acesse seu link de onboarding novamente para recomeçar o cadastro.'); return; }
+  tenantId = state.tenantId; instanceSlug = state.instanceSlug; selectedPlan = state.plano || 'basic'; gConfig.globalKey = localStorage.getItem('inkflow_gk') || '';
+  if (!gConfig.globalKey) { showErrOverlay('Link expirado. Solicite um novo link de onboarding ao suporte InkFlow.'); return; }
   try {
-    const checkRes = await fetch('/api/get-tenant', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenantId, email: state.email || '', fields: 'mp_subscription_id' })
-    });
-    if (checkRes.ok) {
-      const checkData = await checkRes.json();
-      const dbSubId = checkData?.tenants?.[0]?.mp_subscription_id;
-      if (dbSubId && dbSubId !== preapprovalId) {
-        showErrOverlay('ID de pagamento n\u00e3o corresponde. Acesse seu link de onboarding novamente.');
-        return;
-      }
-    } else {
-      console.warn('Payment verification check failed:', checkRes.status);
-      showErrOverlay('Erro ao verificar pagamento. Acesse seu link de onboarding novamente.');
-      return;
-    }
-  } catch (checkErr) {
-    console.warn('Payment verification failed:', checkErr);
-    showErrOverlay('Servi\u00e7o temporariamente indispon\u00edvel. Tente novamente em alguns minutos.');
-    return;
-  }
-
-  // Continuar com setup da inst\u00e2ncia EVO
-  goStep(4); // processing
-  for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
-  await doEvoSetup();
+    const checkRes = await fetch('/api/get-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, email: state.email || '', fields: 'mp_subscription_id' }) });
+    if (checkRes.ok) { const checkData = await checkRes.json(); const dbSubId = checkData?.tenants?.[0]?.mp_subscription_id; if (dbSubId && dbSubId !== preapprovalId) { showErrOverlay('ID de pagamento não corresponde. Acesse seu link de onboarding novamente.'); return; } }
+    else { console.warn('Payment verification check failed:', checkRes.status); showErrOverlay('Erro ao verificar pagamento. Acesse seu link de onboarding novamente.'); return; }
+  } catch (checkErr) { console.warn('Payment verification failed:', checkErr); showErrOverlay('Serviço temporariamente indisponível. Tente novamente em alguns minutos.'); return; }
+  goStep(4); for (let i = 0; i < 5; i++) setStatus(i, null, 'wait'); await doEvoSetup();
 }
 
-// ── Setup Evolution API (sem criar tenant — já existe) ─────────────────────
 async function doEvoSetup() {
   try {
-    // ── 1. Tenant já existe ──────────────────────────────────────────────
     setStatus(0, 'Perfil verificado!', 'done');
-
-    // ── 2. Criar instância na Evolution API ─────────────────────────────
     setStatus(1, 'Criando instância WhatsApp...', 'active');
-
-    // Opcao C: criar/verificar instancia via endpoint server-side (sem expor globalKey)
-    const evoRes = await fetch('/api/evo-create-instance', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ instanceName: instanceSlug, tenant_id: tenantId })
-    });
-    if (!evoRes.ok) {
-      const evoErr = await evoRes.json();
-      throw new Error(evoErr.error || 'Falha ao criar inst\u00e2ncia');
-    }
+    const evoRes = await fetch('/api/evo-create-instance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ instanceName: instanceSlug, tenant_id: tenantId }) });
+    if (!evoRes.ok) { const evoErr = await evoRes.json(); throw new Error(evoErr.error || 'Falha ao criar instância'); }
     const evoData = await evoRes.json();
-    // apikey nao e mais retornada ao frontend — servidor salva direto (Fix Bug #2)
-    if (!evoData.instanceName) throw new Error('Resposta inv\u00e1lida da Evolution API. Contate o suporte.');
-
-    if (evoData.already_existed) {
-      setStatus(1, 'Inst\u00e2ncia WhatsApp reconectada!', 'done');
-    } else {
-      setStatus(1, 'Inst\u00e2ncia WhatsApp criada!', 'done');
-    }
-
-    // ── 3. Credenciais salvas pelo servidor (evo-create-instance.js) ────
+    if (!evoData.instanceName) throw new Error('Resposta inválida da Evolution API. Contate o suporte.');
+    if (evoData.already_existed) { setStatus(1, 'Instância WhatsApp reconectada!', 'done'); } else { setStatus(1, 'Instância WhatsApp criada!', 'done'); }
     setStatus(2, 'Credenciais salvas!', 'done');
-
-    // ── 4. Webhook configurado pelo servidor (evo-create-instance.js) ───
     setStatus(3, 'Webhook configurado!', 'done');
-
-    // ── 5. Ir para conexao WhatsApp ──────────────────────────────────────
-    setStatus(4, 'Preparando conex\u00e3o...', 'active');
+    setStatus(4, 'Preparando conexão...', 'active');
     await new Promise(r => setTimeout(r, 1500));
     setStatus(4, 'Pronto para conectar!', 'done');
-
-    goStep(5); // QR / Pairing
-    initConnectStep();
-
-    // Polling a cada 5 segundos (funciona tanto para QR quanto pairing)
+    goStep(5); initConnectStep();
     pollInterval = setInterval(checkConnection, 5000);
-
   } catch (err) {
-    console.error('doEvoSetup error:', err);
-    let msg = err.message || 'Erro inesperado.';
-    if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-      msg = 'Erro de rede ao conectar com a API. Verifique sua conexão e tente novamente.';
-    }
+    console.error('doEvoSetup error:', err); let msg = err.message || 'Erro inesperado.';
+    if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) { msg = 'Erro de rede ao conectar com a API. Verifique sua conexão e tente novamente.'; }
     showProcError(msg);
-    for (let i = 0; i < 5; i++) {
-      if (document.getElementById('pd-' + i)?.classList.contains('active')) {
-        setStatus(i, 'Falhou', 'err');
-        break;
-      }
-    }
+    for (let i = 0; i < 5; i++) { if (document.getElementById('pd-' + i)?.classList.contains('active')) { setStatus(i, 'Falhou', 'err'); break; } }
   }
 }
 
-// ── Detectar mobile ─────────────────────────────────────────────────────
-function isMobile() {
-  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent) || window.innerWidth <= 768;
-}
-
-// ── Inicializar Step 5 — escolhe QR ou Pairing baseado no dispositivo ───
-let currentConnMode = 'qr'; // 'qr' ou 'pairing'
-
-function initConnectStep() {
-  if (isMobile()) {
-    switchConnMode('pairing');
-  } else {
-    switchConnMode('qr');
-  }
-}
-
+function isMobile() { return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent) || window.innerWidth <= 768; }
+let currentConnMode = 'qr';
+function initConnectStep() { if (isMobile()) { switchConnMode('pairing'); } else { switchConnMode('qr'); } }
 function switchConnMode(mode) {
   currentConnMode = mode;
-  const qrArea = document.getElementById('qr-area');
-  const pairingArea = document.getElementById('pairing-area');
-  const toggleQR = document.getElementById('toggle-qr');
-  const togglePairing = document.getElementById('toggle-pairing');
-
-  if (mode === 'pairing') {
-    qrArea.style.display = 'none';
-    pairingArea.style.display = 'block';
-    toggleQR.classList.remove('active');
-    togglePairing.classList.add('active');
-    clearInterval(qrTimerHandle);
-    document.getElementById('qr-status').textContent = 'aguardando c\u00f3digo';
-  } else {
-    qrArea.style.display = 'block';
-    pairingArea.style.display = 'none';
-    toggleQR.classList.add('active');
-    togglePairing.classList.remove('active');
-    loadQR();
-    startQRTimer();
-    document.getElementById('qr-status').textContent = 'aguardando scan';
-  }
+  const qrArea = document.getElementById('qr-area'); const pairingArea = document.getElementById('pairing-area');
+  const toggleQR = document.getElementById('toggle-qr'); const togglePairing = document.getElementById('toggle-pairing');
+  if (mode === 'pairing') { qrArea.style.display = 'none'; pairingArea.style.display = 'block'; toggleQR.classList.remove('active'); togglePairing.classList.add('active'); clearInterval(qrTimerHandle); document.getElementById('qr-status').textContent = 'aguardando código'; }
+  else { qrArea.style.display = 'block'; pairingArea.style.display = 'none'; toggleQR.classList.add('active'); togglePairing.classList.remove('active'); loadQR(); startQRTimer(); document.getElementById('qr-status').textContent = 'aguardando scan'; }
 }
 
-// ── Pairing Code ────────────────────────────────────────────────────────
 async function requestPairingCode() {
-  const phoneInput = document.getElementById('pairing-phone');
-  const btn = document.getElementById('pairing-btn');
-  const phoneBox = document.getElementById('pairing-phone-box');
-  const codeBox = document.getElementById('pairing-code-box');
-  const codeValue = document.getElementById('pairing-code-value');
-
-  let number = phoneInput.value.replace(/\D/g, '');
-  if (number.length <= 11 && !number.startsWith('55')) {
-    number = '55' + number;
-  }
-
-  if (number.length < 12) {
-    phoneInput.style.borderColor = '#c0392b';
-    phoneInput.focus();
-    return;
-  }
-  phoneInput.style.borderColor = '';
-
-  btn.disabled = true;
-  btn.textContent = 'Gerando...';
-
+  const phoneInput = document.getElementById('pairing-phone'); const btn = document.getElementById('pairing-btn');
+  const phoneBox = document.getElementById('pairing-phone-box'); const codeBox = document.getElementById('pairing-code-box'); const codeValue = document.getElementById('pairing-code-value');
+  let number = phoneInput.value.replace(/\D/g, ''); if (number.length <= 11 && !number.startsWith('55')) { number = '55' + number; }
+  if (number.length < 12) { phoneInput.style.borderColor = 'var(--red)'; phoneInput.focus(); return; } phoneInput.style.borderColor = '';
+  btn.disabled = true; btn.textContent = 'Gerando...';
   try {
     const r = await fetch('/api/evo-pairing-code?instance=' + encodeURIComponent(instanceSlug) + '&number=' + encodeURIComponent(number));
     const data = await r.json();
-
-    if (!r.ok) {
-      const errMsg = data?.error || 'Erro ao gerar c\u00f3digo';
-      if (r.status === 425) {
-        codeValue.textContent = '...';
-        codeBox.classList.add('active');
-        setTimeout(() => requestPairingCode(), 3000);
-        return;
-      }
-      alert(errMsg);
-      btn.disabled = false;
-      btn.textContent = 'Gerar c\u00f3digo';
-      return;
-    }
-
+    if (!r.ok) { const errMsg = data?.error || 'Erro ao gerar código'; if (r.status === 425) { codeValue.textContent = '...'; codeBox.classList.add('active'); setTimeout(() => requestPairingCode(), 3000); return; } alert(errMsg); btn.disabled = false; btn.textContent = 'Gerar código'; return; }
     const code = data?.pairingCode;
-    if (code) {
-      codeValue.textContent = code;
-      phoneBox.classList.remove('active');
-      codeBox.classList.add('active');
-      document.getElementById('qr-status').textContent = 'c\u00f3digo gerado';
-    } else {
-      alert('C\u00f3digo n\u00e3o dispon\u00edvel. Tente usar o QR Code.');
-    }
-  } catch (e) {
-    console.error('Pairing code error:', e);
-    alert('Erro de rede. Verifique sua conex\u00e3o e tente novamente.');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Gerar c\u00f3digo';
-  }
+    if (code) { codeValue.textContent = code; phoneBox.classList.remove('active'); codeBox.classList.add('active'); document.getElementById('qr-status').textContent = 'código gerado'; }
+    else { alert('Código não disponível. Tente usar o QR Code.'); }
+  } catch (e) { console.error('Pairing code error:', e); alert('Erro de rede. Verifique sua conexão e tente novamente.'); }
+  finally { btn.disabled = false; btn.textContent = 'Gerar código'; }
 }
 
-// ── QR Code ────────────────────────────────────────────────────────────────
 async function loadQR() {
-  const qrLoading = document.getElementById('qr-loading');
-  const qrImg = document.getElementById('qr-img');
+  const qrLoading = document.getElementById('qr-loading'); const qrImg = document.getElementById('qr-img');
   if (!qrLoading || !qrImg) { console.warn('loadQR: elementos QR ainda nao estao no DOM'); return; }
-  qrLoading.style.display = 'flex';
-  qrImg.style.display = 'none';
+  qrLoading.style.display = 'flex'; qrImg.style.display = 'none';
   try {
     const r = await fetch('/api/evo-qr?instance=' + encodeURIComponent(instanceSlug));
     const data = await r.json();
-
-    if (!r.ok) {
-      const errMsg = data?.error || 'Erro ao gerar QR Code';
-      console.error('evo-qr error:', r.status, errMsg);
-      if (r.status === 425) {
-        qrLoading.innerHTML = '<span style="font-size:12px;color:rgba(255,255,255,.35);font-family:\'DM Mono\',monospace">Configurando inst\u00e2ncia... tentando novamente em 3s</span>';
-        setTimeout(() => loadQR(), 3000);
-        return;
-      }
-      qrLoading.innerHTML = '<span style="font-size:12px;color:rgba(255,255,255,.35);font-family:\'DM Mono\',monospace">' + errMsg + '. Clique em "Novo QR Code".</span>';
-      return;
-    }
-
+    if (!r.ok) { const errMsg = data?.error || 'Erro ao gerar QR Code'; console.error('evo-qr error:', r.status, errMsg);
+      if (r.status === 425) { qrLoading.innerHTML = '<span>Configurando instância... tentando novamente em 3s</span>'; setTimeout(() => loadQR(), 3000); return; }
+      qrLoading.innerHTML = '<span>' + errMsg + '. Clique em "Novo QR Code".</span>'; return; }
     const qrBase64 = data?.base64;
-    if (qrBase64) {
-      qrImg.src = qrBase64.startsWith('data:') ? qrBase64 : 'data:image/png;base64,' + qrBase64;
-      qrImg.style.display = 'block';
-      qrLoading.style.display = 'none';
-    } else {
-      qrLoading.innerHTML = '<span style="font-size:12px;color:rgba(255,255,255,.35);font-family:\'DM Mono\',monospace">QR n\u00e3o dispon\u00edvel. Se j\u00e1 escaneou, aguarde a conex\u00e3o...</span>';
-    }
-  } catch (e) {
-    console.error('QR load error:', e);
-    if (qrLoading) qrLoading.innerHTML = '<span style="font-size:12px;color:rgba(255,255,255,.35);font-family:\'DM Mono\',monospace">Erro ao carregar QR. Clique em "Novo QR Code".</span>';
-  }
+    if (qrBase64) { qrImg.src = qrBase64.startsWith('data:') ? qrBase64 : 'data:image/png;base64,' + qrBase64; qrImg.style.display = 'block'; qrLoading.style.display = 'none'; }
+    else { qrLoading.innerHTML = '<span>QR não disponível. Se já escaneou, aguarde a conexão...</span>'; }
+  } catch (e) { console.error('QR load error:', e); if (qrLoading) qrLoading.innerHTML = '<span>Erro ao carregar QR. Clique em "Novo QR Code".</span>'; }
 }
 
-async function refreshQR() {
-  clearInterval(qrTimerHandle);
-  await loadQR();
-  startQRTimer();
-}
+async function refreshQR() { clearInterval(qrTimerHandle); await loadQR(); startQRTimer(); }
+let qrTimerSec = 30; let qrTimerHandle = null;
+function startQRTimer() { clearInterval(qrTimerHandle); qrTimerSec = 30; updateTimer(); qrTimerHandle = setInterval(() => { qrTimerSec--; updateTimer(); if (qrTimerSec <= 0) { clearInterval(qrTimerHandle); loadQR().then(startQRTimer); } }, 1000); }
+function updateTimer() { const el = document.getElementById('qr-timer'); if (el) el.textContent = qrTimerSec > 0 ? 'QR expira em ' + qrTimerSec + 's — será atualizado automaticamente' : 'Atualizando QR Code...'; }
 
-let qrTimerSec = 30;
-let qrTimerHandle = null;
-function startQRTimer() {
-  clearInterval(qrTimerHandle);
-  qrTimerSec = 30;
-  updateTimer();
-  qrTimerHandle = setInterval(() => {
-    qrTimerSec--;
-    updateTimer();
-    if (qrTimerSec <= 0) {
-      clearInterval(qrTimerHandle);
-      loadQR().then(startQRTimer);
-    }
-  }, 1000);
-}
-function updateTimer() {
-  const el = document.getElementById('qr-timer');
-  if (el) el.textContent = qrTimerSec > 0
-    ? 'QR expira em ' + qrTimerSec + 's \u2014 ser\u00e1 atualizado automaticamente'
-    : 'Atualizando QR Code...';
-}
-
-// ── Poll conexão ───────────────────────────────────────────────────────────
 async function checkConnection() {
   try {
-    // [FIX Bug #2C] Usa proxy server-side em vez de evoFetch direto
     const r = await fetch('/api/evo-status?instance=' + encodeURIComponent(instanceSlug));
-    const data = await r.json();
-    const state = data?.state || 'unknown';
-
-   if (state === 'open') {
-      clearInterval(pollInterval);
-      clearInterval(qrTimerHandle);
-
-      // ── Feedback visual imediato (funciona tanto com QR quanto Pairing) ──
-      const badge = document.getElementById('qr-status');
-      if (badge) { badge.textContent = 'conectado \u2713'; badge.className = 'qr-badge conn'; }
-
-      const successHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px">' +
-        '<div style="font-size:52px;animation:pulse 1s ease-in-out 3">\u2705</div>' +
-        '<div style="color:rgba(0,210,195,.95);font-weight:700;font-size:16px">WhatsApp Conectado!</div>' +
-        '<div style="color:rgba(255,255,255,.4);font-size:12px;font-family:\'DM Mono\',monospace">configurando seu est\u00fadio...</div>' +
-        '</div>';
-
-      if (currentConnMode === 'pairing') {
-        const pairingArea = document.getElementById('pairing-area');
-        if (pairingArea) pairingArea.innerHTML = successHTML;
-      } else {
-        const qrBox = document.getElementById('qr-box');
-        if (qrBox) qrBox.innerHTML = successHTML;
-      }
-      // Aguardar 2s para o cliente ver a confirmação antes de avançar
+    const data = await r.json(); const state = data?.state || 'unknown';
+    if (state === 'open') {
+      clearInterval(pollInterval); clearInterval(qrTimerHandle);
+      const badge = document.getElementById('qr-status'); if (badge) { badge.textContent = 'conectado ✓'; badge.className = 'qr-badge conn'; }
+      const successHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px"><div style="font-size:52px;animation:pulse 1s ease-in-out 3">✅</div><div style="color:var(--teal);font-weight:700;font-size:16px">WhatsApp Conectado!</div><div style="color:var(--t3);font-size:12px">configurando seu estúdio...</div></div>';
+      if (currentConnMode === 'pairing') { const pairingArea = document.getElementById('pairing-area'); if (pairingArea) pairingArea.innerHTML = successHTML; }
+      else { const qrBox = document.getElementById('qr-box'); if (qrBox) qrBox.innerHTML = successHTML; }
       await new Promise(r => setTimeout(r, 2000));
-
-      // Ativar tenant no Supabase
-      await fetch('/api/update-tenant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenant_id: tenantId, email: document.getElementById('f-email').value.trim(), ativo: true }),
-      });
-
-      // Ler dados do localStorage antes de limpar
-      let ob = {};
-      try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-
-      // Log do signup para painel admin
-      // TODO [AUDIT3 #6]: migrar para endpoint /api/log-signup (evitar INSERT direto via anon key)
-      // Atualmente protegido por RLS (anon so pode INSERT, nao SELECT/UPDATE/DELETE)
-      try {
-        await sbFetch('POST', '/rest/v1/signups_log', {
-          tenant_id:    tenantId,
-          evo_instance: instanceSlug,
-          nome_estudio: ob.estudio || document.getElementById('f-estudio')?.value?.trim() || '',
-          nome:         ob.nome    || document.getElementById('f-nome')?.value?.trim() || '',
-          cidade:       ob.cidade  || document.getElementById('f-cidade')?.value?.trim() || null,
-          plano:        selectedPlan
-        });
-      } catch (logErr) { console.warn('signup log failed:', logErr); }
-
-      // Preencher tela de sucesso
+      await fetch('/api/update-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, email: document.getElementById('f-email').value.trim(), ativo: true }) });
+      let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
+      try { await sbFetch('POST', '/rest/v1/signups_log', { tenant_id: tenantId, evo_instance: instanceSlug, nome_estudio: ob.estudio || document.getElementById('f-estudio')?.value?.trim() || '', nome: ob.nome || document.getElementById('f-nome')?.value?.trim() || '', cidade: ob.cidade || document.getElementById('f-cidade')?.value?.trim() || null, plano: selectedPlan }); } catch (logErr) { console.warn('signup log failed:', logErr); }
       document.getElementById('suc-estudio').textContent = ob.estudio || instanceSlug;
-      document.getElementById('suc-agente').textContent  = ob.agente  || '';
-      document.getElementById('suc-inst').textContent    = instanceSlug;
-      document.getElementById('suc-plano').textContent   = selectedPlan;
-
-      // Limpar estado temporário
-      localStorage.removeItem('inkflow_ob');
-      localStorage.removeItem('inkflow_gk');
-
-      goStep(6); // success
+      document.getElementById('suc-agente').textContent = ob.agente || '';
+      document.getElementById('suc-inst').textContent = instanceSlug;
+      document.getElementById('suc-plano').textContent = selectedPlan;
+      localStorage.removeItem('inkflow_ob'); localStorage.removeItem('inkflow_gk');
+      goStep(6);
     }
-  } catch (e) {
-    console.warn('Poll error:', e);
-  }
+  } catch (e) { console.warn('Poll error:', e); }
 }
 
 init();
