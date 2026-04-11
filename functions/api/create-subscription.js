@@ -15,11 +15,11 @@ const CORS = {
   'Content-Type': 'application/json',
 };
 
-const PLANOS =  {
-    teste:      { nome: 'InkFlow Teste',      valor: 1.00 },   // TEMPORARIO: remover apos teste
-  basic:      { nome: 'InkFlow Essencial',  valor: 199.00 },
-  pro:        { nome: 'InkFlow Growth',     valor: 399.00 },
-  enterprise: { nome: 'InkFlow Enterprise', valor: 999.00 },
+const PLANOS = {
+  teste:      { nome: 'InkFlow Teste',       valor:   1.00 },  // TEMPORÁRIO: remover após teste
+  individual: { nome: 'InkFlow Individual',  valor: 197.00 },
+  estudio:    { nome: 'InkFlow Estúdio',     valor: 497.00 },
+  premium:    { nome: 'InkFlow Estúdio VIP', valor: 997.00 },
 };
 
 // ── [FIX #11] SUPABASE_URL centralizado (antes era duplicado) ────────────────

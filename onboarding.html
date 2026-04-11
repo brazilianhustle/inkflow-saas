@@ -235,7 +235,7 @@ select.fi option{background:var(--card);color:var(--t1)}
     </div>
     <div class="w-logo"><span class="ink">Ink</span>Flow</div>
     <div class="w-tag">assistente virtual para estúdios</div>
-    <div id="w-plano" class="w-plan">plano basic</div>
+    <div id="w-plano" class="w-plan">plano individual</div>
     <div class="w-title">Configure seu estúdio em menos de 3 minutos</div>
     <div class="w-sub">Vamos criar seu assistente virtual de WhatsApp. Nenhum conhecimento técnico necessário.</div>
 
@@ -334,16 +334,6 @@ select.fi option{background:var(--card);color:var(--t1)}
     <hr class="divider"/>
     <div class="fsec">Plano</div>
     <div class="plan-sel" id="plan-sel">
-      <div class="plan-opt" id="plan-free" onclick="selectPlan('free')">
-        <div class="po-name">Free Trial</div>
-        <div class="po-price">7 dias grátis</div>
-        <ul class="po-features">
-          <li class="po-feat">Uso ilimitado por 7 dias</li>
-          <li class="po-feat">Atendimento automático 24/7</li>
-          <li class="po-feat">Agendamento automático</li>
-          <li class="po-feat">Suporte via WhatsApp</li>
-        </ul>
-      </div>
       <div class="plan-opt" id="plan-teste" onclick="selectPlan('teste')" style="border:2px solid #ff4444">
         <div class="po-tag" style="background:#ff4444;color:#fff">TESTE</div>
         <div class="po-name">Teste R$1</div>
@@ -353,41 +343,40 @@ select.fi option{background:var(--card);color:var(--t1)}
           <li class="po-feat">Remover antes do lançamento</li>
         </ul>
       </div>
-      <div class="plan-opt active" id="plan-basic" onclick="selectPlan('basic')">
-        <div class="po-name">Essencial</div>
-        <div class="po-price">R$ 199/mês</div>
+      <div class="plan-opt active" id="plan-individual" onclick="selectPlan('individual')">
+        <div class="po-name">Individual</div>
+        <div class="po-price">R$ 197/mês</div>
         <ul class="po-features">
-          <li class="po-feat">Até 50 leads/mês</li>
-          <li class="po-feat">Agendamento automático</li>
-          <li class="po-feat">IA personalizada para seu estúdio</li>
-          <li class="po-feat">Histórico completo</li>
-          <li class="po-feat">Suporte via WhatsApp</li>
+          <li class="po-feat">Assistente virtual disponível 24h por dia, 7 dias por semana</li>
+          <li class="po-feat">Até 400 conversas mensais gerenciadas pela IA</li>
+          <li class="po-feat">Agendamento automático integrado ao Google Calendar</li>
+          <li class="po-feat">Grupo de orçamentos com confirmação de sessão automatizada</li>
+          <li class="po-feat">IA personalizada com a identidade do seu estúdio</li>
         </ul>
       </div>
-      <div class="plan-opt" id="plan-pro" onclick="selectPlan('pro')">
+      <div class="plan-opt" id="plan-estudio" onclick="selectPlan('estudio')">
         <div class="po-tag">Mais popular</div>
-        <div class="po-name">Growth</div>
-        <div class="po-price">R$ 399/mês</div>
+        <div class="po-name">Estúdio</div>
+        <div class="po-price">R$ 497/mês</div>
         <ul class="po-features">
-          <li class="po-feat">Até 200 leads/mês</li>
-          <li class="po-feat">Tudo do Essencial</li>
-          <li class="po-feat">Google Calendar integrado</li>
-          <li class="po-feat">Notificações de grupo</li>
-          <li class="po-feat">Suporte via WhatsApp prioritário</li>
+          <li class="po-feat">Tudo do Plano Individual, incluído</li>
+          <li class="po-feat">Suporte para até 5 tatuadores no mesmo plano</li>
+          <li class="po-feat">Até 2.000 conversas mensais gerenciadas pela IA</li>
+          <li class="po-feat">Assistente virtual individual para cada artista</li>
+          <li class="po-feat">Agenda separada e autônoma por tatuador</li>
         </ul>
       </div>
-      <div class="plan-opt" id="plan-enterprise" onclick="selectPlan('enterprise')">
-        <div class="po-tag">Premium</div>
-        <div class="po-name">Enterprise</div>
-        <div class="po-price">Sob consulta</div>
+      <div class="plan-opt" id="plan-premium" onclick="selectPlan('premium')">
+        <div class="po-tag">VIP</div>
+        <div class="po-name">Estúdio VIP</div>
+        <div class="po-price">R$ 997/mês</div>
         <ul class="po-features">
-          <li class="po-feat">Leads ilimitados</li>
-          <li class="po-feat">Tudo do Growth</li>
-          <li class="po-feat">IA treinada exclusiva para seu estúdio</li>
-          <li class="po-feat">Multi-atendente (vários tatuadores)</li>
-          <li class="po-feat">Relatórios e métricas avançadas</li>
-          <li class="po-feat">Onboarding dedicado com setup guiado</li>
-          <li class="po-feat">Suporte WhatsApp com SLA 4h</li>
+          <li class="po-feat">Tudo do Plano Estúdio, incluído</li>
+          <li class="po-feat">Suporte para até 10 tatuadores</li>
+          <li class="po-feat">Até 4.000 conversas mensais gerenciadas pela IA</li>
+          <li class="po-feat">Atendimento personalizado com IA por artista</li>
+          <li class="po-feat">Roteamento inteligente por estilo de tatuagem</li>
+          <li class="po-feat">Acesso prioritário a todas as novas funcionalidades</li>
         </ul>
       </div>
     </div>
@@ -551,11 +540,11 @@ select.fi option{background:var(--card);color:var(--t1)}
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenV4eHVzY3lwbGZvaW12b21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMTg3NjAsImV4cCI6MjA4ODg5NDc2MH0.GSw2qzM9RgEQT6xTNBElBv-4AAuSavZe-_C-CljMvdA';
 
-let gConfig      = { globalKey: '', plano: 'basic' };
+let gConfig      = { globalKey: '', plano: 'individual' };
 let tenantId     = null;
 let instanceSlug = null;
 let pollInterval = null;
-let selectedPlan = 'basic';
+let selectedPlan = 'individual';
 const MP_PUBLIC_KEY = 'APP_USR-36990647-ad0a-4978-a672-499f635f9b03';
 let mpBrickController = null;
 
@@ -565,23 +554,23 @@ async function init() {
   if (preapprovalId) { continueAfterPayment(preapprovalId); return; }
   const key = urlParams.get('token') || localStorage.getItem('inkflow_gk') || '';
   if (!key) { showErrOverlay('Link de onboarding inválido ou expirado. Solicite um novo link ao suporte InkFlow.'); return; }
-  let plano = 'basic';
+  let plano = 'individual';
   try {
     const valRes = await fetch('/api/validate-onboarding-key', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
     const valData = await valRes.json();
     if (!valData.valid) { showErrOverlay(valData.error || 'Link de onboarding inválido ou expirado.'); return; }
-    plano = valData.plano || 'basic';
+    plano = valData.plano || 'individual';
   } catch (valErr) {
     console.error('Key validation network error:', valErr);
     showErrOverlay('Erro ao validar link de onboarding. Verifique sua conexao e tente novamente.');
     return;
   }
-  const allowedPlans = ['free','teste','basic','pro','enterprise'];
-  if (!allowedPlans.includes(plano)) plano = 'basic';
+  const allowedPlans = ['teste','individual','estudio','premium'];
+  if (!allowedPlans.includes(plano)) plano = 'individual';
   gConfig = { globalKey: key, plano };
   localStorage.setItem('inkflow_gk', key);
   selectedPlan = plano;
-  const planLabels = { free:'free trial', teste:'teste R$1', basic:'essencial', pro:'growth', enterprise:'enterprise' };
+  const planLabels = { teste:'teste R$1', individual:'individual', estudio:'estúdio', premium:'estúdio vip' };
   document.getElementById('w-plano').textContent = 'plano ' + (planLabels[plano] || plano);
   selectPlan(plano);
 }
@@ -589,7 +578,7 @@ async function init() {
 function goStep(n) { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('s' + n).classList.add('active'); window.scrollTo(0, 0); }
 function makeSlug(text) { return (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').substring(0, 16); }
 function autoAgent() { const nome = document.getElementById('f-nome').value.trim(); const agente = document.getElementById('f-agente'); if (!agente.value && nome) agente.value = nome.split(' ')[0]; }
-function selectPlan(plan) { selectedPlan = plan; ['free','teste','basic','pro','enterprise'].forEach(p => { document.getElementById('plan-' + p)?.classList.toggle('active', p === plan); }); if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan}); }
+function selectPlan(plan) { selectedPlan = plan; ['teste','individual','estudio','premium'].forEach(p => { document.getElementById('plan-' + p)?.classList.toggle('active', p === plan); }); if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan}); }
 function setStatus(idx, msg, state = 'active') { const dot = document.getElementById('pd-' + idx); const txt = document.getElementById('pm-' + idx); if (!dot) return; dot.className = 'proc-dot ' + state; if (msg) { txt.textContent = msg; txt.className = 'proc-msg' + (state === 'done' ? ' done' : ''); } }
 function showProcError(msg) { const box = document.getElementById('proc-err-box'); document.getElementById('proc-err-txt').textContent = msg; box.style.display = 'block'; }
 function showFormError(msg) { const el = document.getElementById('form-err'); el.textContent = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 5000); }
@@ -676,13 +665,12 @@ async function showPaymentStep() {
           await fetch('/api/update-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: ex.id, email, nome_agente: agente, nome_estudio: estudio, evo_instance: instanceSlug, webhook_path: 'inkflow', plano: selectedPlan }) });
           const sbData = [{ id: ex.id }]; tenantId = ex.id;
           localStorage.setItem('inkflow_ob', JSON.stringify({ tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan }));
-          const planNames = { free:'Free Trial', teste:'Teste R$1', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' }; const planPrices = { free:'Grátis', teste:'R$ 1', basic:'R$ 199', pro:'R$ 399', enterprise:'Sob consulta' }; const planCycles = { free:'7 dias de teste sem compromisso', teste:'/mês · teste de pagamento', basic:'/mês · cobrança recorrente', pro:'/mês · cobrança recorrente', enterprise:'valor personalizado' };
+          const planNames = { teste:'Teste R$1', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' }; const planPrices = { teste:'R$ 1', individual:'R$ 197', estudio:'R$ 497', premium:'R$ 997' }; const planCycles = { teste:'/mês · teste de pagamento', individual:'/mês · cobrança recorrente', estudio:'/mês · cobrança recorrente', premium:'/mês · cobrança recorrente' };
           document.getElementById('pay-plan-box').innerHTML = '<div class="pay-plan-name">' + (planNames[selectedPlan] || selectedPlan) + '</div><div class="pay-plan-price">' + (planPrices[selectedPlan] || '') + '</div><div class="pay-plan-cycle">' + (planCycles[selectedPlan] || '') + '</div>';
           const payBtn2 = document.getElementById('pay-btn'); const payOr2 = document.getElementById('pay-or'); const payFreeBtn2 = document.getElementById('pay-free-btn'); const payHint2 = document.getElementById('pay-hint');
-          if (selectedPlan === 'free') { payBtn2.style.display = 'none'; payOr2.style.display = 'none'; if (payHint2) payHint2.style.display = 'none'; payFreeBtn2.textContent = 'Começar período de teste gratuito →'; }
-          else { payBtn2.style.display = 'flex'; payOr2.style.display = 'block'; if (payHint2) payHint2.style.display = 'block'; payFreeBtn2.textContent = 'Começar 7 dias grátis (sem cartão)'; }
+          { payBtn2.style.display = 'flex'; payOr2.style.display = 'block'; if (payHint2) payHint2.style.display = 'block'; if (payFreeBtn2) payFreeBtn2.style.display = 'none'; }
           goStep(3);
-          if (selectedPlan !== 'free') { const planAmounts2 = { teste: 1.00, basic: 199.00, pro: 399.00, enterprise: 999.00 }; initCardBrick(planAmounts2[selectedPlan] || 199.00); }
+          if (selectedPlan !== 'free') { const planAmounts2 = { teste: 1.00, individual: 197.00, estudio: 497.00, premium: 997.00 }; initCardBrick(planAmounts2[selectedPlan] || 197.00); }
           return;
         }
       }
@@ -691,13 +679,12 @@ async function showPaymentStep() {
     if (!createRes.ok) { const errData = await createRes.json().catch(() => ({})); throw new Error(errData.error || 'Erro ao criar perfil'); }
     const createData = await createRes.json(); tenantId = createData.tenant.id; instanceSlug = createData.tenant.evo_instance || instanceSlug;
     localStorage.setItem('inkflow_ob', JSON.stringify({ tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan }));
-    const planNames = { free:'Free Trial', teste:'Teste R$1', basic:'Essencial', pro:'Growth', enterprise:'Enterprise' }; const planPrices = { free:'Grátis', teste:'R$ 1', basic:'R$ 199', pro:'R$ 399', enterprise:'Sob consulta' }; const planCycles = { free:'7 dias de teste sem compromisso', teste:'/mês · teste de pagamento', basic:'/mês · cobrança recorrente', pro:'/mês · cobrança recorrente', enterprise:'valor personalizado' };
+    const planNames = { teste:'Teste R$1', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' }; const planPrices = { teste:'R$ 1', individual:'R$ 197', estudio:'R$ 497', premium:'R$ 997' }; const planCycles = { teste:'/mês · teste de pagamento', individual:'/mês · cobrança recorrente', estudio:'/mês · cobrança recorrente', premium:'/mês · cobrança recorrente' };
     document.getElementById('pay-plan-box').innerHTML = `<div class="pay-plan-name">${planNames[selectedPlan] || selectedPlan}</div><div class="pay-plan-price">${planPrices[selectedPlan] || ''}</div><div class="pay-plan-cycle">${planCycles[selectedPlan] || ''}</div>`;
     const payBtn = document.getElementById('pay-btn'); const payOr = document.getElementById('pay-or'); const payFreeBtn = document.getElementById('pay-free-btn'); const payHint = document.getElementById('pay-hint');
-    if (selectedPlan === 'free') { payBtn.style.display = 'none'; payOr.style.display = 'none'; if (payHint) payHint.style.display = 'none'; payFreeBtn.textContent = 'Começar período de teste gratuito →'; }
-    else { payBtn.style.display = 'flex'; payOr.style.display = 'block'; if (payHint) payHint.style.display = 'block'; payFreeBtn.textContent = 'Começar 7 dias grátis (sem cartão)'; }
+    { payBtn.style.display = 'flex'; payOr.style.display = 'block'; if (payHint) payHint.style.display = 'block'; if (payFreeBtn) payFreeBtn.style.display = 'none'; }
     goStep(3);
-    if (selectedPlan !== 'free') { const planAmounts = { teste: 1.00, basic: 199.00, pro: 399.00, enterprise: 999.00 }; initCardBrick(planAmounts[selectedPlan] || 199.00); }
+    if (selectedPlan !== 'free') { const planAmounts = { teste: 1.00, individual: 197.00, estudio: 497.00, premium: 997.00 }; initCardBrick(planAmounts[selectedPlan] || 197.00); }
   } catch (err) { console.error('showPaymentStep error:', err); let msg = err.message || 'Erro inesperado. Tente novamente.'; if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) { msg = 'Erro de conexão. Verifique sua internet e tente novamente.'; } showFormError(msg); }
   finally { btn.disabled = false; btn.textContent = 'Configurar meu WhatsApp →'; }
 }
@@ -722,7 +709,7 @@ async function startFreeTrial() {
 async function continueAfterPayment(preapprovalId) {
   let state = {}; try { state = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
   if (!state.tenantId || !state.instanceSlug) { showErrOverlay('Sessão expirada. Por favor, acesse seu link de onboarding novamente para recomeçar o cadastro.'); return; }
-  tenantId = state.tenantId; instanceSlug = state.instanceSlug; selectedPlan = state.plano || 'basic'; gConfig.globalKey = localStorage.getItem('inkflow_gk') || '';
+  tenantId = state.tenantId; instanceSlug = state.instanceSlug; selectedPlan = state.plano || 'individual'; gConfig.globalKey = localStorage.getItem('inkflow_gk') || '';
   if (!gConfig.globalKey) { showErrOverlay('Link expirado. Solicite um novo link de onboarding ao suporte InkFlow.'); return; }
   try {
     const checkRes = await fetch('/api/get-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, email: state.email || '', fields: 'mp_subscription_id' }) });
@@ -822,7 +809,8 @@ async function checkConnection() {
       document.getElementById('suc-estudio').textContent = ob.estudio || instanceSlug;
       document.getElementById('suc-agente').textContent = ob.agente || '';
       document.getElementById('suc-inst').textContent = instanceSlug;
-      document.getElementById('suc-plano').textContent = selectedPlan;
+      const sucPlanLabels = { teste:'Teste R$1', individual:'Individual · R$197/mês', estudio:'Estúdio · R$497/mês', premium:'Estúdio VIP · R$997/mês' };
+      document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
       localStorage.removeItem('inkflow_ob'); localStorage.removeItem('inkflow_gk');
       goStep(6);
     }
