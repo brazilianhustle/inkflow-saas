@@ -112,27 +112,54 @@ export async function onRequest(context) {
       }
     }
 
-    // Deletar em cascata: chat_messages → chats → dados_cliente → tenants
-    const tables = [
-      { table: 'chat_messages', filter: 'tenant_id=eq.' + tenant_id },
-      { table: 'chats', filter: 'tenant_id=eq.' + tenant_id },
-      { table: 'dados_cliente', filter: 'tenant_id=eq.' + tenant_id },
-      { table: 'logs', filter: 'tenant_id=eq.' + tenant_id },
-      { table: 'signups_log', filter: 'tenant_id=eq.' + tenant_id },
-      { table: 'payment_logs', filter: 'tenant_id=eq.' + tenant_id },
-      { table: 'tenants', filter: 'id=eq.' + tenant_id },
-    ];
-
-    for (const { table, filter } of tables) {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${filter}`, {
-        method: 'DELETE',
-        headers,
-      });
+    // ── Helper: deletar de uma tabela com filtro ──
+    async function del(table, filter) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${filter}`, { method: 'DELETE', headers });
       if (!res.ok) {
         const err = await res.text();
-        console.error(`delete-tenant: falha ao deletar ${table}:`, err);
-        return json({ error: `Erro ao excluir ${table}` }, 500);
+        console.error(`delete-tenant: falha ao deletar ${table} (${filter}):`, err);
+        // Não bloqueia — loga e continua (dados órfãos são menores que falha total)
       }
+    }
+
+    // ── 1. Buscar IDs dos tenants filhos (artistas) ──
+    const childRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/tenants?parent_tenant_id=eq.${encodeURIComponent(tenant_id)}&select=id`,
+      { headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY } }
+    );
+    const childTenants = childRes.ok ? await childRes.json() : [];
+    const childIds = childTenants.map(c => c.id);
+
+    // ── 2. Deletar dados dos filhos (se existirem) ──
+    for (const childId of childIds) {
+      await del('chat_messages', 'tenant_id=eq.' + childId);
+      await del('chats', 'tenant_id=eq.' + childId);
+      await del('dados_cliente', 'tenant_id=eq.' + childId);
+      await del('logs', 'tenant_id=eq.' + childId);
+      await del('signups_log', 'tenant_id=eq.' + childId);
+      await del('payment_logs', 'tenant_id=eq.' + childId);
+    }
+
+    // ── 3. Limpar onboarding_links e tenants filhos ──
+    await del('onboarding_links', 'parent_tenant_id=eq.' + tenant_id);
+    if (childIds.length > 0) {
+      await del('tenants', 'parent_tenant_id=eq.' + tenant_id);
+    }
+
+    // ── 4. Deletar dados do tenant pai ──
+    await del('chat_messages', 'tenant_id=eq.' + tenant_id);
+    await del('chats', 'tenant_id=eq.' + tenant_id);
+    await del('dados_cliente', 'tenant_id=eq.' + tenant_id);
+    await del('logs', 'tenant_id=eq.' + tenant_id);
+    await del('signups_log', 'tenant_id=eq.' + tenant_id);
+    await del('payment_logs', 'tenant_id=eq.' + tenant_id);
+
+    // ── 5. Deletar o tenant pai ──
+    const finalRes = await fetch(`${SUPABASE_URL}/rest/v1/tenants?id=eq.${tenant_id}`, { method: 'DELETE', headers });
+    if (!finalRes.ok) {
+      const err = await finalRes.text();
+      console.error('delete-tenant: falha ao deletar tenant principal:', err);
+      return json({ error: 'Erro ao excluir tenant' }, 500);
     }
 
     console.log('delete-tenant: tenant', tenant_id, 'excluido com sucesso');
