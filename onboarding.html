@@ -930,7 +930,10 @@ async function checkConnection() {
         document.getElementById('suc-plano').textContent = 'artista \u00b7 ' + (ob.estudio || '');
         document.querySelector('.suc-next').innerHTML = '\u2713 Seu WhatsApp j\u00e1 recebe mensagens automaticamente<br/>\u2713 O assistente responde agendamentos e d\u00favidas<br/>\u2713 Os agendamentos v\u00e3o para o calend\u00e1rio do est\u00fadio<br/><br/>Em caso de d\u00favidas, fale com o dono do est\u00fadio.';
       }
-      if (!selectedPlan && ob.plano) selectedPlan = ob.plano;
+      // [FIX] Restaurar plano do localStorage — cobre page reload no celular
+      // onde init() reseta selectedPlan para 'individual' (link tem plano=NULL)
+      if (ob.plano) selectedPlan = ob.plano;
+      console.log('checkConnection success: selectedPlan=', selectedPlan, 'ob.plano=', ob.plano);
       localStorage.removeItem('inkflow_ob'); localStorage.removeItem('inkflow_gk');
       goStep(6);
       showInviteSection();
@@ -940,8 +943,9 @@ async function checkConnection() {
 
 // ── Convite de artistas (tela de sucesso) ──
 async function showInviteSection() {
+  console.log('showInviteSection: selectedPlan=', selectedPlan, 'isArtistInvite=', isArtistInvite);
   if (isArtistInvite) return; // artista nao convida outros
-  if (!['estudio','premium'].includes(selectedPlan)) return;
+  if (!['estudio','premium'].includes(selectedPlan)) { console.warn('showInviteSection: plano nao elegivel, saindo. selectedPlan=', selectedPlan); return; }
   const section = document.getElementById('invite-section');
   if (!section) return;
   section.classList.add('show');
