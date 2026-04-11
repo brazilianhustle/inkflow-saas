@@ -246,10 +246,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="sec">
           <h3>Pre&ccedil;os dos Planos (R$)</h3>
           <div class="fg2">
-            <div class="fg"><label>Basic</label><input id="cfPb" type="number" value="199" min="0"></div>
-            <div class="fg"><label>Pro</label><input id="cfPp" type="number" value="399" min="0"></div>
+            <div class="fg"><label>Individual</label><input id="cfPb" type="number" value="197" min="0"></div>
+            <div class="fg"><label>Est&#250;dio</label><input id="cfPp" type="number" value="497" min="0"></div>
           </div>
-          <div class="fg" style="margin-top:12px"><label>Enterprise</label><input id="cfPe" type="number" value="999" min="0"></div>
+          <div class="fg" style="margin-top:12px"><label>Premium</label><input id="cfPe" type="number" value="997" min="0"></div>
         </div>
         <div class="sec">
           <button class="btn p" onclick="saveCfg()">Salvar Configura&ccedil;&otilde;es</button>
@@ -853,9 +853,9 @@ function showTab(n) {
 function loadCfgForm() {
   document.getElementById('cfUrl').value = CFG.url;
   document.getElementById('cfKey').value = CFG.key;
-  document.getElementById('cfPb').value  = (CFG.prices||{}).basic||199;
-  document.getElementById('cfPp').value  = (CFG.prices||{}).pro||399;
-  document.getElementById('cfPe').value  = (CFG.prices||{}).enterprise||999;
+  document.getElementById('cfPb').value  = (CFG.prices||{}).individual||197;
+  document.getElementById('cfPp').value  = (CFG.prices||{}).estudio||497;
+  document.getElementById('cfPe').value  = (CFG.prices||{}).premium||997;
 }
 
 function saveCfg() {
@@ -864,9 +864,9 @@ function saveCfg() {
   if (!url||!key) { toast('URL e Key s\u00e3o obrigat\u00f3rios', 'err'); return; }
   CFG.url = url; CFG.key = key;
   CFG.prices = {
-    basic:      parseInt(document.getElementById('cfPb').value)||199,
-    pro:        parseInt(document.getElementById('cfPp').value)||399,
-    enterprise: parseInt(document.getElementById('cfPe').value)||999
+    individual: parseInt(document.getElementById('cfPb').value)||197,
+    estudio:    parseInt(document.getElementById('cfPp').value)||497,
+    premium:    parseInt(document.getElementById('cfPe').value)||997
   };
   localStorage.setItem('ikf', JSON.stringify({ url:CFG.url, key:CFG.key, prices:CFG.prices }));
   toast('Configura\u00e7\u00f5es salvas!', 'ok');
