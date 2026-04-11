@@ -96,6 +96,7 @@ export async function onRequest(context) {
           readMessages: false,        // nao marcar como lido automaticamente
           readStatus: false,          // nao ler status/stories
           syncFullHistory: false,     // nao sincronizar historico antigo
+          webhookBase64: true,        // [FIX] midia enviada como base64 no webhook
         }),
       });
       createData = await createRes.json();
