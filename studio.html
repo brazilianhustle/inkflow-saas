@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InkFlow — Meu Estúdio</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d;--card:#111;--card2:rgba(255,255,255,.03);
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.12);
+  --teal:#00d4aa;--teal-dim:rgba(0,212,170,.15);--teal-mid:rgba(0,212,170,.5);
+  --red:#e74c3c;--red-bg:rgba(231,76,60,.1);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,.1);
+  --green:#22c55e;--green-bg:rgba(34,197,94,.1);
+  --t1:#e5e5e5;--t2:rgba(255,255,255,.5);--t3:rgba(255,255,255,.3);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── Layout ── */
+.page{display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:32px 20px}
+.container{width:100%;max-width:520px}
+
+/* ── Header ── */
+.header{text-align:center;margin-bottom:36px}
+.logo{font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.logo .ink{color:var(--teal)}
+.subtitle{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);font-weight:500}
+
+/* ── Studio card ── */
+.studio-card{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
+.studio-name{font-size:20px;font-weight:700;margin-bottom:4px}
+.studio-plan{display:inline-block;border:1px solid var(--teal-mid);color:var(--teal);padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:16px}
+.studio-info{font-size:13px;color:var(--t2);line-height:1.7}
+.studio-info span{color:var(--t1);font-weight:500}
+
+/* ── Slots bar ── */
+.slots-section{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
+.slots-title{font-size:15px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.slots-bar{height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;margin-bottom:8px}
+.slots-fill{height:100%;background:var(--teal);border-radius:4px;transition:width .5s ease}
+.slots-fill.full{background:var(--amber)}
+.slots-label{font-size:12px;color:var(--t3)}
+.slots-label span{color:var(--teal);font-weight:600}
+
+/* ── Artists list ── */
+.artists-list{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.artist-item{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px}
+.artist-avatar{width:36px;height:36px;border-radius:50%;background:var(--teal-dim);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--teal);flex-shrink:0}
+.artist-info{flex:1;min-width:0}
+.artist-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.artist-status{font-size:11px;color:var(--t3)}
+.artist-badge{font-size:10px;padding:3px 8px;border-radius:8px;font-weight:600;flex-shrink:0}
+.badge-active{background:var(--green-bg);color:var(--green)}
+.badge-pending{background:var(--amber-bg);color:var(--amber)}
+
+/* ── Invite section ── */
+.invite-section{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
+.invite-title{font-size:15px;font-weight:600;margin-bottom:8px}
+.invite-sub{font-size:13px;color:var(--t2);margin-bottom:16px;line-height:1.6}
+.invite-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--teal);color:#000;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.invite-btn:hover{opacity:.9}
+.invite-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── Generated link box ── */
+.link-box{display:none;margin-top:16px;background:rgba(0,212,170,.06);border:1px solid var(--teal-mid);border-radius:10px;padding:14px}
+.link-box.show{display:block;animation:fadeUp .3s ease}
+.link-label{font-size:11px;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.link-url{font-size:12px;color:var(--t1);word-break:break-all;background:rgba(0,0,0,.3);padding:10px;border-radius:6px;margin-bottom:10px;font-family:'Courier New',monospace;display:block}
+.link-actions{display:flex;gap:8px}
+.link-copy{flex:1;padding:10px;border:1px solid var(--teal-mid);background:transparent;color:var(--teal);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s}
+.link-copy:hover{background:var(--teal-dim)}
+.link-share{flex:1;padding:10px;border:1px solid var(--border2);background:transparent;color:var(--t2);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s}
+.link-share:hover{background:rgba(255,255,255,.04)}
+
+/* ── Loading / Error ── */
+.loading{text-align:center;padding:60px 20px;color:var(--t2);font-size:14px}
+.loading .spinner{width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--teal);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-box{text-align:center;padding:60px 20px}
+.error-icon{font-size:48px;margin-bottom:16px}
+.error-msg{font-size:14px;color:var(--t2);max-width:320px;margin:0 auto;line-height:1.6}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--teal);color:#000;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:transform .3s ease,opacity .3s ease;z-index:100}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="container">
+
+    <!-- Loading state -->
+    <div id="state-loading" class="loading">
+      <div class="spinner"></div>
+      Carregando seu estúdio...
+    </div>
+
+    <!-- Error state -->
+    <div id="state-error" style="display:none">
+      <div class="error-box">
+        <div class="error-icon">⚠️</div>
+        <div class="error-msg" id="error-msg">Link inválido ou expirado.</div>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div id="state-main" style="display:none">
+
+      <div class="header">
+        <div class="logo"><span class="ink">Ink</span>Flow</div>
+        <div class="subtitle">Gestão do Estúdio</div>
+      </div>
+
+      <!-- Studio info -->
+      <div class="studio-card">
+        <div class="studio-name" id="st-nome">Meu Estúdio</div>
+        <div class="studio-plan" id="st-plano">estúdio</div>
+        <div class="studio-info">
+          Responsável: <span id="st-owner">—</span><br/>
+          WhatsApp: <span id="st-instance">—</span>
+        </div>
+      </div>
+
+      <!-- Slots -->
+      <div class="slots-section">
+        <div class="slots-title">🎨 Artistas do Estúdio</div>
+        <div class="slots-bar"><div class="slots-fill" id="slots-fill"></div></div>
+        <div class="slots-label"><span id="slots-used">0</span> de <span id="slots-max">4</span> slots ocupados</div>
+
+        <div class="artists-list" id="artists-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Invite -->
+      <div class="invite-section" id="invite-section">
+        <div class="invite-title">Convidar Artista</div>
+        <div class="invite-sub">Gere um link de convite para um artista conectar o WhatsApp dele ao estúdio. Cada artista terá seu próprio assistente virtual.</div>
+        <button class="invite-btn" id="invite-btn" onclick="generateInvite()">Gerar link de convite</button>
+        <div class="link-box" id="link-box">
+          <div class="link-label">Link de convite (válido por 7 dias)</div>
+          <span class="link-url" id="link-url"></span>
+          <div class="link-actions">
+            <button class="link-copy" onclick="copyLink()">📋 Copiar link</button>
+            <button class="link-share" onclick="shareLink()">📤 Compartilhar</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Link copiado!</div>
+
+<script>
+// ── State ──
+let studioData = null;
+let tenantId = null;
+let lastGeneratedLink = '';
+
+// ── Init ──
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+
+  if (!token) {
+    showError('Link inválido. Use o link que foi enviado para o seu email.');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/validate-studio-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.valid) {
+      showError(data.error || 'Token inválido ou expirado.');
+      return;
+    }
+
+    studioData = data;
+    tenantId = data.tenant.id;
+    renderStudio(data);
+
+  } catch (err) {
+    console.error('init error:', err);
+    showError('Erro ao carregar dados. Verifique sua conexão e tente novamente.');
+  }
+}
+
+function showError(msg) {
+  document.getElementById('state-loading').style.display = 'none';
+  document.getElementById('state-error').style.display = 'block';
+  document.getElementById('error-msg').textContent = msg;
+}
+
+function renderStudio(data) {
+  document.getElementById('state-loading').style.display = 'none';
+  document.getElementById('state-main').style.display = 'block';
+
+  const t = data.tenant;
+  const s = data.slots;
+
+  // Studio card
+  document.getElementById('st-nome').textContent = t.nome_estudio || 'Meu Estúdio';
+  const planLabels = { estudio: 'Estúdio', premium: 'Estúdio VIP' };
+  document.getElementById('st-plano').textContent = planLabels[t.plano] || t.plano;
+  document.getElementById('st-owner').textContent = t.nome || t.email || '—';
+  document.getElementById('st-instance').textContent = t.evo_instance || '—';
+
+  // Slots bar
+  const maxArtistSlots = s.max - 1; // dono ocupa 1
+  const usedSlots = s.used;
+  const pct = maxArtistSlots > 0 ? Math.min((usedSlots / maxArtistSlots) * 100, 100) : 0;
+  const fill = document.getElementById('slots-fill');
+  fill.style.width = pct + '%';
+  if (pct >= 100) fill.classList.add('full');
+  document.getElementById('slots-used').textContent = usedSlots;
+  document.getElementById('slots-max').textContent = maxArtistSlots;
+
+  // Artists list
+  const listEl = document.getElementById('artists-list');
+  if (data.artists && data.artists.length > 0) {
+    listEl.innerHTML = data.artists.map(a => {
+      const initials = (a.nome || '?').substring(0, 2).toUpperCase();
+      const badge = a.ativo
+        ? '<span class="artist-badge badge-active">Ativo</span>'
+        : '<span class="artist-badge badge-pending">Pendente</span>';
+      return `
+        <div class="artist-item">
+          <div class="artist-avatar">${initials}</div>
+          <div class="artist-info">
+            <div class="artist-name">${a.nome || 'Sem nome'}</div>
+            <div class="artist-status">${a.evo_instance || 'WhatsApp não conectado'}</div>
+          </div>
+          ${badge}
+        </div>
+      `;
+    }).join('');
+  } else {
+    listEl.innerHTML = '<div style="font-size:13px;color:var(--t3);text-align:center;padding:12px">Nenhum artista vinculado ainda</div>';
+  }
+
+  // Hide invite if no slots remaining
+  if (s.remaining <= 0) {
+    document.getElementById('invite-section').innerHTML = `
+      <div class="invite-title">Limite atingido</div>
+      <div class="invite-sub">Todos os slots de artista estão preenchidos (${usedSlots}/${maxArtistSlots}).</div>
+    `;
+  }
+}
+
+// ── Generate invite ──
+async function generateInvite() {
+  const btn = document.getElementById('invite-btn');
+  btn.disabled = true;
+  btn.textContent = 'Gerando...';
+
+  try {
+    const res = await fetch('/api/create-artist-invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenant_id: tenantId }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      alert(data.error || 'Erro ao gerar convite');
+      btn.disabled = false;
+      btn.textContent = 'Gerar link de convite';
+      return;
+    }
+
+    lastGeneratedLink = data.link;
+    document.getElementById('link-url').textContent = data.link;
+    document.getElementById('link-box').classList.add('show');
+    btn.textContent = 'Gerar outro convite';
+    btn.disabled = false;
+
+    // Update slots display
+    if (data.slots) {
+      document.getElementById('slots-used').textContent = data.slots.used;
+      if (data.slots.remaining <= 0) {
+        btn.disabled = true;
+        btn.textContent = 'Todos os slots preenchidos';
+      }
+    }
+
+  } catch (err) {
+    console.error('generateInvite error:', err);
+    alert('Erro de conexão. Tente novamente.');
+    btn.disabled = false;
+    btn.textContent = 'Gerar link de convite';
+  }
+}
+
+// ── Copy & Share ──
+function copyLink() {
+  if (!lastGeneratedLink) return;
+  navigator.clipboard.writeText(lastGeneratedLink).then(() => {
+    showToast('Link copiado!');
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = lastGeneratedLink;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Link copiado!');
+  });
+}
+
+function shareLink() {
+  if (!lastGeneratedLink) return;
+  if (navigator.share) {
+    navigator.share({
+      title: 'Convite InkFlow',
+      text: 'Use este link para conectar seu WhatsApp ao estúdio:',
+      url: lastGeneratedLink,
+    }).catch(() => {});
+  } else {
+    copyLink();
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Start ──
+init();
+</script>
+</body>
+</html>

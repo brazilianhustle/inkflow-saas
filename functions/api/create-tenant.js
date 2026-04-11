@@ -107,6 +107,11 @@ export async function onRequest(context) {
       // Limpar campos de artista caso enviados indevidamente
       delete tenantData.parent_tenant_id;
       delete tenantData.is_artist_slot;
+
+      // Gerar studio_token para planos estúdio/premium (acesso à página de gestão)
+      if (['estudio', 'premium'].includes(tenantData.plano)) {
+        tenantData.studio_token = crypto.randomUUID();
+      }
     }
 
     // ── INSERT no Supabase ──────────────────────────────────────────────────
