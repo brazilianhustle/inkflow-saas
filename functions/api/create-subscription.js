@@ -17,9 +17,9 @@ const CORS = {
 
 const PLANOS = {
   teste:      { nome: 'InkFlow Teste',       valor:   1.00 },  // TEMPORÁRIO: remover após teste
-  individual: { nome: 'InkFlow Individual',  valor: 197.00 },
-  estudio:    { nome: 'InkFlow Estúdio',     valor: 497.00 },
-  premium:    { nome: 'InkFlow Estúdio VIP', valor: 997.00 },
+  individual: { nome: 'InkFlow Individual',  valor:   1.00 },  // TEMP TESTE: original 197
+  estudio:    { nome: 'InkFlow Estúdio',     valor:   1.00 },  // TEMP TESTE: original 497
+  premium:    { nome: 'InkFlow Estúdio VIP', valor:   1.00 },  // TEMP TESTE: original 997
 };
 
 // ── [FIX #11] SUPABASE_URL centralizado (antes era duplicado) ────────────────
