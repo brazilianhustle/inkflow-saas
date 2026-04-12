@@ -641,7 +641,10 @@ function setupArtistForm() {
   if (dividers.length >= 2) dividers[dividers.length - 1].style.display = 'none';
   // Esconder campos de estudio (artista herda do pai)
   const estudioField = document.getElementById('f-estudio');
-  if (estudioField) estudioField.closest('.fg').style.display = 'none';
+  if (estudioField) {
+    estudioField.value = artistInviteData.parent_nome_estudio || '';
+    estudioField.closest('.fg').style.display = 'none';
+  }
   // Mudar titulo e subtitulo do form
   const formTitle = document.querySelector('.form-title');
   const formSub = document.querySelector('.form-sub');
@@ -733,7 +736,7 @@ async function showPaymentStep() {
   document.getElementById('form-err').style.display = 'none';
   const btn = document.getElementById('form-btn'); btn.disabled = true; btn.textContent = 'Aguarde...';
   try {
-    const slugBase = makeSlug(estudio || nome); const suffix = Math.floor(Math.random() * 900) + 100; instanceSlug = slugBase + suffix;
+    const slugBase = makeSlug(isArtistInvite ? nome : (estudio || nome)); const suffix = Math.floor(Math.random() * 900) + 100; instanceSlug = slugBase + suffix;
     const promptEstudio = isArtistInvite ? (artistInviteData.parent_nome_estudio || 'Est\u00fadio') : estudio;
     const prompt = generatePrompt(agente, promptEstudio, cidade, endereco);
     const tenantData = { nome, nome_agente: agente, nome_estudio: estudio || (isArtistInvite ? artistInviteData.parent_nome_estudio : ''), email: email || null, cidade: cidade || null, endereco: endereco || null, evo_instance: instanceSlug, webhook_path: 'inkflow', evo_apikey: 'pending', plano: selectedPlan, ativo: false, prompt_sistema: prompt, onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || null };
@@ -757,9 +760,22 @@ async function showPaymentStep() {
         if (ex.ativo) { throw new Error('Este email já está cadastrado em um estúdio ativo. Use outro email ou entre em contato com o suporte.'); }
         if (!ex.ativo) {
           tenantId = ex.id;
-          await fetch('/api/update-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: ex.id, email, nome_agente: agente, nome_estudio: estudio, evo_instance: instanceSlug, webhook_path: 'inkflow', plano: selectedPlan }) });
-          const sbData = [{ id: ex.id }]; tenantId = ex.id;
-          localStorage.setItem('inkflow_ob', JSON.stringify({ tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan }));
+          const retryUpdate = { tenant_id: ex.id, email, nome_agente: agente, nome_estudio: estudio || (isArtistInvite ? artistInviteData.parent_nome_estudio : ''), evo_instance: instanceSlug, webhook_path: 'inkflow', plano: selectedPlan };
+          if (isArtistInvite && artistInviteData.parent_tenant_id) {
+            retryUpdate.parent_tenant_id = artistInviteData.parent_tenant_id;
+            retryUpdate.is_artist_slot = true;
+            if (artistInviteData.parent_evo_base_url) retryUpdate.evo_base_url = artistInviteData.parent_evo_base_url;
+          }
+          await fetch('/api/update-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(retryUpdate) });
+          tenantId = ex.id;
+          localStorage.setItem('inkflow_ob', JSON.stringify({ tenantId, instanceSlug, nome, estudio: estudio || artistInviteData?.parent_nome_estudio || '', agente, cidade, email, plano: selectedPlan, isArtist: isArtistInvite }));
+          // ── Artista em retry: pular pagamento, ir direto para setup WhatsApp ──
+          if (isArtistInvite) {
+            goStep(4); for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
+            await doEvoSetup();
+            if (window.posthog) posthog.capture('artist_onboarding_started', { plan: selectedPlan, tenant: tenantId, parent: artistInviteData.parent_tenant_id, retry: true });
+            return;
+          }
           const planNames = { teste:'Teste R$1', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' }; const planPrices = { teste:'R$ 1', individual:'R$ 1', estudio:'R$ 1', premium:'R$ 1' }; const planCycles = { teste:'/mês · teste de pagamento', individual:'/mês · cobrança recorrente', estudio:'/mês · cobrança recorrente', premium:'/mês · cobrança recorrente' };
           document.getElementById('pay-plan-box').innerHTML = '<div class="pay-plan-name">' + (planNames[selectedPlan] || selectedPlan) + '</div><div class="pay-plan-price">' + (planPrices[selectedPlan] || '') + '</div><div class="pay-plan-cycle">' + (planCycles[selectedPlan] || '') + '</div>';
           const payBtn2 = document.getElementById('pay-btn'); const payOr2 = document.getElementById('pay-or'); const payFreeBtn2 = document.getElementById('pay-free-btn'); const payHint2 = document.getElementById('pay-hint');

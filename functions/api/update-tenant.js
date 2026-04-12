@@ -25,6 +25,7 @@ const ALLOWED_FIELDS = new Set([
   'grupo_notificacao', 'grupo_orcamento',
   'google_calendar_id', 'google_drive_folder',
   'nome_agente', 'nome_estudio', 'ativo', 'plano', 'trial_ate',
+  'parent_tenant_id', 'is_artist_slot',
 ]);
 
 // FIX AUDIT #4: Campos adicionais que o admin pode editar via dashboard

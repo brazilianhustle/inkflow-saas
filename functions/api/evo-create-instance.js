@@ -146,7 +146,7 @@ export async function onRequest(context) {
     console.error('evo-create-instance: webhook/set falhou:', webhookErr);
   }
 
-  // Verificacao: confirma que o webhook foi realmente aplicado
+  // Verificacao: confirma que o webhook foi realmente aplicado (enabled E webhookBase64)
   if (webhookOk) {
     try {
       const verifyRes = await fetch(`${EVO_BASE_URL}/webhook/find/${instanceName}`, {
@@ -159,6 +159,11 @@ export async function onRequest(context) {
         if (!wh || wh.enabled !== true) {
           console.error('evo-create-instance: webhook/find mostra enabled=false apos set. Tentando novamente...');
           webhookOk = false;
+        } else if (wh.webhookBase64 !== true) {
+          console.error('evo-create-instance: webhook/find mostra webhookBase64=false (esperado true). Tentando corrigir...');
+          webhookOk = false;
+        } else {
+          console.log('evo-create-instance: webhook verificado OK (enabled=true, webhookBase64=true)');
         }
       }
     } catch (verifyErr) {
@@ -184,6 +189,15 @@ export async function onRequest(context) {
       if (retryRes.ok) {
         webhookOk = true;
         console.log('evo-create-instance: webhook configurado com global key (retry)');
+        // Re-verifica pos-retry para confirmar webhookBase64
+        try {
+          const reVerify = await fetch(`${EVO_BASE_URL}/webhook/find/${instanceName}`, { headers: { apikey: GLOBAL_KEY } });
+          if (reVerify.ok) {
+            const rData = await reVerify.json();
+            const rWh = Array.isArray(rData) ? rData[0] : rData;
+            console.log('evo-create-instance: webhook pos-retry:', JSON.stringify({ enabled: rWh?.enabled, webhookBase64: rWh?.webhookBase64 }));
+          }
+        } catch {}
       } else {
         console.error('evo-create-instance: retry webhook/set falhou:', retryRes.status);
       }
