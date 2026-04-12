@@ -89,6 +89,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Support ── */
+.support-box{margin-top:8px;margin-bottom:20px;text-align:center}
+.support-link{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;font-family:inherit}
+.support-link:hover{border-color:var(--teal-mid);color:var(--teal);background:var(--teal-dim)}
 </style>
 </head>
 <body>
@@ -151,6 +156,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
             <button class="link-share" onclick="shareLink()">📤 Compartilhar</button>
           </div>
         </div>
+      </div>
+
+      <!-- Support -->
+      <div class="support-box">
+        <button type="button" class="support-link" onclick="openSupport()">
+          💬 Precisa de ajuda? Fale com o suporte InkFlow
+        </button>
       </div>
 
     </div>
@@ -341,6 +353,21 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Support ──
+function openSupport() {
+  try {
+    if (typeof window.Intercom === 'function') {
+      window.Intercom('show');
+      return;
+    }
+  } catch (e) {}
+  const studioName = (studioData && studioData.tenant && studioData.tenant.nome_estudio) || '';
+  const msg = encodeURIComponent(
+    `Olá! Sou dono do estúdio${studioName ? ' ' + studioName : ''} e preciso de ajuda com o onboarding de artistas.`
+  );
+  window.open(`https://wa.me/5521970789797?text=${msg}`, '_blank');
 }
 
 // ── Start ──
