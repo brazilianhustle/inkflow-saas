@@ -690,7 +690,20 @@ async function initCardBrick(amount) {
     },
     callbacks: {
       onReady: () => { document.getElementById('card-brick-wrap').style.minHeight = 'unset'; },
-      onSubmit: async (cardFormData) => { if (window._paymentInProgress) return; window._paymentInProgress = true; try { await chargeCard(cardFormData); } finally { window._paymentInProgress = false; } },
+      onSubmit: async (cardFormData) => {
+        // [FIX pagamento] MP Brick mantém o botão desabilitado se onSubmit resolver.
+        // Pra liberar o botão após falha, precisamos REJEITAR o promise.
+        if (window._paymentInProgress) return Promise.reject(new Error('already processing'));
+        window._paymentInProgress = true;
+        try {
+          await chargeCard(cardFormData);
+        } catch (err) {
+          // Re-throw para o Brick re-habilitar o submit e deixar o usuário corrigir e tentar de novo
+          throw err;
+        } finally {
+          window._paymentInProgress = false;
+        }
+      },
       onError: (err) => { console.error('MP Brick error:', err); },
     },
   });
@@ -724,7 +737,16 @@ async function chargeCard(formData) {
     if (data.status === 'authorized') { await doEvoSetup(); if (window.posthog) posthog.capture('payment_success', { plan: selectedPlan, tenant: tenantId }); }
     else if (data.status === 'pending') { setStatus(0, 'Pagamento em processamento...', 'active'); showProcError('Seu banco está verificando o pagamento. Isso pode levar alguns minutos. Você receberá uma confirmação por email (' + (formData.payer?.email || stored.email || '') + ') quando o pagamento for aprovado. Após a confirmação, acesse seu link de onboarding novamente para concluir a configuração.'); if (window.posthog) posthog.capture('payment_pending', { plan: selectedPlan, tenant: tenantId }); }
     else { throw new Error('Status inesperado do pagamento: ' + (data.status || 'desconhecido')); }
-  } catch (err) { console.error('chargeCard error:', err); if (window.posthog) posthog.capture('payment_failed', { error: err.message }); goStep(3); alert(friendlyPaymentError(err.message)); }
+  } catch (err) {
+    console.error('chargeCard error:', err);
+    if (window.posthog) posthog.capture('payment_failed', { error: err.message });
+    // Voltar para a tela de pagamento
+    goStep(3);
+    alert(friendlyPaymentError(err.message));
+    // Re-throw para o MP Brick rejeitar o promise do onSubmit e re-habilitar o botão "Assinar agora"
+    // (sem isso o botão fica travado desabilitado após falha de pagamento)
+    throw err;
+  }
 }
 
 async function showPaymentStep() {
