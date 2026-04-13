@@ -294,11 +294,34 @@ async function init() {
     tenantId = data.tenant.id;
     currentStudioToken = data.refreshed_token || token;
 
-    // Se tenant ainda não está ativo (WhatsApp não conectado) OU query pending_whatsapp=true:
-    // mostrar seção de conexão dentro do painel
-    const urlParams = new URLSearchParams(window.location.search);
-    const pendingWA = urlParams.get('pending_whatsapp') === 'true';
-    if (pendingWA || data?.tenant?.ativo === false) {
+    // [FIX] Checa estado REAL da Evolution API — tenant.ativo pode estar
+    // desatualizado se o update-tenant falhou após conexão bem-sucedida.
+    const realStatus = await getRealConnectionStatus(data.tenant.evo_instance);
+    const isConnected = realStatus === 'open' || realStatus === 'connected' || realStatus === 'online';
+
+    if (isConnected) {
+      // Conectado de verdade — garante que tenant.ativo=true no DB (self-heal)
+      if (data.tenant.ativo === false && currentStudioToken) {
+        try {
+          await fetch('/api/update-tenant', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tenant_id: tenantId, studio_token: currentStudioToken, ativo: true }),
+          });
+          console.log('[studio] self-heal: tenant marcado como ativo');
+        } catch (e) { console.warn('[studio] self-heal falhou:', e?.message); }
+      }
+      // Mostra banner verde persistente + esconde seção conectar
+      showConnectedBanner();
+      // Limpa ?pending_whatsapp=true da URL
+      try {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('pending_whatsapp')) {
+          url.searchParams.delete('pending_whatsapp');
+          window.history.replaceState({}, '', url.toString());
+        }
+      } catch {}
+    } else {
+      // Não conectado — abre seção conectar
       startConnectFlow();
     }
 
@@ -486,6 +509,30 @@ let connMode = 'qr';
 let connPollHandle = null;
 let qrTimer = null;
 
+async function getRealConnectionStatus(instance) {
+  if (!instance) return null;
+  try {
+    const r = await fetch('/api/evo-status?instance=' + encodeURIComponent(instance));
+    if (!r.ok) return null;
+    const d = await r.json();
+    return (d?.state || '').toString().toLowerCase();
+  } catch (e) { console.warn('[studio] getRealConnectionStatus:', e?.message); return null; }
+}
+
+function showConnectedBanner() {
+  const sec = document.getElementById('connect-section');
+  if (sec) sec.style.display = 'none';
+  // Atualiza o studio-card com badge verde
+  const card = document.querySelector('.studio-card');
+  if (card && !document.getElementById('conn-banner')) {
+    const banner = document.createElement('div');
+    banner.id = 'conn-banner';
+    banner.style.cssText = 'background:var(--green-bg);border:1px solid var(--green);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:13px;color:var(--green);font-weight:600;display:flex;align-items:center;gap:8px';
+    banner.innerHTML = '<span style="font-size:16px">✓</span> WhatsApp conectado e pronto para atender';
+    card.appendChild(banner);
+  }
+}
+
 function switchConnTab(mode) {
   connMode = mode;
   document.getElementById('tab-qr').classList.toggle('active', mode === 'qr');
@@ -549,17 +596,28 @@ async function pollConnection() {
       clearInterval(connPollHandle); clearTimeout(qrTimer);
       document.getElementById('conn-status').textContent = '✓ conectado!';
       document.getElementById('conn-status').classList.add('connected');
-      // Ativa tenant
+      // Ativa tenant (com log de erro visível pra debug)
       if (currentStudioToken) {
         try {
-          await fetch('/api/update-tenant', {
+          const upd = await fetch('/api/update-tenant', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ tenant_id: tenantId, studio_token: currentStudioToken, ativo: true }),
           });
-        } catch {}
+          const updTxt = await upd.text().catch(() => '');
+          if (!upd.ok) console.error('[studio] update-tenant ativo=true falhou:', upd.status, updTxt.slice(0, 200));
+          else console.log('[studio] tenant ativado com sucesso');
+        } catch (e) { console.error('[studio] update-tenant throw:', e?.message); }
       }
+      // Limpa ?pending_whatsapp da URL
+      try {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('pending_whatsapp')) {
+          url.searchParams.delete('pending_whatsapp');
+          window.history.replaceState({}, '', url.toString());
+        }
+      } catch {}
       setTimeout(() => {
-        document.getElementById('connect-section').style.display = 'none';
+        showConnectedBanner();
         showToast('WhatsApp conectado!');
       }, 1500);
     }
