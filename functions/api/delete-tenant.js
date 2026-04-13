@@ -91,37 +91,90 @@ export async function onRequest(context) {
       }
     }
 
-    // Helper: deleta uma instancia na Evolution API (logout -> delete)
-    // Evolution API v2 pode exigir logout antes do delete se a instancia estiver conectada
+    // ── Helper: deleta instancia na Evolution API com fallback robusto ─────
+    // v2.3.7 tem bug: se connectionStatus='open' mas Baileys rejeitou (401),
+    // o state machine fica travado e logout/delete retornam 500/400.
+    //
+    // Estrategia (4 niveis):
+    //   1. logout(DELETE) + delete(DELETE)  -> 'success'
+    //   2. sleep 2s + logout(POST) + delete(DELETE)  -> 'retry_success'
+    //   3. HTTP POST para EVO_DB_CLEANUP_URL (bridge no VPS que roda SQL)  -> 'db_fallback'
+    //   4. Retorna 'failed' + manual_sql para admin rodar via SSH
+    async function tryApiDelete(evoKey, base, instanceName, logoutMethod) {
+      // logout — erros nao fatais
+      try {
+        const r = await fetch(`${base}/instance/logout/${encodeURIComponent(instanceName)}`, {
+          method: logoutMethod,
+          headers: { apikey: evoKey },
+        });
+        const t = await r.text().catch(() => '');
+        console.log(`[evo-delete] logout[${logoutMethod}] ${instanceName} status=${r.status} resp=${t.slice(0, 200)}`);
+      } catch (e) {
+        console.warn(`[evo-delete] logout[${logoutMethod}] ${instanceName} threw:`, e?.message || e);
+      }
+      // delete
+      try {
+        const r = await fetch(`${base}/instance/delete/${encodeURIComponent(instanceName)}`, {
+          method: 'DELETE',
+          headers: { apikey: evoKey },
+        });
+        const t = await r.text().catch(() => '');
+        console.log(`[evo-delete] delete ${instanceName} (via ${logoutMethod}-logout) status=${r.status} resp=${t.slice(0, 200)}`);
+        if (r.ok) return { ok: true };
+        return { ok: false, status: r.status, body: t.slice(0, 200) };
+      } catch (e) {
+        return { ok: false, error: String(e?.message || e) };
+      }
+    }
+
     async function deleteEvoInstance(instanceName, baseUrl) {
-      const evoKey = env.EVO_GLOBAL_KEY;
+      const evoKey = env.EVO_GLOBAL_KEY || env.EVOLUTION_GLOBAL_KEY;
       const base = baseUrl || env.EVO_BASE_URL || 'https://evo.inkflowbrasil.com';
-      if (!instanceName || !evoKey) return { ok: false, reason: 'missing instance or key' };
-      // 1. Logout (pode falhar se ja desconectada — nao fatal)
-      try {
-        const logoutRes = await fetch(
-          `${base}/instance/logout/${encodeURIComponent(instanceName)}`,
-          { method: 'DELETE', headers: { apikey: evoKey } }
-        );
-        const logoutTxt = await logoutRes.text().catch(() => '');
-        console.log(`[evo-delete] logout ${instanceName} status=${logoutRes.status} resp=${logoutTxt.slice(0, 200)}`);
-      } catch (e) {
-        console.warn(`[evo-delete] logout ${instanceName} threw:`, e?.message || e);
+      if (!instanceName) return { ok: false, cleanup: 'failed', reason: 'missing instance' };
+      if (!evoKey) return { ok: false, cleanup: 'failed', instance: instanceName, reason: 'missing EVO_GLOBAL_KEY' };
+
+      // Nivel 1: tentativa padrao
+      const a1 = await tryApiDelete(evoKey, base, instanceName, 'DELETE');
+      if (a1.ok) return { ok: true, cleanup: 'success', instance: instanceName };
+
+      // Nivel 2: aguarda 2s, tenta logout via POST (Evolution v2.3.7 as vezes aceita)
+      await new Promise(r => setTimeout(r, 2000));
+      const a2 = await tryApiDelete(evoKey, base, instanceName, 'POST');
+      if (a2.ok) return { ok: true, cleanup: 'retry_success', instance: instanceName };
+
+      // Nivel 3: fallback DB via endpoint HTTP no VPS (bridge que executa SQL)
+      // Requer env vars EVO_DB_CLEANUP_URL + EVO_DB_CLEANUP_SECRET configuradas no Cloudflare Pages.
+      // O endpoint deve receber POST {instance_name} com header x-admin-secret e executar:
+      //   DELETE FROM "Instance" WHERE name = $1
+      const dbUrl = env.EVO_DB_CLEANUP_URL;
+      const dbSecret = env.EVO_DB_CLEANUP_SECRET;
+      if (dbUrl && dbSecret) {
+        try {
+          const dbRes = await fetch(dbUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-secret': dbSecret },
+            body: JSON.stringify({ instance_name: instanceName }),
+          });
+          const dbTxt = await dbRes.text().catch(() => '');
+          console.log(`[evo-delete] db-fallback ${instanceName} status=${dbRes.status} resp=${dbTxt.slice(0, 200)}`);
+          if (dbRes.ok) return { ok: true, cleanup: 'db_fallback', instance: instanceName };
+        } catch (e) {
+          console.warn(`[evo-delete] db-fallback threw:`, e?.message || e);
+        }
+      } else {
+        console.warn('[evo-delete] EVO_DB_CLEANUP_URL/SECRET nao configuradas — pulando nivel 3');
       }
-      // 2. Delete
-      try {
-        const delRes = await fetch(
-          `${base}/instance/delete/${encodeURIComponent(instanceName)}`,
-          { method: 'DELETE', headers: { apikey: evoKey } }
-        );
-        const delTxt = await delRes.text().catch(() => '');
-        console.log(`[evo-delete] delete ${instanceName} status=${delRes.status} resp=${delTxt.slice(0, 200)}`);
-        if (delRes.ok) return { ok: true, instance: instanceName };
-        return { ok: false, instance: instanceName, status: delRes.status, body: delTxt.slice(0, 200) };
-      } catch (e) {
-        console.warn(`[evo-delete] delete ${instanceName} threw:`, e?.message || e);
-        return { ok: false, instance: instanceName, error: String(e?.message || e) };
-      }
+
+      // Nivel 4: falhou tudo — retorna SQL manual para admin rodar via SSH
+      console.error(`[evo-delete] FALHA TOTAL para ${instanceName}. Admin precisa rodar SQL manualmente.`);
+      return {
+        ok: false,
+        cleanup: 'failed',
+        instance: instanceName,
+        last_status: a2.status || a1.status,
+        last_body: (a2.body || a1.body || '').slice(0, 200),
+        manual_sql: `DELETE FROM "Instance" WHERE name = '${instanceName.replace(/'/g, "''")}';`,
+      };
     }
 
     const evoDeleted = [];
@@ -130,7 +183,7 @@ export async function onRequest(context) {
     // Deletar instancia do tenant pai (se existir)
     if (tenantInfo?.evo_instance) {
       const r = await deleteEvoInstance(tenantInfo.evo_instance, tenantInfo.evo_base_url);
-      if (r.ok) evoDeleted.push(r.instance);
+      if (r.ok) evoDeleted.push({ instance: r.instance, cleanup: r.cleanup });
       else evoErrors.push(r);
     }
 
@@ -156,7 +209,7 @@ export async function onRequest(context) {
     for (const child of childTenants) {
       if (child.evo_instance) {
         const r = await deleteEvoInstance(child.evo_instance, child.evo_base_url);
-        if (r.ok) evoDeleted.push(r.instance);
+        if (r.ok) evoDeleted.push({ instance: r.instance, cleanup: r.cleanup });
         else evoErrors.push(r);
       }
     }
@@ -193,9 +246,17 @@ export async function onRequest(context) {
       return json({ error: 'Erro ao excluir tenant' }, 500);
     }
 
-    console.log('delete-tenant: tenant', tenant_id, 'excluido. EVO deletadas:', evoDeleted.length, 'EVO erros:', evoErrors.length);
+    // Agregar status geral de cleanup EVO: "success" | "retry_success" | "db_fallback" | "failed"
+    // Prioridade do pior para o melhor — se qualquer instancia falhou, status geral eh 'failed'
+    let evoCleanup = 'success';
+    if (evoErrors.length > 0) evoCleanup = 'failed';
+    else if (evoDeleted.some(x => typeof x === 'object' && x.cleanup === 'db_fallback')) evoCleanup = 'db_fallback';
+    else if (evoDeleted.some(x => typeof x === 'object' && x.cleanup === 'retry_success')) evoCleanup = 'retry_success';
+
+    console.log('delete-tenant: tenant', tenant_id, 'excluido. EVO cleanup:', evoCleanup, 'deletadas:', evoDeleted.length, 'erros:', evoErrors.length);
     return json({
       ok: true,
+      evo_cleanup: evoCleanup,
       evo_deleted: evoDeleted,
       evo_errors: evoErrors,
     });
