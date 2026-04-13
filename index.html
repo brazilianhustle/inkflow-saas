@@ -824,7 +824,13 @@ function delT(id, nome) {
       body: JSON.stringify({ tenant_id: id })
     });
     if (!r.ok) throw new Error('Falha ao excluir tenant');
-    toast('Tenant e dados relacionados exclu\u00eddos.', 'inf');
+    const data = await r.json().catch(() => ({}));
+    const delCount = (data.evo_deleted || []).length;
+    const errCount = (data.evo_errors || []).length;
+    let msg = 'Tenant e dados relacionados exclu\u00eddos.';
+    if (delCount > 0) msg += ' ' + delCount + ' inst\u00e2ncia(s) removida(s) da Evolution API.';
+    if (errCount > 0) msg += ' \u26a0 ' + errCount + ' inst\u00e2ncia(s) n\u00e3o puderam ser removidas da EVO (veja logs).';
+    toast(msg, errCount > 0 ? 'err' : 'inf');
     document.getElementById('det').innerHTML = '';
     await loadTenants();
   };

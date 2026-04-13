@@ -91,25 +91,47 @@ export async function onRequest(context) {
       }
     }
 
-    // Deletar instancia na Evolution API (se existir)
-    if (tenantInfo?.evo_instance) {
+    // Helper: deleta uma instancia na Evolution API (logout -> delete)
+    // Evolution API v2 pode exigir logout antes do delete se a instancia estiver conectada
+    async function deleteEvoInstance(instanceName, baseUrl) {
+      const evoKey = env.EVO_GLOBAL_KEY;
+      const base = baseUrl || env.EVO_BASE_URL || 'https://evo.inkflowbrasil.com';
+      if (!instanceName || !evoKey) return { ok: false, reason: 'missing instance or key' };
+      // 1. Logout (pode falhar se ja desconectada — nao fatal)
       try {
-        const evoBase = tenantInfo.evo_base_url || env.EVO_BASE_URL || 'https://evo.inkflowbrasil.com';
-        const evoKey = env.EVO_GLOBAL_KEY;
-        if (evoKey) {
-          const evoRes = await fetch(
-            `${evoBase}/instance/delete/${encodeURIComponent(tenantInfo.evo_instance)}`,
-            {
-              method: 'DELETE',
-              headers: { apikey: evoKey },
-            }
-          );
-          if (!evoRes.ok) console.warn('delete-tenant: falha ao deletar instancia EVO:', await evoRes.text());
-          else console.log('delete-tenant: instancia EVO deletada:', tenantInfo.evo_instance);
-        }
-      } catch (evoErr) {
-        console.warn('delete-tenant: erro ao deletar EVO (nao fatal):', evoErr);
+        const logoutRes = await fetch(
+          `${base}/instance/logout/${encodeURIComponent(instanceName)}`,
+          { method: 'DELETE', headers: { apikey: evoKey } }
+        );
+        const logoutTxt = await logoutRes.text().catch(() => '');
+        console.log(`[evo-delete] logout ${instanceName} status=${logoutRes.status} resp=${logoutTxt.slice(0, 200)}`);
+      } catch (e) {
+        console.warn(`[evo-delete] logout ${instanceName} threw:`, e?.message || e);
       }
+      // 2. Delete
+      try {
+        const delRes = await fetch(
+          `${base}/instance/delete/${encodeURIComponent(instanceName)}`,
+          { method: 'DELETE', headers: { apikey: evoKey } }
+        );
+        const delTxt = await delRes.text().catch(() => '');
+        console.log(`[evo-delete] delete ${instanceName} status=${delRes.status} resp=${delTxt.slice(0, 200)}`);
+        if (delRes.ok) return { ok: true, instance: instanceName };
+        return { ok: false, instance: instanceName, status: delRes.status, body: delTxt.slice(0, 200) };
+      } catch (e) {
+        console.warn(`[evo-delete] delete ${instanceName} threw:`, e?.message || e);
+        return { ok: false, instance: instanceName, error: String(e?.message || e) };
+      }
+    }
+
+    const evoDeleted = [];
+    const evoErrors = [];
+
+    // Deletar instancia do tenant pai (se existir)
+    if (tenantInfo?.evo_instance) {
+      const r = await deleteEvoInstance(tenantInfo.evo_instance, tenantInfo.evo_base_url);
+      if (r.ok) evoDeleted.push(r.instance);
+      else evoErrors.push(r);
     }
 
     // ── Helper: deletar de uma tabela com filtro ──
@@ -122,13 +144,22 @@ export async function onRequest(context) {
       }
     }
 
-    // ── 1. Buscar IDs dos tenants filhos (artistas) ──
+    // ── 1. Buscar IDs + info EVO dos tenants filhos (artistas) ──
     const childRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/tenants?parent_tenant_id=eq.${encodeURIComponent(tenant_id)}&select=id`,
+      `${SUPABASE_URL}/rest/v1/tenants?parent_tenant_id=eq.${encodeURIComponent(tenant_id)}&select=id,evo_instance,evo_base_url`,
       { headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY } }
     );
     const childTenants = childRes.ok ? await childRes.json() : [];
     const childIds = childTenants.map(c => c.id);
+
+    // Deletar instancias EVO dos filhos (artistas) antes de remover linhas
+    for (const child of childTenants) {
+      if (child.evo_instance) {
+        const r = await deleteEvoInstance(child.evo_instance, child.evo_base_url);
+        if (r.ok) evoDeleted.push(r.instance);
+        else evoErrors.push(r);
+      }
+    }
 
     // ── 2. Deletar dados dos filhos (se existirem) ──
     for (const childId of childIds) {
@@ -162,8 +193,12 @@ export async function onRequest(context) {
       return json({ error: 'Erro ao excluir tenant' }, 500);
     }
 
-    console.log('delete-tenant: tenant', tenant_id, 'excluido com sucesso');
-    return json({ ok: true });
+    console.log('delete-tenant: tenant', tenant_id, 'excluido. EVO deletadas:', evoDeleted.length, 'EVO erros:', evoErrors.length);
+    return json({
+      ok: true,
+      evo_deleted: evoDeleted,
+      evo_errors: evoErrors,
+    });
 
   } catch (err) {
     console.error('delete-tenant exception:', err);
