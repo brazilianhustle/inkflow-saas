@@ -203,8 +203,14 @@ select.fi option{background:var(--card);color:var(--t1)}
 
 /* ════════ STEP 6: SUCCESS ════════ */
 #s6{background:var(--bg)}
-.suc-card{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:36px 28px;max-width:460px;width:100%;text-align:center}
-.suc-icon{font-size:48px;margin-bottom:16px}
+.suc-card{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:36px 28px;max-width:460px;width:100%;text-align:center;animation:sucFadeIn .5s ease}
+@keyframes sucFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.suc-icon{font-size:56px;margin-bottom:16px;display:inline-block;animation:sucPop .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes sucPop{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.suc-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px 18px;margin-top:20px;border:none;border-radius:10px;background:var(--teal);color:#000;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:opacity .2s;text-decoration:none}
+.suc-cta:hover{opacity:.88}
+.suc-cta.secondary{background:transparent;color:var(--teal);border:1px solid var(--teal-mid);margin-top:8px}
+.suc-cta.secondary:hover{background:var(--teal-dim)}
 .suc-title{font-size:24px;font-weight:700;color:var(--teal);margin-bottom:8px}
 .suc-sub{font-size:14px;color:var(--t2);margin-bottom:28px;line-height:1.6}
 .suc-info{background:var(--teal-dim);border:1px solid rgba(0,212,170,.15);border-radius:12px;padding:16px 18px;text-align:left;margin-bottom:24px}
@@ -523,9 +529,9 @@ select.fi option{background:var(--card);color:var(--t1)}
 <div class="step" id="s6">
   <div class="page-center">
     <div class="suc-card">
-      <div class="suc-icon">🎉</div>
-      <div class="suc-title">WhatsApp Conectado!</div>
-      <div class="suc-sub">Seu assistente virtual já está ativo e pronto para atender os clientes do seu estúdio automaticamente.</div>
+      <div class="suc-icon">✅</div>
+      <div class="suc-title">Sua assistente está pronta!</div>
+      <div class="suc-sub">O InkFlow já está conectado ao seu WhatsApp e pronto para atender seus clientes automaticamente.</div>
       <div class="suc-info">
         <div class="suc-row"><span class="suc-key">estúdio</span><span class="suc-val" id="suc-estudio">—</span></div>
         <div class="suc-row"><span class="suc-key">agente</span><span class="suc-val" id="suc-agente">—</span></div>
@@ -542,6 +548,7 @@ select.fi option{background:var(--card);color:var(--t1)}
         &#10003; Voc&#234; recebe alertas no grupo de notifica&#231;&#227;o<br/><br/>
         Em caso de d&#250;vidas, entre em contato com o suporte InkFlow.
       </div>
+      <button class="suc-cta" id="suc-cta" type="button">Ir para o painel &rarr;</button>
     </div>
   </div>
 </div>
@@ -937,8 +944,11 @@ function updateTimer() { const el = document.getElementById('qr-timer'); if (el)
 async function checkConnection() {
   try {
     const r = await fetch('/api/evo-status?instance=' + encodeURIComponent(instanceSlug));
-    const data = await r.json(); const state = data?.state || 'unknown';
-    if (state === 'open') {
+    const data = await r.json(); const state = (data?.state || 'unknown').toString().toLowerCase();
+    console.log('[inkflow] evo-status state=' + state);
+    // Evolution API retorna 'open' (Baileys), mas algumas versoes/integracoes usam 'connected' ou 'online'
+    const CONNECTED_STATES = ['open', 'connected', 'online'];
+    if (CONNECTED_STATES.includes(state)) {
       clearInterval(pollInterval); clearInterval(qrTimerHandle);
       const badge = document.getElementById('qr-status'); if (badge) { badge.textContent = 'conectado ✓'; badge.className = 'qr-badge conn'; }
       const successHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px"><div style="font-size:52px;animation:pulse 1s ease-in-out 3">✅</div><div style="color:var(--teal);font-weight:700;font-size:16px">WhatsApp Conectado!</div><div style="color:var(--t3);font-size:12px">configurando seu estúdio...</div></div>';
@@ -972,6 +982,23 @@ async function checkConnection() {
         fetch('/api/send-studio-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId }) }).then(r => r.json()).then(d => console.log('[inkflow] send-studio-email response:', d)).catch(e => console.warn('send-studio-email failed:', e));
       }
       goStep(6);
+      // Configurar botao CTA de acordo com o tipo de usuario
+      const cta = document.getElementById('suc-cta');
+      if (cta) {
+        if (isArtistInvite || ob.isArtist) {
+          cta.textContent = 'Concluído ✓';
+          cta.onclick = () => { window.location.href = 'https://inkflowbrasil.com/'; };
+        } else if (isStudioPlan) {
+          cta.textContent = 'Verificar meu email →';
+          cta.onclick = () => {
+            const inv = document.getElementById('invite-section');
+            if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          };
+        } else {
+          cta.textContent = 'Ir para o site →';
+          cta.onclick = () => { window.location.href = 'https://inkflowbrasil.com/'; };
+        }
+      }
       // Se é estúdio, scroll para mostrar o aviso de email
       if (isStudioPlan && !isArtistInvite && !ob.isArtist) {
         setTimeout(() => { const inv = document.getElementById('invite-section'); if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500);
