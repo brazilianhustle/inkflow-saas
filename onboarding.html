@@ -348,16 +348,21 @@ select.fi option{background:var(--card);color:var(--t1)}
       <input class="fi" id="f-cep" type="tel" inputmode="numeric" maxlength="9" autocomplete="postal-code" placeholder="00000-000"/>
       <div class="fi-hint" id="cep-hint">Preencheremos cidade e endereço automaticamente</div>
     </div>
+    <div class="fg">
+      <label class="fl">Cidade</label>
+      <input class="fi" id="f-cidade" type="text" placeholder="Ex: São Paulo - SP"/>
+    </div>
     <div class="fgrid">
-      <div class="fg">
-        <label class="fl">Cidade</label>
-        <input class="fi" id="f-cidade" type="text" placeholder="Ex: São Paulo - SP"/>
-      </div>
-      <div class="fg">
+      <div class="fg" style="flex:3">
         <label class="fl">Endereço</label>
-        <input class="fi" id="f-endereco" type="text" placeholder="Ex: Av. Paulista, 1000"/>
+        <input class="fi" id="f-endereco" type="text" placeholder="Ex: Av. Paulista"/>
+      </div>
+      <div class="fg" style="flex:1">
+        <label class="fl">Número</label>
+        <input class="fi" id="f-numero" type="tel" inputmode="numeric" placeholder="Ex: 1000"/>
       </div>
     </div>
+    <div class="fi-hint" style="margin-top:-8px;margin-bottom:14px">O endereço será usado pela assistente virtual na conversa com os clientes quando questionada.</div>
 
     <hr class="divider"/>
     <div class="fsec">Plano</div>
@@ -764,7 +769,7 @@ async function chargeCard(formData) {
 }
 
 async function showPaymentStep() {
-  const nome = document.getElementById('f-nome').value.trim(); const estudio = (document.getElementById('f-estudio').value || '').trim(); const agente = document.getElementById('f-agente').value.trim() || nome.split(' ')[0]; const cidade = document.getElementById('f-cidade').value.trim(); const endereco = document.getElementById('f-endereco').value.trim(); const email = document.getElementById('f-email').value.trim();
+  const nome = document.getElementById('f-nome').value.trim(); const estudio = (document.getElementById('f-estudio').value || '').trim(); const agente = document.getElementById('f-agente').value.trim() || nome.split(' ')[0]; const cidade = document.getElementById('f-cidade').value.trim(); const enderecoBase = document.getElementById('f-endereco').value.trim(); const numero = document.getElementById('f-numero')?.value?.trim() || ''; const endereco = enderecoBase + (numero ? (enderecoBase.includes(',') ? ' nº ' + numero : ', ' + numero) : ''); const email = document.getElementById('f-email').value.trim();
   // Artista nao precisa de nome_estudio
   if (!isArtistInvite && (!nome || !estudio)) { showFormError('Preencha o nome e o nome do est\u00fadio.'); return; }
   if (isArtistInvite && !nome) { showFormError('Preencha seu nome.'); return; }
