@@ -129,6 +129,20 @@ export async function onRequest(context) {
       body: JSON.stringify(tenantData),
     });
 
+    // ── Coluna onboarding_key inexistente: dropa e retenta (deploy antes de migration) ──
+    if (!res.ok) {
+      const peek = await res.clone().text();
+      if (peek.includes('onboarding_key') && (peek.includes('does not exist') || peek.includes('PGRST204') || peek.includes('42703'))) {
+        console.warn('create-tenant: coluna onboarding_key ausente — retentando sem ela. RODE: ALTER TABLE tenants ADD COLUMN IF NOT EXISTS onboarding_key TEXT;');
+        delete tenantData.onboarding_key;
+        res = await fetch(`${SUPABASE_URL}/rest/v1/tenants`, {
+          method: 'POST',
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+          body: JSON.stringify(tenantData),
+        });
+      }
+    }
+
     // ── Colisão de slug (unique constraint) — até 5 tentativas ──────────────
     if (!res.ok) {
       const errText = await res.text();
