@@ -28,6 +28,9 @@ const ALLOWED_FIELDS = new Set([
   'nome', 'nome_agente', 'nome_estudio', 'email', 'cidade', 'endereco',
   'evo_instance', 'webhook_path', 'evo_base_url', 'plano', 'prompt_sistema',
   'parent_tenant_id', 'is_artist_slot', 'google_calendar_id',
+  // [FIX] onboarding_key precisa ser persistido para que update-tenant/get-studio-token
+  // possam autenticar via verifyOnboardingKey (sem isso, todas as auth pos-criacao falham 403)
+  'onboarding_key',
 ]);
 
 function json(data, status = 200) {

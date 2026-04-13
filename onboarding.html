@@ -968,57 +968,99 @@ async function checkConnection() {
       const successHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px"><div style="font-size:52px;animation:pulse 1s ease-in-out 3">✅</div><div style="color:var(--teal);font-weight:700;font-size:16px">WhatsApp Conectado!</div><div style="color:var(--t3);font-size:12px">configurando seu estúdio...</div></div>';
       if (currentConnMode === 'pairing') { const pairingArea = document.getElementById('pairing-area'); if (pairingArea) pairingArea.innerHTML = successHTML; }
       else { const qrBox = document.getElementById('qr-box'); if (qrBox) qrBox.innerHTML = successHTML; }
-      await new Promise(r => setTimeout(r, 2000));
-      await fetch('/api/update-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, email: document.getElementById('f-email').value.trim(), onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || undefined, ativo: true }) });
+      console.log('[inkflow] connection detected — entering success flow');
+
+      // [FIX redirect] Restaurar contexto e ir para step 6 ANTES de chamadas opcionais
+      // Antes: signup_log/update-tenant/etc podiam throw e o catch silencioso travava em step 5.
       let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-      // Restaurar plano ANTES de usar (cobre page reload no celular)
       if (ob.plano) selectedPlan = ob.plano;
-      console.log('[inkflow] success: selectedPlan=' + selectedPlan + ', ob.plano=' + ob.plano + ', isArtistInvite=' + isArtistInvite + ', ob.isArtist=' + ob.isArtist);
-      try { await sbFetch('POST', '/rest/v1/signups_log', { tenant_id: tenantId, evo_instance: instanceSlug, nome_estudio: ob.estudio || document.getElementById('f-estudio')?.value?.trim() || '', nome: ob.nome || document.getElementById('f-nome')?.value?.trim() || '', cidade: ob.cidade || document.getElementById('f-cidade')?.value?.trim() || null, plano: selectedPlan }); } catch (logErr) { console.warn('signup log failed:', logErr); }
-      document.getElementById('suc-estudio').textContent = ob.estudio || instanceSlug;
-      document.getElementById('suc-agente').textContent = ob.agente || '';
-      document.getElementById('suc-inst').textContent = instanceSlug;
-      const sucPlanLabels = { teste:'Teste R$1', individual:'Individual \u00b7 R$1/m\u00eas (teste)', estudio:'Est\u00fadio \u00b7 R$1/m\u00eas (teste)', premium:'Est\u00fadio VIP \u00b7 R$1/m\u00eas (teste)' };
-      document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
-      // Adaptar tela de sucesso para artista
-      if (isArtistInvite || ob.isArtist) {
-        document.querySelector('.suc-title').textContent = 'Seu WhatsApp est\u00e1 conectado!';
-        document.querySelector('.suc-sub').textContent = 'Seu assistente virtual pessoal j\u00e1 est\u00e1 ativo. Os clientes que entrarem em contato pelo seu n\u00famero ser\u00e3o atendidos automaticamente.';
-        document.getElementById('suc-plano').textContent = 'artista \u00b7 ' + (ob.estudio || '');
-        document.querySelector('.suc-next').innerHTML = '\u2713 Seu WhatsApp j\u00e1 recebe mensagens automaticamente<br/>\u2713 O assistente responde agendamentos e d\u00favidas<br/>\u2713 Os agendamentos v\u00e3o para o calend\u00e1rio do est\u00fadio<br/><br/>Em caso de d\u00favidas, fale com o dono do est\u00fadio.';
-      }
-      localStorage.removeItem('inkflow_ob'); localStorage.removeItem('inkflow_gk');
-      // Para planos estúdio/premium: disparar email com link de gestão do estúdio
+      const isArtist = isArtistInvite || ob.isArtist;
       const isStudioPlan = ['estudio','premium'].includes(selectedPlan);
-      console.log('[inkflow] studio check: isStudioPlan=' + isStudioPlan + ', isArtistInvite=' + isArtistInvite);
-      if (!isArtistInvite && !ob.isArtist && isStudioPlan) {
-        showStudioEmailNotice();
-        fetch('/api/send-studio-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId }) }).then(r => r.json()).then(d => console.log('[inkflow] send-studio-email response:', d)).catch(e => console.warn('send-studio-email failed:', e));
-      }
+      console.log('[inkflow] success: plan=' + selectedPlan + ' isArtist=' + isArtist + ' isStudio=' + isStudioPlan);
+
+      // Preenche tela de sucesso (DOM existe mesmo em step 5)
+      try {
+        document.getElementById('suc-estudio').textContent = ob.estudio || instanceSlug;
+        document.getElementById('suc-agente').textContent = ob.agente || '';
+        document.getElementById('suc-inst').textContent = instanceSlug;
+        const sucPlanLabels = { teste:'Teste R$1', individual:'Individual \u00b7 R$1/m\u00eas (teste)', estudio:'Est\u00fadio \u00b7 R$1/m\u00eas (teste)', premium:'Est\u00fadio VIP \u00b7 R$1/m\u00eas (teste)' };
+        document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
+        if (isArtist) {
+          document.querySelector('.suc-title').textContent = 'Seu WhatsApp est\u00e1 conectado!';
+          document.querySelector('.suc-sub').textContent = 'Seu assistente virtual pessoal j\u00e1 est\u00e1 ativo. Os clientes que entrarem em contato pelo seu n\u00famero ser\u00e3o atendidos automaticamente.';
+          document.getElementById('suc-plano').textContent = 'artista \u00b7 ' + (ob.estudio || '');
+          document.querySelector('.suc-next').innerHTML = '\u2713 Seu WhatsApp j\u00e1 recebe mensagens automaticamente<br/>\u2713 O assistente responde agendamentos e d\u00favidas<br/>\u2713 Os agendamentos v\u00e3o para o calend\u00e1rio do est\u00fadio<br/><br/>Em caso de d\u00favidas, fale com o dono do est\u00fadio.';
+        }
+      } catch (uiErr) { console.warn('[inkflow] UI fill failed (nao fatal):', uiErr); }
+
+      // Pequena pausa visual para o usuário ver o "Conectado!"
+      await new Promise(r => setTimeout(r, 1500));
+
+      // GO TO STEP 6 — antes de qualquer chamada que possa falhar
       goStep(6);
+
       // Configurar botao CTA de acordo com o tipo de usuario
       const cta = document.getElementById('suc-cta');
       if (cta) {
-        if (isArtistInvite || ob.isArtist) {
+        if (isArtist) {
           cta.textContent = 'Concluído ✓';
           cta.onclick = () => { window.location.href = 'https://inkflowbrasil.com/'; };
         } else if (isStudioPlan) {
-          // [Melhoria 3] Auto-redirect para /studio.html?welcome=true com token HMAC
           cta.textContent = 'Ir para o painel do estúdio →';
           cta.onclick = fetchStudioTokenAndRedirect;
-          // Redireciona sozinho após 4s pra não depender do email
+          // Redireciona automaticamente depois de 4s
           setTimeout(() => { if (document.getElementById('s6')?.classList.contains('active')) fetchStudioTokenAndRedirect(); }, 4000);
         } else {
           cta.textContent = 'Ir para o site →';
           cta.onclick = () => { window.location.href = 'https://inkflowbrasil.com/'; };
         }
       }
-      // Se é estúdio, scroll para mostrar o aviso de email
-      if (isStudioPlan && !isArtistInvite && !ob.isArtist) {
+
+      // ── Chamadas de ativacao em paralelo (apos UI ja estar em step 6) ──
+      const obKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk') || undefined;
+      const emailVal = document.getElementById('f-email')?.value?.trim() || ob.email || '';
+
+      // Ativa tenant (nao bloqueia UI)
+      fetch('/api/update-tenant', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenant_id: tenantId, email: emailVal, onboarding_key: obKey, ativo: true }),
+      }).then(r => { if (!r.ok) console.warn('[inkflow] update-tenant ativo retornou', r.status); })
+        .catch(e => console.warn('[inkflow] update-tenant ativo falhou:', e?.message));
+
+      // Log de signup (nao bloqueia)
+      try {
+        sbFetch('POST', '/rest/v1/signups_log', {
+          tenant_id: tenantId, evo_instance: instanceSlug,
+          nome_estudio: ob.estudio || document.getElementById('f-estudio')?.value?.trim() || '',
+          nome: ob.nome || document.getElementById('f-nome')?.value?.trim() || '',
+          cidade: ob.cidade || document.getElementById('f-cidade')?.value?.trim() || null,
+          plano: selectedPlan,
+        }).catch(e => console.warn('[inkflow] signup_log failed:', e?.message));
+      } catch (e) { console.warn('[inkflow] signup_log throw:', e?.message); }
+
+      // Email do estudio (nao bloqueia)
+      if (!isArtist && isStudioPlan) {
+        showStudioEmailNotice();
+        fetch('/api/send-studio-email', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenant_id: tenantId }),
+        }).then(r => r.json()).then(d => console.log('[inkflow] send-studio-email response:', d))
+          .catch(e => console.warn('send-studio-email failed:', e));
+      }
+
+      // Limpar estado salvo (mantem inkflow_gk se for redirect pra studio — fetchStudioTokenAndRedirect precisa)
+      localStorage.removeItem('inkflow_ob');
+      if (!isStudioPlan || isArtist) localStorage.removeItem('inkflow_gk');
+
+      // Scroll para aviso de email se aplicavel
+      if (isStudioPlan && !isArtist) {
         setTimeout(() => { const inv = document.getElementById('invite-section'); if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500);
       }
     }
-  } catch (e) { console.warn('Poll error:', e); }
+  } catch (e) {
+    // [FIX debug] Logar erro real em vez de silenciar — antes era 'Poll error' sem stack
+    console.error('[inkflow] checkConnection threw:', e?.message, e?.stack);
+  }
 }
 
 // ── Aviso de email para donos de estúdio ──
@@ -1141,31 +1183,40 @@ async function validateEmail(email) {
 })();
 
 // ── [Melhoria 3] Welcome redirect para donos de estúdio ──────────────────
+let _studioRedirectInFlight = false;
 async function fetchStudioTokenAndRedirect() {
+  if (_studioRedirectInFlight) return;
+  _studioRedirectInFlight = true;
+  const cta = document.getElementById('suc-cta');
   const key = gConfig?.globalKey || localStorage.getItem('inkflow_gk');
   if (!key || !tenantId) {
-    console.warn('[welcome] sem onboarding_key ou tenantId, redirecionando pra home');
-    window.location.href = 'https://inkflowbrasil.com/';
+    console.error('[welcome] sem onboarding_key ou tenantId — abortando redirect');
+    if (cta) cta.textContent = '⚠ Sessão expirada — recarregue a página';
+    _studioRedirectInFlight = false;
     return;
   }
+  if (cta) { cta.textContent = 'Carregando painel...'; cta.disabled = true; }
   try {
     const r = await fetch('/api/get-studio-token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tenant_id: tenantId, onboarding_key: key }),
     });
-    if (!r.ok) throw new Error('get-studio-token HTTP ' + r.status);
-    const d = await r.json();
-    if (!d.token) throw new Error('token ausente na resposta');
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.token) {
+      throw new Error('HTTP ' + r.status + ' ' + (d.error || 'sem token'));
+    }
+    // Limpa storage só agora que o redirect está garantido
+    localStorage.removeItem('inkflow_gk');
     window.location.href = '/studio.html?token=' + encodeURIComponent(d.token) + '&welcome=true';
   } catch (e) {
-    console.error('[welcome] falha ao gerar token de estudio:', e);
-    // Fallback: ficar na tela de sucesso atual
-    const cta = document.getElementById('suc-cta');
+    console.error('[welcome] falha ao gerar token de estudio:', e?.message);
     if (cta) {
-      cta.textContent = 'Ir para o site →';
-      cta.onclick = () => { window.location.href = 'https://inkflowbrasil.com/'; };
+      cta.disabled = false;
+      cta.textContent = '⚠ Falha ao abrir painel — clique para tentar de novo';
+      cta.onclick = () => { _studioRedirectInFlight = false; fetchStudioTokenAndRedirect(); };
     }
+    _studioRedirectInFlight = false;
   }
 }
 
