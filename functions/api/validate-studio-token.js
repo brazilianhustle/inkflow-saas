@@ -1,8 +1,10 @@
 // ── InkFlow — Valida studio_token (acesso à página de gestão do estúdio) ─────
 // POST /api/validate-studio-token
-// Body: { token: "uuid-do-studio-token" }
-// Resposta sucesso: { valid: true, tenant: { id, nome_estudio, plano, email, evo_instance } }
+// Body: { token: "v1.<...>" | "<uuid-legacy>" }
+// Resposta sucesso: { valid: true, tenant: {...}, slots: {...}, artists: [...], refreshed_token? }
 // Resposta falha:   { valid: false, error: "..." }
+
+import { verifyStudioTokenOrLegacy, generateStudioToken } from './_auth-helpers.js';
 
 const CORS = {
   'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
@@ -32,12 +34,25 @@ export async function onRequest(context) {
     return json({ valid: false, error: 'Token inválido' }, 400);
   }
 
-  try {
-    const SUPABASE_KEY = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
+  const SUPABASE_KEY = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
+  const TOKEN_SECRET = env.STUDIO_TOKEN_SECRET;
 
-    // Buscar tenant pelo studio_token
+  try {
+    // Verifica HMAC ou UUID legacy
+    const verified = await verifyStudioTokenOrLegacy({
+      token,
+      secret: TOKEN_SECRET,
+      supabaseUrl: SUPABASE_URL,
+      supabaseKey: SUPABASE_KEY,
+    });
+
+    if (!verified) {
+      return json({ valid: false, error: 'Token inválido ou expirado. Solicite um novo link.' }, 401);
+    }
+
+    // Buscar dados completos do tenant pelo id validado
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/tenants?studio_token=eq.${encodeURIComponent(token)}&select=id,nome_estudio,plano,email,evo_instance,ativo,nome`,
+      `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(verified.tenantId)}&select=id,nome_estudio,plano,email,evo_instance,ativo,nome,welcome_shown`,
       {
         headers: {
           apikey: SUPABASE_KEY,
@@ -53,7 +68,7 @@ export async function onRequest(context) {
 
     const tenants = await res.json();
     if (!tenants || tenants.length === 0) {
-      return json({ valid: false, error: 'Token inválido ou expirado' }, 404);
+      return json({ valid: false, error: 'Tenant não encontrado' }, 404);
     }
 
     const tenant = tenants[0];
@@ -80,6 +95,21 @@ export async function onRequest(context) {
     const maxSlots = tenant.plano === 'premium' ? 10 : 5;
     const usedSlots = artists.length;
 
+    // Sliding window: se HMAC e restam <7d, emite token renovado.
+    // Se token UUID legacy, também renova promovendo para HMAC.
+    let refreshedToken = null;
+    if (TOKEN_SECRET) {
+      const shouldRefresh = verified.source === 'legacy-uuid' || verified.shouldRefresh;
+      if (shouldRefresh) {
+        try {
+          refreshedToken = await generateStudioToken(tenant.id, TOKEN_SECRET);
+          console.log(`validate-studio-token: token renovado para tenant=${tenant.id} (source=${verified.source})`);
+        } catch (e) {
+          console.warn('validate-studio-token: falha ao renovar token:', e?.message);
+        }
+      }
+    }
+
     return json({
       valid: true,
       tenant: {
@@ -89,6 +119,7 @@ export async function onRequest(context) {
         plano: tenant.plano,
         email: tenant.email,
         evo_instance: tenant.evo_instance,
+        welcome_shown: !!tenant.welcome_shown,
       },
       slots: {
         max: maxSlots,
@@ -101,6 +132,8 @@ export async function onRequest(context) {
         evo_instance: a.evo_instance,
         ativo: a.ativo,
       })),
+      token_exp: verified.exp || null,
+      refreshed_token: refreshedToken,
     });
 
   } catch (err) {

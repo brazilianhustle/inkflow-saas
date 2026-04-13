@@ -331,8 +331,10 @@ select.fi option{background:var(--card);color:var(--t1)}
     </div>
     <div class="fg">
       <label class="fl">Seu e-mail <span>*</span></label>
-      <input class="fi" id="f-email" type="email" placeholder="Ex: carlos@darkinkstudio.com"/>
-      <div class="fi-hint">Para notificações, suporte e cobrança</div>
+      <input class="fi" id="f-email" type="email" autocomplete="email" placeholder="Ex: carlos@darkinkstudio.com"/>
+      <div class="fi-hint" id="email-hint">Para notificações, suporte e cobrança</div>
+      <div class="fi-hint" id="email-err" style="display:none;color:#ff6b6b"></div>
+      <div class="fi-hint" id="email-suggest" style="display:none;color:var(--teal);cursor:pointer;text-decoration:underline"></div>
     </div>
 
     <hr class="divider"/>
@@ -340,6 +342,11 @@ select.fi option{background:var(--card);color:var(--t1)}
     <div class="fg">
       <label class="fl">Nome do estúdio <span>*</span></label>
       <input class="fi" id="f-estudio" type="text" placeholder="Ex: Dark Ink Studio"/>
+    </div>
+    <div class="fg">
+      <label class="fl">CEP</label>
+      <input class="fi" id="f-cep" type="tel" inputmode="numeric" maxlength="9" autocomplete="postal-code" placeholder="00000-000"/>
+      <div class="fi-hint" id="cep-hint">Preencheremos cidade e endereço automaticamente</div>
     </div>
     <div class="fgrid">
       <div class="fg">
@@ -762,6 +769,13 @@ async function showPaymentStep() {
   if (!isArtistInvite && (!nome || !estudio)) { showFormError('Preencha o nome e o nome do est\u00fadio.'); return; }
   if (isArtistInvite && !nome) { showFormError('Preencha seu nome.'); return; }
   if (!email || !email.includes('@')) { showFormError('Email v\u00e1lido \u00e9 obrigat\u00f3rio.'); return; }
+  // [Melhoria 2] Se a validacao ja rodou e falhou, ou ainda não rodou, forçar agora
+  if (emailValidState.email !== email || emailValidState.valid === null) {
+    const ok = await validateEmail(email);
+    if (ok === false) { showFormError('Email inv\u00e1lido. Corrija antes de continuar.'); return; }
+  } else if (emailValidState.valid === false) {
+    showFormError('Email inv\u00e1lido. Corrija antes de continuar.'); return;
+  }
   document.getElementById('form-err').style.display = 'none';
   const btn = document.getElementById('form-btn'); btn.disabled = true; btn.textContent = 'Aguarde...';
   try {
@@ -789,7 +803,7 @@ async function showPaymentStep() {
         if (ex.ativo) { throw new Error('Este email já está cadastrado em um estúdio ativo. Use outro email ou entre em contato com o suporte.'); }
         if (!ex.ativo) {
           tenantId = ex.id;
-          const retryUpdate = { tenant_id: ex.id, email, nome_agente: agente, nome_estudio: estudio || (isArtistInvite ? artistInviteData.parent_nome_estudio : ''), evo_instance: instanceSlug, webhook_path: 'inkflow', plano: selectedPlan };
+          const retryUpdate = { tenant_id: ex.id, email, onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || undefined, nome_agente: agente, nome_estudio: estudio || (isArtistInvite ? artistInviteData.parent_nome_estudio : ''), evo_instance: instanceSlug, webhook_path: 'inkflow', plano: selectedPlan };
           if (isArtistInvite && artistInviteData.parent_tenant_id) {
             retryUpdate.parent_tenant_id = artistInviteData.parent_tenant_id;
             retryUpdate.is_artist_slot = true;
@@ -861,7 +875,7 @@ async function continueAfterPayment(preapprovalId) {
   tenantId = state.tenantId; instanceSlug = state.instanceSlug; selectedPlan = state.plano || 'individual'; gConfig.globalKey = localStorage.getItem('inkflow_gk') || '';
   if (!gConfig.globalKey) { showErrOverlay('Link expirado. Solicite um novo link de onboarding ao suporte InkFlow.'); return; }
   try {
-    const checkRes = await fetch('/api/get-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, email: state.email || '', fields: 'mp_subscription_id' }) });
+    const checkRes = await fetch('/api/get-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, email: state.email || '', onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || undefined, fields: 'mp_subscription_id' }) });
     if (checkRes.ok) { const checkData = await checkRes.json(); const dbSubId = checkData?.tenants?.[0]?.mp_subscription_id; if (dbSubId && dbSubId !== preapprovalId) { showErrOverlay('ID de pagamento não corresponde. Acesse seu link de onboarding novamente.'); return; } }
     else { console.warn('Payment verification check failed:', checkRes.status); showErrOverlay('Erro ao verificar pagamento. Acesse seu link de onboarding novamente.'); return; }
   } catch (checkErr) { console.warn('Payment verification failed:', checkErr); showErrOverlay('Serviço temporariamente indisponível. Tente novamente em alguns minutos.'); return; }
@@ -955,7 +969,7 @@ async function checkConnection() {
       if (currentConnMode === 'pairing') { const pairingArea = document.getElementById('pairing-area'); if (pairingArea) pairingArea.innerHTML = successHTML; }
       else { const qrBox = document.getElementById('qr-box'); if (qrBox) qrBox.innerHTML = successHTML; }
       await new Promise(r => setTimeout(r, 2000));
-      await fetch('/api/update-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, email: document.getElementById('f-email').value.trim(), ativo: true }) });
+      await fetch('/api/update-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: tenantId, email: document.getElementById('f-email').value.trim(), onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || undefined, ativo: true }) });
       let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
       // Restaurar plano ANTES de usar (cobre page reload no celular)
       if (ob.plano) selectedPlan = ob.plano;
@@ -989,11 +1003,11 @@ async function checkConnection() {
           cta.textContent = 'Concluído ✓';
           cta.onclick = () => { window.location.href = 'https://inkflowbrasil.com/'; };
         } else if (isStudioPlan) {
-          cta.textContent = 'Verificar meu email →';
-          cta.onclick = () => {
-            const inv = document.getElementById('invite-section');
-            if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          };
+          // [Melhoria 3] Auto-redirect para /studio.html?welcome=true com token HMAC
+          cta.textContent = 'Ir para o painel do estúdio →';
+          cta.onclick = fetchStudioTokenAndRedirect;
+          // Redireciona sozinho após 4s pra não depender do email
+          setTimeout(() => { if (document.getElementById('s6')?.classList.contains('active')) fetchStudioTokenAndRedirect(); }, 4000);
         } else {
           cta.textContent = 'Ir para o site →';
           cta.onclick = () => { window.location.href = 'https://inkflowbrasil.com/'; };
@@ -1019,6 +1033,140 @@ function showStudioEmailNotice() {
     <div style="font-size:12px;color:var(--t3);margin-top:8px">Não recebeu? Verifique a pasta de spam ou entre em contato com o suporte.</div>
   `;
   section.classList.add('show');
+}
+
+// ── [Melhoria 1] Autopreenchimento CEP via ViaCEP ─────────────────────────
+(function setupCEP() {
+  const cepEl = document.getElementById('f-cep');
+  if (!cepEl) return;
+  const hintEl = document.getElementById('cep-hint');
+  let debounceT = null;
+  function setHint(msg, isError) {
+    if (!hintEl) return;
+    hintEl.textContent = msg;
+    hintEl.style.color = isError ? '#ff6b6b' : '';
+  }
+  cepEl.addEventListener('input', (e) => {
+    let v = e.target.value.replace(/\D/g, '').slice(0, 8);
+    if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5);
+    e.target.value = v;
+    const digits = v.replace(/\D/g, '');
+    clearTimeout(debounceT);
+    if (digits.length !== 8) return;
+    setHint('Buscando endereço...');
+    debounceT = setTimeout(async () => {
+      try {
+        const r = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+        if (!r.ok) throw new Error('viacep offline');
+        const d = await r.json();
+        if (d.erro) { setHint('CEP não encontrado', true); return; }
+        const cidadeEl = document.getElementById('f-cidade');
+        const enderecoEl = document.getElementById('f-endereco');
+        if (cidadeEl && d.localidade) cidadeEl.value = d.localidade + (d.uf ? ' - ' + d.uf : '');
+        if (enderecoEl && d.logradouro) {
+          enderecoEl.value = d.logradouro + (d.bairro ? ', ' + d.bairro : '');
+        }
+        setHint('Endereço preenchido ✓');
+      } catch (err) {
+        console.warn('[cep] viacep fetch failed:', err?.message);
+        setHint('Não foi possível consultar o CEP. Preencha manualmente.', true);
+      }
+    }, 500);
+  });
+})();
+
+// ── [Melhoria 2] Validação robusta de email ──────────────────────────────
+const EMAIL_TYPOS = {
+  'gmial.com':'gmail.com','gmal.com':'gmail.com','gmai.com':'gmail.com','gnail.com':'gmail.com',
+  'hotmal.com':'hotmail.com','hotmai.com':'hotmail.com','hotnail.com':'hotmail.com','hotmial.com':'hotmail.com',
+  'outloo.com':'outlook.com','outlok.com':'outlook.com','outloook.com':'outlook.com',
+  'yaho.com':'yahoo.com','yhaoo.com':'yahoo.com','yahho.com':'yahoo.com',
+  'icluod.com':'icloud.com','iclod.com':'icloud.com',
+  'gmail.co':'gmail.com','hotmail.co':'hotmail.com','outlook.co':'outlook.com',
+};
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+let emailValidState = { valid: null, email: '' };
+
+async function validateEmail(email) {
+  const errEl = document.getElementById('email-err');
+  const sugEl = document.getElementById('email-suggest');
+  const hintEl = document.getElementById('email-hint');
+  const hide = (el) => { if (el) el.style.display = 'none'; };
+  hide(errEl); hide(sugEl);
+  if (!email) { emailValidState = { valid: null, email: '' }; return null; }
+  if (!EMAIL_RE.test(email)) {
+    errEl.textContent = 'Email inválido. Use o formato nome@dominio.com'; errEl.style.display = 'block';
+    emailValidState = { valid: false, email }; return false;
+  }
+  const domain = email.split('@')[1].toLowerCase();
+  // Sugerir correção de typo
+  if (EMAIL_TYPOS[domain]) {
+    const fixed = email.split('@')[0] + '@' + EMAIL_TYPOS[domain];
+    sugEl.textContent = 'Você quis dizer ' + fixed + '?';
+    sugEl.style.display = 'block';
+    sugEl.onclick = () => { document.getElementById('f-email').value = fixed; sugEl.style.display = 'none'; validateEmail(fixed); };
+    emailValidState = { valid: false, email }; return false;
+  }
+  // Verificar MX via dns.google
+  try {
+    const r = await fetch('https://dns.google/resolve?name=' + encodeURIComponent(domain) + '&type=MX');
+    if (r.ok) {
+      const d = await r.json();
+      if (!d.Answer || d.Answer.length === 0) {
+        errEl.textContent = 'Este email parece inválido. Verifique e tente novamente.';
+        errEl.style.display = 'block';
+        emailValidState = { valid: false, email }; return false;
+      }
+    }
+  } catch (e) {
+    // Falha de rede no DNS — não bloqueia, só loga
+    console.warn('[email] DNS check failed:', e?.message);
+  }
+  emailValidState = { valid: true, email };
+  return true;
+}
+
+(function setupEmail() {
+  const emailEl = document.getElementById('f-email');
+  if (!emailEl) return;
+  emailEl.addEventListener('blur', () => validateEmail(emailEl.value.trim()));
+  emailEl.addEventListener('input', () => {
+    // Reseta estado se usuário está digitando
+    const errEl = document.getElementById('email-err');
+    const sugEl = document.getElementById('email-suggest');
+    if (errEl) errEl.style.display = 'none';
+    if (sugEl) sugEl.style.display = 'none';
+    emailValidState = { valid: null, email: emailEl.value.trim() };
+  });
+})();
+
+// ── [Melhoria 3] Welcome redirect para donos de estúdio ──────────────────
+async function fetchStudioTokenAndRedirect() {
+  const key = gConfig?.globalKey || localStorage.getItem('inkflow_gk');
+  if (!key || !tenantId) {
+    console.warn('[welcome] sem onboarding_key ou tenantId, redirecionando pra home');
+    window.location.href = 'https://inkflowbrasil.com/';
+    return;
+  }
+  try {
+    const r = await fetch('/api/get-studio-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenant_id: tenantId, onboarding_key: key }),
+    });
+    if (!r.ok) throw new Error('get-studio-token HTTP ' + r.status);
+    const d = await r.json();
+    if (!d.token) throw new Error('token ausente na resposta');
+    window.location.href = '/studio.html?token=' + encodeURIComponent(d.token) + '&welcome=true';
+  } catch (e) {
+    console.error('[welcome] falha ao gerar token de estudio:', e);
+    // Fallback: ficar na tela de sucesso atual
+    const cta = document.getElementById('suc-cta');
+    if (cta) {
+      cta.textContent = 'Ir para o site →';
+      cta.onclick = () => { window.location.href = 'https://inkflowbrasil.com/'; };
+    }
+  }
 }
 
 init();

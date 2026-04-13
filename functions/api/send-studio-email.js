@@ -7,6 +7,8 @@
 // Body: { tenant_id: "uuid" }
 // Resposta: { success: true } ou { error: "..." }
 
+import { generateStudioToken } from './_auth-helpers.js';
+
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const MAILERLITE_GROUP_ID = '184440232841578230'; // grupo "Donos de Estúdio"
 
@@ -71,22 +73,20 @@ export async function onRequest(context) {
       return json({ success: true, skipped: true, reason: 'Plano não elegível' });
     }
 
-    if (!tenant.studio_token) {
-      console.warn('send-studio-email: tenant sem studio_token, gerando...');
-      const newToken = crypto.randomUUID();
-      await fetch(
-        `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}`,
-        {
-          method: 'PATCH',
-          headers: {
-            apikey: SB_KEY,
-            Authorization: `Bearer ${SB_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ studio_token: newToken }),
-        }
-      );
-      tenant.studio_token = newToken;
+    // [FIX seguranca] Gerar token HMAC assinado (TTL 30d) ao invés de UUID perpetuo
+    // Não precisa persistir — validate-studio-token verifica por assinatura.
+    // Fallback UUID legacy ainda funciona via _auth-helpers pra tokens antigos em circulação.
+    const TOKEN_SECRET = env.STUDIO_TOKEN_SECRET;
+    if (!TOKEN_SECRET) {
+      console.error('send-studio-email: STUDIO_TOKEN_SECRET não configurado');
+      return json({ error: 'Configuração de segurança ausente' }, 503);
+    }
+    let studioToken;
+    try {
+      studioToken = await generateStudioToken(tenant.id, TOKEN_SECRET);
+    } catch (e) {
+      console.error('send-studio-email: falha ao gerar token:', e?.message);
+      return json({ error: 'Falha ao gerar token de acesso' }, 500);
     }
 
     if (!tenant.email) {
@@ -95,7 +95,7 @@ export async function onRequest(context) {
     }
 
     // ── 2. Adicionar subscriber ao MailerLite com campos customizados ──────
-    const studioLink = `https://inkflowbrasil.com/studio.html?token=${tenant.studio_token}`;
+    const studioLink = `https://inkflowbrasil.com/studio.html?token=${studioToken}`;
     const planLabel = tenant.plano === 'premium' ? 'Estúdio VIP' : 'Estúdio';
     const maxSlots = tenant.plano === 'premium' ? 9 : 4;
 

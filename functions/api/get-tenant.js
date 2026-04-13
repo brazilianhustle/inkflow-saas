@@ -8,6 +8,8 @@
 //   3. Busca por evo_instance → retorna dados públicos (para reconnect.html)
 //   4. Header Authorization: Bearer <supabase_jwt> de admin → acesso total
 
+import { verifyOnboardingKey, verifyStudioTokenOrLegacy } from './_auth-helpers.js';
+
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const ADMIN_EMAIL  = 'lmf4200@gmail.com';
 
@@ -22,7 +24,7 @@ const CORS = {
 const READABLE_FIELDS = new Set([
   'id', 'email', 'ativo', 'plano', 'mp_subscription_id',
   'status_pagamento', 'nome_estudio', 'nome_agente',
-  'evo_instance', 'trial_ate',
+  'evo_instance', 'trial_ate', 'welcome_shown',
 ]);
 
 function json(data, status = 200) {
@@ -52,7 +54,7 @@ export async function onRequest(context) {
   try { body = await request.json(); }
   catch { return json({ error: 'JSON inválido' }, 400); }
 
-  const { tenant_id, email, evo_instance, fields } = body;
+  const { tenant_id, email, evo_instance, fields, onboarding_key, studio_token } = body;
 
   if (!tenant_id && !email && !evo_instance) {
     return json({ error: 'tenant_id, email ou evo_instance obrigatório' }, 400);
@@ -79,67 +81,74 @@ export async function onRequest(context) {
 
   const isAdmin = await verifyAdmin(request.headers.get('Authorization'), SUPABASE_KEY);
 
-  // Se busca por tenant_id sem email e sem JWT admin → bloqueado
-  if (tenant_id && !email && !isAdmin) {
-    return json({ error: 'email obrigatório para consulta por tenant_id' }, 403);
+  // ── AUTH em camadas ──────────────────────────────────────────────────────
+  // (1) Admin Bearer → acesso total a qualquer lookup
+  // (2) onboarding_key + tenant_id → campos whitelist daquele tenant
+  // (3) studio_token → campos whitelist daquele tenant
+  // (4) evo_instance (sem auth) → campos publicos pra reconnect.html (legacy)
+  // (5) email sozinho → apenas existence check: retorna id + ativo, nada mais
+  let authorizedTenantId = null;
+  if (isAdmin) authorizedTenantId = tenant_id || null;
+
+  if (!authorizedTenantId && tenant_id && onboarding_key) {
+    const ok = await verifyOnboardingKey({
+      tenantId: tenant_id, onboardingKey: onboarding_key,
+      supabaseUrl: SUPABASE_URL, supabaseKey: SUPABASE_KEY,
+    });
+    if (ok.ok) authorizedTenantId = tenant_id;
   }
 
-  // Busca por evo_instance: retorna apenas campos públicos (para reconnect.html)
-  // Sem auth requerido — evo_instance já é público na URL de reconexão
+  if (!authorizedTenantId && studio_token) {
+    const verified = await verifyStudioTokenOrLegacy({
+      token: studio_token,
+      secret: env.STUDIO_TOKEN_SECRET,
+      supabaseUrl: SUPABASE_URL, supabaseKey: SUPABASE_KEY,
+    });
+    if (verified && (!tenant_id || verified.tenantId === tenant_id)) {
+      authorizedTenantId = verified.tenantId;
+    }
+  }
 
   // Filtrar campos pela whitelist
   const requestedFields = (fields || 'id,ativo').split(',').map(f => f.trim());
   const safeFields = requestedFields.filter(f => READABLE_FIELDS.has(f));
   if (safeFields.length === 0) safeFields.push('id');
 
-  const selectStr = safeFields.join(',');
+  // Email-only: downgrade para existence check (id, ativo apenas)
+  const EMAIL_ONLY_FIELDS = ['id', 'ativo'];
+  const isEmailOnlyLookup = !authorizedTenantId && !evo_instance && email && !tenant_id;
+  const isTenantIdOnlyLookup = !authorizedTenantId && !isAdmin && tenant_id && !email && !evo_instance;
+
+  if (isTenantIdOnlyLookup) {
+    return json({ error: 'autenticação requerida (onboarding_key ou studio_token)' }, 403);
+  }
+
+  let queryParam;
+  let selectStr;
+  if (authorizedTenantId) {
+    queryParam = `id=eq.${encodeURIComponent(authorizedTenantId)}`;
+    selectStr = safeFields.join(',');
+  } else if (isEmailOnlyLookup) {
+    queryParam = `email=eq.${encodeURIComponent(email)}`;
+    selectStr = EMAIL_ONLY_FIELDS.join(',');
+  } else if (evo_instance) {
+    queryParam = `evo_instance=eq.${encodeURIComponent(evo_instance)}`;
+    selectStr = safeFields.join(',');
+  } else {
+    return json({ error: 'parâmetros insuficientes ou não autorizados' }, 400);
+  }
 
   try {
-    // Construir query
-    let queryParam;
-    if (tenant_id) {
-      queryParam = `id=eq.${encodeURIComponent(tenant_id)}`;
-    } else if (email) {
-      queryParam = `email=eq.${encodeURIComponent(email)}`;
-    } else {
-      // [FIX AUDIT] Busca por evo_instance (para reconnect.html)
-      queryParam = `evo_instance=eq.${encodeURIComponent(evo_instance)}`;
-    }
-
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/tenants?${queryParam}&select=${selectStr}`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-      }
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
     );
-
     if (!res.ok) {
       console.error('get-tenant error:', await res.text());
       return json({ error: 'Erro ao consultar tenant' }, 500);
     }
-
     const data = await res.json();
-
-    // Se busca por tenant_id + email (não admin): verificar ownership
-    if (tenant_id && email && !isAdmin && data.length > 0) {
-      // Buscar email real do tenant pra comparar
-      const ownerRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=email`,
-        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-      );
-      if (ownerRes.ok) {
-        const ownerData = await ownerRes.json();
-        if (ownerData.length > 0 && ownerData[0].email !== email) {
-          return json({ error: 'Acesso negado' }, 403);
-        }
-      }
-    }
-
     return json({ tenants: data });
-
   } catch (err) {
     console.error('get-tenant exception:', err);
     return json({ error: 'Erro interno' }, 500);

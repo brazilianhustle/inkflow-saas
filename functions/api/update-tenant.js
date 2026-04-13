@@ -9,6 +9,8 @@
 // Campos BLOQUEADOS (para não-admin): status_pagamento, mp_subscription_id, prompt_sistema, faq_texto
 // FIX AUDIT #4: Admin pode editar campos adicionais (nome, email, cidade, etc.)
 
+import { verifyOnboardingKey, verifyStudioTokenOrLegacy } from './_auth-helpers.js';
+
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const ADMIN_EMAIL  = 'lmf4200@gmail.com';
 
@@ -26,6 +28,7 @@ const ALLOWED_FIELDS = new Set([
   'google_calendar_id', 'google_drive_folder',
   'nome_agente', 'nome_estudio', 'ativo', 'plano', 'trial_ate',
   'parent_tenant_id', 'is_artist_slot',
+  'welcome_shown',
 ]);
 
 // FIX AUDIT #4: Campos adicionais que o admin pode editar via dashboard
@@ -62,7 +65,7 @@ export async function onRequest(context) {
   try { body = await request.json(); }
   catch { return json({ error: 'JSON inválido' }, 400); }
 
-  const { tenant_id, email, ...fields } = body;
+  const { tenant_id, email, onboarding_key, studio_token, ...fields } = body;
 
   if (!tenant_id) return json({ error: 'tenant_id obrigatório' }, 400);
 
@@ -71,34 +74,45 @@ export async function onRequest(context) {
     return json({ error: 'tenant_id inválido' }, 400);
   }
 
-  // ── AUTH: verificar identidade ────────────────────────────────────────────
+  // ── AUTH: verificar identidade via 1 de 3 mecanismos ─────────────────────
+  // 1. Bearer JWT admin (acesso total + campos extras)
+  // 2. onboarding_key que bate com tenants.onboarding_key (prova de posse do link)
+  // 3. studio_token HMAC/legacy que bate com este tenant_id
+  // Email sozinho NÃO autoriza (antes era vulneravel — qualquer um que soubesse
+  // o email do cliente podia impersonar).
   const SUPABASE_KEY = env.SUPABASE_SERVICE_KEY;
   if (!SUPABASE_KEY) return json({ error: 'Configuração interna ausente' }, 503);
 
   const isAdmin = await verifyAdmin(request.headers.get('Authorization'), SUPABASE_KEY);
 
-  // Se não é admin, precisa enviar email pra provar ownership
-  if (!isAdmin && !email) {
-    return json({ error: 'email obrigatório para autenticação' }, 403);
+  let authorized = isAdmin;
+  let authSource = isAdmin ? 'admin' : null;
+
+  if (!authorized && onboarding_key) {
+    const check = await verifyOnboardingKey({
+      tenantId: tenant_id,
+      onboardingKey: onboarding_key,
+      supabaseUrl: SUPABASE_URL,
+      supabaseKey: SUPABASE_KEY,
+    });
+    if (check.ok) { authorized = true; authSource = 'onboarding_key'; }
   }
 
-  // ── Verificar ownership (se não é admin) ──────────────────────────────────
-  if (!isAdmin) {
-    try {
-      const ownerRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=email`,
-        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-      );
-      if (!ownerRes.ok) return json({ error: 'Erro ao verificar ownership' }, 500);
-      const ownerData = await ownerRes.json();
-      if (ownerData.length === 0) return json({ error: 'Tenant não encontrado' }, 404);
-      if (ownerData[0].email !== email) {
-        return json({ error: 'Acesso negado' }, 403);
-      }
-    } catch (err) {
-      console.error('update-tenant: ownership check failed:', err);
-      return json({ error: 'Erro interno' }, 500);
+  if (!authorized && studio_token) {
+    const verified = await verifyStudioTokenOrLegacy({
+      token: studio_token,
+      secret: env.STUDIO_TOKEN_SECRET,
+      supabaseUrl: SUPABASE_URL,
+      supabaseKey: SUPABASE_KEY,
+    });
+    if (verified && verified.tenantId === tenant_id) {
+      authorized = true; authSource = 'studio_token';
     }
+  }
+
+  if (!authorized) {
+    console.warn(`update-tenant: auth rejeitada tenant_id=${tenant_id} email_sent=${!!email}`);
+    return json({ error: 'Autenticação requerida: onboarding_key, studio_token ou admin JWT' }, 403);
   }
 
   // Filtra apenas campos permitidos (admin tem acesso expandido)
