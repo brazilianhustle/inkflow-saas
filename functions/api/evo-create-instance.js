@@ -117,113 +117,117 @@ export async function onRequest(context) {
     return json({ error: 'apikey nao encontrada na resposta' }, 500);
   }
 
-  // [FIX Bug #2A] Configurar webhook n8n (server-side)
-  // [FIX Bug #3 Onboarding] Verificacao pos-set: confirma que webhook ficou enabled.
-  // Antes, falhas silenciosas deixavam instancia criada sem webhook → IA nao respondia.
-  let webhookOk = false;
-  try {
-    const webhookInner = {
-      enabled: true,
-      url: N8N_WEBHOOK,
-      webhookByEvents: false,
-      webhookBase64: true,
-      events: ['MESSAGES_UPSERT'],
-      ...(WEBHOOK_SECRET ? { headers: { 'x-webhook-secret': WEBHOOK_SECRET } } : {})
-    };
+  // ── [FIX webhook] Configurar webhook n8n com multi-format fallback ─────────
+  // Evolution API v2 tem variacoes de payload entre versoes:
+  //   Formato A (v2 nested com nomes curtos): { webhook: { enabled, url, byEvents, base64, events, headers } }
+  //   Formato B (flat com nomes longos):      { enabled, url, webhookByEvents, webhookBase64, events, headers }
+  //   Formato C (nested com nomes longos):    { webhook: { enabled, url, webhookByEvents, webhookBase64, events, headers } }
+  // O response do /webhook/find sempre usa nomes longos flat (webhookByEvents/webhookBase64).
+  // Estrategia: tenta cada formato em ordem com apikey da instancia. Se verify falhar, repete com GLOBAL_KEY.
+  // Se todos falharem, RETORNA ERRO (nao mais silencioso) para o onboarding avisar o usuario.
 
-    const whRes = await fetch(`${EVO_BASE_URL}/webhook/set/${instanceName}`, {
-      method: 'POST',
-      headers: { apikey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ webhook: webhookInner })
-    });
+  const secretHdr = WEBHOOK_SECRET ? { 'x-webhook-secret': WEBHOOK_SECRET } : {};
+  const WEBHOOK_FORMATS = [
+    {
+      label: 'A:nested-short',
+      body: { webhook: { enabled: true, url: N8N_WEBHOOK, byEvents: false, base64: true, events: ['MESSAGES_UPSERT'], ...(WEBHOOK_SECRET ? { headers: secretHdr } : {}) } }
+    },
+    {
+      label: 'B:flat-long',
+      body: { enabled: true, url: N8N_WEBHOOK, webhookByEvents: false, webhookBase64: true, events: ['MESSAGES_UPSERT'], ...(WEBHOOK_SECRET ? { headers: secretHdr } : {}) }
+    },
+    {
+      label: 'C:nested-long',
+      body: { webhook: { enabled: true, url: N8N_WEBHOOK, webhookByEvents: false, webhookBase64: true, events: ['MESSAGES_UPSERT'], ...(WEBHOOK_SECRET ? { headers: secretHdr } : {}) } }
+    },
+  ];
 
-    if (!whRes.ok) {
-      console.error('evo-create-instance: webhook/set retornou', whRes.status, await whRes.text().catch(() => ''));
-    } else {
-      webhookOk = true;
-    }
-  } catch (webhookErr) {
-    console.error('evo-create-instance: webhook/set falhou:', webhookErr);
-  }
-
-  // Verificacao: confirma que o webhook foi realmente aplicado (enabled E webhookBase64)
-  if (webhookOk) {
+  async function findWebhook(useKey) {
     try {
-      const verifyRes = await fetch(`${EVO_BASE_URL}/webhook/find/${instanceName}`, {
-        headers: { apikey }
-      });
-      if (verifyRes.ok) {
-        const whData = await verifyRes.json();
-        // Evolution API pode retornar objeto ou array
-        const wh = Array.isArray(whData) ? whData[0] : whData;
-        if (!wh || wh.enabled !== true) {
-          console.error('evo-create-instance: webhook/find mostra enabled=false apos set. Tentando novamente...');
-          webhookOk = false;
-        } else if (wh.webhookBase64 !== true) {
-          console.error('evo-create-instance: webhook/find mostra webhookBase64=false (esperado true). Tentando corrigir...');
-          webhookOk = false;
-        } else {
-          console.log('evo-create-instance: webhook verificado OK (enabled=true, webhookBase64=true)');
-        }
-      }
-    } catch (verifyErr) {
-      console.warn('evo-create-instance: webhook/find falhou (nao fatal):', verifyErr);
+      const r = await fetch(`${EVO_BASE_URL}/webhook/find/${instanceName}`, { headers: { apikey: useKey } });
+      const txt = await r.text();
+      let data = null;
+      try { data = JSON.parse(txt); } catch {}
+      const wh = Array.isArray(data) ? data[0] : data;
+      return { status: r.status, raw: txt, wh };
+    } catch (e) {
+      return { status: 0, raw: String(e), wh: null };
     }
   }
 
-  // Retry com global key se falhou com instance key
+  function webhookIsCorrect(wh) {
+    if (!wh) return { ok: false, reason: 'no wh object' };
+    if (wh.enabled !== true) return { ok: false, reason: `enabled=${wh.enabled}` };
+    // response pode usar base64 OU webhookBase64 dependendo da versao
+    const b64 = wh.webhookBase64 === true || wh.base64 === true;
+    if (!b64) return { ok: false, reason: `webhookBase64=${wh.webhookBase64}, base64=${wh.base64}` };
+    const events = Array.isArray(wh.events) ? wh.events : [];
+    if (!events.includes('MESSAGES_UPSERT')) return { ok: false, reason: `events=${JSON.stringify(events)}` };
+    return { ok: true };
+  }
+
+  async function trySetWebhook(useKey, keyLabel) {
+    for (const fmt of WEBHOOK_FORMATS) {
+      let status = 0, rawResp = '';
+      try {
+        const r = await fetch(`${EVO_BASE_URL}/webhook/set/${instanceName}`, {
+          method: 'POST',
+          headers: { apikey: useKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify(fmt.body),
+        });
+        status = r.status;
+        rawResp = await r.text().catch(() => '');
+      } catch (e) {
+        console.error(`[webhook] SET ${keyLabel}/${fmt.label} network error:`, e);
+        continue;
+      }
+      console.log(`[webhook] SET ${keyLabel}/${fmt.label} status=${status} resp=${rawResp.slice(0, 300)}`);
+      if (status < 200 || status >= 300) continue;
+
+      // verifica imediatamente
+      const found = await findWebhook(useKey);
+      console.log(`[webhook] FIND ${keyLabel}/${fmt.label} status=${found.status} raw=${(found.raw || '').slice(0, 400)}`);
+      const check = webhookIsCorrect(found.wh);
+      if (check.ok) {
+        console.log(`[webhook] OK com formato ${fmt.label} usando ${keyLabel}`);
+        return { ok: true, format: fmt.label, keyUsed: keyLabel, wh: found.wh };
+      }
+      console.warn(`[webhook] formato ${fmt.label} aplicado mas incorreto: ${check.reason}`);
+    }
+    return { ok: false };
+  }
+
+  let webhookResult = await trySetWebhook(apikey, 'instance-key');
+  if (!webhookResult.ok) {
+    console.warn('[webhook] todos formatos falharam com apikey da instancia. Retry com GLOBAL_KEY...');
+    webhookResult = await trySetWebhook(GLOBAL_KEY, 'global-key');
+  }
+
+  const webhookOk = webhookResult.ok;
   if (!webhookOk) {
-    try {
-      const retryRes = await fetch(`${EVO_BASE_URL}/webhook/set/${instanceName}`, {
-        method: 'POST',
-        headers: { apikey: GLOBAL_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ webhook: {
-          enabled: true,
-          url: N8N_WEBHOOK,
-          webhookByEvents: false,
-          webhookBase64: true,
-          events: ['MESSAGES_UPSERT'],
-          ...(WEBHOOK_SECRET ? { headers: { 'x-webhook-secret': WEBHOOK_SECRET } } : {})
-        }})
-      });
-      if (retryRes.ok) {
-        webhookOk = true;
-        console.log('evo-create-instance: webhook configurado com global key (retry)');
-        // Re-verifica pos-retry para confirmar webhookBase64
-        try {
-          const reVerify = await fetch(`${EVO_BASE_URL}/webhook/find/${instanceName}`, { headers: { apikey: GLOBAL_KEY } });
-          if (reVerify.ok) {
-            const rData = await reVerify.json();
-            const rWh = Array.isArray(rData) ? rData[0] : rData;
-            console.log('evo-create-instance: webhook pos-retry:', JSON.stringify({ enabled: rWh?.enabled, webhookBase64: rWh?.webhookBase64 }));
-          }
-        } catch {}
-      } else {
-        console.error('evo-create-instance: retry webhook/set falhou:', retryRes.status);
-      }
-    } catch (retryErr) {
-      console.error('evo-create-instance: retry webhook/set erro:', retryErr);
-    }
+    console.error('[webhook] FALHA TOTAL: nenhum formato configurou webhook corretamente para', instanceName);
   }
 
-  // Bug 2 fix: garantir settings corretos mesmo para instancias que ja existiam
-  // [FIX] settings/set usa formato nested { settings: {...} } igual ao webhook/set
-  try {
-    await fetch(`${EVO_BASE_URL}/settings/set/${instanceName}`, {
-      method: 'POST',
-      headers: { apikey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ settings: {
-        rejectCall: false,
-        groupsIgnore: true,
-        alwaysOnline: false,
-        readMessages: false,
-        readStatus: false,
-        syncFullHistory: false,
-        webhookBase64: true,    // [FIX Bug #1 Onboarding] garante base64 via settings
-      }})
-    });
-  } catch (settingsErr) {
-    console.warn('evo-create-instance: settings update failed (nao fatal):', settingsErr);
+  // ── Settings: tambem tenta flat e nested ─────────────────────────────────
+  const SETTINGS_BODIES = [
+    // Flat (v2 atual)
+    { rejectCall: false, groupsIgnore: true, alwaysOnline: false, readMessages: false, readStatus: false, syncFullHistory: false, webhookBase64: true },
+    // Nested (legado)
+    { settings: { rejectCall: false, groupsIgnore: true, alwaysOnline: false, readMessages: false, readStatus: false, syncFullHistory: false, webhookBase64: true } },
+  ];
+  for (const sb of SETTINGS_BODIES) {
+    try {
+      const r = await fetch(`${EVO_BASE_URL}/settings/set/${instanceName}`, {
+        method: 'POST',
+        headers: { apikey, 'Content-Type': 'application/json' },
+        body: JSON.stringify(sb),
+      });
+      const txt = await r.text().catch(() => '');
+      console.log(`[settings] status=${r.status} body=${JSON.stringify(sb).slice(0, 100)} resp=${txt.slice(0, 200)}`);
+      if (r.ok) break;
+    } catch (settingsErr) {
+      console.warn('[settings] update failed (nao fatal):', settingsErr);
+    }
   }
 
   // [FIX Bug #8] Salvar evo_apikey e evo_instance no tenant via Supabase
@@ -245,5 +249,22 @@ export async function onRequest(context) {
     }
   }
 
-  return json({ instanceName, already_existed, webhook_configured: webhookOk });
+  // Se o webhook nao ficou correto, retorna 502 para o onboarding avisar o usuario
+  // (instancia foi criada e apikey salva, mas IA nao vai responder sem webhook correto)
+  if (!webhookOk) {
+    return json({
+      error: 'Instância criada mas webhook não configurou corretamente. Contate o suporte para ativar o assistente.',
+      instanceName,
+      already_existed,
+      webhook_configured: false,
+    }, 502);
+  }
+
+  return json({
+    instanceName,
+    already_existed,
+    webhook_configured: true,
+    webhook_format: webhookResult.format,
+    webhook_key_used: webhookResult.keyUsed,
+  });
 }
