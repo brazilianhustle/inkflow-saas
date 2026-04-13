@@ -336,6 +336,11 @@ select.fi option{background:var(--card);color:var(--t1)}
       <div class="fi-hint" id="email-err" style="display:none;color:#ff6b6b"></div>
       <div class="fi-hint" id="email-suggest" style="display:none;color:var(--teal);cursor:pointer;text-decoration:underline"></div>
     </div>
+    <div class="fg">
+      <label class="fl">Seu WhatsApp (com DDD) <span>*</span></label>
+      <input class="fi" id="f-telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ex: 11 98765-4321"/>
+      <div class="fi-hint">Enviaremos o link do painel pro seu WhatsApp logo após o pagamento</div>
+    </div>
 
     <hr class="divider"/>
     <div class="fsec">Estúdio</div>
@@ -770,9 +775,11 @@ async function chargeCard(formData) {
 
 async function showPaymentStep() {
   const nome = document.getElementById('f-nome').value.trim(); const estudio = (document.getElementById('f-estudio').value || '').trim(); const agente = document.getElementById('f-agente').value.trim() || nome.split(' ')[0]; const cidade = document.getElementById('f-cidade').value.trim(); const enderecoBase = document.getElementById('f-endereco').value.trim(); const numero = document.getElementById('f-numero')?.value?.trim() || ''; const endereco = enderecoBase + (numero ? (enderecoBase.includes(',') ? ' nº ' + numero : ', ' + numero) : ''); const email = document.getElementById('f-email').value.trim();
+  const telefoneRaw = document.getElementById('f-telefone')?.value?.trim() || ''; const telefone = telefoneRaw.replace(/\D/g, '');
   // Artista nao precisa de nome_estudio
   if (!isArtistInvite && (!nome || !estudio)) { showFormError('Preencha o nome e o nome do est\u00fadio.'); return; }
   if (isArtistInvite && !nome) { showFormError('Preencha seu nome.'); return; }
+  if (!isArtistInvite && (!telefone || telefone.length < 10)) { showFormError('WhatsApp v\u00e1lido com DDD \u00e9 obrigat\u00f3rio.'); return; }
   if (!email || !email.includes('@')) { showFormError('Email v\u00e1lido \u00e9 obrigat\u00f3rio.'); return; }
   // [Melhoria 2] Se a validacao ja rodou e falhou, ou ainda não rodou, forçar agora
   if (emailValidState.email !== email || emailValidState.valid === null) {
@@ -787,7 +794,7 @@ async function showPaymentStep() {
     const slugBase = makeSlug(isArtistInvite ? nome : (estudio || nome)); const suffix = Math.floor(Math.random() * 900) + 100; instanceSlug = slugBase + suffix;
     const promptEstudio = isArtistInvite ? (artistInviteData.parent_nome_estudio || 'Est\u00fadio') : estudio;
     const prompt = generatePrompt(agente, promptEstudio, cidade, endereco);
-    const tenantData = { nome, nome_agente: agente, nome_estudio: estudio || (isArtistInvite ? artistInviteData.parent_nome_estudio : ''), email: email || null, cidade: cidade || null, endereco: endereco || null, evo_instance: instanceSlug, webhook_path: 'inkflow', evo_apikey: 'pending', plano: selectedPlan, ativo: false, prompt_sistema: prompt, onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || null };
+    const tenantData = { nome, nome_agente: agente, nome_estudio: estudio || (isArtistInvite ? artistInviteData.parent_nome_estudio : ''), email: email || null, telefone: telefone || null, cidade: cidade || null, endereco: endereco || null, evo_instance: instanceSlug, webhook_path: 'inkflow', evo_apikey: 'pending', plano: selectedPlan, ativo: false, prompt_sistema: prompt, onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || null };
     // Artista: incluir dados de vinculacao ao estudio pai
     if (isArtistInvite && artistInviteData.parent_tenant_id) {
       tenantData.parent_tenant_id = artistInviteData.parent_tenant_id;
@@ -901,6 +908,28 @@ async function doEvoSetup() {
     setStatus(4, 'Preparando conexão...', 'active');
     await new Promise(r => setTimeout(r, 1500));
     setStatus(4, 'Pronto para conectar!', 'done');
+
+    // [Fluxo B] Plano estúdio/premium: redirect imediato pro /studio.html
+    // Cliente conecta WhatsApp dentro do painel, sem ficar preso nessa tela.
+    // Indiviual/teste continua com polling local (não tem studio.html pra eles).
+    let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
+    const isArtist = isArtistInvite || ob.isArtist;
+    const planNow = ob.plano || selectedPlan;
+    const isStudioPlan = ['estudio','premium'].includes(planNow);
+    if (!isArtist && isStudioPlan) {
+      // Dispara WhatsApp link em paralelo (fire-and-forget — o redirect não depende disso)
+      const obKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk');
+      fetch('/api/send-whatsapp-link', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenant_id: tenantId, onboarding_key: obKey }),
+      }).then(r => r.json()).then(d => console.log('[inkflow] send-whatsapp-link:', d))
+        .catch(e => console.warn('[inkflow] send-whatsapp-link failed:', e?.message));
+      // Redireciona pro painel com flag pending_whatsapp
+      await fetchStudioTokenAndRedirect(true);
+      return;
+    }
+
+    // Planos individual/teste: polling local (fluxo original)
     goStep(5); initConnectStep();
     pollInterval = setInterval(checkConnection, 5000);
   } catch (err) {
@@ -1189,7 +1218,7 @@ async function validateEmail(email) {
 
 // ── [Melhoria 3] Welcome redirect para donos de estúdio ──────────────────
 let _studioRedirectInFlight = false;
-async function fetchStudioTokenAndRedirect() {
+async function fetchStudioTokenAndRedirect(pendingWhatsapp = false) {
   if (_studioRedirectInFlight) return;
   _studioRedirectInFlight = true;
   const cta = document.getElementById('suc-cta');
@@ -1213,14 +1242,18 @@ async function fetchStudioTokenAndRedirect() {
     }
     // Limpa storage só agora que o redirect está garantido
     localStorage.removeItem('inkflow_gk');
-    window.location.href = '/studio.html?token=' + encodeURIComponent(d.token) + '&welcome=true';
+    let url = '/studio.html?token=' + encodeURIComponent(d.token) + '&welcome=true';
+    if (pendingWhatsapp) url += '&pending_whatsapp=true';
+    window.location.href = url;
   } catch (e) {
     console.error('[welcome] falha ao gerar token de estudio:', e?.message);
     if (cta) {
       cta.disabled = false;
       cta.textContent = '⚠ Falha ao abrir painel — clique para tentar de novo';
-      cta.onclick = () => { _studioRedirectInFlight = false; fetchStudioTokenAndRedirect(); };
+      cta.onclick = () => { _studioRedirectInFlight = false; fetchStudioTokenAndRedirect(pendingWhatsapp); };
     }
+    // Fallback fora do CTA (estamos em step 4 — processamento — sem sucesso screen ainda)
+    showProcError('Falha ao abrir painel. Recarregue a página ou entre em contato com o suporte.');
     _studioRedirectInFlight = false;
   }
 }

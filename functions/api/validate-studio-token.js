@@ -72,9 +72,9 @@ export async function onRequest(context) {
     }
 
     const tenant = tenants[0];
-    if (!tenant.ativo) {
-      return json({ valid: false, error: 'Estúdio ainda não está ativo. Complete o onboarding primeiro.' }, 403);
-    }
+    // Não bloqueia se ativo=false — studio.html mostra seção "Conectar WhatsApp"
+    // quando tenant.ativo=false. Se tivesse bloqueado aqui, cliente nunca chegaria
+    // no painel pra conectar.
 
     // Contar artistas já vinculados
     const slotsRes = await fetch(
@@ -120,6 +120,7 @@ export async function onRequest(context) {
         email: tenant.email,
         evo_instance: tenant.evo_instance,
         welcome_shown: !!tenant.welcome_shown,
+        ativo: !!tenant.ativo,
       },
       slots: {
         max: maxSlots,

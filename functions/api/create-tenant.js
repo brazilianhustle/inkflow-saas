@@ -25,7 +25,7 @@ const CORS = {
 
 // Campos que o frontend pode enviar no INSERT (whitelist)
 const ALLOWED_FIELDS = new Set([
-  'nome', 'nome_agente', 'nome_estudio', 'email', 'cidade', 'endereco',
+  'nome', 'nome_agente', 'nome_estudio', 'email', 'telefone', 'cidade', 'endereco',
   'evo_instance', 'webhook_path', 'evo_base_url', 'plano', 'prompt_sistema',
   'parent_tenant_id', 'is_artist_slot', 'google_calendar_id',
   // [FIX] onboarding_key precisa ser persistido para que update-tenant/get-studio-token
@@ -129,18 +129,22 @@ export async function onRequest(context) {
       body: JSON.stringify(tenantData),
     });
 
-    // ── Coluna onboarding_key inexistente: dropa e retenta (deploy antes de migration) ──
-    if (!res.ok) {
+    // ── Colunas opcionais inexistentes: dropa e retenta (deploy antes de migration) ──
+    // Cobre onboarding_key, telefone, ou qualquer outra coluna recém-adicionada.
+    const OPTIONAL_COLS = ['onboarding_key', 'telefone'];
+    for (let attempt = 0; attempt < OPTIONAL_COLS.length && !res.ok; attempt++) {
       const peek = await res.clone().text();
-      if (peek.includes('onboarding_key') && (peek.includes('does not exist') || peek.includes('PGRST204') || peek.includes('42703'))) {
-        console.warn('create-tenant: coluna onboarding_key ausente — retentando sem ela. RODE: ALTER TABLE tenants ADD COLUMN IF NOT EXISTS onboarding_key TEXT;');
-        delete tenantData.onboarding_key;
-        res = await fetch(`${SUPABASE_URL}/rest/v1/tenants`, {
-          method: 'POST',
-          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-          body: JSON.stringify(tenantData),
-        });
-      }
+      const isMissingCol = peek.includes('PGRST204') || peek.includes('42703') || peek.includes('does not exist');
+      if (!isMissingCol) break;
+      const missing = OPTIONAL_COLS.find(c => peek.includes(c) && tenantData[c] !== undefined);
+      if (!missing) break;
+      console.warn(`create-tenant: coluna ${missing} ausente no DB — retentando sem ela. RODE: ALTER TABLE tenants ADD COLUMN IF NOT EXISTS ${missing} TEXT;`);
+      delete tenantData[missing];
+      res = await fetch(`${SUPABASE_URL}/rest/v1/tenants`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+        body: JSON.stringify(tenantData),
+      });
     }
 
     // ── Colisão de slug (unique constraint) — até 5 tentativas ──────────────

@@ -65,9 +65,8 @@ export async function onRequest(context) {
     if (!['estudio', 'premium'].includes(t.plano)) {
       return json({ error: 'Plano não elegível para painel de estúdio' }, 400);
     }
-    if (!t.ativo) {
-      return json({ error: 'Tenant ainda não ativo — conclua o onboarding' }, 403);
-    }
+    // [Fluxo B] Não exige ativo=true — cliente é redirecionado pro painel
+    // antes de conectar WhatsApp; a conexão acontece dentro do studio.html.
   } catch (e) {
     console.error('get-studio-token: erro ao verificar tenant:', e?.message);
     return json({ error: 'Erro interno' }, 500);

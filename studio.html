@@ -113,6 +113,27 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .wc-btn.primary:hover{opacity:.88}
 .wc-btn.secondary{background:transparent;color:var(--t2);border:1px solid var(--border)}
 .wc-btn.secondary:hover{color:var(--t1);border-color:var(--border2)}
+
+/* ── Connect WhatsApp ── */
+.connect-section{background:var(--card2);border:1px solid var(--teal-mid);border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 0 24px rgba(0,212,170,.15)}
+.connect-title{font-size:16px;font-weight:700;color:var(--teal);margin-bottom:4px}
+.connect-sub{font-size:12px;color:var(--t2);margin-bottom:14px}
+.connect-tabs{display:flex;gap:6px;margin-bottom:14px}
+.connect-tab{flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--t2);font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s}
+.connect-tab.active{background:var(--teal);color:#000;border-color:var(--teal);font-weight:700}
+.qr-wrap{display:flex;justify-content:center;align-items:center;background:rgba(255,255,255,.06);border-radius:10px;min-height:200px;padding:14px;margin-bottom:10px}
+.qr-wrap img{max-width:220px;width:100%;image-rendering:pixelated}
+.qr-loading{color:var(--t3);font-size:12px}
+.conn-hint{font-size:11px;color:var(--t3);line-height:1.5;margin-bottom:8px}
+.qr-refresh{width:100%;padding:10px;border:1px solid var(--border);background:transparent;color:var(--t2);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit}
+.qr-refresh:hover{color:var(--t1);border-color:var(--border2)}
+.pair-input-wrap{display:flex;gap:6px;margin-bottom:10px}
+.pair-input{flex:1;padding:10px;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;color:var(--t1);font-family:inherit;font-size:13px}
+.pair-btn{padding:10px 14px;border:none;background:var(--teal);color:#000;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.pair-code-wrap{text-align:center;padding:14px;background:rgba(0,212,170,.08);border:1px dashed var(--teal-mid);border-radius:10px;margin-bottom:10px}
+.pair-code{font-size:28px;font-weight:800;letter-spacing:4px;color:var(--teal);margin-bottom:6px;font-family:'Courier New',monospace}
+.conn-status{font-size:11px;color:var(--teal);text-align:center;margin-top:6px}
+.conn-status.connected{color:var(--green)}
 </style>
 </head>
 <body>
@@ -149,6 +170,35 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
           Responsável: <span id="st-owner">—</span><br/>
           WhatsApp: <span id="st-instance">—</span>
         </div>
+      </div>
+
+      <!-- Conectar WhatsApp (visível apenas quando tenant.ativo=false) -->
+      <div class="connect-section" id="connect-section" style="display:none">
+        <div class="connect-title">🔌 Conecte seu WhatsApp</div>
+        <div class="connect-sub">Seu estúdio está pronto. Falta só conectar o WhatsApp que o assistente vai usar.</div>
+        <div class="connect-tabs">
+          <button class="connect-tab active" id="tab-qr" onclick="switchConnTab('qr')">QR Code</button>
+          <button class="connect-tab" id="tab-pair" onclick="switchConnTab('pair')">Código no celular</button>
+        </div>
+        <div class="connect-body" id="conn-qr">
+          <div class="qr-wrap">
+            <img id="qr-img" style="display:none" alt="QR Code"/>
+            <div id="qr-loading" class="qr-loading">Gerando QR Code...</div>
+          </div>
+          <div class="conn-hint">Abra o WhatsApp → Configurações → Dispositivos conectados → Conectar dispositivo → aponte para o QR</div>
+          <button class="qr-refresh" onclick="refreshQR()">↻ Novo QR</button>
+        </div>
+        <div class="connect-body" id="conn-pair" style="display:none">
+          <div class="pair-input-wrap">
+            <input class="pair-input" id="pair-number" type="tel" inputmode="tel" placeholder="DDD + número (ex: 11987654321)"/>
+            <button class="pair-btn" onclick="requestPairingCode()">Gerar código</button>
+          </div>
+          <div class="pair-code-wrap" id="pair-code-wrap" style="display:none">
+            <div class="pair-code" id="pair-code">----</div>
+            <div class="conn-hint">No WhatsApp → Dispositivos conectados → Conectar com número de telefone → digite este código</div>
+          </div>
+        </div>
+        <div class="conn-status" id="conn-status">• verificando conexão...</div>
       </div>
 
       <!-- Slots -->
@@ -243,6 +293,14 @@ async function init() {
     studioData = data;
     tenantId = data.tenant.id;
     currentStudioToken = data.refreshed_token || token;
+
+    // Se tenant ainda não está ativo (WhatsApp não conectado) OU query pending_whatsapp=true:
+    // mostrar seção de conexão dentro do painel
+    const urlParams = new URLSearchParams(window.location.search);
+    const pendingWA = urlParams.get('pending_whatsapp') === 'true';
+    if (pendingWA || data?.tenant?.ativo === false) {
+      startConnectFlow();
+    }
 
     // [FIX seguranca] Sliding TTL — se servidor retornou token renovado, atualiza URL
     // sem recarregar (history.replaceState) e guarda em localStorage para próxima visita.
@@ -421,6 +479,99 @@ function openSupport() {
     `Olá! Sou dono do estúdio${studioName ? ' ' + studioName : ''} e preciso de ajuda com o onboarding de artistas.`
   );
   window.open(`https://wa.me/5521970789797?text=${msg}`, '_blank');
+}
+
+// ── Conectar WhatsApp (embedded no painel) ──
+let connMode = 'qr';
+let connPollHandle = null;
+let qrTimer = null;
+
+function switchConnTab(mode) {
+  connMode = mode;
+  document.getElementById('tab-qr').classList.toggle('active', mode === 'qr');
+  document.getElementById('tab-pair').classList.toggle('active', mode === 'pair');
+  document.getElementById('conn-qr').style.display = mode === 'qr' ? '' : 'none';
+  document.getElementById('conn-pair').style.display = mode === 'pair' ? '' : 'none';
+  if (mode === 'qr') loadQR();
+}
+
+async function loadQR() {
+  if (!studioData?.tenant?.evo_instance) return;
+  const inst = studioData.tenant.evo_instance;
+  const img = document.getElementById('qr-img');
+  const loading = document.getElementById('qr-loading');
+  img.style.display = 'none'; loading.style.display = ''; loading.textContent = 'Gerando QR Code...';
+  try {
+    const r = await fetch('/api/evo-qr?instance=' + encodeURIComponent(inst));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const b64 = data?.qr || data?.base64 || data?.qrcode || '';
+    if (!b64) { loading.textContent = 'QR indisponível — tente "Novo QR".'; return; }
+    img.src = b64.startsWith('data:') ? b64 : 'data:image/png;base64,' + b64;
+    img.style.display = ''; loading.style.display = 'none';
+    clearTimeout(qrTimer);
+    qrTimer = setTimeout(() => { if (connMode === 'qr') refreshQR(); }, 30000);
+  } catch (e) { console.warn('[studio] QR load error:', e?.message); loading.textContent = 'Erro ao carregar QR. Clique em "Novo QR".'; }
+}
+async function refreshQR() { clearTimeout(qrTimer); await loadQR(); }
+
+async function requestPairingCode() {
+  const inst = studioData?.tenant?.evo_instance;
+  const numEl = document.getElementById('pair-number');
+  const raw = (numEl.value || '').replace(/\D/g, '');
+  if (!raw || raw.length < 10) { alert('Digite DDD + número (ex: 11987654321)'); return; }
+  const full = raw.startsWith('55') ? raw : '55' + raw;
+  const wrap = document.getElementById('pair-code-wrap');
+  const codeEl = document.getElementById('pair-code');
+  codeEl.textContent = '....'; wrap.style.display = '';
+  try {
+    const r = await fetch('/api/evo-pairing-code?instance=' + encodeURIComponent(inst) + '&number=' + encodeURIComponent(full));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    const code = d?.code || d?.pairingCode || '';
+    if (!code) throw new Error('sem código');
+    codeEl.textContent = code.replace(/(.{4})/, '$1-').replace(/-$/, '');
+  } catch (e) {
+    console.warn('[studio] pairing code error:', e?.message);
+    codeEl.textContent = '?'; wrap.querySelector('.conn-hint').textContent = 'Falha ao gerar código. Tente o QR.';
+  }
+}
+
+async function pollConnection() {
+  const inst = studioData?.tenant?.evo_instance;
+  if (!inst) return;
+  try {
+    const r = await fetch('/api/evo-status?instance=' + encodeURIComponent(inst));
+    const d = await r.json();
+    const state = (d?.state || '').toString().toLowerCase();
+    const CONNECTED = ['open', 'connected', 'online'];
+    if (CONNECTED.includes(state)) {
+      clearInterval(connPollHandle); clearTimeout(qrTimer);
+      document.getElementById('conn-status').textContent = '✓ conectado!';
+      document.getElementById('conn-status').classList.add('connected');
+      // Ativa tenant
+      if (currentStudioToken) {
+        try {
+          await fetch('/api/update-tenant', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tenant_id: tenantId, studio_token: currentStudioToken, ativo: true }),
+          });
+        } catch {}
+      }
+      setTimeout(() => {
+        document.getElementById('connect-section').style.display = 'none';
+        showToast('WhatsApp conectado!');
+      }, 1500);
+    }
+  } catch (e) { console.warn('[studio] pollConnection:', e?.message); }
+}
+
+function startConnectFlow() {
+  document.getElementById('connect-section').style.display = '';
+  loadQR();
+  connPollHandle = setInterval(pollConnection, 5000);
+  // Auto-pick pairing no mobile
+  if (/Android|iPhone|iPad/i.test(navigator.userAgent)) switchConnTab('pair');
 }
 
 // ── Welcome modal (pos-onboarding) ──
