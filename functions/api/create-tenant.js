@@ -92,6 +92,25 @@ export async function onRequest(context) {
     const isArtist = tenantData.parent_tenant_id && tenantData.is_artist_slot === true;
 
     if (isArtist) {
+      // Valida o parent: existe, ativo, e tem plano estudio/premium
+      // (evita abuso: tenant individual/teste gerando artistas gratis em escala)
+      const parentRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenantData.parent_tenant_id)}&select=id,plano,ativo`,
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+      );
+      if (!parentRes.ok) return json({ error: 'Erro ao validar tenant pai' }, 500);
+      const parents = await parentRes.json();
+      if (!Array.isArray(parents) || parents.length === 0) {
+        return json({ error: 'Tenant pai nao encontrado', code: 'parent_not_found' }, 404);
+      }
+      const parent = parents[0];
+      if (!['estudio', 'premium'].includes(parent.plano)) {
+        return json({ error: 'Tenant pai precisa ter plano estudio ou premium', code: 'parent_plan_invalid' }, 403);
+      }
+      if (parent.ativo !== true) {
+        return json({ error: 'Tenant pai inativo', code: 'parent_inactive' }, 403);
+      }
+
       // Artista não paga — entra ativo direto após conectar WhatsApp
       tenantData.ativo = false;  // fica false até conectar WhatsApp (mesma lógica)
       tenantData.status_pagamento = 'artist_slot';  // status especial: não precisa pagar
@@ -114,6 +133,53 @@ export async function onRequest(context) {
       // Gerar studio_token para planos estúdio/premium (acesso à página de gestão)
       if (['estudio', 'premium'].includes(tenantData.plano)) {
         tenantData.studio_token = crypto.randomUUID();
+      }
+    }
+
+    // ── Check duplicata telefone/email ──────────────────────────────────────
+    // 1. Bloqueia se ja existe tenant em status pago/autorizado/pendente (409).
+    // 2. Se so existe em "rascunho" (card recusado, retry, race de duplo-submit),
+    //    REUSA o tenant existente em vez de criar outro — evita acumular lixo.
+    // Artistas ignoram o check (herdam do pai).
+    if (!isArtist) {
+      const BLOCKED_STATUS = ['approved', 'authorized', 'pending', 'paid'];
+      const statusFilter = `status_pagamento=in.(${BLOCKED_STATUS.join(',')})`;
+
+      async function lookupDup(field, value) {
+        const r = await fetch(
+          `${SUPABASE_URL}/rest/v1/tenants?${field}=eq.${encodeURIComponent(value)}&select=id,email,telefone,status_pagamento,ativo,plano,evo_instance,nome_estudio,nome_agente&order=created_at.desc`,
+          { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+        );
+        if (!r.ok) return [];
+        const rows = await r.json();
+        return Array.isArray(rows) ? rows : [];
+      }
+
+      // Checa email + telefone (ambos podem dar match em tenants diferentes)
+      const matches = [];
+      const byEmail = await lookupDup('email', tenantData.email);
+      matches.push(...byEmail);
+      if (tenantData.telefone) {
+        const normTel = String(tenantData.telefone).replace(/\D/g, '');
+        if (normTel.length >= 10) {
+          const byTel = await lookupDup('telefone', tenantData.telefone);
+          // dedup por id
+          for (const t of byTel) if (!matches.find(m => m.id === t.id)) matches.push(t);
+        }
+      }
+
+      // Se qualquer match esta em status bloqueado → 409
+      const blocked = matches.find(m => BLOCKED_STATUS.includes(m.status_pagamento));
+      if (blocked) {
+        const campo = blocked.email === tenantData.email ? 'Email' : 'Telefone';
+        return json({ error: `${campo} ja em uso. Use outro ou entre em contato com suporte.`, code: campo.toLowerCase() + '_in_use' }, 409);
+      }
+
+      // Se so ha rascunho → reusa (retorna o tenant existente como sucesso)
+      const rascunho = matches.find(m => m.status_pagamento === 'rascunho');
+      if (rascunho) {
+        console.log(`create-tenant: reusando rascunho id=${rascunho.id} email=${rascunho.email}`);
+        return json({ tenant: rascunho, reused: true });
       }
     }
 
