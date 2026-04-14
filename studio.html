@@ -134,6 +134,18 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .pair-code{font-size:28px;font-weight:800;letter-spacing:4px;color:var(--teal);margin-bottom:6px;font-family:'Courier New',monospace}
 .conn-status{font-size:11px;color:var(--teal);text-align:center;margin-top:6px}
 .conn-status.connected{color:var(--green)}
+
+/* ── Recovery form (error state) ── */
+.rec-card{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px;max-width:340px;width:100%;margin:20px auto 0;text-align:left}
+.rec-title{font-size:14px;font-weight:700;color:var(--teal);margin-bottom:6px;text-align:center}
+.rec-sub{font-size:12px;color:var(--t2);margin-bottom:14px;text-align:center;line-height:1.5}
+.rec-input{width:100%;padding:10px 12px;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;color:var(--t1);font-family:inherit;font-size:13px;margin-bottom:8px}
+.rec-input:focus{outline:none;border-color:var(--teal-mid)}
+.rec-btn{width:100%;padding:12px;border:none;background:var(--teal);color:#000;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px}
+.rec-btn:hover{opacity:.88}
+.rec-btn:disabled{opacity:.5;cursor:not-allowed}
+.rec-ok{background:var(--green-bg);border:1px solid var(--green);color:var(--green);padding:12px;border-radius:8px;font-size:12px;text-align:center;margin-top:10px}
+.rec-or{text-align:center;font-size:11px;color:var(--t3);margin:10px 0;letter-spacing:1px}
 </style>
 </head>
 <body>
@@ -151,6 +163,17 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <div class="error-box">
         <div class="error-icon">⚠️</div>
         <div class="error-msg" id="error-msg">Link inválido ou expirado.</div>
+
+        <!-- Formulário de recuperação -->
+        <div class="rec-card" id="rec-card">
+          <div class="rec-title">Solicitar novo link</div>
+          <div class="rec-sub">Enviaremos um novo link de acesso por WhatsApp e/ou email.</div>
+          <input class="rec-input" id="rec-email" type="email" autocomplete="email" placeholder="Email cadastrado"/>
+          <div class="rec-or">— ou —</div>
+          <input class="rec-input" id="rec-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="WhatsApp com DDD"/>
+          <button class="rec-btn" id="rec-btn" onclick="requestNewLink()">Enviar novo link</button>
+          <div class="rec-ok" id="rec-ok" style="display:none">✓ Se o email/WhatsApp estiver cadastrado, você receberá o novo link em alguns segundos.</div>
+        </div>
       </div>
     </div>
 
@@ -502,6 +525,30 @@ function openSupport() {
     `Olá! Sou dono do estúdio${studioName ? ' ' + studioName : ''} e preciso de ajuda com o onboarding de artistas.`
   );
   window.open(`https://wa.me/5521970789797?text=${msg}`, '_blank');
+}
+
+// ── Recovery: solicitar novo link ──
+async function requestNewLink() {
+  const btn = document.getElementById('rec-btn');
+  const ok = document.getElementById('rec-ok');
+  const email = document.getElementById('rec-email').value.trim();
+  const phone = document.getElementById('rec-phone').value.trim();
+  if (!email && !phone) { alert('Informe email ou WhatsApp.'); return; }
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    await fetch('/api/request-studio-link', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, phone }),
+    });
+    // Sempre mostra mensagem genérica (endpoint não revela se existe)
+    ok.style.display = 'block';
+    btn.style.display = 'none';
+    document.getElementById('rec-email').disabled = true;
+    document.getElementById('rec-phone').disabled = true;
+  } catch (e) {
+    alert('Erro de conexão. Tente novamente.');
+    btn.disabled = false; btn.textContent = 'Enviar novo link';
+  }
 }
 
 // ── Conectar WhatsApp (embedded no painel) ──
