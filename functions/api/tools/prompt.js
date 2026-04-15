@@ -9,7 +9,7 @@ import { withTool, supaFetch, authTool, toolJson, TOOL_HEADERS, logToolCall } fr
 import { generateSystemPrompt } from '../../_lib/generate-prompt.js';
 
 const TENANT_FIELDS = [
-  'id', 'nome_agente', 'nome_estudio',
+  'id', 'nome_agente', 'nome_estudio', 'plano',
   'prompt_sistema', 'faq_texto',
   'config_precificacao', 'config_agente',
   'horario_funcionamento', 'duracao_sessao_padrao_h',
@@ -17,33 +17,57 @@ const TENANT_FIELDS = [
   'portfolio_urls',
 ].join(',');
 
-async function loadTenantAndConversa(env, tenant_id, telefone) {
-  const [tr, cr] = await Promise.all([
+async function loadContext(env, tenant_id, telefone) {
+  const [tr, cr, ar] = await Promise.all([
     supaFetch(env, `/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=${TENANT_FIELDS}`),
     telefone
       ? supaFetch(env, `/rest/v1/conversas?tenant_id=eq.${encodeURIComponent(tenant_id)}&telefone=eq.${encodeURIComponent(telefone)}&select=id,estado,dados_coletados,slot_expira_em`)
+      : Promise.resolve(null),
+    telefone
+      ? supaFetch(env, `/rest/v1/agendamentos?tenant_id=eq.${encodeURIComponent(tenant_id)}&cliente_telefone=eq.${encodeURIComponent(telefone)}&status=in.(confirmed,done)&select=id,cliente_nome,status&order=created_at.desc&limit=5`)
       : Promise.resolve(null),
   ]);
   if (!tr.ok) throw new Error(`tenant-db-error-${tr.status}`);
   const tenants = await tr.json();
   if (!Array.isArray(tenants) || tenants.length === 0) return { tenant: null };
   const tenant = tenants[0];
+
   let conversa = null;
   if (cr && cr.ok) {
     const rows = await cr.json();
     if (Array.isArray(rows) && rows.length > 0) conversa = rows[0];
   }
-  return { tenant, conversa };
+
+  let agendamentos_passados = [];
+  if (ar && ar.ok) {
+    const rows = await ar.json();
+    if (Array.isArray(rows)) agendamentos_passados = rows;
+  }
+
+  // Monta contexto do cliente pro prompt
+  const is_first_contact = !conversa && agendamentos_passados.length === 0;
+  const nome_cliente = conversa?.dados_coletados?.nome
+    || agendamentos_passados[0]?.cliente_nome
+    || null;
+
+  const clientContext = {
+    is_first_contact,
+    eh_recorrente: agendamentos_passados.length > 0,
+    total_sessoes: agendamentos_passados.length,
+    nome_cliente,
+  };
+
+  return { tenant, conversa, clientContext };
 }
 
 async function handle({ env, input }) {
   const { tenant_id, telefone } = input || {};
   if (!tenant_id) return { status: 400, body: { ok: false, error: 'tenant_id obrigatorio' } };
 
-  const { tenant, conversa } = await loadTenantAndConversa(env, tenant_id, telefone);
+  const { tenant, conversa, clientContext } = await loadContext(env, tenant_id, telefone);
   if (!tenant) return { status: 404, body: { ok: false, error: 'tenant-nao-encontrado' } };
 
-  const prompt = generateSystemPrompt(tenant, conversa);
+  const prompt = generateSystemPrompt(tenant, conversa, clientContext);
   return {
     status: 200,
     body: {
@@ -51,6 +75,7 @@ async function handle({ env, input }) {
       prompt,
       estado: conversa?.estado || 'qualificando',
       conversa_id: conversa?.id || null,
+      cliente: clientContext,
       tenant: {
         nome_estudio: tenant.nome_estudio,
         nome_agente: tenant.nome_agente,

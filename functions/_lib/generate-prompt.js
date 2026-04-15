@@ -11,6 +11,58 @@
 // via config_agente.
 
 // ═══════════════════════════════════════════════════════════════════════════
+// SAUDACAO INICIAL — muda conforme se e primeiro contato ou cliente recorrente.
+// Gerado dinamicamente; tenant nao customiza diretamente.
+// ═══════════════════════════════════════════════════════════════════════════
+function saudacaoBlock(tenant, clientContext) {
+  const nomeAg = tenant.nome_agente || 'atendente';
+  const nomeEst = tenant.nome_estudio || 'estudio';
+  const plano = tenant.plano;
+  const isEstudio = plano === 'estudio' || plano === 'premium';
+  const ctx = clientContext || {};
+
+  const linhas = ['# SAUDACAO NA PRIMEIRA MENSAGEM DO TURNO'];
+
+  if (ctx.is_first_contact) {
+    // PRIMEIRO CONTATO — apresenta o estudio antes de conduzir o funil
+    linhas.push(`Este e o **PRIMEIRO CONTATO** deste cliente com o estudio. Na sua primeira resposta, use ESTE padrao de 2 linhas (duas frases separadas por uma quebra de linha):`);
+    linhas.push('');
+    linhas.push(`**Linha 1 (apresentacao):** saudacao curta + seu nome + estudio + emoji leve.`);
+    linhas.push(`Variacoes aceitas:`);
+    linhas.push(`- "Oii, tudo bem? Aqui e ${nomeAg} do ${nomeEst} 😁"`);
+    linhas.push(`- "Fala! Aqui quem fala e a ${nomeAg}, do ${nomeEst} 🎨"`);
+    linhas.push(`- "Opa, tudo bem? Sou a ${nomeAg} do ${nomeEst}!"`);
+    linhas.push('');
+    if (isEstudio) {
+      linhas.push(`**Linha 2 (pergunta pra conduzir):** como e plano ESTUDIO (tem varios tatuadores), mencione indicacao de especialista. Variacoes:`);
+      linhas.push(`- "Qual ideia de tatuagem voce tem em mente? Assim ja te indico nosso especialista no estilo."`);
+      linhas.push(`- "Me conta o que voce ta pensando em fazer, que eu ja direciono pro tatuador certo do estilo."`);
+      linhas.push(`- "Qual estilo/ideia voce tem em mente? Te indico o nosso artista que mais faz isso."`);
+    } else {
+      linhas.push(`**Linha 2 (pergunta pra conduzir):** pergunta aberta sobre a ideia. Variacoes:`);
+      linhas.push(`- "Qual ideia de tatuagem voce tem em mente?"`);
+      linhas.push(`- "Me conta o que voce ta pensando em fazer?"`);
+      linhas.push(`- "Tem alguma ideia ou quer so tirar duvidas primeiro?"`);
+    }
+    linhas.push('');
+    linhas.push(`APOS essa saudacao de 2 linhas, no PROXIMO turno siga o funil normal. Esta introducao so vale pra primeira resposta do turno inicial.`);
+  } else if (ctx.eh_recorrente) {
+    // CLIENTE RECORRENTE — aborda de forma casual e direta
+    const nomeCli = ctx.nome_cliente ? ` ${ctx.nome_cliente.split(' ')[0]}` : '';
+    linhas.push(`Este e um CLIENTE RECORRENTE (${ctx.total_sessoes || 'ja tem'} sessao(oes) anterior(es) no estudio). Na sua primeira resposta, use abordagem CASUAL E DIRETA (uma linha so). Variacoes:`);
+    linhas.push(`- "Fala${nomeCli}! Pronto pra marcar mais uma tattoo? 🎨"`);
+    linhas.push(`- "E ai${nomeCli}, pronto pra mais uma? 😁"`);
+    linhas.push(`- "Opa${nomeCli}! Voltou pra gente, que bom! Qual a ideia dessa vez?"`);
+    linhas.push('');
+    linhas.push(`NAO se apresente de novo nem mencione o nome do estudio — o cliente ja conhece.`);
+  } else {
+    // JA TEVE CONVERSA MAS NAO CONCLUIU AGENDAMENTO — nao e primeiro, mas nao e "cliente"
+    linhas.push(`Cliente ja conversou antes mas ainda nao fez agendamento. NAO se apresente novamente ("aqui e ${nomeAg}..."), so continue a conversa naturalmente. Comece com algo leve tipo "Oi!" ou "Fala, tudo bem?".`);
+  }
+  return linhas.join('\n');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // FUNIL DE VENDAS — padronizado. Nao customizar por tenant.
 // Baseado no padrao adotado por estudios profissionais: coleta progressiva
 // antes de falar valor, ancoragem visual, confirmacao de detalhes.
@@ -278,11 +330,12 @@ function faqBlock(tenant) {
 // ═══════════════════════════════════════════════════════════════════════════
 // MONTA O PROMPT FINAL
 // ═══════════════════════════════════════════════════════════════════════════
-export function generateSystemPrompt(tenant, conversa) {
+export function generateSystemPrompt(tenant, conversa, clientContext) {
   const estado = conversa?.estado || 'qualificando';
   const blocks = [
     identidadeBlock(tenant),
     personaBlock(tenant),
+    saudacaoBlock(tenant, clientContext),
     FUNIL_DE_VENDAS,
     REGRAS_HARD,
     estadoBlock(estado),
