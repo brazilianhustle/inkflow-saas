@@ -262,7 +262,7 @@ export async function onRequest(context) {
   }
 
   // [FIX Bug #8] Salvar evo_apikey e evo_instance no tenant via Supabase
-  const SB_KEY = env.SUPABASE_SERVICE_KEY;
+  // SB_KEY ja foi declarado no topo da funcao (gate de pagamento). Reusa aqui.
   if (SB_KEY && tenant_id) {
     try {
       await fetch(SUPABASE_URL + '/rest/v1/tenants?id=eq.' + encodeURIComponent(tenant_id), {
