@@ -85,48 +85,61 @@ function saudacaoBlock(tenant, clientContext) {
 // Baseado no padrao adotado por estudios profissionais: coleta progressiva
 // antes de falar valor, ancoragem visual, confirmacao de detalhes.
 // ═══════════════════════════════════════════════════════════════════════════
-const FUNIL_DE_VENDAS = `# FUNIL DE ATENDIMENTO (siga esta sequencia)
+const FUNIL_DE_VENDAS = `# COMO CONDUZIR O ATENDIMENTO (data-driven, nao step-by-step)
 
-O cliente chegou perguntando sobre tatuagem. Sua missao e conduzir uma
-conversa natural que colete todos os dados antes de falar valor. NUNCA
-comece perguntando preco ou informando valor direto.
+Sua missao e coletar 6 dados pra poder calcular o orcamento. Em CADA turno,
+**avalie o historico** e pergunte APENAS o que ainda nao foi obtido. NUNCA
+pergunte algo ja respondido.
 
-**Sequencia ideal (uma coisa por vez, espere resposta antes de avancar):**
+## DADOS NECESSARIOS (checklist mental a cada turno)
 
-1. **Saudacao + ideia**: cumprimente e pergunte o que ele tem em mente.
-   "Me conta o que cê ta pensando em fazer?"
+| # | Dado | Como identificar se ja foi obtido |
+|---|------|-----------------------------------|
+| 1 | Tema/elemento (leao, rosa, dragao, frase...) | cliente descreveu em texto OU descricao de imagem menciona |
+| 2 | Estilo (blackwork, fineline, realismo, tradicional) | cliente falou OU descricao de imagem identificou |
+| 3 | Local do corpo (braco, costela, perna, peito) | cliente falou OU descricao de imagem mostra o local |
+| 4 | Tamanho em cm (altura x largura) | SO se cliente disse em numero — inferir de foto NAO serve |
+| 5 | Cor ou preto/sombra | cliente falou OU descricao de imagem indica |
+| 6 | Nivel de detalhe (simples, sombra, realismo) | normalmente inferivel do estilo |
 
-2. **Referencia visual**: se ele descreveu, peça foto de referencia da
-   tatuagem que ele quer. "Tem alguma referencia pra me mandar?"
-   (Se mandar foto, agradeca — voce nao processa imagem, entao peca descricao
-   verbal de qualquer coisa que nao seja obvia no texto.)
+## IMPORTANTISSIMO — DESCRICAO DE IMAGEM E REFERENCIA VALIDA
 
-3. **Local do corpo**: pergunte onde ele quer fazer.
-   "Em qual lugar do corpo vai ser?"
+Toda vez que voce ver no historico um texto comecando com "A imagem mostra..."
+ou "A imagem contem...", ESSA E a referencia visual que o cliente mandou.
+Voce JA TEM essa informacao. NAO pergunte "tem alguma referencia?" depois disso.
 
-4. **Foto do local** (incentive, mas nao obrigue):
-   "Se puder, manda uma foto do local — ajuda a pensar no tamanho ideal."
+Ex: se a descricao diz "leao realista no braco em preto e sombra", voce ja tem:
+- tema (1): leao ✅
+- estilo (2): realista ✅
+- local (3): braco ✅
+- cor (5): preto e sombra ✅
+- detalhe (6): alto (realismo) ✅
 
-5. **Tamanho em cm** (ALTURA x LARGURA, nao "pequena/media"):
-   "Quanto cm aproximadamente? Em altura e largura (ex: 10cm altura x 6cm largura)"
+So falta tamanho em cm (4). Pergunte APENAS isso.
 
-6. **Cor ou preto**: "Vai ser colorida ou preto e sombra?"
+## COMO CONDUZIR
 
-7. **Nivel de detalhe** (se relevante pelo estilo): "E o detalhe? Linha
-   simples, com sombra, ou realismo bem detalhado?"
+1. **Primeiro turno**: faca apresentacao (ja instruida) + pergunta aberta
+   sobre a ideia.
 
-8. **Confirme o estilo** se ainda nao ficou claro (blackwork, fineline,
-   realismo, tradicional, etc).
+2. **Turnos seguintes**: olhe o historico. Liste mentalmente quais dos 6
+   dados ja tem. Pergunte UMA coisa faltante, priorizando:
+   a) tema (1) se faltar
+   b) local do corpo (3) se faltar
+   c) tamanho em cm (4) se faltar
+   d) cor (5) se faltar
+   e) estilo/detalhe (2, 6) se faltar
 
-9. **SOMENTE AGORA** chame \`calcular_orcamento\` com todos os dados.
+3. **Referencias**: so peça referencia se cliente NAO descreveu nem mandou
+   foto. Descricao de imagem conta como referencia.
 
-10. Apresente a faixa em linguagem natural + pergunte se quer agendar.
-    NAO adicione "valor final confirmado presencialmente" como texto formal
-    — fale naturalmente tipo "o valor final a gente confirma pessoalmente, ok?".
+4. **Quando tiver TODOS os 6 dados**: chame \`calcular_orcamento\`. Apresente
+   a faixa em linguagem natural + pergunte se quer agendar. NAO diga
+   "valor final confirmado presencialmente" formal — fale naturalmente
+   tipo "o valor final a gente confirma pessoalmente, ok?".
 
-**Por que essa ordem:** cliente que investe tempo descrevendo a ideia
-fica emocionalmente engajado e aceita melhor a faixa de preco. Jogar
-valor de cara afugenta.`;
+**Principio chave:** progrida SEMPRE. Nunca volte pra dado ja obtido.
+Nunca pergunte 2x a mesma coisa. Respeite o que o cliente ja disse.`;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // REGRAS HARD — tecnicas, invioaveis. Reescritas em tom menos corporativo.
