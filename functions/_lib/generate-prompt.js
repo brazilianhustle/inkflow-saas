@@ -25,27 +25,37 @@ function saudacaoBlock(tenant, clientContext) {
 
   if (ctx.is_first_contact) {
     // PRIMEIRO CONTATO — apresenta o estudio antes de conduzir o funil
-    linhas.push(`Este e o **PRIMEIRO CONTATO** deste cliente com o estudio. Na sua primeira resposta, use ESTE padrao de 2 linhas (duas frases separadas por uma quebra de linha):`);
+    linhas.push(`Este e o **PRIMEIRO CONTATO** deste cliente com o estudio. Sua primeira resposta deve vir em **DUAS MENSAGENS SEPARADAS** no WhatsApp.`);
     linhas.push('');
-    linhas.push(`**Linha 1 (apresentacao):** saudacao curta + seu nome + estudio + emoji leve.`);
-    linhas.push(`Variacoes aceitas:`);
+    linhas.push(`**COMO SEPARAR: use DUPLA QUEBRA DE LINHA (\\n\\n) entre as duas partes.** O sistema le esse padrao e envia como 2 baloes separados (simula pessoa digitando). NAO junte tudo numa frase so com espaco.`);
+    linhas.push('');
+    linhas.push(`Formato exato da sua resposta:`);
+    linhas.push('```');
+    linhas.push(`Oii, tudo bem? Aqui e ${nomeAg} do ${nomeEst} 😁`);
+    linhas.push('');
+    linhas.push(`Qual ideia de tatuagem voce tem em mente?`);
+    linhas.push('```');
+    linhas.push('');
+    linhas.push(`(Note que tem uma LINHA EM BRANCO entre as duas frases — isso e o \\n\\n.)`);
+    linhas.push('');
+    linhas.push(`**Mensagem 1 (apresentacao) — variacoes:**`);
     linhas.push(`- "Oii, tudo bem? Aqui e ${nomeAg} do ${nomeEst} 😁"`);
     linhas.push(`- "Fala! Aqui quem fala e a ${nomeAg}, do ${nomeEst} 🎨"`);
     linhas.push(`- "Opa, tudo bem? Sou a ${nomeAg} do ${nomeEst}!"`);
     linhas.push('');
     if (isEstudio) {
-      linhas.push(`**Linha 2 (pergunta pra conduzir):** como e plano ESTUDIO (tem varios tatuadores), mencione indicacao de especialista. Variacoes:`);
+      linhas.push(`**Mensagem 2 (pergunta pra conduzir) — plano ESTUDIO, mencione especialista:**`);
       linhas.push(`- "Qual ideia de tatuagem voce tem em mente? Assim ja te indico nosso especialista no estilo."`);
       linhas.push(`- "Me conta o que voce ta pensando em fazer, que eu ja direciono pro tatuador certo do estilo."`);
       linhas.push(`- "Qual estilo/ideia voce tem em mente? Te indico o nosso artista que mais faz isso."`);
     } else {
-      linhas.push(`**Linha 2 (pergunta pra conduzir):** pergunta aberta sobre a ideia. Variacoes:`);
+      linhas.push(`**Mensagem 2 (pergunta pra conduzir):**`);
       linhas.push(`- "Qual ideia de tatuagem voce tem em mente?"`);
       linhas.push(`- "Me conta o que voce ta pensando em fazer?"`);
       linhas.push(`- "Tem alguma ideia ou quer so tirar duvidas primeiro?"`);
     }
     linhas.push('');
-    linhas.push(`APOS essa saudacao de 2 linhas, no PROXIMO turno siga o funil normal. Esta introducao so vale pra primeira resposta do turno inicial.`);
+    linhas.push(`APOS essa saudacao, no PROXIMO turno siga o funil normal SEM separar em 2 mensagens (responda 1 balao so por turno).`);
   } else if (ctx.eh_recorrente) {
     // CLIENTE RECORRENTE — aborda de forma casual e direta
     const temNomeReal = ctx.nome_cliente && typeof ctx.nome_cliente === 'string' && ctx.nome_cliente.trim().length >= 2;
