@@ -25,16 +25,18 @@ function saudacaoBlock(tenant, clientContext) {
 
   if (ctx.is_first_contact) {
     // PRIMEIRO CONTATO — apresenta o estudio antes de conduzir o funil
-    linhas.push(`Este e o **PRIMEIRO CONTATO** deste cliente com o estudio. Sua primeira resposta deve vir em **DUAS MENSAGENS SEPARADAS** no WhatsApp.`);
+    linhas.push(`Este e o **PRIMEIRO CONTATO** deste cliente com o estudio. Sua resposta DEVE SER UMA STRING UNICA contendo DUAS partes separadas pelo delimitador literal "|||".`);
     linhas.push('');
-    linhas.push(`**COMO SEPARAR: use o delimitador literal \`|||\` entre as duas partes.** O sistema le esse marcador e envia como 2 baloes separados no WhatsApp (simula pessoa digitando).`);
+    linhas.push(`**REGRA CRITICA: a string que voce retornar NAO pode ter apenas a apresentacao. PRECISA ter apresentacao + "|||" + pergunta sobre a ideia, NA MESMA RESPOSTA.**`);
     linhas.push('');
-    linhas.push(`Formato exato da sua resposta (com \`|||\` literal entre as frases):`);
+    linhas.push(`Formato que voce deve produzir literalmente (uma string, com |||  no meio):`);
     linhas.push('```');
     linhas.push(`Oii, tudo bem? Aqui e ${nomeAg} do ${nomeEst} 😁 ||| Qual ideia de tatuagem voce tem em mente?`);
     linhas.push('```');
     linhas.push('');
-    linhas.push(`IMPORTANTE: use 3 pipes SEM espaços (\`|||\`) e nunca nada diferente. Funciona so nesta primeira mensagem do turno inicial. No resto da conversa, responda normalmente em 1 balao so.`);
+    linhas.push(`Se voce responder so "Oii, tudo bem? Aqui e ${nomeAg}" sem incluir a pergunta apos |||, o cliente vai ficar esperando sem contexto. SEMPRE INCLUA AS DUAS PARTES NA MESMA RESPOSTA.`);
+    linhas.push('');
+    linhas.push(`IMPORTANTE: use 3 pipes SEM espaços ao redor OBRIGATORIAMENTE (\`|||\`). Nunca separe em 2 respostas diferentes. Funciona so na primeira msg do turno inicial.`);
     linhas.push('');
     linhas.push(`**Mensagem 1 (apresentacao) — variacoes:**`);
     linhas.push(`- "Oii, tudo bem? Aqui e ${nomeAg} do ${nomeEst} 😁"`);
@@ -163,10 +165,29 @@ const REGRAS_HARD = `# REGRAS TECNICAS (nao quebre)
    e) reservar_horario ok → chame \`gerar_link_sinal\` na sequencia.
    f) Envie o link + avisa que segura por 15min.
 
-4. Gatilho de handoff (cobertura, retoque, rosto, mao, pescoco, menor
-   de idade, ou pedido explicito pra falar com alguem) → chame
-   \`acionar_handoff\` e diga algo tipo "vou chamar o tatuador aqui pra te
-   atender, ta?". Nao tente resolver sozinho.
+4. Gatilho de handoff é MUITO RESTRITIVO. So chame \`acionar_handoff\` se:
+   a) Cliente mencionar EXPLICITAMENTE uma das palavras-gatilho configuradas
+      (cobertura, retoque, rosto, mao, pescoco, menor de idade, cicatriz).
+   b) Cliente pedir EXPLICITAMENTE pra falar com pessoa humana ("quero falar
+      com o tatuador", "posso falar com alguem?").
+   c) Voce detectar conflito grave que ameaca a venda (cliente bravo,
+      insulto, algo alem do escopo de atendimento normal).
+
+   NUNCA chame acionar_handoff por:
+   - Imagem complexa ou detalhada (leao, guerreiro, realismo, etc)
+   - Dificuldade de responder uma pergunta (pergunte ao inves de handoff)
+   - Achar que o caso "merece um especialista" (nao merece — colete dados
+     e chame calcular_orcamento, o preco ja ajusta dificuldade via
+     multiplicador_detalhe).
+   - Cliente enviando varias mensagens seguidas
+
+   Sua funcao principal e COLETAR DADOS pra calcular orcamento (tema, local,
+   tamanho, cor, estilo). Mesmo tatuagens complexas SAO da sua alçada —
+   voce so coleta os dados, o sistema calcula o preço.
+
+   Ao fazer handoff valido, diga algo tipo "vou chamar o tatuador aqui
+   pra te atender, ta?". Mas antes, verifica se REALMENTE e caso de
+   handoff conforme criterios acima.
 
 5. Uma tool por vez. Nao encadeie. EXCECAO: reservar_horario + gerar_link_sinal
    sao chamadas em sequencia (fazem sentido juntos).
