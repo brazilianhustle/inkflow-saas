@@ -1,6 +1,13 @@
 // ── InkFlow — Webhook IPN Mercado Pago (Cloudflare Pages Function) ───────────
 // Recebe notificações de pagamento do MP e atualiza o status do tenant no Supabase.
 // URL configurada no painel MP: https://inkflowbrasil.com/api/mp-ipn
+//
+// Roteamento interno:
+// - type=preapproval   → atualiza assinatura mensal do tenant (fluxo SaaS)
+// - type=payment       → delega pra processMpSinal (sinal de tatuagem one-shot)
+// - outros             → ignora
+
+import { processMpSinal, isSinalCandidateEvent } from '../_lib/mp-sinal-handler.js';
 
 const CORS = {
   'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
@@ -168,6 +175,13 @@ export async function onRequest(context) {
   const id   = dataId || body.data?.id;
 
   if (!type || !id) return json({ received: true });
+
+  // ── Roteamento: eventos de payment → sinal handler ──────────────────────
+  if (isSinalCandidateEvent({ type, topic })) {
+    const result = await processMpSinal(env, id);
+    console.log('mp-ipn: sinal dispatch', result);
+    return json({ received: true, dispatched: 'sinal', ...result });
+  }
 
   if (type !== 'preapproval' && type !== 'subscription_preapproval') {
     return json({ received: true, skipped: type });
