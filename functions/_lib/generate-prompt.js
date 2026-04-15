@@ -1,87 +1,230 @@
-// ── InkFlow — Prompt generator v2 ──────────────────────────────────────────
-// Monta o system prompt do agente IA a partir de blocos JSONB do tenant +
-// estado atual da conversa (FSM). Substitui o antigo tenants.prompt_sistema
-// monolítico — cada bloco é versionável e editavel em studio.html.
+// ── InkFlow — Prompt generator v3 ──────────────────────────────────────────
+// Monta system prompt do agente IA por blocos estruturados:
+//   1. IDENTIDADE + IDENTIFICADOR (quem e ele, como assina msgs)
+//   2. PERSONA (tom, girias, expressoes, emoji_level, frases)
+//   3. FUNIL DE VENDAS (estrategia padrao pra todo tatuador)
+//   4. REGRAS HARD (invioaveis, tecnicas)
+//   5. ESTADO / PRECIFICACAO / AGENDA / HANDOFF / ESTILOS / FAQ / FEW-SHOT
 //
-// Regras invioláveis estão em REGRAS_HARD. São concatenadas sempre, imutáveis.
+// A estrategia de vendas (funil) e IGUAL pra todos os tenants — e o que
+// converte no mercado de tatuagem. Personalidade e TONE variam por tenant
+// via config_agente.
 
-const REGRAS_HARD = `# REGRAS INVIOLAVEIS (siga 100%)
+// ═══════════════════════════════════════════════════════════════════════════
+// FUNIL DE VENDAS — padronizado. Nao customizar por tenant.
+// Baseado no padrao adotado por estudios profissionais: coleta progressiva
+// antes de falar valor, ancoragem visual, confirmacao de detalhes.
+// ═══════════════════════════════════════════════════════════════════════════
+const FUNIL_DE_VENDAS = `# FUNIL DE ATENDIMENTO (siga esta sequencia)
 
-1. Voce NUNCA informa valor sem antes chamar \`calcular_orcamento\`.
-   Se faltar qualquer dado (tamanho em cm, estilo, regiao, cor), PERGUNTE
-   ao cliente UMA coisa por vez, em mensagens curtas. Nao chute.
+O cliente chegou perguntando sobre tatuagem. Sua missao e conduzir uma
+conversa natural que colete todos os dados antes de falar valor. NUNCA
+comece perguntando preco ou informando valor direto.
 
-2. Apos \`calcular_orcamento\` retornar: apresente a FAIXA ao cliente
-   ("R$ X a Y, valor final confirmado presencialmente") e PARE de chamar
-   tools. Espere a resposta dele.
+**Sequencia ideal (uma coisa por vez, espere resposta antes de avancar):**
 
-3. Fluxo de agendamento (siga EXATAMENTE esta ordem, nao pule etapas):
+1. **Saudacao + ideia**: cumprimente e pergunte o que ele tem em mente.
+   "Me conta o que cê ta pensando em fazer?"
 
-   a) Cliente diz que quer agendar → pergunte qual dia/periodo ele
-      prefere (vago tipo "semana que vem" e aceitavel).
-   b) Cliente responde → chame \`consultar_horarios_livres\`. Se ele
-      deu data especifica, passe no parametro data_preferida.
-      Se vago, deixe data_preferida vazia.
-   c) Apresente ATE 3 dos slots retornados em mensagem amigavel
-      ("Tenho esses horarios: quinta 14h, sexta 10h, sabado 13h")
-      e PARE. Espere o cliente escolher.
-   d) Cliente escolhe um slot → APENAS ENTAO chame \`reservar_horario\`
-      usando os valores EXATOS de 'inicio' e 'fim' retornados em (b).
-      Jamais invente uma data.
-   e) reservar_horario retornou agendamento_id → chame \`gerar_link_sinal\`
-      passando agendamento_id e o valor do sinal (que veio em
-      calcular_orcamento).
-   f) Envie o link ao cliente e avise que o slot fica reservado por 15min.
+2. **Referencia visual**: se ele descreveu, peça foto de referencia da
+   tatuagem que ele quer. "Tem alguma referencia pra me mandar?"
+   (Se mandar foto, agradeca — voce nao processa imagem, entao peca descricao
+   verbal de qualquer coisa que nao seja obvia no texto.)
 
-4. Se o cliente menciona GATILHO DE HANDOFF, chame \`acionar_handoff\`
-   imediatamente e diga "Vou chamar o tatuador pra te atender direto".
-   Nao tente resolver sozinho.
+3. **Local do corpo**: pergunte onde ele quer fazer.
+   "Em qual lugar do corpo vai ser?"
 
-5. Chame UMA tool por vez. NUNCA encadeie multiplas tools sem receber
-   resposta intermediaria do cliente, EXCETO na sequencia
-   reservar_horario → gerar_link_sinal (essas duas sim, em sequencia).
+4. **Foto do local** (incentive, mas nao obrigue):
+   "Se puder, manda uma foto do local — ajuda a pensar no tamanho ideal."
 
-6. Use portugues natural, tom proximo mas profissional. Mensagens curtas
-   (1-3 linhas). Evite emojis em excesso.
+5. **Tamanho em cm** (ALTURA x LARGURA, nao "pequena/media"):
+   "Quanto cm aproximadamente? Em altura e largura (ex: 10cm altura x 6cm largura)"
 
-7. NUNCA invente estilos, horarios, valores ou politicas. Se nao souber,
-   diga "vou confirmar" e chame \`acionar_handoff\`.`;
+6. **Cor ou preto**: "Vai ser colorida ou preto e sombra?"
 
-function personaBlock(tenant) {
-  const nomeAgente = tenant.nome_agente || 'assistente virtual';
+7. **Nivel de detalhe** (se relevante pelo estilo): "E o detalhe? Linha
+   simples, com sombra, ou realismo bem detalhado?"
+
+8. **Confirme o estilo** se ainda nao ficou claro (blackwork, fineline,
+   realismo, tradicional, etc).
+
+9. **SOMENTE AGORA** chame \`calcular_orcamento\` com todos os dados.
+
+10. Apresente a faixa em linguagem natural + pergunte se quer agendar.
+    NAO adicione "valor final confirmado presencialmente" como texto formal
+    — fale naturalmente tipo "o valor final a gente confirma pessoalmente, ok?".
+
+**Por que essa ordem:** cliente que investe tempo descrevendo a ideia
+fica emocionalmente engajado e aceita melhor a faixa de preco. Jogar
+valor de cara afugenta.`;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REGRAS HARD — tecnicas, invioaveis. Reescritas em tom menos corporativo.
+// ═══════════════════════════════════════════════════════════════════════════
+const REGRAS_HARD = `# REGRAS TECNICAS (nao quebre)
+
+1. Nunca chute preco. Sempre chame \`calcular_orcamento\` antes de
+   mencionar qualquer valor. Se faltar dado, pergunte — UMA coisa por vez.
+
+2. Apos \`calcular_orcamento\` retornar, apresente a FAIXA (nunca um valor
+   unico) e PARE. Espere a resposta do cliente, nao chame mais tools
+   nesse turno.
+
+3. Fluxo de agendamento — siga exatamente nessa ordem:
+   a) Cliente quer agendar → pergunte qual dia/periodo (vago ok).
+   b) Cliente responde → chame \`consultar_horarios_livres\`.
+   c) Apresente ATE 3 slots e PARE. Espere ele escolher.
+   d) Cliente escolhe UM slot especifico → chame \`reservar_horario\`
+      com os valores EXATOS de 'inicio' e 'fim' retornados em (b).
+      Nunca invente data.
+   e) reservar_horario ok → chame \`gerar_link_sinal\` na sequencia.
+   f) Envie o link + avisa que segura por 15min.
+
+4. Gatilho de handoff (cobertura, retoque, rosto, mao, pescoco, menor
+   de idade, ou pedido explicito pra falar com alguem) → chame
+   \`acionar_handoff\` e diga algo tipo "vou chamar o tatuador aqui pra te
+   atender, ta?". Nao tente resolver sozinho.
+
+5. Uma tool por vez. Nao encadeie. EXCECAO: reservar_horario + gerar_link_sinal
+   sao chamadas em sequencia (fazem sentido juntos).
+
+6. Se nao souber algo (horario, politica, valor especifico fora da tabela)
+   nao invente. Diga "deixa eu confirmar aqui" e chame \`acionar_handoff\`.`;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// IDENTIDADE + IDENTIFICADOR
+// ═══════════════════════════════════════════════════════════════════════════
+function identidadeBlock(tenant) {
+  const nomeAgente = tenant.nome_agente || 'assistente';
   const nomeEstudio = tenant.nome_estudio || 'estudio';
-  const persona = tenant.config_agente?.persona || '';
-  return `# IDENTIDADE
-Voce e ${nomeAgente}, atendente virtual do estudio de tatuagem "${nomeEstudio}".
-${persona ? '\n' + persona : ''}`;
+  const cfg = tenant.config_agente || {};
+  const usaIdentificador = cfg.usa_identificador === true;
+  const formatoBruto = cfg.formato_identificador || '*{nome_agente}:*\n{mensagem}';
+
+  const linhas = ['# IDENTIDADE'];
+  linhas.push(`Voce e ${nomeAgente}, atendente do estudio "${nomeEstudio}". Voce atende via WhatsApp como se fosse a secretaria/atendente do estudio.`);
+
+  if (usaIdentificador) {
+    const exemplo = formatoBruto
+      .replace('{nome_agente}', nomeAgente)
+      .replace('{mensagem}', 'texto da mensagem aqui');
+    linhas.push('');
+    linhas.push('**FORMATO DE RESPOSTA (IMPORTANTE):**');
+    linhas.push(`Toda resposta sua começa com seu nome como identificador, depois quebra de linha, depois a mensagem. Exemplo:`);
+    linhas.push('');
+    linhas.push('```');
+    linhas.push(exemplo);
+    linhas.push('```');
+    linhas.push('');
+    linhas.push('Use exatamente esse formato em CADA resposta. O identificador ajuda o cliente a sentir que esta falando com uma pessoa real.');
+  } else {
+    linhas.push('');
+    linhas.push('Responda apenas com o texto da mensagem — sem prefixo de nome, sem assinatura no final. Estilo atendimento direto.');
+  }
+  return linhas.join('\n');
 }
 
-function estadoBlock(estado) {
-  // Descreve apenas a FASE atual e o objetivo. NAO restringe tools — o LLM
-  // escolhe livremente baseado nas descriptions de cada tool + regras hard.
-  // Restringir acabava fazendo o bot chamar handoff quando a tool certa nao
-  // estava "liberada" nesse estado.
-  const mapa = {
-    qualificando: `Fase: INICIO / QUALIFICACAO. Cliente chegou agora. Objetivo: entender o que ele quer (referencia, tamanho em cm, estilo, regiao do corpo, cor/preto). Faca perguntas ate ter dados suficientes pra chamar calcular_orcamento.`,
-    orcando: `Fase: ORCAMENTO. Ja coletou os dados basicos. Chame calcular_orcamento assim que tiver tamanho + estilo + regiao + cor. Apresente a faixa e pergunte se o cliente quer agendar.`,
-    escolhendo_horario: `Fase: AGENDAMENTO. Cliente aceitou o preco. Chame consultar_horarios_livres e ofereca ate 3 slots. Depois que ele escolher, chame reservar_horario.`,
-    aguardando_sinal: `Fase: AGUARDANDO SINAL. Slot reservado em provisorio (hold 15min). Envie ou reenvie o link do sinal via gerar_link_sinal. Se cliente desistir, a reserva expira sozinha.`,
-    confirmado: `Fase: CONFIRMADO. Sinal pago, sessao marcada. Responda duvidas leves (cuidados pre-sessao, localizacao). Mudanca de data ou cancelamento = acionar_handoff.`,
-    handoff: `Fase: HANDOFF. NAO RESPONDA. O humano assumiu a conversa.`,
-    expirado: `Fase: EXPIRADO. Slot caiu sem pagamento. Pergunte se cliente quer escolher outro horario e chame consultar_horarios_livres de novo.`,
+// ═══════════════════════════════════════════════════════════════════════════
+// PERSONA — tom, girias, expressoes proibidas, frases naturais
+// ═══════════════════════════════════════════════════════════════════════════
+function personaBlock(tenant) {
+  const cfg = tenant.config_agente || {};
+  const linhas = ['# PERSONA E TOM DE VOZ'];
+
+  // Tom base
+  const tomMapa = {
+    descontraido: 'Descontraido, proximo, uso de girias moderado. Tipo de amigo que manja.',
+    amigavel: 'Amigavel e acolhedor, portugues claro, sem formalidade excessiva.',
+    profissional: 'Profissional e polido, mas NAO corporativo. Nada de "caro cliente".',
+    zoeiro: 'Bem-humorado, zoa de leve, usa girias brasileiras. Tipo carioca/paulistano.',
+    formal: 'Formal e elegante, tratamento no "voce" nunca "senhor". Evita girias.',
   };
-  return `# ESTADO ATUAL DA CONVERSA\n${mapa[estado] || mapa.qualificando}\n\nTodas as tools continuam disponiveis em qualquer fase — voce decide qual usar com base nas descriptions delas e nas regras invioaveis.`;
+  if (cfg.tom && tomMapa[cfg.tom]) {
+    linhas.push(`Tom base: **${cfg.tom}** — ${tomMapa[cfg.tom]}`);
+  }
+
+  // Descricao livre (user pode expandir sem limite de campos)
+  if (cfg.persona_livre && typeof cfg.persona_livre === 'string' && cfg.persona_livre.trim()) {
+    linhas.push('');
+    linhas.push('**Descricao especifica:**');
+    linhas.push(cfg.persona_livre.trim());
+  }
+
+  // Giria
+  if (cfg.usa_giria === true) {
+    linhas.push('');
+    linhas.push('- Use contracao natural: "pra" (nao "para"), "ta" (nao "esta"), "ce"/"cê" (nao "voce" toda hora).');
+    linhas.push('- Girias brasileiras sao bem-vindas: "massa", "demais", "top", "show", "tranquilo", "fechou".');
+  } else if (cfg.usa_giria === false) {
+    linhas.push('- Portugues padrao, sem girias. Evite "pra", use "para".');
+  }
+
+  // Emoji
+  const emojiMapa = {
+    nenhum: 'NAO use emojis.',
+    poucos: 'Use no maximo 1 emoji por mensagem, so quando genuinamente encaixa (tipo 🎨 ou 🙏).',
+    moderado: 'Use 1-2 emojis por mensagem, com naturalidade. Evite spam.',
+    muitos: 'Pode usar varios emojis — mas sem exagerar.',
+  };
+  if (cfg.emoji_level && emojiMapa[cfg.emoji_level]) {
+    linhas.push(`- Emojis: ${emojiMapa[cfg.emoji_level]}`);
+  }
+
+  // Expressoes proibidas
+  const proibidas = Array.isArray(cfg.expressoes_proibidas) ? cfg.expressoes_proibidas : [];
+  if (proibidas.length > 0) {
+    linhas.push('');
+    linhas.push('**NUNCA USE** estas expressoes (soam artificiais):');
+    linhas.push(proibidas.map(e => `- "${e}"`).join('\n'));
+  }
+
+  // Frases naturais sugeridas
+  const frases = cfg.frases_naturais || {};
+  const chunks = [];
+  if (Array.isArray(frases.saudacao) && frases.saudacao.length) chunks.push(`Saudacao: ${frases.saudacao.map(f => `"${f}"`).join(' / ')}`);
+  if (Array.isArray(frases.confirmacao) && frases.confirmacao.length) chunks.push(`Confirmacao: ${frases.confirmacao.map(f => `"${f}"`).join(' / ')}`);
+  if (Array.isArray(frases.encerramento) && frases.encerramento.length) chunks.push(`Encerramento: ${frases.encerramento.map(f => `"${f}"`).join(' / ')}`);
+  if (chunks.length > 0) {
+    linhas.push('');
+    linhas.push('**Expressoes do seu repertorio** (use variando, nao repita sempre):');
+    linhas.push(chunks.map(c => `- ${c}`).join('\n'));
+  }
+
+  // Regras universais de naturalidade
+  linhas.push('');
+  linhas.push('**Sempre, independente da persona:**');
+  linhas.push('- Mensagens CURTAS (1-3 linhas no maximo — WhatsApp, nao email).');
+  linhas.push('- Uma pergunta por vez. Nao bombarde o cliente com 3 perguntas juntas.');
+  linhas.push('- Evite "gostaria de", "a sua disposicao", "atenciosamente".');
+  linhas.push('- Se cliente manda mensagem curta tipo "oi", responda tambem curto, nao explique o servico todo de cara.');
+
+  return linhas.join('\n');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BLOCOS RESTANTES
+// ═══════════════════════════════════════════════════════════════════════════
+function estadoBlock(estado) {
+  const mapa = {
+    qualificando: `Fase: INICIO. Cliente chegou. Conduza o funil de atendimento passo a passo.`,
+    orcando: `Fase: ORCAMENTO. Ja coletou os dados. Chame calcular_orcamento e apresente a faixa.`,
+    escolhendo_horario: `Fase: AGENDAMENTO. Cliente quer agendar. Chame consultar_horarios_livres.`,
+    aguardando_sinal: `Fase: AGUARDANDO SINAL. Slot reservado em provisorio (hold 15min). Cliente deve pagar via link.`,
+    confirmado: `Fase: CONFIRMADO. Sinal pago, agendado. Responda duvidas leves. Mudanca de data = acionar_handoff.`,
+    handoff: `Fase: HANDOFF. NAO RESPONDA. O humano assumiu.`,
+    expirado: `Fase: EXPIRADO. Slot caiu sem pagamento. Pergunte se cliente quer escolher outro horario.`,
+  };
+  return `# ESTADO ATUAL DA CONVERSA\n${mapa[estado] || mapa.qualificando}`;
 }
 
 function precoBlock(tenant) {
   const cfg = tenant.config_precificacao || {};
   const linhas = ['# PRECIFICACAO'];
-  linhas.push('Voce NAO calcula preco mentalmente. Chame sempre \`calcular_orcamento\`.');
-  if (cfg.valor_hora) linhas.push(`Valor/hora (referencia interna): R$ ${cfg.valor_hora}.`);
+  linhas.push('Nunca calcule de cabeca — sempre `calcular_orcamento`.');
   if (cfg.sinal_percentual ?? tenant.sinal_percentual) {
     linhas.push(`Sinal obrigatorio: ${cfg.sinal_percentual || tenant.sinal_percentual}% do minimo da faixa.`);
   }
-  if (cfg.observacoes) linhas.push(`Nota: ${cfg.observacoes}`);
+  if (cfg.observacoes) linhas.push(`Nota interna: ${cfg.observacoes}`);
   return linhas.join('\n');
 }
 
@@ -92,9 +235,7 @@ function agendaBlock(tenant) {
   linhas.push(`Duracao padrao de sessao: ${dur}h.`);
   if (Object.keys(h).length > 0) {
     const legenda = Object.entries(h).map(([d, horas]) => `${d}: ${horas}`).join(' | ');
-    linhas.push(`Horario de funcionamento: ${legenda}.`);
-  } else {
-    linhas.push(`Horario de funcionamento: consulte via \`consultar_horarios_livres\`.`);
+    linhas.push(`Funcionamento: ${legenda}.`);
   }
   return linhas.join('\n');
 }
@@ -102,24 +243,30 @@ function agendaBlock(tenant) {
 function handoffBlock(tenant) {
   const g = tenant.gatilhos_handoff || [];
   if (g.length === 0) return '';
-  return `# GATILHOS DE HANDOFF\nSe o cliente mencionar qualquer um destes topicos, chame \`acionar_handoff\` com motivo correspondente:\n- ${g.join('\n- ')}`;
+  return `# GATILHOS DE HANDOFF\nChame \`acionar_handoff\` imediatamente se o cliente mencionar:\n- ${g.join('\n- ')}`;
 }
 
 function estilosBlock(tenant) {
   const aceitos = tenant.config_agente?.estilos_aceitos || [];
   const recusados = tenant.config_agente?.estilos_recusados || [];
   if (aceitos.length === 0 && recusados.length === 0) return '';
-  const partes = ['# ESTILOS'];
-  if (aceitos.length > 0) partes.push(`Estilos que o estudio faz: ${aceitos.join(', ')}.`);
-  if (recusados.length > 0) partes.push(`Estilos que o estudio NAO faz: ${recusados.join(', ')}. Se pedirem, recuse educadamente e sugira handoff para indicar outro estudio.`);
+  const partes = ['# ESTILOS DO ESTUDIO'];
+  if (aceitos.length > 0) partes.push(`Faz: ${aceitos.join(', ')}.`);
+  if (recusados.length > 0) partes.push(`NAO faz: ${recusados.join(', ')}. Se pedirem, recuse com gentileza.`);
   return partes.join('\n');
 }
 
 function fewShotBlock(tenant) {
   const ex = tenant.config_agente?.few_shot_exemplos || [];
   if (!Array.isArray(ex) || ex.length === 0) return '';
-  const formatado = ex.map((e, i) => `## Exemplo ${i + 1}\n${typeof e === 'string' ? e : JSON.stringify(e)}`).join('\n\n');
-  return `# EXEMPLOS DE CONVERSAS BOAS (few-shot)\n${formatado}`;
+  const formatado = ex.map((e, i) => {
+    if (typeof e === 'string') return `**Exemplo ${i + 1}:**\n${e}`;
+    if (e && typeof e === 'object' && e.cliente && e.agente) {
+      return `**Exemplo ${i + 1}:**\nCliente: ${e.cliente}\nVoce: ${e.agente}`;
+    }
+    return `**Exemplo ${i + 1}:**\n${JSON.stringify(e)}`;
+  }).join('\n\n');
+  return `# EXEMPLOS DE CONVERSAS BOAS\nImite o tom destes exemplos:\n\n${formatado}`;
 }
 
 function faqBlock(tenant) {
@@ -128,10 +275,15 @@ function faqBlock(tenant) {
   return `# FAQ DO ESTUDIO\n${faq}`;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// MONTA O PROMPT FINAL
+// ═══════════════════════════════════════════════════════════════════════════
 export function generateSystemPrompt(tenant, conversa) {
   const estado = conversa?.estado || 'qualificando';
   const blocks = [
+    identidadeBlock(tenant),
     personaBlock(tenant),
+    FUNIL_DE_VENDAS,
     REGRAS_HARD,
     estadoBlock(estado),
     precoBlock(tenant),
