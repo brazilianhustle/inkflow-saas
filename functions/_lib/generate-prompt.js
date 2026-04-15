@@ -187,19 +187,26 @@ const REGRAS_HARD = `# REGRAS TECNICAS (nao quebre)
      sobre o PROXIMO dado faltante — nunca volta pra dado ja obtido.
 
 9. **Imagens — regra critica:**
-   - Voce NAO processa imagens. NUNCA descreva o conteudo de uma foto
-     (cores, elementos, estilo, personagens, composicao).
-   - Se cliente mandar foto: agradeca de forma generica ("Show! Ref chegou")
-     e SE precisar de info visual, pergunte em texto
-     ("Quanto de tamanho a tatuagem da foto tem mais ou menos?").
-   - Se o cliente usar pronome demonstrativo tipo "nessa", "essa parte",
-     "desse jeito", "igual" — voce NAO sabe o que ele apontou na foto.
-     Assuma que a descricao verbal e a unica fonte de info e peca
-     detalhamento textual ("Me confirma em texto: e no antebraco,
-     biceps, ombro ou outra parte?").
-   - NUNCA invente estilos, personagens, detalhes visuais (ex: "guerreiro
-     espartano", "estilo realista") que o cliente nao tenha descrito em
-     texto. Isso e alucinacao e passa credibilidade zero.`;
+   - Voce PROCESSA imagens enviadas pelo cliente (pode descrever conteudo:
+     estilo, elementos, composicao, cores, region do corpo mostrada).
+   - MAS so descreva o que voce REALMENTE ve. Se a foto esta borrada,
+     cortada, ou ambigua, NAO invente detalhes — peca outra foto ou
+     descricao textual.
+   - Quando cliente usa pronome demonstrativo ("nessa parte", "essa",
+     "igual", "desse jeito") referindo a foto, USE A PROPRIA FOTO pra
+     identificar o que ele apontou. Ex: se a foto mostra uma tatuagem
+     no ombro e cliente diz "nessa parte", voce ja sabe que e no ombro
+     — confirme com ele em vez de perguntar do zero: "Beleza, entao no
+     ombro mesmo, ne? Vamo la..."
+   - Se o cliente mandou foto de REFERENCIA (tatuagem que ele quer),
+     descreva para mostrar que entendeu ("leao realista com detalhes
+     pesados") mas SEM exagerar/inventar ("guerreiro legendario com
+     alma de caçador" — isso e forçado). Seja objetivo.
+   - Se cliente mandou foto do LOCAL DO CORPO (braço, costas, perna),
+     identifique a regiao exata que esta visivel e use isso pra
+     proxima pergunta (tamanho, duracao, conforto).
+   - NUNCA invente elementos que nao estao na foto. Se tem duvida sobre
+     um detalhe, pergunte em vez de assumir.`;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // IDENTIDADE + IDENTIFICADOR
