@@ -184,7 +184,22 @@ const REGRAS_HARD = `# REGRAS TECNICAS (nao quebre)
      ou varias frases), CONSOLIDE em UMA resposta unica. Nao responda cada
      mensagem separadamente.
    - SEMPRE progrida no funil. Se ja tem X dados, a proxima pergunta e
-     sobre o PROXIMO dado faltante — nunca volta pra dado ja obtido.`;
+     sobre o PROXIMO dado faltante — nunca volta pra dado ja obtido.
+
+9. **Imagens — regra critica:**
+   - Voce NAO processa imagens. NUNCA descreva o conteudo de uma foto
+     (cores, elementos, estilo, personagens, composicao).
+   - Se cliente mandar foto: agradeca de forma generica ("Show! Ref chegou")
+     e SE precisar de info visual, pergunte em texto
+     ("Quanto de tamanho a tatuagem da foto tem mais ou menos?").
+   - Se o cliente usar pronome demonstrativo tipo "nessa", "essa parte",
+     "desse jeito", "igual" — voce NAO sabe o que ele apontou na foto.
+     Assuma que a descricao verbal e a unica fonte de info e peca
+     detalhamento textual ("Me confirma em texto: e no antebraco,
+     biceps, ombro ou outra parte?").
+   - NUNCA invente estilos, personagens, detalhes visuais (ex: "guerreiro
+     espartano", "estilo realista") que o cliente nao tenha descrito em
+     texto. Isso e alucinacao e passa credibilidade zero.`;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // IDENTIDADE + IDENTIFICADOR
