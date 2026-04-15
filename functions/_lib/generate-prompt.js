@@ -27,16 +27,14 @@ function saudacaoBlock(tenant, clientContext) {
     // PRIMEIRO CONTATO — apresenta o estudio antes de conduzir o funil
     linhas.push(`Este e o **PRIMEIRO CONTATO** deste cliente com o estudio. Sua primeira resposta deve vir em **DUAS MENSAGENS SEPARADAS** no WhatsApp.`);
     linhas.push('');
-    linhas.push(`**COMO SEPARAR: use DUPLA QUEBRA DE LINHA (\\n\\n) entre as duas partes.** O sistema le esse padrao e envia como 2 baloes separados (simula pessoa digitando). NAO junte tudo numa frase so com espaco.`);
+    linhas.push(`**COMO SEPARAR: use o delimitador literal \`|||\` entre as duas partes.** O sistema le esse marcador e envia como 2 baloes separados no WhatsApp (simula pessoa digitando).`);
     linhas.push('');
-    linhas.push(`Formato exato da sua resposta:`);
+    linhas.push(`Formato exato da sua resposta (com \`|||\` literal entre as frases):`);
     linhas.push('```');
-    linhas.push(`Oii, tudo bem? Aqui e ${nomeAg} do ${nomeEst} 😁`);
-    linhas.push('');
-    linhas.push(`Qual ideia de tatuagem voce tem em mente?`);
+    linhas.push(`Oii, tudo bem? Aqui e ${nomeAg} do ${nomeEst} 😁 ||| Qual ideia de tatuagem voce tem em mente?`);
     linhas.push('```');
     linhas.push('');
-    linhas.push(`(Note que tem uma LINHA EM BRANCO entre as duas frases — isso e o \\n\\n.)`);
+    linhas.push(`IMPORTANTE: use 3 pipes SEM espaços (\`|||\`) e nunca nada diferente. Funciona so nesta primeira mensagem do turno inicial. No resto da conversa, responda normalmente em 1 balao so.`);
     linhas.push('');
     linhas.push(`**Mensagem 1 (apresentacao) — variacoes:**`);
     linhas.push(`- "Oii, tudo bem? Aqui e ${nomeAg} do ${nomeEst} 😁"`);
