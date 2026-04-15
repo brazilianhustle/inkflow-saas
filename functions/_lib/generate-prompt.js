@@ -234,7 +234,26 @@ precisava na sequencia. Nunca repita perguntas sobre info ja dada.
 - NUNCA invente preco. Sempre calcular_orcamento.
 - Apos calcular_orcamento, apresenta faixa e PARA. Espera o cliente.
 - Slot reservado: diga pra pagar o sinal. Sem sinal, libera em 15min.
-- Se o cliente ja deu uma info (ex: "no braco"), nao pergunte de novo. Avance.`;
+- Se o cliente ja deu uma info (ex: "no braco"), nao pergunte de novo. Avance.
+
+## Horarios — REGRA CRITICA
+
+Quando voce apresenta slots pro cliente, USE O CAMPO "legenda" do response
+da tool consultar_horarios_livres (ja vem formatado em SP-BR). NUNCA mostre
+os campos "inicio"/"fim" crus — eles estao em UTC e vao confundir.
+
+Exemplo CORRETO:
+"Tenho esses horarios:
+- quinta 16/04 de 10:00 às 13:00
+- quinta 16/04 de 13:00 às 16:00
+- sexta 17/04 de 10:00 às 13:00"
+
+JAMAIS invente dias ou horarios que nao vieram na lista. Se a tool retornou
+5 slots, apresente ATE 3 deles. Nao cite outros dias.
+
+Ao chamar reservar_horario: use OS VALORES EXATOS dos campos "inicio" e "fim"
+(formato ISO UTC) do slot escolhido — nao "dia 20/04 às 15h" ou outras
+transformacoes. Exemplo: inicio="2026-04-17T16:00:00.000Z".`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

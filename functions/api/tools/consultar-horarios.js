@@ -15,6 +15,16 @@ function toBrISO(d) {
   return d.toISOString();
 }
 
+// Formata datetime UTC pra string legivel em America/Sao_Paulo.
+// Ex: 2026-04-16T13:00:00Z -> { dia_semana: 'quinta', data_br: '16/04', hora_br: '10:00' }
+function formatarSP(dUTC) {
+  const date = new Date(dUTC);
+  const diaSemana = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', timeZone: 'America/Sao_Paulo' }).format(date);
+  const dataBr = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' }).format(date);
+  const horaBr = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Sao_Paulo' }).format(date);
+  return { dia_semana: diaSemana, data_br: dataBr, hora_br: horaBr };
+}
+
 async function bumpEstadoEscolhendo(env, tenant_id, telefone) {
   if (!telefone) return;
   try {
@@ -66,7 +76,18 @@ export const onRequest = withTool('consultar_horarios_livres', async ({ env, inp
     const futuros = livres.filter(s => s.inicio > agoraComBuffer);
     for (const s of futuros) {
       if (slotsResp.length >= MAX_SLOTS) break;
-      slotsResp.push({ inicio: toBrISO(s.inicio), fim: toBrISO(s.fim) });
+      const fmtIni = formatarSP(s.inicio);
+      const fmtFim = formatarSP(s.fim);
+      slotsResp.push({
+        inicio: toBrISO(s.inicio),
+        fim: toBrISO(s.fim),
+        // Campos legiveis em pt-BR / SP timezone pro agente usar direto
+        dia_semana: fmtIni.dia_semana,
+        data_br: fmtIni.data_br,
+        hora_inicio_br: fmtIni.hora_br,
+        hora_fim_br: fmtFim.hora_br,
+        legenda: `${fmtIni.dia_semana} ${fmtIni.data_br} de ${fmtIni.hora_br} às ${fmtFim.hora_br}`,
+      });
     }
   }
 
