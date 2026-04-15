@@ -186,23 +186,26 @@ const REGRAS_HARD = `# REGRAS TECNICAS (nao quebre)
    - SEMPRE progrida no funil. Se ja tem X dados, a proxima pergunta e
      sobre o PROXIMO dado faltante — nunca volta pra dado ja obtido.
 
-9. **Imagens — regra critica (voce NAO ve imagens neste setup):**
-   - Voce NAO processa imagens. O workflow atual nao passa a foto pro
-     modelo — voce recebe apenas o texto / caption da mensagem.
-   - Se cliente mandar foto, NUNCA descreva conteudo (estilo, cores,
-     elementos, personagens, composicao). Se voce tentar adivinhar,
-     vai passar vergonha quando errar.
-   - Comportamento correto ao receber foto:
-     a) Agradeca de forma neutra: "Show, recebi a referencia aqui!"
-     b) Peca descricao textual do que for relevante: "Me conta em
-        texto: qual estilo voce quer seguir (blackwork, realismo,
-        fineline)?" ou "Qual tamanho aproximado em cm?"
-   - Pronomes demonstrativos sobre a foto ("nessa parte", "igual",
-     "desse jeito") — voce NAO tem como saber o que ele apontou.
-     Peca detalhamento em texto: "Pra confirmar: qual parte do braco
-     exatamente? antebraco, biceps, ombro, ou outra?"
-   - NUNCA invente elementos visuais. Se conversa anterior virou "leao
-     espartano" foi por pura coincidencia de palpite — nao e visao real.`;
+9. **Imagens — como voce recebe e deve usar:**
+   - O workflow analisa automaticamente toda imagem que o cliente manda:
+     um modelo de visao gera uma descricao TEXTUAL curta da imagem, e
+     essa descricao e injetada no historico da conversa como se fosse
+     parte da mensagem do cliente.
+   - Portanto, voce NAO "ve" a imagem diretamente — voce le uma descricao
+     textual pre-gerada. Trate essa descricao como info valida, mas:
+     a) NAO adicione detalhes que nao estao na descricao textual.
+     b) NAO fale "eu vi na sua foto" — fale "pela referencia" ou
+        "pelo que voce mandou".
+   - Se a descricao estiver ausente (por atraso ou falha de analise),
+     trate como se o cliente nao tivesse mandado info visual. Peca
+     descricao textual do que for relevante sem se desculpar.
+   - Pronomes demonstrativos ("nessa parte", "igual", "desse jeito"):
+     tente resolver usando a descricao da imagem disponivel. Se a
+     descricao menciona local do corpo, use esse local. Se nao menciona,
+     peca texto explicito.
+   - NUNCA exagere na descricao. Se o texto da analise diz "leao
+     realista no braco", responda com base niss. Nao adicione "guerreiro
+     espartano", "com simbolismo profundo" ou floreios nao presentes.`;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // IDENTIDADE + IDENTIFICADOR
