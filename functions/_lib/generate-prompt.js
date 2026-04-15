@@ -48,11 +48,21 @@ function saudacaoBlock(tenant, clientContext) {
     linhas.push(`APOS essa saudacao de 2 linhas, no PROXIMO turno siga o funil normal. Esta introducao so vale pra primeira resposta do turno inicial.`);
   } else if (ctx.eh_recorrente) {
     // CLIENTE RECORRENTE — aborda de forma casual e direta
-    const nomeCli = ctx.nome_cliente ? ` ${ctx.nome_cliente.split(' ')[0]}` : '';
+    const temNomeReal = ctx.nome_cliente && typeof ctx.nome_cliente === 'string' && ctx.nome_cliente.trim().length >= 2;
+    const nomeCli = temNomeReal ? ` ${ctx.nome_cliente.split(' ')[0]}` : '';
     linhas.push(`Este e um CLIENTE RECORRENTE (${ctx.total_sessoes || 'ja tem'} sessao(oes) anterior(es) no estudio). Na sua primeira resposta, use abordagem CASUAL E DIRETA (uma linha so). Variacoes:`);
-    linhas.push(`- "Fala${nomeCli}! Pronto pra marcar mais uma tattoo? 🎨"`);
-    linhas.push(`- "E ai${nomeCli}, pronto pra mais uma? 😁"`);
-    linhas.push(`- "Opa${nomeCli}! Voltou pra gente, que bom! Qual a ideia dessa vez?"`);
+    if (temNomeReal) {
+      linhas.push(`- "Fala${nomeCli}! Pronto pra marcar mais uma tattoo? 🎨"`);
+      linhas.push(`- "E ai${nomeCli}, pronto pra mais uma? 😁"`);
+      linhas.push(`- "Opa${nomeCli}! Voltou pra gente, que bom! Qual a ideia dessa vez?"`);
+    } else {
+      // Sem nome real capturado — NUNCA usar nomeWpp como fallback
+      linhas.push(`- "Fala! Voltou pra gente, massa! Qual a ideia dessa vez?"`);
+      linhas.push(`- "E ai, pronto pra mais uma? Me conta a ideia 🎨"`);
+      linhas.push(`- "Opa! Que bom te ver de novo. Ja ta pensando no proximo?"`);
+      linhas.push('');
+      linhas.push(`**IMPORTANTE: nao temos o nome real deste cliente ainda.** NAO chute nome. NAO use nenhum nome — use saudacao neutra.`);
+    }
     linhas.push('');
     linhas.push(`NAO se apresente de novo nem mencione o nome do estudio — o cliente ja conhece.`);
   } else {
@@ -141,7 +151,19 @@ const REGRAS_HARD = `# REGRAS TECNICAS (nao quebre)
    sao chamadas em sequencia (fazem sentido juntos).
 
 6. Se nao souber algo (horario, politica, valor especifico fora da tabela)
-   nao invente. Diga "deixa eu confirmar aqui" e chame \`acionar_handoff\`.`;
+   nao invente. Diga "deixa eu confirmar aqui" e chame \`acionar_handoff\`.
+
+7. **Nome do cliente — regra critica:**
+   - Voce SO pode chamar o cliente pelo nome se ELE disser o nome na
+     conversa ("meu nome e X" ou ao preencher dados).
+   - Se o sistema informar um nome pro cliente, use apenas se foi
+     capturado em conversa anterior real.
+   - NUNCA use o nome/username do WhatsApp como referencia — esse campo
+     pode vir como "iPhone de X", apelido aleatorio, ou ate o nome de
+     outra pessoa. E nao-confiavel.
+   - Em duvida: fale sem nome ("Fala!", "Oi!") ate ele se apresentar.
+   - Para reservar_horario, so preencha o campo 'nome' se tiver certeza
+     que capturou da conversa — se nao, deixe vazio.`;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // IDENTIDADE + IDENTIFICADOR
