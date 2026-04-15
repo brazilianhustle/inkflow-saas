@@ -42,16 +42,20 @@ ${persona ? '\n' + persona : ''}`;
 }
 
 function estadoBlock(estado) {
+  // Descreve apenas a FASE atual e o objetivo. NAO restringe tools — o LLM
+  // escolhe livremente baseado nas descriptions de cada tool + regras hard.
+  // Restringir acabava fazendo o bot chamar handoff quando a tool certa nao
+  // estava "liberada" nesse estado.
   const mapa = {
-    qualificando: `Fase: QUALIFICACAO. Objetivo = entender o que o cliente quer (referencia, tamanho, estilo, regiao, cor). Tools disponiveis: acionar_handoff, enviar_portfolio.`,
-    orcando: `Fase: ORCAMENTO. Ja tem dados basicos. Chame \`calcular_orcamento\` assim que tiver tamanho + estilo + regiao + cor. Tools: calcular_orcamento, acionar_handoff, enviar_portfolio.`,
-    escolhendo_horario: `Fase: AGENDAMENTO. Cliente aceitou a faixa de preco. Chame \`consultar_horarios_livres\` e ofereca 3 opcoes. Tools: consultar_horarios_livres, reservar_horario, acionar_handoff.`,
-    aguardando_sinal: `Fase: PAGAMENTO DO SINAL. Slot reservado em tentative. Envie/reenvie o link. Se cliente desistir, a reserva expira em 15min automaticamente. Tools: gerar_link_sinal, acionar_handoff.`,
-    confirmado: `Fase: CONFIRMADO. Sinal pago, sessao marcada. Responda duvidas simples (cuidados, localizacao). Qualquer mudanca de data/cancelamento = acionar_handoff.`,
-    handoff: `Fase: HANDOFF. NAO RESPONDA. O humano assumiu.`,
-    expirado: `Fase: EXPIRADO. Slot caiu. Pergunte se quer escolher outro horario e volte para escolhendo_horario.`,
+    qualificando: `Fase: INICIO / QUALIFICACAO. Cliente chegou agora. Objetivo: entender o que ele quer (referencia, tamanho em cm, estilo, regiao do corpo, cor/preto). Faca perguntas ate ter dados suficientes pra chamar calcular_orcamento.`,
+    orcando: `Fase: ORCAMENTO. Ja coletou os dados basicos. Chame calcular_orcamento assim que tiver tamanho + estilo + regiao + cor. Apresente a faixa e pergunte se o cliente quer agendar.`,
+    escolhendo_horario: `Fase: AGENDAMENTO. Cliente aceitou o preco. Chame consultar_horarios_livres e ofereca ate 3 slots. Depois que ele escolher, chame reservar_horario.`,
+    aguardando_sinal: `Fase: AGUARDANDO SINAL. Slot reservado em provisorio (hold 15min). Envie ou reenvie o link do sinal via gerar_link_sinal. Se cliente desistir, a reserva expira sozinha.`,
+    confirmado: `Fase: CONFIRMADO. Sinal pago, sessao marcada. Responda duvidas leves (cuidados pre-sessao, localizacao). Mudanca de data ou cancelamento = acionar_handoff.`,
+    handoff: `Fase: HANDOFF. NAO RESPONDA. O humano assumiu a conversa.`,
+    expirado: `Fase: EXPIRADO. Slot caiu sem pagamento. Pergunte se cliente quer escolher outro horario e chame consultar_horarios_livres de novo.`,
   };
-  return `# ESTADO ATUAL DA CONVERSA\n${mapa[estado] || mapa.qualificando}`;
+  return `# ESTADO ATUAL DA CONVERSA\n${mapa[estado] || mapa.qualificando}\n\nTodas as tools continuam disponiveis em qualquer fase — voce decide qual usar com base nas descriptions delas e nas regras invioaveis.`;
 }
 
 function precoBlock(tenant) {

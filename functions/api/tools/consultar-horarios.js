@@ -15,8 +15,18 @@ function toBrISO(d) {
   return d.toISOString();
 }
 
-export const onRequest = withTool('consultar_horarios_livres', async ({ env, input }) => {
-  const { tenant_id, data_preferida, duracao_h } = input || {};
+async function bumpEstadoEscolhendo(env, tenant_id, telefone) {
+  if (!telefone) return;
+  try {
+    await supaFetch(env, `/rest/v1/conversas?tenant_id=eq.${encodeURIComponent(tenant_id)}&telefone=eq.${encodeURIComponent(telefone)}&estado=in.(qualificando,orcando,expirado)`, {
+      method: 'PATCH',
+      body: JSON.stringify({ estado: 'escolhendo_horario', updated_at: new Date().toISOString() }),
+    });
+  } catch {}
+}
+
+export const onRequest = withTool('consultar_horarios_livres', async ({ env, input, context }) => {
+  const { tenant_id, data_preferida, duracao_h, telefone } = input || {};
   if (!tenant_id) return { status: 400, body: { ok: false, error: 'tenant_id obrigatorio' } };
 
   const r = await supaFetch(env, `/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=horario_funcionamento,duracao_sessao_padrao_h`);
@@ -58,6 +68,10 @@ export const onRequest = withTool('consultar_horarios_livres', async ({ env, inp
       if (slotsResp.length >= MAX_SLOTS) break;
       slotsResp.push({ inicio: toBrISO(s.inicio), fim: toBrISO(s.fim) });
     }
+  }
+
+  if (context && telefone && slotsResp.length > 0) {
+    context.waitUntil(bumpEstadoEscolhendo(env, tenant_id, telefone));
   }
 
   return {

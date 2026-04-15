@@ -32,8 +32,24 @@ function merge(base, over) {
   return { ...base, ...over, multiplicadores: { ...base.multiplicadores, ...(over.multiplicadores || {}) } };
 }
 
-export const onRequest = withTool('calcular_orcamento', async ({ env, input }) => {
-  const { tenant_id, tamanho_cm, estilo, regiao, cor_bool, nivel_detalhe } = input || {};
+// Auto-transicao de estado na FSM de conversas. Fire-and-forget.
+async function bumpEstado(env, tenant_id, telefone, min, max) {
+  if (!telefone) return;
+  try {
+    await fetch(`https://bfzuxxuscyplfoimvomh.supabase.co/rest/v1/conversas?tenant_id=eq.${encodeURIComponent(tenant_id)}&telefone=eq.${encodeURIComponent(telefone)}&estado=in.(qualificando,orcando)`, {
+      method: 'PATCH',
+      headers: {
+        apikey: env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ estado: 'orcando', orcamento_min: min, orcamento_max: max, updated_at: new Date().toISOString() }),
+    });
+  } catch (e) { /* nao bloqueia resposta */ }
+}
+
+export const onRequest = withTool('calcular_orcamento', async ({ env, input, context }) => {
+  const { tenant_id, tamanho_cm, estilo, regiao, cor_bool, nivel_detalhe, telefone } = input || {};
 
   if (!tenant_id) return { status: 400, body: { ok: false, error: 'tenant_id obrigatorio' } };
   if (!Number.isFinite(Number(tamanho_cm)) || Number(tamanho_cm) <= 0) {
@@ -93,6 +109,9 @@ export const onRequest = withTool('calcular_orcamento', async ({ env, input }) =
 
   // 5. Sinal
   const sinal = Math.round(min * (sinal_pct / 100));
+
+  // 6. Auto-transiciona estado da conversa para "orcando" (fire-and-forget)
+  if (context && telefone) context.waitUntil(bumpEstado(env, tenant_id, telefone, min, max));
 
   return {
     status: 200,
