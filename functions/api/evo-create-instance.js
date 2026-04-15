@@ -52,6 +52,37 @@ export async function onRequest(context) {
     return json({ error: 'instanceName invalido (apenas letras, numeros, hifen e underscore)' }, 400);
   }
 
+  // ── Gate: só cria instancia Evolution se tenant tem pagamento confirmado ──
+  // Evita instancia orfa quando card e recusado ou retry falha no meio do fluxo.
+  // Status liberados: authorized|approved|paid (MP confirmou), artist_slot (heredado),
+  // teste (free trial). Bloqueia: rascunho, pending, cancelled, refused.
+  const SB_KEY = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
+  if (SB_KEY) {
+    try {
+      const tRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=status_pagamento,plano,is_artist_slot`,
+        { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
+      );
+      if (tRes.ok) {
+        const rows = await tRes.json();
+        if (Array.isArray(rows) && rows.length > 0) {
+          const t = rows[0];
+          const ALLOWED = ['authorized', 'approved', 'paid', 'artist_slot'];
+          const isFreeTrial = t.plano === 'teste';
+          const isArtist = t.is_artist_slot === true || t.status_pagamento === 'artist_slot';
+          const paymentOk = ALLOWED.includes(t.status_pagamento);
+          if (!paymentOk && !isFreeTrial && !isArtist) {
+            console.warn(`evo-create-instance: bloqueado — tenant=${tenant_id} status=${t.status_pagamento} plano=${t.plano}`);
+            return json({ error: 'Pagamento nao confirmado. Conclua o checkout antes de criar a instancia.', code: 'payment_required', status_pagamento: t.status_pagamento }, 403);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('evo-create-instance: erro ao verificar status_pagamento:', e);
+      // Nao bloqueia em caso de falha de DB — melhor falhar aberto do que travar tudo
+    }
+  }
+
   let apikey = null;
   let already_existed = false;
 

@@ -74,12 +74,15 @@ export async function verifyStudioToken(token, secret) {
 // ── Verifica onboarding_key contra tenants.onboarding_key no Supabase ───────
 // Uso: durante onboarding, o frontend guarda a key em localStorage e envia
 // junto com tenant_id. Endpoint valida match antes de permitir mutação.
+// Também verifica TTL contra onboarding_links.expires_at — keys expiradas não
+// autorizam mais, mesmo se persistidas em tenants.onboarding_key.
 export async function verifyOnboardingKey({ tenantId, onboardingKey, supabaseUrl, supabaseKey }) {
   if (!tenantId || !onboardingKey || typeof onboardingKey !== 'string' || onboardingKey.length < 8) {
     return { ok: false, reason: 'missing' };
   }
   if (!UUID_RE.test(tenantId)) return { ok: false, reason: 'invalid-tenant-id' };
   try {
+    // 1. Match tenant.onboarding_key == key recebida
     const r = await fetch(
       `${supabaseUrl}/rest/v1/tenants?id=eq.${encodeURIComponent(tenantId)}&select=onboarding_key`,
       { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } }
@@ -89,6 +92,26 @@ export async function verifyOnboardingKey({ tenantId, onboardingKey, supabaseUrl
     if (!Array.isArray(rows) || rows.length === 0) return { ok: false, reason: 'not-found' };
     const stored = rows[0].onboarding_key;
     if (!stored || stored !== onboardingKey) return { ok: false, reason: 'mismatch' };
+
+    // 2. Verifica TTL via onboarding_links.expires_at (fail-open se link nao encontrado)
+    try {
+      const linkRes = await fetch(
+        `${supabaseUrl}/rest/v1/onboarding_links?key=eq.${encodeURIComponent(onboardingKey)}&select=expires_at`,
+        { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } }
+      );
+      if (linkRes.ok) {
+        const linkRows = await linkRes.json();
+        if (Array.isArray(linkRows) && linkRows.length > 0) {
+          const expiresAt = linkRows[0].expires_at;
+          if (expiresAt && new Date(expiresAt).getTime() < Date.now()) {
+            return { ok: false, reason: 'expired', expires_at: expiresAt };
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('verifyOnboardingKey: TTL check falhou (fail-open):', e?.message);
+    }
+
     return { ok: true };
   } catch (e) {
     console.error('verifyOnboardingKey exception:', e);
