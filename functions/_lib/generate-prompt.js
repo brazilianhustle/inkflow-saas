@@ -80,10 +80,22 @@ Voce: Fechou! Qual estilo voce tem em mente? Caso tenha referencia, pode mandar 
 Cliente: nao tenho ref. queria uma rosa fineline
 Voce: [chama calcular_orcamento] Massa. Rosa fineline de 10cm fica entre R$ 350 e R$ 600. O valor final quem fecha e o tatuador. Quer agendar? Depois que marcar, passo as infos pra ele acertar os ultimos detalhes com voce.`,
 
-`## Exemplo 3 — handoff correto
+`## Exemplo 3 — cobertura detectada pela foto (cliente nao avisou)
 
-Cliente: queria fazer uma cobertura
-Voce: [chama acionar_handoff] Opa, cobertura o tatuador prefere ver pessoalmente. Ja te chamo ele aqui, ta?`,
+Cliente: quero uma tatuagem no antebraço
+Voce: Massa! Manda uma foto do local?
+Cliente: [foto] [workflow injeta: "Sujeito principal: antebraço direito com pele tatuada - tatuagem existente"]
+Voce: Vi que voce ja tem uma tatuagem nesse local. Seria pra uma cobertura?
+
+Cliente: sim, quero cobrir
+Voce: [chama acionar_handoff motivo="Orcamento de cobertura"] Fechou! Pra casos de cobertura, as infos sao tratadas direto com o tatuador — vou pedir pra ele entrar em contato com voce, pode ser?
+
+(Se o estudio NAO aceitar cobertura, usar a resposta alternativa — ver regra abaixo)
+
+## Exemplo 3b — cliente ja menciona "cobertura" diretamente
+
+Cliente: queria fazer uma cobertura de uma tattoo antiga
+Voce: [chama acionar_handoff motivo="Orcamento de cobertura"] Opa, pra cobertura o tatuador prefere tratar direto com voce. Ja te chamo ele aqui, ta?`,
 
 `## Exemplo 4 — pedido de portfolio
 
@@ -264,6 +276,29 @@ precisava na sequencia. Nunca repita perguntas sobre info ja dada.
 - Slot reservado: diga pra pagar o sinal. Link valido por 24 horas. Se expirar, cliente pode pedir outro.
 - Se o cliente ja deu uma info (ex: "no braco"), nao pergunte de novo. Avance.
 
+## Cobertura de tatuagem antiga — detectar e tratar
+
+Acontece de o cliente mandar foto de um local que ja tem tatuagem, sem
+avisar que quer uma cobertura. SINAL DE COBERTURA:
+- Descricao da foto diz "pele tatuada" no sujeito principal
+- OU cliente mencionou palavra explicita: "cobrir", "cobertura", "cover up", "tapar tatuagem"
+
+Quando detectar esse sinal, PARE a coleta normal e pergunte:
+"Vi que voce ja tem uma tatuagem nesse local. Seria pra uma cobertura?"
+
+Apos confirmacao ("sim", "isso mesmo", "quero cobrir"):
+
+**Se o estudio ACEITA cobertura** (config padrao):
+"Fechou! Pra casos de cobertura, as infos sao tratadas direto com o
+tatuador — vou pedir pra ele entrar em contato com voce, pode ser?"
+E chame acionar_handoff com motivo="Orcamento de cobertura".
+
+**Se o estudio NAO ACEITA cobertura**:
+"Entendi. Infelizmente o nosso estudio nao faz cobertura de tatuagens,
+trabalhamos so com pecas em pele virgem. Se voce pensar em uma tattoo
+nova em outro local, e so me chamar."
+NAO chame acionar_handoff — fecha educadamente.
+
 ## Tempo de sessao / quantidade de sessoes — NUNCA estimar
 
 O sistema tem uma duracao padrao de sessao so pra reservar slot na agenda,
@@ -353,6 +388,12 @@ function contextBlock(tenant, conversa) {
   const recusados = tenant.config_agente?.estilos_recusados || [];
   if (aceitos.length) linhas.push(`- Estilos que o estudio faz: ${aceitos.join(', ')}.`);
   if (recusados.length) linhas.push(`- Estilos que NAO faz: ${recusados.join(', ')}.`);
+
+  // Flag de cobertura — default true (aceita). Onboarding pode desmarcar.
+  const aceitaCobertura = tenant.config_agente?.aceita_cobertura !== false;
+  linhas.push(aceitaCobertura
+    ? `- Estudio ACEITA cobertura (cover up): em caso de cobertura detectada, confirma com cliente e chama acionar_handoff com motivo "Orcamento de cobertura".`
+    : `- Estudio NAO ACEITA cobertura: quando cliente pedir ou for detectado, recuse educadamente ("trabalhamos so com pele virgem"), nao chame handoff.`);
 
   linhas.push('');
   linhas.push(`## Estado atual da conversa: ${estado}`);
