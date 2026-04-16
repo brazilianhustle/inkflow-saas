@@ -54,7 +54,7 @@ export async function onRequest(context) {
     // Inclui configs do agente IA pra UI "Agente & Preços" carregar valores atuais.
     const tenantFields = [
       'id', 'nome_estudio', 'plano', 'email', 'evo_instance', 'ativo', 'nome', 'welcome_shown',
-      'nome_agente', 'faq_texto', 'faq_customizado',
+      'nome_agente', 'faq_texto',
       'config_agente', 'config_precificacao',
       'horario_funcionamento', 'duracao_sessao_padrao_h',
       'sinal_percentual', 'gatilhos_handoff', 'portfolio_urls',

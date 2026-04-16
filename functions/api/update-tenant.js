@@ -37,8 +37,7 @@ const ALLOWED_FIELDS = new Set([
   'sinal_percentual',
   'gatilhos_handoff',       // TEXT[]: ['cobertura','retoque','rosto',...]
   'portfolio_urls',         // TEXT[]: URLs de portfolio
-  'faq_texto',              // texto livre de FAQ (tambem aparece em ADMIN_EXTRA)
-  'faq_customizado',
+  'faq_texto',              // texto livre de FAQ
 ]);
 
 // FIX AUDIT #4: Campos adicionais que o admin pode editar via dashboard

@@ -695,7 +695,7 @@ function loadAgentConfig(tenant) {
   document.getElementById('ag-precificacao').value = tenant.config_precificacao
     ? JSON.stringify(tenant.config_precificacao, null, 2) : '';
   document.getElementById('ag-portfolio').value = arrayToLines(tenant.portfolio_urls);
-  document.getElementById('ag-faq').value = tenant.faq_customizado || tenant.faq_texto || '';
+  document.getElementById('ag-faq').value = tenant.faq_texto || '';
 }
 
 async function saveAgentConfig() {
@@ -744,7 +744,7 @@ async function saveAgentConfig() {
     config_agente,
     gatilhos_handoff: linesToArray('ag-gatilhos'),
     portfolio_urls: linesToArray('ag-portfolio'),
-    faq_customizado: document.getElementById('ag-faq').value.trim() || null,
+    faq_texto: document.getElementById('ag-faq').value.trim() || null,
   };
 
   const duracao = parseInt(document.getElementById('ag-duracao').value, 10);

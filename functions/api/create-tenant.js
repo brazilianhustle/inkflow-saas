@@ -35,7 +35,7 @@ const ALLOWED_FIELDS = new Set([
   'config_agente', 'config_precificacao',
   'horario_funcionamento', 'duracao_sessao_padrao_h',
   'sinal_percentual', 'gatilhos_handoff', 'portfolio_urls',
-  'faq_texto', 'faq_customizado',
+  'faq_texto',
 ]);
 
 function json(data, status = 200) {

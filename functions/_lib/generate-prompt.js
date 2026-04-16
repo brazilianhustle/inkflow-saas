@@ -302,7 +302,7 @@ function contexto(tenant, conversa, clientContext) {
 // §6 — FAQ (opcional)
 // ═══════════════════════════════════════════════════════════════════════════
 function faqBlock(tenant) {
-  const faq = (tenant.faq_customizado || tenant.faq_texto || '').trim();
+  const faq = (tenant.faq_texto || '').trim();
   if (!faq) return '';
   return `# §6 FAQ DO ESTUDIO\n${faq}`;
 }
