@@ -31,6 +31,11 @@ const ALLOWED_FIELDS = new Set([
   // [FIX] onboarding_key precisa ser persistido para que update-tenant/get-studio-token
   // possam autenticar via verifyOnboardingKey (sem isso, todas as auth pos-criacao falham 403)
   'onboarding_key',
+  // [v5 agente IA] Configs opcionais que o onboarding pode preencher ja na criacao
+  'config_agente', 'config_precificacao',
+  'horario_funcionamento', 'duracao_sessao_padrao_h',
+  'sinal_percentual', 'gatilhos_handoff', 'portfolio_urls',
+  'faq_texto', 'faq_customizado',
 ]);
 
 function json(data, status = 200) {

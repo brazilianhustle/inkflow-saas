@@ -29,14 +29,53 @@ const ALLOWED_FIELDS = new Set([
   'nome_agente', 'nome_estudio', 'ativo', 'plano', 'trial_ate',
   'parent_tenant_id', 'is_artist_slot',
   'welcome_shown',
+  // [v5 agente IA] Configs do agente editaveis pelo dono via studio.html
+  'config_agente',          // JSONB: persona, tom, emoji_level, usa_giria, expressoes_proibidas, frases_naturais, usa_identificador, aceita_cobertura, estilos_aceitos, estilos_recusados, few_shot_exemplos
+  'config_precificacao',    // JSONB: tabela_tamanho, multiplicadores, sinal_percentual, minimo, modo
+  'horario_funcionamento',  // JSONB: { 'seg-sex': '10:00-19:00', 'sab': '10:00-15:00' }
+  'duracao_sessao_padrao_h',
+  'sinal_percentual',
+  'gatilhos_handoff',       // TEXT[]: ['cobertura','retoque','rosto',...]
+  'portfolio_urls',         // TEXT[]: URLs de portfolio
+  'faq_texto',              // texto livre de FAQ (tambem aparece em ADMIN_EXTRA)
+  'faq_customizado',
 ]);
 
 // FIX AUDIT #4: Campos adicionais que o admin pode editar via dashboard
 const ADMIN_EXTRA_FIELDS = new Set([
   'nome', 'email', 'cidade', 'endereco',
-  'prompt_sistema', 'faq_texto',
+  'prompt_sistema',
   'status_pagamento', 'mp_subscription_id',
 ]);
+
+// Valida tipo basico de campos JSONB/array antes de mandar pro Supabase.
+// Retorna { ok: boolean, erro?: string }
+function validateFieldTypes(fields) {
+  const jsonbFields = ['config_agente', 'config_precificacao', 'horario_funcionamento'];
+  const arrayFields = ['gatilhos_handoff', 'portfolio_urls'];
+  const intFields = ['duracao_sessao_padrao_h', 'sinal_percentual'];
+
+  for (const f of jsonbFields) {
+    if (fields[f] !== undefined) {
+      if (typeof fields[f] !== 'object' || Array.isArray(fields[f])) {
+        return { ok: false, erro: `${f} deve ser objeto JSON` };
+      }
+    }
+  }
+  for (const f of arrayFields) {
+    if (fields[f] !== undefined) {
+      if (!Array.isArray(fields[f])) return { ok: false, erro: `${f} deve ser array` };
+      if (fields[f].some(x => typeof x !== 'string')) return { ok: false, erro: `${f} deve conter apenas strings` };
+    }
+  }
+  for (const f of intFields) {
+    if (fields[f] !== undefined) {
+      const n = Number(fields[f]);
+      if (!Number.isFinite(n) || n < 0 || n > 10000) return { ok: false, erro: `${f} deve ser numero entre 0 e 10000` };
+    }
+  }
+  return { ok: true };
+}
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: CORS });
@@ -123,6 +162,12 @@ export async function onRequest(context) {
 
   if (Object.keys(safeFields).length === 0) {
     return json({ error: 'Nenhum campo válido para atualizar' }, 400);
+  }
+
+  // Valida tipos dos novos campos agente/precificacao (evita JSON malformado no DB)
+  const typeCheck = validateFieldTypes(safeFields);
+  if (!typeCheck.ok) {
+    return json({ error: typeCheck.erro, code: 'invalid_field_type' }, 400);
   }
 
   try {
