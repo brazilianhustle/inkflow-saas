@@ -146,6 +146,38 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .rec-btn:disabled{opacity:.5;cursor:not-allowed}
 .rec-ok{background:var(--green-bg);border:1px solid var(--green);color:var(--green);padding:12px;border-radius:8px;font-size:12px;text-align:center;margin-top:10px}
 .rec-or{text-align:center;font-size:11px;color:var(--t3);margin:10px 0;letter-spacing:1px}
+
+/* ── Agente & Preços (v5) ── */
+.ag-section{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px}
+.ag-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.ag-title{font-size:16px;font-weight:700;color:var(--teal)}
+.ag-sub{font-size:11px;color:var(--t3);margin-top:4px}
+.ag-toggle{font-size:18px;color:var(--t2);transition:transform .25s}
+.ag-section.open .ag-toggle{transform:rotate(90deg);color:var(--teal)}
+.ag-body{display:none;margin-top:18px;padding-top:18px;border-top:1px solid var(--border)}
+.ag-section.open .ag-body{display:block}
+.ag-group{margin-bottom:20px}
+.ag-group-title{font-size:12px;font-weight:700;color:var(--t1);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.ag-field{margin-bottom:12px}
+.ag-label{display:block;font-size:12px;color:var(--t2);margin-bottom:4px;font-weight:500}
+.ag-hint{font-size:10px;color:var(--t3);margin-top:3px;line-height:1.4}
+.ag-input,.ag-select,.ag-textarea{width:100%;padding:10px;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;color:var(--t1);font-family:inherit;font-size:13px;resize:vertical}
+.ag-input:focus,.ag-select:focus,.ag-textarea:focus{outline:none;border-color:var(--teal-mid)}
+.ag-textarea{min-height:70px}
+.ag-checkbox{display:flex;align-items:center;gap:8px;padding:8px;background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .2s}
+.ag-checkbox:hover{border-color:var(--teal-mid)}
+.ag-checkbox input{accent-color:var(--teal);width:16px;height:16px;cursor:pointer}
+.ag-checkbox-label{font-size:12px;color:var(--t1);flex:1}
+.ag-save-row{display:flex;gap:8px;margin-top:20px}
+.ag-save-btn{flex:1;padding:13px;border:none;background:var(--teal);color:#000;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.ag-save-btn:hover{opacity:.88}
+.ag-save-btn:disabled{opacity:.5;cursor:not-allowed}
+.ag-save-msg{padding:10px;border-radius:8px;font-size:12px;text-align:center;margin-top:10px;display:none}
+.ag-save-msg.ok{display:block;background:var(--green-bg);border:1px solid var(--green);color:var(--green)}
+.ag-save-msg.err{display:block;background:var(--red-bg);border:1px solid var(--red);color:var(--red)}
+.ag-chips-hint{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.ag-chip{font-size:10px;padding:2px 8px;background:rgba(0,212,170,.08);border:1px solid var(--teal-mid);border-radius:10px;color:var(--teal);cursor:pointer}
+.ag-chip:hover{background:rgba(0,212,170,.18)}
 </style>
 </head>
 <body>
@@ -247,6 +279,179 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
             <button class="link-copy" onclick="copyLink()">📋 Copiar link</button>
             <button class="link-share" onclick="shareLink()">📤 Compartilhar</button>
           </div>
+        </div>
+      </div>
+
+      <!-- Agente & Preços (v5) -->
+      <div class="ag-section" id="ag-section">
+        <div class="ag-header" onclick="toggleAgentSection()">
+          <div>
+            <div class="ag-title">🤖 Agente &amp; Preços</div>
+            <div class="ag-sub">Personalize como seu assistente virtual atende clientes</div>
+          </div>
+          <div class="ag-toggle">›</div>
+        </div>
+
+        <div class="ag-body">
+          <!-- Grupo 1: Identidade do agente -->
+          <div class="ag-group">
+            <div class="ag-group-title">Identidade do agente</div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-nome-agente">Nome do agente</label>
+              <input class="ag-input" id="ag-nome-agente" placeholder="Ex: Isabela"/>
+              <div class="ag-hint">Nome que aparece pro cliente quando o bot se apresenta</div>
+            </div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-persona">Personalidade (descrição livre)</label>
+              <textarea class="ag-textarea" id="ag-persona" rows="3" placeholder="Ex: Carioca descontraida, empatica com clientes nervosos na primeira tatuagem."></textarea>
+              <div class="ag-hint">Descreva em 1-3 frases o jeito do seu agente</div>
+            </div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-tom">Tom de voz</label>
+              <select class="ag-select" id="ag-tom">
+                <option value="amigavel">Amigável (padrão)</option>
+                <option value="descontraido">Descontraído</option>
+                <option value="profissional">Profissional</option>
+                <option value="zoeiro">Bem-humorado / zoeiro</option>
+                <option value="formal">Formal</option>
+              </select>
+            </div>
+            <div class="ag-field">
+              <label class="ag-checkbox">
+                <input type="checkbox" id="ag-identificador"/>
+                <span class="ag-checkbox-label">Usar nome do agente como prefixo na 1ª msg<br><span style="color:var(--t3);font-size:10px">Ex: "Isabela: Oi tudo bem?" — senão texto direto sem prefixo</span></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Grupo 2: Tom / estilo de mensagem -->
+          <div class="ag-group">
+            <div class="ag-group-title">Estilo das mensagens</div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-emoji">Uso de emojis</label>
+              <select class="ag-select" id="ag-emoji">
+                <option value="nenhum">Nenhum</option>
+                <option value="raro" selected>Raro (1 a cada 3 msgs)</option>
+                <option value="moderado">Moderado (1 por msg quando encaixa)</option>
+                <option value="muitos">Muitos</option>
+              </select>
+            </div>
+            <div class="ag-field">
+              <label class="ag-checkbox">
+                <input type="checkbox" id="ag-giria" checked/>
+                <span class="ag-checkbox-label">Usa gírias brasileiras (massa, fechou, top)</span>
+              </label>
+            </div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-proibidas">Expressões proibidas (uma por linha)</label>
+              <textarea class="ag-textarea" id="ag-proibidas" rows="3" placeholder="senhor&#10;senhora&#10;caro cliente"></textarea>
+              <div class="ag-hint">Lista de frases que o bot NUNCA deve usar. Padrão já bloqueia "caro cliente", "atenciosamente", etc.</div>
+            </div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-frases-sau">Saudações variadas (uma por linha)</label>
+              <textarea class="ag-textarea" id="ag-frases-sau" rows="2" placeholder="Oii&#10;Fala&#10;Opa"></textarea>
+            </div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-frases-conf">Confirmações variadas (uma por linha)</label>
+              <textarea class="ag-textarea" id="ag-frases-conf" rows="2" placeholder="Fechou&#10;Combinado&#10;Show"></textarea>
+            </div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-frases-enc">Encerramentos variados (uma por linha)</label>
+              <textarea class="ag-textarea" id="ag-frases-enc" rows="2" placeholder="Tmj&#10;Até mais&#10;Qualquer coisa me chama"></textarea>
+            </div>
+          </div>
+
+          <!-- Grupo 3: Escopo do estúdio -->
+          <div class="ag-group">
+            <div class="ag-group-title">Escopo do estúdio</div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-est-aceitos">Estilos em que o estúdio é especializado</label>
+              <textarea class="ag-textarea" id="ag-est-aceitos" rows="2" placeholder="blackwork&#10;fineline&#10;realismo"></textarea>
+              <div class="ag-hint">Uma por linha. Bot menciona estes quando relevante</div>
+            </div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-est-recusados">Estilos que o estúdio NÃO faz</label>
+              <textarea class="ag-textarea" id="ag-est-recusados" rows="2" placeholder="old_school"></textarea>
+              <div class="ag-hint">Bot recusa pedido desses estilos educadamente</div>
+            </div>
+            <div class="ag-field">
+              <label class="ag-checkbox">
+                <input type="checkbox" id="ag-cobertura" checked/>
+                <span class="ag-checkbox-label">Estúdio aceita cobertura (cover up)<br><span style="color:var(--t3);font-size:10px">Se não, bot recusa e encerra educadamente sem chamar você</span></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Grupo 4: Gatilhos de handoff -->
+          <div class="ag-group">
+            <div class="ag-group-title">Gatilhos de handoff</div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-gatilhos">Palavras/situações que fazem o bot chamar você (uma por linha)</label>
+              <textarea class="ag-textarea" id="ag-gatilhos" rows="4" placeholder="cobertura&#10;retoque&#10;rosto&#10;mao&#10;pescoco&#10;menor_idade"></textarea>
+              <div class="ag-chips-hint">
+                <span class="ag-chip" onclick="appendChip('ag-gatilhos','cobertura')">+ cobertura</span>
+                <span class="ag-chip" onclick="appendChip('ag-gatilhos','retoque')">+ retoque</span>
+                <span class="ag-chip" onclick="appendChip('ag-gatilhos','rosto')">+ rosto</span>
+                <span class="ag-chip" onclick="appendChip('ag-gatilhos','mao')">+ mão</span>
+                <span class="ag-chip" onclick="appendChip('ag-gatilhos','pescoco')">+ pescoço</span>
+                <span class="ag-chip" onclick="appendChip('ag-gatilhos','menor_idade')">+ menor de idade</span>
+                <span class="ag-chip" onclick="appendChip('ag-gatilhos','cicatriz')">+ cicatriz</span>
+                <span class="ag-chip" onclick="appendChip('ag-gatilhos','gestante')">+ gestante</span>
+              </div>
+              <div class="ag-hint">Clique nas sugestões pra adicionar</div>
+            </div>
+          </div>
+
+          <!-- Grupo 5: Agenda e preços -->
+          <div class="ag-group">
+            <div class="ag-group-title">Agenda e preços</div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-horario">Horário de funcionamento (JSON)</label>
+              <textarea class="ag-textarea" id="ag-horario" rows="3" placeholder='{"seg-sex":"10:00-19:00","sab":"10:00-15:00","dom":"closed"}'></textarea>
+              <div class="ag-hint">Formato JSON. Use "seg", "ter", ..., "dom" ou intervalos "seg-sex". Valor "closed" pra dia fechado.</div>
+            </div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-duracao">Duração padrão de sessão (horas)</label>
+              <input class="ag-input" id="ag-duracao" type="number" min="1" max="12" step="1" placeholder="3"/>
+              <div class="ag-hint">Usado só internamente pra reservar slot. Bot nunca diz isso ao cliente.</div>
+            </div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-sinal">Percentual do sinal (%)</label>
+              <input class="ag-input" id="ag-sinal" type="number" min="0" max="100" step="1" placeholder="30"/>
+              <div class="ag-hint">Quanto o cliente paga antecipado pra fechar agendamento</div>
+            </div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-precificacao">Tabela de preços (JSON avançado)</label>
+              <textarea class="ag-textarea" id="ag-precificacao" rows="4" placeholder='{"tabela_tamanho":{"P":[200,400],"M":[400,800],"G":[800,1500],"GG":[1500,3000]},"minimo":200}'></textarea>
+              <div class="ag-hint">Edição JSON direto. UI visual virá em breve. Default aplicado se vazio.</div>
+            </div>
+          </div>
+
+          <!-- Grupo 6: Portfolio -->
+          <div class="ag-group">
+            <div class="ag-group-title">Portfólio</div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-portfolio">URLs de fotos/vídeos (uma por linha)</label>
+              <textarea class="ag-textarea" id="ag-portfolio" rows="4" placeholder="https://exemplo.com/blackwork1.jpg&#10;https://exemplo.com/fineline1.jpg"></textarea>
+              <div class="ag-hint">Dica: inclua o estilo no nome do arquivo pra bot filtrar por estilo (ex: "blackwork1.jpg"). Upload direto virá em breve.</div>
+            </div>
+          </div>
+
+          <!-- Grupo 7: FAQ -->
+          <div class="ag-group">
+            <div class="ag-group-title">FAQ do estúdio</div>
+            <div class="ag-field">
+              <label class="ag-label" for="ag-faq">Perguntas e respostas frequentes</label>
+              <textarea class="ag-textarea" id="ag-faq" rows="6" placeholder="P: Aceita PIX?&#10;R: Sim, aceitamos PIX, crédito e débito.&#10;&#10;P: Onde fica o estúdio?&#10;R: Rua Exemplo 123, Rio de Janeiro."></textarea>
+              <div class="ag-hint">Bot consulta quando cliente pergunta sobre localização, pagamentos, cuidados, etc.</div>
+            </div>
+          </div>
+
+          <!-- Save -->
+          <div class="ag-save-row">
+            <button class="ag-save-btn" id="ag-save-btn" onclick="saveAgentConfig()">Salvar configurações</button>
+          </div>
+          <div class="ag-save-msg" id="ag-save-msg"></div>
         </div>
       </div>
 
@@ -427,6 +632,152 @@ function renderStudio(data) {
       <div class="invite-title">Limite atingido</div>
       <div class="invite-sub">Todos os slots de artista estão preenchidos (${usedSlots}/${maxArtistSlots}).</div>
     `;
+  }
+
+  // Popular formulário de Agente & Preços com configs atuais
+  loadAgentConfig(t);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Agente & Preços (v5) — edição das configs do bot IA
+// ═══════════════════════════════════════════════════════════════════════
+function toggleAgentSection() {
+  document.getElementById('ag-section').classList.toggle('open');
+}
+
+function appendChip(textareaId, valor) {
+  const el = document.getElementById(textareaId);
+  const linhas = (el.value || '').split('\n').map(s => s.trim()).filter(Boolean);
+  if (!linhas.includes(valor)) {
+    linhas.push(valor);
+    el.value = linhas.join('\n');
+  }
+}
+
+function linesToArray(textareaId) {
+  const v = (document.getElementById(textareaId).value || '').trim();
+  if (!v) return [];
+  return v.split('\n').map(s => s.trim()).filter(Boolean);
+}
+
+function arrayToLines(arr) {
+  if (!Array.isArray(arr)) return '';
+  return arr.join('\n');
+}
+
+function tryParseJson(str, fallback) {
+  if (!str || !str.trim()) return fallback;
+  try { return JSON.parse(str); } catch { return null; }
+}
+
+function loadAgentConfig(tenant) {
+  if (!tenant) return;
+  const cfg = tenant.config_agente || {};
+  document.getElementById('ag-nome-agente').value = tenant.nome_agente || '';
+  document.getElementById('ag-persona').value = cfg.persona_livre || '';
+  document.getElementById('ag-tom').value = cfg.tom || 'amigavel';
+  document.getElementById('ag-identificador').checked = cfg.usa_identificador === true;
+  document.getElementById('ag-emoji').value = cfg.emoji_level || 'raro';
+  document.getElementById('ag-giria').checked = cfg.usa_giria !== false;
+  document.getElementById('ag-proibidas').value = arrayToLines(cfg.expressoes_proibidas);
+  const frases = cfg.frases_naturais || {};
+  document.getElementById('ag-frases-sau').value = arrayToLines(frases.saudacao);
+  document.getElementById('ag-frases-conf').value = arrayToLines(frases.confirmacao);
+  document.getElementById('ag-frases-enc').value = arrayToLines(frases.encerramento);
+  document.getElementById('ag-est-aceitos').value = arrayToLines(cfg.estilos_aceitos);
+  document.getElementById('ag-est-recusados').value = arrayToLines(cfg.estilos_recusados);
+  document.getElementById('ag-cobertura').checked = cfg.aceita_cobertura !== false;
+  document.getElementById('ag-gatilhos').value = arrayToLines(tenant.gatilhos_handoff);
+  document.getElementById('ag-horario').value = tenant.horario_funcionamento
+    ? JSON.stringify(tenant.horario_funcionamento, null, 2) : '';
+  document.getElementById('ag-duracao').value = tenant.duracao_sessao_padrao_h || '';
+  document.getElementById('ag-sinal').value = tenant.sinal_percentual || '';
+  document.getElementById('ag-precificacao').value = tenant.config_precificacao
+    ? JSON.stringify(tenant.config_precificacao, null, 2) : '';
+  document.getElementById('ag-portfolio').value = arrayToLines(tenant.portfolio_urls);
+  document.getElementById('ag-faq').value = tenant.faq_customizado || tenant.faq_texto || '';
+}
+
+async function saveAgentConfig() {
+  const btn = document.getElementById('ag-save-btn');
+  const msg = document.getElementById('ag-save-msg');
+  msg.className = 'ag-save-msg';
+  msg.style.display = 'none';
+
+  // Parse JSON dos campos avançados
+  const horarioStr = document.getElementById('ag-horario').value.trim();
+  const horario = horarioStr ? tryParseJson(horarioStr, null) : null;
+  if (horarioStr && !horario) {
+    msg.textContent = 'JSON inválido no horário de funcionamento.';
+    msg.classList.add('err'); return;
+  }
+  const precificacaoStr = document.getElementById('ag-precificacao').value.trim();
+  const precificacao = precificacaoStr ? tryParseJson(precificacaoStr, null) : null;
+  if (precificacaoStr && !precificacao) {
+    msg.textContent = 'JSON inválido na tabela de preços.';
+    msg.classList.add('err'); return;
+  }
+
+  // Monta config_agente
+  const config_agente = {
+    persona_livre: document.getElementById('ag-persona').value.trim(),
+    tom: document.getElementById('ag-tom').value,
+    usa_identificador: document.getElementById('ag-identificador').checked,
+    emoji_level: document.getElementById('ag-emoji').value,
+    usa_giria: document.getElementById('ag-giria').checked,
+    expressoes_proibidas: linesToArray('ag-proibidas'),
+    frases_naturais: {
+      saudacao: linesToArray('ag-frases-sau'),
+      confirmacao: linesToArray('ag-frases-conf'),
+      encerramento: linesToArray('ag-frases-enc'),
+    },
+    estilos_aceitos: linesToArray('ag-est-aceitos'),
+    estilos_recusados: linesToArray('ag-est-recusados'),
+    aceita_cobertura: document.getElementById('ag-cobertura').checked,
+  };
+
+  // Payload pro update-tenant
+  const body = {
+    tenant_id: tenantId,
+    studio_token: currentStudioToken,
+    nome_agente: document.getElementById('ag-nome-agente').value.trim() || undefined,
+    config_agente,
+    gatilhos_handoff: linesToArray('ag-gatilhos'),
+    portfolio_urls: linesToArray('ag-portfolio'),
+    faq_customizado: document.getElementById('ag-faq').value.trim() || null,
+  };
+
+  const duracao = parseInt(document.getElementById('ag-duracao').value, 10);
+  if (Number.isFinite(duracao) && duracao > 0) body.duracao_sessao_padrao_h = duracao;
+
+  const sinal = parseInt(document.getElementById('ag-sinal').value, 10);
+  if (Number.isFinite(sinal) && sinal >= 0) body.sinal_percentual = sinal;
+
+  if (horario) body.horario_funcionamento = horario;
+  if (precificacao) body.config_precificacao = precificacao;
+
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+  try {
+    const res = await fetch('/api/update-tenant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      msg.textContent = data.error || 'Erro ao salvar';
+      msg.classList.add('err');
+    } else {
+      msg.textContent = '✓ Configurações salvas. O agente vai usar as novas regras na próxima conversa.';
+      msg.classList.add('ok');
+    }
+  } catch (e) {
+    msg.textContent = 'Erro de rede: ' + (e?.message || e);
+    msg.classList.add('err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Salvar configurações';
   }
 }
 

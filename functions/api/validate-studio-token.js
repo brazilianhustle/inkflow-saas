@@ -51,8 +51,16 @@ export async function onRequest(context) {
     }
 
     // Buscar dados completos do tenant pelo id validado
+    // Inclui configs do agente IA pra UI "Agente & Preços" carregar valores atuais.
+    const tenantFields = [
+      'id', 'nome_estudio', 'plano', 'email', 'evo_instance', 'ativo', 'nome', 'welcome_shown',
+      'nome_agente', 'faq_texto', 'faq_customizado',
+      'config_agente', 'config_precificacao',
+      'horario_funcionamento', 'duracao_sessao_padrao_h',
+      'sinal_percentual', 'gatilhos_handoff', 'portfolio_urls',
+    ].join(',');
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(verified.tenantId)}&select=id,nome_estudio,plano,email,evo_instance,ativo,nome,welcome_shown`,
+      `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(verified.tenantId)}&select=${tenantFields}`,
       {
         headers: {
           apikey: SUPABASE_KEY,
