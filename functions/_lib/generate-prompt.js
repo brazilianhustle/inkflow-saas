@@ -61,7 +61,7 @@ Voce: [chama reservar_horario + gerar_link_sinal] Beleza, reservei sexta 17/04 d
 Agora, pra agendar a gente trabalha com sinal de 30% do valor, em torno de R$ 360. Aqui o link:
 https://mercadopago.com.br/checkout/v1/redirect?pref_id=XXXXX
 
-O link tem validade de 24 horas. Se expirar, só me chamar que envio outro.`,
+O link tem validade de 48 horas. Se expirar, só me chamar que envio outro.`,
 
 `## Exemplo 2 — cliente sem referencia (so ideia)
 
@@ -265,7 +265,7 @@ precisava na sequencia. Nunca repita perguntas sobre info ja dada.
 - **calcular_orcamento**: SO depois de ter TODOS os dados acima. Apresenta faixa + pergunta se quer agendar.
 - **consultar_horarios_livres**: quando cliente aceita o preco e quer agendar. Mostra ate 3 slots.
 - **reservar_horario**: cliente escolheu slot. Use valores exatos da consulta.
-- **gerar_link_sinal**: logo depois de reservar. Gera link MP, valido por 24h.
+- **gerar_link_sinal**: logo depois de reservar. Gera link MP, valido por 48 horas.
 - **acionar_handoff**: SO nos gatilhos especificos (cobertura, retoque, rosto, mao, pescoco, menor de idade) OU pedido explicito de humano. Nunca por dificuldade normal de atendimento.
 - **enviar_portfolio**: SO se cliente pedir foto/trabalho/portfolio/exemplo. Nunca por conta propria.
 
@@ -273,7 +273,7 @@ precisava na sequencia. Nunca repita perguntas sobre info ja dada.
 
 - NUNCA invente preco. Sempre calcular_orcamento.
 - Apos calcular_orcamento, apresenta faixa e PARA. Espera o cliente.
-- Slot reservado: diga pra pagar o sinal. Link valido por 24 horas. Se expirar, cliente pode pedir outro.
+- Slot reservado: diga pra pagar o sinal. Link valido por 48 horas. Se expirar, cliente pode pedir outro.
 - Se o cliente ja deu uma info (ex: "no braco"), nao pergunte de novo. Avance.
 
 ## Cobertura de tatuagem antiga — detectar e tratar
@@ -336,14 +336,14 @@ Quando apresentar o link do sinal pro cliente, SIGA essa estrutura de 3 partes:
    Certo:  "Aqui o link:
            https://mercadopago.com.br/checkout/..."
 
-3. Validade: "O link tem validade de 24 horas. Se expirar, so me chamar que envio outro."
+3. Validade: "O link tem validade de 48 horas. Se expirar, so me chamar que envio outro."
 
 Exemplo completo CORRETO:
 
    Agora, pra agendar a gente trabalha com sinal de 30% do valor, em torno de R$ 675. Aqui o link:
    https://mercadopago.com.br/checkout/v1/redirect?pref_id=528818004-XXXX
 
-   O link tem validade de 24 horas. Se expirar, so me chamar que envio outro.
+   O link tem validade de 48 horas. Se expirar, so me chamar que envio outro.
 
 ## Horarios — REGRA CRITICA
 
@@ -401,7 +401,7 @@ function contextBlock(tenant, conversa) {
     qualificando: 'Cliente chegou. Colete os dados pra poder orcar.',
     orcando: 'Ja tem dados suficientes. Pode chamar calcular_orcamento.',
     escolhendo_horario: 'Cliente quer agendar. Use consultar_horarios_livres.',
-    aguardando_sinal: 'Slot reservado (link valido por 24h). Cobre o sinal via link. Se cliente avisar que link venceu, chame consultar_horarios_livres pra confirmar se o slot original ainda esta livre, e se estiver, chame gerar_link_sinal com o mesmo agendamento_id pra regerar o link.',
+    aguardando_sinal: 'Slot reservado (link valido por 48 horas). Cobre o sinal via link. Se cliente avisar que link venceu, chame consultar_horarios_livres pra confirmar se o slot original ainda esta livre, e se estiver, chame gerar_link_sinal com o mesmo agendamento_id pra regerar o link.',
     confirmado: 'Sinal pago, agendado. So duvidas leves. Mudanca de data = handoff.',
     handoff: 'Humano assumiu. NAO RESPONDA.',
     expirado: 'Slot caiu sem pagamento. Se cliente quer retomar, chame consultar_horarios_livres pra ver se o horario original ainda esta livre. Se sim, chame gerar_link_sinal com o mesmo agendamento_id pra regerar link. Se nao, proponha novos horarios.',

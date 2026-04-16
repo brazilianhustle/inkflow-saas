@@ -12,7 +12,7 @@
 import { withTool, supaFetch } from './_tool-helpers.js';
 
 const MP_API = 'https://api.mercadopago.com/checkout/preferences';
-const HOLD_MIN = 1440; // 24h — mesmo TTL do reservar-horario
+const HOLD_MIN = 2880; // 48 horas — mesmo TTL do reservar-horario
 
 export const onRequest = withTool('gerar_link_sinal', async ({ env, input }) => {
   const { tenant_id, agendamento_id, valor_sinal } = input || {};

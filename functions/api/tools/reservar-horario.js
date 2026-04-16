@@ -2,12 +2,12 @@
 // POST /api/tools/reservar-horario
 // Headers: X-Inkflow-Tool-Secret
 // Body: { tenant_id, telefone, nome, inicio, fim, descricao? }
-// Cria agendamento "tentative" (hold 24h) + atualiza conversas.estado=aguardando_sinal.
-// Cron expira-holds libera automaticamente se nao pagar em 24h.
+// Cria agendamento "tentative" (hold 48h) + atualiza conversas.estado=aguardando_sinal.
+// Cron expira-holds libera automaticamente se nao pagar em 48h.
 
 import { withTool, supaFetch } from './_tool-helpers.js';
 
-const HOLD_MIN = 1440; // 24 horas
+const HOLD_MIN = 2880; // 48 horas (60 * 48)
 
 export const onRequest = withTool('reservar_horario', async ({ env, input }) => {
   const { tenant_id, telefone, nome, inicio, fim, descricao } = input || {};
