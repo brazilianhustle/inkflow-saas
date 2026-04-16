@@ -129,6 +129,16 @@ export async function onRequest(context) {
         evo_instance: tenant.evo_instance,
         welcome_shown: !!tenant.welcome_shown,
         ativo: !!tenant.ativo,
+        // [v5 agente IA] campos pra aba "Agente & Preços" pre-popular os forms
+        nome_agente: tenant.nome_agente || null,
+        faq_texto: tenant.faq_texto || null,
+        config_agente: tenant.config_agente || null,
+        config_precificacao: tenant.config_precificacao || null,
+        horario_funcionamento: tenant.horario_funcionamento || null,
+        duracao_sessao_padrao_h: tenant.duracao_sessao_padrao_h || null,
+        sinal_percentual: tenant.sinal_percentual || null,
+        gatilhos_handoff: tenant.gatilhos_handoff || null,
+        portfolio_urls: tenant.portfolio_urls || null,
       },
       slots: {
         max: maxSlots,
