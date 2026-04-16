@@ -150,11 +150,28 @@ function fluxo(tenant, clientContext) {
   linhas.push('');
 
   // §3.3 Orcamento
-  linhas.push('## §3.3 Orcamento (template unico)');
-  linhas.push('Chame `calcular_orcamento` apenas quando tiver TODOS os dados. Apresente a resposta em 3 partes obrigatorias nesta ordem:');
-  linhas.push('1. Faixa: "Pelo estilo X, fica entre R$ Y e R$ Z."');
-  linhas.push('2. Quem fecha: "O valor final e passado diretamente pelo tatuador."');
-  linhas.push('3. Convite pra agendar: "Gostaria de agendar? Apos confirmar o horario, passo essas infos pra ele finalizar os detalhes."');
+  linhas.push('## §3.3 Orcamento');
+  linhas.push('Chame `calcular_orcamento` apenas quando tiver TODOS os dados (tamanho, estilo, regiao, cor, detalhe).');
+  linhas.push('');
+  linhas.push('A resposta da tool tem um campo `valor_tipo`. Adapte o discurso:');
+  linhas.push('');
+  linhas.push('**Se `valor_tipo === "faixa"`** (bot apresenta faixa + valor final com tatuador):');
+  linhas.push('1. "Pelo estilo X, fica entre R$ Y e R$ Z."');
+  linhas.push('2. "O valor final e passado diretamente pelo tatuador."');
+  linhas.push('3. "Gostaria de agendar? Apos confirmar o horario, passo essas infos pra ele finalizar os detalhes."');
+  linhas.push('');
+  linhas.push('**Se `valor_tipo === "exato"`** (bot apresenta valor fechado):');
+  linhas.push('1. "Pelo estilo X, fica em R$ Y."');
+  linhas.push('2. "Gostaria de agendar? O tatuador finaliza os detalhes com voce apos o agendamento."');
+  linhas.push('(NAO diga "entre X e Y" nem "valor final pelo tatuador" quando valor_tipo=exato — e valor fechado)');
+  linhas.push('');
+  linhas.push('**Se `pode_fazer === false`:** NAO apresente preco. Chame `acionar_handoff` com o motivo_recusa_texto. Ex:');
+  linhas.push('- tamanho_excede_limite_sessao: "Peca desse tamanho pede avaliacao presencial, vou chamar o tatuador"');
+  linhas.push('- estilo_recusado: "Esse estilo a gente nao trabalha, mas posso te direcionar pra outro estudio se quiser"');
+  linhas.push('- valor_excede_teto: "Peca complexa, o tatuador precisa avaliar pessoalmente"');
+  linhas.push('');
+  linhas.push('**Breakdown (detalhamento do calculo)**: so apresente se cliente perguntar EXPLICITAMENTE ("por que tanto?", "como chegou nesse valor?", "pode explicar?"). Nao confunda reclamacao vaga ("caro...") com pedido de breakdown. Breakdown formato:');
+  linhas.push('"Base: R$ X | + Y% por cor | + Z% por regiao = R$ Total"');
   linhas.push('');
   linhas.push('PROIBIDO: "valor final confirmado pessoalmente", "pode mudar", "depende" — essas frases matam a venda.');
   linhas.push('');
@@ -250,6 +267,19 @@ function contexto(tenant, conversa, clientContext) {
   if (aceitos.length) linhas.push(`- Estilos em que o estudio e especializado: ${aceitos.join(', ')}. (Outros estilos podem ser consultados.)`);
   if (recusados.length) linhas.push(`- Estilos que NAO faz: ${recusados.join(', ')}.`);
   linhas.push(`- ${aceitaCobertura ? 'ACEITA' : 'NAO ACEITA'} cobertura (cover up).`);
+
+  // Guardrails operacionais (informa o bot dos limites — mas tool ja bloqueia mesmo se LLM tentar ignorar)
+  if (cfg.tamanho_maximo_sessao_cm) {
+    linhas.push(`- Tamanho maximo por sessao: ${cfg.tamanho_maximo_sessao_cm}cm (acima disso = handoff automatico).`);
+  }
+
+  // Observacoes livres do tatuador (regras caso-a-caso)
+  const observacoes = (cfg.observacoes_tatuador || '').trim();
+  if (observacoes) {
+    linhas.push('');
+    linhas.push('## Observacoes especificas do tatuador (siga estas regras):');
+    linhas.push(observacoes);
+  }
   linhas.push('');
 
   // Cliente

@@ -30,14 +30,15 @@ const ALLOWED_FIELDS = new Set([
   'parent_tenant_id', 'is_artist_slot',
   'welcome_shown',
   // [v5 agente IA] Configs do agente editaveis pelo dono via studio.html
-  'config_agente',          // JSONB: persona, tom, emoji_level, usa_giria, expressoes_proibidas, frases_naturais, usa_identificador, aceita_cobertura, estilos_aceitos, estilos_recusados, few_shot_exemplos
-  'config_precificacao',    // JSONB: tabela_tamanho, multiplicadores, sinal_percentual, minimo, modo
+  'config_agente',          // JSONB: persona, tom, emoji_level, usa_giria, expressoes_proibidas, frases_naturais, usa_identificador, aceita_cobertura, estilos_aceitos, estilos_recusados, few_shot_exemplos, tester_usage
+  'config_precificacao',    // JSONB: modo, tabela_tamanho, multiplicadores, sinal_percentual, minimo, formula, tamanho_maximo_sessao_cm, valor_maximo_orcado, estilo_fallback, observacoes_tatuador, herda_do_pai
   'horario_funcionamento',  // JSONB: { 'seg-sex': '10:00-19:00', 'sab': '10:00-15:00' }
   'duracao_sessao_padrao_h',
   'sinal_percentual',
   'gatilhos_handoff',       // TEXT[]: ['cobertura','retoque','rosto',...]
   'portfolio_urls',         // TEXT[]: URLs de portfolio
   'faq_texto',              // texto livre de FAQ
+  'modo_atendimento',       // TEXT: individual | tatuador_dono | recepcionista | artista_slot
 ]);
 
 // FIX AUDIT #4: Campos adicionais que o admin pode editar via dashboard
@@ -49,6 +50,7 @@ const ADMIN_EXTRA_FIELDS = new Set([
 
 // Valida tipo basico de campos JSONB/array antes de mandar pro Supabase.
 // Retorna { ok: boolean, erro?: string }
+const MODOS_ATENDIMENTO = ['individual', 'tatuador_dono', 'recepcionista', 'artista_slot'];
 function validateFieldTypes(fields) {
   const jsonbFields = ['config_agente', 'config_precificacao', 'horario_funcionamento'];
   const arrayFields = ['gatilhos_handoff', 'portfolio_urls'];
@@ -72,6 +74,9 @@ function validateFieldTypes(fields) {
       const n = Number(fields[f]);
       if (!Number.isFinite(n) || n < 0 || n > 10000) return { ok: false, erro: `${f} deve ser numero entre 0 e 10000` };
     }
+  }
+  if (fields.modo_atendimento !== undefined && !MODOS_ATENDIMENTO.includes(fields.modo_atendimento)) {
+    return { ok: false, erro: `modo_atendimento deve ser um de: ${MODOS_ATENDIMENTO.join(', ')}` };
   }
   return { ok: true };
 }
