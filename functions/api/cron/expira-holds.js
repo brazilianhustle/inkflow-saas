@@ -2,7 +2,7 @@
 // GET /api/cron/expira-holds
 // Header: X-Cron-Secret (env CLEANUP_SECRET)
 // Roda periodicamente (5min) — cancela agendamentos em tentative cujo slot
-// venceu o TTL de 15min sem receber sinal, e volta a conversa pra expirado.
+// venceu o TTL (24h) sem receber sinal, e volta a conversa pra expirado.
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 
