@@ -525,7 +525,10 @@ async function init() {
     // [FIX] Checa estado REAL da Evolution API — tenant.ativo pode estar
     // desatualizado se o update-tenant falhou após conexão bem-sucedida.
     const realStatus = await getRealConnectionStatus(data.tenant.evo_instance);
-    const isConnected = realStatus === 'open' || realStatus === 'connected' || realStatus === 'online';
+    // Confia em tenant.ativo=true se evo-status retornar 'unknown' (self-heal reverso:
+    // DB ja sabe que esta ativo, nao contradiz com erro de verificacao externa).
+    const isConnected = realStatus === 'open' || realStatus === 'connected' || realStatus === 'online'
+      || (data.tenant.ativo === true && (realStatus === 'unknown' || realStatus == null));
 
     if (isConnected) {
       // Conectado de verdade — garante que tenant.ativo=true no DB (self-heal)
