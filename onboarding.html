@@ -913,6 +913,20 @@ async function init() {
   localStorage.setItem('inkflow_gk', key);
   selectedPlan = plano;
 
+  // ── Resume: se fechou browser no meio do wizard, retoma de onde parou ──
+  try {
+    const savedOb = JSON.parse(localStorage.getItem('inkflow_ob') || '{}');
+    if (savedOb.tenantId && savedOb.step) {
+      tenantId = savedOb.tenantId;
+      instanceSlug = savedOb.instanceSlug;
+      if (savedOb.plano) selectedPlan = savedOb.plano;
+      const step = savedOb.step;
+      if (step === 'sv') { initEstilosChips(); goStep('sv'); return; }
+      if (step === 'sp') { initEstilosChips(); goStep('sp'); return; }
+      if (step === 'qr') { goStep(5); initConnectStep(); pollInterval = setInterval(checkConnection, 5000); return; }
+    }
+  } catch {}
+
   if (isArtistInvite) {
     // Artista: adaptar tela de boas-vindas
     document.getElementById('w-plano').textContent = 'convite de artista';
@@ -1205,6 +1219,7 @@ async function doEvoSetup() {
 
     // Todos os outros planos: wizard valores → personalizar → QR
     initEstilosChips();
+    ob.step = 'sv'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
     goStep('sv');
   } catch (err) {
     console.error('doEvoSetup error:', err); let msg = err.message || 'Erro inesperado.';
