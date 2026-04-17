@@ -121,8 +121,44 @@ export async function onRequest(context) {
           return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
         }
       } else {
-        // Link sem email → não consegue verificar tenant, bloquear
-        return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
+        // Link sem email → tentar encontrar tenant por onboarding_key
+        try {
+          const tenantCheck = await fetch(
+            `${SUPABASE_URL}/rest/v1/tenants?onboarding_key=eq.${encodeURIComponent(key)}&select=ativo,welcome_shown,config_precificacao&order=created_at.desc&limit=1`,
+            {
+              headers: {
+                apikey: SB_KEY,
+                Authorization: `Bearer ${SB_KEY}`,
+              },
+            }
+          );
+          if (tenantCheck.ok) {
+            const tenants = await tenantCheck.json();
+            if (tenants[0]) {
+              await fetch(
+                `${SUPABASE_URL}/rest/v1/onboarding_links?id=eq.${link.id}`,
+                {
+                  method: 'PATCH',
+                  headers: {
+                    apikey: SB_KEY,
+                    Authorization: `Bearer ${SB_KEY}`,
+                    'Content-Type': 'application/json',
+                    Prefer: 'return=minimal',
+                  },
+                  body: JSON.stringify({ used: false }),
+                }
+              );
+              console.log('validate-onboarding-key: link sem email reativado via onboarding_key match');
+            } else {
+              return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
+            }
+          } else {
+            return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
+          }
+        } catch (e) {
+          console.warn('validate-onboarding-key: erro ao verificar tenant por onboarding_key:', e);
+          return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
+        }
       }
     }
 
