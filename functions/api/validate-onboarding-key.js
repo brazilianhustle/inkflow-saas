@@ -87,12 +87,11 @@ export async function onRequest(context) {
           if (tenantCheck.ok) {
             const tenants = await tenantCheck.json();
             const tenant = tenants[0];
-            // Permite retry se: tenant nao existe, nao esta ativo, OU esta ativo
-            // mas nao completou onboarding (welcome_shown=false ou config_precificacao vazio)
-            const onboardingIncompleto = tenant && tenant.ativo === true
-              && (!tenant.welcome_shown || !tenant.config_precificacao || Object.keys(tenant.config_precificacao).length <= 1);
-            if (!tenant || tenant.ativo !== true || onboardingIncompleto) {
-              // Permitir retry — tenant nao existe, nao ativo, ou onboarding incompleto
+            // Permite retry SEMPRE que o tenant existe com este email.
+            // O link de onboarding E a autenticacao — se o user tem a key, e o dono.
+            // Bloquear so atrapalhava UX (user saiu no meio, nao consegue voltar).
+            if (tenant) {
+              // Resetar used pra estado limpo
               await fetch(
                 `${SUPABASE_URL}/rest/v1/onboarding_links?id=eq.${link.id}`,
                 {
@@ -108,9 +107,9 @@ export async function onRequest(context) {
               );
               console.log('validate-onboarding-key: link reativado para retry (tenant não ativo)');
               // Não retornar erro — continuar validação normalmente
-            } else {
-              // Tenant ESTÁ ativo → link realmente já foi usado com sucesso
-              return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
+            } else if (!tenant) {
+              // Tenant nao existe com esse email → bloquear (link orfao)
+              return json({ valid: false, error: 'Este link de onboarding ja foi utilizado.' });
             }
           } else {
             // Falha na verificação → bloquear por segurança
