@@ -256,6 +256,7 @@ select.fi option{background:var(--card);color:var(--t1)}
 .size-sep{color:var(--t3);font-size:12px}
 .size-grid .fi{width:80px;flex-shrink:0}
 .region-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+.saudacao-presets{display:flex;flex-wrap:wrap;gap:6px}
 
 .chip-wrap{display:flex;flex-wrap:wrap;gap:6px}
 .chip{padding:6px 14px;border:1px solid var(--border2);border-radius:20px;font-size:12px;cursor:pointer;color:var(--t2);transition:all .15s;background:transparent;font-family:inherit}
@@ -397,17 +398,11 @@ select.fi option{background:var(--card);color:var(--t1)}
     <div class="form-err" id="form-err"></div>
 
     <div class="fsec">Proprietário</div>
-    <div class="fgrid">
-      <div class="fg">
-        <label class="fl">Seu nome <span>*</span></label>
-        <input class="fi" id="f-nome" type="text" placeholder="Ex: Carlos Silva" oninput="autoAgent()"/>
-      </div>
-      <div class="fg">
-        <label class="fl">Nome do agente IA <span>*</span></label>
-        <input class="fi" id="f-agente" type="text" placeholder="Ex: Carlos"/>
-        <div class="fi-hint">Como o assistente se apresenta</div>
-      </div>
+    <div class="fg">
+      <label class="fl">Seu nome <span>*</span></label>
+      <input class="fi" id="f-nome" type="text" placeholder="Ex: Carlos Silva"/>
     </div>
+    <input type="hidden" id="f-agente" value=""/>
     <div class="fg">
       <label class="fl">Seu e-mail <span>*</span></label>
       <input class="fi" id="f-email" type="email" autocomplete="email" placeholder="Ex: carlos@darkinkstudio.com"/>
@@ -566,7 +561,7 @@ select.fi option{background:var(--card);color:var(--t1)}
     <div class="chat-wrap">
       <div class="chat-bubble" id="cb1">
         <div class="chat-name">InkFlow</div>
-        Seja bem-vindo ao time InkFlow! E um prazer te ter por aqui. Agora que seu assistente esta conectado, chegou a hora de configurar ele para trabalhar 24/7 pra voce!
+        Seja bem-vindo ao time InkFlow! É um prazer te ter por aqui. Agora que seu assistente está conectado, chegou a hora de configurar ele para trabalhar 24/7 pra você!
         <div class="chat-tap">Toque para continuar</div>
       </div>
       <div class="chat-bubble" id="cb2">
@@ -833,6 +828,37 @@ select.fi option{background:var(--card);color:var(--t1)}
   </div>
 </div>
 
+<!-- ══════════ STEP PI: INTRO PERSONALIZAR (chat) ══════════ -->
+<div class="step" id="spi">
+  <div class="page-center" style="justify-content:flex-end;padding-bottom:60px">
+    <div class="chat-wrap">
+      <div class="chat-bubble" id="pi1">
+        <div class="chat-name">InkFlow</div>
+        Agora que você já organizou o preço que irei cobrar, chegou a hora de definir minha personalidade do seu jeito! Vamos começar?
+        <div class="chat-tap">Toque para continuar</div>
+      </div>
+      <div class="chat-bubble" id="pi2">
+        <div class="chat-name">InkFlow</div>
+        A personalização é dividida em etapas: <strong>Personalidade</strong>, <strong>Horários de funcionamento</strong> (fica tranquilo que eu trabalho 24 horas, pense aqui no horário que você atende), <strong>mensagens prontas para o cliente</strong> (cuidados pré-tatuagem, cuidados pós-tatuagem, mensagem de follow-up) para que eu consiga atender de maneira totalmente personalizada.
+        <div class="chat-tap">Toque para continuar</div>
+      </div>
+      <div class="chat-bubble" id="pi3">
+        <div class="chat-name">InkFlow</div>
+        Aqui você pode optar por montar sozinho toda a personalização ou comprar o pacote de personalização exclusivo montado pela nossa equipe para o seu estúdio! Qual opção prefere? <span style="font-size:11px;color:var(--t3)">(oferta estará sempre disponível no painel do estúdio)</span>
+        <div class="qa-opt" style="margin-top:12px">
+          <button class="qa-btn" type="button" onclick="selectPersonaMode('diy')">Montar sozinho</button>
+          <button class="qa-btn" type="button" onclick="selectPersonaMode('consultor')">Chamar um consultor humano</button>
+        </div>
+      </div>
+      <div class="chat-bubble" id="pi4" style="display:none">
+        <div class="chat-name">InkFlow</div>
+        Meu criador fez um vídeo especialmente pra você com dicas práticas para você configurar à sua maneira do jeito certo! Confira agora a seguir.
+        <div class="chat-tap cta">Continuar &rarr;</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════ STEP P: PERSONALIZAR AGENTE ══════════ -->
 <div class="step" id="sp">
   <div class="form-header">
@@ -840,100 +866,201 @@ select.fi option{background:var(--card);color:var(--t1)}
       <svg width="22" height="30" viewBox="-10 -10 100 130" overflow="visible"><g transform="rotate(-15, 38, 56)" fill="currentColor"><rect x="4" y="8" width="66" height="6" rx="3"/><rect x="8" y="14" width="24" height="34" rx="6"/><rect x="40" y="14" width="24" height="34" rx="6"/><rect x="4" y="46" width="66" height="6" rx="3"/><rect x="6" y="8" width="5" height="54" rx="1"/><rect x="-3" y="59" width="24" height="32" rx="8"/><path d="M1,90 L17,90 L5,110 Z"/></g></svg>
       <span class="logo-text"><span class="ink">Ink</span>Flow</span>
     </div>
-    <div class="form-badge">Passo 3 de 4</div>
+    <div class="form-badge">Personalizar Assistente</div>
   </div>
   <div class="form-body">
-    <div class="form-title">Personalizar assistente</div>
-    <div class="form-sub">Ajuste tom e comportamento da IA. Tudo ja vem com padroes inteligentes — mude so o que quiser.</div>
-    <div class="form-err" id="sp-err"></div>
 
-    <div class="fsec">Personalidade</div>
-    <div class="fgrid">
+    <!-- ── Vídeo tutorial (topo) ── -->
+    <div id="pa-video" class="qa show">
+      <div class="video-wrap">
+        <div class="video-placeholder">Como personalizar seu assistente?<br><span style="font-size:11px">(vídeo em breve)</span></div>
+      </div>
+      <button class="skip-video" type="button" onclick="document.getElementById('pa-video').style.display='none';showPA('pa-main')">Pular tutorial de personalização (Não recomendado)</button>
+    </div>
+
+    <!-- ── Área principal ── -->
+    <div id="pa-main" class="qa">
+      <div class="form-title">Personalizar assistente</div>
+      <div class="form-sub" style="margin-bottom:20px">Bem-vindo à área de personalização do seu agente! Tudo aqui já vem configurado com padrões inteligentes — mas sinta-se livre para mudar o que quiser. Cada tópico a configurar possui uma breve explicação para facilitar o entendimento sobre como você pode montar de maneira correta do seu jeito. Caso queira ver o vídeo-tutorial novamente <span class="link-cta" onclick="scrollToVideoPA()">clique aqui</span>.</div>
+      <div class="form-err" id="sp-err"></div>
+
+      <!-- ── Personalidade ── -->
+      <div class="fsec">Personalidade</div>
+      <div class="fi-hint" style="margin-bottom:12px">Aqui você pode dar vida ao seu assistente! Posteriormente na página do estúdio, você terá um simulador de conversa para testar como as configurações estão funcionando e alterar algo caso queira. Se quiser conferir o vídeo-tutorial <span class="link-cta" onclick="scrollToVideoPA()">clique aqui</span>.</div>
+
       <div class="fg">
+        <label class="fl">Nome do agente <span>*</span></label>
+        <input class="fi" id="p-nome-agente" type="text" placeholder="Ex: Carlos"/>
+        <div class="fi-hint">Como o assistente se apresenta para os clientes</div>
+      </div>
+
+      <div class="fg" style="margin-top:12px">
         <label class="fl">Tom da conversa</label>
         <select class="fi" id="p-tom">
-          <option value="amigavel" selected>Amigavel</option>
-          <option value="descontraido">Descontraido</option>
+          <option value="amigavel" selected>Amigável</option>
+          <option value="descontraido">Descontraído</option>
           <option value="profissional">Profissional</option>
           <option value="zoeiro">Zoeiro</option>
           <option value="formal">Formal</option>
         </select>
       </div>
-      <div class="fg">
+
+      <div class="fg" style="margin-top:12px">
+        <label class="fl">Mensagem de saudação (opcional)</label>
+        <div class="fi-hint" style="margin-bottom:8px">Crie uma mensagem de saudação com os presets já definidos ou a sua própria!</div>
+        <div class="saudacao-presets" id="saudacao-presets"></div>
+        <textarea class="fi" id="p-saudacao" rows="2" placeholder="Escreva sua própria saudação ou edite um preset acima" style="margin-top:8px"></textarea>
+      </div>
+
+      <div class="fg" style="margin-top:12px">
         <label class="fl">Uso de emojis</label>
-        <select class="fi" id="p-emoji">
-          <option value="nenhum">Nenhum</option>
-          <option value="raro" selected>Raro</option>
-          <option value="moderado">Moderado</option>
-          <option value="muitos">Muitos</option>
-        </select>
+        <div class="chip-wrap" id="p-emoji-chips">
+          <button class="chip active" type="button" onclick="selectEmoji('moderado',this)">Uso moderado</button>
+          <button class="chip" type="button" onclick="selectEmoji('nenhum',this)">Nenhum uso</button>
+        </div>
       </div>
-    </div>
-    <div class="toggle-row">
-      <span class="toggle-label">Usar girias brasileiras (massa, show, fechou)</span>
-      <label class="toggle"><input type="checkbox" id="p-giria" checked/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span class="toggle-label">Prefixar nome na 1a mensagem (ex: "Isabela:")</span>
-      <label class="toggle"><input type="checkbox" id="p-identificador"/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span class="toggle-label">Aceita cobertura (cover up)</span>
-      <label class="toggle"><input type="checkbox" id="p-cobertura" checked/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
-    </div>
-    <div class="fg">
-      <label class="fl">Descrição livre da persona (opcional)</label>
-      <textarea class="fi" id="p-persona" rows="2" placeholder="Ex: Carioca descontraída, empática com clientes nervosos"></textarea>
-    </div>
 
-    <hr class="divider"/>
-    <div class="fsec">Estilos de tatuagem</div>
-    <div class="fg">
-      <label class="fl">Estilos que você faz (clique para selecionar)</label>
-      <div class="chip-wrap" id="p-estilos-aceitos"></div>
-    </div>
-    <div class="fg">
-      <label class="fl">Estilos que NÃO faz (IA recusará educadamente)</label>
-      <div class="chip-wrap" id="p-estilos-recusados"></div>
-    </div>
-
-    <hr class="divider"/>
-    <div class="fsec">Horário de funcionamento</div>
-    <div class="hora-grid">
-      <span class="hora-label">Seg-Sex</span>
-      <input class="fi" id="h-semana-ini" type="time" value="10:00"/>
-      <span class="hora-sep">às</span>
-      <input class="fi" id="h-semana-fim" type="time" value="19:00"/>
-      <span class="hora-label">Sábado</span>
-      <input class="fi" id="h-sab-ini" type="time" value="10:00"/>
-      <span class="hora-sep">às</span>
-      <input class="fi" id="h-sab-fim" type="time" value="15:00"/>
-      <span class="hora-label">Domingo</span>
-      <input class="fi" id="h-dom-ini" type="time" value=""/>
-      <span class="hora-sep">às</span>
-      <input class="fi" id="h-dom-fim" type="time" value=""/>
-    </div>
-    <div class="fi-hint" style="margin-top:6px">Deixe vazio para dias sem atendimento</div>
-    <div class="fg" style="margin-top:12px">
-      <label class="fl">Duração padrão da sessão</label>
-      <div style="display:flex;align-items:center;gap:8px">
-        <input class="fi" id="p-duracao" type="number" value="3" min="1" max="12" style="width:80px"/>
-        <span style="color:var(--t3);font-size:13px">horas</span>
+      <div class="fg" style="margin-top:12px">
+        <label class="fl">Usar gírias brasileiras</label>
+        <div class="chip-wrap" id="p-girias-chips">
+          <button class="chip giria-chip active" type="button" data-giria="massa" onclick="this.classList.toggle('active')">Massa</button>
+          <button class="chip giria-chip active" type="button" data-giria="irmão" onclick="this.classList.toggle('active')">Irmão</button>
+          <button class="chip giria-chip active" type="button" data-giria="show" onclick="this.classList.toggle('active')">Show</button>
+          <button class="chip giria-chip active" type="button" data-giria="boa" onclick="this.classList.toggle('active')">Boa</button>
+          <button class="chip giria-chip active" type="button" data-giria="beleza" onclick="this.classList.toggle('active')">Beleza</button>
+          <button class="chip giria-chip active" type="button" data-giria="fechou" onclick="this.classList.toggle('active')">Fechou</button>
+          <button class="chip giria-chip active" type="button" data-giria="tranquilo" onclick="this.classList.toggle('active')">Tranquilo</button>
+          <button class="chip giria-chip" type="button" data-giria="outras" onclick="toggleGiriasCustom(this)">Outras</button>
+        </div>
+        <div id="girias-custom-wrap" style="display:none;margin-top:8px">
+          <input class="fi" id="p-girias-custom" type="text" placeholder="Coloque gírias separadas por vírgulas, ex: é isso, meu mano, parceiro"/>
+        </div>
       </div>
+
+      <div class="fg" style="margin-top:12px">
+        <label class="fl">Nome do agente deve aparecer na mensagem?</label>
+        <div class="fi-hint"><span class="link-cta" onclick="toggleExemplosNome()">Veja exemplos</span></div>
+        <div id="exemplos-nome" style="display:none;margin-top:6px">
+          <div style="background:var(--bg2);border-radius:10px;padding:10px;margin-bottom:6px;font-size:12px;color:var(--t2);line-height:1.5">
+            <strong style="color:var(--teal)">Com prefixo:</strong><br>
+            <span id="ex-nome-com">Carlos:</span> <em>Oi! Aqui é o Carlos do Dark Ink Studio. Tudo bem?</em>
+          </div>
+          <div style="background:var(--bg2);border-radius:10px;padding:10px;font-size:12px;color:var(--t2);line-height:1.5">
+            <strong style="color:var(--t3)">Sem prefixo:</strong><br>
+            <em id="ex-nome-sem">Oi! Aqui é o Carlos do Dark Ink Studio. Tudo bem?</em>
+          </div>
+        </div>
+        <div class="toggle-row" style="margin-top:8px">
+          <span class="toggle-label">Usar prefixo com nome do agente</span>
+          <label class="toggle"><input type="checkbox" id="p-identificador"/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+        </div>
+      </div>
+
+      <div class="fg" style="margin-top:12px">
+        <label class="fl">Descrição livre da persona (opcional)</label>
+        <div class="fi-hint" style="margin-bottom:6px">Crie como você quer que seu assistente seja, ex: Carioca descontraída, simpática, empática com clientes nervosos. Clique em 'Aprimorar com IA' para ajustar seu texto de forma que o assistente entenda melhor.</div>
+        <textarea class="fi" id="p-persona" rows="3" placeholder="Descreva a personalidade do seu assistente..."></textarea>
+        <button class="sbtn" type="button" style="margin-top:8px;background:transparent;color:var(--teal);border:1px solid var(--teal-mid);font-size:12px;padding:8px 16px" id="btn-aprimorar" onclick="aprimorarPersona()">✨ Aprimorar texto com IA</button>
+      </div>
+      <button class="sbtn" type="button" style="margin-top:14px;font-size:13px" onclick="showPA('pa-estilos')">Continuar &rarr;</button>
     </div>
 
-    <hr class="divider"/>
-    <div class="fsec">FAQ do estúdio (opcional)</div>
-    <div class="fg">
-      <textarea class="fi" id="p-faq" rows="3" placeholder="Ex: Quais cuidados tomar? Quanto tempo demora pra cicatrizar? Pode usar anestésico?"></textarea>
-      <div class="fi-hint">Perguntas frequentes que a IA responderá automaticamente</div>
+    <!-- ── Estilos de tatuagem ── -->
+    <div id="pa-estilos" class="qa">
+      <hr class="divider"/>
+      <div class="fsec">Estilos de tatuagem</div>
+      <div class="fi-hint" style="margin-bottom:10px">Selecione os estilos que você <strong>NÃO</strong> faz. A IA recusará educadamente caso o cliente peça algum desses estilos.</div>
+      <div class="fg">
+        <div class="chip-wrap" id="p-estilos-recusados"></div>
+        <div class="fi-hint" id="estilo-conflict-warn" style="display:none;color:#ffb347;margin-top:8px"></div>
+      </div>
+      <button class="sbtn" type="button" style="margin-top:14px;font-size:13px" onclick="showPA('pa-horario')">Continuar &rarr;</button>
     </div>
 
-    <div class="wiz-nav">
-      <button class="sbtn wiz-back" type="button" onclick="goStep('sv')">&larr; Voltar</button>
-      <button class="sbtn wiz-fwd" type="button" id="sp-btn" onclick="savePersonaAndNext()">Conectar WhatsApp &rarr;</button>
+    <!-- ── Horário de funcionamento ── -->
+    <div id="pa-horario" class="qa">
+      <hr class="divider"/>
+      <div class="fsec">Horário de funcionamento</div>
+      <div class="fi-hint" style="margin-bottom:12px">A IA trabalha 24 horas atendendo clientes. Configure aqui os horários que você atende presencialmente para agendamento.</div>
+      <div class="chip-wrap" id="p-horario-mode">
+        <button class="chip active" type="button" onclick="selectHorarioMode('todos',this)">Tatuo todos os dias</button>
+        <button class="chip" type="button" onclick="selectHorarioMode('exceto',this)">Todos os dias, exceto...</button>
+        <button class="chip" type="button" onclick="selectHorarioMode('somente',this)">Tatuo somente...</button>
+      </div>
+
+      <div id="horario-todos" style="margin-top:12px">
+        <div class="fg">
+          <label class="fl">Qual o último horário de agendamento que a IA pode marcar?</label>
+          <div class="fi-hint" style="margin-bottom:6px">A IA só agendará clientes iniciando a tatuagem no máximo nesse horário.</div>
+          <input class="fi" id="h-ultimo-horario" type="time" value="19:00" style="width:120px"/>
+        </div>
+      </div>
+
+      <div id="horario-exceto" style="display:none;margin-top:12px">
+        <div class="fg">
+          <label class="fl">Dias que NÃO atende</label>
+          <div class="chip-wrap" id="horario-exceto-dias">
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">Segunda</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">Terça</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">Quarta</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">Quinta</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">Sexta</button>
+            <button class="chip active" type="button" onclick="this.classList.toggle('active')">Sábado</button>
+            <button class="chip active" type="button" onclick="this.classList.toggle('active')">Domingo</button>
+          </div>
+        </div>
+        <div class="fg" style="margin-top:8px">
+          <label class="fl">Último horário de agendamento</label>
+          <input class="fi" id="h-ultimo-exceto" type="time" value="19:00" style="width:120px"/>
+        </div>
+      </div>
+
+      <div id="horario-somente" style="display:none;margin-top:12px">
+        <div class="fg">
+          <label class="fl">Dias que atende</label>
+          <div class="chip-wrap" id="horario-somente-dias">
+            <button class="chip active" type="button" onclick="this.classList.toggle('active')">Segunda</button>
+            <button class="chip active" type="button" onclick="this.classList.toggle('active')">Terça</button>
+            <button class="chip active" type="button" onclick="this.classList.toggle('active')">Quarta</button>
+            <button class="chip active" type="button" onclick="this.classList.toggle('active')">Quinta</button>
+            <button class="chip active" type="button" onclick="this.classList.toggle('active')">Sexta</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">Sábado</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">Domingo</button>
+          </div>
+        </div>
+        <div class="fg" style="margin-top:8px">
+          <label class="fl">Último horário de agendamento</label>
+          <input class="fi" id="h-ultimo-somente" type="time" value="19:00" style="width:120px"/>
+        </div>
+      </div>
+      <button class="sbtn" type="button" style="margin-top:14px;font-size:13px" onclick="showPA('pa-faq')">Continuar &rarr;</button>
     </div>
-    <div class="wiz-hint">Tudo pode ser editado depois no painel</div>
+
+    <!-- ── FAQ do estúdio ── -->
+    <div id="pa-faq" class="qa">
+      <hr class="divider"/>
+      <div class="fsec">FAQ do estúdio</div>
+      <div class="fi-hint" style="margin-bottom:12px">O FAQ do estúdio é para você responder perguntas comuns de clientes para treinar sua IA. Tudo aqui já vem configurado com padrões inteligentes — mas sinta-se livre para mudar o que quiser.</div>
+      <div id="faq-list"></div>
+
+      <hr class="divider" style="margin:16px 0"/>
+      <div class="fg">
+        <label class="fl">Crie uma nova pergunta</label>
+        <input class="fi" id="faq-new-q" type="text" placeholder="Ex: Vocês fazem tattoo em menor de idade?"/>
+      </div>
+      <div class="fg" style="margin-top:8px">
+        <label class="fl">Crie sua resposta</label>
+        <textarea class="fi" id="faq-new-a" rows="2" placeholder="Ex: Não, atendemos apenas maiores de 18 anos com documento de identidade."></textarea>
+      </div>
+      <button class="sbtn" type="button" style="margin-top:8px;background:transparent;color:var(--teal);border:1px solid var(--teal-mid);font-size:12px;padding:8px 16px" onclick="addCustomFaq()">+ Adicionar ao FAQ do estúdio</button>
+
+      <div class="wiz-nav" style="margin-top:24px">
+        <button class="sbtn wiz-back" type="button" onclick="goStep('sv')">&larr; Voltar</button>
+        <button class="sbtn wiz-fwd" type="button" id="sp-btn" onclick="savePersonaAndNext()">Continuar &rarr;</button>
+      </div>
+      <div class="wiz-hint">Tudo pode ser editado depois no painel do estúdio</div>
+    </div>
+
   </div>
 </div>
 
@@ -1114,8 +1241,8 @@ async function init() {
           initEstilosGrid(); goStep('sv'); return;
         }
         if (!hasAgente) {
-          console.log('[inkflow] smart-resume → personalizar (sp)');
-          initEstilosChips(); goStep('sp'); return;
+          console.log('[inkflow] smart-resume → personalizar intro (spi)');
+          initPersonaIntro(); goStep('spi'); return;
         }
         console.log('[inkflow] smart-resume → sucesso (s6)');
         document.getElementById('suc-estudio').textContent = t.nome_estudio || instanceSlug;
@@ -1154,7 +1281,8 @@ async function init() {
       const step = savedOb.step;
       if (step === 'sw') { initWelcomeChat(); goStep('sw'); return; }
       if (step === 'sv') { initEstilosGrid(); goStep('sv'); return; }
-      if (step === 'sp') { initEstilosChips(); goStep('sp'); return; }
+      if (step === 'spi') { initPersonaIntro(); goStep('spi'); return; }
+      if (step === 'sp') { goStep('sp'); return; }
       if (step === 'qr') { goStep(5); initConnectStep(); pollInterval = setInterval(checkConnection, 5000); return; }
     }
   } catch {}
@@ -1185,6 +1313,7 @@ function goStep(n) {
     el.style.opacity = '0'; el.style.transform = 'translateX(30px)';
     requestAnimationFrame(() => { el.style.transition = 'opacity .4s ease, transform .4s ease'; el.style.opacity = '1'; el.style.transform = 'translateX(0)'; });
   }
+  if (n === 'sp') { initSaudacaoPresets(); }
   window.scrollTo(0, 0);
 }
 
@@ -1224,7 +1353,7 @@ function setupArtistForm() {
   if (formBtn) formBtn.textContent = 'Conectar meu WhatsApp \u2192';
 }
 function makeSlug(text) { return (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').substring(0, 16); }
-function autoAgent() { const nome = document.getElementById('f-nome').value.trim(); const agente = document.getElementById('f-agente'); if (!agente.value && nome) agente.value = nome.split(' ')[0]; }
+function autoAgent() {}
 function selectPlan(plan) { selectedPlan = plan; ['teste','individual','estudio','premium'].forEach(p => { document.getElementById('plan-' + p)?.classList.toggle('active', p === plan); }); if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan}); }
 function setStatus(idx, msg, state = 'active') { const dot = document.getElementById('pd-' + idx); const txt = document.getElementById('pm-' + idx); if (!dot) return; dot.className = 'proc-dot ' + state; if (msg) { txt.textContent = msg; txt.className = 'proc-msg' + (state === 'done' ? ' done' : ''); } }
 function showProcError(msg) { const box = document.getElementById('proc-err-box'); document.getElementById('proc-err-txt').textContent = msg; box.style.display = 'block'; }
@@ -2085,9 +2214,9 @@ async function saveValoresAndNext() {
     });
     if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || 'Erro ao salvar'); }
     let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-    ob.step = 'sp'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
-    initEstilosChips();
-    goStep('sp');
+    ob.step = 'spi'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+    initPersonaIntro();
+    goStep('spi');
   } catch (e) {
     console.error('saveValores error:', e);
     const errEl = document.getElementById('sv-err');
@@ -2095,51 +2224,253 @@ async function saveValoresAndNext() {
   } finally { btn.disabled = false; btn.textContent = 'Proximo \u2192'; }
 }
 
+// ── Wizard: Intro Personalizar (chat bubbles) ──────────────────────────────
+let piStep = 0;
+function initPersonaIntro() {
+  piStep = 0;
+  document.querySelectorAll('#spi .chat-bubble').forEach(b => { b.classList.remove('show'); b.style.display = ''; });
+  document.getElementById('pi4').style.display = 'none';
+  setTimeout(() => showNextPI(), 400);
+}
+function showNextPI() {
+  piStep++;
+  const el = document.getElementById('pi' + piStep);
+  if (!el) return;
+  el.style.display = '';
+  el.classList.add('show');
+  if (piStep < 3) { el.onclick = () => showNextPI(); }
+}
+function selectPersonaMode(mode) {
+  document.querySelectorAll('#pi3 .qa-btn').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+  if (mode === 'consultor') {
+    window.open('https://wa.me/5511999999999?text=Olá! Gostaria de contratar o pacote de personalização exclusivo para meu estúdio.', '_blank');
+  }
+  const pi4 = document.getElementById('pi4');
+  pi4.style.display = '';
+  setTimeout(() => { pi4.classList.add('show'); pi4.scrollIntoView({ behavior: 'smooth' }); }, 200);
+  pi4.onclick = () => {
+    let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
+    ob.step = 'sp'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+    goStep('sp');
+  };
+}
+
 // ── Wizard: Personalizar (agente + agenda + FAQ) ─────────────────────────────
+let selectedEmojiLevel = 'moderado';
+let horarioMode = 'todos';
+
+function scrollToVideoPA() {
+  const v = document.getElementById('pa-video');
+  if (v) { v.style.display = ''; v.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+}
+
+function showPA(id) {
+  const el = document.getElementById(id);
+  if (!el || el.classList.contains('show')) return;
+  el.classList.add('show');
+  if (id === 'pa-estilos') initEstilosChips();
+  if (id === 'pa-faq') initFaqPresets();
+  setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+
 function initEstilosChips() {
-  const aceitosWrap = document.getElementById('p-estilos-aceitos');
   const recusadosWrap = document.getElementById('p-estilos-recusados');
-  if (!aceitosWrap || aceitosWrap.children.length > 0) return;
+  if (!recusadosWrap || recusadosWrap.children.length > 0) return;
+  const estilosAceitos = [...document.querySelectorAll('#v-estilos-outros .chip.active')].map(c => c.textContent);
+  const estiloPadraoVal = document.getElementById('v-fallback')?.value || 'blackwork';
+  const todosAceitos = [estiloPadraoVal, ...estilosAceitos];
   ESTILOS_LISTA.forEach(e => {
-    const mkChip = (wrap) => { const c = document.createElement('button'); c.className = 'chip'; c.textContent = e; c.type = 'button'; c.onclick = () => c.classList.toggle('active'); wrap.appendChild(c); };
-    mkChip(aceitosWrap); mkChip(recusadosWrap);
+    const c = document.createElement('button'); c.className = 'chip'; c.textContent = e; c.type = 'button';
+    c.onclick = () => {
+      c.classList.toggle('active');
+      const warn = document.getElementById('estilo-conflict-warn');
+      if (c.classList.contains('active') && todosAceitos.includes(e)) {
+        warn.textContent = '⚠ Você colocou "' + e + '" como um dos estilos que você tatua na última página. Caso tenha sido um erro, deixe marcado aqui que a decisão anterior será descartada.';
+        warn.style.display = 'block';
+        setTimeout(() => warn.style.display = 'none', 8000);
+      }
+    };
+    recusadosWrap.appendChild(c);
   });
 }
 
+function initSaudacaoPresets() {
+  const wrap = document.getElementById('saudacao-presets');
+  if (!wrap || wrap.children.length > 0) return;
+  let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
+  const agente = document.getElementById('p-nome-agente').value || ob.agente || 'Agente';
+  const estudio = ob.estudio || 'seu estúdio';
+  const presets = [
+    'Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem? Como posso te ajudar?',
+    'E aí! Bem-vindo ao ' + estudio + '! Sou o ' + agente + ', seu assistente virtual. No que posso ajudar?',
+    'Olá! Aqui é o ' + agente + ' do ' + estudio + '. Fico feliz em te atender! Me conta o que você tem em mente.',
+    'Fala! Sou o ' + agente + ', assistente do ' + estudio + '. Bora conversar sobre a sua próxima tattoo?',
+    'Oi! Eu sou o ' + agente + ' e estou aqui pra te ajudar com tudo sobre o ' + estudio + '. Me conta sua ideia!',
+  ];
+  presets.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'chip' + (i === 0 ? ' active' : '');
+    btn.textContent = 'Preset ' + (i + 1);
+    btn.type = 'button';
+    btn.title = p;
+    btn.onclick = () => {
+      wrap.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('p-saudacao').value = p;
+    };
+    wrap.appendChild(btn);
+  });
+  document.getElementById('p-saudacao').value = presets[0];
+}
+
+function selectEmoji(level, btn) {
+  selectedEmojiLevel = level;
+  btn.closest('.chip-wrap').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function toggleGiriasCustom(btn) {
+  btn.classList.toggle('active');
+  document.getElementById('girias-custom-wrap').style.display = btn.classList.contains('active') ? 'block' : 'none';
+}
+
+function toggleExemplosNome() {
+  const el = document.getElementById('exemplos-nome');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  const agente = document.getElementById('p-nome-agente').value || 'Carlos';
+  let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
+  const estudio = ob.estudio || 'Dark Ink Studio';
+  document.getElementById('ex-nome-com').innerHTML = '<strong>' + agente + ':</strong> Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem?';
+  document.getElementById('ex-nome-sem').textContent = 'Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem?';
+}
+
+async function aprimorarPersona() {
+  const btn = document.getElementById('btn-aprimorar');
+  const ta = document.getElementById('p-persona');
+  const texto = ta.value.trim();
+  if (!texto) return;
+  btn.disabled = true; btn.textContent = '✨ Aprimorando...';
+  try {
+    const res = await fetch('/api/tools/aprimorar-persona', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texto }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.resultado) ta.value = data.resultado;
+    }
+  } catch (e) { console.warn('aprimorar-persona failed:', e); }
+  finally { btn.disabled = false; btn.textContent = '✨ Aprimorar texto com IA'; }
+}
+
+function selectHorarioMode(mode, btn) {
+  horarioMode = mode;
+  btn.closest('.chip-wrap').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('horario-todos').style.display = mode === 'todos' ? 'block' : 'none';
+  document.getElementById('horario-exceto').style.display = mode === 'exceto' ? 'block' : 'none';
+  document.getElementById('horario-somente').style.display = mode === 'somente' ? 'block' : 'none';
+}
+
+const FAQ_PRESETS = [
+  { q: 'Qual o endereço do estúdio?', a: '{endereço do estúdio}', editable: true },
+  { q: 'Quais cuidados devo ter após a tatuagem?', a: 'Mantenha o filme por 2-4 horas, lave com água e sabão neutro, aplique pomada cicatrizante (como Bepantol) 3x ao dia por 15 dias. Não coce, não arranque casquinhas, evite sol direto e piscina/mar por 30 dias.' },
+  { q: 'Quais cuidados devo ter antes da tatuagem?', a: 'Durma bem na noite anterior, alimente-se bem, hidrate-se bastante. Evite bebidas alcoólicas e aspirina 24h antes. Passe hidratante na região nos dias anteriores.' },
+  { q: 'Pode usar anestésico?', a: 'Sim, caso necessário, oferecemos anestésico tópico. Converse com o tatuador no dia da sessão para avaliar a necessidade.' },
+  { q: 'É normal sair casquinha?', a: 'Sim, é totalmente normal! Faz parte do processo de cicatrização. Nunca arranque as casquinhas — deixe cair naturalmente para não comprometer o resultado.' },
+  { q: 'É normal coçar a tatuagem?', a: 'Sim, a coceira é um sinal de que sua pele está cicatrizando. Não coce! Se precisar, dê leves batidinhas na região ou passe um pouco de hidratante.' },
+  { q: 'Em média quanto tempo demora para cicatrizar?', a: 'A cicatrização superficial leva de 15 a 30 dias. A cicatrização completa (camadas internas da pele) pode levar até 3 meses. Siga os cuidados para garantir o melhor resultado.' },
+  { q: 'Posso beber antes ou depois de tatuar?', a: 'Evite bebidas alcoólicas pelo menos 24 horas antes e depois da sessão. O álcool afina o sangue, aumenta o sangramento e pode prejudicar a cicatrização.' },
+  { q: 'Quais comidas não devo comer após tatuar?', a: 'Evite alimentos com muito açúcar, frituras pesadas, frutos do mar, carne de porco e alimentos muito condimentados nos primeiros 15 dias. Prefira alimentação leve e nutritiva.' },
+];
+let faqItems = [];
+
+function initFaqPresets() {
+  const list = document.getElementById('faq-list');
+  if (!list || list.children.length > 0) return;
+  faqItems = FAQ_PRESETS.map(f => ({ ...f }));
+  renderFaqList();
+}
+
+function renderFaqList() {
+  const list = document.getElementById('faq-list');
+  list.innerHTML = '';
+  faqItems.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.style.cssText = 'background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:12px;margin-bottom:8px';
+    item.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center"><strong style="color:var(--t1);font-size:13px">' + f.q + '</strong><button type="button" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:16px" onclick="removeFaq(' + i + ')">×</button></div>' +
+      '<textarea class="fi" rows="2" style="margin-top:6px;font-size:12px" onchange="faqItems[' + i + '].a=this.value">' + f.a + '</textarea>';
+    list.appendChild(item);
+  });
+}
+
+function removeFaq(i) { faqItems.splice(i, 1); renderFaqList(); }
+
+function addCustomFaq() {
+  const q = document.getElementById('faq-new-q').value.trim();
+  const a = document.getElementById('faq-new-a').value.trim();
+  if (!q || !a) return;
+  faqItems.push({ q, a });
+  renderFaqList();
+  document.getElementById('faq-new-q').value = '';
+  document.getElementById('faq-new-a').value = '';
+}
+
 function buildConfigAgente() {
+  const giriasAtivas = [...document.querySelectorAll('.giria-chip.active')].map(c => c.dataset.giria).filter(g => g !== 'outras');
+  const giriasCustom = (document.getElementById('p-girias-custom')?.value || '').split(',').map(g => g.trim()).filter(Boolean);
   return {
     tom: document.getElementById('p-tom').value,
-    emoji_level: document.getElementById('p-emoji').value,
-    usa_giria: document.getElementById('p-giria').checked,
+    emoji_level: selectedEmojiLevel,
+    usa_giria: giriasAtivas.length > 0,
+    girias: [...giriasAtivas, ...giriasCustom],
     usa_identificador: document.getElementById('p-identificador').checked,
     persona_livre: (document.getElementById('p-persona').value || '').trim() || null,
-    aceita_cobertura: document.getElementById('p-cobertura').checked,
-    estilos_aceitos: [...document.querySelectorAll('#p-estilos-aceitos .chip.active')].map(c => c.textContent),
+    saudacao: (document.getElementById('p-saudacao')?.value || '').trim() || null,
+    nome_agente: (document.getElementById('p-nome-agente')?.value || '').trim() || null,
     estilos_recusados: [...document.querySelectorAll('#p-estilos-recusados .chip.active')].map(c => c.textContent),
   };
 }
 
 function buildHorario() {
+  const DIAS_MAP = { 'Segunda':'seg','Terça':'ter','Quarta':'qua','Quinta':'qui','Sexta':'sex','Sábado':'sab','Domingo':'dom' };
+  const allDays = ['seg','ter','qua','qui','sex','sab','dom'];
+  let ultimoHorario = '19:00';
+  let diasAtivos = [];
+
+  if (horarioMode === 'todos') {
+    diasAtivos = allDays;
+    ultimoHorario = document.getElementById('h-ultimo-horario')?.value || '19:00';
+  } else if (horarioMode === 'exceto') {
+    const excluidos = [...document.querySelectorAll('#horario-exceto-dias .chip.active')].map(c => DIAS_MAP[c.textContent]);
+    diasAtivos = allDays.filter(d => !excluidos.includes(d));
+    ultimoHorario = document.getElementById('h-ultimo-exceto')?.value || '19:00';
+  } else {
+    diasAtivos = [...document.querySelectorAll('#horario-somente-dias .chip.active')].map(c => DIAS_MAP[c.textContent]);
+    ultimoHorario = document.getElementById('h-ultimo-somente')?.value || '19:00';
+  }
+
   const h = {};
-  const si = document.getElementById('h-semana-ini').value, sf = document.getElementById('h-semana-fim').value;
-  if (si && sf) h['seg-sex'] = si + '-' + sf;
-  const sai = document.getElementById('h-sab-ini').value, saf = document.getElementById('h-sab-fim').value;
-  if (sai && saf) h['sab'] = sai + '-' + saf;
-  const di = document.getElementById('h-dom-ini').value, df = document.getElementById('h-dom-fim').value;
-  if (di && df) h['dom'] = di + '-' + df;
+  diasAtivos.forEach(d => { h[d] = '09:00-' + ultimoHorario; });
   return Object.keys(h).length ? h : null;
+}
+
+function buildFaqTexto() {
+  return faqItems.map(f => 'P: ' + f.q + '\nR: ' + f.a).join('\n\n');
 }
 
 async function savePersonaAndNext() {
   const btn = document.getElementById('sp-btn');
   btn.disabled = true; btn.textContent = 'Salvando...';
   try {
+    const nomeAgente = (document.getElementById('p-nome-agente')?.value || '').trim();
+    if (!nomeAgente) { throw new Error('Preencha o nome do agente.'); }
     const config_agente = buildConfigAgente();
     const horario = buildHorario();
-    const duracao = +document.getElementById('p-duracao').value || 3;
-    const faq = (document.getElementById('p-faq').value || '').trim();
+    const faq = buildFaqTexto();
     const obKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk');
-    const body = { tenant_id: tenantId, onboarding_key: obKey, config_agente, duracao_sessao_padrao_h: duracao };
+    const body = { tenant_id: tenantId, onboarding_key: obKey, config_agente, nome_agente: nomeAgente };
     if (horario) body.horario_funcionamento = horario;
     if (faq) body.faq_texto = faq;
     const res = await fetch('/api/update-tenant', {
@@ -2148,14 +2479,15 @@ async function savePersonaAndNext() {
     });
     if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || 'Erro ao salvar'); }
     let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-    ob.step = 'qr'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+    ob.step = 'qr'; ob.agente = nomeAgente;
+    localStorage.setItem('inkflow_ob', JSON.stringify(ob));
     goStep(5); initConnectStep();
     pollInterval = setInterval(checkConnection, 5000);
   } catch (e) {
     console.error('savePersona error:', e);
     const errEl = document.getElementById('sp-err');
     if (errEl) { errEl.textContent = e.message || 'Erro ao salvar'; errEl.style.display = 'block'; setTimeout(() => errEl.style.display = 'none', 5000); }
-  } finally { btn.disabled = false; btn.textContent = 'Conectar WhatsApp \u2192'; }
+  } finally { btn.disabled = false; btn.textContent = 'Continuar \u2192'; }
 }
 
 init();
