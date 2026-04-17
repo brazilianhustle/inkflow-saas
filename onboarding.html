@@ -980,6 +980,12 @@ select.fi option{background:var(--card);color:var(--t1)}
   </div>
 </div>
 
+<!-- Loading overlay (transição entre steps) -->
+<div id="step-loader" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:200;align-items:center;justify-content:center;flex-direction:column">
+  <div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite"></div>
+  <div style="color:var(--t2);font-size:13px;margin-top:14px" id="step-loader-msg">Carregando...</div>
+</div>
+
 <!-- Error overlay -->
 <div id="err-overlay">
   <div class="err-icon">⚠️</div>
@@ -1071,7 +1077,16 @@ async function init() {
   selectPlan(plano);
 }
 
-function goStep(n) { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); const el = typeof n === 'number' ? document.getElementById('s' + n) : document.getElementById(n); if (el) el.classList.add('active'); window.scrollTo(0, 0); }
+function goStep(n) {
+  document.querySelectorAll('.step').forEach(s => { s.classList.remove('active'); s.style.opacity = '0'; s.style.transform = 'translateX(30px)'; });
+  const el = typeof n === 'number' ? document.getElementById('s' + n) : document.getElementById(n);
+  if (el) {
+    el.classList.add('active');
+    el.style.opacity = '0'; el.style.transform = 'translateX(30px)';
+    requestAnimationFrame(() => { el.style.transition = 'opacity .4s ease, transform .4s ease'; el.style.opacity = '1'; el.style.transform = 'translateX(0)'; });
+  }
+  window.scrollTo(0, 0);
+}
 
 function setupArtistForm() {
   // Esconder secao de plano
@@ -1399,7 +1414,7 @@ async function loadQR() {
       qrLoading.innerHTML = '<span>' + errMsg + '. Clique em "Novo QR Code".</span>'; return; }
     const qrBase64 = data?.base64;
     if (qrBase64) { qrImg.src = qrBase64.startsWith('data:') ? qrBase64 : 'data:image/png;base64,' + qrBase64; qrImg.style.display = 'block'; qrLoading.style.display = 'none'; }
-    else { qrLoading.innerHTML = '<span>QR não disponível. Se já escaneou, aguarde a conexão...</span>'; }
+    else { qrLoading.innerHTML = '<span>Gerando QR Code... aguarde</span>'; setTimeout(() => loadQR(), 3000); }
   } catch (e) { console.error('QR load error:', e); if (qrLoading) qrLoading.innerHTML = '<span>Erro ao carregar QR. Clique em "Novo QR Code".</span>'; }
 }
 
@@ -1458,7 +1473,7 @@ async function checkConnection() {
       } catch (uiErr) { console.warn('[inkflow] UI fill failed (nao fatal):', uiErr); }
 
       // Pequena pausa visual para o usuario ver o "Conectado!"
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise(r => setTimeout(r, 1200));
 
       // Nao-artistas: ir pra welcome chat → config ANTES do sucesso
       if (!isArtist) {
@@ -1469,6 +1484,14 @@ async function checkConnection() {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tenant_id: tenantId, email: emailVal, onboarding_key: obKey, ativo: true }),
         }).catch(e => console.warn('[inkflow] update-tenant ativo falhou:', e?.message));
+
+        // Loading transition suave
+        const loader = document.getElementById('step-loader');
+        const loaderMsg = document.getElementById('step-loader-msg');
+        if (loader) { loader.style.display = 'flex'; if (loaderMsg) loaderMsg.textContent = 'Preparando configuracao...'; }
+        await new Promise(r => setTimeout(r, 1500));
+        if (loader) loader.style.display = 'none';
+
         ob.step = 'sw'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
         initWelcomeChat();
         goStep('sw');
