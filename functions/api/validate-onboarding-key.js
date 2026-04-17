@@ -1,11 +1,3 @@
-// ── InkFlow — Valida key de onboarding (server-side) ────────────────────────
-// Verifica se a key existe na tabela onboarding_links, não expirou e não foi usada.
-// POST /api/validate-onboarding-key
-//
-// Body: { key: "abc123" }
-// Resposta sucesso: { valid: true, plano: "basic" }
-// Resposta falha:   { valid: false, error: "..." }
-
 const CORS = {
   'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -14,9 +6,42 @@ const CORS = {
 };
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+const TENANT_SELECT = 'id,ativo,welcome_shown,config_precificacao,config_agente,evo_instance,nome,nome_estudio,nome_agente,email,cidade,plano,is_artist_slot';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: CORS });
+}
+
+function sbHeaders(sbKey) {
+  return { apikey: sbKey, Authorization: `Bearer ${sbKey}` };
+}
+
+async function findTenant(sbKey, { email, onboardingKey }) {
+  const queries = [];
+  if (email) queries.push(`email=eq.${encodeURIComponent(email)}`);
+  if (onboardingKey) queries.push(`onboarding_key=eq.${encodeURIComponent(onboardingKey)}`);
+
+  for (const q of queries) {
+    try {
+      const r = await fetch(
+        `${SUPABASE_URL}/rest/v1/tenants?${q}&select=${TENANT_SELECT}&order=created_at.desc&limit=1`,
+        { headers: sbHeaders(sbKey) }
+      );
+      if (r.ok) {
+        const rows = await r.json();
+        if (rows[0]) return rows[0];
+      }
+    } catch {}
+  }
+  return null;
+}
+
+async function resetLinkUsed(sbKey, linkId) {
+  await fetch(`${SUPABASE_URL}/rest/v1/onboarding_links?id=eq.${linkId}`, {
+    method: 'PATCH',
+    headers: { ...sbHeaders(sbKey), 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    body: JSON.stringify({ used: false }),
+  });
 }
 
 export async function onRequest(context) {
@@ -39,15 +64,9 @@ export async function onRequest(context) {
   if (!SB_KEY) return json({ valid: false, error: 'Configuração interna ausente' }, 503);
 
   try {
-    // Buscar a key na tabela onboarding_links (inclui campos de convite artista)
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/onboarding_links?key=eq.${encodeURIComponent(key)}&select=id,key,plano,email,used,expires_at,parent_tenant_id,is_artist_invite`,
-      {
-        headers: {
-          apikey: SB_KEY,
-          Authorization: `Bearer ${SB_KEY}`,
-        },
-      }
+      { headers: sbHeaders(SB_KEY) }
     );
 
     if (!res.ok) {
@@ -56,116 +75,55 @@ export async function onRequest(context) {
     }
 
     const links = await res.json();
-
     if (!links || links.length === 0) {
       return json({ valid: false, error: 'Link de onboarding inválido ou não encontrado.' });
     }
 
     const link = links[0];
 
-    // Verificar se expirou
     if (new Date(link.expires_at) < new Date()) {
       return json({ valid: false, error: 'Link de onboarding expirado. Solicite um novo link ao suporte InkFlow.' });
     }
 
-    // [FIX Bug #7 + Bug #2 Onboarding] Links de uso único COM retry inteligente
-    // Se o link está marcado como usado, verifica se o tenant associado já completou
-    // o onboarding (ativo=true). Se NÃO completou (ex: cartão recusado), permite retry.
+    let existingTenant = null;
+
     if (link.used) {
-      // Verificar se existe tenant ativo com este email
-      if (link.email) {
-        try {
-          const tenantCheck = await fetch(
-            `${SUPABASE_URL}/rest/v1/tenants?email=eq.${encodeURIComponent(link.email)}&select=ativo,welcome_shown,config_precificacao&order=created_at.desc&limit=1`,
-            {
-              headers: {
-                apikey: SB_KEY,
-                Authorization: `Bearer ${SB_KEY}`,
-              },
-            }
-          );
-          if (tenantCheck.ok) {
-            const tenants = await tenantCheck.json();
-            const tenant = tenants[0];
-            // Permite retry SEMPRE que o tenant existe com este email.
-            // O link de onboarding E a autenticacao — se o user tem a key, e o dono.
-            // Bloquear so atrapalhava UX (user saiu no meio, nao consegue voltar).
-            if (tenant) {
-              // Resetar used pra estado limpo
-              await fetch(
-                `${SUPABASE_URL}/rest/v1/onboarding_links?id=eq.${link.id}`,
-                {
-                  method: 'PATCH',
-                  headers: {
-                    apikey: SB_KEY,
-                    Authorization: `Bearer ${SB_KEY}`,
-                    'Content-Type': 'application/json',
-                    Prefer: 'return=minimal',
-                  },
-                  body: JSON.stringify({ used: false }),
-                }
-              );
-              console.log('validate-onboarding-key: link reativado para retry (tenant não ativo)');
-              // Não retornar erro — continuar validação normalmente
-            } else if (!tenant) {
-              // Tenant nao existe com esse email → bloquear (link orfao)
-              return json({ valid: false, error: 'Este link de onboarding ja foi utilizado.' });
-            }
-          } else {
-            // Falha na verificação → bloquear por segurança
-            return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
-          }
-        } catch (e) {
-          console.warn('validate-onboarding-key: erro ao verificar tenant para retry:', e);
-          // Em caso de erro, bloquear por segurança
-          return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
-        }
+      existingTenant = await findTenant(SB_KEY, { email: link.email, onboardingKey: key });
+
+      if (existingTenant) {
+        await resetLinkUsed(SB_KEY, link.id);
+        console.log('validate-onboarding-key: link reativado para retry, tenant:', existingTenant.id);
       } else {
-        // Link sem email → tentar encontrar tenant por onboarding_key
-        try {
-          const tenantCheck = await fetch(
-            `${SUPABASE_URL}/rest/v1/tenants?onboarding_key=eq.${encodeURIComponent(key)}&select=ativo,welcome_shown,config_precificacao&order=created_at.desc&limit=1`,
-            {
-              headers: {
-                apikey: SB_KEY,
-                Authorization: `Bearer ${SB_KEY}`,
-              },
-            }
-          );
-          if (tenantCheck.ok) {
-            const tenants = await tenantCheck.json();
-            if (tenants[0]) {
-              await fetch(
-                `${SUPABASE_URL}/rest/v1/onboarding_links?id=eq.${link.id}`,
-                {
-                  method: 'PATCH',
-                  headers: {
-                    apikey: SB_KEY,
-                    Authorization: `Bearer ${SB_KEY}`,
-                    'Content-Type': 'application/json',
-                    Prefer: 'return=minimal',
-                  },
-                  body: JSON.stringify({ used: false }),
-                }
-              );
-              console.log('validate-onboarding-key: link sem email reativado via onboarding_key match');
-            } else {
-              return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
-            }
-          } else {
-            return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
-          }
-        } catch (e) {
-          console.warn('validate-onboarding-key: erro ao verificar tenant por onboarding_key:', e);
-          return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
-        }
+        return json({ valid: false, error: 'Este link de onboarding já foi utilizado.' });
       }
     }
 
-    // Key válida — retornar plano associado + info de artista se aplicável
+    // Se link não estava used, ainda verificar se tenant já existe (reload da página)
+    if (!existingTenant) {
+      existingTenant = await findTenant(SB_KEY, { email: link.email, onboardingKey: key });
+    }
+
     const response = { valid: true, plano: link.plano, link_id: link.id };
 
-    // Se for convite de artista, buscar google_calendar_id do tenant pai
+    // Incluir estado do tenant pra frontend fazer smart-resume
+    if (existingTenant) {
+      response.tenant = {
+        id: existingTenant.id,
+        ativo: !!existingTenant.ativo,
+        welcome_shown: !!existingTenant.welcome_shown,
+        evo_instance: existingTenant.evo_instance || null,
+        nome: existingTenant.nome || '',
+        nome_estudio: existingTenant.nome_estudio || '',
+        nome_agente: existingTenant.nome_agente || '',
+        email: existingTenant.email || '',
+        cidade: existingTenant.cidade || '',
+        plano: existingTenant.plano || link.plano,
+        config_precificacao: existingTenant.config_precificacao || null,
+        config_agente: existingTenant.config_agente || null,
+        is_artist_slot: !!existingTenant.is_artist_slot,
+      };
+    }
+
     if (link.is_artist_invite && link.parent_tenant_id) {
       response.is_artist_invite = true;
       response.parent_tenant_id = link.parent_tenant_id;
@@ -173,16 +131,11 @@ export async function onRequest(context) {
       try {
         const parentRes = await fetch(
           `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(link.parent_tenant_id)}&select=google_calendar_id,nome_estudio,evo_base_url`,
-          {
-            headers: {
-              apikey: SB_KEY,
-              Authorization: `Bearer ${SB_KEY}`,
-            },
-          }
+          { headers: sbHeaders(SB_KEY) }
         );
         if (parentRes.ok) {
           const parents = await parentRes.json();
-          if (parents && parents[0]) {
+          if (parents[0]) {
             response.parent_google_calendar_id = parents[0].google_calendar_id;
             response.parent_nome_estudio = parents[0].nome_estudio;
             response.parent_evo_base_url = parents[0].evo_base_url;
@@ -190,11 +143,10 @@ export async function onRequest(context) {
         }
       } catch (e) {
         console.warn('validate-onboarding-key: erro ao buscar dados do tenant pai:', e);
-        // Não bloqueia — artista pode prosseguir sem calendar
       }
     }
 
-    console.log('validate-onboarding-key: key válida, plano:', link.plano, 'artista:', !!link.is_artist_invite);
+    console.log('validate-onboarding-key: key válida, plano:', link.plano, 'tenant:', existingTenant?.id || 'novo');
     return json(response);
 
   } catch (err) {

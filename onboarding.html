@@ -1037,6 +1037,55 @@ async function init() {
         parent_evo_base_url: valData.parent_evo_base_url || '',
       };
     }
+
+    // ── Smart resume via server-side tenant state ──
+    if (valData.tenant && valData.tenant.id) {
+      const t = valData.tenant;
+      tenantId = t.id;
+      instanceSlug = t.evo_instance || '';
+      selectedPlan = t.plano || plano;
+      plano = selectedPlan;
+
+      localStorage.setItem('inkflow_gk', key);
+      gConfig = { globalKey: key, plano };
+      localStorage.setItem('inkflow_ob', JSON.stringify({
+        tenantId, instanceSlug, nome: t.nome, estudio: t.nome_estudio,
+        agente: t.nome_agente, cidade: t.cidade, email: t.email,
+        plano: selectedPlan, isArtist: t.is_artist_slot,
+      }));
+
+      if (t.evo_instance && t.ativo) {
+        const hasConfig = t.config_precificacao && Object.keys(t.config_precificacao).length > 1;
+        const hasAgente = t.config_agente && Object.keys(t.config_agente).length > 1;
+
+        if (!t.welcome_shown) {
+          console.log('[inkflow] smart-resume → welcome chat (sw)');
+          initWelcomeChat(); goStep('sw'); return;
+        }
+        if (!hasConfig) {
+          console.log('[inkflow] smart-resume → valores (sv)');
+          initEstilosGrid(); goStep('sv'); return;
+        }
+        if (!hasAgente) {
+          console.log('[inkflow] smart-resume → personalizar (sp)');
+          initEstilosChips(); goStep('sp'); return;
+        }
+        console.log('[inkflow] smart-resume → sucesso (s6)');
+        document.getElementById('suc-estudio').textContent = t.nome_estudio || instanceSlug;
+        document.getElementById('suc-agente').textContent = t.nome_agente || '';
+        document.getElementById('suc-inst').textContent = instanceSlug;
+        const sucPlanLabels = { teste:'Teste', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' };
+        document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
+        goStep(6); return;
+      }
+
+      if (t.evo_instance && !t.ativo) {
+        console.log('[inkflow] smart-resume → QR (instance exists, not ativo)');
+        goStep(5); initConnectStep(); pollInterval = setInterval(checkConnection, 5000); return;
+      }
+
+      console.log('[inkflow] smart-resume → tenant exists but no instance, showing form');
+    }
   } catch (valErr) {
     console.error('Key validation network error:', valErr);
     showErrOverlay('Erro ao validar link de onboarding. Verifique sua conexao e tente novamente.');
@@ -1048,7 +1097,7 @@ async function init() {
   localStorage.setItem('inkflow_gk', key);
   selectedPlan = plano;
 
-  // ── Resume: se fechou browser no meio do wizard, retoma de onde parou ──
+  // ── Resume localStorage (fallback se backend não retornou tenant) ──
   try {
     const savedOb = JSON.parse(localStorage.getItem('inkflow_ob') || '{}');
     if (savedOb.tenantId && savedOb.step) {
