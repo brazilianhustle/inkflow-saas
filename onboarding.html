@@ -988,9 +988,19 @@ select.fi option{background:var(--card);color:var(--t1)}
 
 <!-- Error overlay -->
 <div id="err-overlay">
-  <div class="err-icon">⚠️</div>
-  <div class="err-title">Link inválido</div>
-  <div class="err-msg" id="err-msg">Este link de onboarding é inválido ou expirou. Solicite um novo link ao suporte InkFlow.</div>
+  <div class="err-icon">&#9888;&#65039;</div>
+  <div class="err-title">Link invalido</div>
+  <div class="err-msg" id="err-msg">Este link de onboarding e invalido ou expirou.</div>
+  <div style="margin-top:24px;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px;max-width:340px;width:100%;text-align:left">
+    <div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:6px;text-align:center">Solicitar novo link</div>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:14px;text-align:center;line-height:1.5">Enviaremos um novo link de acesso por WhatsApp e/ou email.</div>
+    <input class="fi" id="err-email" type="email" autocomplete="email" placeholder="Email cadastrado" style="margin-bottom:8px"/>
+    <div style="text-align:center;font-size:11px;color:var(--t3);margin:4px 0">&mdash; ou &mdash;</div>
+    <input class="fi" id="err-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="WhatsApp com DDD" style="margin-bottom:10px"/>
+    <button class="sbtn" type="button" id="err-send-btn" onclick="requestRecoveryLink()" style="width:100%">Enviar novo link</button>
+    <div id="err-send-ok" style="display:none;background:rgba(34,197,94,.1);border:1px solid #22c55e;color:#22c55e;padding:10px;border-radius:8px;font-size:12px;text-align:center;margin-top:10px">&#10003; Se o email/WhatsApp estiver cadastrado, voce recebera o novo link em alguns segundos.</div>
+    <div style="margin-top:12px;text-align:center"><a href="https://wa.me/5521970789797?text=Oi%2C%20preciso%20de%20um%20novo%20link%20de%20onboarding" target="_blank" style="color:var(--teal);font-size:11px;text-decoration:underline">Ou fale direto com o suporte InkFlow</a></div>
+  </div>
 </div>
 
 <script>
@@ -1729,6 +1739,24 @@ async function fetchStudioTokenAndRedirect(pendingWhatsapp = false) {
     showProcError('Falha ao abrir painel. Recarregue a página ou entre em contato com o suporte.');
     _studioRedirectInFlight = false;
   }
+}
+
+// ── Recovery link (tela de erro) ─────────────────────────────────────────────
+async function requestRecoveryLink() {
+  const email = (document.getElementById('err-email').value || '').trim();
+  const phone = (document.getElementById('err-phone').value || '').trim();
+  if (!email && !phone) { alert('Preencha email ou WhatsApp'); return; }
+  const btn = document.getElementById('err-send-btn');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    await fetch('/api/request-studio-link', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email || undefined, phone: phone || undefined }),
+    });
+    document.getElementById('err-send-ok').style.display = 'block';
+  } catch (e) {
+    alert('Erro ao enviar. Tente novamente ou contate o suporte.');
+  } finally { btn.disabled = false; btn.textContent = 'Enviar novo link'; }
 }
 
 // ── Welcome Chat (bot bubbles) ───────────────────────────────────────────────

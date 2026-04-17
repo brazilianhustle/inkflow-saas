@@ -76,7 +76,7 @@ export async function onRequest(context) {
       if (link.email) {
         try {
           const tenantCheck = await fetch(
-            `${SUPABASE_URL}/rest/v1/tenants?email=eq.${encodeURIComponent(link.email)}&select=ativo&order=created_at.desc&limit=1`,
+            `${SUPABASE_URL}/rest/v1/tenants?email=eq.${encodeURIComponent(link.email)}&select=ativo,welcome_shown,config_precificacao&order=created_at.desc&limit=1`,
             {
               headers: {
                 apikey: SB_KEY,
@@ -87,9 +87,12 @@ export async function onRequest(context) {
           if (tenantCheck.ok) {
             const tenants = await tenantCheck.json();
             const tenant = tenants[0];
-            if (!tenant || tenant.ativo !== true) {
-              // Tenant não existe ou não está ativo → permitir retry
-              // Resetar flag used para estado limpo
+            // Permite retry se: tenant nao existe, nao esta ativo, OU esta ativo
+            // mas nao completou onboarding (welcome_shown=false ou config_precificacao vazio)
+            const onboardingIncompleto = tenant && tenant.ativo === true
+              && (!tenant.welcome_shown || !tenant.config_precificacao || Object.keys(tenant.config_precificacao).length <= 1);
+            if (!tenant || tenant.ativo !== true || onboardingIncompleto) {
+              // Permitir retry — tenant nao existe, nao ativo, ou onboarding incompleto
               await fetch(
                 `${SUPABASE_URL}/rest/v1/onboarding_links?id=eq.${link.id}`,
                 {
