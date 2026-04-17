@@ -803,19 +803,21 @@ select.fi option{background:var(--card);color:var(--t1)}
           </div>
           <div class="fg">
             <label class="fl">Estilo</label>
-            <select class="fi" id="t-estilo"><option>blackwork</option><option>fineline</option><option>realismo</option><option>tradicional</option><option>old school</option><option>aquarela</option></select>
+            <select class="fi" id="t-estilo"></select>
           </div>
         </div>
-        <div class="fgrid">
-          <div class="fg">
-            <label class="fl">Região</label>
-            <select class="fi" id="t-regiao"><option value="antebraco">Antebraço</option><option value="biceps">Bíceps</option><option value="ombro">Ombro</option><option value="costela">Costela</option><option value="pescoco">Pescoço</option><option value="mao">Mão</option><option value="pe">Pé</option><option value="cabeca">Cabeça/rosto</option><option value="coluna">Coluna/lombar</option><option value="panturrilha">Panturrilha</option><option value="coxa">Coxa</option><option value="costas">Costas</option><option value="perna">Perna</option></select>
-          </div>
-          <div class="fg">
-            <label class="fl">Colorida</label>
-            <div class="toggle-row" style="padding:4px 0">
-              <label class="toggle"><input type="checkbox" id="t-cor"/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
-            </div>
+        <div class="fg">
+          <label class="fl">Local do corpo</label>
+          <div class="chip-wrap" id="t-local-chips"></div>
+        </div>
+        <div class="fg" id="t-sublocal-wrap" style="display:none;margin-top:4px">
+          <label class="fl" id="t-sublocal-label">Específico</label>
+          <select class="fi" id="t-sublocal"></select>
+        </div>
+        <div class="fg" style="margin-top:8px">
+          <label class="fl">Colorida</label>
+          <div class="toggle-row" style="padding:4px 0">
+            <label class="toggle"><input type="checkbox" id="t-cor"/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
           </div>
         </div>
         <button class="sbtn" type="button" style="margin-top:8px;background:transparent;color:var(--teal);border:1px solid var(--teal-mid)" onclick="testOrcamento()">Calcular preview</button>
@@ -1876,6 +1878,7 @@ function showQA(id) {
   const el = document.getElementById(id);
   if (!el || el.classList.contains('show')) return;
   el.classList.add('show');
+  if (id === 'qa-test') { initTestadorRegions(); initTestadorEstilos(); }
   setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 }
 function selectModo(modo, btn) {
@@ -1895,7 +1898,7 @@ function scrollToVideo() {
 }
 
 // ── Estilos 2 colunas (padrao + outros) ──────────────────────────────────────
-const ESTILOS_LISTA = ['blackwork','fineline','realismo','minirealismo','tradicional','old school','aquarela','geometrico','dotwork','tribal','oriental','lettering','caligrafia','minimalista','neo tradicional','trash polka','ornamental','maori','chicano','biomecanico','sketch','pontilhismo','abstrato','mandala','floral','blackout'];
+const ESTILOS_LISTA = ['blackwork','fineline','realismo','minirealismo','tradicional','old school','aquarela','colorido','geometrico','dotwork','tribal','oriental','lettering','caligrafia','minimalista','neo tradicional','trash polka','ornamental','maori','chicano','biomecanico','sketch','pontilhismo','abstrato','mandala','floral','blackout'];
 let estiloPadrao = 'blackwork';
 
 function initEstilosGrid() {
@@ -1961,10 +1964,73 @@ function useDefaultValores() {
   document.getElementById('test-result').style.display = 'none';
 }
 
+const BODY_REGIONS = [
+  { id:'braco', label:'Braço', subs:['Antebraço interno','Antebraço externo','Bíceps externo','Bíceps interno'] },
+  { id:'perna', label:'Perna', subs:['Panturrilha lateral','Panturrilha atrás','Canela','Coxa frontal','Coxa lateral externa','Coxa lateral interna','Coxa atrás'] },
+  { id:'pescoco', label:'Pescoço', regiao:'pescoco' },
+  { id:'costas', label:'Costas' },
+  { id:'peito', label:'Peito', subs:['Peito unilateral','Peito inteiro'] },
+  { id:'ombro', label:'Ombro', regiao:'ombro' },
+  { id:'costela', label:'Costela', regiao:'costela' },
+  { id:'pe', label:'Pé', regiao:'pe' },
+  { id:'cabeca', label:'Cabeça/rosto', regiao:'cabeca' },
+  { id:'mao', label:'Mão', regiao:'mao' },
+  { id:'coluna', label:'Coluna/lombar', regiao:'coluna' },
+];
+let selectedBodyRegion = 'braco';
+let selectedSubRegion = '';
+
+function initTestadorRegions() {
+  const wrap = document.getElementById('t-local-chips');
+  if (!wrap || wrap.children.length > 0) return;
+  BODY_REGIONS.forEach(r => {
+    const c = document.createElement('button');
+    c.className = 'chip' + (r.id === 'braco' ? ' active' : '');
+    c.textContent = r.label; c.type = 'button';
+    c.onclick = () => {
+      wrap.querySelectorAll('.chip').forEach(ch => ch.classList.remove('active'));
+      c.classList.add('active');
+      selectedBodyRegion = r.id;
+      const subWrap = document.getElementById('t-sublocal-wrap');
+      const subSel = document.getElementById('t-sublocal');
+      if (r.subs && r.subs.length > 0) {
+        subSel.innerHTML = '';
+        r.subs.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; subSel.appendChild(o); });
+        document.getElementById('t-sublocal-label').textContent = r.label + ' — específico';
+        subWrap.style.display = 'block';
+        selectedSubRegion = r.subs[0];
+        subSel.onchange = () => { selectedSubRegion = subSel.value; };
+      } else {
+        subWrap.style.display = 'none';
+        selectedSubRegion = '';
+      }
+    };
+    wrap.appendChild(c);
+  });
+  selectedBodyRegion = 'braco'; selectedSubRegion = 'Antebraço interno';
+  const subSel = document.getElementById('t-sublocal');
+  const bracoSubs = BODY_REGIONS[0].subs;
+  bracoSubs.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; subSel.appendChild(o); });
+  document.getElementById('t-sublocal-label').textContent = 'Braço — específico';
+  document.getElementById('t-sublocal-wrap').style.display = 'block';
+}
+
+function initTestadorEstilos() {
+  const sel = document.getElementById('t-estilo');
+  if (!sel || sel.children.length > 0) return;
+  ESTILOS_LISTA.forEach(e => { const o = document.createElement('option'); o.value = e; o.textContent = e; sel.appendChild(o); });
+}
+
+function getTestRegiao() {
+  const region = BODY_REGIONS.find(r => r.id === selectedBodyRegion);
+  if (region && region.regiao) return region.regiao;
+  return selectedBodyRegion;
+}
+
 function testOrcamento() {
   const cfg = buildConfigPrecificacao();
   const tam = +document.getElementById('t-tam').value || 10;
-  const regiao = document.getElementById('t-regiao').value || 'antebraco';
+  const regiao = getTestRegiao();
   const cor = document.getElementById('t-cor').checked;
   const r = document.getElementById('test-result');
   r.style.display = 'block';
@@ -1988,15 +2054,17 @@ function testOrcamento() {
   if (mx < mn) mx = mn;
   const sinalPct = cfg.sinal_percentual || 30;
   const sinalVal = Math.round(mn * sinalPct / 100);
+  const localLabel = BODY_REGIONS.find(b => b.id === selectedBodyRegion)?.label || regiao;
+  const subLabel = selectedSubRegion ? ' (' + selectedSubRegion + ')' : '';
+  const estiloLabel = document.getElementById('t-estilo')?.value || 'blackwork';
   if (cfg.modo === 'exato') {
     const avg = Math.round((mn + mx) / 2);
-    r.innerHTML = 'R$ ' + avg.toLocaleString('pt-BR') +
-      '<br><span style="font-size:12px;color:var(--t2);font-weight:400">Sinal: R$ ' + Math.round(avg * sinalPct / 100).toLocaleString('pt-BR') + ' (' + sinalPct + '%)</span>';
+    r.innerHTML = '<div style="font-size:13px;color:var(--t2);margin-bottom:6px;font-weight:400;line-height:1.5">"Uma tatuagem de ' + estiloLabel + ', ' + tam + 'cm no ' + localLabel.toLowerCase() + subLabel.toLowerCase() + (cor ? ', colorida' : '') + ' ficaria em <strong style="color:var(--teal)">R$ ' + avg.toLocaleString('pt-BR') + '</strong>"</div>' +
+      '<span style="font-size:12px;color:var(--t3)">Sinal: R$ ' + Math.round(avg * sinalPct / 100).toLocaleString('pt-BR') + ' (' + sinalPct + '%)</span>';
   } else {
-    r.innerHTML = 'R$ ' + mn.toLocaleString('pt-BR') + ' a R$ ' + mx.toLocaleString('pt-BR') +
-      '<br><span style="font-size:12px;color:var(--t2);font-weight:400">Sinal: R$ ' + sinalVal.toLocaleString('pt-BR') + ' (' + sinalPct + '%)</span>';
+    r.innerHTML = '<div style="font-size:13px;color:var(--t2);margin-bottom:6px;font-weight:400;line-height:1.5">"Uma tatuagem de ' + estiloLabel + ', ' + tam + 'cm no ' + localLabel.toLowerCase() + subLabel.toLowerCase() + (cor ? ', colorida' : '') + ' ficaria na faixa de <strong style="color:var(--teal)">R$ ' + mn.toLocaleString('pt-BR') + ' a R$ ' + mx.toLocaleString('pt-BR') + '</strong>"</div>' +
+      '<span style="font-size:12px;color:var(--t3)">Sinal: R$ ' + sinalVal.toLocaleString('pt-BR') + ' (' + sinalPct + '%)</span>';
   }
-  r.style.color = 'var(--teal)';
 }
 
 async function saveValoresAndNext() {
