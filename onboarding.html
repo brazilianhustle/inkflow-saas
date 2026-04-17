@@ -251,9 +251,11 @@ select.fi option{background:var(--card);color:var(--t1)}
 .toggle-thumb{position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s;pointer-events:none}
 .toggle input:checked~.toggle-thumb{left:22px}
 
-.size-grid{display:grid;grid-template-columns:70px 1fr 20px 1fr;gap:8px;align-items:center}
-.size-label{font-size:12px;color:var(--t2);font-weight:600}
-.size-sep{text-align:center;color:var(--t3);font-size:12px}
+.size-grid{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}
+.size-label{font-size:12px;color:var(--t2);font-weight:600;width:100%}
+.size-sep{color:var(--t3);font-size:12px}
+.size-grid .fi{width:80px;flex-shrink:0}
+.region-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
 
 .chip-wrap{display:flex;flex-wrap:wrap;gap:6px}
 .chip{padding:6px 14px;border:1px solid var(--border2);border-radius:20px;font-size:12px;cursor:pointer;color:var(--t2);transition:all .15s;background:transparent;font-family:inherit}
@@ -569,13 +571,13 @@ select.fi option{background:var(--card);color:var(--t1)}
       </div>
       <div class="chat-bubble" id="cb2">
         <div class="chat-name">InkFlow</div>
-        Aqui voce tera duas opcoes: trabalhar com valores do mercado geral em uma configuracao rapida, ou montar um robo treinado com o valor do seu trabalho <strong>(recomendado)</strong>.
+        Aqui você terá duas opções: trabalhar com valores do mercado geral em uma configuração rápida, ou montar um robô treinado com o valor do seu trabalho <strong>(recomendado)</strong>.
         <div class="chat-tap">Toque para continuar</div>
       </div>
       <div class="chat-bubble" id="cb3">
         <div class="chat-name">InkFlow</div>
-        Recomendo tirar 15 minutos para realizar a configuracao completa, e seu robo poder comecar a trabalhar com o melhor desempenho pro seu estudio! Vamos la?
-        <div class="chat-tap cta">Vamos la! &rarr;</div>
+        Recomendo tirar 15 minutos para realizar a configuração completa, e seu robô poder começar a trabalhar com o melhor desempenho pro seu estúdio! Vamos lá?
+        <div class="chat-tap cta">Vamos lá! &rarr;</div>
       </div>
     </div>
   </div>
@@ -595,35 +597,35 @@ select.fi option{background:var(--card);color:var(--t1)}
     <!-- ── Video tutorial (topo) ── -->
     <div id="qa-video" class="qa show">
       <div class="video-wrap">
-        <div class="video-placeholder">Como precificar o seu trabalho?<br><span style="font-size:11px">(video em breve)</span></div>
+        <div class="video-placeholder">Como precificar o seu trabalho?<br><span style="font-size:11px">(vídeo em breve)</span></div>
       </div>
-      <button class="skip-video" type="button" onclick="document.getElementById('qa-video').style.display='none';showQA('qa-intro')">Pular tutorial de precificacao (Nao recomendado)</button>
+      <button class="skip-video" type="button" onclick="document.getElementById('qa-video').style.display='none';showQA('qa-intro')">Pular tutorial de precificação (Não recomendado)</button>
     </div>
 
     <!-- ── Intro ── -->
     <div id="qa-intro" class="qa">
       <div class="form-title">Treine o seu agente com o valor do seu trabalho</div>
-      <div class="form-sub" style="margin-bottom:20px">Responda o questionario abaixo e atinja o maximo potencial do seu assistente virtual. Caso nunca tenha precificado, nao tem problema! <span class="link-cta" onclick="scrollToVideo()">Clique aqui</span> e veja como precificar seu trabalho corretamente. Caso prefira usar o valor geral do mercado, use os valores ja previamente definidos e leia as dicas para facilitar sua precificacao!</div>
+      <div class="form-sub" style="margin-bottom:20px">Responda o questionário abaixo e atinja o máximo potencial do seu assistente virtual. Caso nunca tenha precificado, não tem problema! <span class="link-cta" onclick="scrollToVideo()">Clique aqui</span> e veja como precificar seu trabalho corretamente. Caso prefira usar o valor geral do mercado, use os valores já previamente definidos e leia as dicas para facilitar sua precificação!</div>
       <div class="form-err" id="sv-err"></div>
 
       <!-- ── Q1: Faixa vs Exato ── -->
       <div class="qa-q">
         <div class="chat-name">InkFlow</div>
-        Voce gostaria que o agente responda com uma media de precos (e o valor final e fechado pelo tatuador), ou gostaria que seu agente passasse o orcamento completo com base na calculadora personalizada InkFlow com os seus valores reais?
+        Você gostaria que o agente responda com uma média de preços (e o valor final é fechado pelo tatuador), ou gostaria que seu agente passasse o orçamento completo com base na calculadora personalizada InkFlow com os seus valores reais?
 
         <div class="qa-ex" style="margin-top:12px">
-          <div class="qa-ex-label">Exemplo 1 — Faixa de preco</div>
+          <div class="qa-ex-label">Exemplo 1 — Faixa de preço</div>
           <div class="qa-ex-msg"><b>Cliente:</b> Fechou, e quanto ficaria essa tattoo?</div>
-          <div class="qa-ex-msg"><b>Agente:</b> Essa tatuagem fica na faixa de R$ 600 a R$ 900, o valor final e detalhes sobre as sessoes e passado diretamente com o tatuador, gostaria de agendar?</div>
+          <div class="qa-ex-msg"><b>Agente:</b> Essa tatuagem fica na faixa de R$ 600 a R$ 900, o valor final e detalhes sobre as sessões é passado diretamente com o tatuador, gostaria de agendar?</div>
         </div>
         <div class="qa-ex" style="margin-top:8px">
           <div class="qa-ex-label">Exemplo 2 — Valor exato</div>
           <div class="qa-ex-msg"><b>Cliente:</b> Fechou, e quanto ficaria essa tattoo?</div>
-          <div class="qa-ex-msg"><b>Agente:</b> Essa tatuagem fica em R$ 750 nessa pegada de tamanho, os detalhes da sessao e passado diretamente com o tatuador, gostaria de agendar?</div>
+          <div class="qa-ex-msg"><b>Agente:</b> Essa tatuagem fica em R$ 750 nessa pegada de tamanho, os detalhes da sessão é passado diretamente com o tatuador, gostaria de agendar?</div>
         </div>
 
         <div class="qa-opt" style="margin-top:14px">
-          <button class="qa-btn" type="button" onclick="selectModo('faixa',this)">Faixa de preco (valor final pelo tatuador)</button>
+          <button class="qa-btn" type="button" onclick="selectModo('faixa',this)">Faixa de preço (valor final pelo tatuador)</button>
           <button class="qa-btn" type="button" onclick="selectModo('exato',this)">Valor exato (calculadora InkFlow)</button>
         </div>
         <div style="margin-top:10px;font-size:11px;color:var(--t3)">Caso queira entender como funciona a calculadora inteligente InkFlow, <span class="link-cta" onclick="scrollToVideo()">clique aqui</span></div>
@@ -634,11 +636,11 @@ select.fi option{background:var(--card);color:var(--t1)}
     <div id="qa-sinal" class="qa">
       <hr class="divider"/>
       <div class="fsec">Sinal de agendamento</div>
-      <div class="fi-hint" style="margin-bottom:10px">Defina qual o valor de sinal cobrado por tatuagem. Caso nao queira cobrar sinal (maior risco de perder agendamento), coloque o valor "0".</div>
+      <div class="fi-hint" style="margin-bottom:10px">Defina qual o valor de sinal cobrado por tatuagem. Caso não queira cobrar sinal (maior risco de perder agendamento), coloque o valor "0".</div>
       <div class="fg">
         <div style="display:flex;align-items:center;gap:8px">
           <input class="fi" id="v-sinal" type="number" value="30" min="0" max="100" style="width:80px"/>
-          <span style="color:var(--t3);font-size:13px">% do orcamento</span>
+          <span style="color:var(--t3);font-size:13px">% do orçamento</span>
         </div>
       </div>
       <button class="sbtn" type="button" style="margin-top:14px;font-size:13px" onclick="showQA('qa-faixas')">Continuar &rarr;</button>
@@ -648,35 +650,35 @@ select.fi option{background:var(--card);color:var(--t1)}
     <div id="qa-faixas" class="qa">
       <hr class="divider"/>
       <div class="fsec">Faixas por tamanho</div>
-      <div class="fi-hint" style="margin-bottom:12px">Coloque uma media inicial para treinar a IA com seus valores reais. Nao se preocupe em passar uma media exata, coloque valores gerais de tatuagem sem agravantes nos tamanhos indicados (sem cor, sem locais complexos). Caso precise de ajuda para precificar seus trabalhos <span class="link-cta" onclick="scrollToVideo()">clique aqui</span> para assistir um tutorial feito pra voce!</div>
+      <div class="fi-hint" style="margin-bottom:12px">Coloque uma média inicial para treinar a IA com seus valores reais. Não se preocupe em passar uma média exata, coloque valores gerais de tatuagem sem agravantes nos tamanhos indicados (sem cor, sem locais complexos). Caso precise de ajuda para precificar seus trabalhos <span class="link-cta" onclick="scrollToVideo()">clique aqui</span> para assistir um tutorial feito pra você!</div>
       <div class="size-grid">
-        <span class="size-label" style="font-size:11px">Minimalista/simples (ate 7cm)</span>
+        <span class="size-label">Minimalista/simples (até 7cm)</span>
         <input class="fi" id="v-p-min" type="number" value="200" min="0" onfocus="showTip('tip-p')"/>
         <span class="size-sep">a</span>
         <input class="fi" id="v-p-max" type="number" value="400" min="0" onfocus="showTip('tip-p')"/>
       </div>
-      <div class="field-tip" id="tip-p">Tatuagens de linha, escrita, sem sombras, baixo nivel de complexidade.</div>
-      <div class="size-grid" style="margin-top:8px">
-        <span class="size-label" style="font-size:11px">Media (8-15cm)</span>
+      <div class="field-tip" id="tip-p">Tatuagens de linha, escrita, sem sombras, baixo nível de complexidade.</div>
+      <div class="size-grid">
+        <span class="size-label">Média (8-15cm)</span>
         <input class="fi" id="v-m-min" type="number" value="400" min="0" onfocus="showTip('tip-m')"/>
         <span class="size-sep">a</span>
         <input class="fi" id="v-m-max" type="number" value="800" min="0" onfocus="showTip('tip-m')"/>
       </div>
-      <div class="field-tip" id="tip-m">Tatuagens simples com sombreado ou nao, floral, fineline, oldschool.</div>
-      <div class="size-grid" style="margin-top:8px">
-        <span class="size-label" style="font-size:11px">Media grande/pecas trabalhadas (16-25cm)</span>
+      <div class="field-tip" id="tip-m">Tatuagens simples com sombreado ou não, floral, fineline, oldschool.</div>
+      <div class="size-grid">
+        <span class="size-label">Média grande/peças trabalhadas (16-25cm)</span>
         <input class="fi" id="v-g-min" type="number" value="800" min="0" onfocus="showTip('tip-g')"/>
         <span class="size-sep">a</span>
         <input class="fi" id="v-g-max" type="number" value="1500" min="0" onfocus="showTip('tip-g')"/>
       </div>
-      <div class="field-tip" id="tip-g">Trabalhos de minirealismo, blackwork mais detalhado, pecas grandes de fineline.</div>
-      <div class="size-grid" style="margin-top:8px">
-        <span class="size-label" style="font-size:11px">Grande/fechamento (26cm+)</span>
+      <div class="field-tip" id="tip-g">Trabalhos de minirealismo, blackwork mais detalhado, peças grandes de fineline.</div>
+      <div class="size-grid">
+        <span class="size-label">Grande/fechamento (26cm+)</span>
         <input class="fi" id="v-gg-min" type="number" value="1500" min="0" onfocus="showTip('tip-gg')"/>
         <span class="size-sep">a</span>
         <input class="fi" id="v-gg-max" type="number" value="3000" min="0" onfocus="showTip('tip-gg')"/>
       </div>
-      <div class="field-tip" id="tip-gg">Fechamento de area especifica, trabalhos de alta complexidade, realismo.</div>
+      <div class="field-tip" id="tip-gg">Fechamento de área específica, trabalhos de alta complexidade, realismo.</div>
       <button class="sbtn" type="button" style="margin-top:14px;font-size:13px" onclick="showQA('qa-ajustes')">Continuar &rarr;</button>
     </div>
 
@@ -684,21 +686,63 @@ select.fi option{background:var(--card);color:var(--t1)}
     <div id="qa-ajustes" class="qa">
       <hr class="divider"/>
       <div class="fsec">Ajustes percentuais</div>
-      <div class="fi-hint" style="margin-bottom:10px">Pense aqui em como um acrescimo em cima do valor da tatuagem ocasionado por situacoes agravantes. Exemplos: tatuagens coloridas (um valor de X% sera incluso), locais de maior complexidade (mao, pescoco, costela, rosto, pe). Caso precise de ajuda na precificacao do seu trabalho, <span class="link-cta" onclick="scrollToVideo()">clique aqui!</span></div>
-      <div class="fgrid">
+      <div class="fi-hint" style="margin-bottom:10px">Defina o acréscimo (%) sobre o valor base da tatuagem para cada situação agravante. Deixe 0 se não quiser cobrar extra. Caso precise de ajuda na precificação do seu trabalho, <span class="link-cta" onclick="scrollToVideo()">clique aqui!</span></div>
+      <div class="fg" style="margin-bottom:14px">
+        <label class="fl">Colorida</label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="color:var(--t3);font-size:13px">+</span>
+          <input class="fi" id="v-mult-cor" type="number" value="30" min="0" max="200" style="width:80px"/>
+          <span style="color:var(--t3);font-size:13px">%</span>
+        </div>
+      </div>
+      <label class="fl" style="margin-bottom:8px">Regiões de maior complexidade</label>
+      <div class="fi-hint" style="margin-bottom:10px">Cada região do corpo pode ter um acréscimo diferente por conta da dificuldade técnica.</div>
+      <div class="region-grid">
         <div class="fg">
-          <label class="fl">Colorida</label>
+          <label class="fl" style="font-size:12px">Costela</label>
           <div style="display:flex;align-items:center;gap:6px">
             <span style="color:var(--t3);font-size:13px">+</span>
-            <input class="fi" id="v-mult-cor" type="number" value="30" min="0" max="200" style="width:80px"/>
+            <input class="fi" id="v-mult-costela" type="number" value="20" min="0" max="200" style="width:70px"/>
             <span style="color:var(--t3);font-size:13px">%</span>
           </div>
         </div>
         <div class="fg">
-          <label class="fl">Regiao dificil (costela, mao, pescoco...)</label>
+          <label class="fl" style="font-size:12px">Mão</label>
           <div style="display:flex;align-items:center;gap:6px">
             <span style="color:var(--t3);font-size:13px">+</span>
-            <input class="fi" id="v-mult-regiao" type="number" value="20" min="0" max="200" style="width:80px"/>
+            <input class="fi" id="v-mult-mao" type="number" value="20" min="0" max="200" style="width:70px"/>
+            <span style="color:var(--t3);font-size:13px">%</span>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl" style="font-size:12px">Pescoço</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="color:var(--t3);font-size:13px">+</span>
+            <input class="fi" id="v-mult-pescoco" type="number" value="20" min="0" max="200" style="width:70px"/>
+            <span style="color:var(--t3);font-size:13px">%</span>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl" style="font-size:12px">Pé</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="color:var(--t3);font-size:13px">+</span>
+            <input class="fi" id="v-mult-pe" type="number" value="15" min="0" max="200" style="width:70px"/>
+            <span style="color:var(--t3);font-size:13px">%</span>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl" style="font-size:12px">Cabeça/rosto</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="color:var(--t3);font-size:13px">+</span>
+            <input class="fi" id="v-mult-cabeca" type="number" value="25" min="0" max="200" style="width:70px"/>
+            <span style="color:var(--t3);font-size:13px">%</span>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl" style="font-size:12px">Coluna/lombar</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="color:var(--t3);font-size:13px">+</span>
+            <input class="fi" id="v-mult-coluna" type="number" value="15" min="0" max="200" style="width:70px"/>
             <span style="color:var(--t3);font-size:13px">%</span>
           </div>
         </div>
@@ -710,9 +754,9 @@ select.fi option{background:var(--card);color:var(--t1)}
     <div id="qa-limites" class="qa">
       <hr class="divider"/>
       <div class="fsec">Limites e estilos</div>
-      <div class="fi-hint" style="margin-bottom:10px">Defina o seu valor minimo, quais estilos voce tatua (caso nao tatue algum, nao marcar) e se aceita ou nao coberturas e reformas (ambos caso aceite, e encaminhado diretamente para o tatuador montar o orcamento). Coloque no estilo padrao o seu estilo principal, e marque os demais caso faca outros estilos tambem.</div>
+      <div class="fi-hint" style="margin-bottom:10px">Defina o seu valor mínimo, quais estilos você tatua (caso não tatue algum, não marcar) e se aceita ou não coberturas e reformas (ambos caso aceite, é encaminhado diretamente para o tatuador montar o orçamento). Coloque no estilo padrão o seu estilo principal, e marque os demais caso faça outros estilos também.</div>
       <div class="fg">
-        <label class="fl">Valor minimo (R$)</label>
+        <label class="fl">Valor mínimo (R$)</label>
         <input class="fi" id="v-minimo" type="number" value="200" min="0"/>
       </div>
 
@@ -720,7 +764,7 @@ select.fi option{background:var(--card);color:var(--t1)}
         <label class="fl">Estilos de tatuagem</label>
         <div class="estilos-grid">
           <div>
-            <div class="estilos-col-title">Estilo padrao</div>
+            <div class="estilos-col-title">Estilo padrão</div>
             <div id="v-estilo-padrao"></div>
           </div>
           <div>
@@ -731,7 +775,7 @@ select.fi option{background:var(--card);color:var(--t1)}
       </div>
 
       <div class="toggle-row" style="margin-top:10px">
-        <span class="toggle-label">Aceita cobertura (cover up)</span>
+        <span class="toggle-label">Aceita cobertura (cover-up)</span>
         <label class="toggle"><input type="checkbox" id="v-cobertura" checked/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
       </div>
       <div class="toggle-row">
@@ -740,8 +784,8 @@ select.fi option{background:var(--card);color:var(--t1)}
       </div>
 
       <div class="fg" style="margin-top:10px">
-        <label class="fl">Algum tipo de trabalho que nao realize (opcional)</label>
-        <textarea class="fi" id="v-obs" rows="2" placeholder="Ex: Nao faco tatuagens menores que 5cm. Retratos so em preto."></textarea>
+        <label class="fl">Algum tipo de trabalho que não realize (opcional)</label>
+        <textarea class="fi" id="v-obs" rows="2" placeholder="Ex: Não faço tatuagens menores que 5cm. Retratos só em preto."></textarea>
       </div>
       <button class="sbtn" type="button" style="margin-top:14px;font-size:13px" onclick="showQA('qa-test')">Continuar &rarr;</button>
     </div>
@@ -750,8 +794,8 @@ select.fi option{background:var(--card);color:var(--t1)}
     <div id="qa-test" class="qa">
       <hr class="divider"/>
       <div class="test-box">
-        <div class="test-title"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm1 10H7V7h2v4zm0-5H7V4h2v2z"/></svg> Testar orcamento</div>
-        <div class="fi-hint" style="margin-bottom:10px">Agora simule os valores baseado nos seus dados, simulando como o agente vai responder para o seu cliente! Use o simulador e altere informacoes futuramente na sua pagina do estudio (liberada nos proximos passos). Caso queira melhorar sua precificacao, <span class="link-cta" onclick="scrollToVideo()">clique aqui</span> e confira um tutorial exclusivo!</div>
+        <div class="test-title"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm1 10H7V7h2v4zm0-5H7V4h2v2z"/></svg> Testar orçamento</div>
+        <div class="fi-hint" style="margin-bottom:10px">Agora simule os valores baseado nos seus dados, simulando como o agente vai responder para o seu cliente! Use o simulador e altere informações futuramente na sua página do estúdio (liberada nos próximos passos). Caso queira melhorar sua precificação, <span class="link-cta" onclick="scrollToVideo()">clique aqui</span> e confira um tutorial exclusivo!</div>
         <div class="fgrid">
           <div class="fg">
             <label class="fl">Tamanho (cm)</label>
@@ -764,8 +808,8 @@ select.fi option{background:var(--card);color:var(--t1)}
         </div>
         <div class="fgrid">
           <div class="fg">
-            <label class="fl">Regiao</label>
-            <select class="fi" id="t-regiao"><option value="antebraco">Antebraco</option><option value="biceps">Biceps</option><option value="ombro">Ombro</option><option value="costela">Costela</option><option value="panturrilha">Panturrilha</option><option value="coxa">Coxa</option><option value="costas">Costas</option><option value="perna">Perna</option></select>
+            <label class="fl">Região</label>
+            <select class="fi" id="t-regiao"><option value="antebraco">Antebraço</option><option value="biceps">Bíceps</option><option value="ombro">Ombro</option><option value="costela">Costela</option><option value="pescoco">Pescoço</option><option value="mao">Mão</option><option value="pe">Pé</option><option value="cabeca">Cabeça/rosto</option><option value="coluna">Coluna/lombar</option><option value="panturrilha">Panturrilha</option><option value="coxa">Coxa</option><option value="costas">Costas</option><option value="perna">Perna</option></select>
           </div>
           <div class="fg">
             <label class="fl">Colorida</label>
@@ -779,9 +823,9 @@ select.fi option{background:var(--card);color:var(--t1)}
       </div>
 
       <div class="wiz-nav" style="margin-top:20px">
-        <button class="sbtn wiz-fwd" type="button" id="sv-btn" onclick="saveValoresAndNext()">Proximo &rarr;</button>
+        <button class="sbtn wiz-fwd" type="button" id="sv-btn" onclick="saveValoresAndNext()">Próximo &rarr;</button>
       </div>
-      <div class="wiz-hint">Voce pode ajustar tudo isso depois no painel do estudio</div>
+      <div class="wiz-hint">Você pode ajustar tudo isso depois no painel do estúdio</div>
     </div>
 
   </div>
@@ -836,40 +880,40 @@ select.fi option{background:var(--card);color:var(--t1)}
       <label class="toggle"><input type="checkbox" id="p-cobertura" checked/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
     </div>
     <div class="fg">
-      <label class="fl">Descricao livre da persona (opcional)</label>
-      <textarea class="fi" id="p-persona" rows="2" placeholder="Ex: Carioca descontraida, empatica com clientes nervosos"></textarea>
+      <label class="fl">Descrição livre da persona (opcional)</label>
+      <textarea class="fi" id="p-persona" rows="2" placeholder="Ex: Carioca descontraída, empática com clientes nervosos"></textarea>
     </div>
 
     <hr class="divider"/>
     <div class="fsec">Estilos de tatuagem</div>
     <div class="fg">
-      <label class="fl">Estilos que voce faz (clique para selecionar)</label>
+      <label class="fl">Estilos que você faz (clique para selecionar)</label>
       <div class="chip-wrap" id="p-estilos-aceitos"></div>
     </div>
     <div class="fg">
-      <label class="fl">Estilos que NAO faz (IA recusara educadamente)</label>
+      <label class="fl">Estilos que NÃO faz (IA recusará educadamente)</label>
       <div class="chip-wrap" id="p-estilos-recusados"></div>
     </div>
 
     <hr class="divider"/>
-    <div class="fsec">Horario de funcionamento</div>
+    <div class="fsec">Horário de funcionamento</div>
     <div class="hora-grid">
       <span class="hora-label">Seg-Sex</span>
       <input class="fi" id="h-semana-ini" type="time" value="10:00"/>
-      <span class="hora-sep">as</span>
+      <span class="hora-sep">às</span>
       <input class="fi" id="h-semana-fim" type="time" value="19:00"/>
-      <span class="hora-label">Sabado</span>
+      <span class="hora-label">Sábado</span>
       <input class="fi" id="h-sab-ini" type="time" value="10:00"/>
-      <span class="hora-sep">as</span>
+      <span class="hora-sep">às</span>
       <input class="fi" id="h-sab-fim" type="time" value="15:00"/>
       <span class="hora-label">Domingo</span>
       <input class="fi" id="h-dom-ini" type="time" value=""/>
-      <span class="hora-sep">as</span>
+      <span class="hora-sep">às</span>
       <input class="fi" id="h-dom-fim" type="time" value=""/>
     </div>
     <div class="fi-hint" style="margin-top:6px">Deixe vazio para dias sem atendimento</div>
     <div class="fg" style="margin-top:12px">
-      <label class="fl">Duracao padrao da sessao</label>
+      <label class="fl">Duração padrão da sessão</label>
       <div style="display:flex;align-items:center;gap:8px">
         <input class="fi" id="p-duracao" type="number" value="3" min="1" max="12" style="width:80px"/>
         <span style="color:var(--t3);font-size:13px">horas</span>
@@ -877,10 +921,10 @@ select.fi option{background:var(--card);color:var(--t1)}
     </div>
 
     <hr class="divider"/>
-    <div class="fsec">FAQ do estudio (opcional)</div>
+    <div class="fsec">FAQ do estúdio (opcional)</div>
     <div class="fg">
-      <textarea class="fi" id="p-faq" rows="3" placeholder="Ex: Quais cuidados tomar? Quanto tempo demora pra cicatrizar? Pode usar anestesico?"></textarea>
-      <div class="fi-hint">Perguntas frequentes que a IA respondera automaticamente</div>
+      <textarea class="fi" id="p-faq" rows="3" placeholder="Ex: Quais cuidados tomar? Quanto tempo demora pra cicatrizar? Pode usar anestésico?"></textarea>
+      <div class="fi-hint">Perguntas frequentes que a IA responderá automaticamente</div>
     </div>
 
     <div class="wiz-nav">
@@ -947,7 +991,7 @@ select.fi option{background:var(--card);color:var(--t1)}
           <button class="qr-refresh" id="pairing-refresh-btn" onclick="requestPairingCode()">↻ Novo codigo</button>
         </div>
       </div>
-      <div class="qr-poll"><div class="qr-poll-dot"></div>verificando conexao automaticamente...</div>
+      <div class="qr-poll"><div class="qr-poll-dot"></div>verificando conexão automaticamente...</div>
       <div style="margin-top:14px;text-align:center;font-size:11px;color:var(--t3);line-height:1.6">Caso tenha problemas para conectar, <a href="https://wa.me/5521970789797?text=Oi%2C%20estou%20com%20problemas%20para%20conectar%20meu%20WhatsApp%20no%20InkFlow" target="_blank" style="color:var(--teal);text-decoration:underline">contate-nos</a> para envio de um novo link.</div>
     </div>
   </div>
@@ -1882,8 +1926,13 @@ function buildConfigPrecificacao() {
       GG: [+document.getElementById('v-gg-min').value || 1500, +document.getElementById('v-gg-max').value || 3000],
     },
     multiplicadores: {
-      cor: +document.getElementById('v-mult-cor').value || 0,
-      regiao_dificil: +document.getElementById('v-mult-regiao').value || 0,
+      cor: 1 + (+document.getElementById('v-mult-cor').value || 0) / 100,
+      regiao_costela: 1 + (+document.getElementById('v-mult-costela').value || 0) / 100,
+      regiao_mao: 1 + (+document.getElementById('v-mult-mao').value || 0) / 100,
+      regiao_pescoco: 1 + (+document.getElementById('v-mult-pescoco').value || 0) / 100,
+      regiao_pe: 1 + (+document.getElementById('v-mult-pe').value || 0) / 100,
+      regiao_cabeca: 1 + (+document.getElementById('v-mult-cabeca').value || 0) / 100,
+      regiao_coluna: 1 + (+document.getElementById('v-mult-coluna').value || 0) / 100,
     },
     minimo: +document.getElementById('v-minimo').value || 200,
     sinal_percentual: +document.getElementById('v-sinal').value || 30,
@@ -1899,7 +1948,12 @@ function useDefaultValores() {
   document.getElementById('v-g-min').value = 800; document.getElementById('v-g-max').value = 1500;
   document.getElementById('v-gg-min').value = 1500; document.getElementById('v-gg-max').value = 3000;
   document.getElementById('v-mult-cor').value = 30;
-  document.getElementById('v-mult-regiao').value = 20;
+  document.getElementById('v-mult-costela').value = 20;
+  document.getElementById('v-mult-mao').value = 20;
+  document.getElementById('v-mult-pescoco').value = 20;
+  document.getElementById('v-mult-pe').value = 15;
+  document.getElementById('v-mult-cabeca').value = 25;
+  document.getElementById('v-mult-coluna').value = 15;
   document.getElementById('v-minimo').value = 200;
   const fb = document.getElementById('v-fallback');
   if (fb) fb.value = 'blackwork';
@@ -1922,12 +1976,13 @@ function testOrcamento() {
   else bracket = tab.GG || [1500, 3000];
   let [mn, mx] = bracket;
   const mult = cfg.multiplicadores || {};
-  let pct = 0;
-  if (cor && mult.cor) pct += mult.cor;
-  const regioesDificeis = ['costela','pescoco','mao','pe','cabeca','rosto'];
-  if (regioesDificeis.includes(regiao) && mult.regiao_dificil) pct += mult.regiao_dificil;
-  mn = Math.round(mn * (1 + pct / 100));
-  mx = Math.round(mx * (1 + pct / 100));
+  let fator = 1;
+  if (cor && mult.cor) fator *= mult.cor;
+  const regiaoMap = { costela:'regiao_costela', mao:'regiao_mao', pescoco:'regiao_pescoco', pe:'regiao_pe', cabeca:'regiao_cabeca', rosto:'regiao_cabeca', coluna:'regiao_coluna' };
+  const regiaoKey = regiaoMap[regiao];
+  if (regiaoKey && mult[regiaoKey]) fator *= mult[regiaoKey];
+  mn = Math.round(mn * fator);
+  mx = Math.round(mx * fator);
   const minimo = cfg.minimo || 200;
   if (mn < minimo) mn = minimo;
   if (mx < mn) mx = mn;

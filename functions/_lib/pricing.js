@@ -25,7 +25,7 @@ const DEFAULTS = {
     detalhe_medio: 1.2,
     regiao_dificil: 1.2,
   },
-  regioes_dificeis: ['costela', 'pe', 'mao', 'pescoco', 'cabeca'],
+  regioes_dificeis: ['costela', 'pe', 'mao', 'pescoco', 'cabeca', 'rosto', 'coluna'],
   sinal_percentual: 30,
   tamanho_maximo_sessao_cm: 25,
   valor_maximo_orcado: 5000,
@@ -156,8 +156,11 @@ export function calcularOrcamento({ tamanho_cm, estilo, regiao, cor_bool, nivel_
   }
   const regiaoNorm = String(regiao || '').toLowerCase().trim();
   if (regiaoNorm && (cfg.regioes_dificeis || []).includes(regiaoNorm)) {
-    multTotal *= (mult.regiao_dificil || 1);
-    breakdown.multiplicadores_aplicados.push({ nome: 'regiao_dificil', fator: mult.regiao_dificil || 1, descricao: `região difícil (${regiao})` });
+    const regiaoMap = { costela:'regiao_costela', mao:'regiao_mao', pescoco:'regiao_pescoco', pe:'regiao_pe', cabeca:'regiao_cabeca', rosto:'regiao_cabeca', coluna:'regiao_coluna' };
+    const regiaoKey = regiaoMap[regiaoNorm];
+    const regiaoFator = (regiaoKey && mult[regiaoKey]) ? mult[regiaoKey] : (mult.regiao_dificil || 1);
+    multTotal *= regiaoFator;
+    breakdown.multiplicadores_aplicados.push({ nome: regiaoKey || 'regiao_dificil', fator: regiaoFator, descricao: `região difícil (${regiao})` });
   }
 
   if (estiloFallbackAplicado) {
