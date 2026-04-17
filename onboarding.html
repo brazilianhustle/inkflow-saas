@@ -240,6 +240,39 @@ select.fi option{background:var(--card);color:var(--t1)}
 .err-icon{font-size:40px;margin-bottom:16px}
 .err-title{font-size:20px;font-weight:700;margin-bottom:8px}
 .err-msg{font-size:13px;color:var(--t2);max-width:360px;line-height:1.6}
+
+/* ════════ WIZARD: VALORES + PERSONALIZAR ════════ */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+.toggle-label{font-size:13px;color:var(--t2);flex:1;padding-right:12px}
+.toggle{position:relative;width:44px;height:24px;cursor:pointer;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:12px;transition:.2s}
+.toggle input:checked+.toggle-track{background:var(--teal)}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s;pointer-events:none}
+.toggle input:checked~.toggle-thumb{left:22px}
+
+.size-grid{display:grid;grid-template-columns:70px 1fr 20px 1fr;gap:8px;align-items:center}
+.size-label{font-size:12px;color:var(--t2);font-weight:600}
+.size-sep{text-align:center;color:var(--t3);font-size:12px}
+
+.chip-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 14px;border:1px solid var(--border2);border-radius:20px;font-size:12px;cursor:pointer;color:var(--t2);transition:all .15s;background:transparent;font-family:inherit}
+.chip.active{border-color:var(--teal);color:var(--teal);background:var(--teal-dim)}
+.chip:hover:not(.active){border-color:rgba(255,255,255,.2)}
+
+.test-box{background:rgba(0,212,170,.04);border:1px solid rgba(0,212,170,.15);border-radius:12px;padding:16px;margin-top:16px}
+.test-title{font-size:13px;font-weight:600;color:var(--teal);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.test-result{background:rgba(0,0,0,.3);border-radius:8px;padding:12px;margin-top:12px;text-align:center;font-size:16px;font-weight:700;color:var(--teal);display:none}
+
+.hora-grid{display:grid;grid-template-columns:60px 1fr 24px 1fr;gap:6px;align-items:center}
+.hora-label{font-size:11px;color:var(--t2);font-weight:600}
+.hora-sep{text-align:center;color:var(--t3);font-size:11px}
+
+.wiz-nav{display:flex;gap:10px;margin-top:20px}
+.wiz-nav .sbtn{flex:1}
+.wiz-back{background:transparent!important;color:var(--t2)!important;border:1px solid var(--border2)!important}
+.wiz-fwd{flex:2!important}
+.wiz-hint{text-align:center;margin-top:8px;font-size:11px;color:var(--t3)}
 </style>
 <script src="https://sdk.mercadopago.com/js/v2"></script>
 <script src="https://browser.sentry-cdn.com/7.119.0/bundle.min.js" crossorigin="anonymous"></script>
@@ -481,6 +514,258 @@ select.fi option{background:var(--card);color:var(--t1)}
   </div>
 </div>
 
+<!-- ══════════ STEP V: VALORES (PRECIFICAÇÃO) ══════════ -->
+<div class="step" id="sv">
+  <div class="form-header">
+    <div class="logo-lockup">
+      <svg width="22" height="30" viewBox="-10 -10 100 130" overflow="visible"><g transform="rotate(-15, 38, 56)" fill="currentColor"><rect x="4" y="8" width="66" height="6" rx="3"/><rect x="8" y="14" width="24" height="34" rx="6"/><rect x="40" y="14" width="24" height="34" rx="6"/><rect x="4" y="46" width="66" height="6" rx="3"/><rect x="6" y="8" width="5" height="54" rx="1"/><rect x="-3" y="59" width="24" height="32" rx="8"/><path d="M1,90 L17,90 L5,110 Z"/></g></svg>
+      <span class="logo-text"><span class="ink">Ink</span>Flow</span>
+    </div>
+    <div class="form-badge">Passo 2 de 4</div>
+  </div>
+  <div class="form-body">
+    <div class="form-title">Tabela de precos</div>
+    <div class="form-sub">Esses valores ajudam seu assistente a dar orcamentos automaticamente. Pode ajustar depois no painel.</div>
+    <div class="form-err" id="sv-err"></div>
+
+    <div class="fsec">Sinal de agendamento</div>
+    <div class="fg">
+      <label class="fl">Percentual do sinal</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input class="fi" id="v-sinal" type="number" value="30" min="10" max="100" style="width:80px"/>
+        <span style="color:var(--t3);font-size:13px">% do orcamento</span>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+    <div class="fsec">Faixas por tamanho</div>
+    <div class="fi-hint" style="margin-bottom:12px">Valor minimo e maximo por faixa de tamanho (R$)</div>
+    <div class="size-grid">
+      <span class="size-label">P (&le;7cm)</span>
+      <input class="fi" id="v-p-min" type="number" value="200" min="0"/>
+      <span class="size-sep">a</span>
+      <input class="fi" id="v-p-max" type="number" value="400" min="0"/>
+      <span class="size-label">M (8-15cm)</span>
+      <input class="fi" id="v-m-min" type="number" value="400" min="0"/>
+      <span class="size-sep">a</span>
+      <input class="fi" id="v-m-max" type="number" value="800" min="0"/>
+      <span class="size-label">G (16-25cm)</span>
+      <input class="fi" id="v-g-min" type="number" value="800" min="0"/>
+      <span class="size-sep">a</span>
+      <input class="fi" id="v-g-max" type="number" value="1500" min="0"/>
+      <span class="size-label">GG (26cm+)</span>
+      <input class="fi" id="v-gg-min" type="number" value="1500" min="0"/>
+      <span class="size-sep">a</span>
+      <input class="fi" id="v-gg-max" type="number" value="3000" min="0"/>
+    </div>
+
+    <hr class="divider"/>
+    <div class="fsec">Ajustes percentuais</div>
+    <div class="fgrid">
+      <div class="fg">
+        <label class="fl">Colorida</label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="color:var(--t3);font-size:13px">+</span>
+          <input class="fi" id="v-mult-cor" type="number" value="30" min="0" max="200" style="width:80px"/>
+          <span style="color:var(--t3);font-size:13px">%</span>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Regiao dificil</label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="color:var(--t3);font-size:13px">+</span>
+          <input class="fi" id="v-mult-regiao" type="number" value="20" min="0" max="200" style="width:80px"/>
+          <span style="color:var(--t3);font-size:13px">%</span>
+        </div>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Detalhe alto</label>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="color:var(--t3);font-size:13px">+</span>
+        <input class="fi" id="v-mult-detalhe" type="number" value="25" min="0" max="200" style="width:80px"/>
+        <span style="color:var(--t3);font-size:13px">%</span>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+    <div class="fsec">Limites</div>
+    <div class="fgrid">
+      <div class="fg">
+        <label class="fl">Valor minimo (R$)</label>
+        <input class="fi" id="v-minimo" type="number" value="200" min="0"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Valor max. orcado (R$)</label>
+        <input class="fi" id="v-max-orcado" type="number" value="5000" min="0"/>
+      </div>
+    </div>
+    <div class="fgrid">
+      <div class="fg">
+        <label class="fl">Tam. max. por sessao (cm)</label>
+        <input class="fi" id="v-max-tamanho" type="number" value="25" min="5" max="100"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Estilo padrao (fallback)</label>
+        <select class="fi" id="v-fallback">
+          <option value="blackwork">Blackwork</option>
+          <option value="fineline">Fineline</option>
+          <option value="realismo">Realismo</option>
+          <option value="tradicional">Tradicional</option>
+          <option value="old_school">Old School</option>
+          <option value="aquarela">Aquarela</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Observacoes livres (opcional)</label>
+      <textarea class="fi" id="v-obs" rows="2" placeholder="Ex: Nao faco tatuagens menores que 5cm. Retratos so em preto."></textarea>
+      <div class="fi-hint">Regras especificas que o assistente seguira ao orcar</div>
+    </div>
+
+    <div class="test-box">
+      <div class="test-title"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm1 10H7V7h2v4zm0-5H7V4h2v2z"/></svg> Testar orcamento</div>
+      <div class="fi-hint" style="margin-bottom:10px">Simule com os valores acima — calculo local, sem rede</div>
+      <div class="fgrid">
+        <div class="fg">
+          <label class="fl">Tamanho (cm)</label>
+          <input class="fi" id="t-tam" type="number" value="10" min="1" max="100"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Estilo</label>
+          <select class="fi" id="t-estilo"><option>blackwork</option><option>fineline</option><option>realismo</option><option>tradicional</option><option>old school</option><option>aquarela</option></select>
+        </div>
+      </div>
+      <div class="fgrid">
+        <div class="fg">
+          <label class="fl">Regiao</label>
+          <select class="fi" id="t-regiao"><option value="antebraco">Antebraco</option><option value="biceps">Biceps</option><option value="ombro">Ombro</option><option value="costela">Costela</option><option value="panturrilha">Panturrilha</option><option value="coxa">Coxa</option><option value="costas">Costas</option><option value="perna">Perna</option></select>
+        </div>
+        <div class="fg">
+          <label class="fl">Detalhe</label>
+          <select class="fi" id="t-detalhe"><option value="baixo">Baixo</option><option value="medio" selected>Medio</option><option value="alto">Alto</option></select>
+        </div>
+      </div>
+      <div class="toggle-row" style="padding:4px 0">
+        <span class="toggle-label" style="font-size:12px">Colorida</span>
+        <label class="toggle"><input type="checkbox" id="t-cor"/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+      </div>
+      <button class="sbtn" type="button" style="margin-top:8px;background:transparent;color:var(--teal);border:1px solid var(--teal-mid)" onclick="testOrcamento()">Calcular preview</button>
+      <div class="test-result" id="test-result"></div>
+    </div>
+
+    <div class="wiz-nav">
+      <button class="sbtn wiz-back" type="button" onclick="useDefaultValores()">Restaurar padrao</button>
+      <button class="sbtn wiz-fwd" type="button" id="sv-btn" onclick="saveValoresAndNext()">Proximo &rarr;</button>
+    </div>
+    <div class="wiz-hint">Voce pode ajustar tudo isso depois no painel</div>
+  </div>
+</div>
+
+<!-- ══════════ STEP P: PERSONALIZAR AGENTE ══════════ -->
+<div class="step" id="sp">
+  <div class="form-header">
+    <div class="logo-lockup">
+      <svg width="22" height="30" viewBox="-10 -10 100 130" overflow="visible"><g transform="rotate(-15, 38, 56)" fill="currentColor"><rect x="4" y="8" width="66" height="6" rx="3"/><rect x="8" y="14" width="24" height="34" rx="6"/><rect x="40" y="14" width="24" height="34" rx="6"/><rect x="4" y="46" width="66" height="6" rx="3"/><rect x="6" y="8" width="5" height="54" rx="1"/><rect x="-3" y="59" width="24" height="32" rx="8"/><path d="M1,90 L17,90 L5,110 Z"/></g></svg>
+      <span class="logo-text"><span class="ink">Ink</span>Flow</span>
+    </div>
+    <div class="form-badge">Passo 3 de 4</div>
+  </div>
+  <div class="form-body">
+    <div class="form-title">Personalizar assistente</div>
+    <div class="form-sub">Ajuste tom e comportamento da IA. Tudo ja vem com padroes inteligentes — mude so o que quiser.</div>
+    <div class="form-err" id="sp-err"></div>
+
+    <div class="fsec">Personalidade</div>
+    <div class="fgrid">
+      <div class="fg">
+        <label class="fl">Tom da conversa</label>
+        <select class="fi" id="p-tom">
+          <option value="amigavel" selected>Amigavel</option>
+          <option value="descontraido">Descontraido</option>
+          <option value="profissional">Profissional</option>
+          <option value="zoeiro">Zoeiro</option>
+          <option value="formal">Formal</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Uso de emojis</label>
+        <select class="fi" id="p-emoji">
+          <option value="nenhum">Nenhum</option>
+          <option value="raro" selected>Raro</option>
+          <option value="moderado">Moderado</option>
+          <option value="muitos">Muitos</option>
+        </select>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Usar girias brasileiras (massa, show, fechou)</span>
+      <label class="toggle"><input type="checkbox" id="p-giria" checked/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Prefixar nome na 1a mensagem (ex: "Isabela:")</span>
+      <label class="toggle"><input type="checkbox" id="p-identificador"/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Aceita cobertura (cover up)</span>
+      <label class="toggle"><input type="checkbox" id="p-cobertura" checked/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+    </div>
+    <div class="fg">
+      <label class="fl">Descricao livre da persona (opcional)</label>
+      <textarea class="fi" id="p-persona" rows="2" placeholder="Ex: Carioca descontraida, empatica com clientes nervosos"></textarea>
+    </div>
+
+    <hr class="divider"/>
+    <div class="fsec">Estilos de tatuagem</div>
+    <div class="fg">
+      <label class="fl">Estilos que voce faz (clique para selecionar)</label>
+      <div class="chip-wrap" id="p-estilos-aceitos"></div>
+    </div>
+    <div class="fg">
+      <label class="fl">Estilos que NAO faz (IA recusara educadamente)</label>
+      <div class="chip-wrap" id="p-estilos-recusados"></div>
+    </div>
+
+    <hr class="divider"/>
+    <div class="fsec">Horario de funcionamento</div>
+    <div class="hora-grid">
+      <span class="hora-label">Seg-Sex</span>
+      <input class="fi" id="h-semana-ini" type="time" value="10:00"/>
+      <span class="hora-sep">as</span>
+      <input class="fi" id="h-semana-fim" type="time" value="19:00"/>
+      <span class="hora-label">Sabado</span>
+      <input class="fi" id="h-sab-ini" type="time" value="10:00"/>
+      <span class="hora-sep">as</span>
+      <input class="fi" id="h-sab-fim" type="time" value="15:00"/>
+      <span class="hora-label">Domingo</span>
+      <input class="fi" id="h-dom-ini" type="time" value=""/>
+      <span class="hora-sep">as</span>
+      <input class="fi" id="h-dom-fim" type="time" value=""/>
+    </div>
+    <div class="fi-hint" style="margin-top:6px">Deixe vazio para dias sem atendimento</div>
+    <div class="fg" style="margin-top:12px">
+      <label class="fl">Duracao padrao da sessao</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input class="fi" id="p-duracao" type="number" value="3" min="1" max="12" style="width:80px"/>
+        <span style="color:var(--t3);font-size:13px">horas</span>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+    <div class="fsec">FAQ do estudio (opcional)</div>
+    <div class="fg">
+      <textarea class="fi" id="p-faq" rows="3" placeholder="Ex: Quais cuidados tomar? Quanto tempo demora pra cicatrizar? Pode usar anestesico?"></textarea>
+      <div class="fi-hint">Perguntas frequentes que a IA respondera automaticamente</div>
+    </div>
+
+    <div class="wiz-nav">
+      <button class="sbtn wiz-back" type="button" onclick="goStep('sv')">&larr; Voltar</button>
+      <button class="sbtn wiz-fwd" type="button" id="sp-btn" onclick="savePersonaAndNext()">Conectar WhatsApp &rarr;</button>
+    </div>
+    <div class="wiz-hint">Tudo pode ser editado depois no painel</div>
+  </div>
+</div>
+
 <!-- ══════════ STEP 5: QR CODE / PAIRING CODE ══════════ -->
 <div class="step" id="s5">
   <div class="page-center">
@@ -646,7 +931,7 @@ async function init() {
   selectPlan(plano);
 }
 
-function goStep(n) { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('s' + n).classList.add('active'); window.scrollTo(0, 0); }
+function goStep(n) { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); const el = typeof n === 'number' ? document.getElementById('s' + n) : document.getElementById(n); if (el) el.classList.add('active'); window.scrollTo(0, 0); }
 
 function setupArtistForm() {
   // Esconder secao de plano
@@ -909,29 +1194,18 @@ async function doEvoSetup() {
     await new Promise(r => setTimeout(r, 1500));
     setStatus(4, 'Pronto para conectar!', 'done');
 
-    // [Fluxo B] Plano estúdio/premium: redirect imediato pro /studio.html
-    // Cliente conecta WhatsApp dentro do painel, sem ficar preso nessa tela.
-    // Indiviual/teste continua com polling local (não tem studio.html pra eles).
+    // Artistas herdam config do pai — pula valores/personalizar, vai direto pro QR
     let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
     const isArtist = isArtistInvite || ob.isArtist;
-    const planNow = ob.plano || selectedPlan;
-    const isStudioPlan = ['estudio','premium'].includes(planNow);
-    if (!isArtist && isStudioPlan) {
-      // Dispara WhatsApp link em paralelo (fire-and-forget — o redirect não depende disso)
-      const obKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk');
-      fetch('/api/send-whatsapp-link', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenant_id: tenantId, onboarding_key: obKey }),
-      }).then(r => r.json()).then(d => console.log('[inkflow] send-whatsapp-link:', d))
-        .catch(e => console.warn('[inkflow] send-whatsapp-link failed:', e?.message));
-      // Redireciona pro painel com flag pending_whatsapp
-      await fetchStudioTokenAndRedirect(true);
+    if (isArtist) {
+      goStep(5); initConnectStep();
+      pollInterval = setInterval(checkConnection, 5000);
       return;
     }
 
-    // Planos individual/teste: polling local (fluxo original)
-    goStep(5); initConnectStep();
-    pollInterval = setInterval(checkConnection, 5000);
+    // Todos os outros planos: wizard valores → personalizar → QR
+    initEstilosChips();
+    goStep('sv');
   } catch (err) {
     console.error('doEvoSetup error:', err); let msg = err.message || 'Erro inesperado.';
     if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) { msg = 'Erro de rede ao conectar com a API. Verifique sua conexão e tente novamente.'; }
@@ -1072,7 +1346,7 @@ async function checkConnection() {
         }).catch(e => console.warn('[inkflow] signup_log failed:', e?.message));
       } catch (e) { console.warn('[inkflow] signup_log throw:', e?.message); }
 
-      // Email do estudio (nao bloqueia)
+      // Email + WhatsApp link do estudio (nao bloqueia)
       if (!isArtist && isStudioPlan) {
         showStudioEmailNotice();
         fetch('/api/send-studio-email', {
@@ -1080,6 +1354,11 @@ async function checkConnection() {
           body: JSON.stringify({ tenant_id: tenantId }),
         }).then(r => r.json()).then(d => console.log('[inkflow] send-studio-email response:', d))
           .catch(e => console.warn('send-studio-email failed:', e));
+        fetch('/api/send-whatsapp-link', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenant_id: tenantId, onboarding_key: obKey }),
+        }).then(r => r.json()).then(d => console.log('[inkflow] send-whatsapp-link:', d))
+          .catch(e => console.warn('[inkflow] send-whatsapp-link failed:', e?.message));
       }
 
       // Limpar estado salvo (mantem inkflow_gk se for redirect pra studio — fetchStudioTokenAndRedirect precisa)
@@ -1256,6 +1535,174 @@ async function fetchStudioTokenAndRedirect(pendingWhatsapp = false) {
     showProcError('Falha ao abrir painel. Recarregue a página ou entre em contato com o suporte.');
     _studioRedirectInFlight = false;
   }
+}
+
+// ── Wizard: Valores (Testador A local) ──────────────────────────────────────
+function buildConfigPrecificacao() {
+  return {
+    modo: 'faixa',
+    tabela_tamanho: {
+      P: [+document.getElementById('v-p-min').value || 200, +document.getElementById('v-p-max').value || 400],
+      M: [+document.getElementById('v-m-min').value || 400, +document.getElementById('v-m-max').value || 800],
+      G: [+document.getElementById('v-g-min').value || 800, +document.getElementById('v-g-max').value || 1500],
+      GG: [+document.getElementById('v-gg-min').value || 1500, +document.getElementById('v-gg-max').value || 3000],
+    },
+    multiplicadores: {
+      cor: +document.getElementById('v-mult-cor').value || 0,
+      regiao_dificil: +document.getElementById('v-mult-regiao').value || 0,
+      detalhe_alto: +document.getElementById('v-mult-detalhe').value || 0,
+    },
+    minimo: +document.getElementById('v-minimo').value || 200,
+    sinal_percentual: +document.getElementById('v-sinal').value || 30,
+    tamanho_maximo_sessao_cm: +document.getElementById('v-max-tamanho').value || 25,
+    valor_maximo_orcado: +document.getElementById('v-max-orcado').value || 5000,
+    estilo_fallback: document.getElementById('v-fallback').value || 'blackwork',
+    observacoes_tatuador: (document.getElementById('v-obs').value || '').trim(),
+  };
+}
+
+function useDefaultValores() {
+  document.getElementById('v-sinal').value = 30;
+  document.getElementById('v-p-min').value = 200; document.getElementById('v-p-max').value = 400;
+  document.getElementById('v-m-min').value = 400; document.getElementById('v-m-max').value = 800;
+  document.getElementById('v-g-min').value = 800; document.getElementById('v-g-max').value = 1500;
+  document.getElementById('v-gg-min').value = 1500; document.getElementById('v-gg-max').value = 3000;
+  document.getElementById('v-mult-cor').value = 30;
+  document.getElementById('v-mult-regiao').value = 20;
+  document.getElementById('v-mult-detalhe').value = 25;
+  document.getElementById('v-minimo').value = 200;
+  document.getElementById('v-max-orcado').value = 5000;
+  document.getElementById('v-max-tamanho').value = 25;
+  document.getElementById('v-fallback').value = 'blackwork';
+  document.getElementById('v-obs').value = '';
+  document.getElementById('test-result').style.display = 'none';
+}
+
+function testOrcamento() {
+  const cfg = buildConfigPrecificacao();
+  const tam = +document.getElementById('t-tam').value || 10;
+  const regiao = document.getElementById('t-regiao').value || 'antebraco';
+  const cor = document.getElementById('t-cor').checked;
+  const detalhe = document.getElementById('t-detalhe').value || 'medio';
+  const r = document.getElementById('test-result');
+  r.style.display = 'block';
+  if (tam > (cfg.tamanho_maximo_sessao_cm || 25)) {
+    r.innerHTML = 'Acima do tamanho maximo &rarr; handoff automatico';
+    r.style.color = 'var(--amber)'; return;
+  }
+  const tab = cfg.tabela_tamanho || {};
+  let bracket;
+  if (tam <= 7) bracket = tab.P || [200, 400];
+  else if (tam <= 15) bracket = tab.M || [400, 800];
+  else if (tam <= 25) bracket = tab.G || [800, 1500];
+  else bracket = tab.GG || [1500, 3000];
+  let [mn, mx] = bracket;
+  const mult = cfg.multiplicadores || {};
+  let pct = 0;
+  if (cor && mult.cor) pct += mult.cor;
+  const regioesDificeis = ['costela','pescoco','mao','pe','cabeca','rosto'];
+  if (regioesDificeis.includes(regiao) && mult.regiao_dificil) pct += mult.regiao_dificil;
+  if (detalhe === 'alto' && mult.detalhe_alto) pct += mult.detalhe_alto;
+  mn = Math.round(mn * (1 + pct / 100));
+  mx = Math.round(mx * (1 + pct / 100));
+  const minimo = cfg.minimo || 200;
+  if (mn < minimo) mn = minimo;
+  if (mx < mn) mx = mn;
+  if (mn > (cfg.valor_maximo_orcado || 5000)) {
+    r.innerHTML = 'Acima do valor maximo &rarr; handoff automatico';
+    r.style.color = 'var(--amber)'; return;
+  }
+  const sinalPct = cfg.sinal_percentual || 30;
+  const sinalVal = Math.round(mn * sinalPct / 100);
+  r.innerHTML = 'R$ ' + mn.toLocaleString('pt-BR') + ' a R$ ' + mx.toLocaleString('pt-BR') +
+    '<br><span style="font-size:12px;color:var(--t2);font-weight:400">Sinal: R$ ' + sinalVal.toLocaleString('pt-BR') + ' (' + sinalPct + '%)</span>';
+  r.style.color = 'var(--teal)';
+}
+
+async function saveValoresAndNext() {
+  const btn = document.getElementById('sv-btn');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+  try {
+    const config = buildConfigPrecificacao();
+    const obKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk');
+    const res = await fetch('/api/update-tenant', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenant_id: tenantId, onboarding_key: obKey, config_precificacao: config, sinal_percentual: config.sinal_percentual }),
+    });
+    if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || 'Erro ao salvar'); }
+    let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
+    ob.step = 'sp'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+    goStep('sp');
+  } catch (e) {
+    console.error('saveValores error:', e);
+    const errEl = document.getElementById('sv-err');
+    if (errEl) { errEl.textContent = e.message || 'Erro ao salvar'; errEl.style.display = 'block'; setTimeout(() => errEl.style.display = 'none', 5000); }
+  } finally { btn.disabled = false; btn.textContent = 'Proximo \u2192'; }
+}
+
+// ── Wizard: Personalizar (agente + agenda + FAQ) ─────────────────────────────
+const ESTILOS_LISTA = ['blackwork','fineline','realismo','tradicional','old school','aquarela','geometrico','dotwork','tribal','japones','lettering','minimalista','neo tradicional','trash polka'];
+
+function initEstilosChips() {
+  const aceitosWrap = document.getElementById('p-estilos-aceitos');
+  const recusadosWrap = document.getElementById('p-estilos-recusados');
+  if (!aceitosWrap || aceitosWrap.children.length > 0) return;
+  ESTILOS_LISTA.forEach(e => {
+    const mkChip = (wrap) => { const c = document.createElement('button'); c.className = 'chip'; c.textContent = e; c.type = 'button'; c.onclick = () => c.classList.toggle('active'); wrap.appendChild(c); };
+    mkChip(aceitosWrap); mkChip(recusadosWrap);
+  });
+}
+
+function buildConfigAgente() {
+  return {
+    tom: document.getElementById('p-tom').value,
+    emoji_level: document.getElementById('p-emoji').value,
+    usa_giria: document.getElementById('p-giria').checked,
+    usa_identificador: document.getElementById('p-identificador').checked,
+    persona_livre: (document.getElementById('p-persona').value || '').trim() || null,
+    aceita_cobertura: document.getElementById('p-cobertura').checked,
+    estilos_aceitos: [...document.querySelectorAll('#p-estilos-aceitos .chip.active')].map(c => c.textContent),
+    estilos_recusados: [...document.querySelectorAll('#p-estilos-recusados .chip.active')].map(c => c.textContent),
+  };
+}
+
+function buildHorario() {
+  const h = {};
+  const si = document.getElementById('h-semana-ini').value, sf = document.getElementById('h-semana-fim').value;
+  if (si && sf) h['seg-sex'] = si + '-' + sf;
+  const sai = document.getElementById('h-sab-ini').value, saf = document.getElementById('h-sab-fim').value;
+  if (sai && saf) h['sab'] = sai + '-' + saf;
+  const di = document.getElementById('h-dom-ini').value, df = document.getElementById('h-dom-fim').value;
+  if (di && df) h['dom'] = di + '-' + df;
+  return Object.keys(h).length ? h : null;
+}
+
+async function savePersonaAndNext() {
+  const btn = document.getElementById('sp-btn');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+  try {
+    const config_agente = buildConfigAgente();
+    const horario = buildHorario();
+    const duracao = +document.getElementById('p-duracao').value || 3;
+    const faq = (document.getElementById('p-faq').value || '').trim();
+    const obKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk');
+    const body = { tenant_id: tenantId, onboarding_key: obKey, config_agente, duracao_sessao_padrao_h: duracao };
+    if (horario) body.horario_funcionamento = horario;
+    if (faq) body.faq_texto = faq;
+    const res = await fetch('/api/update-tenant', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || 'Erro ao salvar'); }
+    let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
+    ob.step = 'qr'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+    goStep(5); initConnectStep();
+    pollInterval = setInterval(checkConnection, 5000);
+  } catch (e) {
+    console.error('savePersona error:', e);
+    const errEl = document.getElementById('sp-err');
+    if (errEl) { errEl.textContent = e.message || 'Erro ao salvar'; errEl.style.display = 'block'; setTimeout(() => errEl.style.display = 'none', 5000); }
+  } finally { btn.disabled = false; btn.textContent = 'Conectar WhatsApp \u2192'; }
 }
 
 init();
