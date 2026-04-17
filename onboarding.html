@@ -637,10 +637,11 @@ select.fi option{background:var(--card);color:var(--t1)}
       <div class="fi-hint" style="margin-bottom:10px">Defina qual o valor de sinal cobrado por tatuagem. Caso nao queira cobrar sinal (maior risco de perder agendamento), coloque o valor "0".</div>
       <div class="fg">
         <div style="display:flex;align-items:center;gap:8px">
-          <input class="fi" id="v-sinal" type="number" value="30" min="0" max="100" style="width:80px" onchange="showQA('qa-faixas')"/>
+          <input class="fi" id="v-sinal" type="number" value="30" min="0" max="100" style="width:80px"/>
           <span style="color:var(--t3);font-size:13px">% do orcamento</span>
         </div>
       </div>
+      <button class="sbtn" type="button" style="margin-top:14px;font-size:13px" onclick="showQA('qa-faixas')">Continuar &rarr;</button>
     </div>
 
     <!-- ── Q3: Faixas por tamanho ── -->
