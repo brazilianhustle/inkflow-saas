@@ -943,10 +943,11 @@ select.fi option{background:var(--card);color:var(--t1)}
           <div class="qr-step"><div class="qr-step-num">4</div><span>Digite o <strong>código</strong> que apareceu acima</span></div>
         </div>
         <div style="display:flex;gap:10px;justify-content:center">
-          <button class="qr-refresh" onclick="requestPairingCode()">↻ Novo código</button>
+          <button class="qr-refresh" id="pairing-refresh-btn" onclick="requestPairingCode()">↻ Novo codigo</button>
         </div>
       </div>
-      <div class="qr-poll"><div class="qr-poll-dot"></div>verificando conexão automaticamente...</div>
+      <div class="qr-poll"><div class="qr-poll-dot"></div>verificando conexao automaticamente...</div>
+      <div style="margin-top:14px;text-align:center;font-size:11px;color:var(--t3);line-height:1.6">Caso tenha problemas para conectar, <a href="https://wa.me/5521970789797?text=Oi%2C%20estou%20com%20problemas%20para%20conectar%20meu%20WhatsApp%20no%20InkFlow" target="_blank" style="color:var(--teal);text-decoration:underline">contate-nos</a> para envio de um novo link.</div>
     </div>
   </div>
 </div>
@@ -1364,21 +1365,26 @@ function switchConnMode(mode) {
   else { qrArea.style.display = 'block'; pairingArea.style.display = 'none'; toggleQR.classList.add('active'); togglePairing.classList.remove('active'); loadQR(); startQRTimer(); document.getElementById('qr-status').textContent = 'aguardando scan'; }
 }
 
+let _pairingInFlight = false;
 async function requestPairingCode() {
+  if (_pairingInFlight) return;
+  _pairingInFlight = true;
   const phoneInput = document.getElementById('pairing-phone'); const btn = document.getElementById('pairing-btn');
+  const refreshBtn = document.getElementById('pairing-refresh-btn');
   const phoneBox = document.getElementById('pairing-phone-box'); const codeBox = document.getElementById('pairing-code-box'); const codeValue = document.getElementById('pairing-code-value');
   let number = phoneInput.value.replace(/\D/g, ''); if (number.length <= 11 && !number.startsWith('55')) { number = '55' + number; }
-  if (number.length < 12) { phoneInput.style.borderColor = 'var(--red)'; phoneInput.focus(); return; } phoneInput.style.borderColor = '';
+  if (number.length < 12) { phoneInput.style.borderColor = 'var(--red)'; phoneInput.focus(); _pairingInFlight = false; return; } phoneInput.style.borderColor = '';
   btn.disabled = true; btn.textContent = 'Gerando...';
+  if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.textContent = '⏳ Gerando...'; }
   try {
     const r = await fetch('/api/evo-pairing-code?instance=' + encodeURIComponent(instanceSlug) + '&number=' + encodeURIComponent(number));
     const data = await r.json();
-    if (!r.ok) { const errMsg = data?.error || 'Erro ao gerar código'; if (r.status === 425) { codeValue.textContent = '...'; codeBox.classList.add('active'); setTimeout(() => requestPairingCode(), 3000); return; } alert(errMsg); btn.disabled = false; btn.textContent = 'Gerar código'; return; }
+    if (!r.ok) { const errMsg = data?.error || 'Erro ao gerar codigo'; if (r.status === 425) { codeValue.textContent = '...'; codeBox.classList.add('active'); setTimeout(() => { _pairingInFlight = false; requestPairingCode(); }, 3000); return; } alert(errMsg); return; }
     const code = data?.pairingCode;
-    if (code) { codeValue.textContent = code; phoneBox.classList.remove('active'); codeBox.classList.add('active'); document.getElementById('qr-status').textContent = 'código gerado'; }
-    else { alert('Código não disponível. Tente usar o QR Code.'); }
-  } catch (e) { console.error('Pairing code error:', e); alert('Erro de rede. Verifique sua conexão e tente novamente.'); }
-  finally { btn.disabled = false; btn.textContent = 'Gerar código'; }
+    if (code) { codeValue.textContent = code; phoneBox.classList.remove('active'); codeBox.classList.add('active'); document.getElementById('qr-status').textContent = 'codigo gerado'; }
+    else { alert('Codigo nao disponivel. Tente usar o QR Code.'); }
+  } catch (e) { console.error('Pairing code error:', e); alert('Erro de rede. Verifique sua conexao e tente novamente.'); }
+  finally { btn.disabled = false; btn.textContent = 'Gerar codigo'; if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.textContent = '↻ Novo codigo'; } _pairingInFlight = false; }
 }
 
 async function loadQR() {
@@ -1397,7 +1403,18 @@ async function loadQR() {
   } catch (e) { console.error('QR load error:', e); if (qrLoading) qrLoading.innerHTML = '<span>Erro ao carregar QR. Clique em "Novo QR Code".</span>'; }
 }
 
-async function refreshQR() { clearInterval(qrTimerHandle); await loadQR(); startQRTimer(); }
+let _qrRefreshing = false;
+async function refreshQR() {
+  if (_qrRefreshing) return;
+  _qrRefreshing = true;
+  const btn = document.querySelector('.qr-refresh');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Gerando...'; }
+  clearInterval(qrTimerHandle);
+  await loadQR();
+  startQRTimer();
+  if (btn) { btn.disabled = false; btn.textContent = '↻ Novo QR Code'; }
+  _qrRefreshing = false;
+}
 let qrTimerSec = 30; let qrTimerHandle = null;
 function startQRTimer() { clearInterval(qrTimerHandle); qrTimerSec = 30; updateTimer(); qrTimerHandle = setInterval(() => { qrTimerSec--; updateTimer(); if (qrTimerSec <= 0) { clearInterval(qrTimerHandle); loadQR().then(startQRTimer); } }, 1000); }
 function updateTimer() { const el = document.getElementById('qr-timer'); if (el) el.textContent = qrTimerSec > 0 ? 'QR expira em ' + qrTimerSec + 's — será atualizado automaticamente' : 'Atualizando QR Code...'; }
