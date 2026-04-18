@@ -2614,7 +2614,30 @@ async function savePersonaAndNext() {
     });
     if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || 'Erro ao salvar'); }
     let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-    ob.step = 'qr'; ob.agente = nomeAgente;
+    ob.agente = nomeAgente;
+    localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+
+    // Se WhatsApp já está conectado, pular direto pro sucesso
+    if (instanceSlug) {
+      try {
+        const statusRes = await fetch('/api/evo-status?instance=' + encodeURIComponent(instanceSlug));
+        const statusData = await statusRes.json();
+        const state = (statusData?.state || '').toString().toLowerCase();
+        if (['open','connected','online'].includes(state)) {
+          ob.step = 'done'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+          document.getElementById('suc-estudio').textContent = ob.estudio || instanceSlug;
+          document.getElementById('suc-agente').textContent = nomeAgente || '';
+          document.getElementById('suc-inst').textContent = instanceSlug;
+          const sucPlanLabels = { teste:'Teste', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' };
+          document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
+          goStep(6);
+          localStorage.removeItem('inkflow_ob');
+          return;
+        }
+      } catch (e) { console.warn('evo-status check failed:', e); }
+    }
+
+    ob.step = 'qr';
     localStorage.setItem('inkflow_ob', JSON.stringify(ob));
     goStep(5); initConnectStep();
     pollInterval = setInterval(checkConnection, 5000);
