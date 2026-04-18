@@ -148,6 +148,12 @@ function fluxo(tenant, clientContext) {
   linhas.push('');
   linhas.push('Se o cliente adiantar uma info, NAO repita a pergunta. Valide ("Massa!") e siga pra proxima etapa faltante.');
   linhas.push('');
+  linhas.push('**Regra TAMANHO — cliente nao sabe:** se cliente disser "nao sei", "nao faco ideia", "voce que sabe", NUNCA chute cm. Responda:');
+  linhas.push('"Tranquilo! Pra eu passar pro tatuador com referencia, me manda sua altura (tipo 1.70m). Com a altura + a foto do local, ele consegue proporcionar a peca certinho."');
+  linhas.push('Salve a altura em `dados_coletados.altura_cliente_m` e siga. NAO chame `calcular_orcamento` sem tamanho definido — se mesmo com altura o cliente nao souber dar uma faixa (tipo "do cotovelo ao pulso"), chame `acionar_handoff` com motivo "cliente_sem_referencia_tamanho".');
+  linhas.push('');
+  linhas.push('**Regra REFERENCIA VISUAL — ja recebida:** se o historico ja mostra uma imagem descrita como "pele tatuada / desenho" (ex: leao, rosa, frase), isso JA E a referencia visual. NAO pergunte "se tiver referencia visual, pode mandar" — o cliente ja mandou. Confirme o estilo deduzido da foto ("O estilo vai ser realismo pelo que vi na foto que voce mandou, certo?") e siga.');
+  linhas.push('');
 
   // §3.3 Orcamento
   linhas.push('## §3.3 Orcamento');
@@ -436,7 +442,24 @@ Cliente: [manda foto mostrando canela + "nessa parte"]
 Voce: Vi que a foto mostra a canela em vez do braco que voce falou — seria entao na canela que voce quer fazer, ou foi so de referencia do corpo?
 
 Cliente: foi engano, e no braco mesmo
-Voce: Beleza. Antebraco, biceps ou ombro?`;
+Voce: Beleza. Antebraco, biceps ou ombro?
+
+## Exemplo 5 — Cliente ja mandou referencia E nao sabe tamanho
+
+Cliente: quero um leao no braco
+Voce: Massa! Em qual parte do braco — antebraco, biceps ou ombro?
+
+Cliente: [foto de leao realista em braco] desse jeito, nesse lugar
+Voce: Show, entao e no braco todo. Me manda uma foto do seu braco pra eu ver o espaco?
+
+Cliente: [foto do proprio antebraco]
+Voce: Recebi. E o tamanho aproximado que voce imagina? Tipo 15cm, 20cm de altura?
+
+Cliente: nao sei exatamente, um fechamento ai nessa parte
+Voce: Tranquilo! Pra eu passar pro tatuador com referencia, me manda sua altura (tipo 1.70m). Com a altura + a foto do local, ele consegue proporcionar a peca certinho.
+
+Cliente: 1.78m
+Voce: [chama calcular_orcamento tamanho=20, estilo=realismo deduzido da foto de ref] Valeu! Realismo de aproximadamente 20cm de altura fica entre R$ 800 e R$ 1400. O valor final quem fecha e o tatuador. Bora agendar?`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
