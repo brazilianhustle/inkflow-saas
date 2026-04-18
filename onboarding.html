@@ -844,7 +844,7 @@ select.fi option{background:var(--card);color:var(--t1)}
       </div>
       <div class="chat-bubble" id="pi3">
         <div class="chat-name">InkFlow</div>
-        Aqui você pode optar por montar sozinho toda a personalização ou comprar o pacote de personalização exclusivo montado pela nossa equipe para o seu estúdio! Qual opção prefere? <span style="font-size:11px;color:var(--t3)">(oferta estará sempre disponível no painel do estúdio)</span>
+        Aqui você pode optar por montar sozinho toda a personalização ou comprar o pacote de personalização exclusivo montado pela nossa equipe para o seu estúdio! Qual opção prefere?<br><span style="font-size:11px;color:var(--t3)">(oferta estará sempre disponível no painel do estúdio)</span>
         <div class="qa-opt" style="margin-top:12px">
           <button class="qa-btn" type="button" onclick="selectPersonaMode('diy')">Montar sozinho</button>
           <button class="qa-btn" type="button" onclick="selectPersonaMode('consultor')">Chamar um consultor humano</button>
@@ -938,27 +938,28 @@ select.fi option{background:var(--card);color:var(--t1)}
       </div>
 
       <div class="fg" style="margin-top:12px">
-        <label class="fl">Nome do agente deve aparecer na mensagem?</label>
-        <div class="fi-hint"><span class="link-cta" onclick="toggleExemplosNome()">Veja exemplos</span></div>
-        <div id="exemplos-nome" style="display:none;margin-top:6px">
-          <div style="background:var(--bg2);border-radius:10px;padding:10px;margin-bottom:6px;font-size:12px;color:var(--t2);line-height:1.5">
-            <strong style="color:var(--teal)">Com prefixo:</strong><br>
-            <span id="ex-nome-com">Carlos:</span> <em>Oi! Aqui é o Carlos do Dark Ink Studio. Tudo bem?</em>
-          </div>
-          <div style="background:var(--bg2);border-radius:10px;padding:10px;font-size:12px;color:var(--t2);line-height:1.5">
-            <strong style="color:var(--t3)">Sem prefixo:</strong><br>
-            <em id="ex-nome-sem">Oi! Aqui é o Carlos do Dark Ink Studio. Tudo bem?</em>
-          </div>
-        </div>
-        <div class="toggle-row" style="margin-top:8px">
+        <div class="toggle-row">
           <span class="toggle-label">Usar prefixo com nome do agente</span>
           <label class="toggle"><input type="checkbox" id="p-identificador"/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
         </div>
+        <label class="fl" style="margin-top:8px">Nome do agente deve aparecer na mensagem?</label>
+        <div class="fi-hint"><span class="link-cta" onclick="toggleExemplosNome()">Veja exemplos</span></div>
+        <div id="exemplos-nome" style="display:none;margin-top:6px">
+          <div style="background:var(--bg2);border-radius:10px;padding:10px;margin-bottom:6px;font-size:12px;color:var(--t2);line-height:1.5">
+            <strong style="color:var(--t2)">Com prefixo:</strong><br>
+            <span id="ex-nome-com"></span>
+          </div>
+          <div style="background:var(--bg2);border-radius:10px;padding:10px;font-size:12px;color:var(--t2);line-height:1.5">
+            <strong style="color:var(--t3)">Sem prefixo:</strong><br>
+            <em id="ex-nome-sem"></em>
+          </div>
+        </div>
       </div>
 
-      <div class="fg" style="margin-top:12px">
-        <label class="fl">Descrição livre da persona (opcional)</label>
-        <div class="fi-hint" style="margin-bottom:6px">Crie como você quer que seu assistente seja, ex: Carioca descontraída, simpática, empática com clientes nervosos. Clique em 'Aprimorar com IA' para ajustar seu texto de forma que o assistente entenda melhor.</div>
+      <hr class="divider"/>
+      <div class="fsec">Descrição livre da persona (opcional)</div>
+      <div class="fi-hint" style="margin-bottom:6px">Crie como você quer que seu assistente seja, ex: Carioca descontraída, simpática, empática com clientes nervosos. Clique em 'Aprimorar com IA' para ajustar seu texto de forma que o assistente entenda melhor.</div>
+      <div class="fg">
         <textarea class="fi" id="p-persona" rows="3" placeholder="Descreva a personalidade do seu assistente..."></textarea>
         <button class="sbtn" type="button" style="margin-top:8px;background:transparent;color:var(--teal);border:1px solid var(--teal-mid);font-size:12px;padding:8px 16px" id="btn-aprimorar" onclick="aprimorarPersona()">✨ Aprimorar texto com IA</button>
       </div>
@@ -2299,29 +2300,29 @@ function initSaudacaoPresets() {
   const wrap = document.getElementById('saudacao-presets');
   if (!wrap || wrap.children.length > 0) return;
   let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-  const agente = document.getElementById('p-nome-agente').value || ob.agente || 'Agente';
-  const estudio = ob.estudio || 'seu estúdio';
+  const agente = document.getElementById('p-nome-agente').value || ob.agente || '{nome do agente}';
+  const estudio = ob.estudio || '{nome do estúdio}';
   const presets = [
-    'Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem? Como posso te ajudar?',
-    'E aí! Bem-vindo ao ' + estudio + '! Sou o ' + agente + ', seu assistente virtual. No que posso ajudar?',
-    'Olá! Aqui é o ' + agente + ' do ' + estudio + '. Fico feliz em te atender! Me conta o que você tem em mente.',
-    'Fala! Sou o ' + agente + ', assistente do ' + estudio + '. Bora conversar sobre a sua próxima tattoo?',
-    'Oi! Eu sou o ' + agente + ' e estou aqui pra te ajudar com tudo sobre o ' + estudio + '. Me conta sua ideia!',
+    { label: 'Preset 1', text: 'Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem? Como posso te ajudar?' },
+    { label: 'Preset 2', text: 'E aí! Bem-vindo ao ' + estudio + '! Sou o ' + agente + ', o assistente virtual aqui do estúdio. Como posso ajudar?' },
+    { label: 'Preset 3', text: 'Bem-vindo ao ' + estudio + '! Me chamo ' + agente + ' e tô aqui para montar seu orçamento. Qual sua ideia de tatuagem?' },
+    { label: 'Customizado', text: '' },
   ];
   presets.forEach((p, i) => {
     const btn = document.createElement('button');
     btn.className = 'chip' + (i === 0 ? ' active' : '');
-    btn.textContent = 'Preset ' + (i + 1);
+    btn.textContent = p.label;
     btn.type = 'button';
-    btn.title = p;
+    if (p.text) btn.title = p.text;
     btn.onclick = () => {
       wrap.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('p-saudacao').value = p;
+      document.getElementById('p-saudacao').value = p.text;
+      if (p.label === 'Customizado') document.getElementById('p-saudacao').focus();
     };
     wrap.appendChild(btn);
   });
-  document.getElementById('p-saudacao').value = presets[0];
+  document.getElementById('p-saudacao').value = presets[0].text;
 }
 
 function selectEmoji(level, btn) {
@@ -2338,11 +2339,11 @@ function toggleGiriasCustom(btn) {
 function toggleExemplosNome() {
   const el = document.getElementById('exemplos-nome');
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
-  const agente = document.getElementById('p-nome-agente').value || 'Carlos';
+  const agente = document.getElementById('p-nome-agente').value || '{nome do agente}';
   let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-  const estudio = ob.estudio || 'Dark Ink Studio';
-  document.getElementById('ex-nome-com').innerHTML = '<strong>' + agente + ':</strong> Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem?';
-  document.getElementById('ex-nome-sem').textContent = 'Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem?';
+  const estudio = ob.estudio || '{nome do estúdio}';
+  document.getElementById('ex-nome-com').innerHTML = '<strong style="color:var(--t1)">' + agente + ':</strong> <em>Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem?</em>';
+  document.getElementById('ex-nome-sem').innerHTML = '<em>Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem?</em>';
 }
 
 async function aprimorarPersona() {
