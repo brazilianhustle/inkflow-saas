@@ -2054,6 +2054,7 @@ function showNextBubble() {
   const el = document.getElementById('cb' + chatStep);
   if (!el) return;
   el.classList.add('show');
+  setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'end' }), 150);
   el.onclick = () => {
     if (chatStep < 3) { showNextBubble(); }
     else {
@@ -2343,6 +2344,7 @@ function showNextPI() {
   if (!el) return;
   el.style.display = '';
   el.classList.add('show');
+  setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'end' }), 150);
   if (piStep < 3) { el.onclick = () => showNextPI(); }
 }
 function selectPersonaMode(mode) {
@@ -2353,7 +2355,7 @@ function selectPersonaMode(mode) {
   }
   const pi4 = document.getElementById('pi4');
   pi4.style.display = '';
-  setTimeout(() => { pi4.classList.add('show'); pi4.scrollIntoView({ behavior: 'smooth' }); }, 200);
+  setTimeout(() => { pi4.classList.add('show'); pi4.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, 200);
   pi4.onclick = () => {
     let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
     ob.step = 'sp'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
@@ -2738,9 +2740,11 @@ const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
       e.target.classList.add('visible', 'in-view');
+    } else {
+      e.target.classList.remove('visible', 'in-view');
     }
   });
-}, { threshold: 0.15, rootMargin: '0px 0px -30px 0px' });
+}, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
 
 function observeReveals() {
   document.querySelectorAll('.reveal, .fsec, .fg, .fgrid, .toggle-row, .size-grid, .region-grid, .qa-q, .qa-opt, .test-box, .wiz-nav, .wiz-hint, .divider, .qa-ex, .skip-video, .video-wrap, .form-title, .form-sub').forEach(el => {
