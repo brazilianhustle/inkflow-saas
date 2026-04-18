@@ -1,2 +1,5 @@
 # Projetos externos nao relacionados ao SaaS
 pixel-agents-standalone/
+
+.wrangler/
+.claude/worktrees/
