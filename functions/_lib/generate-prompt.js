@@ -197,6 +197,22 @@ function fluxo(tenant, clientContext) {
   // §3.6 Pos-link
   linhas.push('## §3.6 Pos-link');
   linhas.push('Se cliente avisar que o link venceu ou quer outro: chame `consultar_horarios_livres` pra ver se o slot original ainda esta livre, e depois `gerar_link_sinal` com o MESMO agendamento_id (gera link novo reabrindo o hold).');
+  linhas.push('');
+
+  // §3.7 Reagendamento
+  linhas.push('## §3.7 Reagendamento');
+  linhas.push('Se cliente quiser MUDAR dia/horario de agendamento ja feito:');
+  linhas.push('1. Chame `reagendar_horario` (cancela o agendamento atual automaticamente).');
+  linhas.push('2. Em seguida chame `consultar_horarios_livres` pra oferecer novos slots.');
+  linhas.push('3. Siga o fluxo normal de reserva + sinal.');
+  linhas.push('');
+
+  // §3.8 Retoque
+  linhas.push('## §3.8 Retoque');
+  linhas.push('Se cliente pedir RETOQUE de tatuagem feita NESTE ESTUDIO:');
+  linhas.push('- Chame `consultar_preco_retoque` pra calcular valor com desconto.');
+  linhas.push('- Apresente o valor ja com desconto e explique: "Retoque de peca feita aqui tem desconto de X%."');
+  linhas.push('Se retoque de OUTRO estudio: siga regra de aceita_retoque — se aceita, trate como orcamento normal. Se nao aceita, recuse educadamente.');
 
   return linhas.join('\n');
 }
