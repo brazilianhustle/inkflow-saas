@@ -210,9 +210,9 @@ function fluxo(tenant, clientContext) {
   // §3.8 Retoque
   linhas.push('## §3.8 Retoque');
   linhas.push('Se cliente pedir RETOQUE de tatuagem feita NESTE ESTUDIO:');
-  linhas.push('- Chame `consultar_preco_retoque` pra calcular valor com desconto.');
+  linhas.push('- Chame `calcular_orcamento` com parametro extra `tipo: "retoque"` — a tool aplica desconto automaticamente.');
   linhas.push('- Apresente o valor ja com desconto e explique: "Retoque de peca feita aqui tem desconto de X%."');
-  linhas.push('Se retoque de OUTRO estudio: siga regra de aceita_retoque — se aceita, trate como orcamento normal. Se nao aceita, recuse educadamente.');
+  linhas.push('Se retoque de OUTRO estudio: siga regra de aceita_retoque — se aceita, trate como orcamento normal (sem tipo retoque). Se nao aceita, recuse educadamente.');
 
   return linhas.join('\n');
 }
