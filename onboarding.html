@@ -257,6 +257,13 @@ select.fi option{background:var(--card);color:var(--t1)}
 .size-grid .fi{width:80px;flex-shrink:0}
 .region-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
 .saudacao-presets{display:flex;flex-wrap:wrap;gap:6px}
+.estilo-slot{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.estilo-slot select{flex:1}
+.estilo-slot .estilo-remove{background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;padding:4px 8px}
+.estilo-slot .estilo-remove:hover{color:#ff6b6b}
+.estilo-slot:first-child .estilo-tag{background:var(--teal-dim);color:var(--teal);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap}
+.emoji-prefs{margin-top:10px}
+.emoji-prefs .fi-hint{margin-bottom:6px}
 
 .chip-wrap{display:flex;flex-wrap:wrap;gap:6px}
 .chip{padding:6px 14px;border:1px solid var(--border2);border-radius:20px;font-size:12px;cursor:pointer;color:var(--t2);transition:all .15s;background:transparent;font-family:inherit}
@@ -608,7 +615,8 @@ select.fi option{background:var(--card);color:var(--t1)}
 
     <!-- ── Intro ── -->
     <div id="qa-intro" class="qa">
-      <div class="form-title">Treine o seu agente com o valor do seu trabalho</div>
+      <div class="form-title">Treine seu agente</div>
+      <div class="form-sub" style="margin-bottom:16px">Personalize seu agente com o valor da sua arte.</div>
       <div class="form-sub" style="margin-bottom:20px">Responda o questionário abaixo e atinja o máximo potencial do seu assistente virtual. Caso nunca tenha precificado, não tem problema! <span class="link-cta" onclick="scrollToVideo()">Clique aqui</span> e veja como precificar seu trabalho corretamente. Caso prefira usar o valor geral do mercado, use os valores já previamente definidos e leia as dicas para facilitar sua precificação!</div>
       <div class="form-err" id="sv-err"></div>
 
@@ -758,24 +766,19 @@ select.fi option{background:var(--card);color:var(--t1)}
     <div id="qa-limites" class="qa">
       <hr class="divider"/>
       <div class="fsec">Limites e estilos</div>
-      <div class="fi-hint" style="margin-bottom:10px">Defina o seu valor mínimo, quais estilos você tatua (caso não tatue algum, não marcar) e se aceita ou não coberturas e reformas (ambos caso aceite, é encaminhado diretamente para o tatuador montar o orçamento). Coloque no estilo padrão o seu estilo principal, e marque os demais caso faça outros estilos também.</div>
+      <div class="fi-hint" style="margin-bottom:10px">Defina o seu valor mínimo, suas especialidades e se aceita ou não coberturas e reformas.</div>
       <div class="fg">
         <label class="fl">Valor mínimo (R$)</label>
         <input class="fi" id="v-minimo" type="number" value="200" min="0"/>
       </div>
 
       <div class="fg" style="margin-top:14px">
-        <label class="fl">Estilos de tatuagem</label>
-        <div class="estilos-grid">
-          <div>
-            <div class="estilos-col-title">Estilo padrão</div>
-            <div id="v-estilo-padrao"></div>
-          </div>
-          <div>
-            <div class="estilos-col-title">Outros estilos</div>
-            <div class="chip-wrap" id="v-estilos-outros"></div>
-          </div>
-        </div>
+        <label class="fl">Especialidades</label>
+        <div class="fi-hint" style="margin-bottom:8px">Selecione seu estilo principal e adicione outros que você também tatua.</div>
+        <div id="v-especialidades-list"></div>
+        <button class="sbtn" type="button" id="btn-add-estilo" style="margin-top:8px;background:transparent;color:var(--teal);border:1px solid var(--teal-mid);font-size:12px;padding:6px 16px" onclick="addEstiloSlot()">+ Add</button>
+        <select class="fi" id="v-fallback" style="display:none"><option value="blackwork">blackwork</option></select>
+        <div class="chip-wrap" id="v-estilos-outros" style="display:none"></div>
       </div>
 
       <div class="toggle-row" style="margin-top:10px">
@@ -926,6 +929,30 @@ select.fi option{background:var(--card);color:var(--t1)}
         <div class="chip-wrap" id="p-emoji-chips">
           <button class="chip active" type="button" onclick="selectEmoji('moderado',this)">Uso moderado</button>
           <button class="chip" type="button" onclick="selectEmoji('nenhum',this)">Nenhum uso</button>
+        </div>
+        <div class="emoji-prefs" id="emoji-prefs">
+          <label class="fl" style="margin-top:10px">Emojis de preferência</label>
+          <div class="fi-hint">Selecione o emoji de preferência para o assistente entender sua vibe! <span class="link-cta" onclick="toggleEmojiExemplos()">Clique para ver exemplos de uso de emoji</span></div>
+          <div id="emoji-exemplos" style="display:none;margin-top:8px">
+            <div style="background:var(--bg2);border-radius:10px;padding:10px;margin-bottom:6px;font-size:12px;color:var(--t2);line-height:1.5">
+              "Fechou! Fico no aguardo da imagem de referência 😁"
+            </div>
+            <div style="background:var(--bg2);border-radius:10px;padding:10px;font-size:12px;color:var(--t2);line-height:1.5">
+              "Que bom que gostou 😁<br>Preciso somente da sua altura para finalizar seu orçamento!"
+            </div>
+          </div>
+          <div class="chip-wrap" style="margin-top:8px" id="emoji-pref-chips">
+            <button class="chip active" type="button" onclick="this.classList.toggle('active')">😁</button>
+            <button class="chip active" type="button" onclick="this.classList.toggle('active')">😊</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">🔥</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">✨</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">💪</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">👊</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">🤙</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">💉</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">🎨</button>
+            <button class="chip" type="button" onclick="this.classList.toggle('active')">❤️</button>
+          </div>
         </div>
       </div>
 
@@ -2051,20 +2078,61 @@ function scrollToVideo() {
 const ESTILOS_LISTA = ['blackwork','fineline','realismo','minirealismo','tradicional','old school','aquarela','colorido','geometrico','dotwork','tribal','oriental','lettering','caligrafia','minimalista','neo tradicional','trash polka','ornamental','maori','chicano','biomecanico','sketch','pontilhismo','abstrato','mandala','floral','blackout'];
 let estiloPadrao = 'blackwork';
 
-function initEstilosGrid() {
-  const padraoWrap = document.getElementById('v-estilo-padrao');
-  const outrosWrap = document.getElementById('v-estilos-outros');
-  if (!padraoWrap || padraoWrap.children.length > 0) return;
+function createEstiloSelect(value) {
   const sel = document.createElement('select');
-  sel.className = 'fi'; sel.id = 'v-fallback';
-  ESTILOS_LISTA.forEach(e => { const o = document.createElement('option'); o.value = e; o.textContent = e; sel.appendChild(o); });
-  sel.value = 'blackwork';
-  sel.onchange = () => { estiloPadrao = sel.value; };
-  padraoWrap.appendChild(sel);
-  ESTILOS_LISTA.forEach(e => {
-    const c = document.createElement('button'); c.className = 'chip'; c.textContent = e; c.type = 'button';
-    c.onclick = () => c.classList.toggle('active');
-    outrosWrap.appendChild(c);
+  sel.className = 'fi estilo-select';
+  sel.setAttribute('size', '1');
+  const placeholder = document.createElement('option');
+  placeholder.value = ''; placeholder.textContent = 'Selecionar'; placeholder.disabled = true;
+  if (!value) placeholder.selected = true;
+  sel.appendChild(placeholder);
+  ESTILOS_LISTA.forEach(e => { const o = document.createElement('option'); o.value = e; o.textContent = e; if (e === value) o.selected = true; sel.appendChild(o); });
+  return sel;
+}
+
+function initEstilosGrid() {
+  const list = document.getElementById('v-especialidades-list');
+  if (!list || list.children.length > 0) return;
+  const slot = document.createElement('div');
+  slot.className = 'estilo-slot';
+  const sel = createEstiloSelect('blackwork');
+  sel.onchange = () => { document.getElementById('v-fallback').value = sel.value; estiloPadrao = sel.value; syncEstilosHidden(); };
+  const tag = document.createElement('span');
+  tag.className = 'estilo-tag'; tag.textContent = 'principal';
+  slot.appendChild(sel);
+  slot.appendChild(tag);
+  list.appendChild(slot);
+  estiloPadrao = 'blackwork';
+  syncEstilosHidden();
+}
+
+function addEstiloSlot() {
+  const list = document.getElementById('v-especialidades-list');
+  const slot = document.createElement('div');
+  slot.className = 'estilo-slot';
+  const sel = createEstiloSelect('');
+  sel.onchange = () => syncEstilosHidden();
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'estilo-remove'; removeBtn.textContent = '×'; removeBtn.type = 'button';
+  removeBtn.onclick = () => { slot.remove(); syncEstilosHidden(); };
+  slot.appendChild(sel);
+  slot.appendChild(removeBtn);
+  list.appendChild(slot);
+}
+
+function syncEstilosHidden() {
+  const selects = document.querySelectorAll('#v-especialidades-list .estilo-select');
+  const fallback = document.getElementById('v-fallback');
+  const outrosWrap = document.getElementById('v-estilos-outros');
+  outrosWrap.innerHTML = '';
+  selects.forEach((sel, i) => {
+    if (!sel.value) return;
+    if (i === 0) { fallback.value = sel.value; estiloPadrao = sel.value; }
+    else {
+      const c = document.createElement('button');
+      c.className = 'chip active'; c.textContent = sel.value; c.type = 'button';
+      outrosWrap.appendChild(c);
+    }
   });
 }
 
@@ -2316,18 +2384,23 @@ function initEstilosChips() {
   });
 }
 
-function initSaudacaoPresets() {
-  const wrap = document.getElementById('saudacao-presets');
-  if (!wrap || wrap.children.length > 0) return;
+function getSaudacaoPresets() {
   let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-  const agente = document.getElementById('p-nome-agente').value || ob.agente || '{nome do agente}';
+  const agente = document.getElementById('p-nome-agente')?.value || ob.agente || '{nome do agente}';
   const estudio = ob.estudio || '{nome do estúdio}';
-  const presets = [
+  return [
     { label: 'Preset 1', text: 'Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem? Como posso te ajudar?' },
     { label: 'Preset 2', text: 'E aí! Bem-vindo ao ' + estudio + '! Sou o ' + agente + ', o assistente virtual aqui do estúdio. Como posso ajudar?' },
     { label: 'Preset 3', text: 'Bem-vindo ao ' + estudio + '! Me chamo ' + agente + ' e tô aqui para montar seu orçamento. Qual sua ideia de tatuagem?' },
     { label: 'Customizado', text: '' },
   ];
+}
+
+function initSaudacaoPresets() {
+  const wrap = document.getElementById('saudacao-presets');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const presets = getSaudacaoPresets();
   presets.forEach((p, i) => {
     const btn = document.createElement('button');
     btn.className = 'chip' + (i === 0 ? ' active' : '');
@@ -2337,18 +2410,38 @@ function initSaudacaoPresets() {
     btn.onclick = () => {
       wrap.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('p-saudacao').value = p.text;
+      const fresh = getSaudacaoPresets();
+      document.getElementById('p-saudacao').value = fresh[i].text;
       if (p.label === 'Customizado') document.getElementById('p-saudacao').focus();
     };
     wrap.appendChild(btn);
   });
   document.getElementById('p-saudacao').value = presets[0].text;
+  const nomeInput = document.getElementById('p-nome-agente');
+  if (nomeInput && !nomeInput._saudacaoHooked) {
+    nomeInput._saudacaoHooked = true;
+    nomeInput.addEventListener('input', () => {
+      const activeBtn = wrap.querySelector('.chip.active');
+      if (activeBtn && activeBtn.textContent !== 'Customizado') {
+        const idx = [...wrap.children].indexOf(activeBtn);
+        const fresh = getSaudacaoPresets();
+        document.getElementById('p-saudacao').value = fresh[idx].text;
+      }
+    });
+  }
 }
 
 function selectEmoji(level, btn) {
   selectedEmojiLevel = level;
   btn.closest('.chip-wrap').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
+  const prefs = document.getElementById('emoji-prefs');
+  if (prefs) prefs.style.display = level === 'moderado' ? 'block' : 'none';
+}
+
+function toggleEmojiExemplos() {
+  const el = document.getElementById('emoji-exemplos');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
 function toggleGiriasCustom(btn) {
@@ -2444,6 +2537,7 @@ function buildConfigAgente() {
   return {
     tom: document.getElementById('p-tom').value,
     emoji_level: selectedEmojiLevel,
+    emojis_preferidos: selectedEmojiLevel === 'moderado' ? [...document.querySelectorAll('#emoji-pref-chips .chip.active')].map(c => c.textContent) : [],
     usa_giria: giriasAtivas.length > 0,
     girias: [...giriasAtivas, ...giriasCustom],
     usa_identificador: document.getElementById('p-identificador').checked,
