@@ -264,11 +264,19 @@ select.fi option{background:var(--card);color:var(--t1)}
 .estilo-slot:first-child .estilo-tag{background:var(--teal-dim);color:var(--teal);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap}
 .emoji-prefs{margin-top:10px}
 .emoji-prefs .fi-hint{margin-bottom:6px}
-.wa-preview{max-width:320px;margin:8px 0}
-.wa-msg{position:relative;background:#1a2e28;border-radius:8px 8px 8px 0;padding:8px 12px;margin-bottom:6px;font-size:13px;line-height:1.5;color:#e1e1e1}
+.wa-preview{max-width:340px;margin:6px 0}
+.wa-preview.right{margin-left:auto}
+.wa-msg{position:relative;background:#1a2e28;border-radius:8px 8px 8px 0;padding:8px 12px;margin-bottom:4px;font-size:13px;line-height:1.5;color:#e1e1e1}
 .wa-msg::before{content:'';position:absolute;left:-6px;bottom:0;width:0;height:0;border-right:6px solid #1a2e28;border-bottom:6px solid transparent}
+.wa-msg.client{background:#1a3a1a;border-radius:8px 8px 0 8px}
+.wa-msg.client::before{display:none}
+.wa-msg.client::after{content:'';position:absolute;right:-6px;bottom:0;width:0;height:0;border-left:6px solid #1a3a1a;border-bottom:6px solid transparent}
 .wa-msg-time{display:block;text-align:right;font-size:10px;color:rgba(255,255,255,.35);margin-top:2px}
 .wa-msg-name{font-size:11px;font-weight:600;color:var(--teal);margin-bottom:2px}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .45s ease,transform .45s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.fsec,.fg,.fgrid,.toggle-row,.size-grid,.region-grid,.qa-q,.qa-opt,.test-box,.wiz-nav,.wiz-hint,.divider,.qa-ex,.skip-video,.video-wrap,.form-title,.form-sub{opacity:0;transform:translateY(14px);transition:opacity .4s ease,transform .4s ease}
+.in-view{opacity:1!important;transform:translateY(0)!important}
 
 .chip-wrap{display:flex;flex-wrap:wrap;gap:6px}
 .chip{padding:6px 14px;border:1px solid var(--border2);border-radius:20px;font-size:12px;cursor:pointer;color:var(--t2);transition:all .15s;background:transparent;font-family:inherit}
@@ -632,13 +640,13 @@ select.fi option{background:var(--card);color:var(--t1)}
 
         <div class="qa-ex" style="margin-top:12px">
           <div class="qa-ex-label">Exemplo 1 — Faixa de preço</div>
-          <div class="qa-ex-msg"><b>Cliente:</b> Fechou, e quanto ficaria essa tattoo?</div>
-          <div class="qa-ex-msg"><b>Agente:</b> Essa tatuagem fica na faixa de R$ 600 a R$ 900, o valor final e detalhes sobre as sessões é passado diretamente com o tatuador, gostaria de agendar?</div>
+          <div class="wa-preview right reveal"><div class="wa-msg client">Fechou, e quanto ficaria essa tattoo?<span class="wa-msg-time">14:20 ✓✓</span></div></div>
+          <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Essa tatuagem fica na faixa de R$ 600 a R$ 900, o valor final e detalhes sobre as sessões é passado diretamente com o tatuador, gostaria de agendar?<span class="wa-msg-time">14:20 ✓✓</span></div></div>
         </div>
         <div class="qa-ex" style="margin-top:8px">
           <div class="qa-ex-label">Exemplo 2 — Valor exato</div>
-          <div class="qa-ex-msg"><b>Cliente:</b> Fechou, e quanto ficaria essa tattoo?</div>
-          <div class="qa-ex-msg"><b>Agente:</b> Essa tatuagem fica em R$ 750 nessa pegada de tamanho, os detalhes da sessão é passado diretamente com o tatuador, gostaria de agendar?</div>
+          <div class="wa-preview right reveal"><div class="wa-msg client">Fechou, e quanto ficaria essa tattoo?<span class="wa-msg-time">14:22 ✓✓</span></div></div>
+          <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Essa tatuagem fica em R$ 750 nessa pegada de tamanho, os detalhes da sessão é passado diretamente com o tatuador, gostaria de agendar?<span class="wa-msg-time">14:22 ✓✓</span></div></div>
         </div>
 
         <div class="qa-opt" style="margin-top:14px">
@@ -939,20 +947,10 @@ select.fi option{background:var(--card);color:var(--t1)}
           <label class="fl" style="margin-top:10px">Emojis de preferência</label>
           <div class="fi-hint">Selecione o emoji de preferência para o assistente entender sua vibe! <span class="link-cta" onclick="toggleEmojiExemplos()">Clique para ver exemplos de uso de emoji</span></div>
           <div id="emoji-exemplos" style="display:none;margin-top:8px">
-            <div class="wa-preview">
-              <div class="wa-msg">
-                <div class="wa-msg-name">Agente</div>
-                Fechou! Fico no aguardo da imagem de referência 😁
-                <span class="wa-msg-time">14:32 ✓✓</span>
-              </div>
-            </div>
-            <div class="wa-preview">
-              <div class="wa-msg">
-                <div class="wa-msg-name">Agente</div>
-                Que bom que gostou 😁<br>Preciso somente da sua altura para finalizar seu orçamento!
-                <span class="wa-msg-time">14:33 ✓✓</span>
-              </div>
-            </div>
+            <div class="wa-preview right reveal"><div class="wa-msg client">Fechou, quero agendar!<span class="wa-msg-time">14:31 ✓✓</span></div></div>
+            <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Fechou! Fico no aguardo da imagem de referência 😁<span class="wa-msg-time">14:32 ✓✓</span></div></div>
+            <div class="wa-preview right reveal"><div class="wa-msg client">Gostei do orçamento!<span class="wa-msg-time">14:33 ✓✓</span></div></div>
+            <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Que bom que gostou 😁<br>Preciso somente da sua altura para finalizar seu orçamento!<span class="wa-msg-time">14:33 ✓✓</span></div></div>
           </div>
           <div class="chip-wrap" style="margin-top:8px" id="emoji-pref-chips">
             <button class="chip active" type="button" onclick="this.classList.toggle('active')">😁</button>
@@ -2734,6 +2732,25 @@ function restoreFieldsFromStorage() {
     if (sel) sel.value = fields['p-tom'];
   }
 }
+
+// ── Scroll reveal (IntersectionObserver) ────────────────────────────────────
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible', 'in-view');
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -30px 0px' });
+
+function observeReveals() {
+  document.querySelectorAll('.reveal, .fsec, .fg, .fgrid, .toggle-row, .size-grid, .region-grid, .qa-q, .qa-opt, .test-box, .wiz-nav, .wiz-hint, .divider, .qa-ex, .skip-video, .video-wrap, .form-title, .form-sub').forEach(el => {
+    revealObserver.observe(el);
+  });
+}
+
+const revealMO = new MutationObserver(() => observeReveals());
+revealMO.observe(document.body, { childList: true, subtree: true });
+observeReveals();
 
 init();
 </script>
