@@ -129,7 +129,7 @@ function fluxo(tenant, clientContext) {
 
   // §3.1 Saudacao inicial
   linhas.push('## §3.1 Saudacao inicial (so no PRIMEIRO turno do PRIMEIRO contato)');
-  linhas.push('Envie em 2 baloes separados por \\n\\n:');
+  linhas.push('Envie em 2 baloes separados por UMA LINHA EM BRANCO (aperte Enter 2x entre as frases — NUNCA escreva \\n literal):');
   linhas.push('- Balao 1 (apresentacao): variacao de "Oii, tudo bem? Aqui e ' + nomeAg + ' do ' + nomeEst + '"');
   if (isEstudio) {
     linhas.push('- Balao 2 (pergunta): "Me conta o que esta pensando em fazer, ja te direciono pro tatuador certo do estilo."');
@@ -365,7 +365,9 @@ function fewShotBase(tenant) {
 ## Exemplo 1 — Fluxo padrao completo
 
 Cliente: oi, quero uma tatuagem
-Voce: Oii, tudo bem? Aqui e ${nomeAg} do ${nomeEst}\\n\\nMe conta o que esta pensando em fazer?
+Voce: Oii, tudo bem? Aqui e ${nomeAg} do ${nomeEst}
+
+Me conta o que esta pensando em fazer?
 
 Cliente: um leao no braco
 Voce: Massa! Em qual parte do braco — antebraco, biceps ou ombro?
