@@ -10,46 +10,95 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0d0d0d;--card:#111;--card2:rgba(255,255,255,.03);
+  --bg:#0d0d0d;--bg2:#111;--card:#111;--card2:rgba(255,255,255,.03);
   --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.12);
   --teal:#00d4aa;--teal-dim:rgba(0,212,170,.15);--teal-mid:rgba(0,212,170,.5);
   --red:#e74c3c;--red-bg:rgba(231,76,60,.1);
   --amber:#f59e0b;--amber-bg:rgba(245,158,11,.1);
   --green:#22c55e;--green-bg:rgba(34,197,94,.1);
   --t1:#e5e5e5;--t2:rgba(255,255,255,.5);--t3:rgba(255,255,255,.3);
+  --sidebar-w:60px;
 }
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;-webkit-font-smoothing:antialiased}
 
-/* ── Layout ── */
-.page{display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:32px 20px}
-.container{width:100%;max-width:520px}
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.18)}
 
-/* ── Header ── */
-.header{text-align:center;margin-bottom:36px}
-.logo{font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
-.logo .ink{color:var(--teal)}
-.subtitle{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);font-weight:500}
+/* ── Sidebar (desktop) ── */
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:16px 0;z-index:50;gap:4px}
+.sidebar-logo{font-size:18px;font-weight:800;color:var(--teal);margin-bottom:24px;letter-spacing:-1px;writing-mode:vertical-lr;text-orientation:mixed;transform:rotate(180deg)}
+.nav-btn{position:relative;width:44px;height:44px;border:none;background:transparent;color:var(--t3);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:inherit}
+.nav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-btn:hover{color:var(--t1);background:rgba(255,255,255,.04)}
+.nav-btn.active{color:var(--teal);background:var(--teal-dim)}
+.nav-btn.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--teal);border-radius:0 3px 3px 0}
+.nav-tooltip{position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);background:#222;color:var(--t1);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
+.nav-btn:hover .nav-tooltip{opacity:1}
+.sidebar-bottom{margin-top:auto}
+
+/* ── Main layout ── */
+.app-layout{margin-left:var(--sidebar-w);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── Top header ── */
+.top-header{position:sticky;top:0;z-index:30;background:rgba(13,13,13,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:12px}
+.top-header-name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-header-badge{display:inline-block;border:1px solid var(--teal-mid);color:var(--teal);padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;flex-shrink:0}
+.top-header-status{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);font-weight:500}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.status-dot.online{background:var(--green);box-shadow:0 0 6px var(--green)}
+.status-dot.offline{background:var(--red)}
+.status-dot.pending{background:var(--amber)}
+
+/* ── Content area ── */
+.content-area{flex:1;padding:24px;display:flex;justify-content:center}
+.content-inner{width:100%;max-width:900px}
+
+/* ── Tab panels ── */
+.tab-panel{display:none;animation:tabIn .25s ease}
+.tab-panel.active{display:block}
+@keyframes tabIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── KPI cards ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.kpi-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;transition:border-color .2s}
+.kpi-card:hover{border-color:var(--border2)}
+.kpi-value{font-size:28px;font-weight:800;color:var(--t1);line-height:1.2;margin-bottom:4px}
+.kpi-label{font-size:11px;color:var(--t3);font-weight:500;letter-spacing:.3px}
+.kpi-card.accent .kpi-value{color:var(--teal)}
+
+/* ── Section blocks ── */
+.section-block{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.section-title{font-size:14px;font-weight:700;color:var(--t1);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title svg{width:16px;height:16px;stroke:var(--teal);fill:none;stroke-width:2}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:48px 20px;color:var(--t3);font-size:14px;line-height:1.6}
+.empty-state-icon{font-size:40px;margin-bottom:12px;opacity:.5}
+.empty-state-title{font-size:16px;font-weight:600;color:var(--t2);margin-bottom:6px}
 
 /* ── Studio card ── */
-.studio-card{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
-.studio-name{font-size:20px;font-weight:700;margin-bottom:4px}
-.studio-plan{display:inline-block;border:1px solid var(--teal-mid);color:var(--teal);padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:16px}
-.studio-info{font-size:13px;color:var(--t2);line-height:1.7}
+.studio-card{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.studio-name{font-size:18px;font-weight:700;margin-bottom:4px;display:none}
+.studio-plan{display:none}
+.studio-info{font-size:13px;color:var(--t2);line-height:1.8}
 .studio-info span{color:var(--t1);font-weight:500}
 
 /* ── Slots bar ── */
-.slots-section{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
-.slots-title{font-size:15px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.slots-bar{height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;margin-bottom:8px}
-.slots-fill{height:100%;background:var(--teal);border-radius:4px;transition:width .5s ease}
+.slots-section{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.slots-title{font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.slots-bar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.slots-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .5s ease}
 .slots-fill.full{background:var(--amber)}
 .slots-label{font-size:12px;color:var(--t3)}
 .slots-label span{color:var(--teal);font-weight:600}
 
 /* ── Artists list ── */
-.artists-list{margin-top:16px;display:flex;flex-direction:column;gap:8px}
-.artist-item{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px}
-.artist-avatar{width:36px;height:36px;border-radius:50%;background:var(--teal-dim);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--teal);flex-shrink:0}
+.artists-list{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+.artist-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px}
+.artist-avatar{width:34px;height:34px;border-radius:50%;background:var(--teal-dim);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--teal);flex-shrink:0}
 .artist-info{flex:1;min-width:0}
 .artist-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .artist-status{font-size:11px;color:var(--t3)}
@@ -58,22 +107,22 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .badge-pending{background:var(--amber-bg);color:var(--amber)}
 
 /* ── Invite section ── */
-.invite-section{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
-.invite-title{font-size:15px;font-weight:600;margin-bottom:8px}
-.invite-sub{font-size:13px;color:var(--t2);margin-bottom:16px;line-height:1.6}
-.invite-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--teal);color:#000;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.invite-section{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.invite-title{font-size:14px;font-weight:600;margin-bottom:8px}
+.invite-sub{font-size:13px;color:var(--t2);margin-bottom:14px;line-height:1.6}
+.invite-btn{width:100%;padding:12px;border:none;border-radius:10px;background:var(--teal);color:#000;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s;font-family:inherit}
 .invite-btn:hover{opacity:.9}
 .invite-btn:disabled{opacity:.4;cursor:not-allowed}
 
 /* ── Generated link box ── */
-.link-box{display:none;margin-top:16px;background:rgba(0,212,170,.06);border:1px solid var(--teal-mid);border-radius:10px;padding:14px}
+.link-box{display:none;margin-top:14px;background:rgba(0,212,170,.06);border:1px solid var(--teal-mid);border-radius:10px;padding:14px}
 .link-box.show{display:block;animation:fadeUp .3s ease}
 .link-label{font-size:11px;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
 .link-url{font-size:12px;color:var(--t1);word-break:break-all;background:rgba(0,0,0,.3);padding:10px;border-radius:6px;margin-bottom:10px;font-family:'Courier New',monospace;display:block}
 .link-actions{display:flex;gap:8px}
-.link-copy{flex:1;padding:10px;border:1px solid var(--teal-mid);background:transparent;color:var(--teal);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s}
+.link-copy{flex:1;padding:10px;border:1px solid var(--teal-mid);background:transparent;color:var(--teal);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;font-family:inherit}
 .link-copy:hover{background:var(--teal-dim)}
-.link-share{flex:1;padding:10px;border:1px solid var(--border2);background:transparent;color:var(--t2);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s}
+.link-share{flex:1;padding:10px;border:1px solid var(--border2);background:transparent;color:var(--t2);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;font-family:inherit}
 .link-share:hover{background:rgba(255,255,255,.04)}
 
 /* ── Loading / Error ── */
@@ -91,7 +140,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── Support ── */
-.support-box{margin-top:8px;margin-bottom:20px;text-align:center}
+.support-box{margin-top:8px;margin-bottom:16px;text-align:center}
 .support-link{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;font-family:inherit}
 .support-link:hover{border-color:var(--teal-mid);color:var(--teal);background:var(--teal-dim)}
 
@@ -115,8 +164,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .wc-btn.secondary:hover{color:var(--t1);border-color:var(--border2)}
 
 /* ── Connect WhatsApp ── */
-.connect-section{background:var(--card2);border:1px solid var(--teal-mid);border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 0 24px rgba(0,212,170,.15)}
-.connect-title{font-size:16px;font-weight:700;color:var(--teal);margin-bottom:4px}
+.connect-section{background:var(--card2);border:1px solid var(--teal-mid);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 0 24px rgba(0,212,170,.1)}
+.connect-title{font-size:15px;font-weight:700;color:var(--teal);margin-bottom:4px}
 .connect-sub{font-size:12px;color:var(--t2);margin-bottom:14px}
 .connect-tabs{display:flex;gap:6px;margin-bottom:14px}
 .connect-tab{flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--t2);font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s}
@@ -135,7 +184,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .conn-status{font-size:11px;color:var(--teal);text-align:center;margin-top:6px}
 .conn-status.connected{color:var(--green)}
 
-/* ── Recovery form (error state) ── */
+/* ── Recovery form ── */
 .rec-card{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px;max-width:340px;width:100%;margin:20px auto 0;text-align:left}
 .rec-title{font-size:14px;font-weight:700;color:var(--teal);margin-bottom:6px;text-align:center}
 .rec-sub{font-size:12px;color:var(--t2);margin-bottom:14px;text-align:center;line-height:1.5}
@@ -147,28 +196,26 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .rec-ok{background:var(--green-bg);border:1px solid var(--green);color:var(--green);padding:12px;border-radius:8px;font-size:12px;text-align:center;margin-top:10px}
 .rec-or{text-align:center;font-size:11px;color:var(--t3);margin:10px 0;letter-spacing:1px}
 
-/* ── Agente & Preços (v5) ── */
-.ag-section{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px}
-.ag-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
-.ag-title{font-size:16px;font-weight:700;color:var(--teal)}
-.ag-sub{font-size:11px;color:var(--t3);margin-top:4px}
-.ag-toggle{font-size:18px;color:var(--t2);transition:transform .25s}
-.ag-section.open .ag-toggle{transform:rotate(90deg);color:var(--teal)}
-.ag-body{display:none;margin-top:18px;padding-top:18px;border-top:1px solid var(--border)}
-.ag-section.open .ag-body{display:block}
-.ag-group{margin-bottom:20px}
-.ag-group-title{font-size:12px;font-weight:700;color:var(--t1);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+/* ── Agente & Preços ── */
+.ag-section{margin-bottom:16px}
+.ag-title{font-size:16px;font-weight:700;color:var(--teal);margin-bottom:4px;display:none}
+.ag-sub{display:none}
+.ag-toggle{display:none}
+.ag-header{display:none}
+.ag-body{display:block !important}
+.ag-group{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:12px}
+.ag-group-title{font-size:12px;font-weight:700;color:var(--t1);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 .ag-field{margin-bottom:12px}
 .ag-label{display:block;font-size:12px;color:var(--t2);margin-bottom:4px;font-weight:500}
 .ag-hint{font-size:10px;color:var(--t3);margin-top:3px;line-height:1.4}
-.ag-input,.ag-select,.ag-textarea{width:100%;padding:10px;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;color:var(--t1);font-family:inherit;font-size:13px;resize:vertical}
+.ag-input,.ag-select,.ag-textarea{width:100%;padding:10px;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;color:var(--t1);font-family:inherit;font-size:13px;resize:vertical;transition:border-color .2s}
 .ag-input:focus,.ag-select:focus,.ag-textarea:focus{outline:none;border-color:var(--teal-mid)}
 .ag-textarea{min-height:70px}
 .ag-checkbox{display:flex;align-items:center;gap:8px;padding:8px;background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .2s}
 .ag-checkbox:hover{border-color:var(--teal-mid)}
 .ag-checkbox input{accent-color:var(--teal);width:16px;height:16px;cursor:pointer}
 .ag-checkbox-label{font-size:12px;color:var(--t1);flex:1}
-.ag-save-row{display:flex;gap:8px;margin-top:20px}
+.ag-save-row{display:flex;gap:8px;margin-top:16px}
 .ag-save-btn{flex:1;padding:13px;border:none;background:var(--teal);color:#000;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
 .ag-save-btn:hover{opacity:.88}
 .ag-save-btn:disabled{opacity:.5;cursor:not-allowed}
@@ -178,307 +225,446 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .ag-chips-hint{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .ag-chip{font-size:10px;padding:2px 8px;background:rgba(0,212,170,.08);border:1px solid var(--teal-mid);border-radius:10px;color:var(--teal);cursor:pointer}
 .ag-chip:hover{background:rgba(0,212,170,.18)}
+
+/* ── Mobile: bottom tab bar ── */
+@media(max-width:768px){
+  .sidebar{position:fixed;top:auto;bottom:0;left:0;width:100%;height:56px;flex-direction:row;padding:0;border-right:none;border-top:1px solid var(--border);justify-content:space-around;gap:0}
+  .sidebar-logo{display:none}
+  .sidebar-bottom{display:none}
+  .nav-btn{width:auto;height:auto;flex-direction:column;gap:2px;padding:6px 12px;border-radius:8px;font-size:10px;color:var(--t3)}
+  .nav-btn span.nav-label{display:block;font-size:9px;font-weight:600;letter-spacing:.2px}
+  .nav-btn.active::before{display:none}
+  .nav-btn.active{background:transparent}
+  .nav-btn.active span.nav-label{color:var(--teal)}
+  .nav-tooltip{display:none}
+  .app-layout{margin-left:0;padding-bottom:64px}
+  .top-header{padding:12px 16px}
+  .content-area{padding:16px}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .kpi-card:last-child{grid-column:span 2}
+  .kpi-value{font-size:22px}
+}
+
+@media(max-width:380px){
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .kpi-card{padding:12px}
+  .kpi-value{font-size:20px}
+}
 </style>
 </head>
 <body>
-<div class="page">
-  <div class="container">
 
-    <!-- Loading state -->
-    <div id="state-loading" class="loading">
-      <div class="spinner"></div>
-      Carregando seu estúdio...
-    </div>
-
-    <!-- Error state -->
-    <div id="state-error" style="display:none">
-      <div class="error-box">
-        <div class="error-icon">⚠️</div>
-        <div class="error-msg" id="error-msg">Link inválido ou expirado.</div>
-
-        <!-- Formulário de recuperação -->
-        <div class="rec-card" id="rec-card">
-          <div class="rec-title">Solicitar novo link</div>
-          <div class="rec-sub">Enviaremos um novo link de acesso por WhatsApp e/ou email.</div>
-          <input class="rec-input" id="rec-email" type="email" autocomplete="email" placeholder="Email cadastrado"/>
-          <div class="rec-or">— ou —</div>
-          <input class="rec-input" id="rec-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="WhatsApp com DDD"/>
-          <button class="rec-btn" id="rec-btn" onclick="requestNewLink()">Enviar novo link</button>
-          <div class="rec-ok" id="rec-ok" style="display:none">✓ Se o email/WhatsApp estiver cadastrado, você receberá o novo link em alguns segundos.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main content -->
-    <div id="state-main" style="display:none">
-
-      <div class="header">
-        <div class="logo"><span class="ink">Ink</span>Flow</div>
-        <div class="subtitle">Gestão do Estúdio</div>
-      </div>
-
-      <!-- Studio info -->
-      <div class="studio-card">
-        <div class="studio-name" id="st-nome">Meu Estúdio</div>
-        <div class="studio-plan" id="st-plano">estúdio</div>
-        <div class="studio-info">
-          Responsável: <span id="st-owner">—</span><br/>
-          WhatsApp: <span id="st-instance">—</span>
-        </div>
-      </div>
-
-      <!-- Conectar WhatsApp (visível apenas quando tenant.ativo=false) -->
-      <div class="connect-section" id="connect-section" style="display:none">
-        <div class="connect-title">🔌 Conecte seu WhatsApp</div>
-        <div class="connect-sub">Seu estúdio está pronto. Falta só conectar o WhatsApp que o assistente vai usar.</div>
-        <div class="connect-tabs">
-          <button class="connect-tab active" id="tab-qr" onclick="switchConnTab('qr')">QR Code</button>
-          <button class="connect-tab" id="tab-pair" onclick="switchConnTab('pair')">Código no celular</button>
-        </div>
-        <div class="connect-body" id="conn-qr">
-          <div class="qr-wrap">
-            <img id="qr-img" style="display:none" alt="QR Code"/>
-            <div id="qr-loading" class="qr-loading">Gerando QR Code...</div>
-          </div>
-          <div class="conn-hint">Abra o WhatsApp → Configurações → Dispositivos conectados → Conectar dispositivo → aponte para o QR</div>
-          <button class="qr-refresh" onclick="refreshQR()">↻ Novo QR</button>
-        </div>
-        <div class="connect-body" id="conn-pair" style="display:none">
-          <div class="pair-input-wrap">
-            <input class="pair-input" id="pair-number" type="tel" inputmode="tel" placeholder="DDD + número (ex: 11987654321)"/>
-            <button class="pair-btn" onclick="requestPairingCode()">Gerar código</button>
-          </div>
-          <div class="pair-code-wrap" id="pair-code-wrap" style="display:none">
-            <div class="pair-code" id="pair-code">----</div>
-            <div class="conn-hint">No WhatsApp → Dispositivos conectados → Conectar com número de telefone → digite este código</div>
-          </div>
-        </div>
-        <div class="conn-status" id="conn-status">• verificando conexão...</div>
-      </div>
-
-      <!-- Slots -->
-      <div class="slots-section">
-        <div class="slots-title">🎨 Artistas do Estúdio</div>
-        <div class="slots-bar"><div class="slots-fill" id="slots-fill"></div></div>
-        <div class="slots-label"><span id="slots-used">0</span> de <span id="slots-max">4</span> slots ocupados</div>
-
-        <div class="artists-list" id="artists-list">
-          <!-- Populated by JS -->
-        </div>
-      </div>
-
-      <!-- Invite -->
-      <div class="invite-section" id="invite-section">
-        <div class="invite-title">Convidar Artista</div>
-        <div class="invite-sub">Gere um link de convite para um artista conectar o WhatsApp dele ao estúdio. Cada artista terá seu próprio assistente virtual.</div>
-        <button class="invite-btn" id="invite-btn" onclick="generateInvite()">Gerar link de convite</button>
-        <div class="link-box" id="link-box">
-          <div class="link-label">Link de convite (válido por 7 dias)</div>
-          <span class="link-url" id="link-url"></span>
-          <div class="link-actions">
-            <button class="link-copy" onclick="copyLink()">📋 Copiar link</button>
-            <button class="link-share" onclick="shareLink()">📤 Compartilhar</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Agente & Preços (v5) -->
-      <div class="ag-section" id="ag-section">
-        <div class="ag-header" onclick="toggleAgentSection()">
-          <div>
-            <div class="ag-title">🤖 Agente &amp; Preços</div>
-            <div class="ag-sub">Personalize como seu assistente virtual atende clientes</div>
-          </div>
-          <div class="ag-toggle">›</div>
-        </div>
-
-        <div class="ag-body">
-          <!-- Grupo 1: Identidade do agente -->
-          <div class="ag-group">
-            <div class="ag-group-title">Identidade do agente</div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-nome-agente">Nome do agente</label>
-              <input class="ag-input" id="ag-nome-agente" placeholder="Ex: Isabela"/>
-              <div class="ag-hint">Nome que aparece pro cliente quando o bot se apresenta</div>
-            </div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-persona">Personalidade (descrição livre)</label>
-              <textarea class="ag-textarea" id="ag-persona" rows="3" placeholder="Ex: Carioca descontraida, empatica com clientes nervosos na primeira tatuagem."></textarea>
-              <div class="ag-hint">Descreva em 1-3 frases o jeito do seu agente</div>
-            </div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-tom">Tom de voz</label>
-              <select class="ag-select" id="ag-tom">
-                <option value="amigavel">Amigável (padrão)</option>
-                <option value="descontraido">Descontraído</option>
-                <option value="profissional">Profissional</option>
-                <option value="zoeiro">Bem-humorado / zoeiro</option>
-                <option value="formal">Formal</option>
-              </select>
-            </div>
-            <div class="ag-field">
-              <label class="ag-checkbox">
-                <input type="checkbox" id="ag-identificador"/>
-                <span class="ag-checkbox-label">Usar nome do agente como prefixo na 1ª msg<br><span style="color:var(--t3);font-size:10px">Ex: "Isabela: Oi tudo bem?" — senão texto direto sem prefixo</span></span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Grupo 2: Tom / estilo de mensagem -->
-          <div class="ag-group">
-            <div class="ag-group-title">Estilo das mensagens</div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-emoji">Uso de emojis</label>
-              <select class="ag-select" id="ag-emoji">
-                <option value="nenhum">Nenhum</option>
-                <option value="raro" selected>Raro (1 a cada 3 msgs)</option>
-                <option value="moderado">Moderado (1 por msg quando encaixa)</option>
-                <option value="muitos">Muitos</option>
-              </select>
-            </div>
-            <div class="ag-field">
-              <label class="ag-checkbox">
-                <input type="checkbox" id="ag-giria" checked/>
-                <span class="ag-checkbox-label">Usa gírias brasileiras (massa, fechou, top)</span>
-              </label>
-            </div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-proibidas">Expressões proibidas (uma por linha)</label>
-              <textarea class="ag-textarea" id="ag-proibidas" rows="3" placeholder="senhor&#10;senhora&#10;caro cliente"></textarea>
-              <div class="ag-hint">Lista de frases que o bot NUNCA deve usar. Padrão já bloqueia "caro cliente", "atenciosamente", etc.</div>
-            </div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-frases-sau">Saudações variadas (uma por linha)</label>
-              <textarea class="ag-textarea" id="ag-frases-sau" rows="2" placeholder="Oii&#10;Fala&#10;Opa"></textarea>
-            </div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-frases-conf">Confirmações variadas (uma por linha)</label>
-              <textarea class="ag-textarea" id="ag-frases-conf" rows="2" placeholder="Fechou&#10;Combinado&#10;Show"></textarea>
-            </div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-frases-enc">Encerramentos variados (uma por linha)</label>
-              <textarea class="ag-textarea" id="ag-frases-enc" rows="2" placeholder="Tmj&#10;Até mais&#10;Qualquer coisa me chama"></textarea>
-            </div>
-          </div>
-
-          <!-- Grupo 3: Escopo do estúdio -->
-          <div class="ag-group">
-            <div class="ag-group-title">Escopo do estúdio</div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-est-aceitos">Estilos em que o estúdio é especializado</label>
-              <textarea class="ag-textarea" id="ag-est-aceitos" rows="2" placeholder="blackwork&#10;fineline&#10;realismo"></textarea>
-              <div class="ag-hint">Uma por linha. Bot menciona estes quando relevante</div>
-            </div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-est-recusados">Estilos que o estúdio NÃO faz</label>
-              <textarea class="ag-textarea" id="ag-est-recusados" rows="2" placeholder="old_school"></textarea>
-              <div class="ag-hint">Bot recusa pedido desses estilos educadamente</div>
-            </div>
-            <div class="ag-field">
-              <label class="ag-checkbox">
-                <input type="checkbox" id="ag-cobertura" checked/>
-                <span class="ag-checkbox-label">Estúdio aceita cobertura (cover up)<br><span style="color:var(--t3);font-size:10px">Se não, bot recusa e encerra educadamente sem chamar você</span></span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Grupo 4: Gatilhos de handoff -->
-          <div class="ag-group">
-            <div class="ag-group-title">Gatilhos de handoff</div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-gatilhos">Palavras/situações que fazem o bot chamar você (uma por linha)</label>
-              <textarea class="ag-textarea" id="ag-gatilhos" rows="4" placeholder="cobertura&#10;retoque&#10;rosto&#10;mao&#10;pescoco&#10;menor_idade"></textarea>
-              <div class="ag-chips-hint">
-                <span class="ag-chip" onclick="appendChip('ag-gatilhos','cobertura')">+ cobertura</span>
-                <span class="ag-chip" onclick="appendChip('ag-gatilhos','retoque')">+ retoque</span>
-                <span class="ag-chip" onclick="appendChip('ag-gatilhos','rosto')">+ rosto</span>
-                <span class="ag-chip" onclick="appendChip('ag-gatilhos','mao')">+ mão</span>
-                <span class="ag-chip" onclick="appendChip('ag-gatilhos','pescoco')">+ pescoço</span>
-                <span class="ag-chip" onclick="appendChip('ag-gatilhos','menor_idade')">+ menor de idade</span>
-                <span class="ag-chip" onclick="appendChip('ag-gatilhos','cicatriz')">+ cicatriz</span>
-                <span class="ag-chip" onclick="appendChip('ag-gatilhos','gestante')">+ gestante</span>
-              </div>
-              <div class="ag-hint">Clique nas sugestões pra adicionar</div>
-            </div>
-          </div>
-
-          <!-- Grupo 5: Agenda e preços -->
-          <div class="ag-group">
-            <div class="ag-group-title">Agenda e preços</div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-horario">Horário de funcionamento (JSON)</label>
-              <textarea class="ag-textarea" id="ag-horario" rows="3" placeholder='{"seg-sex":"10:00-19:00","sab":"10:00-15:00","dom":"closed"}'></textarea>
-              <div class="ag-hint">Formato JSON. Use "seg", "ter", ..., "dom" ou intervalos "seg-sex". Valor "closed" pra dia fechado.</div>
-            </div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-duracao">Duração padrão de sessão (horas)</label>
-              <input class="ag-input" id="ag-duracao" type="number" min="1" max="12" step="1" placeholder="3"/>
-              <div class="ag-hint">Usado só internamente pra reservar slot. Bot nunca diz isso ao cliente.</div>
-            </div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-sinal">Percentual do sinal (%)</label>
-              <input class="ag-input" id="ag-sinal" type="number" min="0" max="100" step="1" placeholder="30"/>
-              <div class="ag-hint">Quanto o cliente paga antecipado pra fechar agendamento</div>
-            </div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-precificacao">Tabela de preços (JSON avançado)</label>
-              <textarea class="ag-textarea" id="ag-precificacao" rows="4" placeholder='{"tabela_tamanho":{"P":[200,400],"M":[400,800],"G":[800,1500],"GG":[1500,3000]},"minimo":200}'></textarea>
-              <div class="ag-hint">Edição JSON direto. UI visual virá em breve. Default aplicado se vazio.</div>
-            </div>
-          </div>
-
-          <!-- Grupo 6: Portfolio -->
-          <div class="ag-group">
-            <div class="ag-group-title">Portfólio</div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-portfolio">URLs de fotos/vídeos (uma por linha)</label>
-              <textarea class="ag-textarea" id="ag-portfolio" rows="4" placeholder="https://exemplo.com/blackwork1.jpg&#10;https://exemplo.com/fineline1.jpg"></textarea>
-              <div class="ag-hint">Dica: inclua o estilo no nome do arquivo pra bot filtrar por estilo (ex: "blackwork1.jpg"). Upload direto virá em breve.</div>
-            </div>
-          </div>
-
-          <!-- Grupo 7: FAQ -->
-          <div class="ag-group">
-            <div class="ag-group-title">FAQ do estúdio</div>
-            <div class="ag-field">
-              <label class="ag-label" for="ag-faq">Perguntas e respostas frequentes</label>
-              <textarea class="ag-textarea" id="ag-faq" rows="6" placeholder="P: Aceita PIX?&#10;R: Sim, aceitamos PIX, crédito e débito.&#10;&#10;P: Onde fica o estúdio?&#10;R: Rua Exemplo 123, Rio de Janeiro."></textarea>
-              <div class="ag-hint">Bot consulta quando cliente pergunta sobre localização, pagamentos, cuidados, etc.</div>
-            </div>
-          </div>
-
-          <!-- Save -->
-          <div class="ag-save-row">
-            <button class="ag-save-btn" id="ag-save-btn" onclick="saveAgentConfig()">Salvar configurações</button>
-          </div>
-          <div class="ag-save-msg" id="ag-save-msg"></div>
-        </div>
-      </div>
-
-      <!-- Support -->
-      <div class="support-box">
-        <button type="button" class="support-link" onclick="openSupport()">
-          💬 Precisa de ajuda? Fale com o suporte InkFlow
-        </button>
-      </div>
-
-    </div>
+<!-- ── Sidebar (desktop) / Bottom bar (mobile) ── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">IF</div>
+  <button class="nav-btn active" onclick="switchTab('dashboard')" data-tab="dashboard">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="nav-label">Dashboard</span>
+    <span class="nav-tooltip">Dashboard</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('agente')" data-tab="agente">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4l2 2-2 2"/></svg>
+    <span class="nav-label">Agente</span>
+    <span class="nav-tooltip">Agente</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('conversas')" data-tab="conversas">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <span class="nav-label">Conversas</span>
+    <span class="nav-tooltip">Conversas</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('agendamentos')" data-tab="agendamentos">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="12" y1="14" x2="12" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/></svg>
+    <span class="nav-label">Agenda</span>
+    <span class="nav-tooltip">Agendamentos</span>
+  </button>
+  <div class="sidebar-bottom">
+    <button class="nav-btn" onclick="openSupport()" title="Suporte">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span class="nav-tooltip">Suporte</span>
+    </button>
   </div>
-</div>
+</nav>
+
+<!-- ── App ── -->
+<div class="app-layout">
+
+  <!-- Top header -->
+  <header class="top-header" id="top-header" style="display:none">
+    <div class="top-header-name" id="header-studio-name">Meu Estúdio</div>
+    <div class="top-header-badge" id="header-plan-badge">estúdio</div>
+    <div class="top-header-status" id="header-status">
+      <span class="status-dot pending"></span>
+      <span>verificando...</span>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="content-area">
+    <div class="content-inner">
+
+      <!-- Loading state -->
+      <div id="state-loading" class="loading">
+        <div class="spinner"></div>
+        Carregando seu estúdio...
+      </div>
+
+      <!-- Error state -->
+      <div id="state-error" style="display:none">
+        <div class="error-box">
+          <div class="error-icon">&#9888;&#65039;</div>
+          <div class="error-msg" id="error-msg">Link inválido ou expirado.</div>
+
+          <div class="rec-card" id="rec-card">
+            <div class="rec-title">Solicitar novo link</div>
+            <div class="rec-sub">Enviaremos um novo link de acesso por WhatsApp e/ou email.</div>
+            <input class="rec-input" id="rec-email" type="email" autocomplete="email" placeholder="Email cadastrado"/>
+            <div class="rec-or">— ou —</div>
+            <input class="rec-input" id="rec-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="WhatsApp com DDD"/>
+            <button class="rec-btn" id="rec-btn" onclick="requestNewLink()">Enviar novo link</button>
+            <div class="rec-ok" id="rec-ok" style="display:none">&#10003; Se o email/WhatsApp estiver cadastrado, você receberá o novo link em alguns segundos.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <div id="state-main" style="display:none">
+
+        <!-- ═══ TAB: Dashboard ═══ -->
+        <div class="tab-panel active" id="tab-dashboard">
+
+          <!-- KPI cards -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-value" id="kpi-conversas">&mdash;</div>
+              <div class="kpi-label">Conversas hoje</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-value" id="kpi-orcamentos">&mdash;</div>
+              <div class="kpi-label">Orçamentos esta semana</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-value" id="kpi-agendamentos">&mdash;</div>
+              <div class="kpi-label">Agendamentos pendentes</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-value" id="kpi-conversao">&mdash;</div>
+              <div class="kpi-label">Taxa de conversão</div>
+            </div>
+            <div class="kpi-card accent">
+              <div class="kpi-value" id="kpi-sinal">&mdash;</div>
+              <div class="kpi-label">Sinal recebido (R$)</div>
+            </div>
+          </div>
+
+          <!-- Atividade recente -->
+          <div class="section-block">
+            <div class="section-title">
+              <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Atividade recente
+            </div>
+            <div class="empty-state" style="padding:24px 12px">
+              <div style="color:var(--t3);font-size:13px">Nenhuma atividade registrada ainda</div>
+            </div>
+          </div>
+
+          <!-- Studio info -->
+          <div class="section-block">
+            <div class="section-title">
+              <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Informações do estúdio
+            </div>
+            <div class="studio-card" style="background:transparent;border:none;padding:0;margin:0">
+              <div class="studio-name" id="st-nome">Meu Estúdio</div>
+              <div class="studio-plan" id="st-plano">estúdio</div>
+              <div class="studio-info">
+                Responsável: <span id="st-owner">&mdash;</span><br/>
+                WhatsApp: <span id="st-instance">&mdash;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Conectar WhatsApp -->
+          <div class="connect-section" id="connect-section" style="display:none">
+            <div class="connect-title">&#128268; Conecte seu WhatsApp</div>
+            <div class="connect-sub">Seu estúdio está pronto. Falta só conectar o WhatsApp que o assistente vai usar.</div>
+            <div class="connect-tabs">
+              <button class="connect-tab active" id="tab-qr" onclick="switchConnTab('qr')">QR Code</button>
+              <button class="connect-tab" id="tab-pair" onclick="switchConnTab('pair')">Código no celular</button>
+            </div>
+            <div class="connect-body" id="conn-qr">
+              <div class="qr-wrap">
+                <img id="qr-img" style="display:none" alt="QR Code"/>
+                <div id="qr-loading" class="qr-loading">Gerando QR Code...</div>
+              </div>
+              <div class="conn-hint">Abra o WhatsApp → Configurações → Dispositivos conectados → Conectar dispositivo → aponte para o QR</div>
+              <button class="qr-refresh" onclick="refreshQR()">&#8635; Novo QR</button>
+            </div>
+            <div class="connect-body" id="conn-pair" style="display:none">
+              <div class="pair-input-wrap">
+                <input class="pair-input" id="pair-number" type="tel" inputmode="tel" placeholder="DDD + número (ex: 11987654321)"/>
+                <button class="pair-btn" onclick="requestPairingCode()">Gerar código</button>
+              </div>
+              <div class="pair-code-wrap" id="pair-code-wrap" style="display:none">
+                <div class="pair-code" id="pair-code">----</div>
+                <div class="conn-hint">No WhatsApp → Dispositivos conectados → Conectar com número de telefone → digite este código</div>
+              </div>
+            </div>
+            <div class="conn-status" id="conn-status">• verificando conexão...</div>
+          </div>
+
+          <!-- Slots -->
+          <div class="slots-section">
+            <div class="slots-title">
+              <svg style="width:16px;height:16px;stroke:var(--teal);fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+              Artistas do Estúdio
+            </div>
+            <div class="slots-bar"><div class="slots-fill" id="slots-fill"></div></div>
+            <div class="slots-label"><span id="slots-used">0</span> de <span id="slots-max">4</span> slots ocupados</div>
+            <div class="artists-list" id="artists-list"></div>
+          </div>
+
+          <!-- Invite -->
+          <div class="invite-section" id="invite-section">
+            <div class="invite-title">Convidar Artista</div>
+            <div class="invite-sub">Gere um link de convite para um artista conectar o WhatsApp dele ao estúdio. Cada artista terá seu próprio assistente virtual.</div>
+            <button class="invite-btn" id="invite-btn" onclick="generateInvite()">Gerar link de convite</button>
+            <div class="link-box" id="link-box">
+              <div class="link-label">Link de convite (válido por 7 dias)</div>
+              <span class="link-url" id="link-url"></span>
+              <div class="link-actions">
+                <button class="link-copy" onclick="copyLink()">&#128203; Copiar link</button>
+                <button class="link-share" onclick="shareLink()">&#128228; Compartilhar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Support (mobile) -->
+          <div class="support-box" style="display:none" id="mobile-support">
+            <button type="button" class="support-link" onclick="openSupport()">
+              &#128172; Precisa de ajuda? Fale com o suporte InkFlow
+            </button>
+          </div>
+
+        </div>
+
+        <!-- ═══ TAB: Agente ═══ -->
+        <div class="tab-panel" id="tab-agente">
+
+          <div style="margin-bottom:20px">
+            <h2 style="font-size:18px;font-weight:700;color:var(--t1);margin-bottom:4px">Agente &amp; Preços</h2>
+            <p style="font-size:13px;color:var(--t3)">Personalize como seu assistente virtual atende clientes</p>
+          </div>
+
+          <div class="ag-section" id="ag-section">
+            <div class="ag-header" onclick="toggleAgentSection()">
+              <div>
+                <div class="ag-title">&#129302; Agente &amp; Preços</div>
+                <div class="ag-sub">Personalize como seu assistente virtual atende clientes</div>
+              </div>
+              <div class="ag-toggle">›</div>
+            </div>
+
+            <div class="ag-body">
+              <!-- Grupo 1: Identidade do agente -->
+              <div class="ag-group">
+                <div class="ag-group-title">Identidade do agente</div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-nome-agente">Nome do agente</label>
+                  <input class="ag-input" id="ag-nome-agente" placeholder="Ex: Isabela"/>
+                  <div class="ag-hint">Nome que aparece pro cliente quando o bot se apresenta</div>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-persona">Personalidade (descrição livre)</label>
+                  <textarea class="ag-textarea" id="ag-persona" rows="3" placeholder="Ex: Carioca descontraida, empatica com clientes nervosos na primeira tatuagem."></textarea>
+                  <div class="ag-hint">Descreva em 1-3 frases o jeito do seu agente</div>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-tom">Tom de voz</label>
+                  <select class="ag-select" id="ag-tom">
+                    <option value="amigavel">Amigável (padrão)</option>
+                    <option value="descontraido">Descontraído</option>
+                    <option value="profissional">Profissional</option>
+                    <option value="zoeiro">Bem-humorado / zoeiro</option>
+                    <option value="formal">Formal</option>
+                  </select>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-checkbox">
+                    <input type="checkbox" id="ag-identificador"/>
+                    <span class="ag-checkbox-label">Usar nome do agente como prefixo na 1ª msg<br><span style="color:var(--t3);font-size:10px">Ex: "Isabela: Oi tudo bem?" — senão texto direto sem prefixo</span></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Grupo 2: Tom / estilo de mensagem -->
+              <div class="ag-group">
+                <div class="ag-group-title">Estilo das mensagens</div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-emoji">Uso de emojis</label>
+                  <select class="ag-select" id="ag-emoji">
+                    <option value="nenhum">Nenhum</option>
+                    <option value="raro" selected>Raro (1 a cada 3 msgs)</option>
+                    <option value="moderado">Moderado (1 por msg quando encaixa)</option>
+                    <option value="muitos">Muitos</option>
+                  </select>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-checkbox">
+                    <input type="checkbox" id="ag-giria" checked/>
+                    <span class="ag-checkbox-label">Usa gírias brasileiras (massa, fechou, top)</span>
+                  </label>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-proibidas">Expressões proibidas (uma por linha)</label>
+                  <textarea class="ag-textarea" id="ag-proibidas" rows="3" placeholder="senhor&#10;senhora&#10;caro cliente"></textarea>
+                  <div class="ag-hint">Lista de frases que o bot NUNCA deve usar. Padrão já bloqueia "caro cliente", "atenciosamente", etc.</div>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-frases-sau">Saudações variadas (uma por linha)</label>
+                  <textarea class="ag-textarea" id="ag-frases-sau" rows="2" placeholder="Oii&#10;Fala&#10;Opa"></textarea>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-frases-conf">Confirmações variadas (uma por linha)</label>
+                  <textarea class="ag-textarea" id="ag-frases-conf" rows="2" placeholder="Fechou&#10;Combinado&#10;Show"></textarea>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-frases-enc">Encerramentos variados (uma por linha)</label>
+                  <textarea class="ag-textarea" id="ag-frases-enc" rows="2" placeholder="Tmj&#10;Até mais&#10;Qualquer coisa me chama"></textarea>
+                </div>
+              </div>
+
+              <!-- Grupo 3: Escopo do estúdio -->
+              <div class="ag-group">
+                <div class="ag-group-title">Escopo do estúdio</div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-est-aceitos">Estilos em que o estúdio é especializado</label>
+                  <textarea class="ag-textarea" id="ag-est-aceitos" rows="2" placeholder="blackwork&#10;fineline&#10;realismo"></textarea>
+                  <div class="ag-hint">Uma por linha. Bot menciona estes quando relevante</div>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-est-recusados">Estilos que o estúdio NÃO faz</label>
+                  <textarea class="ag-textarea" id="ag-est-recusados" rows="2" placeholder="old_school"></textarea>
+                  <div class="ag-hint">Bot recusa pedido desses estilos educadamente</div>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-checkbox">
+                    <input type="checkbox" id="ag-cobertura" checked/>
+                    <span class="ag-checkbox-label">Estúdio aceita cobertura (cover up)<br><span style="color:var(--t3);font-size:10px">Se não, bot recusa e encerra educadamente sem chamar você</span></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Grupo 4: Gatilhos de handoff -->
+              <div class="ag-group">
+                <div class="ag-group-title">Gatilhos de handoff</div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-gatilhos">Palavras/situações que fazem o bot chamar você (uma por linha)</label>
+                  <textarea class="ag-textarea" id="ag-gatilhos" rows="4" placeholder="cobertura&#10;retoque&#10;rosto&#10;mao&#10;pescoco&#10;menor_idade"></textarea>
+                  <div class="ag-chips-hint">
+                    <span class="ag-chip" onclick="appendChip('ag-gatilhos','cobertura')">+ cobertura</span>
+                    <span class="ag-chip" onclick="appendChip('ag-gatilhos','retoque')">+ retoque</span>
+                    <span class="ag-chip" onclick="appendChip('ag-gatilhos','rosto')">+ rosto</span>
+                    <span class="ag-chip" onclick="appendChip('ag-gatilhos','mao')">+ mão</span>
+                    <span class="ag-chip" onclick="appendChip('ag-gatilhos','pescoco')">+ pescoço</span>
+                    <span class="ag-chip" onclick="appendChip('ag-gatilhos','menor_idade')">+ menor de idade</span>
+                    <span class="ag-chip" onclick="appendChip('ag-gatilhos','cicatriz')">+ cicatriz</span>
+                    <span class="ag-chip" onclick="appendChip('ag-gatilhos','gestante')">+ gestante</span>
+                  </div>
+                  <div class="ag-hint">Clique nas sugestões pra adicionar</div>
+                </div>
+              </div>
+
+              <!-- Grupo 5: Agenda e preços -->
+              <div class="ag-group">
+                <div class="ag-group-title">Agenda e preços</div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-horario">Horário de funcionamento (JSON)</label>
+                  <textarea class="ag-textarea" id="ag-horario" rows="3" placeholder='{"seg-sex":"10:00-19:00","sab":"10:00-15:00","dom":"closed"}'></textarea>
+                  <div class="ag-hint">Formato JSON. Use "seg", "ter", ..., "dom" ou intervalos "seg-sex". Valor "closed" pra dia fechado.</div>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-duracao">Duração padrão de sessão (horas)</label>
+                  <input class="ag-input" id="ag-duracao" type="number" min="1" max="12" step="1" placeholder="3"/>
+                  <div class="ag-hint">Usado só internamente pra reservar slot. Bot nunca diz isso ao cliente.</div>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-sinal">Percentual do sinal (%)</label>
+                  <input class="ag-input" id="ag-sinal" type="number" min="0" max="100" step="1" placeholder="30"/>
+                  <div class="ag-hint">Quanto o cliente paga antecipado pra fechar agendamento</div>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-precificacao">Tabela de preços (JSON avançado)</label>
+                  <textarea class="ag-textarea" id="ag-precificacao" rows="4" placeholder='{"tabela_tamanho":{"P":[200,400],"M":[400,800],"G":[800,1500],"GG":[1500,3000]},"minimo":200}'></textarea>
+                  <div class="ag-hint">Edição JSON direto. UI visual virá em breve. Default aplicado se vazio.</div>
+                </div>
+              </div>
+
+              <!-- Grupo 6: Portfolio -->
+              <div class="ag-group">
+                <div class="ag-group-title">Portfólio</div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-portfolio">URLs de fotos/vídeos (uma por linha)</label>
+                  <textarea class="ag-textarea" id="ag-portfolio" rows="4" placeholder="https://exemplo.com/blackwork1.jpg&#10;https://exemplo.com/fineline1.jpg"></textarea>
+                  <div class="ag-hint">Dica: inclua o estilo no nome do arquivo pra bot filtrar por estilo (ex: "blackwork1.jpg"). Upload direto virá em breve.</div>
+                </div>
+              </div>
+
+              <!-- Grupo 7: FAQ -->
+              <div class="ag-group">
+                <div class="ag-group-title">FAQ do estúdio</div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-faq">Perguntas e respostas frequentes</label>
+                  <textarea class="ag-textarea" id="ag-faq" rows="6" placeholder="P: Aceita PIX?&#10;R: Sim, aceitamos PIX, crédito e débito.&#10;&#10;P: Onde fica o estúdio?&#10;R: Rua Exemplo 123, Rio de Janeiro."></textarea>
+                  <div class="ag-hint">Bot consulta quando cliente pergunta sobre localização, pagamentos, cuidados, etc.</div>
+                </div>
+              </div>
+
+              <!-- Save -->
+              <div class="ag-save-row">
+                <button class="ag-save-btn" id="ag-save-btn" onclick="saveAgentConfig()">Salvar configurações</button>
+              </div>
+              <div class="ag-save-msg" id="ag-save-msg"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ TAB: Conversas ═══ -->
+        <div class="tab-panel" id="tab-conversas">
+          <div class="empty-state">
+            <div class="empty-state-icon">&#128172;</div>
+            <div class="empty-state-title">Conversas</div>
+            Em breve — Histórico de conversas com clientes
+          </div>
+        </div>
+
+        <!-- ═══ TAB: Agendamentos ═══ -->
+        <div class="tab-panel" id="tab-agendamentos">
+          <div class="empty-state">
+            <div class="empty-state-icon">&#128197;</div>
+            <div class="empty-state-title">Agendamentos</div>
+            Em breve — Seus agendamentos e confirmações
+          </div>
+        </div>
+
+      </div><!-- /state-main -->
+
+    </div><!-- /content-inner -->
+  </main>
+</div><!-- /app-layout -->
 
 <div class="toast" id="toast">Link copiado!</div>
 
 <!-- Welcome modal (primeiro acesso pós-onboarding) -->
 <div class="wc-overlay" id="wc-overlay">
   <div class="wc-card">
-    <div class="wc-emoji">🎉</div>
+    <div class="wc-emoji">&#127881;</div>
     <div class="wc-title">Seu InkFlow está pronto!</div>
     <div class="wc-sub">Agora convide os artistas do seu estúdio para conectarem os WhatsApps deles.</div>
-    <div class="wc-slots" id="wc-slots">Você pode convidar até <span id="wc-slot-count">—</span> artistas</div>
+    <div class="wc-slots" id="wc-slots">Você pode convidar até <span id="wc-slot-count">&mdash;</span> artistas</div>
     <div class="wc-invite" id="wc-invite-box" style="display:none">
       <div class="wc-invite-label">Link de convite (válido por 7 dias)</div>
       <div class="wc-invite-link" id="wc-invite-link"></div>
-      <button class="wc-btn primary" onclick="copyWelcomeLink()">📋 Copiar link de convite</button>
+      <button class="wc-btn primary" onclick="copyWelcomeLink()">&#128203; Copiar link de convite</button>
     </div>
     <div class="wc-actions">
       <button class="wc-btn primary" id="wc-generate" onclick="generateWelcomeInvite()">Gerar primeiro link de convite</button>
@@ -488,6 +674,29 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 </div>
 
 <script>
+// ── Tab switching ──
+function switchTab(tabName) {
+  // Update nav buttons
+  document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+  // Update panels
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === 'tab-' + tabName);
+  });
+  // Save to URL hash
+  window.location.hash = tabName;
+}
+
+// Restore tab from URL hash on load
+function restoreTab() {
+  const hash = window.location.hash.replace('#', '');
+  if (hash && document.getElementById('tab-' + hash)) {
+    switchTab(hash);
+  }
+}
+window.addEventListener('hashchange', restoreTab);
+
 // ── State ──
 let studioData = null;
 let tenantId = null;
@@ -543,6 +752,8 @@ async function init() {
       }
       // Mostra banner verde persistente + esconde seção conectar
       showConnectedBanner();
+      // Update header status
+      updateHeaderStatus('online', 'WhatsApp conectado');
       // Limpa ?pending_whatsapp=true da URL
       try {
         const url = new URL(window.location.href);
@@ -553,6 +764,7 @@ async function init() {
       } catch {}
     } else {
       // Não conectado — abre seção conectar
+      updateHeaderStatus('pending', 'WhatsApp desconectado');
       startConnectFlow();
     }
 
@@ -569,11 +781,19 @@ async function init() {
     }
     renderStudio(data);
     maybeShowWelcome(data);
+    restoreTab();
 
   } catch (err) {
     console.error('init error:', err);
     showError('Erro ao carregar dados. Verifique sua conexão e tente novamente.');
   }
+}
+
+function updateHeaderStatus(state, label) {
+  const el = document.getElementById('header-status');
+  if (!el) return;
+  const dotClass = state === 'online' ? 'online' : state === 'offline' ? 'offline' : 'pending';
+  el.innerHTML = '<span class="status-dot ' + dotClass + '"></span><span>' + label + '</span>';
 }
 
 function showError(msg) {
@@ -585,14 +805,21 @@ function showError(msg) {
 function renderStudio(data) {
   document.getElementById('state-loading').style.display = 'none';
   document.getElementById('state-main').style.display = 'block';
+  document.getElementById('top-header').style.display = '';
 
   const t = data.tenant;
   const s = data.slots;
 
-  // Studio card
-  document.getElementById('st-nome').textContent = t.nome_estudio || 'Meu Estúdio';
+  // Header
+  const studioName = t.nome_estudio || 'Meu Estúdio';
+  document.getElementById('header-studio-name').textContent = studioName;
   const planLabels = { estudio: 'Estúdio', premium: 'Estúdio VIP' };
-  document.getElementById('st-plano').textContent = planLabels[t.plano] || t.plano;
+  const planLabel = planLabels[t.plano] || t.plano;
+  document.getElementById('header-plan-badge').textContent = planLabel;
+
+  // Studio card
+  document.getElementById('st-nome').textContent = studioName;
+  document.getElementById('st-plano').textContent = planLabel;
   document.getElementById('st-owner').textContent = t.nome || t.email || '—';
   document.getElementById('st-instance').textContent = t.evo_instance || '—';
 
@@ -1019,6 +1246,7 @@ async function pollConnection() {
       } catch {}
       setTimeout(() => {
         showConnectedBanner();
+        updateHeaderStatus('online', 'WhatsApp conectado');
         showToast('WhatsApp conectado!');
       }, 1500);
     }
