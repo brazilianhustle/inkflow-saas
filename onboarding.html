@@ -994,13 +994,18 @@ select.fi option{background:var(--card);color:var(--t1)}
         <label class="fl" style="margin-top:8px">Nome do agente deve aparecer na mensagem?</label>
         <div class="fi-hint"><span class="link-cta" onclick="toggleExemplosNome()">Veja exemplos</span></div>
         <div id="exemplos-nome" style="display:none;margin-top:6px">
-          <div style="background:var(--bg2);border-radius:10px;padding:10px;margin-bottom:6px;font-size:12px;color:var(--t2);line-height:1.5">
-            <strong style="color:var(--t2)">Com prefixo:</strong><br>
-            <span id="ex-nome-com"></span>
+          <div class="fi-hint" style="margin-bottom:4px;font-weight:600;color:var(--t2)">Com prefixo:</div>
+          <div class="wa-preview">
+            <div class="wa-msg" id="ex-nome-com">
+              <div class="wa-msg-name"></div>
+              <span class="wa-msg-time">14:30 ✓✓</span>
+            </div>
           </div>
-          <div style="background:var(--bg2);border-radius:10px;padding:10px;font-size:12px;color:var(--t2);line-height:1.5">
-            <strong style="color:var(--t3)">Sem prefixo:</strong><br>
-            <em id="ex-nome-sem"></em>
+          <div class="fi-hint" style="margin-bottom:4px;margin-top:10px;font-weight:600;color:var(--t3)">Sem prefixo:</div>
+          <div class="wa-preview">
+            <div class="wa-msg" id="ex-nome-sem">
+              <span class="wa-msg-time">14:30 ✓✓</span>
+            </div>
           </div>
         </div>
       </div>
@@ -2468,8 +2473,10 @@ function toggleExemplosNome() {
   const agente = document.getElementById('p-nome-agente').value || '{nome do agente}';
   let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
   const estudio = ob.estudio || '{nome do estúdio}';
-  document.getElementById('ex-nome-com').innerHTML = '<strong style="color:var(--t1)">' + agente + ':</strong> <em>Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem?</em>';
-  document.getElementById('ex-nome-sem').innerHTML = '<em>Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem?</em>';
+  const comEl = document.getElementById('ex-nome-com');
+  comEl.innerHTML = '<div class="wa-msg-name">' + agente + '</div>' + agente + ': <em>Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem?</em><span class="wa-msg-time">14:30 ✓✓</span>';
+  const semEl = document.getElementById('ex-nome-sem');
+  semEl.innerHTML = '<div class="wa-msg-name">' + agente + '</div>Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem?<span class="wa-msg-time">14:30 ✓✓</span>';
 }
 
 async function aprimorarPersona() {
