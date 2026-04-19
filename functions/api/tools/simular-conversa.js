@@ -196,6 +196,69 @@ function validatePricesInReply(reply, toolResult) {
   return { ok: true };
 }
 
+// ── Guardrail: detector de prompt injection ──
+// Clientes mal-intencionados tentam manipular o bot pra quebrar cotacao,
+// revelar prompt, fingir ser outro personagem, etc. Detecta ANTES do LLM
+// e retorna resposta segura sem chamar OpenAI (mais barato e 100% confiavel).
+
+const INJECTION_PATTERNS = [
+  // Tentativas de override do sistema
+  { rx: /ignor(e|a|ar)\s+(as?\s+)?(instru[cç][oõ]es?|regras?|tudo|prompt)/i, tipo: 'override' },
+  { rx: /esque[cç]a?\s+(as?\s+)?(instru|regras?|tudo|o prompt|o sistema)/i, tipo: 'override' },
+  { rx: /\b(disregard|ignore all|forget)\s+(previous|above|all|your)/i, tipo: 'override' },
+
+  // Revelar prompt / system
+  { rx: /(mostr(e|a)|revela|me d[aá]|qual [eé])\s+(seu\s+)?(system\s+)?prompt/i, tipo: 'prompt_leak' },
+  { rx: /suas?\s+instru[cç][oõ]es?\s+(do\s+sistema|completas?|originais?)/i, tipo: 'prompt_leak' },
+  { rx: /\b(reveal|show|print|expose)\s+(your|the)\s+(system\s+)?(prompt|instructions)/i, tipo: 'prompt_leak' },
+
+  // Role-play / personagem
+  { rx: /(voc[eê]|tu)\s+(agora|e|[eé])\s+(um|uma)\s+(pirata|hacker|outro bot|chatgpt|gpt|claude)/i, tipo: 'roleplay' },
+  { rx: /finja\s+que\s+(voc[eê]|tu)\s+(e|[eé])/i, tipo: 'roleplay' },
+  { rx: /\b(act as|pretend (to be|you are)|you are now)\b/i, tipo: 'roleplay' },
+
+  // Manipulacao de preco absurda
+  { rx: /\bdesconto\s+(de\s+)?(9[0-9]|[5-9][0-9])\s*%/i, tipo: 'desconto_absurdo' },
+  { rx: /(faz|cobra|d[aá])\s+(de\s+)?(gr[aá]tis|free|zero|r\$\s*0|1\s*real)/i, tipo: 'preco_zero' },
+  { rx: /\b(pague|paga|pago)\s+(metade|10%|20%|30%)\b/i, tipo: 'desconto_absurdo' },
+  { rx: /\bminimo\s+minimo\b|\bm[ií]nimo\s+dos\s+m[ií]nimos\b/i, tipo: 'desconto_absurdo' },
+
+  // Claim de autoridade falsa
+  { rx: /\bsou\s+(o\s+)?(dono|admin|suporte|gerente)\s+(do\s+estudio|do\s+sistema|aqui)/i, tipo: 'autoridade' },
+  { rx: /\b(admin|suporte|sistema)\s+(me\s+)?autoriz(ou|a)\b/i, tipo: 'autoridade' },
+
+  // Injection via codigo/markup
+  { rx: /<\/?(system|prompt|instruction|tool)[\s>]/i, tipo: 'markup' },
+  { rx: /\[\[\s*(system|override|admin)\s*\]\]/i, tipo: 'markup' },
+];
+
+function detectPromptInjection(userMsg) {
+  const text = String(userMsg || '');
+  for (const { rx, tipo } of INJECTION_PATTERNS) {
+    if (rx.test(text)) return tipo;
+  }
+  return null;
+}
+
+function buildInjectionReply(tipo) {
+  switch (tipo) {
+    case 'desconto_absurdo':
+    case 'preco_zero':
+      return 'Os valores sao fechados com o tatuador e seguem uma tabela — nao consigo mexer. Me conta o que voce ta pensando em fazer que te passo a faixa certinha?';
+    case 'prompt_leak':
+      return 'Eu so ajudo aqui com orcamentos e agendamentos de tatuagem. Me conta o que voce ta pensando em fazer?';
+    case 'roleplay':
+    case 'override':
+      return 'Opa, aqui eu so falo sobre tatuagem mesmo! Me conta o que voce ta pensando em fazer?';
+    case 'autoridade':
+      return 'Pra qualquer coisa alem de orcamento/agendamento, vou te passar pro tatuador mesmo — ja chamo ele pra voce.';
+    case 'markup':
+      return 'Nao entendi direito, me conta em poucas palavras o que voce ta pensando em fazer?';
+    default:
+      return 'Me conta o que voce ta pensando em fazer de tatuagem?';
+  }
+}
+
 function buildSafePriceReply(toolResult) {
   if (!toolResult || !toolResult.ok) {
     return 'Um momento, deixa eu conferir o valor com o tatuador e ja volto.';
@@ -293,6 +356,21 @@ export async function onRequest(context) {
     if (!usageCheck.ok) {
       return toolJson({ ok: false, error: usageCheck.error, usage: usageCheck.usage, retry_after_s: usageCheck.retry_after_s }, 429);
     }
+  }
+
+  // Guardrail: detecta prompt injection na ultima mensagem do cliente.
+  // Bypassa LLM totalmente — resposta fixa por tipo de ataque.
+  const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')?.content;
+  const injectionTipo = detectPromptInjection(lastUserMsg);
+  if (injectionTipo) {
+    return toolJson({
+      ok: true,
+      reply: buildInjectionReply(injectionTipo),
+      tool_call: null,
+      usage: usageCheck.usage,
+      preview: true,
+      guardrail: `injection_${injectionTipo}`,
+    });
   }
 
   // Guardrail: se handoff ja foi detectado em turno anterior, bypassa LLM.
