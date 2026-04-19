@@ -82,6 +82,80 @@ async function checkAndBumpUsage(env, tenant_id, configAgente) {
   return { ok: true, usage: { today: contagem_hoje, limit: DAILY_LIMIT } };
 }
 
+// ── Guardrail: detecta handoff no histórico ──
+// Se o bot ja disse "te direciono", "chamo ele", etc em QUALQUER turno anterior,
+// bypassa o LLM nos turnos seguintes pra garantir resposta curta e fixa. Assim
+// nao depende do LLM lembrar a regra do prompt (falha conhecida do gpt-4o-mini).
+const HANDOFF_MARKERS = [
+  'direciono pra ele',
+  'já te direciono',
+  'ja te direciono',
+  'chamo ele',
+  'já chamo',
+  'ja chamo',
+  'sinalizei pro tatuador',
+  'já sinalizei',
+  'ja sinalizei',
+  'avalia pessoalmente',
+  'tatuador já vai',
+  'tatuador ja vai',
+  'tatuador entra em contato',
+  'passar pro tatuador',
+  'conversar direto contigo',
+  'ele te chama',
+];
+
+const HANDOFF_FIXED_REPLIES = [
+  'Já sinalizei pro tatuador, em breve ele te chama aqui.',
+  'Um momento, ele já fala contigo.',
+  'Tô passando pro tatuador, ele te responde em instantes.',
+];
+
+function detectHandoffInHistory(messages) {
+  const botMsgs = messages
+    .filter(m => m.role === 'assistant')
+    .map(m => String(m.content || '').toLowerCase());
+  return botMsgs.some(m => HANDOFF_MARKERS.some(mk => m.includes(mk)));
+}
+
+function pickFixedReply(messages) {
+  // Escolhe reply fixa baseado no tamanho do historico — varia pra nao repetir identico
+  const idx = messages.length % HANDOFF_FIXED_REPLIES.length;
+  return HANDOFF_FIXED_REPLIES[idx];
+}
+
+// ── Guardrail: detecta repeticao de pergunta pelo bot ──
+// Se o bot ja fez perguntas parecidas 3+ vezes nos ultimos turnos, injeta
+// system-nudge forte pra mudar abordagem. Usa fingerprint de palavras-chave.
+function questionFingerprint(text) {
+  const t = String(text || '').toLowerCase();
+  const keys = [];
+  if (/\b(parte do (braco|braço|corpo)|antebraco|antebraço|biceps|ombro)\b/.test(t)) keys.push('local_braco');
+  if (/\b(parte da perna|panturrilha|coxa|tornozelo)\b/.test(t)) keys.push('local_perna');
+  if (/\b(tamanho|cm de altura|quantos cm|10cm|15cm|20cm)\b/.test(t)) keys.push('tamanho');
+  if (/\b(estilo|realismo|fineline|blackwork|old school|aquarela)\b/.test(t) && /\?/.test(t)) keys.push('estilo');
+  if (/\b(cor|colorido|preto e branco)\b/.test(t) && /\?/.test(t)) keys.push('cor');
+  if (/\b(detalhe|detalhado|simples|nivel de detalhe)\b/.test(t) && /\?/.test(t)) keys.push('detalhe');
+  if (/\bfoto do local\b|\bmanda uma foto\b/.test(t)) keys.push('foto_local');
+  if (/\bfoto de referencia\b|\breferencia visual\b/.test(t)) keys.push('foto_ref');
+  return keys.join('|');
+}
+
+function detectRepeatedQuestion(messages) {
+  const botMsgs = messages.filter(m => m.role === 'assistant');
+  const fingerprints = botMsgs.map(m => questionFingerprint(m.content)).filter(Boolean);
+  if (fingerprints.length < 3) return null;
+  // Conta ocorrencias de cada fingerprint nos ultimos 5 bot turns
+  const recent = fingerprints.slice(-5);
+  const counts = {};
+  for (const fp of recent) counts[fp] = (counts[fp] || 0) + 1;
+  // Se algum fingerprint aparece 3+ vezes, retorna ele
+  for (const [fp, count] of Object.entries(counts)) {
+    if (count >= 3) return fp;
+  }
+  return null;
+}
+
 // Schema da tool calcular_orcamento pro LLM
 const TOOL_SCHEMA_CALC = {
   type: 'function',
@@ -168,14 +242,39 @@ export async function onRequest(context) {
     }
   }
 
+  // Guardrail: se handoff ja foi detectado em turno anterior, bypassa LLM.
+  // Retorna resposta fixa curta — mais confiavel que depender do LLM seguir
+  // a regra de memoria conversacional do prompt (falha conhecida).
+  if (detectHandoffInHistory(messages)) {
+    return toolJson({
+      ok: true,
+      reply: pickFixedReply(messages),
+      tool_call: null,
+      usage: usageCheck.usage,
+      preview: true,
+      guardrail: 'handoff_active',
+    });
+  }
+
   // System prompt v6 (simula conversa = primeiro contato, estado qualificando)
   const systemPrompt = generateSystemPrompt(tenant, null, { is_first_contact: messages.length <= 2 });
+
+  // Guardrail: se bot ja perguntou a mesma coisa 3+ vezes, injeta nudge
+  // forte instruindo a mudar de abordagem.
+  const repeatedFp = detectRepeatedQuestion(messages);
 
   // Monta conversa pro OpenAI
   const openaiMessages = [
     { role: 'system', content: systemPrompt },
     ...messages.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content || '').slice(0, 2000) })),
   ];
+
+  if (repeatedFp) {
+    openaiMessages.push({
+      role: 'system',
+      content: `ALERTA GUARDRAIL: voce ja fez a MESMA pergunta ("${repeatedFp}") 3+ vezes. O cliente claramente nao vai responder. PARE de perguntar isso. Responda agora com: "Beleza, sem problema! Vou passar pro tatuador conversar direto contigo — ele te chama ja." Nao pergunte mais nada.`,
+    });
+  }
 
   // Chama OpenAI com tool calling
   let openaiRes;
