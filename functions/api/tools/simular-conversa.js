@@ -130,8 +130,10 @@ export async function onRequest(context) {
   const studio_tok = studio_token || request.headers.get('X-Studio-Token');
 
   let authorized = false;
+  let isAdmin = false;
   if (await verifyAdmin(authHeader, SB_KEY)) {
     authorized = true;
+    isAdmin = true;
   } else if (studio_tok) {
     const verified = await verifyStudioTokenOrLegacy({
       token: studio_tok,
@@ -152,10 +154,13 @@ export async function onRequest(context) {
   if (!tenants.length) return toolJson({ ok: false, error: 'tenant-nao-encontrado' }, 404);
   const tenant = tenants[0];
 
-  // Rate limit
-  const usageCheck = await checkAndBumpUsage(env, tenant_id, tenant.config_agente);
-  if (!usageCheck.ok) {
-    return toolJson({ ok: false, error: usageCheck.error, usage: usageCheck.usage, retry_after_s: usageCheck.retry_after_s }, 429);
+  // Rate limit (admin bypassa pra rodar evals em batch)
+  let usageCheck = { ok: true, usage: { today: 0, limit: DAILY_LIMIT } };
+  if (!isAdmin) {
+    usageCheck = await checkAndBumpUsage(env, tenant_id, tenant.config_agente);
+    if (!usageCheck.ok) {
+      return toolJson({ ok: false, error: usageCheck.error, usage: usageCheck.usage, retry_after_s: usageCheck.retry_after_s }, 429);
+    }
   }
 
   // System prompt v6 (simula conversa = primeiro contato, estado qualificando)

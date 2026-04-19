@@ -1,0 +1,23 @@
+{
+  "id": "003_adianta_tudo",
+  "titulo": "Cliente adianta 4 infos na primeira msg",
+  "descricao": "Cliente despeja tema+local+tamanho+estilo de uma vez. Bot NÃO pode re-perguntar info já dada — deve pular pra próxima etapa faltante.",
+  "turns_cliente": [
+    "oi, quero uma rosa fineline no antebraço de uns 10cm",
+    "preto",
+    "pouco detalhe"
+  ],
+  "expected": {
+    "tool_esperada": "calcular_orcamento",
+    "ultima_msg_deve_conter": ["R$"],
+    "nunca_conter": [
+      "qual estilo",
+      "qual o tamanho",
+      "qual parte do corpo",
+      "em qual lugar",
+      "onde você quer fazer"
+    ],
+    "naturalidade_min": 4.0,
+    "funcionalidade_min": 0.8
+  }
+}

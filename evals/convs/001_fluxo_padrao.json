@@ -1,0 +1,32 @@
+{
+  "id": "001_fluxo_padrao",
+  "titulo": "Fluxo padrão — leão realismo bíceps 15cm",
+  "descricao": "Cliente linear e colaborativo. Deve chegar a orçamento sem handoff.",
+  "turns_cliente": [
+    "olá",
+    "quero uma tatuagem",
+    "um leão no braço",
+    "biceps",
+    "[FOTO: braço limpo, bíceps exposto, sem tatuagem visível]",
+    "uns 15cm de altura",
+    "realismo",
+    "colorido",
+    "pode ser detalhado"
+  ],
+  "expected": {
+    "tool_esperada": "calcular_orcamento",
+    "estado_final_desejado": "orcando",
+    "ultima_msg_deve_conter": ["R$"],
+    "nunca_conter": [
+      "caro cliente",
+      "prezado",
+      "passo pro tatuador",
+      "ele consegue proporcionar",
+      "vou levar pra ele",
+      "atenciosamente",
+      "disposição"
+    ],
+    "naturalidade_min": 4.0,
+    "funcionalidade_min": 0.8
+  }
+}

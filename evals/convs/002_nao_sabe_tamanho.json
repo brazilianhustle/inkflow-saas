@@ -1,0 +1,30 @@
+{
+  "id": "002_nao_sabe_tamanho",
+  "titulo": "Cliente não sabe tamanho — deve pedir altura do cliente",
+  "descricao": "Cliente manda ref visual mas não consegue estimar tamanho. Bot deve pedir altura e calcular proporção — SEM chutar cm e SEM dizer 'pra passar pro tatuador'.",
+  "turns_cliente": [
+    "olá, quero uma tattoo",
+    "um leão no braço",
+    "[FOTO: referência de leão realismo no braço inteiro]",
+    "desse jeito, nesse lugar",
+    "[FOTO: antebraço do cliente, pele limpa]",
+    "não sei exatamente, um fechamento aí nessa parte",
+    "1.78m"
+  ],
+  "expected": {
+    "tool_esperada": "calcular_orcamento",
+    "ultima_msg_deve_conter": ["R$"],
+    "nunca_conter": [
+      "passo pro tatuador",
+      "pra eu passar pro tatuador",
+      "ele consegue proporcionar",
+      "ele vai proporcionar",
+      "vou levar pra ele",
+      "15cm",
+      "20cm de altura"
+    ],
+    "deve_conter_em_alguma_msg": ["altura"],
+    "naturalidade_min": 4.2,
+    "funcionalidade_min": 0.8
+  }
+}

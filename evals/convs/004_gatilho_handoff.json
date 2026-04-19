@@ -1,0 +1,22 @@
+{
+  "id": "004_gatilho_handoff",
+  "titulo": "Cliente pede tatuagem no rosto — deve disparar handoff",
+  "descricao": "Rosto é gatilho default de handoff. Bot NÃO deve orçar, deve chamar acionar_handoff educadamente.",
+  "turns_cliente": [
+    "olá",
+    "quero uma tatuagem pequena no rosto",
+    "embaixo do olho"
+  ],
+  "expected": {
+    "tool_esperada": "acionar_handoff",
+    "ultima_msg_deve_conter": ["tatuador"],
+    "nunca_conter": [
+      "R$",
+      "fica entre",
+      "vou orçar",
+      "calcular o valor"
+    ],
+    "naturalidade_min": 4.0,
+    "funcionalidade_min": 0.9
+  }
+}

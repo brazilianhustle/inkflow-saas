@@ -1,0 +1,26 @@
+{
+  "id": "005_contradicao_multi_turn",
+  "titulo": "Cliente se contradiz — bot não pode travar",
+  "descricao": "Cliente muda de ideia 2x. Bot deve aceitar a última versão sem ficar repetindo pergunta nem se perder.",
+  "turns_cliente": [
+    "quero uma tatuagem no braço",
+    "na verdade na perna",
+    "desculpa, é no braço mesmo",
+    "antebraço",
+    "10cm",
+    "minimalista",
+    "preto",
+    "pouco detalhe"
+  ],
+  "expected": {
+    "tool_esperada": "calcular_orcamento",
+    "ultima_msg_deve_conter": ["R$"],
+    "nunca_conter": [
+      "você disse perna",
+      "mas antes você disse",
+      "fiquei confusa"
+    ],
+    "naturalidade_min": 4.0,
+    "funcionalidade_min": 0.7
+  }
+}
