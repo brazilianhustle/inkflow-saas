@@ -92,11 +92,15 @@ O array \`cenarios\` DEVE ter EXATAMENTE ${N} itens.
 
 REGRAS IMPORTANTES:
 - Nunca coloque em \`nunca_conter\` substrings que o bot NORMALMENTE diria no fluxo válido (ex: "tamanho", "cm" — são palavras que aparecem muito). Use frases específicas e longas o suficiente pra não gerar falso positivo (ex: "passo pro tatuador", "caro cliente").
-- \`tool_esperada\` só define se é CLARO qual tool o bot deveria chamar. Senão, \`null\`.
-- \`ultima_msg_deve_conter\` só define se cliente chegou num ponto de orçamento ou resposta específica.
 - Turnos do cliente devem soar REAIS, não formais. Ex: "ei", "oi, tudo bem?", "quero um desenho no braço", "uns 10cm acho", "kkkk", "sei la".
-- Use todos os campos opcionais do \`expected\` conforme fizer sentido. Se não fizer, omita.
 - \`id\` precisa ser único (adicione sufixo aleatório) e começar com \`auto_\`.
+
+CRÍTICO — LIMITAÇÕES DO SIMULADOR (senão o teste é impossível):
+- O simulador SÓ expõe a tool \`calcular_orcamento\` pro bot. NÃO expõe \`acionar_handoff\`, \`consultar_horarios_livres\`, \`reservar_horario\`, etc.
+- Se o cenário testa gatilho (menor de idade, rosto, mão, cobertura), NÃO use \`tool_esperada\` — use apenas \`deve_conter_em_alguma_msg: ["tatuador"]\` ou frases equivalentes pra checar que o bot RECONHECEU verbalmente.
+- \`tool_esperada: "calcular_orcamento"\` só é válido quando os turnos_cliente contêm TODOS estes dados: local do corpo, tamanho em cm, estilo, cor (preto/colorido), e nível de detalhe (simples/detalhado). Se faltar qualquer um, use \`tool_esperada: null\` ou omita o campo.
+- \`ultima_msg_deve_conter: ["R$"]\` só é válido se os turnos_cliente permitirem ao bot coletar tudo pra orçar. Se o cenário é sobre cliente evasivo/confuso/contraditório que nunca dá info completa, OMITA esse assertion.
+- Regra de ouro: cada assertion precisa ser VERIFICADO mentalmente contra os turns_cliente. Se um bot perfeito não conseguiria cumprir dado o que o cliente disse, não coloque o assertion.
 
 Retorne SOMENTE o JSON, sem texto fora.`;
 

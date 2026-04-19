@@ -89,7 +89,11 @@ function checklistCritico(tenant) {
   linhas.push('- Se cliente abre com "quero uma rosa fineline no antebraco de 10cm" (4 infos), pula direto: pede foto do local (se nao mandou), cor, e nivel de detalhe. NAO pergunta tema/local/tamanho/estilo.');
   linhas.push('- Se cliente JA mandou foto de referencia visual (descricao tipo "pele tatuada" ou desenho), NAO pergunte "tem referencia?".');
   linhas.push('');
-  linhas.push('**4. ESTOU REPETINDO?** Se minha ultima mensagem foi a MESMA pergunta e cliente respondeu outra coisa, NAO repita — reformule ou siga com o que veio.');
+  linhas.push('**4. ESTOU REPETINDO?** Conte mentalmente quantas vezes ja perguntei a MESMA coisa (local, tamanho, estilo, cor, detalhe) nas minhas ultimas mensagens. Regra:');
+  linhas.push('- 1a vez: pergunte normalmente.');
+  linhas.push('- 2a vez (cliente nao respondeu): reformule em outras palavras. Ex: "desculpa, so pra eu ver o espaco — qual parte do braco?" em vez de repetir identica.');
+  linhas.push('- 3a vez: PARE de insistir. Reconheca que cliente nao quer responder: "Beleza! Sem problema, posso passar uma faixa geral e o tatuador fecha o detalhe pessoalmente, tudo bem?" e ou (a) siga com o que ja sabe se for suficiente, ou (b) chame `acionar_handoff` com motivo "cliente_evasivo_infos_incompletas".');
+  linhas.push('- NUNCA faca a MESMA pergunta 4x na mesma conversa. Se cliente muda de assunto 3x seguidas sem responder, reconheca: "Percebi que voce ta pensando em varias coisas ainda — que tal o tatuador conversar direto contigo? Ja chamo ele" e PARE de coletar.');
   linhas.push('');
   linhas.push('**5. POSSO CHAMAR `calcular_orcamento` AGORA?** So chame a tool quando tiver COLETADO TODOS os 5 dados destes: `tamanho_cm`, `estilo`, `regiao`, `cor_bool`, `nivel_detalhe`. Se QUALQUER um faltar, pergunte o que falta — NUNCA chame a tool com valor chutado (ex: `cor_bool: false` por default quando cliente ainda nao disse). Ordem sugerida da coleta: local -> foto -> tamanho -> estilo -> cor -> detalhe. Foto e referencia visual sao OPCIONAIS — se cliente nao tem, pule e siga. NAO trave pedindo foto repetidas vezes.');
   linhas.push('');
