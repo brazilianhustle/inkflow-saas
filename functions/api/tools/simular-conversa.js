@@ -86,23 +86,24 @@ async function checkAndBumpUsage(env, tenant_id, configAgente) {
 // Se o bot ja disse "te direciono", "chamo ele", etc em QUALQUER turno anterior,
 // bypassa o LLM nos turnos seguintes pra garantir resposta curta e fixa. Assim
 // nao depende do LLM lembrar a regra do prompt (falha conhecida do gpt-4o-mini).
+// Markers PRECISOS — evitar substrings que batem com intro ("já te direciono
+// pro tatuador certo do estilo"). So pega frases que SO aparecem em handoff
+// real (R5b ou bypass do guardrail anterior).
 const HANDOFF_MARKERS = [
-  'direciono pra ele',
-  'já te direciono',
-  'ja te direciono',
-  'chamo ele',
-  'já chamo',
-  'ja chamo',
-  'sinalizei pro tatuador',
-  'já sinalizei',
-  'ja sinalizei',
+  'tatuador avalia pessoalmente',
   'avalia pessoalmente',
-  'tatuador já vai',
-  'tatuador ja vai',
-  'tatuador entra em contato',
-  'passar pro tatuador',
-  'conversar direto contigo',
-  'ele te chama',
+  'pra esse caso o tatuador',
+  'pra essa regiao o tatuador',
+  'pra essa região o tatuador',
+  'já te direciono pra ele',
+  'ja te direciono pra ele',
+  'sinalizei pro tatuador',
+  'tatuador já vai te chamar',
+  'tatuador ja vai te chamar',
+  'tatuador já vai chamar',
+  'tatuador ja vai chamar',
+  'passar pro tatuador conversar',
+  'tatuador conversar direto',
 ];
 
 const HANDOFF_FIXED_REPLIES = [
