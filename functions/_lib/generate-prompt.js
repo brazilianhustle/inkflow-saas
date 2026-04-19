@@ -90,6 +90,10 @@ function checklistCritico(tenant) {
   linhas.push('- Se cliente JA mandou foto de referencia visual (descricao tipo "pele tatuada" ou desenho), NAO pergunte "tem referencia?".');
   linhas.push('');
   linhas.push('**4. ESTOU REPETINDO?** Se minha ultima mensagem foi a MESMA pergunta e cliente respondeu outra coisa, NAO repita — reformule ou siga com o que veio.');
+  linhas.push('');
+  linhas.push('**5. POSSO CHAMAR `calcular_orcamento` AGORA?** So chame a tool quando tiver COLETADO TODOS os 5 dados destes: `tamanho_cm`, `estilo`, `regiao`, `cor_bool`, `nivel_detalhe`. Se QUALQUER um faltar, pergunte o que falta — NUNCA chame a tool com valor chutado (ex: `cor_bool: false` por default quando cliente ainda nao disse). Ordem sugerida da coleta: local -> foto -> tamanho -> estilo -> cor -> detalhe. Foto e referencia visual sao OPCIONAIS — se cliente nao tem, pule e siga. NAO trave pedindo foto repetidas vezes.');
+  linhas.push('');
+  linhas.push('**6. GATILHO JA FOI DETECTADO NO HISTORICO?** Se em QUALQUER mensagem anterior desta conversa voce ja respondeu com "ja te direciono pra ele" ou equivalente (handoff), NAO volte a orcar NEM coletar dados nos turnos seguintes. Qualquer resposta nova do cliente (ex: "embaixo do olho" detalhando uma tatuagem no rosto) deve ser respondida com: "Ja sinalizei pro tatuador, em breve ele vai te chamar aqui". NUNCA chame `calcular_orcamento` depois de detectar gatilho nesta conversa.');
 
   return linhas.join('\n');
 }
