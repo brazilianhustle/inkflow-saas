@@ -169,7 +169,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <div id="app">
   <header>
     <div class="hlogo">InkFlow <span>Admin &middot; SaaS</span></div>
-    <button class="hbtn" onclick="doLogout()">Sair</button>
+    <div style="display:flex;gap:8px;">
+      <button class="hbtn" onclick="copyDevJWT(this)" title="Copia o JWT de admin pro clipboard (usado em /evals)">Copiar JWT dev</button>
+      <button class="hbtn" onclick="doLogout()">Sair</button>
+    </div>
   </header>
   <div class="main">
 
@@ -480,6 +483,18 @@ function doLogout() {
   document.getElementById('lp').value = '';
   document.getElementById('det').innerHTML = '';
   tenants = []; allT = [];
+}
+
+async function copyDevJWT(btn) {
+  if (!accessToken) { alert('Faca login primeiro'); return; }
+  try {
+    await navigator.clipboard.writeText(accessToken);
+    const orig = btn.textContent;
+    btn.textContent = 'Copiado ✓';
+    setTimeout(() => { btn.textContent = orig; }, 1800);
+  } catch (e) {
+    prompt('Copie manualmente (Cmd+C):', accessToken);
+  }
 }
 
 function showApp() {
