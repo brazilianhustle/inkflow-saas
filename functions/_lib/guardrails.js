@@ -87,15 +87,20 @@ export function buildRepeatedQuestionNudge(fingerprint) {
 // 3. PROMPT INJECTION DETECTION — bypass total com resposta fixa por tipo
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Raiz flexivel pra "instrucoes" — cobre typos comuns:
+//   instrucao, instrucoes, instrução, instruções, intrucao, intrução,
+//   intruções (sem s), istrucoes, etc. Usa char-class e opcionalidade.
+const INSTRU_RX = '(?:ins?tru[cç][aãoõ][eoõ]?s?|ins?truction)';
+
 export const INJECTION_PATTERNS = [
-  // Override do sistema
-  { rx: /ignor(e|a|ar)\s+.{0,30}?(instru[cç][oõ]es?|regras?|tudo|prompt|sistema)/i, tipo: 'override' },
-  { rx: /esque[cç]a?\s+.{0,30}?(instru|regras?|tudo|o prompt|o sistema)/i, tipo: 'override' },
+  // Override do sistema — ignore/ignora tolera typos em "instrucoes"
+  { rx: new RegExp(`ignor[ae]r?\\s+.{0,30}?(${INSTRU_RX}|regras?|tudo|prompt|sistema|limite)`, 'i'), tipo: 'override' },
+  { rx: new RegExp(`esque[cç][ae]r?\\s+.{0,30}?(${INSTRU_RX}|regras?|tudo|o prompt|o sistema)`, 'i'), tipo: 'override' },
   { rx: /\b(disregard|ignore all|forget)\s+(previous|above|all|your)/i, tipo: 'override' },
 
   // Revelar prompt / system
-  { rx: /(mostr(e|a)|revela|me d[aá]|qual [eé])\s+.{0,15}?prompt/i, tipo: 'prompt_leak' },
-  { rx: /suas?\s+instru[cç][oõ]es?\s+(do\s+sistema|completas?|originais?)/i, tipo: 'prompt_leak' },
+  { rx: /(mostr[ae]|revela|me d[aá]|qual [eé])\s+.{0,15}?prompt/i, tipo: 'prompt_leak' },
+  { rx: new RegExp(`suas?\\s+${INSTRU_RX}\\s+(do\\s+sistema|completas?|originais?)`, 'i'), tipo: 'prompt_leak' },
   { rx: /\b(reveal|show|print|expose)\s+(your|the)\s+(system\s+)?(prompt|instructions)/i, tipo: 'prompt_leak' },
 
   // Role-play / personagem
@@ -103,8 +108,10 @@ export const INJECTION_PATTERNS = [
   { rx: /finja\s+(que\s+)?(voc[eê]|tu|ser)/i, tipo: 'roleplay' },
   { rx: /\b(act as|pretend (to be|you are)|you are now)\b/i, tipo: 'roleplay' },
 
-  // Manipulação de preço absurda
-  { rx: /\bdesconto\s+(de\s+)?(9[0-9]|[5-9][0-9])\s*%/i, tipo: 'desconto_absurdo' },
+  // Manipulação de preço absurda — cobre "desconto 80%" E "80% de desconto" (ordem inversa)
+  { rx: /\bdesconto\s+(de\s+)?([4-9]\d)\s*%/i, tipo: 'desconto_absurdo' },
+  { rx: /\b([4-9]\d)\s*%\s+(de\s+)?desconto/i, tipo: 'desconto_absurdo' },
+  { rx: /\bme\s+d[aá]\s+.{0,15}?([4-9]\d)\s*%/i, tipo: 'desconto_absurdo' },
   { rx: /(faz|cobra|d[aá])\s+(de\s+)?(gr[aá]tis|free|zero|r\$\s*0|1\s*real)/i, tipo: 'preco_zero' },
   { rx: /\b(pague|paga|pago)\s+(metade|10%|20%|30%)\b/i, tipo: 'desconto_absurdo' },
   { rx: /\bminimo\s+minimo\b|\bm[ií]nimo\s+dos\s+m[ií]nimos\b/i, tipo: 'desconto_absurdo' },
