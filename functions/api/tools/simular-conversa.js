@@ -157,6 +157,58 @@ function detectRepeatedQuestion(messages) {
   return null;
 }
 
+// ── Guardrail: fact-checker de precos ──
+// Impede LLM de alucinar valor de R$ que nao bate com resultado da tool.
+// Bug catastrofico em bot comercial: bot diz "R$ 500" mas calc real e "R$ 800".
+
+function extractPrices(text) {
+  const matches = String(text || '').match(/r\$\s*(\d{1,6}(?:[.,]\d{1,3})?)/gi) || [];
+  return matches.map(m => {
+    const num = m.match(/\d{1,6}(?:[.,]\d{1,3})?/)[0].replace(/\./g, '').replace(',', '.');
+    return parseFloat(num);
+  }).filter(n => !isNaN(n) && n > 0);
+}
+
+function validatePricesInReply(reply, toolResult) {
+  const prices = extractPrices(reply);
+  if (prices.length === 0) return { ok: true };
+
+  // Bot mencionou preco mas nao houve calcular_orcamento valido → alucinacao.
+  if (!toolResult || !toolResult.ok || toolResult.pode_fazer === false) {
+    return { ok: false, reason: 'preco_sem_calc', prices };
+  }
+
+  const allowed = new Set();
+  if (toolResult.valor) allowed.add(Math.round(toolResult.valor));
+  if (toolResult.sinal) allowed.add(Math.round(toolResult.sinal));
+  if (toolResult.min) allowed.add(Math.round(toolResult.min));
+  if (toolResult.max) allowed.add(Math.round(toolResult.max));
+
+  const bad = prices.filter(p => {
+    const rounded = Math.round(p);
+    if (allowed.has(rounded)) return false;
+    // Tolerancia pra valores dentro da faixa (modo faixa)
+    if (toolResult.min && toolResult.max && rounded >= toolResult.min && rounded <= toolResult.max) return false;
+    return true;
+  });
+
+  if (bad.length > 0) return { ok: false, reason: 'preco_divergente', bad, allowed: [...allowed] };
+  return { ok: true };
+}
+
+function buildSafePriceReply(toolResult) {
+  if (!toolResult || !toolResult.ok) {
+    return 'Um momento, deixa eu conferir o valor com o tatuador e ja volto.';
+  }
+  if (toolResult.pode_fazer === false) {
+    return toolResult.motivo_recusa_texto || 'Pra esse caso o tatuador avalia pessoalmente, ja te direciono pra ele.';
+  }
+  if (toolResult.valor_tipo === 'exato') {
+    return `Fica em R$ ${toolResult.valor}. Bora agendar?`;
+  }
+  return `Fica entre R$ ${toolResult.min} e R$ ${toolResult.max}. O valor exato o tatuador fecha pessoalmente no dia. Bora agendar?`;
+}
+
 // Schema da tool calcular_orcamento pro LLM
 const TOOL_SCHEMA_CALC = {
   type: 'function',
@@ -329,24 +381,43 @@ export async function onRequest(context) {
       });
       if (followupRes.ok) {
         const followup = await followupRes.json();
-        const reply = followup.choices?.[0]?.message?.content || '';
+        let reply = followup.choices?.[0]?.message?.content || '';
+
+        // Guardrail fact-checker: valida R$ mencionados na reply contra o resultado real da tool.
+        const priceCheck = validatePricesInReply(reply, toolResult);
+        let guardrail = null;
+        if (!priceCheck.ok) {
+          reply = buildSafePriceReply(toolResult);
+          guardrail = `price_${priceCheck.reason}`;
+        }
+
         return toolJson({
           ok: true,
           reply,
           tool_call: { name: 'calcular_orcamento', args, result: toolResult },
           usage: usageCheck.usage,
           preview: true,
+          ...(guardrail ? { guardrail } : {}),
         });
       }
     }
   }
 
-  // Sem tool call — retorna texto direto
+  // Sem tool call — retorna texto direto, mas valida se nao tem R$ alucinado
+  let replyNoTool = choice?.content || '';
+  const priceCheckNoTool = validatePricesInReply(replyNoTool, null);
+  let guardrailNoTool = null;
+  if (!priceCheckNoTool.ok) {
+    // Bot mencionou R$ sem ter chamado calcular_orcamento — alucinacao.
+    replyNoTool = 'Pra te passar um valor certinho, preciso antes do tamanho, estilo e local. Me conta?';
+    guardrailNoTool = 'price_sem_calc';
+  }
   return toolJson({
     ok: true,
-    reply: choice?.content || '',
+    reply: replyNoTool,
     tool_call: null,
     usage: usageCheck.usage,
+    ...(guardrailNoTool ? { guardrail: guardrailNoTool } : {}),
     preview: true,
   });
 }
