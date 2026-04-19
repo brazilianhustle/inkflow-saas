@@ -169,26 +169,36 @@ function extractPrices(text) {
   }).filter(n => !isNaN(n) && n > 0);
 }
 
-function validatePricesInReply(reply, toolResult) {
+function validatePricesInReply(reply, toolResult, priorMessages = []) {
   const prices = extractPrices(reply);
   if (prices.length === 0) return { ok: true };
 
-  // Bot mencionou preco mas nao houve calcular_orcamento valido → alucinacao.
-  if (!toolResult || !toolResult.ok || toolResult.pode_fazer === false) {
-    return { ok: false, reason: 'preco_sem_calc', prices };
+  // Coleta precos que o bot JA mencionou em turnos anteriores da conversa.
+  // Permite bot referenciar "como falei antes, fica em R$ 1750" sem re-chamar tool.
+  const priorBotPrices = new Set();
+  for (const m of priorMessages) {
+    if (m.role !== 'assistant') continue;
+    for (const p of extractPrices(m.content)) priorBotPrices.add(Math.round(p));
   }
 
-  const allowed = new Set();
-  if (toolResult.valor) allowed.add(Math.round(toolResult.valor));
-  if (toolResult.sinal) allowed.add(Math.round(toolResult.sinal));
-  if (toolResult.min) allowed.add(Math.round(toolResult.min));
-  if (toolResult.max) allowed.add(Math.round(toolResult.max));
+  const allowed = new Set(priorBotPrices);
+  if (toolResult && toolResult.ok && toolResult.pode_fazer !== false) {
+    if (toolResult.valor) allowed.add(Math.round(toolResult.valor));
+    if (toolResult.sinal) allowed.add(Math.round(toolResult.sinal));
+    if (toolResult.min) allowed.add(Math.round(toolResult.min));
+    if (toolResult.max) allowed.add(Math.round(toolResult.max));
+  }
+
+  // Sem tool result E sem precos anteriores = alucinacao pura.
+  if (allowed.size === 0) {
+    return { ok: false, reason: 'preco_sem_calc', prices };
+  }
 
   const bad = prices.filter(p => {
     const rounded = Math.round(p);
     if (allowed.has(rounded)) return false;
-    // Tolerancia pra valores dentro da faixa (modo faixa)
-    if (toolResult.min && toolResult.max && rounded >= toolResult.min && rounded <= toolResult.max) return false;
+    // Tolerancia pra valores dentro da faixa do tool result atual
+    if (toolResult?.min && toolResult?.max && rounded >= toolResult.min && rounded <= toolResult.max) return false;
     return true;
   });
 
@@ -202,19 +212,19 @@ function validatePricesInReply(reply, toolResult) {
 // e retorna resposta segura sem chamar OpenAI (mais barato e 100% confiavel).
 
 const INJECTION_PATTERNS = [
-  // Tentativas de override do sistema
-  { rx: /ignor(e|a|ar)\s+(as?\s+)?(instru[cç][oõ]es?|regras?|tudo|prompt)/i, tipo: 'override' },
-  { rx: /esque[cç]a?\s+(as?\s+)?(instru|regras?|tudo|o prompt|o sistema)/i, tipo: 'override' },
+  // Tentativas de override do sistema — flexivel com palavras no meio
+  { rx: /ignor(e|a|ar)\s+.{0,30}?(instru[cç][oõ]es?|regras?|tudo|prompt|sistema)/i, tipo: 'override' },
+  { rx: /esque[cç]a?\s+.{0,30}?(instru|regras?|tudo|o prompt|o sistema)/i, tipo: 'override' },
   { rx: /\b(disregard|ignore all|forget)\s+(previous|above|all|your)/i, tipo: 'override' },
 
   // Revelar prompt / system
-  { rx: /(mostr(e|a)|revela|me d[aá]|qual [eé])\s+(seu\s+)?(system\s+)?prompt/i, tipo: 'prompt_leak' },
+  { rx: /(mostr(e|a)|revela|me d[aá]|qual [eé])\s+.{0,15}?prompt/i, tipo: 'prompt_leak' },
   { rx: /suas?\s+instru[cç][oõ]es?\s+(do\s+sistema|completas?|originais?)/i, tipo: 'prompt_leak' },
   { rx: /\b(reveal|show|print|expose)\s+(your|the)\s+(system\s+)?(prompt|instructions)/i, tipo: 'prompt_leak' },
 
-  // Role-play / personagem
-  { rx: /(voc[eê]|tu)\s+(agora|e|[eé])\s+(um|uma)\s+(pirata|hacker|outro bot|chatgpt|gpt|claude)/i, tipo: 'roleplay' },
-  { rx: /finja\s+que\s+(voc[eê]|tu)\s+(e|[eé])/i, tipo: 'roleplay' },
+  // Role-play / personagem — flexivel com "agora é", "agora é o", etc
+  { rx: /(voc[eê]|tu)\s+.{0,20}?(um|uma)\s+(pirata|hacker|outro bot|chatgpt|gpt|claude|bot)/i, tipo: 'roleplay' },
+  { rx: /finja\s+(que\s+)?(voc[eê]|tu|ser)/i, tipo: 'roleplay' },
   { rx: /\b(act as|pretend (to be|you are)|you are now)\b/i, tipo: 'roleplay' },
 
   // Manipulacao de preco absurda
@@ -462,7 +472,8 @@ export async function onRequest(context) {
         let reply = followup.choices?.[0]?.message?.content || '';
 
         // Guardrail fact-checker: valida R$ mencionados na reply contra o resultado real da tool.
-        const priceCheck = validatePricesInReply(reply, toolResult);
+        // Tambem aceita precos que o bot mencionou em turnos anteriores.
+        const priceCheck = validatePricesInReply(reply, toolResult, messages);
         let guardrail = null;
         if (!priceCheck.ok) {
           reply = buildSafePriceReply(toolResult);
@@ -483,7 +494,7 @@ export async function onRequest(context) {
 
   // Sem tool call — retorna texto direto, mas valida se nao tem R$ alucinado
   let replyNoTool = choice?.content || '';
-  const priceCheckNoTool = validatePricesInReply(replyNoTool, null);
+  const priceCheckNoTool = validatePricesInReply(replyNoTool, null, messages);
   let guardrailNoTool = null;
   if (!priceCheckNoTool.ok) {
     // Bot mencionou R$ sem ter chamado calcular_orcamento — alucinacao.
