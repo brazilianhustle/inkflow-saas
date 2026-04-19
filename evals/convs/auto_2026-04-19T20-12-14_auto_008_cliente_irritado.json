@@ -1,0 +1,25 @@
+{
+  "id": "auto_008_cliente_irritado",
+  "titulo": "Cliente irritado com perguntas",
+  "descricao": "Testa a resiliência do bot com um cliente que se irrita com as perguntas",
+  "turns_cliente": [
+    "oi quero tatuar um tigre",
+    "por que tantas perguntas",
+    "logo no braço",
+    "calma aí não precisa saber tanto",
+    "queria estilo realismo, tá bom?",
+    "ok, colorido então deve servir"
+  ],
+  "expected": {
+    "tool_esperada": "calcular_orcamento",
+    "ultima_msg_deve_conter": [
+      "R$"
+    ],
+    "nunca_conter": [
+      "calma",
+      "desculpa"
+    ],
+    "naturalidade_min": 4,
+    "funcionalidade_min": 0.8
+  }
+}
