@@ -9,7 +9,9 @@
     "desse jeito, nesse lugar",
     "[FOTO: antebraço do cliente, pele limpa]",
     "não sei exatamente, um fechamento aí nessa parte",
-    "1.78m"
+    "1.78m",
+    "colorido",
+    "bem detalhado"
   ],
   "expected": {
     "tool_esperada": "calcular_orcamento",
