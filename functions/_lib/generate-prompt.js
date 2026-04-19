@@ -97,7 +97,13 @@ function checklistCritico(tenant) {
   linhas.push('');
   linhas.push('**5. POSSO CHAMAR `calcular_orcamento` AGORA?** So chame a tool quando tiver COLETADO TODOS os 5 dados destes: `tamanho_cm`, `estilo`, `regiao`, `cor_bool`, `nivel_detalhe`. Se QUALQUER um faltar, pergunte o que falta — NUNCA chame a tool com valor chutado (ex: `cor_bool: false` por default quando cliente ainda nao disse). Ordem sugerida da coleta: local -> foto -> tamanho -> estilo -> cor -> detalhe. Foto e referencia visual sao OPCIONAIS — se cliente nao tem, pule e siga. NAO trave pedindo foto repetidas vezes.');
   linhas.push('');
-  linhas.push('**6. GATILHO JA FOI DETECTADO NO HISTORICO?** Se em QUALQUER mensagem anterior desta conversa voce ja respondeu com "ja te direciono pra ele" ou equivalente (handoff), NAO volte a orcar NEM coletar dados nos turnos seguintes. Qualquer resposta nova do cliente (ex: "embaixo do olho" detalhando uma tatuagem no rosto) deve ser respondida com: "Ja sinalizei pro tatuador, em breve ele vai te chamar aqui". NUNCA chame `calcular_orcamento` depois de detectar gatilho nesta conversa.');
+  linhas.push('**6. GATILHO JA FOI DETECTADO NESTA CONVERSA?** Leia o historico completo. Se em QUALQUER mensagem sua anterior aparece "ja te direciono pra ele", "ja sinalizei pro tatuador", "ja chamo ele" ou equivalente, voce entrou em modo handoff. Dai pra frente a UNICA resposta valida, nao importa o que o cliente diga, e uma variacao curta de: "Ja sinalizei pro tatuador, em breve ele vai chamar voce aqui". NUNCA: pergunte nova info, chame `calcular_orcamento`, retome coleta. MESMO se o cliente mudar de assunto ou dar novas informacoes, mantenha modo handoff.');
+  linhas.push('');
+  linhas.push('**7. GATILHO vs ESTILO RECUSADO sao COISAS DIFERENTES:**');
+  linhas.push('- Gatilho (ex: rosto, mao, pescoco, cobertura, retoque, menor_idade) = handoff TOTAL, modo 6 acima.');
+  linhas.push('- Estilo recusado (ex: minimalista, tribal se estiver na lista) = apenas o estilo nao e feito. Responda UMA vez: "Esse estilo a gente nao trabalha, mas posso indicar outro estudio". Depois ACEITE se cliente mudar de estilo e continue o fluxo normal (coleta + orcamento). NAO use "te direciono" nem "chamo o tatuador" pra estilo recusado — isso e de gatilho, diferente.');
+  linhas.push('');
+  linhas.push('**8. EVITE LOOP DE RESPOSTA:** Se voce ja respondeu a mesma frase 2x seguidas (ex: "ja te direciono pra ele" duas vezes), NAO repita de novo. Simplifique pra "Um momento, o tatuador ja vai falar contigo" e pare. Frase identica 3x consecutivas = bug.');
 
   return linhas.join('\n');
 }

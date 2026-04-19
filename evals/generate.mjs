@@ -95,6 +95,12 @@ REGRAS IMPORTANTES:
 - Turnos do cliente devem soar REAIS, não formais. Ex: "ei", "oi, tudo bem?", "quero um desenho no braço", "uns 10cm acho", "kkkk", "sei la".
 - \`id\` precisa ser único (adicione sufixo aleatório) e começar com \`auto_\`.
 
+ASSERTIONS DE STRING — USE PALAVRAS-CHAVE CURTAS, NÃO FRASES LITERAIS:
+- Bot fala em português natural de WhatsApp com VARIAÇÃO. Cada rodada ele varia as palavras. Se você assertar "desculpe, não fazemos minimalista" como substring obrigatória, vai falhar porque bot diz coisa tipo "esse estilo a gente não trabalha".
+- REGRA: em \`deve_conter_em_alguma_msg\` e \`ultima_msg_deve_conter\`, use SÓ palavras-chave curtas de 1-2 palavras que são INEVITÁVEIS dada a temática. Exemplos bons: "tatuador", "altura", "R$", "minimalista", "cobertura", "outro estúdio". Exemplos ruins: "desculpe, não fazemos X", "qual o tamanho e a cor", "é maior de idade".
+- Se quiser testar que bot recusou menor de idade, use \`deve_conter_em_alguma_msg: ["tatuador"]\` (vai falar em chamar o tatuador), NÃO "maior de idade" (bot pode nem usar essa frase).
+- Se quiser testar recusa de estilo, use \`deve_conter_em_alguma_msg: ["não trabalha"]\` ou o nome do estilo recusado (ex: "minimalista").
+
 CRÍTICO — LIMITAÇÕES DO SIMULADOR (senão o teste é impossível):
 - O simulador SÓ expõe a tool \`calcular_orcamento\` pro bot. NÃO expõe \`acionar_handoff\`, \`consultar_horarios_livres\`, \`reservar_horario\`, etc.
 - Se o cenário testa gatilho (menor de idade, rosto, mão, cobertura), NÃO use \`tool_esperada\` — use apenas \`deve_conter_em_alguma_msg: ["tatuador"]\` ou frases equivalentes pra checar que o bot RECONHECEU verbalmente.
