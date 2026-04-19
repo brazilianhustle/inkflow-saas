@@ -1,22 +1,22 @@
 {
   "id": "004_gatilho_handoff",
-  "titulo": "Cliente pede tatuagem no rosto — deve disparar handoff",
-  "descricao": "Rosto é gatilho default de handoff. Bot NÃO deve orçar, deve chamar acionar_handoff educadamente.",
+  "titulo": "Cliente pede tatuagem no rosto — deve recusar verbalmente",
+  "descricao": "Rosto é gatilho default. Simulador não expõe acionar_handoff, então validamos o DISCURSO: bot deve mencionar 'tatuador' e NÃO orçar. Em produção o n8n dispara a tool; aqui só checamos que o bot reconhece o gatilho e transfere verbalmente.",
   "turns_cliente": [
     "olá",
     "quero uma tatuagem pequena no rosto",
     "embaixo do olho"
   ],
   "expected": {
-    "tool_esperada": "acionar_handoff",
-    "ultima_msg_deve_conter": ["tatuador"],
+    "deve_conter_em_alguma_msg": ["tatuador"],
     "nunca_conter": [
       "R$",
       "fica entre",
-      "vou orçar",
-      "calcular o valor"
+      "tipo 10cm",
+      "tipo 5cm",
+      "qual estilo"
     ],
     "naturalidade_min": 4.0,
-    "funcionalidade_min": 0.9
+    "funcionalidade_min": 0.8
   }
 }

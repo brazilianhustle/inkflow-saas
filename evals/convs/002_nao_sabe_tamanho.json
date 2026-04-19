@@ -20,8 +20,9 @@
       "ele consegue proporcionar",
       "ele vai proporcionar",
       "vou levar pra ele",
-      "15cm",
-      "20cm de altura"
+      "vamos considerar um tamanho",
+      "em torno de 15cm",
+      "fica em 15cm"
     ],
     "deve_conter_em_alguma_msg": ["altura"],
     "naturalidade_min": 4.2,

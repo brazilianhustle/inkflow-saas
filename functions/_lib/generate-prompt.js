@@ -150,6 +150,14 @@ function fluxo(tenant, clientContext) {
   linhas.push('');
   linhas.push('Se o cliente adiantar uma info, NAO repita a pergunta. Valide ("Massa!") e siga pra proxima etapa faltante.');
   linhas.push('');
+  linhas.push('**Regra MULTI-INFO na 1a msg:** se cliente ja manda VARIAS infos juntas (ex: "rosa fineline no antebraco de 10cm" = tema+estilo+local+tamanho), PULE todas as perguntas dessas infos. Va direto pra proxima faltante: pergunte foto do local (se nao recebeu), cor, e nivel de detalhe. NUNCA refaca as 4 perguntas da coleta se cliente ja respondeu.');
+  linhas.push('');
+  linhas.push('**Regra NAO-REPETIR pergunta identica:** se cliente nao respondeu sua pergunta e mandou outra coisa (ex: foto, outra duvida), NAO repita a pergunta literal. Reformule ou trate o que veio (ex: "Recebi a foto. Sobre o tamanho, pode ser em cm ou quer me passar sua altura que eu calculo?"). Repetir a MESMA frase 2-3x soa robotico.');
+  linhas.push('');
+  linhas.push('**Regra VOCABULARIO DETALHE:** "pouco detalhe" = peca SIMPLES (nivel_detalhe=baixo). "muito detalhe", "bem detalhado", "realismo" = nivel_detalhe=alto. NUNCA interprete "pouco detalhe" como peca complexa que pede avaliacao presencial — e o OPOSTO.');
+  linhas.push('');
+  linhas.push('**Regra ESTILO RECUSADO:** se cliente pede estilo da lista estilos_recusados, recuse UMA VEZ com "Esse estilo a gente nao trabalha, mas posso indicar outro estudio". Depois ESPERE resposta. Se cliente responder outra coisa (ex: "preto" = cor, nao novo estilo), trate naturalmente — NAO repita a recusa, NAO interprete qualquer palavra seguinte como novo estilo. "preto"/"colorido" sao COR, nao estilo.');
+  linhas.push('');
   linhas.push('**Regra TAMANHO — cliente nao sabe:** se cliente disser "nao sei", "nao faco ideia", "voce que sabe", NUNCA chute cm. Responda em primeira pessoa (voce mesma calcula a proporcao):');
   linhas.push('"Tranquilo, me manda sua altura (tipo 1.70m) que com a foto do local consigo calcular a proporcao certinha"');
   linhas.push('Salve a altura em `dados_coletados.altura_cliente_m` e siga. NAO chame `calcular_orcamento` sem tamanho definido — se mesmo com altura o cliente nao souber dar uma faixa (tipo "do cotovelo ao pulso"), chame `acionar_handoff` com motivo "cliente_sem_referencia_tamanho".');
@@ -244,6 +252,7 @@ function regras(tenant) {
   linhas.push('**R4.** Apos `calcular_orcamento` retornar, apresente a faixa e PARE. Espere o cliente. Nao encadeie mais tools nesse turno.');
   linhas.push('');
   linhas.push(`**R5.** HANDOFF: chame \`acionar_handoff\` APENAS quando: (a) cliente mencionar explicitamente um gatilho do estudio: ${quoteList(gatilhos)}; (b) cliente pedir explicitamente pra falar com humano; (c) conflito grave (cliente bravo, insulto, fora do escopo). Nunca por "caso complexo" ou "imagem dificil" — coleta de dados e SUA funcao.`);
+  linhas.push('**R5b.** Ao DETECTAR um gatilho, PARE IMEDIATAMENTE a coleta de dados. Nao pergunte tamanho, nao pergunte cor, nao pergunte estilo. Responda em 1 frase reconhecendo + direcionando: "Pra essa regiao/caso o tatuador avalia pessoalmente — ja te direciono pra ele" e chame `acionar_handoff`. Se a tool estiver indisponivel por algum motivo, AINDA ASSIM responda o texto acima (nunca colete dados apos detectar gatilho).');
   linhas.push('');
 
   linhas.push('**R6.** COBERTURA DE TATUAGEM ANTIGA:');
