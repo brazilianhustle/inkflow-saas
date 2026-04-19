@@ -16,6 +16,7 @@ import { toolJson, TOOL_HEADERS } from './_tool-helpers.js';
 import { verifyStudioTokenOrLegacy } from '../_auth-helpers.js';
 import { loadConfigPrecificacao, calcularOrcamento } from '../../_lib/pricing.js';
 import { generateSystemPrompt } from '../../_lib/generate-prompt.js';
+import { runPreGuardrails, runPostGuardrails } from '../../_lib/guardrails.js';
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const ADMIN_EMAIL = 'lmf4200@gmail.com';
@@ -80,206 +81,6 @@ async function checkAndBumpUsage(env, tenant_id, configAgente) {
   });
 
   return { ok: true, usage: { today: contagem_hoje, limit: DAILY_LIMIT } };
-}
-
-// ── Guardrail: detecta handoff no histórico ──
-// Se o bot ja disse "te direciono", "chamo ele", etc em QUALQUER turno anterior,
-// bypassa o LLM nos turnos seguintes pra garantir resposta curta e fixa. Assim
-// nao depende do LLM lembrar a regra do prompt (falha conhecida do gpt-4o-mini).
-// Markers PRECISOS — evitar substrings que batem com intro ("já te direciono
-// pro tatuador certo do estilo"). So pega frases que SO aparecem em handoff
-// real (R5b ou bypass do guardrail anterior).
-const HANDOFF_MARKERS = [
-  'tatuador avalia pessoalmente',
-  'avalia pessoalmente',
-  'pra esse caso o tatuador',
-  'pra essa regiao o tatuador',
-  'pra essa região o tatuador',
-  'já te direciono pra ele',
-  'ja te direciono pra ele',
-  'sinalizei pro tatuador',
-  'tatuador já vai te chamar',
-  'tatuador ja vai te chamar',
-  'tatuador já vai chamar',
-  'tatuador ja vai chamar',
-  'passar pro tatuador conversar',
-  'tatuador conversar direto',
-];
-
-const HANDOFF_FIXED_REPLIES = [
-  'Já sinalizei pro tatuador, em breve ele te chama aqui.',
-  'Um momento, ele já fala contigo.',
-  'Tô passando pro tatuador, ele te responde em instantes.',
-];
-
-function detectHandoffInHistory(messages) {
-  const botMsgs = messages
-    .filter(m => m.role === 'assistant')
-    .map(m => String(m.content || '').toLowerCase());
-  return botMsgs.some(m => HANDOFF_MARKERS.some(mk => m.includes(mk)));
-}
-
-function pickFixedReply(messages) {
-  // Escolhe reply fixa baseado no tamanho do historico — varia pra nao repetir identico
-  const idx = messages.length % HANDOFF_FIXED_REPLIES.length;
-  return HANDOFF_FIXED_REPLIES[idx];
-}
-
-// ── Guardrail: detecta repeticao de pergunta pelo bot ──
-// Se o bot ja fez perguntas parecidas 3+ vezes nos ultimos turnos, injeta
-// system-nudge forte pra mudar abordagem. Usa fingerprint de palavras-chave.
-function questionFingerprint(text) {
-  const t = String(text || '').toLowerCase();
-  const keys = [];
-  if (/\b(parte do (braco|braço|corpo)|antebraco|antebraço|biceps|ombro)\b/.test(t)) keys.push('local_braco');
-  if (/\b(parte da perna|panturrilha|coxa|tornozelo)\b/.test(t)) keys.push('local_perna');
-  if (/\b(tamanho|cm de altura|quantos cm|10cm|15cm|20cm)\b/.test(t)) keys.push('tamanho');
-  if (/\b(estilo|realismo|fineline|blackwork|old school|aquarela)\b/.test(t) && /\?/.test(t)) keys.push('estilo');
-  if (/\b(cor|colorido|preto e branco)\b/.test(t) && /\?/.test(t)) keys.push('cor');
-  if (/\b(detalhe|detalhado|simples|nivel de detalhe)\b/.test(t) && /\?/.test(t)) keys.push('detalhe');
-  if (/\bfoto do local\b|\bmanda uma foto\b/.test(t)) keys.push('foto_local');
-  if (/\bfoto de referencia\b|\breferencia visual\b/.test(t)) keys.push('foto_ref');
-  return keys.join('|');
-}
-
-function detectRepeatedQuestion(messages) {
-  const botMsgs = messages.filter(m => m.role === 'assistant');
-  const fingerprints = botMsgs.map(m => questionFingerprint(m.content)).filter(Boolean);
-  if (fingerprints.length < 3) return null;
-  // Conta ocorrencias de cada fingerprint nos ultimos 5 bot turns
-  const recent = fingerprints.slice(-5);
-  const counts = {};
-  for (const fp of recent) counts[fp] = (counts[fp] || 0) + 1;
-  // Se algum fingerprint aparece 3+ vezes, retorna ele
-  for (const [fp, count] of Object.entries(counts)) {
-    if (count >= 3) return fp;
-  }
-  return null;
-}
-
-// ── Guardrail: fact-checker de precos ──
-// Impede LLM de alucinar valor de R$ que nao bate com resultado da tool.
-// Bug catastrofico em bot comercial: bot diz "R$ 500" mas calc real e "R$ 800".
-
-function extractPrices(text) {
-  const matches = String(text || '').match(/r\$\s*(\d{1,6}(?:[.,]\d{1,3})?)/gi) || [];
-  return matches.map(m => {
-    const num = m.match(/\d{1,6}(?:[.,]\d{1,3})?/)[0].replace(/\./g, '').replace(',', '.');
-    return parseFloat(num);
-  }).filter(n => !isNaN(n) && n > 0);
-}
-
-function validatePricesInReply(reply, toolResult, priorMessages = []) {
-  const prices = extractPrices(reply);
-  if (prices.length === 0) return { ok: true };
-
-  // Coleta precos que o bot JA mencionou em turnos anteriores da conversa.
-  // Permite bot referenciar "como falei antes, fica em R$ 1750" sem re-chamar tool.
-  const priorBotPrices = new Set();
-  for (const m of priorMessages) {
-    if (m.role !== 'assistant') continue;
-    for (const p of extractPrices(m.content)) priorBotPrices.add(Math.round(p));
-  }
-
-  const allowed = new Set(priorBotPrices);
-  if (toolResult && toolResult.ok && toolResult.pode_fazer !== false) {
-    if (toolResult.valor) allowed.add(Math.round(toolResult.valor));
-    if (toolResult.sinal) allowed.add(Math.round(toolResult.sinal));
-    if (toolResult.min) allowed.add(Math.round(toolResult.min));
-    if (toolResult.max) allowed.add(Math.round(toolResult.max));
-  }
-
-  // Sem tool result E sem precos anteriores = alucinacao pura.
-  if (allowed.size === 0) {
-    return { ok: false, reason: 'preco_sem_calc', prices };
-  }
-
-  const bad = prices.filter(p => {
-    const rounded = Math.round(p);
-    if (allowed.has(rounded)) return false;
-    // Tolerancia pra valores dentro da faixa do tool result atual
-    if (toolResult?.min && toolResult?.max && rounded >= toolResult.min && rounded <= toolResult.max) return false;
-    return true;
-  });
-
-  if (bad.length > 0) return { ok: false, reason: 'preco_divergente', bad, allowed: [...allowed] };
-  return { ok: true };
-}
-
-// ── Guardrail: detector de prompt injection ──
-// Clientes mal-intencionados tentam manipular o bot pra quebrar cotacao,
-// revelar prompt, fingir ser outro personagem, etc. Detecta ANTES do LLM
-// e retorna resposta segura sem chamar OpenAI (mais barato e 100% confiavel).
-
-const INJECTION_PATTERNS = [
-  // Tentativas de override do sistema — flexivel com palavras no meio
-  { rx: /ignor(e|a|ar)\s+.{0,30}?(instru[cç][oõ]es?|regras?|tudo|prompt|sistema)/i, tipo: 'override' },
-  { rx: /esque[cç]a?\s+.{0,30}?(instru|regras?|tudo|o prompt|o sistema)/i, tipo: 'override' },
-  { rx: /\b(disregard|ignore all|forget)\s+(previous|above|all|your)/i, tipo: 'override' },
-
-  // Revelar prompt / system
-  { rx: /(mostr(e|a)|revela|me d[aá]|qual [eé])\s+.{0,15}?prompt/i, tipo: 'prompt_leak' },
-  { rx: /suas?\s+instru[cç][oõ]es?\s+(do\s+sistema|completas?|originais?)/i, tipo: 'prompt_leak' },
-  { rx: /\b(reveal|show|print|expose)\s+(your|the)\s+(system\s+)?(prompt|instructions)/i, tipo: 'prompt_leak' },
-
-  // Role-play / personagem — flexivel com "agora é", "agora é o", etc
-  { rx: /(voc[eê]|tu)\s+.{0,20}?(um|uma)\s+(pirata|hacker|outro bot|chatgpt|gpt|claude|bot)/i, tipo: 'roleplay' },
-  { rx: /finja\s+(que\s+)?(voc[eê]|tu|ser)/i, tipo: 'roleplay' },
-  { rx: /\b(act as|pretend (to be|you are)|you are now)\b/i, tipo: 'roleplay' },
-
-  // Manipulacao de preco absurda
-  { rx: /\bdesconto\s+(de\s+)?(9[0-9]|[5-9][0-9])\s*%/i, tipo: 'desconto_absurdo' },
-  { rx: /(faz|cobra|d[aá])\s+(de\s+)?(gr[aá]tis|free|zero|r\$\s*0|1\s*real)/i, tipo: 'preco_zero' },
-  { rx: /\b(pague|paga|pago)\s+(metade|10%|20%|30%)\b/i, tipo: 'desconto_absurdo' },
-  { rx: /\bminimo\s+minimo\b|\bm[ií]nimo\s+dos\s+m[ií]nimos\b/i, tipo: 'desconto_absurdo' },
-
-  // Claim de autoridade falsa
-  { rx: /\bsou\s+(o\s+)?(dono|admin|suporte|gerente)\s+(do\s+estudio|do\s+sistema|aqui)/i, tipo: 'autoridade' },
-  { rx: /\b(admin|suporte|sistema)\s+(me\s+)?autoriz(ou|a)\b/i, tipo: 'autoridade' },
-
-  // Injection via codigo/markup
-  { rx: /<\/?(system|prompt|instruction|tool)[\s>]/i, tipo: 'markup' },
-  { rx: /\[\[\s*(system|override|admin)\s*\]\]/i, tipo: 'markup' },
-];
-
-function detectPromptInjection(userMsg) {
-  const text = String(userMsg || '');
-  for (const { rx, tipo } of INJECTION_PATTERNS) {
-    if (rx.test(text)) return tipo;
-  }
-  return null;
-}
-
-function buildInjectionReply(tipo) {
-  switch (tipo) {
-    case 'desconto_absurdo':
-    case 'preco_zero':
-      return 'Os valores sao fechados com o tatuador e seguem uma tabela — nao consigo mexer. Me conta o que voce ta pensando em fazer que te passo a faixa certinha?';
-    case 'prompt_leak':
-      return 'Eu so ajudo aqui com orcamentos e agendamentos de tatuagem. Me conta o que voce ta pensando em fazer?';
-    case 'roleplay':
-    case 'override':
-      return 'Opa, aqui eu so falo sobre tatuagem mesmo! Me conta o que voce ta pensando em fazer?';
-    case 'autoridade':
-      return 'Pra qualquer coisa alem de orcamento/agendamento, vou te passar pro tatuador mesmo — ja chamo ele pra voce.';
-    case 'markup':
-      return 'Nao entendi direito, me conta em poucas palavras o que voce ta pensando em fazer?';
-    default:
-      return 'Me conta o que voce ta pensando em fazer de tatuagem?';
-  }
-}
-
-function buildSafePriceReply(toolResult) {
-  if (!toolResult || !toolResult.ok) {
-    return 'Um momento, deixa eu conferir o valor com o tatuador e ja volto.';
-  }
-  if (toolResult.pode_fazer === false) {
-    return toolResult.motivo_recusa_texto || 'Pra esse caso o tatuador avalia pessoalmente, ja te direciono pra ele.';
-  }
-  if (toolResult.valor_tipo === 'exato') {
-    return `Fica em R$ ${toolResult.valor}. Bora agendar?`;
-  }
-  return `Fica entre R$ ${toolResult.min} e R$ ${toolResult.max}. O valor exato o tatuador fecha pessoalmente no dia. Bora agendar?`;
 }
 
 // Schema da tool calcular_orcamento pro LLM
@@ -368,41 +169,21 @@ export async function onRequest(context) {
     }
   }
 
-  // Guardrail: detecta prompt injection na ultima mensagem do cliente.
-  // Bypassa LLM totalmente — resposta fixa por tipo de ataque.
-  const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')?.content;
-  const injectionTipo = detectPromptInjection(lastUserMsg);
-  if (injectionTipo) {
+  // Guardrails pré-LLM (shared module — mesma lógica exposta via /api/tools/guardrails/pre)
+  const preResult = runPreGuardrails({ messages });
+  if (preResult.bypass) {
     return toolJson({
       ok: true,
-      reply: buildInjectionReply(injectionTipo),
+      reply: preResult.reply,
       tool_call: null,
       usage: usageCheck.usage,
       preview: true,
-      guardrail: `injection_${injectionTipo}`,
-    });
-  }
-
-  // Guardrail: se handoff ja foi detectado em turno anterior, bypassa LLM.
-  // Retorna resposta fixa curta — mais confiavel que depender do LLM seguir
-  // a regra de memoria conversacional do prompt (falha conhecida).
-  if (detectHandoffInHistory(messages)) {
-    return toolJson({
-      ok: true,
-      reply: pickFixedReply(messages),
-      tool_call: null,
-      usage: usageCheck.usage,
-      preview: true,
-      guardrail: 'handoff_active',
+      guardrail: preResult.guardrail,
     });
   }
 
   // System prompt v6 (simula conversa = primeiro contato, estado qualificando)
   const systemPrompt = generateSystemPrompt(tenant, null, { is_first_contact: messages.length <= 2 });
-
-  // Guardrail: se bot ja perguntou a mesma coisa 3+ vezes, injeta nudge
-  // forte instruindo a mudar de abordagem.
-  const repeatedFp = detectRepeatedQuestion(messages);
 
   // Monta conversa pro OpenAI
   const openaiMessages = [
@@ -410,11 +191,9 @@ export async function onRequest(context) {
     ...messages.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content || '').slice(0, 2000) })),
   ];
 
-  if (repeatedFp) {
-    openaiMessages.push({
-      role: 'system',
-      content: `ALERTA GUARDRAIL: voce ja fez a MESMA pergunta ("${repeatedFp}") 3+ vezes. O cliente claramente nao vai responder. PARE de perguntar isso. Responda agora com: "Beleza, sem problema! Vou passar pro tatuador conversar direto contigo — ele te chama ja." Nao pergunte mais nada.`,
-    });
+  // Se pré-guardrail sinalizou nudge (ex: bot repetindo mesma pergunta), injeta
+  if (preResult.nudge) {
+    openaiMessages.push({ role: 'system', content: preResult.nudge });
   }
 
   // Chama OpenAI com tool calling
@@ -469,44 +248,33 @@ export async function onRequest(context) {
       });
       if (followupRes.ok) {
         const followup = await followupRes.json();
-        let reply = followup.choices?.[0]?.message?.content || '';
+        const rawReply = followup.choices?.[0]?.message?.content || '';
 
-        // Guardrail fact-checker: valida R$ mencionados na reply contra o resultado real da tool.
-        // Tambem aceita precos que o bot mencionou em turnos anteriores.
-        const priceCheck = validatePricesInReply(reply, toolResult, messages);
-        let guardrail = null;
-        if (!priceCheck.ok) {
-          reply = buildSafePriceReply(toolResult);
-          guardrail = `price_${priceCheck.reason}`;
-        }
+        // Guardrails pós-LLM (fact-checker de preço)
+        const postResult = runPostGuardrails({ reply: rawReply, toolResult, messages });
 
         return toolJson({
           ok: true,
-          reply,
+          reply: postResult.reply,
           tool_call: { name: 'calcular_orcamento', args, result: toolResult },
           usage: usageCheck.usage,
           preview: true,
-          ...(guardrail ? { guardrail } : {}),
+          ...(postResult.guardrail ? { guardrail: postResult.guardrail } : {}),
         });
       }
     }
   }
 
-  // Sem tool call — retorna texto direto, mas valida se nao tem R$ alucinado
-  let replyNoTool = choice?.content || '';
-  const priceCheckNoTool = validatePricesInReply(replyNoTool, null, messages);
-  let guardrailNoTool = null;
-  if (!priceCheckNoTool.ok) {
-    // Bot mencionou R$ sem ter chamado calcular_orcamento — alucinacao.
-    replyNoTool = 'Pra te passar um valor certinho, preciso antes do tamanho, estilo e local. Me conta?';
-    guardrailNoTool = 'price_sem_calc';
-  }
+  // Sem tool call — passa pelos guardrails pós-LLM mesmo assim pra detectar
+  // alucinacao de R$ (bot inventou preço sem chamar tool).
+  const rawReplyNoTool = choice?.content || '';
+  const postResultNoTool = runPostGuardrails({ reply: rawReplyNoTool, toolResult: null, messages });
   return toolJson({
     ok: true,
-    reply: replyNoTool,
+    reply: postResultNoTool.reply,
     tool_call: null,
     usage: usageCheck.usage,
-    ...(guardrailNoTool ? { guardrail: guardrailNoTool } : {}),
+    ...(postResultNoTool.guardrail ? { guardrail: postResultNoTool.guardrail } : {}),
     preview: true,
   });
 }
