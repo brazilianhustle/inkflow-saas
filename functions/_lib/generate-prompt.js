@@ -62,6 +62,39 @@ ${persona}`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// §0 — CHECKLIST CRITICO (ANTES de responder qualquer turno)
+// ═══════════════════════════════════════════════════════════════════════════
+function checklistCritico(tenant) {
+  const gatilhos = Array.isArray(tenant.gatilhos_handoff) && tenant.gatilhos_handoff.length
+    ? tenant.gatilhos_handoff : GATILHOS_DEFAULT;
+  const recusados = tenant.config_agente?.estilos_recusados || [];
+
+  const linhas = ['# §0 CHECKLIST ANTES DE CADA RESPOSTA (OBRIGATORIO)'];
+  linhas.push('');
+  linhas.push('Antes de gerar a resposta, verifique NESTA ORDEM:');
+  linhas.push('');
+  linhas.push(`**1. GATILHO HANDOFF?** Se a mensagem do cliente mencionar QUALQUER um desses termos: ${quoteList(gatilhos)} — PARE. Nao pergunte mais nada. Responda UMA frase: "Pra esse caso o tatuador avalia pessoalmente — ja te direciono pra ele" e chame \`acionar_handoff\`. NAO colete tamanho, estilo, foto, nada. Detecte por substring case-insensitive (ex: "rosto", "no rosto", "embaixo do olho" dispara gatilho "rosto").`);
+  linhas.push('');
+  linhas.push('**2. PALAVRA E ESTILO ou OUTRA COISA?** Antes de tratar uma palavra como estilo de tatuagem, confira:');
+  linhas.push('- "preto", "colorido", "preto e branco" = COR (cor_bool), NAO estilo.');
+  linhas.push('- "pouco detalhe", "simples", "pouco detalhado" = NIVEL DE DETALHE baixo, NAO estilo. Nao recuse.');
+  linhas.push('- "muito detalhe", "bem detalhado", "detalhado", "cheio de detalhes" = NIVEL DE DETALHE alto, NAO estilo. Nao recuse.');
+  linhas.push('- "grande", "pequeno", "medio" = TAMANHO, NAO estilo.');
+  if (recusados.length) {
+    linhas.push(`- Estilos recusados (UNICA lista valida pra recusar): ${recusados.join(', ')}. So recuse se a palavra bater EXATAMENTE com um desses.`);
+  }
+  linhas.push('');
+  linhas.push('**3. INFO JA FOI DADA?** Antes de perguntar algo, confira o historico inteiro da conversa:');
+  linhas.push('- Se o cliente JA disse local, tamanho, estilo, cor ou detalhe em QUALQUER mensagem anterior, NAO pergunte de novo.');
+  linhas.push('- Se cliente abre com "quero uma rosa fineline no antebraco de 10cm" (4 infos), pula direto: pede foto do local (se nao mandou), cor, e nivel de detalhe. NAO pergunta tema/local/tamanho/estilo.');
+  linhas.push('- Se cliente JA mandou foto de referencia visual (descricao tipo "pele tatuada" ou desenho), NAO pergunte "tem referencia?".');
+  linhas.push('');
+  linhas.push('**4. ESTOU REPETINDO?** Se minha ultima mensagem foi a MESMA pergunta e cliente respondeu outra coisa, NAO repita — reformule ou siga com o que veio.');
+
+  return linhas.join('\n');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // §2 — TOM (consome config_agente)
 // ═══════════════════════════════════════════════════════════════════════════
 function tom(tenant) {
@@ -496,6 +529,7 @@ export function generateSystemPrompt(tenant, conversa, clientContext) {
   const ctx = clientContext || {};
   const blocks = [
     identidade(tenant),
+    checklistCritico(tenant),
     tom(tenant),
     fluxo(tenant, ctx),
     regras(tenant),

@@ -167,8 +167,9 @@ export function calcularOrcamento({ tamanho_cm, estilo, regiao, cor_bool, nivel_
     breakdown.fallback = { estilo_original: estilo, estilo_aplicado: estiloEfetivo };
   }
 
-  // ── Branch: modo FAIXA ──────────────────────────────────────────────────
-  if (cfg.modo === 'faixa') {
+  // ── Branch: modo FAIXA ou EXATO (ambos usam tabela_tamanho) ────────────
+  // 'exato' = mesma tabela do 'faixa', mas retorna midpoint colapsado (ver onboarding.html)
+  if (cfg.modo === 'faixa' || cfg.modo === 'exato') {
     const bucket = bucketize(cm, cfg.buckets_cm);
     const base = cfg.tabela_tamanho[bucket];
     if (!Array.isArray(base) || base.length !== 2) {
@@ -198,9 +199,29 @@ export function calcularOrcamento({ tamanho_cm, estilo, regiao, cor_bool, nivel_
       };
     }
 
-    const sinal = Math.round(min * (sinal_pct / 100));
     breakdown.base = { bucket, faixa_base: base, multiplicador_total: Number(multTotal.toFixed(2)) };
 
+    // Modo EXATO: colapsa pra midpoint
+    if (cfg.modo === 'exato') {
+      let valor = arredondar(Math.round((min + max) / 2), arrUnit);
+      const sinal = Math.round(valor * (sinal_pct / 100));
+      return {
+        ok: true,
+        pode_fazer: true,
+        valor_tipo: 'exato',
+        moeda: 'BRL',
+        valor,
+        sinal,
+        sinal_percentual: sinal_pct,
+        min: valor, max: valor,
+        bucket,
+        multiplicador_total: Number(multTotal.toFixed(2)),
+        breakdown,
+        herdou_do_pai: tenant?._herdou_do_pai || false,
+      };
+    }
+
+    const sinal = Math.round(min * (sinal_pct / 100));
     return {
       ok: true,
       pode_fazer: true,
