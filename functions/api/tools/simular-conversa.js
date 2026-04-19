@@ -131,7 +131,12 @@ export async function onRequest(context) {
 
   let authorized = false;
   let isAdmin = false;
-  if (await verifyAdmin(authHeader, SB_KEY)) {
+  // Eval-secret: token permanente pro harness (nunca expira). Bypassa auth e rate limit.
+  const evalSecret = request.headers.get('X-Eval-Secret');
+  if (evalSecret && env.EVAL_SECRET && evalSecret === env.EVAL_SECRET) {
+    authorized = true;
+    isAdmin = true;
+  } else if (await verifyAdmin(authHeader, SB_KEY)) {
     authorized = true;
     isAdmin = true;
   } else if (studio_tok) {

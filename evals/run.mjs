@@ -28,6 +28,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ── Config ─────────────────────────────────────────────────────────────────
 const BASE_URL = process.env.BASE_URL || 'https://inkflowbrasil.com';
+const EVAL_SECRET = process.env.EVAL_SECRET;
 const BEARER = process.env.ADMIN_BEARER;
 const TENANT_ID = process.env.TENANT_ID;
 const OPENAI_KEY = process.env.OPENAI_API_KEY;
@@ -36,8 +37,9 @@ const TURN_DELAY_MS = parseInt(process.env.TURN_DELAY_MS || '500', 10);
 const CONVS_DIR = path.join(__dirname, 'convs');
 const REPORT_PATH = path.join(__dirname, 'report.json');
 
-if (!BEARER || !TENANT_ID || !OPENAI_KEY) {
-  console.error('ERRO: faltam env vars. Precisa de ADMIN_BEARER, TENANT_ID, OPENAI_API_KEY.');
+const hasAuth = EVAL_SECRET || BEARER;
+if (!hasAuth || !TENANT_ID || !OPENAI_KEY) {
+  console.error('ERRO: faltam env vars. Precisa de (EVAL_SECRET ou ADMIN_BEARER), TENANT_ID, OPENAI_API_KEY.');
   console.error('Copie .env.example pra .env e preencha, rode: node --env-file=.env run.mjs');
   process.exit(1);
 }
@@ -69,12 +71,12 @@ async function playConv(conv) {
 
     let res, data;
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (EVAL_SECRET) headers['X-Eval-Secret'] = EVAL_SECRET;
+      else headers['Authorization'] = `Bearer ${BEARER}`;
       res = await fetch(`${BASE_URL}/api/tools/simular-conversa`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${BEARER}`,
-        },
+        headers,
         body: JSON.stringify({ tenant_id: TENANT_ID, messages: history }),
       });
     } catch (e) {
