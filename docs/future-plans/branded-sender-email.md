@@ -50,20 +50,30 @@ MailerLite precisa provar que você é dono do domínio antes de mandar em nome 
 
 Resultado: MailerLite manda como `oi@inkflowbrasil.com` e passa nos filtros anti-spoofing (SPF+DKIM+DMARC alignment).
 
-### Passo 3 — Gmail "Send as" pra responder com o mesmo remetente (10 min)
+### Passo 3 — Gmail "Send as" pra responder com o mesmo remetente (BLOQUEADO na v1)
 
-Pra quando um cliente responder um email do bot, você poder responder DE VOLTA como `oi@inkflowbrasil.com` direto do Gmail em vez de `lmf4200@gmail.com`.
+**Status em 2026-04-21:** BLOQUEADO · nenhum SMTP outbound gratuito facilmente disponível.
 
-1. Gmail → Settings (⚙️) → See all settings → **Accounts and Import**
-2. **Send mail as** → Add another email address
-3. Name: `InkFlow` (ou `Leandro · InkFlow`)
-4. Email address: `oi@inkflowbrasil.com`
-5. Check "Treat as an alias" → Next
-6. SMTP server: `smtp.mailerlite.com` (pega da configuração do MailerLite)
-7. Port: 587 · TLS · Username + senha gerada no dashboard MailerLite em Domains → SMTP credentials
-8. Save → Gmail manda email de confirmação pra `oi@inkflowbrasil.com` → chega via Cloudflare Routing no próprio gmail → clica confirmação
+**Descoberta durante execução:**
 
-Resultado: ao responder, Gmail abre dropdown de From e você escolhe `oi@inkflowbrasil.com`.
+- **Cloudflare Email Routing é SÓ INBOUND.** Não oferece SMTP outbound. O `route3.mx.cloudflare.net` que aparece como sugestão no Gmail é servidor de RECEBIMENTO — não roda SMTP SEND. Usá-lo falha.
+- **MailerLite Free tier não expõe SMTP credentials** via API (endpoint `/api/smtp_credentials` retorna 404). Pra acessar precisa plano Growing Business ($9/mês) ou superior. No dashboard, a seção de SMTP aparece como feature paga.
+- **Gmail exige SMTP externo** pra "Send as" com domínio próprio (não tem opção "Send through Gmail" pra domínios custom nas versões atuais — só Workspace paid tem).
+
+**Alternativas viáveis pra destravar:**
+
+1. **MailerSend (sibling do MailerLite)** — mailersend.com, free tier 3k emails/mês com SMTP incluído. Signup separado, reusa DKIM do domínio. Setup ~30min.
+2. **Brevo (ex-Sendinblue)** — 300 emails/dia free com SMTP. Signup separado, DKIM próprio (config diferente). Setup ~30min.
+3. **Mailjet** — 200 emails/dia free com SMTP. Similar a Brevo.
+4. **Google Workspace** — $6/user/mês. Resolve tudo (inbox nativa + outbound via Gmail SMTP próprio) mas custo mensal.
+5. **Aceitar limitação** — manter Send as desativado. Automações do bot saem de `oi@` via MailerLite ✓. Respostas manuais do Leandro saem de `lmf4200@gmail.com`. Cliente raramente nota se assinatura estiver consistente.
+
+**Recomendação:** Opção 5 (aceitar) até ter motivo forte pra mudar. Quando houver, implementar via MailerSend (Opção 1) porque reusa infra MailerLite já configurada.
+
+**Sinais pra priorizar destravar:**
+- Cliente reclamou que respondeu email e ninguém recebeu
+- Cliente confundiu identidade ("quem é lmf4200@gmail.com?")
+- Começar a escalar suporte (mais de 1 pessoa respondendo)
 
 ### Passo 4 — Atualizar automations existentes pra usar o novo sender
 
