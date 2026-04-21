@@ -1,3 +1,5 @@
+import { isValidPlan } from '../_lib/plans.js';
+
 export async function onRequest(context) {
   // [FIX Bug #10] Hardcoded para consistencia com demais endpoints
   const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
@@ -59,9 +61,7 @@ export async function onRequest(context) {
       });
     }
 
-    // Aceita 'trial' (novo free trial 7 dias) e 'teste' (legado, mantido durante transicao)
-    const validPlans = ['trial', 'teste', 'individual', 'estudio', 'premium'];
-    if (!validPlans.includes(plano)) {
+    if (!isValidPlan(plano)) {
       return new Response(JSON.stringify({ error: 'Plano invalido' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });

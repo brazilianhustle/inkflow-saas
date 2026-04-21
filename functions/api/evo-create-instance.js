@@ -5,6 +5,8 @@
 // [FIX] Bug #8: Salva evo_apikey no tenant via Supabase (server-side)
 // [FIX] Bug #2A: Configura webhook n8n (server-side, removido do frontend)
 
+import { isFreeTrial } from '../_lib/plans.js';
+
 // FIX AUDIT-2 #6: SUPABASE_URL extraído para constante (era hardcoded na linha 156)
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 
@@ -55,7 +57,7 @@ export async function onRequest(context) {
   // ── Gate: só cria instancia Evolution se tenant tem pagamento confirmado ──
   // Evita instancia orfa quando card e recusado ou retry falha no meio do fluxo.
   // Status liberados: authorized|approved|paid (MP confirmou), artist_slot (heredado),
-  // teste (free trial). Bloqueia: rascunho, pending, cancelled, refused.
+  // trial (free trial 7 dias). Bloqueia: rascunho, pending, cancelled, refused.
   const SB_KEY = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
   if (SB_KEY) {
     try {
@@ -68,10 +70,10 @@ export async function onRequest(context) {
         if (Array.isArray(rows) && rows.length > 0) {
           const t = rows[0];
           const ALLOWED = ['authorized', 'approved', 'paid', 'artist_slot'];
-          const isFreeTrial = t.plano === 'trial' || t.plano === 'teste';
+          const freeTrial = isFreeTrial(t.plano);
           const isArtist = t.is_artist_slot === true || t.status_pagamento === 'artist_slot';
           const paymentOk = ALLOWED.includes(t.status_pagamento);
-          if (!paymentOk && !isFreeTrial && !isArtist) {
+          if (!paymentOk && !freeTrial && !isArtist) {
             console.warn(`evo-create-instance: bloqueado — tenant=${tenant_id} status=${t.status_pagamento} plano=${t.plano}`);
             return json({ error: 'Pagamento nao confirmado. Conclua o checkout antes de criar a instancia.', code: 'payment_required', status_pagamento: t.status_pagamento }, 403);
           }

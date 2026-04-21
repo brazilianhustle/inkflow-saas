@@ -1,6 +1,6 @@
 // ── InkFlow — Self-checkout público (gera onboarding_key sem auth admin) ──
 // POST /api/public-start
-// Body: { plano: "individual"|"estudio"|"premium"|"trial"|"teste" }
+// Body: { plano: "trial"|"individual"|"estudio"|"premium" }
 // Resposta: { key, url }
 //
 // Diferente de /api/create-onboarding-link (requer admin), este endpoint é
@@ -12,6 +12,8 @@
 // - TTL curto (24h) — se cliente não completar, key expira
 // - NÃO envia email, não coleta dados nesta etapa
 // - Validate-onboarding-key já valida used/expired/retry
+
+import { isValidPlan } from '../_lib/plans.js';
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 
@@ -36,8 +38,7 @@ export async function onRequest(context) {
   catch { return json({ error: 'JSON invalido' }, 400); }
 
   const plano = body?.plano;
-  const VALID_PLANS = ['trial', 'teste', 'individual', 'estudio', 'premium'];
-  if (!VALID_PLANS.includes(plano)) {
+  if (!isValidPlan(plano)) {
     return json({ error: 'Plano invalido' }, 400);
   }
 

@@ -8,23 +8,14 @@
 //   1. COM card_token  → cria assinatura direto com cartão (sem redirecionar)
 //   2. SEM card_token  → retorna init_point para redirect MP (Pix / boleto)
 
+import { PLANOS } from '../_lib/plans.js';
+
 const CORS = {
   'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
 };
-
-const PLANOS = {
-  individual: { nome: 'InkFlow Individual',  valor: 197.00 },
-  estudio:    { nome: 'InkFlow Estúdio',     valor: 497.00 },
-  premium:    { nome: 'InkFlow Estúdio VIP', valor: 997.00 },
-};
-
-// Valor em BRL inteiros gravado em tenants.preco_mensal pra grandfathering.
-// Travar esse valor no momento da ativacao protege a base instalada de
-// reajustes futuros que mudem o objeto PLANOS.
-export const PLANO_PRECO_BRL = { individual: 197, estudio: 497, premium: 997 };
 
 // ── [FIX #11] SUPABASE_URL centralizado (antes era duplicado) ────────────────
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';

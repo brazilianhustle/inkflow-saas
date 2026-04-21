@@ -10,7 +10,7 @@
 import { processMpSinal, isSinalCandidateEvent } from '../_lib/mp-sinal-handler.js';
 import { sendTelegramAlert } from '../_lib/telegram.js';
 import { moveToMailerLiteGroup } from '../_lib/trial-helpers.js';
-import { PLANO_PRECO_BRL } from './create-subscription.js';
+import { PLANO_PRECO_BRL } from '../_lib/plans.js';
 
 const CORS = {
   'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
