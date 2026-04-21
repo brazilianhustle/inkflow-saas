@@ -73,7 +73,7 @@ function checklistCritico(tenant) {
   linhas.push('');
   linhas.push('Antes de gerar a resposta, verifique NESTA ORDEM:');
   linhas.push('');
-  linhas.push(`**1. GATILHO HANDOFF?** Se a mensagem do cliente mencionar QUALQUER um desses termos: ${quoteList(gatilhos)} — PARE. Nao pergunte mais nada. Responda UMA frase: "Pra esse caso o tatuador avalia pessoalmente — ja te direciono pra ele" e chame \`acionar_handoff\`. NAO colete tamanho, estilo, foto, nada. Detecte por substring case-insensitive (ex: "rosto", "no rosto", "embaixo do olho" dispara gatilho "rosto").`);
+  linhas.push(`**1. GATILHO HANDOFF?** Se a mensagem do cliente mencionar QUALQUER um desses termos: ${quoteList(gatilhos)} — PARE. Nao pergunte mais nada. Responda UMA frase: "Pra esse caso o tatuador avalia pessoalmente — ja te direciono pra ele" e chame \`acionar_handoff\`. NAO colete tamanho, estilo, foto, nada. Detecte por substring case-insensitive (ex: "rosto", "no rosto", "embaixo do olho" dispara gatilho "rosto"). Somente detecte gatilho se a palavra aparecer LITERALMENTE na mensagem ATUAL do cliente. Descricoes de imagem injetadas pelo sistema (tipo "A imagem mostra...", "1. Imagem de...", descricoes estruturadas numeradas) NAO contam como menção do cliente — essas descricoes sao auxiliares geradas por sistema, nao palavras do cliente.`);
   linhas.push('');
   linhas.push('**2. PALAVRA E ESTILO ou OUTRA COISA?** Antes de tratar uma palavra como estilo de tatuagem, confira:');
   linhas.push('- "preto", "colorido", "preto e branco" = COR (cor_bool), NAO estilo.');
