@@ -890,7 +890,8 @@ git commit -m "docs(billing): captura IDs das 4 automations MailerLite"
 Dashboard Cloudflare Pages → projeto `inkflow-saas` → Settings → Environment variables → Production:
 
 ```
-TELEGRAM_BOT_TOKEN = 8774271336:AAHNv4A2Kr49FLmnaxoW1pb4pukmPbilJBk
+TELEGRAM_BOT_TOKEN = <copiar do BotFather apos criar o bot>
+# Aviso: NAO commitar o valor real — sempre configure direto no dashboard CF Pages.
 TELEGRAM_CHAT_ID = 8529665470
 CRON_SECRET = <gerar UUID via `uuidgen` ou `openssl rand -hex 32`>
 MAILERLITE_GROUP_TRIAL_ATIVO = <ID do Task 1 Step 1>

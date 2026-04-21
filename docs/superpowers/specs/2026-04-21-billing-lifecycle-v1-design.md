@@ -289,7 +289,7 @@ Copy é gerada via `generate_email_content` do MCP, revisada por mim antes de pu
 ## Env vars necessárias (Cloudflare Pages)
 
 Novas:
-- `TELEGRAM_BOT_TOKEN=8774271336:AAHNv4A2Kr49FLmnaxoW1pb4pukmPbilJBk`
+- `TELEGRAM_BOT_TOKEN=<configurado no Cloudflare Pages — ver env vars>`
 - `TELEGRAM_CHAT_ID=8529665470`
 - `CRON_SECRET` (nova, se ainda não existir) — pro endpoint `/api/cron/expira-trial`
 - `MAILERLITE_GROUP_TRIAL_ATIVO` — ID do grupo (preenchido após MCP criar)
@@ -395,7 +395,7 @@ Status inicial: **draft** (precisam ser ativadas manualmente no dashboard após 
 1. Abrir URL do workflow
 2. Criar credential nova: nome "InkFlow CRON_SECRET", tipo Header Auth
    - Name: `Authorization`
-   - Value: `Bearer 0E664DB1-F23C-4D5B-B616-D134816A741D`
+   - Value: `Bearer <CRON_SECRET — ver env var no Cloudflare Pages>`
 3. No nó HTTP Request, associar essa credential
 4. Clicar Active (toggle no canto superior direito)
 
