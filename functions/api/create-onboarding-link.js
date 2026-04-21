@@ -59,8 +59,8 @@ export async function onRequest(context) {
       });
     }
 
-    // FIX AUDIT #7: Adicionado 'teste' para permitir links de onboarding no plano teste (R$1)
-    const validPlans = ['teste', 'individual', 'estudio', 'premium'];
+    // Aceita 'trial' (novo free trial 7 dias) e 'teste' (legado, mantido durante transicao)
+    const validPlans = ['trial', 'teste', 'individual', 'estudio', 'premium'];
     if (!validPlans.includes(plano)) {
       return new Response(JSON.stringify({ error: 'Plano invalido' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }

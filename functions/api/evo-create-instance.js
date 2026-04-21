@@ -68,7 +68,7 @@ export async function onRequest(context) {
         if (Array.isArray(rows) && rows.length > 0) {
           const t = rows[0];
           const ALLOWED = ['authorized', 'approved', 'paid', 'artist_slot'];
-          const isFreeTrial = t.plano === 'teste';
+          const isFreeTrial = t.plano === 'trial' || t.plano === 'teste';
           const isArtist = t.is_artist_slot === true || t.status_pagamento === 'artist_slot';
           const paymentOk = ALLOWED.includes(t.status_pagamento);
           if (!paymentOk && !isFreeTrial && !isArtist) {

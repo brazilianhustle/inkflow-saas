@@ -1,6 +1,6 @@
 // ── InkFlow — Self-checkout público (gera onboarding_key sem auth admin) ──
 // POST /api/public-start
-// Body: { plano: "individual"|"estudio"|"premium"|"teste" }
+// Body: { plano: "individual"|"estudio"|"premium"|"trial"|"teste" }
 // Resposta: { key, url }
 //
 // Diferente de /api/create-onboarding-link (requer admin), este endpoint é
@@ -36,7 +36,7 @@ export async function onRequest(context) {
   catch { return json({ error: 'JSON invalido' }, 400); }
 
   const plano = body?.plano;
-  const VALID_PLANS = ['teste', 'individual', 'estudio', 'premium'];
+  const VALID_PLANS = ['trial', 'teste', 'individual', 'estudio', 'premium'];
   if (!VALID_PLANS.includes(plano)) {
     return json({ error: 'Plano invalido' }, 400);
   }
