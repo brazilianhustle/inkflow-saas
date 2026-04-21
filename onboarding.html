@@ -1283,6 +1283,7 @@ async function init() {
       localStorage.setItem('inkflow_gk', key);
       gConfig = { globalKey: key, plano };
       localStorage.setItem('inkflow_ob', JSON.stringify({
+        globalKey: key,
         tenantId, instanceSlug, nome: t.nome, estudio: t.nome_estudio,
         agente: t.nome_agente, cidade: t.cidade, email: t.email,
         plano: selectedPlan, isArtist: t.is_artist_slot,
@@ -1332,9 +1333,13 @@ async function init() {
   selectedPlan = plano;
 
   // ── Resume localStorage (fallback se backend não retornou tenant) ──
+  // Só restaura se o savedOb pertencer ao token atual — evita que um onboarding
+  // anterior abandonado (ex: step='qr' salvo em localStorage) pule o fluxo novo.
   try {
     const savedOb = JSON.parse(localStorage.getItem('inkflow_ob') || '{}');
-    if (savedOb.tenantId && savedOb.step) {
+    if (savedOb.globalKey && savedOb.globalKey !== key) {
+      localStorage.removeItem('inkflow_ob');
+    } else if (savedOb.globalKey === key && savedOb.tenantId && savedOb.step) {
       tenantId = savedOb.tenantId;
       instanceSlug = savedOb.instanceSlug;
       if (savedOb.plano) selectedPlan = savedOb.plano;
@@ -1344,6 +1349,9 @@ async function init() {
       if (step === 'spi') { initPersonaIntro(); goStep('spi'); return; }
       if (step === 'sp') { goStep('sp'); return; }
       if (step === 'qr') { goStep(5); initConnectStep(); pollInterval = setInterval(checkConnection, 5000); return; }
+    } else if (!savedOb.globalKey && savedOb.tenantId) {
+      // Entrada legada sem globalKey — descarta para evitar resume incorreto.
+      localStorage.removeItem('inkflow_ob');
     }
   } catch {}
 
@@ -1556,7 +1564,7 @@ async function showPaymentStep() {
           }
           await fetch('/api/update-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(retryUpdate) });
           tenantId = ex.id;
-          localStorage.setItem('inkflow_ob', JSON.stringify({ tenantId, instanceSlug, nome, estudio: estudio || artistInviteData?.parent_nome_estudio || '', agente, cidade, email, plano: selectedPlan, isArtist: isArtistInvite }));
+          localStorage.setItem('inkflow_ob', JSON.stringify({ globalKey: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || '', tenantId, instanceSlug, nome, estudio: estudio || artistInviteData?.parent_nome_estudio || '', agente, cidade, email, plano: selectedPlan, isArtist: isArtistInvite }));
           // ── Artista em retry: pular pagamento, ir direto para setup WhatsApp ──
           if (isArtistInvite) {
             goStep(4); for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
@@ -1577,7 +1585,7 @@ async function showPaymentStep() {
     const createRes = await fetch('/api/create-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tenantData) });
     if (!createRes.ok) { const errData = await createRes.json().catch(() => ({})); throw new Error(errData.error || 'Erro ao criar perfil'); }
     const createData = await createRes.json(); tenantId = createData.tenant.id; instanceSlug = createData.tenant.evo_instance || instanceSlug;
-    localStorage.setItem('inkflow_ob', JSON.stringify({ tenantId, instanceSlug, nome, estudio: estudio || artistInviteData?.parent_nome_estudio || '', agente, cidade, email, plano: selectedPlan, isArtist: isArtistInvite }));
+    localStorage.setItem('inkflow_ob', JSON.stringify({ globalKey: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || '', tenantId, instanceSlug, nome, estudio: estudio || artistInviteData?.parent_nome_estudio || '', agente, cidade, email, plano: selectedPlan, isArtist: isArtistInvite }));
 
     // ── Artista: pular pagamento, ir direto para setup WhatsApp ──
     if (isArtistInvite) {
