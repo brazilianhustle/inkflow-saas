@@ -8,6 +8,9 @@
 // - outros             → ignora
 
 import { processMpSinal, isSinalCandidateEvent } from '../_lib/mp-sinal-handler.js';
+import { sendTelegramAlert } from '../_lib/telegram.js';
+import { moveToMailerLiteGroup } from '../_lib/trial-helpers.js';
+import { PLANO_PRECO_BRL } from './create-subscription.js';
 
 const CORS = {
   'Access-Control-Allow-Origin': 'https://inkflowbrasil.com',
@@ -214,15 +217,49 @@ export async function onRequest(context) {
     const statusPagamento = STATUS_MAP[mpStatus] || mpStatus;
 
     // [FIX AUDIT4 #3] encodeURIComponent para consistencia defensiva
+    // Buscar snapshot do tenant ANTES do PATCH pra ter plano/nome/email pra side-effects
+    const tSnapRes = await fetch(
+      SUPABASE_URL + '/rest/v1/tenants?id=eq.' + encodeURIComponent(tenantId) + '&select=plano,nome_estudio,email',
+      { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY } }
+    );
+    const tSnapRows = tSnapRes.ok ? await tSnapRes.json() : [];
+    const tenantSnapshot = tSnapRows[0] || {};
+
+    // Montar PATCH — se autorizado, travar preco_mensal (grandfathering) e zerar trial_ate
+    const patchBody = { ativo, status_pagamento: statusPagamento, mp_subscription_id: id };
+    if (ativo && tenantSnapshot.plano && PLANO_PRECO_BRL[tenantSnapshot.plano]) {
+      patchBody.preco_mensal = PLANO_PRECO_BRL[tenantSnapshot.plano];
+      patchBody.trial_ate = null;
+    }
     await fetch(SUPABASE_URL + '/rest/v1/tenants?id=eq.' + encodeURIComponent(tenantId), {
       method:  'PATCH',
       headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ ativo, status_pagamento: statusPagamento, mp_subscription_id: id }),
+      body: JSON.stringify(patchBody),
     });
 
-    // Boas-vindas: adiciona subscriber ao MailerLite quando pagamento é autorizado
+    // Side-effects somente quando pagamento é autorizado
     if (ativo) {
-      await addSubscriberToMailerLite(env, tenantId, SUPABASE_KEY);
+      const email = tenantSnapshot.email || sub.payer_email;
+
+      // 1. Mover MailerLite: Trial Expirou (se vinha de la) -> Clientes Ativos
+      if (email) {
+        await moveToMailerLiteGroup(env, email, {
+          from: env.MAILERLITE_GROUP_TRIAL_EXPIROU || null,
+          to: env.MAILERLITE_GROUP_CLIENTES_ATIVOS || env.MAILERLITE_GROUP_ID || '184387920768009398',
+        });
+      }
+
+      // 2. Notificacao Telegram fail-open
+      const preco = PLANO_PRECO_BRL[tenantSnapshot.plano] ?? '?';
+      const alertMsg = [
+        '🟢 *Novo pagamento InkFlow*',
+        '━━━━━━━━━━━━━━━',
+        `Estúdio: ${tenantSnapshot.nome_estudio || '?'}`,
+        `Plano: ${tenantSnapshot.plano || '?'} (R$ ${preco})`,
+        `Email: ${email || '?'}`,
+        `Sub ID: \`${id}\``,
+      ].join('\n');
+      await sendTelegramAlert(env, alertMsg);
     }
 
     // [FIX #14] Log do IPN processado
