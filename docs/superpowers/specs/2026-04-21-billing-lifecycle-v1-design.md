@@ -368,6 +368,22 @@ Permite desligar em incidente sem revert de commit. Remove a flag após 30 dias 
 - **Trial Expirou**: `185330997199373672`
 - **Clientes Ativos** (reutilizado do grupo existente "Clientes InkFlow"): `184387920768009398`
 
+## MailerLite automation IDs (capturado 2026-04-21)
+
+Status inicial: **draft** (precisam ser ativadas manualmente no dashboard após design visual).
+
+- **Dia 2 warm-up**: `185331384158520593` — https://dashboard.mailerlite.com/automations/185331384158520593
+- **Dia 5 warning**: `185331388712486190` — https://dashboard.mailerlite.com/automations/185331388712486190
+- **Expirou (imediato)**: `185331393176274482` — https://dashboard.mailerlite.com/automations/185331393176274482
+- **Last chance (+7d)**: `185331397115774135` — https://dashboard.mailerlite.com/automations/185331397115774135
+
+**Ação do usuário pra cada automation:**
+1. Abrir dashboard URL
+2. Clicar no step de email — verificar que subject + plain text estão corretos
+3. Aplicar um template visual básico (MailerLite força um design, pode ser o mais simples)
+4. Configurar sender email verificado (ex: leandro@inkflowbrasil.com)
+5. Ativar
+
 ## Grupos MailerLite legados (não tocar)
 
 - `184440232841578230` "Donos de Estúdio" — função não-billing, preservar
