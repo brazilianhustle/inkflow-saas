@@ -637,6 +637,7 @@ async function startCheckout(plano, btn) {
   if (!btn || btn.classList.contains('loading')) return;
   btn.classList.add('loading');
   const original = btn.textContent;
+  btn.dataset.originalText = original;
   try {
     const res = await fetch('/api/public-start', {
       method: 'POST',
@@ -655,6 +656,16 @@ async function startCheckout(plano, btn) {
     alert('N\u00e3o foi poss\u00edvel iniciar o cadastro agora. Tente novamente em alguns instantes ou entre em contato pelo WhatsApp.');
   }
 }
+
+// Reset checkout buttons se a pagina foi restaurada do bfcache (botao Voltar do browser).
+// Sem isso, o btn fica travado em .loading e o early-return de startCheckout bloqueia novos cliques.
+window.addEventListener('pageshow', (event) => {
+  if (!event.persisted) return;
+  document.querySelectorAll('button.loading').forEach((btn) => {
+    btn.classList.remove('loading');
+    if (btn.dataset.originalText) btn.textContent = btn.dataset.originalText;
+  });
+});
 
 // ========= Demo video placeholder =========
 function playDemo(){

@@ -813,7 +813,7 @@ function renderStudio(data) {
   // Header
   const studioName = t.nome_estudio || 'Meu Estúdio';
   document.getElementById('header-studio-name').textContent = studioName;
-  const planLabels = { estudio: 'Estúdio', premium: 'Estúdio VIP' };
+  const planLabels = { trial: 'Trial 7 dias', individual: 'Individual', estudio: 'Estúdio', premium: 'Estúdio VIP' };
   const planLabel = planLabels[t.plano] || t.plano;
   document.getElementById('header-plan-badge').textContent = planLabel;
 

@@ -475,18 +475,9 @@ select.fi option{background:var(--card);color:var(--t1)}
     <hr class="divider"/>
     <div class="fsec">Plano</div>
     <div class="plan-sel" id="plan-sel">
-      <div class="plan-opt" id="plan-teste" onclick="selectPlan('teste')" style="border:2px solid #ff4444">
-        <div class="po-tag" style="background:#ff4444;color:#fff">TESTE</div>
-        <div class="po-name">Teste R$1</div>
-        <div class="po-price">R$ 1/mês</div>
-        <ul class="po-features">
-          <li class="po-feat">Apenas para teste interno</li>
-          <li class="po-feat">Remover antes do lançamento</li>
-        </ul>
-      </div>
       <div class="plan-opt active" id="plan-individual" onclick="selectPlan('individual')">
         <div class="po-name">Individual</div>
-        <div class="po-price">R$ 1/m&#234;s (teste)</div>
+        <div class="po-price">R$ 197/m&#234;s</div>
         <ul class="po-features">
           <li class="po-feat">Assistente virtual disponível 24h por dia, 7 dias por semana</li>
           <li class="po-feat">Até 400 conversas mensais gerenciadas pela IA</li>
@@ -498,7 +489,7 @@ select.fi option{background:var(--card);color:var(--t1)}
       <div class="plan-opt" id="plan-estudio" onclick="selectPlan('estudio')">
         <div class="po-tag">Mais popular</div>
         <div class="po-name">Estúdio</div>
-        <div class="po-price">R$ 1/m&#234;s (teste)</div>
+        <div class="po-price">R$ 497/m&#234;s</div>
         <ul class="po-features">
           <li class="po-feat">Tudo do Plano Individual, incluído</li>
           <li class="po-feat">Suporte para até 5 tatuadores no mesmo plano</li>
@@ -510,7 +501,7 @@ select.fi option{background:var(--card);color:var(--t1)}
       <div class="plan-opt" id="plan-premium" onclick="selectPlan('premium')">
         <div class="po-tag">VIP</div>
         <div class="po-name">Estúdio VIP</div>
-        <div class="po-price">R$ 1/m&#234;s (teste)</div>
+        <div class="po-price">R$ 997/m&#234;s</div>
         <ul class="po-features">
           <li class="po-feat">Tudo do Plano Estúdio, incluído</li>
           <li class="po-feat">Suporte para até 10 tatuadores</li>
@@ -1309,7 +1300,7 @@ async function init() {
         document.getElementById('suc-estudio').textContent = t.nome_estudio || instanceSlug;
         document.getElementById('suc-agente').textContent = t.nome_agente || '';
         document.getElementById('suc-inst').textContent = instanceSlug;
-        const sucPlanLabels = { teste:'Teste', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' };
+        const sucPlanLabels = { trial:'Trial 7 dias', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' };
         document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
         goStep(6); return;
       }
@@ -1326,7 +1317,7 @@ async function init() {
     showErrOverlay('Erro ao validar link de onboarding. Verifique sua conexao e tente novamente.');
     return;
   }
-  const allowedPlans = ['teste','individual','estudio','premium'];
+  const allowedPlans = ['trial','individual','estudio','premium'];
   if (!allowedPlans.includes(plano)) plano = 'individual';
   gConfig = { globalKey: key, plano };
   localStorage.setItem('inkflow_gk', key);
@@ -1367,7 +1358,7 @@ async function init() {
     // Adaptar formulario
     setupArtistForm();
   } else {
-    const planLabels = { teste:'teste R$1', individual:'individual', estudio:'est\u00fadio', premium:'est\u00fadio vip' };
+    const planLabels = { trial:'trial 7 dias', individual:'individual', estudio:'est\u00fadio', premium:'est\u00fadio vip' };
     document.getElementById('w-plano').textContent = 'plano ' + (planLabels[plano] || plano);
   }
   selectPlan(plano);
@@ -1426,7 +1417,7 @@ function setupArtistForm() {
 }
 function makeSlug(text) { return (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').substring(0, 16); }
 function autoAgent() {}
-function selectPlan(plan) { selectedPlan = plan; ['teste','individual','estudio','premium'].forEach(p => { document.getElementById('plan-' + p)?.classList.toggle('active', p === plan); }); if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan}); }
+function selectPlan(plan) { selectedPlan = plan; ['individual','estudio','premium'].forEach(p => { document.getElementById('plan-' + p)?.classList.toggle('active', p === plan); }); if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan}); }
 function setStatus(idx, msg, state = 'active') { const dot = document.getElementById('pd-' + idx); const txt = document.getElementById('pm-' + idx); if (!dot) return; dot.className = 'proc-dot ' + state; if (msg) { txt.textContent = msg; txt.className = 'proc-msg' + (state === 'done' ? ' done' : ''); } }
 function showProcError(msg) { const box = document.getElementById('proc-err-box'); document.getElementById('proc-err-txt').textContent = msg; box.style.display = 'block'; }
 function showFormError(msg) { const el = document.getElementById('form-err'); el.textContent = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 5000); }
@@ -1572,12 +1563,12 @@ async function showPaymentStep() {
             if (window.posthog) posthog.capture('artist_onboarding_started', { plan: selectedPlan, tenant: tenantId, parent: artistInviteData.parent_tenant_id, retry: true });
             return;
           }
-          const planNames = { teste:'Teste R$1', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' }; const planPrices = { teste:'R$ 1', individual:'R$ 1', estudio:'R$ 1', premium:'R$ 1' }; const planCycles = { teste:'/mês · teste de pagamento', individual:'/mês · cobrança recorrente', estudio:'/mês · cobrança recorrente', premium:'/mês · cobrança recorrente' };
+          const planNames = { trial:'Trial 7 dias', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' }; const planPrices = { trial:'Grátis', individual:'R$ 197', estudio:'R$ 497', premium:'R$ 997' }; const planCycles = { trial:'/7 dias · sem cartão', individual:'/mês · cobrança recorrente', estudio:'/mês · cobrança recorrente', premium:'/mês · cobrança recorrente' };
           document.getElementById('pay-plan-box').innerHTML = '<div class="pay-plan-name">' + (planNames[selectedPlan] || selectedPlan) + '</div><div class="pay-plan-price">' + (planPrices[selectedPlan] || '') + '</div><div class="pay-plan-cycle">' + (planCycles[selectedPlan] || '') + '</div>';
           const payBtn2 = document.getElementById('pay-btn'); const payOr2 = document.getElementById('pay-or'); const payFreeBtn2 = document.getElementById('pay-free-btn'); const payHint2 = document.getElementById('pay-hint');
           { payBtn2.style.display = 'flex'; payOr2.style.display = 'block'; if (payHint2) payHint2.style.display = 'block'; if (payFreeBtn2) payFreeBtn2.style.display = 'none'; }
           goStep(3);
-          if (selectedPlan !== 'free') { const planAmounts2 = { teste: 1.00, individual: 1.00, estudio: 1.00, premium: 1.00 }; initCardBrick(planAmounts2[selectedPlan] || 197.00); }
+          if (selectedPlan !== 'free') { const planAmounts2 = { trial: 0, individual: 197.00, estudio: 497.00, premium: 997.00 }; initCardBrick(planAmounts2[selectedPlan] || 197.00); }
           return;
         }
       }
@@ -1595,12 +1586,12 @@ async function showPaymentStep() {
       return;
     }
 
-    const planNames = { teste:'Teste R$1', individual:'Individual', estudio:'Est\u00fadio', premium:'Est\u00fadio VIP' }; const planPrices = { teste:'R$ 1', individual:'R$ 1', estudio:'R$ 1', premium:'R$ 1' }; const planCycles = { teste:'/m\u00eas \u00b7 teste de pagamento', individual:'/m\u00eas \u00b7 cobran\u00e7a recorrente', estudio:'/m\u00eas \u00b7 cobran\u00e7a recorrente', premium:'/m\u00eas \u00b7 cobran\u00e7a recorrente' };
+    const planNames = { trial:'Trial 7 dias', individual:'Individual', estudio:'Est\u00fadio', premium:'Est\u00fadio VIP' }; const planPrices = { trial:'Gr\u00e1tis', individual:'R$ 197', estudio:'R$ 497', premium:'R$ 997' }; const planCycles = { trial:'/7 dias \u00b7 sem cart\u00e3o', individual:'/m\u00eas \u00b7 cobran\u00e7a recorrente', estudio:'/m\u00eas \u00b7 cobran\u00e7a recorrente', premium:'/m\u00eas \u00b7 cobran\u00e7a recorrente' };
     document.getElementById('pay-plan-box').innerHTML = `<div class="pay-plan-name">${planNames[selectedPlan] || selectedPlan}</div><div class="pay-plan-price">${planPrices[selectedPlan] || ''}</div><div class="pay-plan-cycle">${planCycles[selectedPlan] || ''}</div>`;
     const payBtn = document.getElementById('pay-btn'); const payOr = document.getElementById('pay-or'); const payFreeBtn = document.getElementById('pay-free-btn'); const payHint = document.getElementById('pay-hint');
     { payBtn.style.display = 'flex'; payOr.style.display = 'block'; if (payHint) payHint.style.display = 'block'; if (payFreeBtn) payFreeBtn.style.display = 'none'; }
     goStep(3);
-    if (selectedPlan !== 'free') { const planAmounts = { teste: 1.00, individual: 1.00, estudio: 1.00, premium: 1.00 }; initCardBrick(planAmounts[selectedPlan] || 197.00); }
+    if (selectedPlan !== 'free') { const planAmounts = { trial: 0, individual: 197.00, estudio: 497.00, premium: 997.00 }; initCardBrick(planAmounts[selectedPlan] || 197.00); }
   } catch (err) { console.error('showPaymentStep error:', err); let msg = err.message || 'Erro inesperado. Tente novamente.'; if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) { msg = 'Erro de conexão. Verifique sua internet e tente novamente.'; } showFormError(msg); }
   finally { btn.disabled = false; btn.textContent = 'Configurar meu WhatsApp →'; }
 }
@@ -1763,7 +1754,7 @@ async function checkConnection() {
         document.getElementById('suc-estudio').textContent = ob.estudio || instanceSlug;
         document.getElementById('suc-agente').textContent = ob.agente || '';
         document.getElementById('suc-inst').textContent = instanceSlug;
-        const sucPlanLabels = { teste:'Teste R$1', individual:'Individual \u00b7 R$1/m\u00eas (teste)', estudio:'Est\u00fadio \u00b7 R$1/m\u00eas (teste)', premium:'Est\u00fadio VIP \u00b7 R$1/m\u00eas (teste)' };
+        const sucPlanLabels = { trial:'Trial 7 dias', individual:'Individual \u00b7 R$ 197/m\u00eas', estudio:'Est\u00fadio \u00b7 R$ 497/m\u00eas', premium:'Est\u00fadio VIP \u00b7 R$ 997/m\u00eas' };
         document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
         if (isArtist) {
           document.querySelector('.suc-title').textContent = 'Seu WhatsApp est\u00e1 conectado!';
@@ -2636,7 +2627,7 @@ async function savePersonaAndNext() {
           document.getElementById('suc-estudio').textContent = ob.estudio || instanceSlug;
           document.getElementById('suc-agente').textContent = nomeAgente || '';
           document.getElementById('suc-inst').textContent = instanceSlug;
-          const sucPlanLabels = { teste:'Teste', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' };
+          const sucPlanLabels = { trial:'Trial 7 dias', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' };
           document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
           goStep(6);
           localStorage.removeItem('inkflow_ob');
