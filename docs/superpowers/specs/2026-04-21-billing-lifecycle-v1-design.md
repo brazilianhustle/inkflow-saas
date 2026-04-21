@@ -384,6 +384,21 @@ Status inicial: **draft** (precisam ser ativadas manualmente no dashboard após 
 4. Configurar sender email verificado (ex: leandro@inkflowbrasil.com)
 5. Ativar
 
+## n8n workflow — Cron expira-trial
+
+- **Workflow ID**: `KEO1tJRKpYTxi15E`
+- **URL**: https://n8n.inkflowbrasil.com/workflow/KEO1tJRKpYTxi15E
+- **Schedule**: diário, 12:00 UTC (= 09:00 BRT)
+- **Status inicial**: criado mas **NÃO ATIVO**
+
+**Ação do usuário pra ativar:**
+1. Abrir URL do workflow
+2. Criar credential nova: nome "InkFlow CRON_SECRET", tipo Header Auth
+   - Name: `Authorization`
+   - Value: `Bearer 0E664DB1-F23C-4D5B-B616-D134816A741D`
+3. No nó HTTP Request, associar essa credential
+4. Clicar Active (toggle no canto superior direito)
+
 ## Grupos MailerLite legados (não tocar)
 
 - `184440232841578230` "Donos de Estúdio" — função não-billing, preservar
