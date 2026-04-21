@@ -361,3 +361,14 @@ Permite desligar em incidente sem revert de commit. Remove a flag após 30 dias 
 - Hoje: spec commitado, MailerLite configurado via MCP (~30min), backend changes (~45min), HTML changes (~15min), teste local (~15min). **Total: ~1h45.**
 - Deploy: `wrangler pages deploy` com feature flag ON
 - Monitoramento: 48h de observação antes de remover `teste` plan legacy
+
+## MailerLite group IDs (capturado 2026-04-21)
+
+- **Trial Ativo**: `185330994354586770`
+- **Trial Expirou**: `185330997199373672`
+- **Clientes Ativos** (reutilizado do grupo existente "Clientes InkFlow"): `184387920768009398`
+
+## Grupos MailerLite legados (não tocar)
+
+- `184440232841578230` "Donos de Estúdio" — função não-billing, preservar
+- `183216843189651148` "InkFlow — Clientes Ativos" — duplicata semântica do `184387920768009398`, deixar quieto (não usar)
