@@ -568,7 +568,13 @@ function render(list) {
     const plLabel = isArt ? '\u{1F3A8} ' + pl : pl;
     const plc  = pl === 'premium' ? 'ba' : pl === 'estudio' ? 'bb' : 'bgr';
      const pgto = t.status_pagamento || 'pendente';
-    const pgc  = pgto === 'authorized' ? 'bg' : pgto === 'cancelled' ? 'br' : 'ba';
+    const pgc  = pgto === 'authorized' ? 'bg' : pgto === 'cancelled' || pgto === 'trial_expirado' ? 'br' : 'ba';
+    // Quando trial ativo, anexa "(Xd)" com dias restantes pra facilitar triagem
+    let pgLabel = pgto;
+    if (pgto === 'trial' && t.trial_ate) {
+      const daysLeft = Math.max(0, Math.ceil((new Date(t.trial_ate) - new Date()) / 86400000));
+      pgLabel = `trial (${daysLeft}d)`;
+    }
     const stc  = t.ativo ? 'bg' : 'br';
     const sid  = esc(t.id);
     const sat  = t.ativo ? 'true' : 'false';
@@ -582,7 +588,7 @@ function render(list) {
       <td style="text-align:center;font-family:monospace;color:var(--text2)">${t.tc||0}</td>
       <td style="text-align:center;font-family:monospace;color:var(--text2)">${t.th||0}</td>
       <td style="text-align:center;font-family:monospace;color:var(--text2)">${t.tm||0}</td>
-      <td><span class="badge ${pgc}">${pgto}</span></td>
+      <td><span class="badge ${pgc}">${pgLabel}</span></td>
       <td><span class="badge ${stc}">${t.ativo?'ativo':'inativo'}</span></td>
       <td style="white-space:nowrap">
         <button class="ab" onclick="event.stopPropagation();openModal('${sid}')">editar</button>
