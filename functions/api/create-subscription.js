@@ -16,11 +16,15 @@ const CORS = {
 };
 
 const PLANOS = {
-  teste:      { nome: 'InkFlow Teste',       valor:   1.00 },  // TEMPORÁRIO: remover após teste
-  individual: { nome: 'InkFlow Individual',  valor:   1.00 },  // TEMP TESTE: original 197
-  estudio:    { nome: 'InkFlow Estúdio',     valor:   1.00 },  // TEMP TESTE: original 497
-  premium:    { nome: 'InkFlow Estúdio VIP', valor:   1.00 },  // TEMP TESTE: original 997
+  individual: { nome: 'InkFlow Individual',  valor: 197.00 },
+  estudio:    { nome: 'InkFlow Estúdio',     valor: 497.00 },
+  premium:    { nome: 'InkFlow Estúdio VIP', valor: 997.00 },
 };
+
+// Valor em BRL inteiros gravado em tenants.preco_mensal pra grandfathering.
+// Travar esse valor no momento da ativacao protege a base instalada de
+// reajustes futuros que mudem o objeto PLANOS.
+export const PLANO_PRECO_BRL = { individual: 197, estudio: 497, premium: 997 };
 
 // ── [FIX #11] SUPABASE_URL centralizado (antes era duplicado) ────────────────
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
@@ -30,9 +34,9 @@ function json(data, status = 200) {
 }
 
 // ── MailerLite: adiciona subscriber ao grupo de clientes ativos ───────────────
-async function addToMailerLite(env, email, plano, tenantId) {
+async function addToMailerLite(env, email, plano, tenantId, groupOverride = null) {
   const ML_KEY   = env.MAILERLITE_API_KEY;
-  const ML_GROUP = env.MAILERLITE_GROUP_ID;
+  const ML_GROUP = groupOverride || env.MAILERLITE_GROUP_ID;
   if (!ML_KEY || !ML_GROUP || !email) return;
   try {
     const res = await fetch('https://connect.mailerlite.com/api/subscribers', {
@@ -165,7 +169,29 @@ export async function onRequest(context) {
     return json({ error: 'tenant_id e plano são obrigatórios' }, 400);
   }
 
-  // ── Plano free — sem cobrança ─────────────────────────────────────────────
+  // ── Plano trial — 7 dias sem cobranca ──────────────────────────────────────
+  // Feature flag permite rollback sem revert
+  if (plano === 'trial' && env.ENABLE_TRIAL_V2 === 'false') {
+    return json({ error: 'Trial temporariamente indisponível. Escolha um plano pago.' }, 503);
+  }
+  if (plano === 'trial') {
+    const { calculateTrialEnd } = await import('../_lib/trial-helpers.js');
+    const trial_ate = calculateTrialEnd();
+    await updateTenant(env, tenant_id, {
+      plano: 'trial',
+      status_pagamento: 'trial',
+      ativo: true,
+      trial_ate,
+    });
+    // Adiciona ao grupo MailerLite "Trial Ativo" (dispara automations dia 2 e dia 5)
+    if (email && env.MAILERLITE_API_KEY && env.MAILERLITE_GROUP_TRIAL_ATIVO) {
+      await addToMailerLite(env, email, 'trial', tenant_id, env.MAILERLITE_GROUP_TRIAL_ATIVO);
+    }
+    await logPaymentEvent(env, tenant_id, 'trial_started', { status: 'trial', raw: { trial_ate } });
+    return json({ trial: true, trial_ate });
+  }
+
+  // ── Plano free (legado) — preservado por compatibilidade ───────────────────
   if (plano === 'free') {
     return json({ trial: true });
   }
