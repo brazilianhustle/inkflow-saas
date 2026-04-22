@@ -1,8 +1,12 @@
 // ── InkFlow — Cleanup de tenants orfaos (Cloudflare Pages Function) ──────────
-// Deleta tenants abandonados em 3 categorias:
-//   1. rascunho (>48h) — criou perfil mas nunca foi ao pagamento
-//   2. pendente (>72h, inativo, sem assinatura) — foi ao pagamento mas nao pagou
+// Deleta tenants abandonados em 4 categorias:
+//   1. rascunho (>24h) — criou perfil mas nunca foi ao pagamento
+//   2. pendente (>12h, inativo, sem assinatura) — foi ao pagamento mas nao pagou
 //   3. artist_slot (>7d, inativo) — convite de artista nao aceito
+//   4. evo_orfa (>6h, ativo=false, tem evo_instance) — criou instancia Evolution
+//      mas nunca conectou WhatsApp. Pega tenants que fizeram pagamento/trial e
+//      abandonaram antes do QR scan — aparecem vazios no admin e ocupam slot
+//      na Evolution API.
 // Tambem deleta a instancia correspondente na Evolution API para evitar orfas.
 //
 // POST /api/cleanup-tenants
@@ -55,20 +59,21 @@ export async function onRequest(context) {
   try {
     const sbHeaders = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
 
-    // ── 1. Buscar tenants orfaos em 3 categorias ─────────────────────────
-    const cutoff48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-    const cutoff72h = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+    // ── 1. Buscar tenants orfaos em 4 categorias ─────────────────────────
+    const cutoff6h  = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+    const cutoff12h = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+    const cutoff24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const cutoff7d  = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Cat 1: rascunho sem pagamento (>48h) — fluxo original
+    // Cat 1: rascunho sem pagamento (>24h)
     const q1 = fetch(
-      `${SUPABASE_URL}/rest/v1/tenants?status_pagamento=eq.rascunho&mp_subscription_id=is.null&created_at=lt.${encodeURIComponent(cutoff48h)}&select=id,nome_estudio,email,created_at,evo_instance,status_pagamento`,
+      `${SUPABASE_URL}/rest/v1/tenants?status_pagamento=eq.rascunho&mp_subscription_id=is.null&created_at=lt.${encodeURIComponent(cutoff24h)}&select=id,nome_estudio,email,created_at,evo_instance,status_pagamento`,
       { headers: sbHeaders }
     );
 
-    // Cat 2: pendente, inativo, sem assinatura (>72h) — abandonou pagamento
+    // Cat 2: pendente, inativo, sem assinatura (>12h) — abandonou pagamento
     const q2 = fetch(
-      `${SUPABASE_URL}/rest/v1/tenants?status_pagamento=eq.pendente&ativo=eq.false&mp_subscription_id=is.null&created_at=lt.${encodeURIComponent(cutoff72h)}&select=id,nome_estudio,email,created_at,evo_instance,status_pagamento`,
+      `${SUPABASE_URL}/rest/v1/tenants?status_pagamento=eq.pendente&ativo=eq.false&mp_subscription_id=is.null&created_at=lt.${encodeURIComponent(cutoff12h)}&select=id,nome_estudio,email,created_at,evo_instance,status_pagamento`,
       { headers: sbHeaders }
     );
 
@@ -78,21 +83,37 @@ export async function onRequest(context) {
       { headers: sbHeaders }
     );
 
-    const [res1, res2, res3] = await Promise.all([q1, q2, q3]);
+    // Cat 4: evo_instance criada mas WhatsApp nunca conectado (>6h)
+    // Pega orfãs de abandono pós-pagamento/trial antes do QR scan.
+    // Exclui artist_slot (tem janela maior via cat 3) pra nao conflitar.
+    const q4 = fetch(
+      `${SUPABASE_URL}/rest/v1/tenants?ativo=eq.false&evo_instance=not.is.null&status_pagamento=neq.artist_slot&created_at=lt.${encodeURIComponent(cutoff6h)}&select=id,nome_estudio,email,created_at,evo_instance,status_pagamento`,
+      { headers: sbHeaders }
+    );
 
-    if (!res1.ok || !res2.ok || !res3.ok) {
-      const errText = (!res1.ok ? await res1.text() : '') || (!res2.ok ? await res2.text() : '') || await res3.text();
+    const [res1, res2, res3, res4] = await Promise.all([q1, q2, q3, q4]);
+
+    if (!res1.ok || !res2.ok || !res3.ok || !res4.ok) {
+      const errText = (!res1.ok ? await res1.text() : '') || (!res2.ok ? await res2.text() : '') || (!res3.ok ? await res3.text() : '') || await res4.text();
       console.error('cleanup-tenants: search error:', errText);
       return json({ error: 'Erro ao buscar tenants' }, 500);
     }
 
-    const [list1, list2, list3] = await Promise.all([res1.json(), res2.json(), res3.json()]);
+    const [list1, list2, list3, list4] = await Promise.all([res1.json(), res2.json(), res3.json(), res4.json()]);
 
-    // Deduplicar por id (caso raro de overlap)
+    // Deduplicar por id (overlap esperado entre cat 1/2/4 — um tenant rascunho
+    // com evo_instance bate cat 1 E cat 4; dedup garante um delete só).
     const seen = new Set();
     const staleTeams = [];
-    for (const t of [...list1, ...list2, ...list3]) {
-      if (!seen.has(t.id)) { seen.add(t.id); staleTeams.push(t); }
+    const categoryFor = new Map(); // rastreia a categoria primaria pra cada tenant
+    for (const [cat, list] of [['rascunho', list1], ['pendente', list2], ['artist_slot', list3], ['evo_orfa', list4]]) {
+      for (const t of list) {
+        if (!seen.has(t.id)) {
+          seen.add(t.id);
+          staleTeams.push(t);
+          categoryFor.set(t.id, cat);
+        }
+      }
     }
 
     if (!staleTeams || staleTeams.length === 0) {
@@ -142,16 +163,18 @@ export async function onRequest(context) {
         }
       );
 
+      const cat = categoryFor.get(tenant.id) || tenant.status_pagamento;
       results.push({
         id: tenant.id,
         evo_instance: tenant.evo_instance,
-        categoria: tenant.status_pagamento,
+        categoria: cat,
+        status_pagamento: tenant.status_pagamento,
         evo_deleted: evoDeleted,
         db_deleted: delRes.ok,
       });
 
       if (delRes.ok) {
-        console.log(`cleanup-tenants: deleted orphan tenant ${tenant.id} (${tenant.nome_estudio}, status=${tenant.status_pagamento})`);
+        console.log(`cleanup-tenants: deleted orphan tenant ${tenant.id} (${tenant.nome_estudio}, cat=${cat}, status=${tenant.status_pagamento})`);
       } else {
         console.error(`cleanup-tenants: failed to delete ${tenant.id}:`, await delRes.text());
       }
@@ -168,6 +191,7 @@ export async function onRequest(context) {
         rascunho: results.filter(r => r.categoria === 'rascunho').length,
         pendente: results.filter(r => r.categoria === 'pendente').length,
         artist_slot: results.filter(r => r.categoria === 'artist_slot').length,
+        evo_orfa: results.filter(r => r.categoria === 'evo_orfa').length,
       },
       details: results,
     });
