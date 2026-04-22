@@ -10,11 +10,12 @@
 // Tambem deleta a instancia correspondente na Evolution API para evitar orfas.
 //
 // POST /api/cleanup-tenants
-// Header: Authorization: Bearer <CLEANUP_SECRET>
+// Header: Authorization: Bearer <CLEANUP_SECRET ou CRON_SECRET>
 //
 // Env vars necessárias:
 //   - SUPABASE_SERVICE_KEY
-//   - CLEANUP_SECRET
+//   - CLEANUP_SECRET OR CRON_SECRET (aceita qualquer um dos dois — mesmo padrão
+//     de expira-holds.js pra unificar ops secrets)
 //   - EVO_BASE_URL (opcional, default: https://evo.inkflowbrasil.com)
 //   - EVO_GLOBAL_KEY (API key global da Evolution API)
 //
@@ -44,12 +45,12 @@ export async function onRequest(context) {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
-  // ── Autenticação simples via secret ──────────────────────────────────────
+  // ── Autenticação simples via secret (CLEANUP_SECRET ou CRON_SECRET) ──────
   const authHeader = request.headers.get('Authorization') || '';
   const token = authHeader.replace('Bearer ', '').trim();
-  const CLEANUP_SECRET = env.CLEANUP_SECRET;
+  const validSecrets = [env.CLEANUP_SECRET, env.CRON_SECRET].filter(Boolean);
 
-  if (!CLEANUP_SECRET || token !== CLEANUP_SECRET) {
+  if (validSecrets.length === 0 || !validSecrets.includes(token)) {
     return json({ error: 'Não autorizado' }, 401);
   }
 

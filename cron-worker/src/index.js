@@ -5,8 +5,7 @@
 //
 // Setup:
 //   wrangler deploy
-//   wrangler secret put CRON_SECRET     (mesmo valor que CF Pages)
-//   wrangler secret put CLEANUP_SECRET  (mesmo valor que CF Pages)
+//   wrangler secret put CRON_SECRET     (mesmo valor que CF Pages — UNICO secret necessario)
 //   wrangler secret put TELEGRAM_BOT_TOKEN  (opcional, pra alerta de falha)
 //   wrangler secret put TELEGRAM_CHAT_ID    (opcional)
 
@@ -14,11 +13,13 @@ const BASE_URL = 'https://inkflowbrasil.com';
 
 // Mapa: cron expression → { path, secretEnv }
 // Mantem em sync com triggers em wrangler.toml.
+// Todos os endpoints aceitam CRON_SECRET (cleanup-tenants tambem aceita
+// CLEANUP_SECRET como legacy, mas aqui usamos CRON_SECRET pra unificar).
 const SCHEDULE_MAP = {
-  '0 12 * * *':   { path: '/api/cron/expira-trial',       secretEnv: 'CRON_SECRET',    label: 'expira-trial' },
-  '0 2 * * *':    { path: '/api/cleanup-tenants',         secretEnv: 'CLEANUP_SECRET', label: 'cleanup-tenants' },
-  '0 9 * * *':    { path: '/api/cron/reset-agendamentos', secretEnv: 'CRON_SECRET',    label: 'reset-agendamentos' },
-  '*/30 * * * *': { path: '/api/cron/monitor-whatsapp',   secretEnv: 'CRON_SECRET',    label: 'monitor-whatsapp' },
+  '0 12 * * *':   { path: '/api/cron/expira-trial',       secretEnv: 'CRON_SECRET', label: 'expira-trial' },
+  '0 2 * * *':    { path: '/api/cleanup-tenants',         secretEnv: 'CRON_SECRET', label: 'cleanup-tenants' },
+  '0 9 * * *':    { path: '/api/cron/reset-agendamentos', secretEnv: 'CRON_SECRET', label: 'reset-agendamentos' },
+  '*/30 * * * *': { path: '/api/cron/monitor-whatsapp',   secretEnv: 'CRON_SECRET', label: 'monitor-whatsapp' },
 };
 
 async function notifyFailure(env, label, detail) {
