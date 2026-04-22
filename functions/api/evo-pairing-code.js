@@ -73,7 +73,7 @@ export async function onRequest(context) {
         const connState = statusData?.instance?.state || statusData?.state || '';
         console.log('evo-pairing-code: connectionState =', connState);
         if (connState === 'open') {
-          return json({ error: 'Este WhatsApp j\u00e1 est\u00e1 conectado. Recarregue a p\u00e1gina.' }, 409);
+          return json({ error: 'Este WhatsApp já está conectado. Recarregue a página.' }, 409);
         }
         if (connState === 'connecting') {
           // Resetar instancia para estado limpo antes de gerar pairing code

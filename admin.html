@@ -457,7 +457,7 @@ async function doLogin() {
     accessToken = d.access_token;
     const ADMINS = ['lmf4200@gmail.com'];
 if (!ADMINS.includes(email.toLowerCase())) {
-  errEl.textContent = 'Acesso n\u00e3o autorizado';
+  errEl.textContent = 'Acesso não autorizado';
   errEl.style.display = 'block';
   accessToken = null;
   return;
@@ -523,7 +523,7 @@ async function api(method, path, body) {
     if (accessToken) return api(method, path, body);
   }
   doLogout();
-  throw new Error('Sess\u00e3o expirada. Fa\u00e7a login novamente.');
+  throw new Error('Sessão expirada. Faça login novamente.');
 }
   if (method === 'GET') return r.json();
   return r;
@@ -651,8 +651,8 @@ function selT(id) {
         <div class="sr"><div class="sk">Link Onboarding</div><div class="sv2">${t.onboarding_key?`<a href="https://inkflowbrasil.com/onboarding.html?key=${encodeURIComponent(t.onboarding_key)}" target="_blank" style="color:var(--glow);font-size:11px;word-break:break-all">onboarding?key=${esc(t.onboarding_key.slice(0,12))}...</a> <button class="ab" onclick="event.stopPropagation();navigator.clipboard.writeText('https://inkflowbrasil.com/onboarding.html?key=${encodeURIComponent(t.onboarding_key)}').then(()=>this.textContent='copiado!');setTimeout(()=>this.textContent='copiar',2000)" style="font-size:10px;margin-left:6px">copiar</button>`:'<span style="color:var(--text3);font-size:11px">sem key</span>'}</div></div>
       </div>
       ${t.prompt_sistema?`<div class="prm" style="margin-top:16px"><div class="sk" style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:8px">Prompt do Sistema</div><div style="font-size:12px;color:var(--text2);white-space:pre-wrap;max-height:100px;overflow-y:auto;line-height:1.6">${esc(t.prompt_sistema)}</div></div>`:''}
-      ${t.is_artist_slot?`<div style="margin-top:16px;padding:12px;background:rgba(0,212,170,.05);border:1px solid rgba(0,212,170,.15);border-radius:10px"><div class="sk" style="font-size:10px;text-transform:uppercase;color:var(--glow);font-weight:600;margin-bottom:6px">&#x1F3A8; Artista vinculado</div><div style="font-size:12px;color:var(--text2)">Este tenant \u00e9 um artista filho. Parent: <span style="font-family:monospace;font-size:11px">${esc(t.parent_tenant_id||'-')}</span></div></div>`:''}
-      ${(!t.is_artist_slot && ['estudio','premium'].includes(t.plano))?`<div style="margin-top:16px;padding:12px;background:rgba(0,212,170,.05);border:1px solid rgba(0,212,170,.15);border-radius:10px"><div class="sk" style="font-size:10px;text-transform:uppercase;color:var(--glow);font-weight:600;margin-bottom:6px">&#x1F3A8; Artistas do Est\u00fadio (max: ${t.max_artists||'?'})</div><div id="det-artists" style="font-size:12px;color:var(--text2)">Carregando...</div></div>`:''}
+      ${t.is_artist_slot?`<div style="margin-top:16px;padding:12px;background:rgba(0,212,170,.05);border:1px solid rgba(0,212,170,.15);border-radius:10px"><div class="sk" style="font-size:10px;text-transform:uppercase;color:var(--glow);font-weight:600;margin-bottom:6px">&#x1F3A8; Artista vinculado</div><div style="font-size:12px;color:var(--text2)">Este tenant é um artista filho. Parent: <span style="font-family:monospace;font-size:11px">${esc(t.parent_tenant_id||'-')}</span></div></div>`:''}
+      ${(!t.is_artist_slot && ['estudio','premium'].includes(t.plano))?`<div style="margin-top:16px;padding:12px;background:rgba(0,212,170,.05);border:1px solid rgba(0,212,170,.15);border-radius:10px"><div class="sk" style="font-size:10px;text-transform:uppercase;color:var(--glow);font-weight:600;margin-bottom:6px">&#x1F3A8; Artistas do Estúdio (max: ${t.max_artists||'?'})</div><div id="det-artists" style="font-size:12px;color:var(--text2)">Carregando...</div></div>`:''}
     </div>`;
   document.getElementById('det').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   // Se for estudio/premium (dono), carregar artistas filhos
@@ -673,7 +673,7 @@ function updateStats() {
   document.getElementById('stDesc').textContent  = total + ' tenant' + (total!==1?'s':'') + ' cadastrado' + (total!==1?'s':'');
   document.getElementById('stAtivos').textContent = ativos;
   document.getElementById('stInat').textContent   = 'inativos: ' + (total - ativos);
-  document.getElementById('stMrr').textContent    = 'R$\u00a0' + mrr.toLocaleString('pt-BR');
+  document.getElementById('stMrr').textContent    = 'R$ ' + mrr.toLocaleString('pt-BR');
   document.getElementById('stPlanos').innerHTML   =
     '<span class="badge bgr">I:'+cnt.individual+'</span> '+
     '<span class="badge bb">Est:'+cnt.estudio+'</span> '+
@@ -723,7 +723,7 @@ function openModal(id) {
     document.getElementById('fEnd').value     = t.endereco||'';
     document.getElementById('fEvoInst').value = t.evo_instance||'';
     document.getElementById('fEvoKey').value  = '';
-  document.getElementById('fEvoKey').placeholder = t.evo_apikey ? '(chave salva \u2014 deixe vazio para manter)' : 'chave_api_evo';
+  document.getElementById('fEvoKey').placeholder = t.evo_apikey ? '(chave salva — deixe vazio para manter)' : 'chave_api_evo';
     document.getElementById('fEvoUrl').value  = t.evo_base_url||'https://evo.inkflowbrasil.com';
     document.getElementById('fGrpN').value    = t.grupo_notificacao||'';
     document.getElementById('fGrpO').value    = t.grupo_orcamento||'';
@@ -752,7 +752,7 @@ async function saveModal() {
   const nome = document.getElementById('fNome').value.trim();
   const est  = document.getElementById('fEst').value.trim();
   if (!nome || !est) {
-    toast('Nome e nome do est\u00fadio s\u00e3o obrigat\u00f3rios', 'err');
+    toast('Nome e nome do estúdio são obrigatórios', 'err');
     return;
   }
   const data = {
@@ -813,8 +813,8 @@ function askT(id, ativo) {
   const t    = allT.find(x => x.id === id);
   const nome = t ? esc(t.nome_estudio||t.nome||id) : id;
   document.getElementById('cm').innerHTML = isAt
-    ? 'Pausar o tenant <strong>"' + nome + '"</strong>?<br><br>O atendimento via WhatsApp ser\u00e1 interrompido para este cliente.'
-    : 'Ativar o tenant <strong>"' + nome + '"</strong>?<br><br>O atendimento via WhatsApp ser\u00e1 retomado.';
+    ? 'Pausar o tenant <strong>"' + nome + '"</strong>?<br><br>O atendimento via WhatsApp será interrompido para este cliente.'
+    : 'Ativar o tenant <strong>"' + nome + '"</strong>?<br><br>O atendimento via WhatsApp será retomado.';
   document.getElementById('cok').textContent = isAt ? 'Pausar' : 'Ativar';
   document.getElementById('cok').className   = isAt ? 'btn d' : 'btn p';
   pending = async () => {
@@ -835,7 +835,7 @@ function askT(id, ativo) {
 function delT(id, nome) {
   document.getElementById('cm').innerHTML =
     'Excluir <strong>"' + esc(nome) + '"</strong>?<br><br>' +
-    'Esta a\u00e7\u00e3o \u00e9 permanente e n\u00e3o pode ser desfeita.';
+    'Esta ação é permanente e não pode ser desfeita.';
   document.getElementById('cok').textContent = 'Excluir permanentemente';
   document.getElementById('cok').className   = 'btn d';
   pending = async () => {
@@ -851,17 +851,17 @@ function delT(id, nome) {
     const errList = data.evo_errors || [];
     const cleanupStatus = data.evo_cleanup || (errList.length ? 'failed' : 'success');
     const statusLabel = {
-      success: '\u2713 EVO limpo',
-      retry_success: '\u2713 EVO limpo (retry)',
-      db_fallback: '\u26a0 EVO limpo via DB bridge',
-      failed: '\u2717 EVO FALHOU',
+      success: '✓ EVO limpo',
+      retry_success: '✓ EVO limpo (retry)',
+      db_fallback: '⚠ EVO limpo via DB bridge',
+      failed: '✗ EVO FALHOU',
     }[cleanupStatus] || cleanupStatus;
-    let msg = 'Tenant exclu\u00eddo. ' + statusLabel + '. ' + delList.length + ' ok / ' + errList.length + ' erro(s).';
+    let msg = 'Tenant excluído. ' + statusLabel + '. ' + delList.length + ' ok / ' + errList.length + ' erro(s).';
     // Se falhou, copia o SQL manual para o admin rodar via SSH
     if (errList.length > 0) {
       const sqls = errList.filter(e => e.manual_sql).map(e => e.manual_sql).join('\n');
       if (sqls) {
-        msg += ' SQL copiado para clipboard \u2014 rode no Postgres do Evolution.';
+        msg += ' SQL copiado para clipboard — rode no Postgres do Evolution.';
         try { navigator.clipboard.writeText(sqls); } catch {}
         console.warn('[admin] Manual cleanup SQL:\n' + sqls);
       }
@@ -903,7 +903,7 @@ function loadCfgForm() {
 function saveCfg() {
   const url = document.getElementById('cfUrl').value.trim();
   const key = document.getElementById('cfKey').value.trim();
-  if (!url||!key) { toast('URL e Key s\u00e3o obrigat\u00f3rios', 'err'); return; }
+  if (!url||!key) { toast('URL e Key são obrigatórios', 'err'); return; }
   CFG.url = url; CFG.key = key;
   CFG.prices = {
     individual: parseInt(document.getElementById('cfPb').value)||197,
@@ -911,7 +911,7 @@ function saveCfg() {
     premium:    parseInt(document.getElementById('cfPe').value)||997
   };
   localStorage.setItem('ikf', JSON.stringify({ url:CFG.url, key:CFG.key, prices:CFG.prices }));
-  toast('Configura\u00e7\u00f5es salvas!', 'ok');
+  toast('Configurações salvas!', 'ok');
   updateStats();
 }
 

@@ -64,7 +64,7 @@ export async function onRequest(context) {
   const isArtistRequest = body.is_artist_slot === true && body.parent_tenant_id;
   if (!isArtistRequest) {
     if (!nome_estudio || typeof nome_estudio !== 'string' || nome_estudio.trim().length < 2) {
-      return json({ error: 'Nome do est\u00fadio \u00e9 obrigat\u00f3rio' }, 400);
+      return json({ error: 'Nome do estúdio é obrigatório' }, 400);
     }
   }
   // FIX: nome_agente agora validado como obrigatório

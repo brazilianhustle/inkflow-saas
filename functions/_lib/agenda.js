@@ -11,7 +11,7 @@ function parseHorario(str) {
   const s = str.trim().toLowerCase();
   if (s === 'closed' || s === 'fechado' || s === '-') return null;
   const normalized = s.replace(/h(\d)/g, ':$1').replace(/h$/g, ':00');
-  const parts = normalized.split(/[-\u2013]/).map(x => x.trim());
+  const parts = normalized.split(/[-–]/).map(x => x.trim());
   if (parts.length !== 2) return null;
   const toMin = (hm) => {
     const m = hm.match(/^(\d{1,2})(?::(\d{2}))?/);
@@ -34,7 +34,7 @@ export function horarioDoDia(horarioFuncionamento, diaSemana) {
   if (horarioFuncionamento[dia]) return parseHorario(horarioFuncionamento[dia]);
   // Chaves compostas tipo "seg-sex"
   for (const k of Object.keys(horarioFuncionamento)) {
-    const parts = k.toLowerCase().split(/[-\u2013_]/);
+    const parts = k.toLowerCase().split(/[-–_]/);
     if (parts.length === 2 && DIAS.includes(parts[0]) && DIAS.includes(parts[1])) {
       const i0 = DIAS.indexOf(parts[0]);
       const i1 = DIAS.indexOf(parts[1]);

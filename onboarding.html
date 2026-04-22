@@ -1249,7 +1249,7 @@ async function init() {
   try {
     const valRes = await fetch('/api/validate-onboarding-key', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
     const valData = await valRes.json();
-    if (!valData.valid) { showErrOverlay(valData.error || 'Link de onboarding inv\u00e1lido ou expirado.'); return; }
+    if (!valData.valid) { showErrOverlay(valData.error || 'Link de onboarding inválido ou expirado.'); return; }
     plano = valData.plano || 'individual';
 
     // ── Detectar convite de artista ──
@@ -1351,14 +1351,14 @@ async function init() {
     document.getElementById('w-plano').textContent = 'convite de artista';
     document.getElementById('w-plano').style.borderColor = 'rgba(0,212,170,.5)';
     document.querySelector('.w-title').textContent = 'Configure seu assistente virtual';
-    document.querySelector('.w-sub').textContent = 'Voc\u00ea foi convidado para o est\u00fadio ' + (artistInviteData.parent_nome_estudio || '') + '. Conecte seu WhatsApp para ativar seu assistente pessoal.';
+    document.querySelector('.w-sub').textContent = 'Você foi convidado para o estúdio ' + (artistInviteData.parent_nome_estudio || '') + '. Conecte seu WhatsApp para ativar seu assistente pessoal.';
     // Esconder steps de pagamento na lista de boas-vindas
     const welcomeSteps = document.querySelectorAll('.w-step');
     if (welcomeSteps[3]) welcomeSteps[3].style.display = 'none'; // Pagamento
     // Adaptar formulario
     setupArtistForm();
   } else {
-    const planLabels = { trial:'trial 7 dias', individual:'individual', estudio:'est\u00fadio', premium:'est\u00fadio vip' };
+    const planLabels = { trial:'trial 7 dias', individual:'individual', estudio:'estúdio', premium:'estúdio vip' };
     document.getElementById('w-plano').textContent = 'plano ' + (planLabels[plano] || plano);
   }
   selectPlan(plano);
@@ -1405,7 +1405,7 @@ function setupArtistForm() {
   const formTitle = document.querySelector('.form-title');
   const formSub = document.querySelector('.form-sub');
   if (formTitle) formTitle.textContent = 'Seus dados de artista';
-  if (formSub) formSub.textContent = 'Essas informa\u00e7\u00f5es configuram seu assistente virtual pessoal.';
+  if (formSub) formSub.textContent = 'Essas informações configuram seu assistente virtual pessoal.';
   // Mudar badge
   const formBadge = document.querySelector('.form-badge');
   if (formBadge) formBadge.textContent = 'Convite de Artista';
@@ -1413,9 +1413,9 @@ function setupArtistForm() {
   const nomeLabel = document.querySelector('label[for="f-nome"], #f-nome')?.closest('.fg')?.querySelector('.fl');
   // Mudar texto do botao
   const formBtn = document.getElementById('form-btn');
-  if (formBtn) formBtn.textContent = 'Conectar meu WhatsApp \u2192';
+  if (formBtn) formBtn.textContent = 'Conectar meu WhatsApp →';
 }
-function makeSlug(text) { return (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').substring(0, 16); }
+function makeSlug(text) { return (text || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '').substring(0, 16); }
 function autoAgent() {}
 function selectPlan(plan) { selectedPlan = plan; ['individual','estudio','premium'].forEach(p => { document.getElementById('plan-' + p)?.classList.toggle('active', p === plan); }); if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan}); }
 function setStatus(idx, msg, state = 'active') { const dot = document.getElementById('pd-' + idx); const txt = document.getElementById('pm-' + idx); if (!dot) return; dot.className = 'proc-dot ' + state; if (msg) { txt.textContent = msg; txt.className = 'proc-msg' + (state === 'done' ? ' done' : ''); } }
@@ -1509,22 +1509,22 @@ async function showPaymentStep() {
   const nome = document.getElementById('f-nome').value.trim(); const estudio = (document.getElementById('f-estudio').value || '').trim(); const agente = document.getElementById('f-agente').value.trim() || nome.split(' ')[0]; const cidade = document.getElementById('f-cidade').value.trim(); const enderecoBase = document.getElementById('f-endereco').value.trim(); const numero = document.getElementById('f-numero')?.value?.trim() || ''; const endereco = enderecoBase + (numero ? (enderecoBase.includes(',') ? ' nº ' + numero : ', ' + numero) : ''); const email = document.getElementById('f-email').value.trim();
   const telefoneRaw = document.getElementById('f-telefone')?.value?.trim() || ''; const telefone = telefoneRaw.replace(/\D/g, '');
   // Artista nao precisa de nome_estudio
-  if (!isArtistInvite && (!nome || !estudio)) { showFormError('Preencha o nome e o nome do est\u00fadio.'); return; }
+  if (!isArtistInvite && (!nome || !estudio)) { showFormError('Preencha o nome e o nome do estúdio.'); return; }
   if (isArtistInvite && !nome) { showFormError('Preencha seu nome.'); return; }
-  if (!isArtistInvite && (!telefone || telefone.length < 10)) { showFormError('WhatsApp v\u00e1lido com DDD \u00e9 obrigat\u00f3rio.'); return; }
-  if (!email || !email.includes('@')) { showFormError('Email v\u00e1lido \u00e9 obrigat\u00f3rio.'); return; }
+  if (!isArtistInvite && (!telefone || telefone.length < 10)) { showFormError('WhatsApp válido com DDD é obrigatório.'); return; }
+  if (!email || !email.includes('@')) { showFormError('Email válido é obrigatório.'); return; }
   // [Melhoria 2] Se a validacao ja rodou e falhou, ou ainda não rodou, forçar agora
   if (emailValidState.email !== email || emailValidState.valid === null) {
     const ok = await validateEmail(email);
-    if (ok === false) { showFormError('Email inv\u00e1lido. Corrija antes de continuar.'); return; }
+    if (ok === false) { showFormError('Email inválido. Corrija antes de continuar.'); return; }
   } else if (emailValidState.valid === false) {
-    showFormError('Email inv\u00e1lido. Corrija antes de continuar.'); return;
+    showFormError('Email inválido. Corrija antes de continuar.'); return;
   }
   document.getElementById('form-err').style.display = 'none';
   const btn = document.getElementById('form-btn'); btn.disabled = true; btn.textContent = 'Aguarde...';
   try {
     const slugBase = makeSlug(isArtistInvite ? nome : (estudio || nome)); const suffix = Math.floor(Math.random() * 900) + 100; instanceSlug = slugBase + suffix;
-    const promptEstudio = isArtistInvite ? (artistInviteData.parent_nome_estudio || 'Est\u00fadio') : estudio;
+    const promptEstudio = isArtistInvite ? (artistInviteData.parent_nome_estudio || 'Estúdio') : estudio;
     const prompt = generatePrompt(agente, promptEstudio, cidade, endereco);
     const tenantData = { nome, nome_agente: agente, nome_estudio: estudio || (isArtistInvite ? artistInviteData.parent_nome_estudio : ''), email: email || null, telefone: telefone || null, cidade: cidade || null, endereco: endereco || null, evo_instance: instanceSlug, webhook_path: 'inkflow', evo_apikey: 'pending', plano: selectedPlan, ativo: false, prompt_sistema: prompt, onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || null };
     // Artista: incluir dados de vinculacao ao estudio pai
@@ -1586,7 +1586,7 @@ async function showPaymentStep() {
       return;
     }
 
-    const planNames = { trial:'Trial 7 dias', individual:'Individual', estudio:'Est\u00fadio', premium:'Est\u00fadio VIP' }; const planPrices = { trial:'Gr\u00e1tis', individual:'R$ 197', estudio:'R$ 497', premium:'R$ 997' }; const planCycles = { trial:'/7 dias \u00b7 sem cart\u00e3o', individual:'/m\u00eas \u00b7 cobran\u00e7a recorrente', estudio:'/m\u00eas \u00b7 cobran\u00e7a recorrente', premium:'/m\u00eas \u00b7 cobran\u00e7a recorrente' };
+    const planNames = { trial:'Trial 7 dias', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' }; const planPrices = { trial:'Grátis', individual:'R$ 197', estudio:'R$ 497', premium:'R$ 997' }; const planCycles = { trial:'/7 dias · sem cartão', individual:'/mês · cobrança recorrente', estudio:'/mês · cobrança recorrente', premium:'/mês · cobrança recorrente' };
     document.getElementById('pay-plan-box').innerHTML = `<div class="pay-plan-name">${planNames[selectedPlan] || selectedPlan}</div><div class="pay-plan-price">${planPrices[selectedPlan] || ''}</div><div class="pay-plan-cycle">${planCycles[selectedPlan] || ''}</div>`;
     const payBtn = document.getElementById('pay-btn'); const payOr = document.getElementById('pay-or'); const payFreeBtn = document.getElementById('pay-free-btn'); const payHint = document.getElementById('pay-hint');
     { payBtn.style.display = 'flex'; payOr.style.display = 'block'; if (payHint) payHint.style.display = 'block'; if (payFreeBtn) payFreeBtn.style.display = 'none'; }
@@ -1754,13 +1754,13 @@ async function checkConnection() {
         document.getElementById('suc-estudio').textContent = ob.estudio || instanceSlug;
         document.getElementById('suc-agente').textContent = ob.agente || '';
         document.getElementById('suc-inst').textContent = instanceSlug;
-        const sucPlanLabels = { trial:'Trial 7 dias', individual:'Individual \u00b7 R$ 197/m\u00eas', estudio:'Est\u00fadio \u00b7 R$ 497/m\u00eas', premium:'Est\u00fadio VIP \u00b7 R$ 997/m\u00eas' };
+        const sucPlanLabels = { trial:'Trial 7 dias', individual:'Individual · R$ 197/mês', estudio:'Estúdio · R$ 497/mês', premium:'Estúdio VIP · R$ 997/mês' };
         document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
         if (isArtist) {
-          document.querySelector('.suc-title').textContent = 'Seu WhatsApp est\u00e1 conectado!';
-          document.querySelector('.suc-sub').textContent = 'Seu assistente virtual pessoal j\u00e1 est\u00e1 ativo. Os clientes que entrarem em contato pelo seu n\u00famero ser\u00e3o atendidos automaticamente.';
-          document.getElementById('suc-plano').textContent = 'artista \u00b7 ' + (ob.estudio || '');
-          document.querySelector('.suc-next').innerHTML = '\u2713 Seu WhatsApp j\u00e1 recebe mensagens automaticamente<br/>\u2713 O assistente responde agendamentos e d\u00favidas<br/>\u2713 Os agendamentos v\u00e3o para o calend\u00e1rio do est\u00fadio<br/><br/>Em caso de d\u00favidas, fale com o dono do est\u00fadio.';
+          document.querySelector('.suc-title').textContent = 'Seu WhatsApp está conectado!';
+          document.querySelector('.suc-sub').textContent = 'Seu assistente virtual pessoal já está ativo. Os clientes que entrarem em contato pelo seu número serão atendidos automaticamente.';
+          document.getElementById('suc-plano').textContent = 'artista · ' + (ob.estudio || '');
+          document.querySelector('.suc-next').innerHTML = '✓ Seu WhatsApp já recebe mensagens automaticamente<br/>✓ O assistente responde agendamentos e dúvidas<br/>✓ Os agendamentos vão para o calendário do estúdio<br/><br/>Em caso de dúvidas, fale com o dono do estúdio.';
         }
       } catch (uiErr) { console.warn('[inkflow] UI fill failed (nao fatal):', uiErr); }
 
@@ -2326,7 +2326,7 @@ async function saveValoresAndNext() {
     console.error('saveValores error:', e);
     const errEl = document.getElementById('sv-err');
     if (errEl) { errEl.textContent = e.message || 'Erro ao salvar'; errEl.style.display = 'block'; setTimeout(() => errEl.style.display = 'none', 5000); }
-  } finally { btn.disabled = false; btn.textContent = 'Proximo \u2192'; }
+  } finally { btn.disabled = false; btn.textContent = 'Proximo →'; }
 }
 
 // ── Wizard: Intro Personalizar (chat bubbles) ──────────────────────────────
@@ -2644,7 +2644,7 @@ async function savePersonaAndNext() {
     console.error('savePersona error:', e);
     const errEl = document.getElementById('sp-err');
     if (errEl) { errEl.textContent = e.message || 'Erro ao salvar'; errEl.style.display = 'block'; setTimeout(() => errEl.style.display = 'none', 5000); }
-  } finally { btn.disabled = false; btn.textContent = 'Continuar \u2192'; }
+  } finally { btn.disabled = false; btn.textContent = 'Continuar →'; }
 }
 
 // ── Nav fixa + auto-save/restore campos ─────────────────────────────────────
