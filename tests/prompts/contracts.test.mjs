@@ -11,6 +11,7 @@ import {
   conversaVazia,
   clientContextPrimeiroContato,
 } from './fixtures/tenant-canonico.js';
+import { containsBannedToken } from './_helpers.js';
 
 // Aproximação simples: ~4 chars por token (OpenAI BPE pt-br fica em 3-4).
 // Só usamos pra teto, não pra métrica fina.
@@ -26,15 +27,8 @@ function validarContrato(prompt, contrato) {
     );
   }
   for (const token of contrato.must_not_contain) {
-    // Tokens alfanuméricos (ex: TODO, FIXME) são checados com word boundary
-    // pra evitar falso-positivo em palavras pt-br como "TODOS". Delimitadores
-    // tipo {{ }} ficam com match de substring mesmo.
-    const isWord = /^\w+$/.test(token);
-    const matched = isWord
-      ? new RegExp(`\\b${token}\\b`).test(prompt)
-      : prompt.includes(token);
     assert.ok(
-      !matched,
+      !containsBannedToken(prompt, token),
       `prompt modo ${contrato.modo} contém "${token}" mas deveria não conter`,
     );
   }

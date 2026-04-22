@@ -9,6 +9,7 @@ import {
   conversaVazia,
   clientContextPrimeiroContato,
 } from './fixtures/tenant-canonico.js';
+import { containsBannedToken } from './_helpers.js';
 
 const MODOS_SUPORTADOS = [
   { nome: 'faixa', tenant: tenantCanonicoFaixa },
@@ -28,10 +29,9 @@ for (const { nome, tenant } of MODOS_SUPORTADOS) {
 
   test(`invariante [${nome}]: prompt não contém metainstruções placeholder`, () => {
     const p = generateSystemPrompt(tenant, conversaVazia, clientContextPrimeiroContato);
-    assert.ok(!p.includes('{{'), 'contém {{');
-    assert.ok(!p.includes('}}'), 'contém }}');
-    assert.ok(!/\bTODO\b/.test(p), 'contém TODO');
-    assert.ok(!/\bFIXME\b/.test(p), 'contém FIXME');
+    for (const token of ['{{', '}}', 'TODO', 'FIXME']) {
+      assert.ok(!containsBannedToken(p, token), `contém ${token}`);
+    }
   });
 
   test(`invariante [${nome}]: nome do agente aparece no prompt (identidade)`, () => {

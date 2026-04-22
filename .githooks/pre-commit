@@ -10,7 +10,7 @@ CHANGED=$(git diff --cached --name-only --diff-filter=ACM)
 NEEDS_TESTS=0
 for f in $CHANGED; do
   case "$f" in
-    functions/_lib/prompts/*|functions/_lib/generate-prompt.js|functions/api/_validate-config-precificacao.js|functions/api/update-tenant.js|tests/prompts/*|tests/update-tenant-validations.test.mjs)
+    functions/_lib/prompts/*|functions/api/_validate-config-precificacao.js|functions/api/update-tenant.js|tests/prompts/*|tests/update-tenant-validations.test.mjs)
       NEEDS_TESTS=1
       ;;
   esac
