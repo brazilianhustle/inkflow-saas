@@ -10,6 +10,7 @@
 // FIX AUDIT #4: Admin pode editar campos adicionais (nome, email, cidade, etc.)
 
 import { verifyOnboardingKey, verifyStudioTokenOrLegacy } from './_auth-helpers.js';
+import { validarConfigPrecificacao, validarFewshotsPorModo } from './_validate-config-precificacao.js';
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const ADMIN_EMAIL  = 'lmf4200@gmail.com';
@@ -32,6 +33,7 @@ const ALLOWED_FIELDS = new Set([
   // [v5 agente IA] Configs do agente editaveis pelo dono via studio.html
   'config_agente',          // JSONB: persona, tom, emoji_level, usa_giria, expressoes_proibidas, frases_naturais, usa_identificador, aceita_cobertura, estilos_aceitos, estilos_recusados, few_shot_exemplos, tester_usage
   'config_precificacao',    // JSONB: modo, tabela_tamanho, multiplicadores, sinal_percentual, minimo, formula, tamanho_maximo_sessao_cm, valor_maximo_orcado, estilo_fallback, observacoes_tatuador, herda_do_pai
+  'fewshots_por_modo',      // JSONB: { faixa:[], exato:[], coleta_info:[], coleta_agendamento:[] }
   'horario_funcionamento',  // JSONB: { 'seg-sex': '10:00-19:00', 'sab': '10:00-15:00' }
   'duracao_sessao_padrao_h',
   'sinal_percentual',
@@ -51,8 +53,8 @@ const ADMIN_EXTRA_FIELDS = new Set([
 // Valida tipo basico de campos JSONB/array antes de mandar pro Supabase.
 // Retorna { ok: boolean, erro?: string }
 const MODOS_ATENDIMENTO = ['individual', 'tatuador_dono', 'recepcionista', 'artista_slot'];
-function validateFieldTypes(fields) {
-  const jsonbFields = ['config_agente', 'config_precificacao', 'horario_funcionamento'];
+function validateFieldTypes(fields, { enableColetaMode = false } = {}) {
+  const jsonbFields = ['config_agente', 'horario_funcionamento'];
   const arrayFields = ['gatilhos_handoff', 'portfolio_urls'];
   const intFields = ['duracao_sessao_padrao_h', 'sinal_percentual'];
 
@@ -78,6 +80,20 @@ function validateFieldTypes(fields) {
   if (fields.modo_atendimento !== undefined && !MODOS_ATENDIMENTO.includes(fields.modo_atendimento)) {
     return { ok: false, erro: `modo_atendimento deve ser um de: ${MODOS_ATENDIMENTO.join(', ')}` };
   }
+
+  // config_precificacao — validação rica + cleanup
+  if (fields.config_precificacao !== undefined) {
+    const r = validarConfigPrecificacao(fields.config_precificacao, { enableColetaMode });
+    if (!r.ok) return { ok: false, erro: r.erro };
+    fields.config_precificacao = r.cleanedCfg;
+  }
+
+  // fewshots_por_modo
+  if (fields.fewshots_por_modo !== undefined) {
+    const r = validarFewshotsPorModo(fields.fewshots_por_modo);
+    if (!r.ok) return { ok: false, erro: r.erro };
+  }
+
   return { ok: true };
 }
 
@@ -169,7 +185,8 @@ export async function onRequest(context) {
   }
 
   // Valida tipos dos novos campos agente/precificacao (evita JSON malformado no DB)
-  const typeCheck = validateFieldTypes(safeFields);
+  const enableColetaMode = env.ENABLE_COLETA_MODE === 'true' || env.ENABLE_COLETA_MODE === true;
+  const typeCheck = validateFieldTypes(safeFields, { enableColetaMode });
   if (!typeCheck.ok) {
     return json({ error: typeCheck.erro, code: 'invalid_field_type' }, 400);
   }
