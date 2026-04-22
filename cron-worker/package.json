@@ -1,0 +1,18 @@
+{
+  "name": "inkflow-cron",
+  "version": "1.0.0",
+  "description": "InkFlow cron dispatcher Worker — chama endpoints CF Pages em schedule",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail",
+    "test-expira-trial": "curl -X POST \"https://inkflow-cron.workers.dev/?cron=0+12+*+*+*\" -H \"Authorization: Bearer $CRON_SECRET\"",
+    "test-cleanup": "curl -X POST \"https://inkflow-cron.workers.dev/?cron=0+2+*+*+*\" -H \"Authorization: Bearer $CLEANUP_SECRET\"",
+    "test-reset-agendamentos": "curl -X POST \"https://inkflow-cron.workers.dev/?cron=0+9+*+*+*\" -H \"Authorization: Bearer $CRON_SECRET\"",
+    "test-monitor": "curl -X POST \"https://inkflow-cron.workers.dev/?cron=*/30+*+*+*+*\" -H \"Authorization: Bearer $CRON_SECRET\""
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

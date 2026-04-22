@@ -1,0 +1,18 @@
+name = "inkflow-cron"
+main = "src/index.js"
+compatibility_date = "2026-04-01"
+# Dispatcher de crons que chama os endpoints CF Pages em inkflowbrasil.com.
+# Cada trigger abaixo dispara o scheduled() handler em src/index.js; a rota
+# e escolhida por event.cron → endpoint map.
+
+[triggers]
+crons = [
+  "0 12 * * *",     # 09:00 BRT diario → /api/cron/expira-trial
+  "0 2 * * *",      # 23:00 BRT diario → /api/cleanup-tenants
+  "0 9 * * *",      # 06:00 BRT diario → /api/cron/reset-agendamentos
+  "*/30 * * * *",   # a cada 30min     → /api/cron/monitor-whatsapp
+]
+
+# Observability: todos os console.log aparecem em Workers → inkflow-cron → Logs
+[observability]
+enabled = true
