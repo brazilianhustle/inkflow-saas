@@ -21,10 +21,5 @@ if [ $NEEDS_TESTS -eq 0 ]; then
   exit 0
 fi
 
-echo "pre-commit: rodando testes de prompts + validações..."
-node --test \
-  tests/prompts/snapshot.test.mjs \
-  tests/prompts/contracts.test.mjs \
-  tests/prompts/invariants.test.mjs \
-  tests/prompts/contamination.test.mjs \
-  tests/update-tenant-validations.test.mjs
+echo "pre-commit: rodando bateria de testes..."
+node --test 'tests/**/*.test.*'

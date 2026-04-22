@@ -18,12 +18,4 @@ jobs:
           node-version: '20'
 
       - name: Run test suites
-        run: |
-          node --test \
-            tests/telegram.test.mjs \
-            tests/trial-helpers.test.mjs \
-            tests/update-tenant-validations.test.mjs \
-            tests/prompts/snapshot.test.mjs \
-            tests/prompts/contracts.test.mjs \
-            tests/prompts/invariants.test.mjs \
-            tests/prompts/contamination.test.mjs
+        run: node --test 'tests/**/*.test.*'
