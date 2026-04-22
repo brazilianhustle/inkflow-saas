@@ -65,8 +65,9 @@ export async function onRequest(context) {
     const evoData = await evoRes.json();
 
     const instances = Array.isArray(evoData) ? evoData : (evoData.data || []);
+    // Evolution API mudou formato: v1.x usa instance.instanceName, v2.x usa name (flat).
     const inst = instances.find(i =>
-      (i.instance?.instanceName || i.instanceName) === instance
+      (i.instance?.instanceName || i.instanceName || i.name) === instance
     );
     const state = inst
       ? (inst.instance?.state || inst.state || inst.connectionStatus || 'unknown')
