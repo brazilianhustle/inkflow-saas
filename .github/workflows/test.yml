@@ -1,0 +1,29 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: node --test (prompts + validations)
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run test suites
+        run: |
+          node --test \
+            tests/telegram.test.mjs \
+            tests/trial-helpers.test.mjs \
+            tests/update-tenant-validations.test.mjs \
+            tests/prompts/snapshot.test.mjs \
+            tests/prompts/contracts.test.mjs \
+            tests/prompts/invariants.test.mjs \
+            tests/prompts/contamination.test.mjs

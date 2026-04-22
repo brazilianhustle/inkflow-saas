@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Pre-commit hook InkFlow — roda bateria mínima de testes.
+# Instalação (uma vez por clone): git config core.hooksPath .githooks
+
+set -e
+
+# Só roda se o commit toca arquivos relacionados a prompts ou validações.
+CHANGED=$(git diff --cached --name-only --diff-filter=ACM)
+
+NEEDS_TESTS=0
+for f in $CHANGED; do
+  case "$f" in
+    functions/_lib/prompts/*|functions/_lib/generate-prompt.js|functions/api/_validate-config-precificacao.js|functions/api/update-tenant.js|tests/prompts/*|tests/update-tenant-validations.test.mjs)
+      NEEDS_TESTS=1
+      ;;
+  esac
+done
+
+if [ $NEEDS_TESTS -eq 0 ]; then
+  echo "pre-commit: nenhuma mudança relevante a testar. OK."
+  exit 0
+fi
+
+echo "pre-commit: rodando testes de prompts + validações..."
+node --test \
+  tests/prompts/snapshot.test.mjs \
+  tests/prompts/contracts.test.mjs \
+  tests/prompts/invariants.test.mjs \
+  tests/prompts/contamination.test.mjs \
+  tests/update-tenant-validations.test.mjs
