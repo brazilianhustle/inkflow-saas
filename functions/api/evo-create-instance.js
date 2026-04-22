@@ -62,7 +62,7 @@ export async function onRequest(context) {
   if (SB_KEY) {
     try {
       const tRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=status_pagamento,plano,is_artist_slot`,
+        `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=status_pagamento,plano,is_artist_slot,trial_ate`,
         { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
       );
       if (tRes.ok) {
@@ -70,11 +70,12 @@ export async function onRequest(context) {
         if (Array.isArray(rows) && rows.length > 0) {
           const t = rows[0];
           const ALLOWED = ['authorized', 'approved', 'paid', 'artist_slot'];
-          const freeTrial = isFreeTrial(t.plano);
+          const freeTrialByPlan = isFreeTrial(t.plano);
+          const trialActive = t.trial_ate && new Date(t.trial_ate).getTime() > Date.now();
           const isArtist = t.is_artist_slot === true || t.status_pagamento === 'artist_slot';
           const paymentOk = ALLOWED.includes(t.status_pagamento);
-          if (!paymentOk && !freeTrial && !isArtist) {
-            console.warn(`evo-create-instance: bloqueado — tenant=${tenant_id} status=${t.status_pagamento} plano=${t.plano}`);
+          if (!paymentOk && !freeTrialByPlan && !trialActive && !isArtist) {
+            console.warn(`evo-create-instance: bloqueado — tenant=${tenant_id} status=${t.status_pagamento} plano=${t.plano} trial_ate=${t.trial_ate}`);
             return json({ error: 'Pagamento nao confirmado. Conclua o checkout antes de criar a instancia.', code: 'payment_required', status_pagamento: t.status_pagamento }, 403);
           }
         }

@@ -104,18 +104,32 @@ export async function onRequest(context) {
   const dsnParts = parseDSN(SENTRY_DSN);
 
   try {
-    // Executa a edge function normalmente
     const response = await context.next();
+
+    // Captura 5xx que NÃO foram throw (ex: endpoints retornando 503 via json()).
+    // Clona pra não consumir o body original.
+    if (response.status >= 500) {
+      try {
+        const clone = response.clone();
+        const bodyText = await clone.text().catch(() => '');
+        const synthetic = new Error(`HTTP ${response.status} — ${bodyText.slice(0, 500)}`);
+        synthetic.name = `HTTP${response.status}`;
+        const event = buildSentryPayload(synthetic, context.request, dsnParts);
+        event.tags.status_code = String(response.status);
+        event.level = response.status >= 500 ? 'error' : 'warning';
+        context.waitUntil(sendToSentry(event, dsnParts));
+      } catch (captureErr) {
+        console.error('[SENTRY-MIDDLEWARE] Falha ao capturar 5xx:', captureErr.message);
+      }
+    }
+
     return response;
   } catch (error) {
-    // Captura o erro e envia para o Sentry
     console.error(`[SENTRY-MIDDLEWARE] Erro em ${context.request.url}:`, error.message);
 
     const event = buildSentryPayload(error, context.request, dsnParts);
-    // Usa waitUntil para enviar sem atrasar a resposta ao usuário
     context.waitUntil(sendToSentry(event, dsnParts));
 
-    // Retorna erro 500 genérico (sem vazar detalhes internos)
     return new Response(
       JSON.stringify({
         error: 'Erro interno do servidor. Nossa equipe já foi notificada.',
