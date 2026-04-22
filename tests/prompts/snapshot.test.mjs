@@ -1,10 +1,10 @@
 // Snapshot tests — comparam prompt gerado contra baseline comitado.
 // Pra regerar: UPDATE_SNAPSHOTS=1 node --test tests/prompts/snapshot.test.mjs
 //
-// Este arquivo importa do dispatcher novo em functions/_lib/prompts/index.js.
-// Na primeira execução (Task 3) o dispatcher ainda não existe — ajustamos o
-// import em Task 8 pra apontar pro dispatcher. Por enquanto, importa direto do
-// legado pra capturar baseline.
+// Este arquivo importa do dispatcher em functions/_lib/prompts/index.js.
+// Histórico: na Task 3 originalmente importava do legado generate-prompt.js
+// pra capturar o baseline; Task 8 (este commit) trocou pro dispatcher agora
+// que ele existe e produz output bit-identical.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,8 +12,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// IMPORT PROVISÓRIO — Task 8 muda pra ../../functions/_lib/prompts/index.js
-import { generateSystemPrompt } from '../../functions/_lib/generate-prompt.js';
+import { generateSystemPrompt } from '../../functions/_lib/prompts/index.js';
 
 import {
   tenantCanonicoFaixa,

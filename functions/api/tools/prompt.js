@@ -6,7 +6,7 @@
 // O n8n chama este endpoint antes do agent, substituindo prompt_sistema cru.
 
 import { withTool, supaFetch, authTool, toolJson, TOOL_HEADERS, logToolCall } from './_tool-helpers.js';
-import { generateSystemPrompt } from '../../_lib/generate-prompt.js';
+import { generateSystemPrompt } from '../../_lib/prompts/index.js';
 
 const TENANT_FIELDS = [
   'id', 'nome_agente', 'nome_estudio', 'plano',

@@ -15,7 +15,7 @@
 import { toolJson, TOOL_HEADERS } from './_tool-helpers.js';
 import { verifyStudioTokenOrLegacy } from '../_auth-helpers.js';
 import { loadConfigPrecificacao, calcularOrcamento } from '../../_lib/pricing.js';
-import { generateSystemPrompt } from '../../_lib/generate-prompt.js';
+import { generateSystemPrompt } from '../../_lib/prompts/index.js';
 import { runPreGuardrails, runPostGuardrails } from '../../_lib/guardrails.js';
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
