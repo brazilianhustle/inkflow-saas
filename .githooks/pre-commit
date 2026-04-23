@@ -22,4 +22,4 @@ if [ $NEEDS_TESTS -eq 0 ]; then
 fi
 
 echo "pre-commit: rodando bateria de testes..."
-node --test 'tests/**/*.test.*'
+find tests -name '*.test.mjs' -exec node --test {} +
