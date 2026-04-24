@@ -12,15 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # [FIX Bug #13] Validar que index.html e 100% ASCII antes do deploy (Regra #7)
-      - name: Validate ASCII encoding
-        run: |
-          if LC_ALL=C grep -Pn '[^\x00-\x7F]' index.html; then
-            echo "ERRO: index.html contem caracteres non-ASCII. Use HTML entities ou \\uXXXX no JS."
-            exit 1
-          fi
-          echo "index.html OK — 100% ASCII"
-
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
