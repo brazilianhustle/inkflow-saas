@@ -22,17 +22,23 @@ Inventário de identificadores estáveis do InkFlow (IDs de domínio, tabelas Su
 
 ## Tabelas Supabase
 
-Sem `supabase/migrations/` no repo, o esquema vive na própria base. As tabelas abaixo foram identificadas via grep `rest/v1/<tabela>` em `functions/`.
+Sem `supabase/migrations/` no repo, o esquema vive na própria base. As tabelas abaixo foram identificadas via grep `rest/v1/<tabela>` em `functions/` **e** via inspeção do helper wrapper `del()` em `functions/api/delete-tenant.js` (que constrói a URL `rest/v1/` internamente, então não aparece no grep direto).
+
+> Nota: nem toda tabela aparece via grep `rest/v1/` — algumas só são acessadas por wrappers (`del()`, etc.). Sempre validar contra `delete-tenant.js` ao mapear o esquema.
 
 | Tabela | Propósito | Referenciada em |
 |---|---|---|
 | `tenants` | registro mestre de cada estúdio (status, plano, MP sub, Evo instance, prompt) | `functions/api/_auth-helpers.js`, `functions/api/get-tenant.js`, `functions/api/update-tenant.js` (+ ~25 outros) |
-| `payment_logs` | histórico de pagamentos MP recebidos via IPN | `functions/api/create-subscription.js`, `functions/api/mp-ipn.js` |
+| `payment_logs` | histórico de pagamentos MP recebidos via IPN | `functions/api/create-subscription.js`, `functions/api/mp-ipn.js`, `functions/api/delete-tenant.js:224,239` |
 | `conversas` | mensagens trocadas com clientes pelo bot WhatsApp | `functions/api/tools/prompt.js`, `functions/api/tools/reservar-horario.js`, `functions/_lib/mp-sinal-handler.js` |
 | `agendamentos` | slots agendados/holds/confirmados | `functions/api/tools/reservar-horario.js`, `functions/api/tools/reagendar-horario.js`, `functions/api/cron/expira-holds.js`, `functions/api/cron/followup.js` |
 | `tool_calls_log` | log de invocações das tools (auditoria + guardrails) | `functions/api/tools/_tool-helpers.js`, `functions/api/tools/guardrails/post.js` |
 | `onboarding_links` | chaves temporárias de self-checkout (público) | `functions/api/public-start.js`, `functions/api/create-onboarding-link.js`, `functions/api/validate-onboarding-key.js` |
 | `dados_cliente` | dados estendidos por cliente (usado no reset diário) | `functions/api/cron/reset-agendamentos.js` |
+| `chat_messages` | mensagens individuais de chats WhatsApp (histórico granular por mensagem) | `functions/api/delete-tenant.js:219,234` |
+| `chats` | sessões/threads de chat WhatsApp (parent de `chat_messages`) | `functions/api/delete-tenant.js:220,235` |
+| `logs` | logs genéricos da aplicação (eventos diversos por tenant) | `functions/api/delete-tenant.js:222,237` |
+| `signups_log` | log de eventos de signup (auditoria de cadastros) | `functions/api/delete-tenant.js:223,238` |
 
 ## Workflows n8n
 
