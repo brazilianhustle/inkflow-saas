@@ -2,7 +2,7 @@
 last_reviewed: 2026-04-26
 owner: leandro
 status: stable
-related: [stack.md, runbooks/rollback.md]
+related: [stack.md, runbooks/rollback.md]  # rollback.md sera criado em Task 5
 ---
 # Mapa Canônico — Secrets
 
@@ -172,41 +172,57 @@ wrangler whoami
 
 Severidade alta. Crítico: se trocar só num lado, cron quebra (Worker manda secret X, Pages espera Y → 401).
 
+> **Aviso sobre vazamento via shell history:** o padrão `echo "$VAR" | wrangler secret put X` expande `$VAR` para o valor literal na linha de comando registrada. zsh com `INC_APPEND_HISTORY` (default em muitos setups) escreve isso em `~/.zsh_history` IMEDIATAMENTE. Por isso, abaixo o padrão primário é **paste interativo** — o valor nunca aparece na linha de comando. `history -c` só limpa a memória da sessão; se a linha já foi appendada, ela está lá.
+
 ```bash
 # 1. Gerar valor novo localmente (entropia 256-bit, não persistir em arquivo)
-NEW_VAL=$(openssl rand -base64 32)
+#    DICA: prefixar comandos com espaço (com HIST_IGNORE_SPACE) os mantém fora do history
+ NEW_VAL=$(openssl rand -hex 32)
 # (NEW_VAL fica só nessa shell; NÃO ecoar, NÃO escrever arquivo)
 
 # 2. Atualizar Worker PRIMEIRO (assim, mesmo que dê erro, o Pages
 #    ainda aceita o antigo até a próxima cron — Worker é quem chama)
+#    PRIMÁRIO (recomendado): paste interativo — valor não vai pro shell history
 cd ~/Documents/inkflow-saas/cron-worker
-echo "$NEW_VAL" | wrangler secret put CRON_SECRET --name=inkflow-cron
-# (sim, aqui usa stdin via echo; alternativa mais segura: omitir o pipe e colar manualmente)
+wrangler secret put CRON_SECRET --name=inkflow-cron
+# → wrangler abre prompt: cola o valor de $NEW_VAL manualmente (echo "$NEW_VAL" em
+#   outro terminal pra ver, ou pbcopy < <(printf %s "$NEW_VAL") pra copiar; nunca
+#   no mesmo terminal sem o leading-space + HIST_IGNORE_SPACE)
+#
+#   ALTERNATIVA (só se scripting automatizado, ATENÇÃO: vaza history):
+#   printf '%s' "$NEW_VAL" | wrangler secret put CRON_SECRET --name=inkflow-cron
 
-# 3. Atualizar CF Pages IMEDIATAMENTE em seguida
+# 3. Atualizar CF Pages IMEDIATAMENTE em seguida (mesmo padrão: paste interativo)
 cd ~/Documents/inkflow-saas
 wrangler pages secret delete CRON_SECRET --project-name=inkflow-saas
-echo "$NEW_VAL" | wrangler pages secret put CRON_SECRET --project-name=inkflow-saas
+wrangler pages secret put CRON_SECRET --project-name=inkflow-saas
+# → cola o mesmo valor de $NEW_VAL
 
-# 4. Limpar var da shell
-unset NEW_VAL
-history -c   # zsh: limpa history desta sessão (não toca ~/.zsh_history)
-
-# 5. Forçar redeploy CF Pages
+# 4. Forçar redeploy CF Pages pra pegar o novo valor
 git commit --allow-empty -m "chore: redeploy pra pegar novo CRON_SECRET"
 git push origin main
 
-# 6. Validar próxima execução cron
-#    Espera próximo trigger (max 30min: monitor-whatsapp roda */30) ou força:
-curl -H "Authorization: Bearer $(security find-generic-password -s CRON_SECRET -w)" \
+# 5. VALIDAR usando $NEW_VAL ainda em memória (NÃO ler do Keychain — Keychain ainda
+#    tem o valor antigo, só vamos salvar lá no passo 6 se a validação passar)
+#    Espera redeploy completar (~1-2min) e então:
+curl -H "Authorization: Bearer $NEW_VAL" \
   https://inkflowbrasil.com/api/cron/monitor-whatsapp
-# Esperado: 200. Se 401 → trocar voltou só num lado, repetir.
+# Esperado: 200. Se 401 → algo deu errado nos passos 2/3, repetir.
+#   Recovery: re-rodar passo 2 e/ou 3 com $NEW_VAL ainda em memória.
 
-# 7. Salvar novo valor no Bitwarden + Keychain pra debug futuro
-#    (de novo: NÃO ecoar, usar `bw edit` e `security add-generic-password -w`)
+# 6. SE validação passou: salvar novo valor em Bitwarden + Keychain pra debug futuro
+#    (paste interativo via `bw edit` e `security add-generic-password -w` — sem -w no comando, ele prompt)
+bw edit item inkflow-cron-secret
+security delete-generic-password -s CRON_SECRET 2>/dev/null
+security add-generic-password -s CRON_SECRET -a "$USER" -w   # prompt pra colar
+# (cola o valor de $NEW_VAL)
+
+# 7. Limpar var da shell
+unset NEW_VAL
+# (history -c só limpa memória da sessão; se algum echo escapou, ~/.zsh_history já tem)
 ```
 
-**Atomic guarantee:** se a sequência falhar entre passos 2 e 3, o próximo cron retorna 401 e dispara alerta Telegram. Recovery: completar o passo 3 ou reverter o passo 2 com o valor antigo (que ainda está no Bitwarden até passo 7).
+**Atomic guarantee:** se a sequência falhar entre passos 2 e 3, o próximo cron retorna 401 e dispara alerta Telegram. **Recovery:** `$NEW_VAL` ainda está em memória da shell — completar o passo que faltou. Se perder a shell antes de completar, o valor antigo ainda está no Bitwarden/Keychain (só foi sobrescrito no passo 6, que só roda APÓS validação) — usar pra rolar manualmente até reconvergir.
 
 ### Rotacionar `EVO_GLOBAL_KEY` / `EVOLUTION_GLOBAL_KEY` (coordenado com Vultr VPS)
 
@@ -219,9 +235,21 @@ ssh root@<ip-vultr-evo>   # IP em [[InkFlow — Links e IDs]] no vault
 # 2. Gerar novo valor + atualizar env do Evolution
 #    Evolution roda via docker-compose; arquivo de env tipicamente em /opt/evolution/.env
 #    NÃO ler o .env existente — só editar via $EDITOR ou substituir a linha:
-NEW_KEY=$(openssl rand -hex 32)
-sed -i "s/^AUTHENTICATION_API_KEY=.*/AUTHENTICATION_API_KEY=$NEW_KEY/" /opt/evolution/.env
-# (anota NEW_KEY pra próximo passo, NÃO ecoa)
+ NEW_KEY=$(openssl rand -hex 32)   # leading-space pra HIST_IGNORE_SPACE
+
+# 2a. BACKUP da linha atual ANTES do sed (recovery se algo falhar)
+OLD_LINE=$(grep "^AUTHENTICATION_API_KEY=" /opt/evolution/.env)
+BACKUP_FILE=/root/evo-rotation-backup-$(date +%s).bak
+printf '%s\n' "$OLD_LINE" > "$BACKUP_FILE"
+chmod 600 "$BACKUP_FILE"
+echo "Backup salvo em: $BACKUP_FILE"
+
+# 2b. Substitui (delimitador | em vez de / pra evitar escape se key tiver /)
+sed -i "s|^AUTHENTICATION_API_KEY=.*|AUTHENTICATION_API_KEY=$NEW_KEY|" /opt/evolution/.env
+
+# 2c. IMPORTANTE: NUNCA fazer 'cat /opt/evolution/.env' ou 'less' nele.
+#     Verificar a substituição via grep direcionado (conta linhas, não printa valor):
+grep -c "^AUTHENTICATION_API_KEY=" /opt/evolution/.env  # esperado: 1
 
 # 3. Restart Evolution pra pegar novo valor
 cd /opt/evolution && docker compose restart
@@ -255,6 +283,38 @@ bw edit item inkflow-evo-global-key
 ```
 
 **Janela de risco:** entre passo 3 (Evolution restart com nova key) e passo 5 (CF Pages atualizado), TODO tráfego CF Pages → Evolution falha com 401. Tempo estimado: 2-5 min. Fora de horário comercial é o ideal. Avisa o canal Telegram antes.
+
+**Rollback (se passo 4 falhar com 401, ou qualquer falha antes do passo 8):**
+
+```bash
+# Ainda na VPS (ou re-SSH)
+ssh root@<ip-vultr-evo>
+
+# 1. Localizar o backup criado no passo 2a
+ls -t /root/evo-rotation-backup-*.bak | head -1
+BACKUP_FILE=<caminho-do-mais-recente>
+
+# 2. Restaurar a linha original (substitui a linha atual pela do backup)
+#    Lê só a linha do backup (single line) e usa ela na substituição
+OLD_LINE=$(cat "$BACKUP_FILE")
+# Extrai só o valor (depois do =) pra usar no sed sem reler .env
+OLD_VAL="${OLD_LINE#AUTHENTICATION_API_KEY=}"
+sed -i "s|^AUTHENTICATION_API_KEY=.*|AUTHENTICATION_API_KEY=$OLD_VAL|" /opt/evolution/.env
+
+# 3. Verificar (sem cat — só conta)
+grep -c "^AUTHENTICATION_API_KEY=" /opt/evolution/.env  # esperado: 1
+
+# 4. Restart pra pegar o valor antigo de volta
+cd /opt/evolution && docker compose restart
+
+# 5. Validar com o valor antigo (que CF Pages ainda está usando — não chegou ao passo 5)
+curl -H "apikey: $OLD_VAL" https://<evo-vps-domain>/instance/fetchInstances
+# Esperado: 200. Sistema voltou ao estado pré-rotação.
+
+# 6. Limpar backup + var
+unset OLD_VAL OLD_LINE
+shred -u "$BACKUP_FILE" 2>/dev/null || rm -f "$BACKUP_FILE"
+```
 
 Para detalhes do restore caso algo dê errado, ver `runbooks/restore-backup.md` (a ser criado em Task 9).
 
