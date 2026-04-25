@@ -1,8 +1,8 @@
 ---
-last_reviewed: 2026-04-26
+last_reviewed: 2026-04-25
 owner: leandro
 status: stable
-related: [stack.md, runbooks/rollback.md]  # rollback.md sera criado em Task 5
+related: [stack.md, runbooks/rollback.md]
 ---
 # Mapa Canônico — Secrets
 
@@ -318,7 +318,7 @@ unset OLD_VAL OLD_LINE
 shred -u "$BACKUP_FILE" 2>/dev/null || rm -f "$BACKUP_FILE"
 ```
 
-Para detalhes do restore caso algo dê errado, ver `runbooks/restore-backup.md` (a ser criado em Task 9).
+Para detalhes do restore caso algo dê errado, ver `runbooks/restore-backup.md`.
 
 ---
 

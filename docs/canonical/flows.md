@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-26
+last_reviewed: 2026-04-25
 owner: leandro
 status: stable
 related: [stack.md, ids.md, runbooks/mp-webhook-down.md, runbooks/outage-wa.md, runbooks/rollback.md]

@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-26
+last_reviewed: 2026-04-25
 owner: leandro
 status: stable
 related: [../stack.md]
@@ -22,8 +22,6 @@ Cada runbook é um procedimento operacional pra um cenário específico. Use:
 | `mp-webhook-down.md` | webhook MP parou (>24h) | critical | 30 min |
 | `db-indisponivel.md` | Supabase fora | critical | depende da Supabase |
 | `restore-backup.md` | dados corrompidos / restore | critical | 1-4h |
-
-(Observação: `outage-wa.md`, `mp-webhook-down.md`, `db-indisponivel.md`, `restore-backup.md` serão criados na Onda 2 — Tasks 9 e 10.)
 
 ## Convenções de runbook
 
