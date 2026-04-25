@@ -111,17 +111,18 @@ Canal de alertas pro founder. Bot enviando ao chat configurado em `TELEGRAM_CHAT
 | Mensagens / min por chat | 20 | mitigado por agrupamento em runbooks |
 | Tamanho mensagem | 4096 chars | quebrar em N mensagens se exceder |
 
-## n8n (self-hosted no mesmo VPS Vultr da Evolution? — confirmar)
+## n8n (self-hosted, mesma VPS Vultr da Evolution)
 
-Orquestrador do bot WhatsApp. Domain: `https://n8n.inkflowbrasil.com`.
+Orquestrador do bot WhatsApp. Domain: `https://n8n.inkflowbrasil.com`. Hospedado na **mesma VPS Vultr** da Evolution API (per `stack.md`) — disco / RAM / CPU compartilhados com Evolution + Postgres dela.
 
 | Recurso | Limite | Threshold warn |
 |---|---|---|
 | Concurrent executions | `[confirmar — config self-host]` | n/a |
 | Workflow execution time | `[confirmar — depende de config]` | timeout >60s |
-| Storage (postgres dedicado) | `[confirmar — disco compartilhado com Evolution VPS?]` | 75% |
+| Storage (postgres dedicado) | compartilhado com VPS Evolution (ver seção Vultr acima) | 75% do disco total da VPS |
 
-**Hospedagem:** `[confirmar — mesmo VPS da Evolution ou outro?]`
+⚠️ **Implicação operacional:** auditoria de disco / RAM da VPS Vultr cobre Evolution API + Evolution Postgres + n8n + n8n Postgres simultaneamente. Spike em qualquer um derruba todos. Auditor #3 (VPS limits) deve tratar a VPS Vultr como recurso compartilhado, não individual por serviço.
+
 **Workflow principal:** `MEU NOVO WORK - SAAS` (id `PmCMHTaTi07XGgWh`)
 
 ## LLM Providers (Claude / OpenAI)

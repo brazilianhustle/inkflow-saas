@@ -2,7 +2,7 @@
 last_reviewed: 2026-04-26
 owner: leandro
 status: stable
-related: [stack.md, ids.md, runbooks/mp-webhook-down.md, runbooks/outage-wa.md]
+related: [stack.md, ids.md, runbooks/mp-webhook-down.md, runbooks/outage-wa.md, runbooks/rollback.md]
 ---
 # Mapa Canônico — Fluxos críticos
 
@@ -326,8 +326,7 @@ flowchart TD
 4. Pra cada candidato:
    - Se tem `evo_instance`: chama `DELETE {evo_base_url}/instance/delete/<instance>` com `EVO_GLOBAL_KEY`.
    - `DELETE FROM tenants WHERE id=<id>` no Supabase. FKs CASCADE limpam: `payment_logs`, `conversas`, `chat_messages`, `chats`, `agendamentos`, `tool_calls_log`, `dados_cliente`, `logs`, `signups_log`.
-5. Insert `payment_logs` (tipo `tenant_deleted_cleanup`) — sobrevive ao DELETE porque payment_logs do tenant deletado já foi removido junto; o log fica em registro separado de auditoria via tenant_id NULL ou em outra tabela (verificar implementação).
-6. Retorna 200 com `counts` por categoria.
+5. Retorna 200 com `counts` por categoria (sem registro persistente do delete em `payment_logs` — implementação atual em `functions/api/cleanup-tenants.js` retorna apenas contadores in-memory; auditoria depende dos logs do CF Worker).
 
 ### Pontos de falha conhecidos
 
