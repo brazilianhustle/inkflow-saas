@@ -2763,10 +2763,41 @@ Atualizar `InkFlow — Sub-spec Mapa Canônico (2026-04-26)` (vault) — status 
 
 ---
 
+## Plan revision (2026-04-25 — execution decision)
+
+**Decisão:** splitar a v1 em **2 PRs separados**, alinhados com as ondas, em vez do "1 PR com tudo" do plano original.
+
+**Motivação:**
+- Onda 1 já desbloqueia Sub-projeto 2 imediatamente (per spec §2.6) — esperar Onda 2 desperdiça o gate.
+- PRs menores são mais reviewáveis pelo founder (700 vs 2000+ linhas).
+- Onda 2 tem componentes que beneficiam de sessão fresca: validação visual de Mermaid (Task 7), edição coordenada do vault (Task 12).
+- Casa com a estrutura faseada do spec-mestre.
+
+**Mapeamento Tasks → PRs:**
+
+| PR | Tasks cobertas | Status |
+|---|---|---|
+| **PR1 (este)** | Tasks 1-6 (Onda 1: setup + stack + ids + secrets + runbooks deploy/rollback + checkpoint) | ✅ aberta — `https://github.com/brazilianhustle/inkflow-saas/pull/4` |
+| **PR2 (próxima sessão)** | Tasks 7-13 (Onda 2: flows + limits + 4 runbooks + index final + vault anchors + DoD test) | ⏳ pendente |
+| **(removido)** | Task 14 original (open PR + merge) — agora desdobrado em 14a (PR1, este) + 14b (PR2, próxima sessão) | — |
+
+**Onda 1 — execução completa em sessão de 2026-04-25:**
+
+| Task | Commit(s) | Findings |
+|---|---|---|
+| 1 — setup | `ce71f74` | Skeleton OK |
+| 2 — stack.md | `914bb7b` | 9 discrepâncias do plano corrigidas (worker dir, paths, env vars) |
+| 3 — ids.md | `4f85716` + `41a799f` | 11 tabelas reais (vs 7 do plano), 38 endpoints; spec reviewer flagou 4 missing tables → fix |
+| 4 — secrets.md | `6ef2d11` + `39101b8` | Zero leaks; 95 env vars; code reviewer flagou 5 Important issues (sequencing CRON, history leak, EVO recovery, etc.) → todas fixed |
+| 5 — runbooks Onda 1 | `86e5edb` | Discovery: GHA `deploy.yml` auto-deploya em push to main (vault note `Como publicar` desatualizada) |
+| 6 — checkpoint | inline | 7 arquivos ✅, 7 commits, anti-leak global ✅ |
+
 ## Validation log
 
-_(Preenchido na execução, Task 13 step 5)_
+_(Preenchido na execução, Task 13 step 5 — DoD test final acontecerá no escopo da PR2)_
 
-- YYYY-MM-DD Sessão 1 (deploy): ⏳
+- YYYY-MM-DD Sessão 1 (deploy): ⏳ (será feito após Onda 2)
 - YYYY-MM-DD Sessão 2 (secrets): ⏳
 - YYYY-MM-DD Sessão 3 (fluxo): ⏳
+
+**Nota:** o DoD test do spec original cobria os 13 arquivos. Como Onda 1 só tem 7, faz sentido aguardar Onda 2 mergear pra fazer o test contra o canonical completo. Se quiseres validação parcial pós-merge da PR1 (perguntas sobre deploy/secrets/IDs), pode rodar agora — mas pergunta sobre fluxos só fará sentido pós-`flows.md`.
