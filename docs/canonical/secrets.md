@@ -119,11 +119,13 @@ wrangler pages secret delete MP_ACCESS_TOKEN --project-name=inkflow-saas
 wrangler pages secret put MP_ACCESS_TOKEN --project-name=inkflow-saas
 # (cola o novo valor quando prompt — NÃO passa via flag, NÃO ecoa)
 
-# 4. Forçar redeploy pra pegar o novo valor
+# 4. Forçar redeploy pra pegar o novo valor (aguardar 1-2 min até GHA finalizar)
 git commit --allow-empty -m "chore: redeploy pra pegar novo MP_ACCESS_TOKEN"
 git push origin main
 
 # 5. Validar — criar uma subscription de teste e confirmar 200
+#    Se falhar, re-rodar passo 3 com o token antigo (Bitwarden ainda tem) — antigo NÃO foi
+#    revogado ainda, então é seguro voltar.
 curl -X POST https://inkflowbrasil.com/api/create-subscription \
   -H "Content-Type: application/json" \
   -d '{"tenant_id":"<id-de-teste>","plano":"basic"}'
