@@ -59,7 +59,7 @@ wrangler whoami            # autenticado?
 git push origin main
 ```
 
-Acompanhar em `https://github.com/<owner>/inkflow-saas/actions` — workflow "Deploy to Cloudflare Pages" leva ~1-2 min.
+Acompanhar em `https://github.com/brazilianhustle/inkflow-saas/actions` — workflow "Deploy to Cloudflare Pages" leva ~1-2 min.
 
 **Caminho B — Manual via wrangler (fallback):**
 

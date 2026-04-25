@@ -2794,10 +2794,10 @@ Atualizar `InkFlow — Sub-spec Mapa Canônico (2026-04-26)` (vault) — status 
 
 ## Validation log
 
-_(Preenchido na execução, Task 13 step 5 — DoD test final acontecerá no escopo da PR2)_
+DoD test executado em 2026-04-26 com 3 subagents `general-purpose` em paralelo, cada um restrito a ler APENAS `docs/canonical/*.md` e `docs/canonical/runbooks/*.md` (sem acesso a `functions/`, vault Obsidian ou outros docs do repo). Não substitui sessões frescas do user mas valida cobertura/clareza do canonical antes do merge.
 
-- YYYY-MM-DD Sessão 1 (deploy): ⏳ (será feito após Onda 2)
-- YYYY-MM-DD Sessão 2 (secrets): ⏳
-- YYYY-MM-DD Sessão 3 (fluxo): ⏳
+- **2026-04-26 Sessão 1 (deploy):** ✅ — agent respondeu corretamente comandos `wrangler`, caminho GHA + manual, deploy do Worker e 5 checks de verificação. Citou `runbooks/deploy.md`. Gap real: placeholder `<owner>` em URL do GitHub Actions → fix aplicado neste PR (substituído por `brazilianhustle`).
+- **2026-04-26 Sessão 2 (secrets):** ✅ — agent respondeu 6 passos da rotação `MP_ACCESS_TOKEN`, com rollover correto, NÃO vazou nem inventou valor de token, citou Bitwarden item correto (`inkflow-mp-prod`). Gaps: tempo de propagação não documentado + rollback em caso de falha do passo 5 não-explícito → fix aplicado neste PR (adicionado "aguardar 1-2 min" + nota de rollback inline).
+- **2026-04-26 Sessão 3 (fluxo):** ✅ — agent respondeu sequência de 11 passos do `signup → trial`, listou 5 serviços envolvidos e 5 pontos de falha (incluindo bug histórico do `update-tenant`, kill switch `ENABLE_TRIAL_V2`, key reuse). Citou `flows.md`. Gaps menores documentados no agent output (idempotência trial-puro, ausência de Telegram alert) — backlog, não bloqueia v1.
 
-**Nota:** o DoD test do spec original cobria os 13 arquivos. Como Onda 1 só tem 7, faz sentido aguardar Onda 2 mergear pra fazer o test contra o canonical completo. Se quiseres validação parcial pós-merge da PR1 (perguntas sobre deploy/secrets/IDs), pode rodar agora — mas pergunta sobre fluxos só fará sentido pós-`flows.md`.
+Todas as 3 sessões responderam ≥80% dos pontos esperados sem alucinar comandos errados nem vazar secrets. Mapa Canônico v1 considerado pronto pra merge.
