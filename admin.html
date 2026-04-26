@@ -510,6 +510,9 @@ function doLogout() {
   document.getElementById('lu').value = '';
   document.getElementById('lp').value = '';
   document.getElementById('det').innerHTML = '';
+  // Reset approval section caso usuário tenha logout no meio de #approvals/<id>
+  const aprSec = document.getElementById('approval-section');
+  if (aprSec) aprSec.style.display = 'none';
   tenants = []; allT = [];
 }
 
@@ -563,7 +566,12 @@ async function loadApproval(id) {
       document.getElementById('approval-actions').style.display = 'none';
       const result = document.getElementById('approval-result');
       result.style.display = 'block';
-      result.innerHTML = `<strong>Já decidido:</strong> ${row.status} por ${row.approved_by || '?'} em ${row.approved_at || '?'}.<br>Notas: ${row.notes || '(vazio)'}`;
+      // XSS-safe: structural innerHTML + textContent pra valores dinâmicos do DB
+      result.innerHTML = '<strong>Já decidido:</strong> <span class="ap-status"></span> por <span class="ap-by"></span> em <span class="ap-at"></span>.<br>Notas: <span class="ap-notes"></span>';
+      result.querySelector('.ap-status').textContent = row.status;
+      result.querySelector('.ap-by').textContent = row.approved_by || '?';
+      result.querySelector('.ap-at').textContent = row.approved_at || '?';
+      result.querySelector('.ap-notes').textContent = row.notes || '(vazio)';
     } else {
       document.getElementById('approval-approve-btn').onclick = () => decideApproval(id, 'approve');
       document.getElementById('approval-reject-btn').onclick = () => decideApproval(id, 'reject');
