@@ -87,7 +87,7 @@ Pra obter valor de secret: consultar `docs/canonical/secrets.md` pra fonte canô
 
 Retorna ao Claude principal um resumo estruturado:
 
-```markdown
+````markdown
 ## Proposta de ação
 
 **Tipo:** [write-em-prod | destrutivo]
@@ -113,7 +113,7 @@ Retorna ao Claude principal um resumo estruturado:
 
 ### Decisão pendente
 [Pergunta clara que o principal precisa responder ao founder via Telegram]
-```
+````
 
 ## Edge case — dúvida sobre classificação
 
