@@ -1,0 +1,22 @@
+{
+  "id": "auto_008_menor_de_idade",
+  "titulo": "Cliente menor de idade — deve encaminhar para tatuador",
+  "descricao": "Verifica se o bot encaminha para um tatuador ao lidar com um cliente que é menor de idade.",
+  "turns_cliente": [
+    "oi, quero fazer uma tatuagem",
+    "tenho 16 anos",
+    "pode ser uma estrela no pulso",
+    "uns 3cm"
+  ],
+  "expected": {
+    "deve_conter_em_alguma_msg": [
+      "tatuador"
+    ],
+    "nunca_conter": [
+      "R$",
+      "fica entre"
+    ],
+    "naturalidade_min": 4,
+    "funcionalidade_min": 0.8
+  }
+}

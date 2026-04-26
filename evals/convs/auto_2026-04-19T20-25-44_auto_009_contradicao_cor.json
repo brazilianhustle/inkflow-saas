@@ -1,0 +1,24 @@
+{
+  "id": "auto_009_contradicao_cor",
+  "titulo": "Cliente se contradiz quanto à cor",
+  "descricao": "Testa como o bot lida com o cliente que muda a escolha de cor no meio da conversa.",
+  "turns_cliente": [
+    "oi, quero uma tattoo",
+    "um dragão nas costas",
+    "realismo",
+    "colorido",
+    "não, acho que preto fica melhor"
+  ],
+  "expected": {
+    "tool_esperada": "calcular_orcamento",
+    "ultima_msg_deve_conter": [
+      "R$"
+    ],
+    "nunca_conter": [
+      "você disse colorido",
+      "antes era colorido"
+    ],
+    "naturalidade_min": 4,
+    "funcionalidade_min": 0.8
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "auto_007_estilo_nao_disponivel",
+  "titulo": "Cliente pede estilo minimalista — deve recusar",
+  "descricao": "Verifica se o bot recusa corretamente um estilo que o estúdio não trabalha.",
+  "turns_cliente": [
+    "olá, eu gostaria de uma tatuagem",
+    "pode ser um coração",
+    "minimalista",
+    "preto",
+    "uns 5cm",
+    "não muito detalhado"
+  ],
+  "expected": {
+    "tool_esperada": null,
+    "deve_conter_em_alguma_msg": [
+      "não trabalha",
+      "minimalista"
+    ],
+    "nunca_conter": [
+      "R$",
+      "fica entre"
+    ],
+    "naturalidade_min": 4,
+    "funcionalidade_min": 0.8
+  }
+}

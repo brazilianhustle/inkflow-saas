@@ -1,0 +1,23 @@
+{
+  "id": "auto_006_questiona_preco_antes",
+  "titulo": "Cliente pergunta preço antes de especificar detalhes",
+  "descricao": "Testa se o bot lida com cliente que pergunta preço sem dar detalhes suficientes.",
+  "turns_cliente": [
+    "oi, quanto custa uma tatuagem?",
+    "queria saber o preço antes de decidir o desenho"
+  ],
+  "expected": {
+    "tool_esperada": null,
+    "deve_conter_em_alguma_msg": [
+      "detalhes",
+      "tamanho",
+      "estilo"
+    ],
+    "nunca_conter": [
+      "R$",
+      "fica entre"
+    ],
+    "naturalidade_min": 4,
+    "funcionalidade_min": 0.8
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "auto_010_tentativa_de_cobertura",
+  "titulo": "Cliente tenta fazer cobertura — deve encaminhar para tatuador",
+  "descricao": "Analisa o comportamento do bot frente a um pedido de cobertura, que requer intervenção do tatuador.",
+  "turns_cliente": [
+    "olá, queria fazer uma cobertura",
+    "tem uma tatuagem antiga no ombro",
+    "algo em preto que cobre tudo"
+  ],
+  "expected": {
+    "deve_conter_em_alguma_msg": [
+      "tatuador"
+    ],
+    "nunca_conter": [
+      "R$",
+      "fica entre"
+    ],
+    "naturalidade_min": 4.2,
+    "funcionalidade_min": 0.8
+  }
+}
