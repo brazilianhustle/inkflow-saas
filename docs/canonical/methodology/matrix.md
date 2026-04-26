@@ -4,6 +4,7 @@ owner: leandro
 status: stable
 related: [index.md, incident-response.md, release-protocol.md, ../secrets.md, ../runbooks/README.md]
 ---
+<!-- index.md, incident-response.md, release-protocol.md são criados em Tasks 2-4 deste plano (docs/superpowers/plans/2026-04-25-metodologia-fabrica.md). Forward-references intencionais. -->
 
 # Matrix — Principal vs. Subagent
 
@@ -44,7 +45,7 @@ Doctrine de delegação: quando trabalho fica na sessão principal vs. quando vi
 
 ## 5.3 Exemplos canônicos
 
-12 casos resolvidos cobrindo os 3 grupos de heurísticas:
+14 casos resolvidos cobrindo os 3 grupos de heurísticas:
 
 | # | Cenário | Decisão | Heurística aplicada |
 |---|---|---|---|

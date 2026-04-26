@@ -103,7 +103,7 @@ Template completo em §9.
 
 ### 5.3 Exemplos canônicos
 
-12 casos resolvidos cobrindo os 3 grupos de heurísticas:
+14 casos resolvidos cobrindo os 3 grupos de heurísticas:
 
 | # | Cenário | Decisão | Heurística aplicada |
 |---|---|---|---|
