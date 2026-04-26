@@ -138,6 +138,7 @@ test('returns 409 when row already decided (PATCH returns empty array)', async (
     authHeader: 'Bearer admin-jwt',
     body: { id: 'fake-uuid', action: 'approve' },
   });
+  let capturedUrl = null;
   const ctx = makeContext({
     request: req,
     fetchMock: async (url, opts) => {
@@ -145,6 +146,7 @@ test('returns 409 when row already decided (PATCH returns empty array)', async (
         return { ok: true, json: async () => ({ email: ADMIN_EMAIL }) };
       }
       if (url.includes('/rest/v1/approvals') && opts?.method === 'PATCH') {
+        capturedUrl = url;
         return { ok: true, status: 200, json: async () => ([]) };  // 0 rows updated → conflict
       }
       return { ok: true };
@@ -152,6 +154,7 @@ test('returns 409 when row already decided (PATCH returns empty array)', async (
   });
   const res = await onRequest(ctx);
   assert.equal(res.status, 409);
+  assert.match(capturedUrl, /status=eq\.pending/);  // pinpoints atomic guard against double-decide race
 });
 
 test('returns 200 + rejected status on action=reject', async () => {
