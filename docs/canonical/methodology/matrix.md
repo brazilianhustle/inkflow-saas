@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-25
+last_reviewed: 2026-04-26
 owner: leandro
 status: stable
 related: [index.md, incident-response.md, release-protocol.md, ../secrets.md, ../runbooks/README.md]
@@ -22,7 +22,20 @@ Doctrine de delegação: quando trabalho fica na sessão principal vs. quando vi
 **Safety** — overrides universais. Valem **mesmo dentro** do escopo de subagent autorizado.
 
 4. **Operações destrutivas** (`drop table`, `git reset --hard`, `rm -rf`, `git push --force`, `wrangler delete`, drop de migration aplicada, truncate, `DELETE` sem `WHERE` específico) → SEMPRE confirmação humana via Telegram ✅. Subagent **nunca** executa destrutivo sozinho, mesmo no domínio dele.
-   - **Fallback se Telegram indisponível ou sem resposta:** abortar a operação. **Nunca** timeout silencioso autorizando destrutivo. Em P0 com Telegram down, preferir caminhos não-destrutivos (`runbooks/rollback.md` é recuperação, não destrutivo). Se destrutivo for inevitável e Telegram down: aguardar founder via canal habitual (não há canal alternativo formalizado hoje — gap registrado em §11 do spec como pré-trabalho do runbook `telegram-bot-down.md`).
+   - **Fallback se Telegram indisponível ou sem resposta:** ver `../runbooks/telegram-bot-down.md` Ação 0. Resumo:
+     - **Trigger:** Telegram API retornou erro **OU** msg aceita mas zero resposta do founder em 10 min.
+     - **Canal alt:** Pushover (priority=2, retry=60, expire=1800, sound=siren).
+     - **Mecanismo de retorno:** tabela `approvals` no Supabase + admin panel `/admin.html#approvals/<id>` linkado no Pushover. Agent faz polling.
+     - **Polling interval por severity** (alinhado com `incident-response.md §6.2`):
+
+       | Severity | Polling interval | Timeout total |
+       |---|---|---|
+       | P0 | 5s | 15 min |
+       | P1 | 30s | 2 h |
+       | P2 | 2 min | 24 h |
+
+     - **Default se Pushover também falhar (ambos canais sem resposta em `expires_at`):** abort destrutivo automático. Operação fica registrada em log com payload completo pra retry manual quando founder ficar disponível. **Não inventar 3º canal ad-hoc** — fluxo é deterministicamente "abort". Se ocorrer >2x/trimestre, abrir spec separado pra formalizar 2º alt channel.
+     - **Não** timeout silencioso autorizando destrutivo. Se nem canal primário nem alt respondem em `expires_at`, **default = abort**.
 5. **Secrets em plaintext** → NUNCA `Read` direto em `.env`, `~/.zshrc`, `~/.config/`, ou arquivos com `secret`/`token`/`key`/`password` no nome. Pra obter valor: consultar `docs/canonical/secrets.md` pra descobrir fonte canônica (Bitwarden/CF env/Keychain) e pedir via Telegram. Se já tem MCP autenticado pro serviço (Cloudflare/Supabase/etc.), usar MCP em vez de pedir secret bruto.
 6. **Tarefa que precisa >15 min de exploração isolada** → subagent (preserva contexto do principal).
 
