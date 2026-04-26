@@ -57,6 +57,8 @@ Doctrine de delegação: quando trabalho fica na sessão principal vs. quando vi
 
 ✅ = gate de aprovação humana via Telegram. Define-se no prompt de cada agent (referência cruzada com Sub-projeto 2).
 
+**Agents que implementam esta tabela** (Sub-projeto 2 MVP — desde 2026-04-26): `deploy-engineer`, `supabase-dba`, `vps-ops`. Detalhes operacionais (tools whitelist, gates específicos, runbooks referenciados): ver `.claude/agents/README.md`.
+
 ## 5.3 Exemplos canônicos
 
 14 casos resolvidos cobrindo os 3 grupos de heurísticas:
