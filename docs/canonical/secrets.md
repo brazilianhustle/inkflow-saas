@@ -89,7 +89,9 @@ Aparecem como `env.X` no código mas **não são secrets**. Listados aqui para e
 - Uso: ver `runbooks/telegram-bot-down.md` Ação 0.
 - **NÃO replicado em CF Pages env / Worker env nesse momento** — fica em Bitwarden até Sub-projeto 2 wirar agents (manual via curl no runbook até lá).
 - **TODO Sub-projeto 2:** quando agents forem implementados em CF Worker, replicar `PUSHOVER_APP_TOKEN` + `PUSHOVER_USER_KEY` em CF Pages env + Worker env (`wrangler pages secret put` + `wrangler secret put`). Hoje uso é manual via curl no runbook, então só Bitwarden basta.
-- **Procedure de rotação:** se vazar, regenerar `APP_TOKEN` no dashboard Pushover (`USER_KEY` é estável por conta). Atualizar Bitwarden.
+- **Procedure de rotação:** se vazar, regenerar `APP_TOKEN` no dashboard Pushover (Apps → InkFlow Alerts → Edit → checkbox "Regenerate Token" → Save Changes). `USER_KEY` é estável por conta — só rotacionar se app comprometida em si. Atualizar Bitwarden.
+- **Histórico de rotação:**
+  - **2026-04-26** — `PUSHOVER_APP_TOKEN` regenerado. Causa: vazamento em transcript Anthropic durante setup E2E do `telegram-bot-down` (script `.sh` foi salvo com tokens em plaintext, contexto inteiro foi capturado). Token antigo confirmado inválido via curl test. `USER_KEY` mantida (sozinha não permite dispatch).
 
 ### Cron / autenticação inter-serviço
 - `CRON_SECRET` — header de auth dos endpoints `/api/cron/*`. **Crítico: tem que ser o mesmo valor em CF Pages e Worker.**
@@ -103,8 +105,11 @@ Aparecem como `env.X` no código mas **não são secrets**. Listados aqui para e
 - `OPENAI_API_KEY` — usado pelo agent runtime / evals.
 
 ### Cloudflare (admin / deploy)
-- `CLOUDFLARE_API_TOKEN` — usado por `wrangler`, GHA deploy, `scripts/preflight-envvars.sh`, MCP Cloudflare. **Único token com TTL** (90d, política do dashboard CF). Nome no Bitwarden: `cloudflare-agent-token`.
-- `CLOUDFLARE_ACCOUNT_ID` — ID da conta. Não é segredo de fato (vaza em URLs do dashboard) mas tratado como confidencial.
+- `CLOUDFLARE_API_TOKEN` (uso geral) — usado por `wrangler` local, `scripts/preflight-envvars.sh`, MCP Cloudflare. **TTL 90d**, política do dashboard CF. Nome no Bitwarden: `cloudflare-agent-token`.
+- `CF_API_TOKEN` (GitHub Secrets — deploy GHA dedicado) — separado do master. Token criado via template "Edit Cloudflare Workers" com permission `Cloudflare Pages: Edit` explícita (master não inclui Pages). TTL: never expire (cuidado: monitorar manualmente). Nome sugerido no Bitwarden: `cloudflare-pages-deploy-token`.
+- `CLOUDFLARE_ACCOUNT_ID` / `CF_ACCOUNT_ID` — ID da conta (mesmo valor em ambos lugares). Não é segredo de fato (vaza em URLs do dashboard) mas tratado como confidencial.
+- **Histórico de incidents:**
+  - **2026-04-25 → 2026-04-26** — Deploys GHA falharam silenciosamente por ~24h. Causa-raiz: `CLOUDFLARE_API_TOKEN` master não tinha permission `Cloudflare Pages: Edit`. Roll do token preservou as permissions ruins. Fix: criado token novo dedicado (`CF_API_TOKEN`) via template "Edit Cloudflare Workers" e atualizado em GitHub Secrets. Lições: (1) master tokens podem não cobrir todos os serviços — preferir tokens dedicados por uso; (2) silent failures de GHA são cegos — auditor cron pra detectar (Sub-projeto 3, backlog); (3) gap deu trigger pro `runbooks/secrets-expired.md` (P1 escalou).
 
 ---
 
