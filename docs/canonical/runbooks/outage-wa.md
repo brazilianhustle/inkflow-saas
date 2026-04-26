@@ -176,14 +176,16 @@ systemctl status postgresql  # Postgres dedicado da Evo
 
 **Comandos:**
 
+> **Pré-requisito:** substituir `<EVO_GLOBAL_KEY>` pelo valor real (Bitwarden item `inkflow-evolution`, ou pedir via Telegram — NÃO ler `/opt/inkflow/.env` em plaintext, Safety #5).
+
 ### Listar todas as instâncias EVO
 ```bash
-ssh root@104.207.145.47 'KEY=$(grep EVO_API_KEY /opt/inkflow/.env | cut -d= -f2); curl -sS "http://172.18.0.4:8080/instance/fetchInstances" -H "apikey: $KEY"' | python3 -m json.tool
+ssh root@104.207.145.47 'curl -sS "http://172.18.0.4:8080/instance/fetchInstances" -H "apikey: <EVO_GLOBAL_KEY>"' | python3 -m json.tool
 ```
 
 ### Status de uma instância específica
 ```bash
-ssh root@104.207.145.47 'KEY=$(grep EVO_API_KEY /opt/inkflow/.env | cut -d= -f2); curl -sS "http://172.18.0.4:8080/instance/fetchInstances?instanceName=NAME" -H "apikey: $KEY"'
+ssh root@104.207.145.47 'curl -sS "http://172.18.0.4:8080/instance/fetchInstances?instanceName=NAME" -H "apikey: <EVO_GLOBAL_KEY>"'
 ```
 
 ### Cross-reference DB vs EVO
@@ -223,24 +225,26 @@ ssh root@104.207.145.47 'curl -sS "http://172.18.0.4:8080/settings/find/NAME" -H
 
 **Repair — Evolution v2.3.7 aceita 3 formatos no `POST /webhook/set/{name}`. Tenta na ordem:**
 
+> **Antes de rodar:** substituir `NAME` (nome da instância), `APIKEY_INSTANCIA` (apikey da instância) e `<n8n-webhook-url>` (Bitwarden item `inkflow-evolution`, custom field `N8N_WEBHOOK_URL`, ou pedir via Telegram). NÃO ler `/opt/inkflow/.env` em plaintext (Safety #5). Os curls precisam rodar de dentro do VPS — `172.18.0.4` é IP da bridge Docker, inalcançável de fora.
+
 ```bash
 # Formato 1 — nested short
-curl -X POST "http://172.18.0.4:8080/webhook/set/NAME" \
-  -H "apikey: APIKEY_INSTANCIA" \
-  -H "Content-Type: application/json" \
-  -d '{"webhook": {"enabled": true, "url": "$N8N_WEBHOOK_URL", "byEvents": true, "base64": true, "events": ["MESSAGES_UPSERT"], "headers": {}}}'
+ssh root@104.207.145.47 "curl -X POST 'http://172.18.0.4:8080/webhook/set/NAME' \
+  -H 'apikey: APIKEY_INSTANCIA' \
+  -H 'Content-Type: application/json' \
+  -d '{\"webhook\": {\"enabled\": true, \"url\": \"<n8n-webhook-url>\", \"byEvents\": true, \"base64\": true, \"events\": [\"MESSAGES_UPSERT\"], \"headers\": {}}}'"
 
 # Formato 2 — flat long (se 1 falhar)
-curl -X POST "http://172.18.0.4:8080/webhook/set/NAME" \
-  -H "apikey: APIKEY_INSTANCIA" \
-  -H "Content-Type: application/json" \
-  -d '{"enabled": true, "url": "$N8N_WEBHOOK_URL", "webhookByEvents": true, "webhookBase64": true, "events": ["MESSAGES_UPSERT"], "headers": {}}'
+ssh root@104.207.145.47 "curl -X POST 'http://172.18.0.4:8080/webhook/set/NAME' \
+  -H 'apikey: APIKEY_INSTANCIA' \
+  -H 'Content-Type: application/json' \
+  -d '{\"enabled\": true, \"url\": \"<n8n-webhook-url>\", \"webhookByEvents\": true, \"webhookBase64\": true, \"events\": [\"MESSAGES_UPSERT\"], \"headers\": {}}'"
 
 # Formato 3 — nested long (se 2 falhar)
-curl -X POST "http://172.18.0.4:8080/webhook/set/NAME" \
-  -H "apikey: APIKEY_INSTANCIA" \
-  -H "Content-Type: application/json" \
-  -d '{"webhook": {"enabled": true, "url": "$N8N_WEBHOOK_URL", "webhookByEvents": true, "webhookBase64": true, "events": ["MESSAGES_UPSERT"], "headers": {}}}'
+ssh root@104.207.145.47 "curl -X POST 'http://172.18.0.4:8080/webhook/set/NAME' \
+  -H 'apikey: APIKEY_INSTANCIA' \
+  -H 'Content-Type: application/json' \
+  -d '{\"webhook\": {\"enabled\": true, \"url\": \"<n8n-webhook-url>\", \"webhookByEvents\": true, \"webhookBase64\": true, \"events\": [\"MESSAGES_UPSERT\"], \"headers\": {}}}'"
 ```
 
 Após cada tentativa, valide com `GET /webhook/find/NAME`. Se `webhookBase64` ainda false, tenta próximo formato.
@@ -254,8 +258,10 @@ Após cada tentativa, valide com `GET /webhook/find/NAME`. Se `webhookBase64` ai
 **Pré-validação:** confirma que é mesmo estado inconsistente:
 
 ```bash
-ssh root@104.207.145.47 'KEY=$(grep EVO_API_KEY /opt/inkflow/.env | cut -d= -f2); curl -sS "http://172.18.0.4:8080/instance/connectionState/NAME" -H "apikey: $KEY"'
+ssh root@104.207.145.47 'curl -sS "http://172.18.0.4:8080/instance/connectionState/NAME" -H "apikey: <EVO_GLOBAL_KEY>"'
 ```
+
+> `<EVO_GLOBAL_KEY>` via Bitwarden item `inkflow-evolution` (não ler `/opt/inkflow/.env` em plaintext — Safety #5).
 
 Compara com `fetchInstances` — se `connectionStatus` ≠ `state`, é o caso.
 

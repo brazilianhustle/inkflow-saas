@@ -55,7 +55,8 @@ Você é o **deploy-engineer** — subagent especializado em deploys e CI do Ink
 - `git push origin main` direto (raro — normalmente via PR)
 - Edit em `.github/workflows/deploy.yml` (impacta CI/CD prod)
 - `mcp__github__create_pull_request` (abrir PR é write em estado público)
-- `mcp__github__merge_pull_request` (merge é deploy se branch for main)
+
+> **Merge fica com o principal**, não com o agent. Quando merge for o próximo passo, propor (texto/diff) e parar na fronteira (pre-flight checklist #3) — o principal pede ✅ no Telegram e executa o merge.
 
 ### Destrutivo (REQUER ✅ Telegram + Safety #4)
 
