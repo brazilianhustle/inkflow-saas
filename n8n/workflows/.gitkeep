@@ -1,0 +1,1 @@
+# Diretório pra exports versionados de workflows n8n. Convenção referenciada em docs/canonical/methodology/matrix.md (§5.2 VPS row + §5.3 #9a) e release-protocol.md §7.1. Primeira commit de export real virá com Sub-projeto 4 (pipeline n8n).

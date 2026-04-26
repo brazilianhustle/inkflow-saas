@@ -2,7 +2,7 @@
 last_reviewed: 2026-04-25
 owner: leandro
 status: stable
-related: []
+related: [stack.md, flows.md, ids.md, secrets.md, limits.md, runbooks/README.md, methodology/index.md]
 ---
 # Mapa Canônico do InkFlow — Index
 
@@ -26,6 +26,7 @@ related: []
 | `secrets.md` | Mapa de secrets — APENAS nomes e ponteiros pra fonte canônica (Bitwarden + CF Pages env). Procedure de rotação. **ZERO valores plaintext.** |
 | `limits.md` | Quotas de Vultr / CF Workers / CF Pages / Supabase / MP / MailerLite / Telegram / n8n / LLM providers + thresholds warn/critical. Alimenta auditores #3 (VPS limits) e #5 (billing health) do Sub-projeto 3. |
 | `runbooks/` | Procedimentos operacionais. Ver `runbooks/README.md` pro índice completo + `runbooks/<incidente>.md` por procedimento. |
+| `methodology/index.md` | Doutrina de operação: matriz principal-subagent, incident-response, release-protocol. Ver `methodology/` pro índice completo. |
 
 ## Runbooks disponíveis
 
@@ -52,16 +53,16 @@ related: []
 
 ## Visão geral da rede
 
-Os 13 arquivos do Mapa cobrem 6 áreas técnicas do spec-mestre:
+Os 14 arquivos do Mapa cobrem 7 áreas técnicas do spec-mestre:
 
 ```
                         index.md (este arquivo)
                               │
-              ┌──────────┬────┴────┬──────────┬──────────┐
-              │          │         │          │          │
-          stack.md   flows.md   ids.md   secrets.md  limits.md
-              │          │         │          │          │
-              └─────── runbooks/ (6 procedimentos) ───────┘
+      ┌──────────┬────┴────┬──────────┬──────────┬──────────────┐
+      │          │         │          │          │              │
+  stack.md   flows.md   ids.md   secrets.md  limits.md  methodology/
+      │          │         │          │          │
+      └─────── runbooks/ (6 procedimentos) ───────┘
 ```
 
 Sub-projeto 2 (Time de Subagents) consome este Mapa como contexto base. Sub-projeto 3 (Time de Auditores) audita a saúde dos sistemas referenciados aqui.
