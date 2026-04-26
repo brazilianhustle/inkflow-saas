@@ -23,6 +23,7 @@ Cada runbook é um procedimento operacional pra um cenário específico. Use:
 | `db-indisponivel.md` | Supabase fora | critical | depende da Supabase |
 | `restore-backup.md` | dados corrompidos / restore | critical | 1-4h |
 | `telegram-bot-down.md` | Telegram bot off / approval bloqueado | critical (se P0 ativo) | 15-30 min |
+| `secrets-expired.md` | Secret expirado / 401-403 / GHA silent failure | critical (se prod write afetado) | 15-45 min |
 
 ## Convenções de runbook
 
