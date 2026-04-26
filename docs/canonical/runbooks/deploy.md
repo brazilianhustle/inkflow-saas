@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-25
+last_reviewed: 2026-04-26
 owner: leandro
 status: stable
 related: [rollback.md, ../stack.md]
@@ -30,6 +30,98 @@ O Worker é sempre deploy manual via wrangler (não tem GHA pra ele).
 - [ ] Para Worker: estar dentro de `/Users/brazilianhustler/Documents/inkflow-saas/cron-worker`
 
 Verificar credenciais em `secrets.md` se algum comando reclamar de auth.
+
+## Pré-flight checks (manuais)
+
+Bateria de validações pra rodar **antes** do `git push origin main` (ou abertura de PR mergeável). Cobre os 7 pontos que historicamente queimaram deploy. Resultado esperado: PASS em todos. Qualquer FAIL bloqueia push até corrigir.
+
+### 1. Sintaxe JS em todos os endpoints
+
+```bash
+for f in /Users/brazilianhustler/Documents/inkflow-saas/functions/api/**/*.js; do
+  node --check "$f" 2>&1 || echo "FAIL: $f"
+done
+```
+
+PASS = nenhum output. FAIL = path do arquivo + erro.
+
+### 2. HTML bem-formado em arquivos críticos
+
+Confere tags não-fechadas em `index.html`, `onboarding.html`, `studio.html`, `admin.html`. Pode usar `tidy -e` ou inspeção visual rápida — qualquer tag aberta sem `</...>` correspondente quebra DOM em CF Pages CDN.
+
+```bash
+for f in /Users/brazilianhustler/Documents/inkflow-saas/{index,onboarding,studio,admin}.html; do
+  echo "=== $f ==="
+  tidy -errors -quiet "$f" 2>&1 | head -5 || true
+done
+```
+
+PASS = "no warnings or errors found". FAIL = lista de erros.
+
+### 3. Links internos não-quebrados
+
+```bash
+cd /Users/brazilianhustler/Documents/inkflow-saas
+grep -rn 'href="\.\?/[^"]*\.html"' --include="*.html" --include="*.js" | grep -v "://" | while IFS= read -r line; do
+  file=$(echo "$line" | grep -oE 'href="[^"]*\.html"' | head -1 | sed 's|href="||' | sed 's|"||')
+  test -f "$file" || echo "BROKEN: $line"
+done
+```
+
+PASS = nenhum "BROKEN:" output. FAIL = referência a HTML que não existe.
+
+### 4. Env vars críticas presentes em CF Pages
+
+Lista canônica em `docs/canonical/secrets.md`. Verifica se cada uma está configurada (sem ler valor — só presença) via MCP Cloudflare:
+
+```
+mcp__plugin_cloudflare_cloudflare-bindings__workers_get_worker (ou via wrangler env list)
+```
+
+Lista mínima: `SUPABASE_SERVICE_KEY`, `EVO_GLOBAL_KEY`, `EVO_BASE_URL`, `N8N_WEBHOOK_URL`, `MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`, `STUDIO_TOKEN_SECRET`, `EVO_CENTRAL_INSTANCE`, `EVO_CENTRAL_APIKEY`, `MAILERLITE_API_KEY`, `EVO_DB_CLEANUP_URL`, `EVO_DB_CLEANUP_SECRET`, `CRON_SECRET`, `CLEANUP_SECRET`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`.
+
+PASS = todas presentes em production. FAIL = lista de missing vars.
+
+### 5. Schema Supabase (colunas usadas pelo código existem)
+
+Via MCP em vez de `SB_PAT` plaintext (Safety #5):
+
+```
+mcp__plugin_supabase_supabase__execute_sql
+
+SELECT column_name FROM information_schema.columns
+WHERE table_name = 'tenants' AND table_schema = 'public';
+```
+
+Colunas obrigatórias mínimas: `onboarding_key`, `telefone`, `welcome_shown`, `parent_tenant_id`, `is_artist_slot`, `studio_token`, `evo_instance`, `evo_apikey`, `evo_base_url`, `ativo`, `plano`, `mp_subscription_id`, `status_pagamento`, `trial_ate`.
+
+PASS = todas presentes. FAIL = colunas missing (rodar migration antes de deploy).
+
+### 6. Git status — sem changes não-staged não-committed
+
+```bash
+cd /Users/brazilianhustler/Documents/inkflow-saas
+git status --porcelain
+```
+
+PASS = output vazio. FAIL = working tree dirty (commitar ou stash antes de push).
+
+### 7. CORS consistency
+
+Confere se todas as funções em `functions/api/*.js` retornam header CORS uniforme:
+
+```bash
+grep -rn 'Access-Control-Allow-Origin' /Users/brazilianhustler/Documents/inkflow-saas/functions/api/ | head -20
+```
+
+PASS = todas as ocorrências apontam pra `https://inkflowbrasil.com` ou `*` consistentemente. FAIL = mistura de origens (tipo dev `localhost` em prod).
+
+### Resultado consolidado
+
+Se 7/7 PASS → seguro pra `git push origin main` (ou abrir PR mergeável).
+Se qualquer FAIL → bloqueado até corrigir. Re-rodar checklist após fix.
+
+---
 
 ## Procedure — CF Pages
 
