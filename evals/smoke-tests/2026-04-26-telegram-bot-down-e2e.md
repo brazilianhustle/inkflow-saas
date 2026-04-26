@@ -1,6 +1,7 @@
 ---
 date: 2026-04-26
-status: prepared (awaiting user E2E)
+status: passed
+executed_at: 2026-04-26 15:26 BRT (18:26 UTC)
 related:
   - docs/superpowers/plans/2026-04-26-telegram-bot-down.md (Task 9)
   - docs/superpowers/specs/2026-04-26-telegram-bot-down-design.md
@@ -9,19 +10,24 @@ related:
 
 # Smoke Test E2E — `telegram-bot-down`
 
-## Status
+## Status: ✅ PASSED
+
+E2E completou com sucesso em prod (`https://inkflowbrasil.com`) após merge do PR #7 (commit `5f652cb`).
 
 **Subagent steps:** COMPLETE
 - Test suite passing (`node --test tests/*.mjs` — 15/15 green)
 - Endpoint syntax valid (`node --check functions/api/approvals/decide.js`)
 - admin.html script blocks syntactically valid
-- Smoke approval row inserted in Supabase: `70c710a0-4f25-4fe4-b3dd-a5f3e50cfcd9`
+- Smoke approval row pré-criada (substituída por outra após expirar — fluxo funcionou normal)
 
-**User E2E steps:** AWAITING USER
-- Push branch + merge PR (or wait for deploy preview)
-- Dispatch real Pushover with deep-link URL
-- Tap URL on phone → login → approve → verify status changed
-- Cleanup test row
+**User E2E steps:** ✅ COMPLETE
+- ✅ PR #7 merged em main (squash, `5f652cb`)
+- ⚠️ Deploy CF Pages falhou inicialmente (token CF expirado — incident pré-existente desde Apr 25). Resolvido com criação de token novo dedicado pra Pages + atualização do GitHub Secret `CF_API_TOKEN`.
+- ✅ Pushover dispatchado (priority=1, deep-link `https://inkflowbrasil.com/admin.html#approvals/73013cff-dcd3-49a7-9a4f-33fa28d3e2fc`)
+- ✅ Tap URL no celular → admin login (Supabase Auth — sem CF Access em prod) → página de approval renderizou com payload JSON correto
+- ✅ Approve clicado (sem nota — opcional)
+- ✅ DB mutou: `status=approved`, `approved_by=lmf4200@gmail.com`, `approved_at=18:26:39 UTC`
+- ✅ Cleanup row deletada
 
 ## Subagent verification log
 
@@ -150,10 +156,28 @@ Se algum critério falhar: abrir issue, NÃO marcar E2E como completo.
 
 ## Issues found
 
-(populate during user E2E run)
+1. **Deploy bloqueado por CF API token expirado** (incident pré-existente, não relacionado ao PR #7).
+   - Token `Cloudflare Agent Token - 2026-04-24` (criado 24/04) não tinha permission `Cloudflare Pages: Edit`.
+   - Todos os 5 deploys desde 25/04 mid-day (commits `3f8b0b6`, `a3de947`, `8268b1b`, `bb2828d`, `5f652cb`) falharam silenciosamente com `Authentication error code 10000`.
+   - **Fix aplicado:** criado token novo via template "Edit Cloudflare Workers" (que inclui `Cloudflare Pages: Edit`), atualizado `CF_API_TOKEN` no GitHub Secrets, re-runs sucessivos do GH Action passaram.
+   - **Lições:**
+     - Adicionar runbook `runbooks/secrets-expired.md` (já registrado P1 no backlog) — esse incident era exatamente o cenário coberto.
+     - Considerar auditor cron pra detectar GH Action falhas sustentadas (Sub-projeto 3).
+     - Documentar em `secrets.md` que o token `Cloudflare Agent Token` master NÃO inclui Pages — precisa token dedicado.
+
+2. **Notes no approval ficou null** (user esqueceu de digitar antes de aprovar). Não é bug — é UX nit já flagado em code review T5: campo notes não tem validação de "estás certo que quer aprovar sem nota?". Acceptable pra V1.
 
 ## Latency observations
 
-- Push notification → tap: ___ s
-- Tap → admin loaded: ___ s
-- Click approve → DB updated: ___ s
+- Push notification → tap: ~5s (priority=1 sem siren — chegou normal)
+- Tap → admin loaded + login + approval rendered: ~15s (1ª vez precisa Supabase Auth login)
+- Click approve → DB updated: <1s (atomic UPDATE retornou 200, polling `SELECT` no DB confirmou em ~47s depois mas mutação foi instantânea)
+
+## Próximos passos pós-E2E
+
+- [x] Cleanup smoke row (DELETE em 18:27 UTC)
+- [x] Atualizar este doc pra `status: passed`
+- [ ] Rotacionar `PUSHOVER_APP_TOKEN` (vazado em transcript Anthropic durante setup do script .sh)
+- [ ] Mover P0 `runbooks/telegram-bot-down.md` pra ✅ feito no backlog
+- [ ] Atualizar Painel + Mapa geral (sessão concluída)
+- [ ] Commit deste doc atualizado
