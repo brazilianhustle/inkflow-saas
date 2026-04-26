@@ -96,9 +96,9 @@ Retorna ao Claude principal um resumo estruturado:
 **Heurística da matrix.md aplicada:** [#3 write-em-prod, #4 destrutivo, etc.]
 
 ### Diff/plano
-\`\`\`
+```
 <diff git-style ou comandos exatos com flags>
-\`\`\`
+```
 
 ### Pré-validação executada (read-only)
 - [x] Verifiquei X
