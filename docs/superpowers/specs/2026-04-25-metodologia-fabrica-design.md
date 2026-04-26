@@ -57,6 +57,15 @@ vault/
 
 Cada doc canonical tem frontmatter `last_reviewed` + `owner` + `status` + `related`, mesmo padrão dos arquivos existentes em `canonical/`.
 
+**Padrão da nota-âncora no vault** (segue `[[InkFlow — Arquitetura]]`):
+
+- Frontmatter com `tags`, `canonical:` (path relativo do repo), `canonical_commit:` (sha do merge), `created`.
+- 1 parágrafo curto de contexto humano (por que essa nota existe pra quem abre o vault).
+- Bloco "Como uso na prática" — 3-5 bullets pessoais, diferente do canonical.
+- Footer com wiki-links pra notas relacionadas.
+
+Template completo em §9.
+
 ## 5. Componente — `matrix.md`
 
 ### 5.1 Heurísticas globais (9 regras, 3 grupos)
@@ -70,6 +79,7 @@ Cada doc canonical tem frontmatter `last_reviewed` + `owner` + `status` + `relat
 **Safety** — overrides universais. Valem **mesmo dentro** do escopo de subagent autorizado.
 
 4. **Operações destrutivas** (`drop table`, `git reset --hard`, `rm -rf`, `git push --force`, `wrangler delete`, drop de migration aplicada, truncate, `DELETE` sem `WHERE` específico) → SEMPRE confirmação humana via Telegram ✅. Subagent **nunca** executa destrutivo sozinho, mesmo no domínio dele.
+   - **Fallback se Telegram indisponível ou sem resposta:** abortar a operação. **Nunca** timeout silencioso autorizando destrutivo. Em P0 com Telegram down, preferir caminhos não-destrutivos (`runbooks/rollback.md` é recuperação, não destrutivo). Se destrutivo for inevitável e Telegram down, escalar via canal alternativo definido em `secrets.md` (`TELEGRAM_BOT_TOKEN` row) ou aguardar founder.
 5. **Secrets em plaintext** → NUNCA `Read` direto em `.env`, `~/.zshrc`, `~/.config/`, ou arquivos com `secret`/`token`/`key`/`password` no nome. Pra obter valor: consultar `docs/canonical/secrets.md` pra descobrir fonte canônica (Bitwarden/CF env/Keychain) e pedir via Telegram. Se já tem MCP autenticado pro serviço (Cloudflare/Supabase/etc.), usar MCP em vez de pedir secret bruto.
 6. **Tarefa que precisa >15 min de exploração isolada** → subagent (preserva contexto do principal).
 
@@ -106,7 +116,8 @@ Cada doc canonical tem frontmatter `last_reviewed` + `owner` + `status` + `relat
 | 7 | Pedido "lê o valor de `OPENAI_API_KEY` no `.zshrc`" | **REJEITAR** + pedir via Telegram | Safety/secrets (#5) — proibição direta |
 | 8 | Force push em `main` | **REJEITAR** salvo Telegram ✅ explícito | Safety/destrutivo (#4) |
 | 9a | Ajustar workflow n8n via SDK + commitar export em `n8n/workflows/` | **principal** | Scope/write-dev (#2) — código versionado |
-| 9b | Aplicar workflow ajustado no servidor n8n VPS | **`vps-ops` ✅** | Scope/write-prod (#3) + Domain (#7) |
+| 9b | Aplicar workflow ajustado **via n8n MCP** (HTTP autenticada — `mcp__n8n__update_workflow`) | **principal** | Scope/write-prod (#3) — API tipada, não-destrutivo de infra |
+| 9c | Modificar config do servidor VPS **via SSH** (nginx, docker, systemd, env) | **`vps-ops` ✅** | Scope/write-prod (#3) + Domain (#7) — acesso shell ao host |
 | 10 | Adicionar nova tool no `generate-prompt.js` | **`prompt-engineer`** (golden set ✅) | Domain (#7) |
 | 11 | Editar `docs/canonical/stack.md` pós-refactor | **principal** (pós-MVP: `doc-keeper`) | Domain/docs (#7) |
 | 12 | Decidir UX do novo Modo Coleta | **principal com Leandro** | Domain/produto (#8) — não delegar |
@@ -150,10 +161,14 @@ Alinha com a do `runbooks/README.md`. Severity define **tempo de resposta espera
 | Mensagens WhatsApp Evolution não fluem | [`runbooks/outage-wa.md`](../runbooks/outage-wa.md) | P0/P1 |
 | Dados corrompidos / restore necessário | [`runbooks/restore-backup.md`](../runbooks/restore-backup.md) | P0 |
 | Procedimento de deploy padrão (não é incidente) | [`runbooks/deploy.md`](../runbooks/deploy.md) | n/a |
-| Supabase advisor crítico (RLS exposto / slow query) | _gap registrado — abrir spec se ocorrer_ | P1 |
-| Deploy GHA falhou antes de chegar em prod | _gap registrado — coberto parcialmente por `rollback.md`_ | P1 |
+| Supabase advisor crítico (RLS exposto / slow query / security issue, DB no ar) | _gap registrado_ | P1 |
+| Deploy GHA falhou antes de chegar em prod | _gap registrado — coberto parcialmente por `rollback.md`_ | P2 |
+| **Telegram bot down** (canal de approval indisponível — quebra fluxo destrutivo §5.1#4) | _gap registrado_ | P0 |
+| **Secret expirado / rotação não-anunciada** (CF API token TTL=90d, OPENAI key, etc.) | _gap registrado_ | P1 |
+| **CF Pages build failed** (build no CF após push, distinto de GHA) | _gap registrado — adjacente a `rollback.md`_ | P2 |
+| **MailerLite block rate alto** (entrega quebrada — afeta funil) | _gap registrado_ | P3 |
 
-Os 2 gaps ficam registrados em `[[InkFlow — Pendências (backlog)]]` quando virarem concrete need (não trabalho desse spec).
+Os 6 gaps ficam registrados em `[[InkFlow — Pendências (backlog)]]` com prioridades diferenciadas (ver §11). Cada um vira trabalho próprio quando o cenário ocorrer e a resposta ad-hoc não for óbvia em 5 min (regra do `runbooks/README.md`). **Não** são trabalho desse spec.
 
 ## 7. Componente — `release-protocol.md`
 
@@ -212,12 +227,14 @@ Quando surgir cliente pagante: expandir comunicação (email, in-app banner, sta
 
 ### 7.5 Janela de release
 
+> **Janela real ainda não validada empiricamente.** A tabela abaixo é hipótese inicial baseada em padrão de salão de tatuagem (clientes reservam mais final de semana). Refinar após primeiro mês de telemetria com cliente pagante: olhar `wrangler tail` + dashboards de uso pra identificar pico real de requests do bot. Atualizar essa seção e remover este aviso quando dados existirem.
+
 | Tipo de release | Janela permitida | Gate |
 |---|---|---|
 | Worker — feat/fix sem migration | qualquer hora útil de Leandro | `/deploy-check` |
 | Worker — com migration não-destrutiva | qualquer hora | `/deploy-check` + Telegram ✅ migration |
 | Migration destrutiva (drop table/coluna lida) | madrugada (00h-06h BRT) | `/deploy-check` + Telegram ✅ + backup recente confirmado |
-| Mudança em horário de pico de tatuagem (sábado 14h-22h) | **adiar** salvo P0 | n/a |
+| Mudança em pico estimado (hipótese: sábado 14h-22h, domingo 10h-14h) | **adiar** salvo P0 — validar quando tiver dados | n/a |
 | Hotfix P0 | imediato | `/hotfix` (bypass parcial do checklist — runbook do hotfix documenta o que pular) |
 
 ## 8. Componente — `index.md`
@@ -321,19 +338,26 @@ Resultado documentado em `inkflow-saas/evals/methodology/auto-validation-2026-04
 
 ### 10.5 Entrega
 
-- [ ] PR contendo 4 docs canonical + 3 notas-âncora + Visão geral atualizada + eval da auto-validação.
-- [ ] Code review (subagent `code-reviewer` ou principal antes do merge).
-- [ ] Merge pra `main`.
-- [ ] Painel + Mapa geral atualizados pós-merge.
+- [ ] PR(s) contendo 4 docs canonical + 3 notas-âncora vault + Visão geral atualizada + eval da auto-validação. Split em 1 ou 2 PRs decidido no `/plan`.
+- [ ] Cada doc canonical com frontmatter padrão (`last_reviewed: 2026-04-XX`, `owner: leandro`, `status: stable`, `related: [...]`) — mesmo padrão dos arquivos existentes em `canonical/`.
+- [ ] Code review por subagent `code-reviewer` (ou principal se MVP do agent ainda não existir).
+- [ ] Merge pra `main` após code review aprovado.
+- [ ] Pós-merge: registrar os 6 gaps de §11 em `[[InkFlow — Pendências (backlog)]]` com as prioridades indicadas.
+- [ ] Pós-merge: atualizar `[[InkFlow — Painel]]` (seção "Doctrine viva") + `[[InkFlow — Mapa geral]]` (link pra metodologia).
+- [ ] Pós-merge: atualizar `last_reviewed` dos canonical files se a revisão real divergir da data inicial.
 
 ## 11. Gaps registrados (não-trabalho desse spec)
 
-Adicionar ao `[[InkFlow — Pendências (backlog)]]` durante implementação:
+Adicionar ao `[[InkFlow — Pendências (backlog)]]` durante implementação. Prioridade reflete impacto se o cenário ocorrer hoje (não probabilidade):
 
-- **P3** — Runbook `supabase-advisor-critical.md` (RLS exposto / slow query / security advisor) em `canonical/runbooks/`. Trigger: primeira vez que advisor crítico aparece e leva >5min pra resolver ad-hoc.
-- **P3** — Runbook `deploy-gha-failed.md` em `canonical/runbooks/`. Trigger: 2ª vez que GHA falhar de jeito não-coberto por `rollback.md`.
+- **P0** — Runbook `telegram-bot-down.md` em `canonical/runbooks/`. Telegram é canal de approval pro fluxo destrutivo (§5.1#4) — se ele cai, fluxo todo trava. Trigger: 1ª vez que bot Telegram não responder e founder precisar aprovar destrutivo. Pré-trabalho útil: definir canal de fallback (SMS, email, signal) e documentar em `secrets.md` como linha nova ou anexo.
+- **P1** — Runbook `secrets-expired.md` em `canonical/runbooks/`. CF API Token tem TTL=90d; sem runbook, primeira expiração vai ser surpresa quebrada. Trigger: 30 dias antes do primeiro vencimento conhecido (CF token), ou na 1ª vez que um secret expirar silenciosamente. Idealmente combinado com auditor `secret-rotation` (Sub-projeto 4 — adjacente).
+- **P1** — Runbook `supabase-advisor-critical.md` em `canonical/runbooks/`. RLS exposto / slow query / security advisor. Distinto de `db-indisponivel.md` (DB no ar, mas advisor flagou). Trigger: 1ª vez que advisor crítico aparecer e levar >5 min pra resolver ad-hoc.
+- **P2** — Runbook `cf-pages-build-failed.md` em `canonical/runbooks/`. Build no CF Pages após push (distinto do GHA). Adjacente a `rollback.md` mas com causas/diagnósticos próprios. Trigger: 2ª vez que CF Pages build falhar de jeito não-coberto por `rollback.md`.
+- **P2** — Runbook `deploy-gha-failed.md` em `canonical/runbooks/`. GHA falhou antes de chegar em prod. Parcialmente coberto por `rollback.md` mas merece doc próprio quando virar repetição. Trigger: 2ª vez que GHA falhar de jeito não-coberto.
+- **P3** — Runbook `mailerlite-block-rate.md` em `canonical/runbooks/`. Entrega de email caiu (bounce/spam alto), afeta funil de aquisição mas não quebra produto. Trigger: alerta de auditor `billing-flow-health` ou queda visível na taxa de entrega no painel MailerLite.
 
-Esses 2 só viram trabalho quando o cenário ocorrer e a resposta ad-hoc não for óbvia em 5 min (regra do `runbooks/README.md`).
+Cada runbook só vira trabalho quando o cenário ocorrer e a resposta ad-hoc não for óbvia em 5 min (regra do `runbooks/README.md`). Esse spec **só registra** os gaps — não cria os arquivos.
 
 ## 12. Sequência de implementação sugerida (input pro `/plan`)
 
