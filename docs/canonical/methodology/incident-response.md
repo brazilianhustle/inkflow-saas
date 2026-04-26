@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-25
+last_reviewed: 2026-04-26
 owner: leandro
 status: stable
 related: [index.md, matrix.md, release-protocol.md, ../runbooks/README.md, ../runbooks/rollback.md]
@@ -45,7 +45,7 @@ Alinha com a do `runbooks/README.md`. Severity define **tempo de resposta espera
 | Procedimento de deploy padrão (não é incidente) | [`runbooks/deploy.md`](../runbooks/deploy.md) | n/a |
 | Supabase advisor crítico (RLS exposto / slow query / security issue, DB no ar) | _gap registrado_ | P1 |
 | Deploy GHA falhou antes de chegar em prod | _gap registrado — coberto parcialmente por `rollback.md`_ | P2 |
-| **Telegram bot down** (canal de approval indisponível — quebra fluxo destrutivo §5.1#4) | _gap registrado_ | P0 |
+| **Telegram bot down** (canal de approval indisponível — quebra fluxo destrutivo §5.1#4) | [`runbooks/telegram-bot-down.md`](../runbooks/telegram-bot-down.md) | P0 |
 | **Secret expirado / rotação não-anunciada** (CF API token TTL=90d, OPENAI key, etc.) | _gap registrado_ | P1 |
 | **CF Pages build failed** (build no CF após push, distinto de GHA) | _gap registrado — adjacente a `rollback.md`_ | P2 |
 | **MailerLite block rate alto** (entrega quebrada — afeta funil) | _gap registrado_ | P3 |

@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-25
+last_reviewed: 2026-04-26
 owner: leandro
 status: stable
 related: [stack.md, runbooks/rollback.md]
@@ -30,6 +30,8 @@ Todos os secrets referenciados em código (`functions/**` e `cron-worker/src/**`
 | `EVO_DB_CLEANUP_SECRET` | CF Pages env | sem expiry | leandro | alta |
 | `MAILERLITE_API_KEY` | Bitwarden + CF Pages env | sem expiry | leandro | alta |
 | `TELEGRAM_BOT_TOKEN` | Bitwarden + CF Pages env + Worker env | sem expiry | leandro | crítica |
+| `PUSHOVER_APP_TOKEN` | Bitwarden `inkflow-pushover` | sem expiry | leandro | alta |
+| `PUSHOVER_USER_KEY` | Bitwarden `inkflow-pushover` | sem expiry | leandro | alta |
 | `CRON_SECRET` | CF Pages env + Worker env (mesmo valor nas duas pontas) | sem expiry | leandro | alta |
 | `CLEANUP_SECRET` | CF Pages env + Worker env | sem expiry | leandro | alta |
 | `INKFLOW_TOOL_SECRET` | CF Pages env | sem expiry | leandro | alta |
@@ -80,6 +82,14 @@ Aparecem como `env.X` no código mas **não são secrets**. Listados aqui para e
 
 ### Telegram (alertas)
 - `TELEGRAM_BOT_TOKEN` — bot dedicado a alertas operacionais. Compartilhado entre CF Pages e Worker (mesmo valor).
+
+### Pushover (alt channel emergência)
+- `PUSHOVER_APP_TOKEN` — token da application "InkFlow Alerts" criada no dashboard Pushover.
+- `PUSHOVER_USER_KEY` — user key do founder (Leandro). Único por device/conta.
+- Uso: ver `runbooks/telegram-bot-down.md` Ação 0.
+- **NÃO replicado em CF Pages env / Worker env nesse momento** — fica em Bitwarden até Sub-projeto 2 wirar agents (manual via curl no runbook até lá).
+- **TODO Sub-projeto 2:** quando agents forem implementados em CF Worker, replicar `PUSHOVER_APP_TOKEN` + `PUSHOVER_USER_KEY` em CF Pages env + Worker env (`wrangler pages secret put` + `wrangler secret put`). Hoje uso é manual via curl no runbook, então só Bitwarden basta.
+- **Procedure de rotação:** se vazar, regenerar `APP_TOKEN` no dashboard Pushover (`USER_KEY` é estável por conta). Atualizar Bitwarden.
 
 ### Cron / autenticação inter-serviço
 - `CRON_SECRET` — header de auth dos endpoints `/api/cron/*`. **Crítico: tem que ser o mesmo valor em CF Pages e Worker.**

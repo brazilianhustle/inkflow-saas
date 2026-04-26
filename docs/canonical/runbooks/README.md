@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-25
+last_reviewed: 2026-04-26
 owner: leandro
 status: stable
 related: [../stack.md]
@@ -22,6 +22,7 @@ Cada runbook é um procedimento operacional pra um cenário específico. Use:
 | `mp-webhook-down.md` | webhook MP parou (>24h) | critical | 30 min |
 | `db-indisponivel.md` | Supabase fora | critical | depende da Supabase |
 | `restore-backup.md` | dados corrompidos / restore | critical | 1-4h |
+| `telegram-bot-down.md` | Telegram bot off / approval bloqueado | critical (se P0 ativo) | 15-30 min |
 
 ## Convenções de runbook
 
