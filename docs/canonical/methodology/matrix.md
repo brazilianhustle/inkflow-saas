@@ -17,11 +17,12 @@ Doctrine de delegação: quando trabalho fica na sessão principal vs. quando vi
 1. **Read-only** (logs, docs, queries de leitura, `git log`, `wrangler tail`, `gh pr view`) → **principal**.
 2. **Write seguro em dev** (refactor, novo arquivo, edit local, `npm test`, branch nova) → **principal**.
 3. **Write em prod** (deploy, migration, `git push origin main`, configuração CF Pages env) → **subagent dedicado do domínio**.
+   - **Exceção:** ações via MCP autenticada com API tipada (n8n MCP, Supabase MCP, Cloudflare MCP) são consideradas operações controladas pela API — `principal` pode executar diretamente. Exemplos canônicos: §5.3 #9b (n8n via `mcp__n8n__update_workflow`). Operação destrutiva via MCP (#4) ou que requer SSH/shell ao host (#9c) NÃO se beneficia dessa exceção.
 
 **Safety** — overrides universais. Valem **mesmo dentro** do escopo de subagent autorizado.
 
 4. **Operações destrutivas** (`drop table`, `git reset --hard`, `rm -rf`, `git push --force`, `wrangler delete`, drop de migration aplicada, truncate, `DELETE` sem `WHERE` específico) → SEMPRE confirmação humana via Telegram ✅. Subagent **nunca** executa destrutivo sozinho, mesmo no domínio dele.
-   - **Fallback se Telegram indisponível ou sem resposta:** abortar a operação. **Nunca** timeout silencioso autorizando destrutivo. Em P0 com Telegram down, preferir caminhos não-destrutivos (`runbooks/rollback.md` é recuperação, não destrutivo). Se destrutivo for inevitável e Telegram down, escalar via canal alternativo definido em `secrets.md` (`TELEGRAM_BOT_TOKEN` row) ou aguardar founder.
+   - **Fallback se Telegram indisponível ou sem resposta:** abortar a operação. **Nunca** timeout silencioso autorizando destrutivo. Em P0 com Telegram down, preferir caminhos não-destrutivos (`runbooks/rollback.md` é recuperação, não destrutivo). Se destrutivo for inevitável e Telegram down: aguardar founder via canal habitual (não há canal alternativo formalizado hoje — gap registrado em §11 do spec como pré-trabalho do runbook `telegram-bot-down.md`).
 5. **Secrets em plaintext** → NUNCA `Read` direto em `.env`, `~/.zshrc`, `~/.config/`, ou arquivos com `secret`/`token`/`key`/`password` no nome. Pra obter valor: consultar `docs/canonical/secrets.md` pra descobrir fonte canônica (Bitwarden/CF env/Keychain) e pedir via Telegram. Se já tem MCP autenticado pro serviço (Cloudflare/Supabase/etc.), usar MCP em vez de pedir secret bruto.
 6. **Tarefa que precisa >15 min de exploração isolada** → subagent (preserva contexto do principal).
 

@@ -2,7 +2,7 @@
 last_reviewed: 2026-04-25
 owner: leandro
 status: stable
-related: []
+related: [stack.md, flows.md, ids.md, secrets.md, limits.md, runbooks/README.md, methodology/index.md]
 ---
 # Mapa Canônico do InkFlow — Index
 
