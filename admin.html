@@ -307,6 +307,31 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
+<!-- Approvals — alt channel pra heurística #4 -->
+<section id="approval-section" style="display:none; padding:20px; max-width:800px;">
+  <h2 style="margin-top:0;">Approval</h2>
+  <div id="approval-loading">Carregando...</div>
+  <div id="approval-content" style="display:none;">
+    <div style="margin-bottom:12px;">
+      <span><strong>ID:</strong> <code id="approval-id"></code></span>
+      <span style="margin-left:20px;"><strong>Severity:</strong> <span id="approval-severity"></span></span>
+      <span style="margin-left:20px;"><strong>Status:</strong> <span id="approval-status"></span></span>
+    </div>
+    <div style="margin-bottom:12px;">
+      <strong>Expira:</strong> <span id="approval-expires"></span>
+    </div>
+    <h3>Payload da operação</h3>
+    <pre id="approval-payload" style="background:#f5f5f5; padding:12px; overflow:auto; max-height:300px;"></pre>
+    <div id="approval-actions" style="margin-top:20px;">
+      <textarea id="approval-notes" placeholder="Notas (opcional)" rows="2" style="width:100%; margin-bottom:12px;"></textarea>
+      <button id="approval-approve-btn" style="background:#4caf50; color:white; padding:10px 20px; border:none; cursor:pointer; margin-right:10px;">✅ Aprovar</button>
+      <button id="approval-reject-btn" style="background:#f44336; color:white; padding:10px 20px; border:none; cursor:pointer;">❌ Rejeitar</button>
+    </div>
+    <div id="approval-result" style="margin-top:20px; display:none;"></div>
+  </div>
+  <div id="approval-error" style="display:none; color:#c00;"></div>
+</section>
+
 <!-- MODAL TENANT -->
 <div id="modal" class="overlay" style="display:none" onclick="if(event.target===this)closeModal()">
   <div class="md">
@@ -432,6 +457,9 @@ else {
 }
   document.getElementById('lp').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   document.getElementById('lu').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('lp').focus(); });
+  window.addEventListener('hashchange', () => {
+    if (accessToken) checkApprovalRoute();
+  });
 }
 
 async function doLogin() {
@@ -501,7 +529,96 @@ function showApp() {
   document.getElementById('ls').style.display = 'none';
   document.getElementById('app').classList.add('v');
   loadCfgForm();
+  if (checkApprovalRoute()) return;  // se URL é #approvals/<id>, render approval em vez de lista de tenants
   loadTenants();
+}
+
+async function loadApproval(id) {
+  document.getElementById('app').classList.remove('v');
+  document.getElementById('ls').style.display = 'none';
+  document.getElementById('approval-section').style.display = 'block';
+  document.getElementById('approval-loading').style.display = 'block';
+  document.getElementById('approval-content').style.display = 'none';
+  document.getElementById('approval-error').style.display = 'none';
+
+  try {
+    const data = await api('GET', `/rest/v1/approvals?id=eq.${encodeURIComponent(id)}&select=*`);
+    if (!Array.isArray(data) || data.length === 0) {
+      document.getElementById('approval-error').textContent = 'Approval não encontrado.';
+      document.getElementById('approval-error').style.display = 'block';
+      document.getElementById('approval-loading').style.display = 'none';
+      return;
+    }
+    const row = data[0];
+    document.getElementById('approval-id').textContent = row.id;
+    document.getElementById('approval-severity').textContent = row.severity;
+    document.getElementById('approval-status').textContent = row.status;
+    document.getElementById('approval-expires').textContent = row.expires_at;
+    document.getElementById('approval-payload').textContent = JSON.stringify(row.request_payload, null, 2);
+    document.getElementById('approval-loading').style.display = 'none';
+    document.getElementById('approval-content').style.display = 'block';
+
+    // Esconder botões se já decidido
+    if (row.status !== 'pending') {
+      document.getElementById('approval-actions').style.display = 'none';
+      const result = document.getElementById('approval-result');
+      result.style.display = 'block';
+      result.innerHTML = `<strong>Já decidido:</strong> ${row.status} por ${row.approved_by || '?'} em ${row.approved_at || '?'}.<br>Notas: ${row.notes || '(vazio)'}`;
+    } else {
+      document.getElementById('approval-approve-btn').onclick = () => decideApproval(id, 'approve');
+      document.getElementById('approval-reject-btn').onclick = () => decideApproval(id, 'reject');
+    }
+  } catch (e) {
+    document.getElementById('approval-error').textContent = 'Erro ao carregar: ' + (e.message || e);
+    document.getElementById('approval-error').style.display = 'block';
+    document.getElementById('approval-loading').style.display = 'none';
+  }
+}
+
+async function decideApproval(id, action) {
+  const notes = document.getElementById('approval-notes').value || undefined;
+  const approveBtn = document.getElementById('approval-approve-btn');
+  const rejectBtn = document.getElementById('approval-reject-btn');
+  approveBtn.disabled = true;
+  rejectBtn.disabled = true;
+
+  try {
+    const r = await fetch('/api/approvals/decide', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, action, notes }),
+    });
+    const data = await r.json();
+    const result = document.getElementById('approval-result');
+    result.style.display = 'block';
+    if (r.ok) {
+      result.innerHTML = `<strong>✓ ${data.status}</strong> registrado em ${data.approved_at}.`;
+      document.getElementById('approval-actions').style.display = 'none';
+      document.getElementById('approval-status').textContent = data.status;
+    } else {
+      result.innerHTML = `<strong style="color:#c00;">Erro:</strong> ${data.error || 'desconhecido'} (${r.status})`;
+      approveBtn.disabled = false;
+      rejectBtn.disabled = false;
+    }
+  } catch (e) {
+    document.getElementById('approval-result').style.display = 'block';
+    document.getElementById('approval-result').innerHTML = `<strong style="color:#c00;">Falha:</strong> ${e.message || e}`;
+    approveBtn.disabled = false;
+    rejectBtn.disabled = false;
+  }
+}
+
+function checkApprovalRoute() {
+  const hash = window.location.hash;
+  const m = hash.match(/^#approvals\/([0-9a-f-]+)$/i);
+  if (m && accessToken) {
+    loadApproval(m[1]);
+    return true;
+  }
+  return false;
 }
 
 async function api(method, path, body) {
