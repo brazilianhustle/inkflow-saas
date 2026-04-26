@@ -1668,27 +1668,20 @@ async function initiatePayment() {
 async function startFreeTrial() {
   const cta = document.getElementById('trial-cta-btn');
   if (cta) { if (cta.disabled) return; cta.disabled = true; cta.textContent = 'Ativando...'; }
-  const onboardingKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk') || '';
   try {
-    const trialEnd = new Date(); trialEnd.setDate(trialEnd.getDate() + 7);
-    const trialRes = await fetch('/api/update-tenant', {
+    const email = document.getElementById('f-email').value.trim();
+    const trialRes = await fetch('/api/create-subscription', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        tenant_id: tenantId,
-        email: document.getElementById('f-email').value.trim(),
-        onboarding_key: onboardingKey,
-        trial_ate: trialEnd.toISOString(),
-        ativo: true
-      })
+      body: JSON.stringify({ tenant_id: tenantId, plano: 'trial', email })
     });
-    if (!trialRes.ok) {
-      const errTxt = await trialRes.text();
-      console.error('trial_ate update failed:', trialRes.status, errTxt);
-      throw new Error('Falha ao ativar trial: ' + errTxt);
+    const data = await trialRes.json().catch(() => ({}));
+    if (!trialRes.ok || data.error) {
+      console.error('trial create failed:', trialRes.status, data);
+      throw new Error(data.error || 'Falha ao ativar trial.');
     }
   } catch (trialErr) {
-    console.error('trial_ate update error:', trialErr);
+    console.error('trial create error:', trialErr);
     showProcError('Falha ao ativar trial. Recarregue a página e tente novamente.');
     return;
   }
