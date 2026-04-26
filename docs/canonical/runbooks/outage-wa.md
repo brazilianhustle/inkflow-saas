@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-25
+last_reviewed: 2026-04-26
 owner: leandro
 status: stable
 related: [README.md, ../stack.md, ../flows.md]
@@ -169,6 +169,109 @@ systemctl status postgresql  # Postgres dedicado da Evo
 # Se down: systemctl restart postgresql
 # Se vivo mas com queries presas: usar EVO_DB_CLEANUP_URL via secrets.md
 ```
+
+## Ação E — Diagnóstico de instância órfã (DB ≠ EVO)
+
+**Quando:** alguma instância em `tenants.evo_instance` não retorna em `fetchInstances`, ou alguma instância em EVO não tem tenant correspondente.
+
+**Comandos:**
+
+### Listar todas as instâncias EVO
+```bash
+ssh root@104.207.145.47 'KEY=$(grep EVO_API_KEY /opt/inkflow/.env | cut -d= -f2); curl -sS "http://172.18.0.4:8080/instance/fetchInstances" -H "apikey: $KEY"' | python3 -m json.tool
+```
+
+### Status de uma instância específica
+```bash
+ssh root@104.207.145.47 'KEY=$(grep EVO_API_KEY /opt/inkflow/.env | cut -d= -f2); curl -sS "http://172.18.0.4:8080/instance/fetchInstances?instanceName=NAME" -H "apikey: $KEY"'
+```
+
+### Cross-reference DB vs EVO
+Via Supabase MCP: `mcp__plugin_supabase_supabase__execute_sql`:
+```sql
+SELECT id, evo_instance FROM tenants WHERE evo_instance IS NOT NULL;
+```
+
+Compare a lista do DB com a do EVO. Diff aponta órfãs (em EVO sem tenant) ou referências quebradas (tenant aponta pra instância que não existe).
+
+**Resolução:**
+- Órfã em EVO sem tenant → candidata a delete via bridge (ver Ação F).
+- Tenant com referência quebrada → ou recriar instância, ou clear `tenants.evo_instance` se tenant foi cancelado.
+
+---
+
+## Ação F — Reparação de webhook config
+
+**Quando:** instância existe mas `webhookBase64=false` ou `events` não inclui `MESSAGES_UPSERT`. Sintoma: bot não recebe mídia, ou n8n não é acionado.
+
+**Diagnóstico — verificar webhook + settings da instância:**
+
+```bash
+ssh root@104.207.145.47 'curl -sS "http://172.18.0.4:8080/webhook/find/NAME" -H "apikey: APIKEY_INSTANCIA"'
+ssh root@104.207.145.47 'curl -sS "http://172.18.0.4:8080/settings/find/NAME" -H "apikey: APIKEY_INSTANCIA"'
+```
+
+**8 checks por instância:**
+1. Existe na EVO (`fetchInstances` retorna)
+2. `connectionStatus = open` (conectada ao WhatsApp)
+3. `webhook.enabled = true`
+4. `webhook.webhookBase64 = true` (crítico pra n8n receber mídia)
+5. `webhook.events` inclui `MESSAGES_UPSERT` (sem isso, n8n não é acionado)
+6. `webhook.url` aponta pro n8n certo (env `N8N_WEBHOOK_URL`)
+7. `settings.groupsIgnore = true` (bot não responde grupos)
+8. DB consistency: `tenants.evo_instance = instância_existe_em_EVO`
+
+**Repair — Evolution v2.3.7 aceita 3 formatos no `POST /webhook/set/{name}`. Tenta na ordem:**
+
+```bash
+# Formato 1 — nested short
+curl -X POST "http://172.18.0.4:8080/webhook/set/NAME" \
+  -H "apikey: APIKEY_INSTANCIA" \
+  -H "Content-Type: application/json" \
+  -d '{"webhook": {"enabled": true, "url": "$N8N_WEBHOOK_URL", "byEvents": true, "base64": true, "events": ["MESSAGES_UPSERT"], "headers": {}}}'
+
+# Formato 2 — flat long (se 1 falhar)
+curl -X POST "http://172.18.0.4:8080/webhook/set/NAME" \
+  -H "apikey: APIKEY_INSTANCIA" \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": true, "url": "$N8N_WEBHOOK_URL", "webhookByEvents": true, "webhookBase64": true, "events": ["MESSAGES_UPSERT"], "headers": {}}'
+
+# Formato 3 — nested long (se 2 falhar)
+curl -X POST "http://172.18.0.4:8080/webhook/set/NAME" \
+  -H "apikey: APIKEY_INSTANCIA" \
+  -H "Content-Type: application/json" \
+  -d '{"webhook": {"enabled": true, "url": "$N8N_WEBHOOK_URL", "webhookByEvents": true, "webhookBase64": true, "events": ["MESSAGES_UPSERT"], "headers": {}}}'
+```
+
+Após cada tentativa, valide com `GET /webhook/find/NAME`. Se `webhookBase64` ainda false, tenta próximo formato.
+
+---
+
+## Ação G — Force reconnect de instância em estado inconsistente
+
+**Quando:** instância em estado `ativo=close` mas `state=open` (ou vice-versa). Sintoma: comandos `DELETE /instance/logout/NAME` retornam `500 "Connection Closed"` e `DELETE /instance/delete/NAME` retornam `400 "[object Object]"`.
+
+**Pré-validação:** confirma que é mesmo estado inconsistente:
+
+```bash
+ssh root@104.207.145.47 'KEY=$(grep EVO_API_KEY /opt/inkflow/.env | cut -d= -f2); curl -sS "http://172.18.0.4:8080/instance/connectionState/NAME" -H "apikey: $KEY"'
+```
+
+Compara com `fetchInstances` — se `connectionStatus` ≠ `state`, é o caso.
+
+**Solução — bridge DB cleanup (endpoint admin já deployado):**
+
+```bash
+curl -X POST "https://evo.inkflowbrasil.com/__admin__/cleanup" \
+  -H "x-admin-secret: $EVO_DB_CLEANUP_SECRET" \
+  -d '{"instance_name":"NAME"}'
+```
+
+`EVO_DB_CLEANUP_SECRET` está no Bitwarden (item `inkflow-evolution`, custom field `EVO_DB_CLEANUP_SECRET`). NÃO ler em plaintext do `/opt/inkflow/.env` — pedir ao founder via Telegram ou consultar Bitwarden.
+
+**Pós-bridge:** verifica se instância foi removida com `fetchInstances`. Se sim, recriar normalmente via `/api/create-tenant` ou flow de onboarding.
+
+---
 
 ## Verificação
 
