@@ -8,7 +8,7 @@ related: [index.md, matrix.md, incident-response.md, ../runbooks/deploy.md, ../r
 
 # Release Protocol
 
-Como publicar mudança em prod. Entry point: `/deploy-check` (slash existente) — esse documento expande os critérios que o slash valida. Operação atomica de **deploy** mora em `../runbooks/deploy.md`; este doc é o ritual organizacional ao redor (versionamento, changelog, comunicação, janelas).
+Como publicar mudança em prod: ritual organizacional ao redor do deploy (versionamento, changelog, comunicação, janelas). Operação atômica de **deploy** propriamente dita mora em `../runbooks/deploy.md`.
 
 ## 7.1 Versionamento por componente
 
@@ -51,7 +51,7 @@ Formato:
 **Action requerida do tenant:** nenhum
 ```
 
-Localização: `inkflow-saas/CHANGELOG.md` (raiz do repo). Atualizado no merge da PR de release. Quando tiver cliente pagante: replicar trecho relevante em comunicação ao cliente.
+Localização: `CHANGELOG.md` (raiz do repo `inkflow-saas`). Atualizado no merge da PR de release. Quando tiver cliente pagante: replicar trecho relevante em comunicação ao cliente.
 
 ## 7.4 Comunicação (estado MVP)
 

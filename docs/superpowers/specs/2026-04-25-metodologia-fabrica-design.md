@@ -213,7 +213,7 @@ Formato:
 **Action requerida do tenant:** nenhum
 ```
 
-Localização: `inkflow-saas/CHANGELOG.md` (raiz do repo). Atualizado no merge da PR de release. Quando tiver cliente pagante: replicar trecho relevante em comunicação ao cliente.
+Localização: `CHANGELOG.md` (raiz do repo `inkflow-saas`). Atualizado no merge da PR de release. Quando tiver cliente pagante: replicar trecho relevante em comunicação ao cliente.
 
 ### 7.4 Comunicação (estado MVP)
 
