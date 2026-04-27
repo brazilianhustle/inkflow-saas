@@ -54,3 +54,53 @@ test('module exports 7 named functions', () => {
   assert.equal(typeof sendTelegram, 'function');
   assert.equal(typeof sendPushover, 'function');
 });
+
+// dedupePolicy — 8 cases da tabela §6.2 do spec ——————————————————————————————
+
+const HOUR = 3600 * 1000;
+const NOW = new Date('2026-04-27T12:00:00Z').getTime();
+
+test('dedupe: current vazio + new warn → fire', () => {
+  const action = dedupePolicy(null, { severity: 'warn' }, { now: NOW });
+  assert.equal(action, 'fire');
+});
+
+test('dedupe: current vazio + new critical → fire', () => {
+  const action = dedupePolicy(null, { severity: 'critical' }, { now: NOW });
+  assert.equal(action, 'fire');
+});
+
+test('dedupe: same severity + last_alerted_at <24h → silent', () => {
+  const current = { severity: 'warn', last_alerted_at: new Date(NOW - 5 * HOUR).toISOString() };
+  const action = dedupePolicy(current, { severity: 'warn' }, { now: NOW });
+  assert.equal(action, 'silent');
+});
+
+test('dedupe: same severity + last_alerted_at >=24h → fire (lembrete)', () => {
+  const current = { severity: 'warn', last_alerted_at: new Date(NOW - 25 * HOUR).toISOString() };
+  const action = dedupePolicy(current, { severity: 'warn' }, { now: NOW });
+  assert.equal(action, 'fire');
+});
+
+test('dedupe: warn → critical → supersede', () => {
+  const current = { severity: 'warn', last_alerted_at: new Date(NOW - HOUR).toISOString() };
+  const action = dedupePolicy(current, { severity: 'critical' }, { now: NOW });
+  assert.equal(action, 'supersede');
+});
+
+test('dedupe: critical → warn → silent (não rebaixa)', () => {
+  const current = { severity: 'critical', last_alerted_at: new Date(NOW - HOUR).toISOString() };
+  const action = dedupePolicy(current, { severity: 'warn' }, { now: NOW });
+  assert.equal(action, 'silent');
+});
+
+test('dedupe: current existe + next clean → resolve', () => {
+  const current = { severity: 'warn', last_alerted_at: new Date(NOW - HOUR).toISOString() };
+  const action = dedupePolicy(current, { severity: 'clean' }, { now: NOW });
+  assert.equal(action, 'resolve');
+});
+
+test('dedupe: current vazio + next clean → no-op', () => {
+  const action = dedupePolicy(null, { severity: 'clean' }, { now: NOW });
+  assert.equal(action, 'no-op');
+});

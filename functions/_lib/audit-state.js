@@ -30,8 +30,30 @@ export async function insertEvent(supabase, evt) {
 
 // ── Dedupe policy (pure) ────────────────────────────────────────────────────
 
+const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+
 export function dedupePolicy(current, next, { now = Date.now() } = {}) {
-  throw new Error('not implemented');
+  const isOpen = (s) => s === 'warn' || s === 'critical';
+  const isClean = (s) => s === 'clean';
+
+  if (!current) {
+    if (isOpen(next.severity)) return 'fire';
+    return 'no-op';
+  }
+
+  if (isClean(next.severity)) return 'resolve';
+
+  if (current.severity === 'warn' && next.severity === 'critical') return 'supersede';
+
+  if (current.severity === 'critical' && next.severity === 'warn') return 'silent';
+
+  if (current.severity === next.severity) {
+    const lastAlert = current.last_alerted_at ? new Date(current.last_alerted_at).getTime() : 0;
+    const elapsed = now - lastAlert;
+    return elapsed >= TWENTY_FOUR_HOURS_MS ? 'fire' : 'silent';
+  }
+
+  return 'silent';
 }
 
 // ── Outbound alerts ─────────────────────────────────────────────────────────
