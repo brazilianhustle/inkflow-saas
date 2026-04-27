@@ -169,6 +169,60 @@ async function detectLayer2(env, fetchImpl) {
   return events;
 }
 
+// Layer 3: drift (opt-in) ───────────────────────────────────────────────────
+
+const TWENTY_FOUR_HOURS_MS = 24 * 3600 * 1000;
+
+async function fetchModifiedOn(url, headers, fetchImpl) {
+  try {
+    const res = await fetchImpl(url, { headers, signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return null;
+    const body = await res.json();
+    return body?.result?.latest_deployment?.modified_on || body?.result?.modified_on || null;
+  } catch {
+    return null;
+  }
+}
+
+async function detectLayer3(env, fetchImpl, now) {
+  if (env.AUDIT_KEY_EXPIRY_LAYER3 !== 'true') return [];
+  const token = env.CLOUDFLARE_API_TOKEN;
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+  if (!token || !accountId) return [];
+
+  const projectName = env.CF_PAGES_PROJECT_NAME || 'inkflow-saas';
+  const scriptName = env.CF_WORKER_SCRIPT_NAME || 'inkflow-cron';
+  const headers = { Authorization: `Bearer ${token}` };
+
+  const pagesUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`;
+  const workerUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${scriptName}`;
+
+  const [pagesIso, workerIso] = await Promise.all([
+    fetchModifiedOn(pagesUrl, headers, fetchImpl),
+    fetchModifiedOn(workerUrl, headers, fetchImpl),
+  ]);
+
+  if (!pagesIso || !workerIso) return [];
+
+  const diffMs = Math.abs(new Date(pagesIso).getTime() - new Date(workerIso).getTime());
+  if (diffMs <= TWENTY_FOUR_HOURS_MS) return [];
+
+  const diffHours = Math.round(diffMs / 3600000);
+  return [{
+    severity: 'warn',
+    payload: {
+      runbook_path: RUNBOOK_PATH,
+      suggested_subagent: SUGGESTED_SUBAGENT,
+      summary: `CF Pages vs Worker drift: ${diffHours}h gap`,
+      layer: 'drift',
+      diff_hours: diffHours,
+      pages_modified_at: pagesIso,
+      worker_modified_at: workerIso,
+    },
+    evidence: { pages_modified_on: pagesIso, worker_modified_on: workerIso, project: projectName, script: scriptName },
+  }];
+}
+
 // detect ────────────────────────────────────────────────────────────────────
 
 export async function detect({ env = {}, fetchImpl, now = Date.now() } = {}) {
@@ -176,6 +230,7 @@ export async function detect({ env = {}, fetchImpl, now = Date.now() } = {}) {
   events.push(...detectLayer1(env, now));
   if (fetchImpl) {
     events.push(...await detectLayer2(env, fetchImpl));
+    events.push(...await detectLayer3(env, fetchImpl, now));
   }
   return events;
 }

@@ -171,3 +171,74 @@ test('layer2: 500 from MERCADOPAGO → warn (transient, not critical)', async ()
   assert.equal(evt.severity, 'warn');
   assert.equal(evt.payload.status, 500);
 });
+
+// Layer 3 — drift (opt-in) ──────────────────────────────────────────────────
+
+const layer3Env = (extras = {}) => ({
+  CLOUDFLARE_API_TOKEN: 'cf-tok',
+  CLOUDFLARE_ACCOUNT_ID: 'acc-123',
+  AUDIT_KEY_EXPIRY_LAYER3: 'true',
+  ...extras,
+});
+
+function makeLayer3Fetch({ pagesModifiedAt, workerModifiedAt }) {
+  return makeFetchImpl([
+    ['/pages/projects/', {
+      ok: true, status: 200,
+      text: async () => JSON.stringify({ result: { latest_deployment: { modified_on: pagesModifiedAt } } }),
+      json: async () => ({ result: { latest_deployment: { modified_on: pagesModifiedAt } } }),
+    }],
+    ['/workers/scripts/', {
+      ok: true, status: 200,
+      text: async () => JSON.stringify({ result: { modified_on: workerModifiedAt } }),
+      json: async () => ({ result: { modified_on: workerModifiedAt } }),
+    }],
+    ['/user/tokens/verify', { ok: true, status: 200, text: async () => '{}' }],
+  ]);
+}
+
+test('layer3: flag missing → skip (no drift event)', async () => {
+  const fetchImpl = makeLayer3Fetch({
+    pagesModifiedAt: '2026-04-25T10:00:00Z',
+    workerModifiedAt: '2026-04-20T10:00:00Z',
+  });
+  const events = await detect({
+    env: { CLOUDFLARE_API_TOKEN: 'x', CLOUDFLARE_ACCOUNT_ID: 'acc' },
+    fetchImpl, now: NOW,
+  });
+  const drift = events.find((e) => e.payload?.layer === 'drift');
+  assert.equal(drift, undefined);
+});
+
+test('layer3: flag on + diff < 24h → no event', async () => {
+  const fetchImpl = makeLayer3Fetch({
+    pagesModifiedAt: '2026-04-27T08:00:00Z',
+    workerModifiedAt: '2026-04-27T06:00:00Z',
+  });
+  const events = await detect({ env: layer3Env(), fetchImpl, now: NOW });
+  const drift = events.find((e) => e.payload?.layer === 'drift');
+  assert.equal(drift, undefined);
+});
+
+test('layer3: flag on + diff > 24h → warn event', async () => {
+  const fetchImpl = makeLayer3Fetch({
+    pagesModifiedAt: '2026-04-27T08:00:00Z',
+    workerModifiedAt: '2026-04-25T08:00:00Z',
+  });
+  const events = await detect({ env: layer3Env(), fetchImpl, now: NOW });
+  const drift = events.find((e) => e.payload?.layer === 'drift');
+  assert.ok(drift, 'Drift event should exist');
+  assert.equal(drift.severity, 'warn');
+  assert.match(drift.payload.summary, /drift/i);
+  assert.ok(drift.payload.diff_hours);
+});
+
+test('layer3: flag on + token missing → skip silently (no crash)', async () => {
+  const fetchImpl = makeLayer3Fetch({ pagesModifiedAt: 'x', workerModifiedAt: 'y' });
+  const events = await detect({
+    env: { AUDIT_KEY_EXPIRY_LAYER3: 'true' },
+    fetchImpl, now: NOW,
+  });
+  const drift = events.find((e) => e.payload?.layer === 'drift');
+  assert.equal(drift, undefined);
+});
