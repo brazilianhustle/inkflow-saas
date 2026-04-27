@@ -103,6 +103,8 @@ Aparecem como `env.X` no código mas **não são secrets**. Listados aqui para e
 
 ### OpenAI / IA
 - `OPENAI_API_KEY` — usado pelo agent runtime / evals.
+- **Histórico de rotação:**
+  - **2026-04-26** — `OPENAI_API_KEY` rotacionada. Causa: vazamento em transcript Anthropic em 2026-04-25 (P1 backlog — 5 secrets expostos em chat durante leitura do `~/.zshrc`). Escopo do vazamento: chave geral financeira, qualquer um com acesso ao transcript poderia usar e cobrar a conta. Réplicas atualizadas: CF Pages env (`inkflow-saas` production) via `wrangler pages secret put` + redeploy via `gh workflow run deploy.yml --ref main`. Smoke direto contra `api.openai.com/v1/models` confirmou key válida. Smoke E2E WhatsApp bloqueado por bug separado de pipeline Evolution → n8n (P1 backlog próprio). Key antiga revogada manualmente em `platform.openai.com` após smoke direto passar. Dev local Keychain atualizado pelo founder. Operação executada via DoD test do `deploy-engineer` agent (Sub-projeto 2 T12) — primeiro write-em-prod via subagent_type com gates ✅ explícitos.
 
 ### Cloudflare (admin / deploy)
 - `CLOUDFLARE_API_TOKEN` (uso geral) — usado por `wrangler` local, `scripts/preflight-envvars.sh`, MCP Cloudflare. **TTL 90d**, política do dashboard CF. Nome no Bitwarden: `cloudflare-agent-token`.
