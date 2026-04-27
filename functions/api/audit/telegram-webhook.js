@@ -87,14 +87,16 @@ async function handleRequest(context) {
     'Content-Type': 'application/json',
   };
 
-  // Resolver UUID por prefix (apenas eventos abertos pra evitar colisão histórica)
-  const lookupUrl = `${SUPABASE_URL}/rest/v1/audit_events?id=like.${idShort}*&resolved_at=is.null&select=id,auditor,severity&limit=2`;
-  let lookupRes;
+  // DEBUG: testar fetch a host externo SIMPLES pra ver se fetch em si funciona
+  let testRes;
   try {
-    lookupRes = await fetch(lookupUrl, { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } });
+    testRes = await fetch('https://api.github.com/zen');
   } catch (e) {
-    return json({ error: 'fetch_threw', name: String(e?.name), message: String(e?.message), stack: String(e?.stack || '').slice(0, 600) }, 500);
+    return json({ error: 'fetch_external_threw', name: String(e?.name), message: String(e?.message) }, 500);
   }
+  const testText = await testRes.text();
+  return json({ debug: 'fetch_external_ok', status: testRes.status, body: testText }, 200);
+  let lookupRes;
   if (!lookupRes.ok) {
     console.error('telegram-webhook: lookup failed:', lookupRes.status);
     return json({ error: 'lookup_failed' }, 502);
