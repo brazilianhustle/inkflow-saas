@@ -62,3 +62,32 @@ test('returns 0 when no critical sem ack >2h', async () => {
   const data = await res.json();
   assert.equal(data.escalated_count, 0);
 });
+
+test('separates skipped (config missing) from error in response shape', async () => {
+  let pushoverCalled = false;
+  globalThis.fetch = async (url, opts) => {
+    if (String(url).includes('/rest/v1/audit_events') && (opts.method || 'GET') === 'GET') {
+      return { ok: true, status: 200, json: async () => [
+        { id: 'evt1', auditor: 'key-expiry', payload: { summary: 's1' } },
+      ]};
+    }
+    if (String(url).includes('api.pushover.net')) {
+      pushoverCalled = true;
+      return { ok: true };
+    }
+    if (String(url).includes('/rest/v1/audit_events') && opts.method === 'PATCH') {
+      return { ok: true, status: 204 };
+    }
+    throw new Error(`unmocked: ${url}`);
+  };
+  // ENV without PUSHOVER_APP_TOKEN — sendPushover returns {ok:false, skipped:true}
+  const envNoPushover = { CRON_SECRET: 'cron-secret', SUPABASE_SERVICE_KEY: 'sb-key' };
+  const res = await onRequest({ request: reqAuthed(), env: envNoPushover });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.escalated_count, 0);
+  assert.equal(data.skipped_count, 1);
+  assert.equal(data.error_count, 0);
+  assert.equal(data.candidates, 1);
+  assert.equal(pushoverCalled, false, 'pushover should NOT be called when config missing');
+});

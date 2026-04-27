@@ -44,10 +44,16 @@ export async function onRequest(context) {
   const msg = update?.message;
   if (!msg || !msg.text) return json({ skipped: 'no_text' });
 
-  // Auth #2: admin whitelist
-  const fromId = String(msg.from?.id || '');
-  if (fromId !== String(env.TELEGRAM_ADMIN_USER_ID)) {
-    console.warn(`telegram-webhook: non-admin from.id=${fromId}, ignorando`);
+  // Auth #2: admin whitelist (from.id deve ser positivo + env não-vazio)
+  const adminId = String(env.TELEGRAM_ADMIN_USER_ID || '').trim();
+  if (!adminId) {
+    console.error('telegram-webhook: TELEGRAM_ADMIN_USER_ID ausente no env, bloqueando');
+    return json({ error: 'config_missing' }, 503);
+  }
+  const rawFromId = msg.from?.id;
+  const fromId = Number.isInteger(rawFromId) && rawFromId > 0 ? String(rawFromId) : null;
+  if (!fromId || fromId !== adminId) {
+    console.warn(`telegram-webhook: non-admin from.id=${rawFromId}, ignorando`);
     return json({ skipped: 'not_admin' });
   }
 
@@ -68,7 +74,10 @@ export async function onRequest(context) {
 
   // Resolver UUID por prefix (apenas eventos abertos pra evitar colisão histórica)
   const lookupUrl = `${SUPABASE_URL}/rest/v1/audit_events?id=like.${idShort}*&resolved_at=is.null&select=id,auditor,severity&limit=2`;
-  const lookupRes = await fetch(lookupUrl, { headers: sbHeaders });
+  const lookupRes = await fetch(lookupUrl, {
+    headers: sbHeaders,
+    signal: AbortSignal.timeout(8000),
+  });
   if (!lookupRes.ok) {
     console.error('telegram-webhook: lookup failed:', lookupRes.status);
     return json({ error: 'lookup_failed' }, 502);
@@ -93,6 +102,7 @@ export async function onRequest(context) {
       acknowledged_at: new Date().toISOString(),
       acknowledged_by: fromId,
     }),
+    signal: AbortSignal.timeout(8000),
   });
   if (!patchRes.ok) {
     console.error('telegram-webhook: patch failed:', patchRes.status);

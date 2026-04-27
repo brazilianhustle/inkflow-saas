@@ -40,7 +40,10 @@ export async function onRequest(context) {
     + `&detected_at=lt.${cutoff}`
     + `&select=id,auditor,payload,evidence,severity,detected_at`;
 
-  const queryRes = await fetch(url, { headers: sbHeaders });
+  const queryRes = await fetch(url, {
+    headers: sbHeaders,
+    signal: AbortSignal.timeout(8000),
+  });
   if (!queryRes.ok) {
     console.error('audit-escalate: query failed:', queryRes.status);
     return json({ error: 'query_failed' }, 502);
@@ -48,19 +51,38 @@ export async function onRequest(context) {
   const rows = await queryRes.json();
 
   let escalated = 0;
+  let skippedConfig = 0;
+  let errored = 0;
   for (const evt of rows) {
     const result = await sendPushover(env, evt);
+    if (result.skipped) {
+      skippedConfig += 1;
+      console.warn(`audit-escalate: pushover skipped for ${evt.id} — PUSHOVER_* env ausente`);
+      continue;
+    }
     if (!result.ok) {
-      console.error(`audit-escalate: pushover failed for ${evt.id}:`, result.error || result.skipped);
+      errored += 1;
+      console.error(`audit-escalate: pushover error for ${evt.id}:`, result.error);
       continue;
     }
     const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/audit_events?id=eq.${evt.id}`, {
       method: 'PATCH',
       headers: sbHeaders,
       body: JSON.stringify({ escalated_at: new Date().toISOString() }),
+      signal: AbortSignal.timeout(8000),
     });
     if (patchRes.ok) escalated += 1;
+    else {
+      errored += 1;
+      console.error(`audit-escalate: patch failed for ${evt.id}:`, patchRes.status);
+    }
   }
 
-  return json({ ok: true, escalated_count: escalated, candidates: rows.length });
+  return json({
+    ok: true,
+    escalated_count: escalated,
+    skipped_count: skippedConfig,
+    error_count: errored,
+    candidates: rows.length,
+  });
 }

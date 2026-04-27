@@ -101,3 +101,29 @@ test('ack with unknown id_short returns 200 with not_found', async () => {
   const data = await res.json();
   assert.equal(data.skipped, 'not_found');
 });
+
+test('returns 503 when TELEGRAM_ADMIN_USER_ID is empty', async () => {
+  globalThis.fetch = async () => { throw new Error('should not be called'); };
+  const envEmpty = { ...ENV, TELEGRAM_ADMIN_USER_ID: '' };
+  const req = makeRequest({
+    secretHeader: 'whsec',
+    body: { message: { from: { id: 12345 }, text: 'ack a3f1b9c2' } },
+  });
+  const res = await onRequest({ request: req, env: envEmpty });
+  assert.equal(res.status, 503);
+  const data = await res.json();
+  assert.equal(data.error, 'config_missing');
+});
+
+test('returns 200 noop when from.id is 0 even if TELEGRAM_ADMIN_USER_ID matches', async () => {
+  globalThis.fetch = async () => { throw new Error('should not be called'); };
+  const envZero = { ...ENV, TELEGRAM_ADMIN_USER_ID: '0' };
+  const req = makeRequest({
+    secretHeader: 'whsec',
+    body: { message: { from: { id: 0 }, text: 'ack a3f1b9c2' } },
+  });
+  const res = await onRequest({ request: req, env: envZero });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.skipped, 'not_admin');
+});

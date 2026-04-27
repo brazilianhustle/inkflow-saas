@@ -35,8 +35,16 @@ export async function onRequest(context) {
   const runsUrl = `${SUPABASE_URL}/rest/v1/audit_runs?started_at=lt.${runsCutoff}`;
 
   const [eventsRes, runsRes] = await Promise.all([
-    fetch(eventsUrl, { method: 'DELETE', headers: sbHeaders }),
-    fetch(runsUrl, { method: 'DELETE', headers: sbHeaders }),
+    fetch(eventsUrl, {
+      method: 'DELETE',
+      headers: sbHeaders,
+      signal: AbortSignal.timeout(8000),
+    }),
+    fetch(runsUrl, {
+      method: 'DELETE',
+      headers: sbHeaders,
+      signal: AbortSignal.timeout(8000),
+    }),
   ]);
 
   return json({
