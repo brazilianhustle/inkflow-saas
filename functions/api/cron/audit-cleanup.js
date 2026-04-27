@@ -4,6 +4,12 @@
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 
+function timeoutSignal(ms) {
+  const c = new AbortController();
+  setTimeout(() => c.abort(), ms);
+  return c.signal;
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -38,12 +44,12 @@ export async function onRequest(context) {
     fetch(eventsUrl, {
       method: 'DELETE',
       headers: sbHeaders,
-      signal: AbortSignal.timeout(8000),
+      signal: timeoutSignal(8000),
     }),
     fetch(runsUrl, {
       method: 'DELETE',
       headers: sbHeaders,
-      signal: AbortSignal.timeout(8000),
+      signal: timeoutSignal(8000),
     }),
   ]);
 

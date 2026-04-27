@@ -7,6 +7,12 @@ import { sendPushover } from '../../_lib/audit-state.js';
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 
+function timeoutSignal(ms) {
+  const c = new AbortController();
+  setTimeout(() => c.abort(), ms);
+  return c.signal;
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -42,7 +48,7 @@ export async function onRequest(context) {
 
   const queryRes = await fetch(url, {
     headers: sbHeaders,
-    signal: AbortSignal.timeout(8000),
+    signal: timeoutSignal(8000),
   });
   if (!queryRes.ok) {
     console.error('audit-escalate: query failed:', queryRes.status);
@@ -69,7 +75,7 @@ export async function onRequest(context) {
       method: 'PATCH',
       headers: sbHeaders,
       body: JSON.stringify({ escalated_at: new Date().toISOString() }),
-      signal: AbortSignal.timeout(8000),
+      signal: timeoutSignal(8000),
     });
     if (patchRes.ok) escalated += 1;
     else {

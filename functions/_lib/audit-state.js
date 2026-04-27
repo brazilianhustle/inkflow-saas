@@ -8,6 +8,12 @@
 
 export const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 
+function timeoutSignal(ms) {
+  const c = new AbortController();
+  setTimeout(() => c.abort(), ms);
+  return c.signal;
+}
+
 function sbHeaders(supabase, extra = {}) {
   return {
     apikey: supabase.key,
@@ -136,7 +142,7 @@ export async function sendTelegram(env, event) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, text }),
-      signal: AbortSignal.timeout(5000),
+      signal: timeoutSignal(5000),
     });
     return { ok: res.ok };
   } catch (e) {
@@ -167,7 +173,7 @@ export async function sendPushover(env, event) {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
-      signal: AbortSignal.timeout(5000),
+      signal: timeoutSignal(5000),
     });
     return { ok: res.ok };
   } catch (e) {

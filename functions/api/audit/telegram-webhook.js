@@ -7,6 +7,12 @@
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 
+function timeoutSignal(ms) {
+  const c = new AbortController();
+  setTimeout(() => c.abort(), ms);
+  return c.signal;
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -21,7 +27,7 @@ async function sendBotConfirmation(env, text) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text }),
-      signal: AbortSignal.timeout(5000),
+      signal: timeoutSignal(5000),
     });
   } catch (e) {
     console.error('telegram-webhook: confirmation send failed:', e.message);
@@ -76,7 +82,7 @@ export async function onRequest(context) {
   const lookupUrl = `${SUPABASE_URL}/rest/v1/audit_events?id=like.${idShort}*&resolved_at=is.null&select=id,auditor,severity&limit=2`;
   const lookupRes = await fetch(lookupUrl, {
     headers: sbHeaders,
-    signal: AbortSignal.timeout(8000),
+    signal: timeoutSignal(8000),
   });
   if (!lookupRes.ok) {
     console.error('telegram-webhook: lookup failed:', lookupRes.status);
@@ -102,7 +108,7 @@ export async function onRequest(context) {
       acknowledged_at: new Date().toISOString(),
       acknowledged_by: fromId,
     }),
-    signal: AbortSignal.timeout(8000),
+    signal: timeoutSignal(8000),
   });
   if (!patchRes.ok) {
     console.error('telegram-webhook: patch failed:', patchRes.status);
