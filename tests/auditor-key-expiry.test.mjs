@@ -56,3 +56,96 @@ test('layer1: env missing → skip (no TTL event)', async () => {
   const ttl = events.find((e) => e.payload?.layer === 'ttl');
   assert.equal(ttl, undefined);
 });
+
+// Layer 2 — self-check ──────────────────────────────────────────────────────
+
+function makeFetchImpl(routes) {
+  return async (url, opts) => {
+    for (const [pattern, response] of routes) {
+      if (url.includes(pattern)) {
+        if (response instanceof Error) throw response;
+        return response;
+      }
+    }
+    return { ok: true, status: 200, text: async () => '{}', json: async () => ({}) };
+  };
+}
+
+const fullEnv = {
+  CLOUDFLARE_API_TOKEN: 'cf-tok',
+  CF_API_TOKEN: 'cf-gha-tok',
+  MP_ACCESS_TOKEN: 'mp-tok',
+  TELEGRAM_BOT_TOKEN: 'tg-tok',
+  OPENAI_API_KEY: 'oa-key',
+  PUSHOVER_APP_TOKEN: 'po-app',
+  PUSHOVER_USER_KEY: 'po-user',
+  SUPABASE_SERVICE_KEY: 'sb-key',
+  EVO_GLOBAL_KEY: 'evo-key',
+};
+
+test('layer2: all 8 self-checks return 200 → no critical events', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['cloudflare.com', { ok: true, status: 200, text: async () => '{"result":{"status":"active"}}' }],
+    ['mercadopago.com', { ok: true, status: 200, text: async () => '{"id":1}' }],
+    ['api.telegram.org', { ok: true, status: 200, text: async () => '{"ok":true}' }],
+    ['api.openai.com', { ok: true, status: 200, text: async () => '{"data":[]}' }],
+    ['api.pushover.net', { ok: true, status: 200, text: async () => '{"status":1}' }],
+    ['supabase.co', { ok: true, status: 200, text: async () => '[]' }],
+    ['evo.inkflowbrasil.com', { ok: true, status: 200, text: async () => '[]' }],
+  ]);
+  const events = await detect({ env: fullEnv, fetchImpl, now: NOW });
+  const layer2Critical = events.filter((e) => e.payload?.layer === 'self-check' && e.severity === 'critical');
+  assert.equal(layer2Critical.length, 0);
+});
+
+test('layer2: 401 from CLOUDFLARE → critical event with correct payload', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['cloudflare.com', { ok: false, status: 401, text: async () => '{"errors":[{"code":1000}]}' }],
+  ]);
+  const events = await detect({ env: { CLOUDFLARE_API_TOKEN: 'invalid' }, fetchImpl, now: NOW });
+  const evt = events.find((e) => e.payload?.layer === 'self-check' && e.payload?.secret_name === 'CLOUDFLARE_API_TOKEN');
+  assert.ok(evt, 'Critical event for CF should exist');
+  assert.equal(evt.severity, 'critical');
+  assert.equal(evt.payload.suggested_subagent, 'deploy-engineer');
+  assert.equal(evt.payload.runbook_path, 'docs/canonical/runbooks/secrets-expired.md');
+});
+
+test('layer2: missing env var → skip that secret silently', async () => {
+  const fetchImpl = makeFetchImpl([]);
+  const events = await detect({ env: {}, fetchImpl, now: NOW });
+  const layer2 = events.filter((e) => e.payload?.layer === 'self-check');
+  assert.equal(layer2.length, 0);
+});
+
+test('layer2: network error → warn (transient)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['mercadopago.com', new Error('ECONNRESET')],
+  ]);
+  const events = await detect({ env: { MP_ACCESS_TOKEN: 'mp-tok' }, fetchImpl, now: NOW });
+  const evt = events.find((e) => e.payload?.layer === 'self-check' && e.payload?.secret_name === 'MP_ACCESS_TOKEN');
+  assert.equal(evt.severity, 'warn');
+  assert.match(evt.payload.summary, /transient|network|error/i);
+});
+
+test('layer2: 401 in two secrets → two critical events', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['cloudflare.com', { ok: false, status: 401, text: async () => '{}' }],
+    ['mercadopago.com', { ok: false, status: 401, text: async () => '{}' }],
+  ]);
+  const events = await detect({
+    env: { CLOUDFLARE_API_TOKEN: 'x', MP_ACCESS_TOKEN: 'y' },
+    fetchImpl, now: NOW,
+  });
+  const criticals = events.filter((e) => e.payload?.layer === 'self-check' && e.severity === 'critical');
+  assert.equal(criticals.length, 2);
+});
+
+test('layer2: PUSHOVER without USER_KEY → skip (incomplete config)', async () => {
+  const fetchImpl = makeFetchImpl([]);
+  const events = await detect({
+    env: { PUSHOVER_APP_TOKEN: 'po-app' },
+    fetchImpl, now: NOW,
+  });
+  const evt = events.find((e) => e.payload?.secret_name === 'PUSHOVER_APP_TOKEN');
+  assert.equal(evt, undefined);
+});
