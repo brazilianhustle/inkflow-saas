@@ -35,6 +35,15 @@ async function sendBotConfirmation(env, text) {
 }
 
 export async function onRequest(context) {
+  try {
+    return await handleRequest(context);
+  } catch (e) {
+    console.error('telegram-webhook UNCAUGHT:', e?.message, e?.stack);
+    return json({ error: 'handler_crash', message: String(e?.message || e), stack: String(e?.stack || '').slice(0, 500) }, 500);
+  }
+}
+
+async function handleRequest(context) {
   const { request, env } = context;
   if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
 
@@ -80,10 +89,7 @@ export async function onRequest(context) {
 
   // Resolver UUID por prefix (apenas eventos abertos pra evitar colisão histórica)
   const lookupUrl = `${SUPABASE_URL}/rest/v1/audit_events?id=like.${idShort}*&resolved_at=is.null&select=id,auditor,severity&limit=2`;
-  const lookupRes = await fetch(lookupUrl, {
-    headers: sbHeaders,
-    signal: timeoutSignal(8000),
-  });
+  const lookupRes = await fetch(lookupUrl, { headers: sbHeaders });
   if (!lookupRes.ok) {
     console.error('telegram-webhook: lookup failed:', lookupRes.status);
     return json({ error: 'lookup_failed' }, 502);
