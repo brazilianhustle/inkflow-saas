@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-25
+last_reviewed: 2026-04-27
 owner: leandro
 status: stable
 related: [stack.md, runbooks/outage-wa.md, runbooks/db-indisponivel.md]
@@ -27,29 +27,32 @@ VPS dedicado que roda Evolution API + Postgres dela + nginx. Único serviço aut
 
 ## Cloudflare Workers (`inkflow-cron`)
 
-CF Worker dispatcher dos crons. Plano atual: `[confirmar — Free ou Workers Paid $5/mês]`.
+CF Worker dispatcher dos crons. **Plano atual: Workers Paid ($5/mês, recorrente, próxima renovação 2026-04-30).**
 
 | Recurso | Limite plano atual | Threshold warn | Threshold critical | Como medir |
 |---|---|---|---|---|
-| CPU time / req | `[confirmar — 10ms free, 30ms paid Bundled]` | 80% do limite | 95% | observability dashboard |
+| CPU time / req | 30s (Paid Bundled) | 80% do limite | 95% | observability dashboard |
 | Subrequests / req | 50 (paid Bundled) ou 1000 (Unbound) | 30 | 45 | observability |
-| Requests / dia | `[confirmar — 100k free, 10M+ paid]` | 80% | 95% | dashboard analytics |
+| Requests / dia | 10M+ (Paid) | 80% | 95% | dashboard analytics |
 | Cron triggers / dia | conforme schedule (`cron-worker/wrangler.toml`) | n/a | n/a | logs Worker |
+| Cron triggers / Worker | **30 (cap Paid)** | n/a | aproximação do cap | wrangler.toml + dashboard |
+
+> **Cron triggers em uso:** atualmente **4** (`expira-trial`, `cleanup-tenants`, `reset-agendamentos`, `monitor-whatsapp`). Sub-projeto 3 (Auditores) adicionará mais 2, totalizando **6** — folga grande até o cap de 30.
 
 **Dashboard:** CF dashboard → Workers & Pages → `inkflow-cron` → Metrics
 **Account ID:** `1bea7a6f2e41f53d5687b29ec0bd6fec`
 
 ## Cloudflare Pages (`inkflow-saas`)
 
-Site + APIs (`/api/*` rodando como Pages Functions). Plano: `[confirmar — Free ou Pro]`.
+Site + APIs (`/api/*` rodando como Pages Functions). **Plano atual: Free** (não há subscription `Pages Pro` ativa — billing dashboard 2026-04-27 lista apenas `Workers Paid` como recorrente; R2, Teams, Images/Stream estão em tier Free $0/mo).
 
 | Recurso | Limite | Threshold warn | Threshold critical | Como medir |
 |---|---|---|---|---|
-| Builds / mês | `[confirmar — 500 free, 5000 pro]` | 70% | 90% | dashboard |
+| Builds / mês | 500 (Free) | 70% | 90% | dashboard |
 | Bandwidth | `unlimited` | n/a | n/a | dashboard |
-| Functions invocações / dia | `[confirmar — 100k free, 10M+ paid]` | 80% | 95% | dashboard |
-| Functions CPU time / req | 10ms free, 30ms paid | 80% | 95% | observability |
-| Concurrent builds | 1 free, 5 pro | n/a (fila) | builds presos >30 min | dashboard |
+| Functions invocações / dia | 100k (Free) | 80% | 95% | dashboard |
+| Functions CPU time / req | 10ms (Free) | 80% | 95% | observability |
+| Concurrent builds | 1 (Free) | n/a (fila) | builds presos >30 min | dashboard |
 
 **Dashboard:** CF dashboard → Workers & Pages → `inkflow-saas` → Settings/Metrics
 
