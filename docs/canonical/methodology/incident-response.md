@@ -51,3 +51,9 @@ Alinha com a do `runbooks/README.md`. Severity define **tempo de resposta espera
 | **MailerLite block rate alto** (entrega quebrada — afeta funil) | _gap registrado_ | P3 |
 
 Os 6 gaps ficam registrados em `[[InkFlow — Pendências (backlog)]]` com prioridades diferenciadas (ver §11). Cada um vira trabalho próprio quando o cenário ocorrer e a resposta ad-hoc não for óbvia em 5 min (regra do `runbooks/README.md`). **Não** são trabalho desse spec.
+
+### Auditores em prod (cross-ref)
+
+Auditores que detectam sintomas mapeados em §6.3 e disparam alerta com `payload.runbook_path` apontando pra fonte única acima:
+
+- **key-expiry** (2026-04-27): detecta secrets expirando ou inválidos via TTL/self-check/drift. Alerta `[critical] [key-expiry]` → seguir [secrets-expired.md](../runbooks/secrets-expired.md). Doc canônico: [auditores.md#key-expiry](../auditores.md#key-expiry).
