@@ -279,6 +279,63 @@ curl -X POST "https://evo.inkflowbrasil.com/__admin__/cleanup" \
 
 ---
 
+## Ação H — Reverter webhook config drift (URL pública sobrescrevendo URL Docker interna)
+
+**Quando:** Evolution log mostra `WebhookController ERROR ... timeout of 60000ms exceeded ... url: https://n8n.inkflowbrasil.com/webhook/inkflow` mas o pipeline deveria estar usando URL Docker interna `http://inkflow-n8n-1:5678/webhook/inkflow`. Sintoma: bot mudo apesar de instância `connectionStatus=open` e n8n workflow `active=true`.
+
+**Causa-raiz:** containers Docker não conseguem alcançar o IP público do próprio VPS via DNS (hairpin NAT). URL pública do n8n resolve pra IP do VPS → request sai e tenta voltar = timeout. URL interna (Docker hostname) é direta e confiável.
+
+**Pré-validação — confirma drift:**
+
+```bash
+ssh root@104.207.145.47 'EVO_KEY=$(docker exec inkflow-evolution-1 printenv AUTHENTICATION_API_KEY); curl -sS http://172.18.0.4:8080/webhook/find/<INSTANCE_NAME> -H "apikey: $EVO_KEY" | jq .url'
+```
+
+Se retorna `"https://n8n.inkflowbrasil.com/webhook/inkflow"` → drift confirmado, segue.
+Se retorna `"http://inkflow-n8n-1:5678/webhook/inkflow"` → não é esse problema.
+
+**Hotfix imediato — UPDATE direto via SQL (Evolution API tem chance de re-drift; SQL pega fixo):**
+
+```bash
+cat > /tmp/evo_fix.sql <<'SQL'
+UPDATE "Webhook" SET url='http://inkflow-n8n-1:5678/webhook/inkflow', "updatedAt"=NOW()
+WHERE "instanceId" = (SELECT id FROM "Instance" WHERE name='<INSTANCE_NAME>');
+SELECT i.name, w.url, w."updatedAt" FROM "Webhook" w JOIN "Instance" i ON i.id=w."instanceId";
+SQL
+
+scp -q /tmp/evo_fix.sql root@104.207.145.47:/tmp/evo_fix.sql
+ssh root@104.207.145.47 '
+DB_PASS_E=$(docker exec inkflow-evolution-1 printenv DATABASE_CONNECTION_URI 2>/dev/null | sed -E "s|.*://[^:]+:([^@]+)@.*|\1|" | head -c 50)
+DB_USER_E=$(docker exec inkflow-evolution-1 printenv DATABASE_CONNECTION_URI 2>/dev/null | sed -E "s|.*://([^:]+):.*|\1|")
+DB_NAME_E=$(docker exec inkflow-evolution-1 printenv DATABASE_CONNECTION_URI 2>/dev/null | sed -E "s|.*/([^?]+).*|\1|")
+docker cp /tmp/evo_fix.sql inkflow-postgres-1:/tmp/evo_fix.sql
+docker exec -e PGPASSWORD="$DB_PASS_E" inkflow-postgres-1 psql -U "$DB_USER_E" -d "$DB_NAME_E" -f /tmp/evo_fix.sql
+'
+```
+
+Substituir `<INSTANCE_NAME>` antes de rodar.
+
+**Pré-requisito permanente (evita drift em instâncias futuras):**
+
+CF Pages env var `N8N_WEBHOOK_URL` precisa estar = `http://inkflow-n8n-1:5678/webhook/inkflow` (não a URL pública). Verificar com `npx wrangler pages secret list --project-name=inkflow-saas`. Se mostrar valor errado, atualizar via `npx wrangler pages secret put N8N_WEBHOOK_URL --project-name=inkflow-saas`. Sem deploy needed (Pages Functions lê on-demand).
+
+**Validação pós-fix:**
+
+```bash
+# Polling 30s — confirma config persistente
+for i in 1 2 3 4 5 6; do
+  ssh root@104.207.145.47 'EVO_KEY=$(docker exec inkflow-evolution-1 printenv AUTHENTICATION_API_KEY); curl -sS http://172.18.0.4:8080/webhook/find/<INSTANCE_NAME> -H "apikey: $EVO_KEY" | jq -r ".url"'
+  sleep 5
+done
+# Esperado: 6 leituras consecutivas com URL interna
+```
+
+Smoke E2E real: enviar mensagem WhatsApp pra instância. Verificar Evolution log mostra `WebhookController LOG` (não `ERROR`) com `url: http://inkflow-n8n-1:5678/webhook/inkflow`.
+
+**Mistério aberto (P1 backlog):** identificar quem causa drift (Setting + Webhook tables atualizados no mesmo segundo). Suspeitos descartados: monitor-whatsapp cron, VPS crontab, admin-bridge container. Próxima vez que ocorrer: capturar `tcpdump` na rede Docker no momento do drift pra ver fonte da chamada `/webhook/set`.
+
+---
+
 ## Verificação
 
 ```bash
