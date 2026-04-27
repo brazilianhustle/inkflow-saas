@@ -49,6 +49,16 @@ Cada agent valida no pre-flight checklist:
 
 **Em dúvida sobre classificação, default = destrutiva.** Falso-positivo (pedir ✅ à toa) custa 1 ping. Falso-negativo (executar destrutivo sem ✅) custa incidente.
 
+## Mapping auditor → agent
+
+Auditores em prod sugerem qual subagent é especialista no domínio do alerta. Founder vê `payload.suggested_subagent` no Telegram e roteia.
+
+| Auditor | Suggested subagent | Doctrine reason |
+|---|---|---|
+| `key-expiry` | `deploy-engineer` | Secrets vivem em CF Pages env; rotação envolve `wrangler` + GHA Secrets. Domain match. |
+
+Doc canonical dos auditores: [`docs/canonical/auditores.md`](../../docs/canonical/auditores.md).
+
 ## Histórico de promoções de autonomia
 
 (vazio — todos os agents operam em autonomia média (b). Promoção pra autonomia (a) — execução sem aprovação prévia em ações reversíveis e baixo blast radius — requer >30d sem incidentes do agent específico + decisão consciente registrada em `docs/canonical/decisions/`.)
