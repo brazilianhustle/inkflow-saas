@@ -87,15 +87,17 @@ async function handleRequest(context) {
     'Content-Type': 'application/json',
   };
 
-  // DEBUG: testar fetch a host externo SIMPLES pra ver se fetch em si funciona
-  let testRes;
+  // DEBUG: testar fetch a Supabase SEM wildcard '*' pra ver se eh isso
+  let supabaseTrivial;
   try {
-    testRes = await fetch('https://api.github.com/zen');
+    supabaseTrivial = await fetch(`${SUPABASE_URL}/rest/v1/audit_events?limit=1&select=id`, {
+      headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` },
+    });
   } catch (e) {
-    return json({ error: 'fetch_external_threw', name: String(e?.name), message: String(e?.message) }, 500);
+    return json({ error: 'supabase_trivial_threw', name: String(e?.name), message: String(e?.message) }, 500);
   }
-  const testText = await testRes.text();
-  return json({ debug: 'fetch_external_ok', status: testRes.status, body: testText }, 200);
+  const trivialBody = await supabaseTrivial.text();
+  return json({ debug: 'supabase_trivial_ok', status: supabaseTrivial.status, body: trivialBody.slice(0, 200) }, 200);
   let lookupRes;
   if (!lookupRes.ok) {
     console.error('telegram-webhook: lookup failed:', lookupRes.status);
