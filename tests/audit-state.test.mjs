@@ -104,3 +104,99 @@ test('dedupe: current vazio + next clean → no-op', () => {
   const action = dedupePolicy(null, { severity: 'clean' }, { now: NOW });
   assert.equal(action, 'no-op');
 });
+
+// Supabase REST helpers — startRun/endRun/getCurrentState/insertEvent ————————
+
+function makeFetchMock(responses) {
+  const calls = [];
+  globalThis.fetch = async (url, opts = {}) => {
+    calls.push({ url: String(url), method: opts.method || 'GET', body: opts.body });
+    const handler = responses.find((r) => r.match(String(url), opts));
+    if (!handler) throw new Error(`unmocked fetch: ${url}`);
+    return {
+      ok: handler.response.status < 400,
+      status: handler.response.status,
+      json: async () => handler.response.json,
+      text: async () => JSON.stringify(handler.response.json),
+    };
+  };
+  return { calls };
+}
+
+test('startRun INSERTs row in audit_runs and returns id', async () => {
+  const mock = makeFetchMock([
+    {
+      match: (url, o) => url.includes('/rest/v1/audit_runs') && o.method === 'POST',
+      response: { status: 201, json: [{ id: 'run-uuid-1' }] },
+    },
+  ]);
+  const runId = await startRun(FIXTURE_SUPABASE, 'key-expiry');
+  assert.equal(runId, 'run-uuid-1');
+  assert.equal(mock.calls.length, 1);
+  const body = JSON.parse(mock.calls[0].body);
+  assert.equal(body.auditor, 'key-expiry');
+  assert.equal(body.status, 'running');
+});
+
+test('endRun PATCHes audit_runs with status=success', async () => {
+  const mock = makeFetchMock([
+    {
+      match: (url, o) => url.includes('/rest/v1/audit_runs') && o.method === 'PATCH',
+      response: { status: 204, json: null },
+    },
+  ]);
+  await endRun(FIXTURE_SUPABASE, 'run-uuid-1', { status: 'success', eventsEmitted: 2 });
+  assert.equal(mock.calls.length, 1);
+  const body = JSON.parse(mock.calls[0].body);
+  assert.equal(body.status, 'success');
+  assert.equal(body.events_emitted, 2);
+  assert.ok(body.completed_at, 'completed_at should be set');
+});
+
+test('endRun PATCHes audit_runs with status=error and message', async () => {
+  const mock = makeFetchMock([
+    {
+      match: (url, o) => url.includes('/rest/v1/audit_runs') && o.method === 'PATCH',
+      response: { status: 204, json: null },
+    },
+  ]);
+  await endRun(FIXTURE_SUPABASE, 'run-uuid-1', { status: 'error', errorMessage: 'boom' });
+  const body = JSON.parse(mock.calls[0].body);
+  assert.equal(body.status, 'error');
+  assert.equal(body.error_message, 'boom');
+});
+
+test('getCurrentState returns row from audit_current_state view', async () => {
+  makeFetchMock([
+    {
+      match: (url) => url.includes('/rest/v1/audit_current_state'),
+      response: { status: 200, json: [{ auditor: 'key-expiry', severity: 'warn', event_id: 'e1' }] },
+    },
+  ]);
+  const state = await getCurrentState(FIXTURE_SUPABASE, 'key-expiry');
+  assert.equal(state.severity, 'warn');
+  assert.equal(state.event_id, 'e1');
+});
+
+test('getCurrentState returns null when no open event', async () => {
+  makeFetchMock([
+    { match: (url) => url.includes('/rest/v1/audit_current_state'), response: { status: 200, json: [] } },
+  ]);
+  const state = await getCurrentState(FIXTURE_SUPABASE, 'key-expiry');
+  assert.equal(state, null);
+});
+
+test('insertEvent POSTs to audit_events and returns inserted row', async () => {
+  const mock = makeFetchMock([
+    {
+      match: (url, o) => url.includes('/rest/v1/audit_events') && o.method === 'POST',
+      response: { status: 201, json: [{ ...FIXTURE_EVENT_WARN, id: 'evt-1' }] },
+    },
+  ]);
+  const inserted = await insertEvent(FIXTURE_SUPABASE, {
+    run_id: 'r1', auditor: 'key-expiry', severity: 'warn',
+    payload: { summary: 'x' }, evidence: null,
+  });
+  assert.equal(inserted.id, 'evt-1');
+  assert.equal(mock.calls.length, 1);
+});

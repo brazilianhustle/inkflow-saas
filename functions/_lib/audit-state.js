@@ -8,24 +8,58 @@
 
 export const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 
+function sbHeaders(supabase, extra = {}) {
+  return {
+    apikey: supabase.key,
+    Authorization: `Bearer ${supabase.key}`,
+    'Content-Type': 'application/json',
+    ...extra,
+  };
+}
+
 // ── Run lifecycle ───────────────────────────────────────────────────────────
 
 export async function startRun(supabase, auditor) {
-  throw new Error('not implemented');
+  const res = await fetch(`${supabase.url}/rest/v1/audit_runs`, {
+    method: 'POST',
+    headers: sbHeaders(supabase, { Prefer: 'return=representation' }),
+    body: JSON.stringify({ auditor, status: 'running' }),
+  });
+  if (!res.ok) throw new Error(`startRun failed: ${res.status} ${await res.text()}`);
+  const rows = await res.json();
+  return rows[0].id;
 }
 
-export async function endRun(supabase, runId, { status, eventsEmitted, errorMessage }) {
-  throw new Error('not implemented');
+export async function endRun(supabase, runId, { status, eventsEmitted = 0, errorMessage = null }) {
+  const patch = { status, completed_at: new Date().toISOString(), events_emitted: eventsEmitted };
+  if (errorMessage) patch.error_message = errorMessage;
+  const res = await fetch(`${supabase.url}/rest/v1/audit_runs?id=eq.${runId}`, {
+    method: 'PATCH',
+    headers: sbHeaders(supabase),
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) throw new Error(`endRun failed: ${res.status} ${await res.text()}`);
 }
 
 // ── Event state ─────────────────────────────────────────────────────────────
 
 export async function getCurrentState(supabase, auditor) {
-  throw new Error('not implemented');
+  const url = `${supabase.url}/rest/v1/audit_current_state?auditor=eq.${encodeURIComponent(auditor)}&limit=1`;
+  const res = await fetch(url, { headers: sbHeaders(supabase) });
+  if (!res.ok) throw new Error(`getCurrentState failed: ${res.status} ${await res.text()}`);
+  const rows = await res.json();
+  return rows.length === 0 ? null : rows[0];
 }
 
 export async function insertEvent(supabase, evt) {
-  throw new Error('not implemented');
+  const res = await fetch(`${supabase.url}/rest/v1/audit_events`, {
+    method: 'POST',
+    headers: sbHeaders(supabase, { Prefer: 'return=representation' }),
+    body: JSON.stringify(evt),
+  });
+  if (!res.ok) throw new Error(`insertEvent failed: ${res.status} ${await res.text()}`);
+  const rows = await res.json();
+  return rows[0];
 }
 
 // ── Dedupe policy (pure) ────────────────────────────────────────────────────
