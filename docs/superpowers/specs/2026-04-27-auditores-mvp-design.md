@@ -60,13 +60,19 @@ Caminho de evolução pós-MVP:
 
 ### 2.3. Categorias de severity (alinhada com `incident-response.md §6.2`)
 
-| Severity | Sintoma | Tempo de resposta | Ack |
-|---|---|---|---|
-| `warn` | Drift detectado, sem dano imediato | < 24h | Reply Telegram opcional |
-| `critical` | Dano em curso ou iminente | < 2h | **Reply Telegram obrigatório**, escala via Pushover se ausente |
-| `resolved` | Auditor próximo run em estado clean | n/a | Auto-resolve via `resolved_at=now()` |
+| Severity (auditor) | Mapping doctrine | Sintoma | Tempo de resposta | Ack |
+|---|---|---|---|---|
+| `warn` | **P2** (medium/low) | Drift detectado, sem dano imediato | < 24h | Reply Telegram opcional |
+| `critical` | **P1** (high) | Dano em curso ou iminente | < 2h | **Reply Telegram obrigatório**, escala via Pushover se ausente |
+| `resolved` | n/a | Auditor próximo run em estado clean | n/a | Auto-resolve via `resolved_at=now()` |
 
-**`info` removido** — spec-mestre §3 cita mas brainstorm 2026-04-27 cravou que info-only polui Telegram sem valor. Eventos info-equivalentes ficam em CF observability heartbeat, não em `audit_events`.
+**P0 não é coberto pelos auditores deste MVP.** Cenários P0 prototípicos (bot mudo, pagamento quebrado em janela <15min) ficam cobertos por instrumentação existente:
+- **Bot mudo:** `monitor-whatsapp` cron a cada 30min (já em prod) — disparo direto Telegram em outage.
+- **MP webhook silent <1h:** ainda não coberto — fica registrado como gap pós-MVP. `billing-flow` detecta com janela ≥6h (P1 timing), não <15min.
+
+Escalation via Pushover (§6.5, cron `*/5`) tem timeout 2h — explicitamente **timing P1**, não P0. Promover algum auditor pra timing P0 (reduzir cron pra `*/1` e timeout 15min) é decisão pós-MVP após observar 30d de baseline.
+
+**`info` removido** — spec-mestre §3 cita mas brainstorm 2026-04-27 cravou que info-only polui Telegram sem valor. Eventos info-equivalentes ficam em `audit_runs.status='success'` (heartbeat — §4.2), não em `audit_events`.
 
 ### 2.4. Canal único: Telegram com fallback Pushover
 
@@ -78,33 +84,56 @@ Caminho de evolução pós-MVP:
 
 ## §3. Arquitetura
 
+**Pattern do repo (importante — não inventar):** `cron-worker` é **PURE DISPATCHER** (HTTP fetch). Toda lógica de cron mora em `functions/api/cron/*.js` (CF Pages Functions). Helpers compartilhados em `functions/_lib/*.js`. Spec novo replica esse pattern.
+
 ```
-inkflow-cron Worker (CF Workers, observability ON)
-  ├── triggers existentes: 4 (expira-trial, cleanup-tenants, reset-agendamentos, monitor-whatsapp)
-  └── triggers novos (todos UTC — CF Workers cron usa UTC):
-      ├── 0 6 * * *      → /api/cron/audit-key-expiry      (UTC 06:00 = 03:00 BRT, 24h)
-      ├── 0 */6 * * *    → /api/cron/audit-deploy-health   (6h)
-      ├── 30 */6 * * *   → /api/cron/audit-billing-flow    (6h, offset 30min pra não colidir)
-      ├── */5 * * * *    → /api/cron/audit-escalate        (escalation Pushover)
-      ├── 0 12 * * 1     → /api/cron/audit-weekly-report   (UTC seg 12:00 = 09:00 BRT)
-      └── 0 4 * * 1      → /api/cron/audit-cleanup         (UTC seg 04:00 = 01:00 BRT)
+cron-worker/ (CF Workers — dispatcher only)
+  wrangler.toml
+    └── triggers: 4 existentes + 6 novos (ver §9.0 pra confirmar limit do plano CF):
+        ├── 0 6 * * *      → /api/cron/audit-key-expiry      (UTC 06:00 = 03:00 BRT, 24h)
+        ├── 0 */6 * * *    → /api/cron/audit-deploy-health   (6h)
+        ├── 30 */6 * * *   → /api/cron/audit-billing-flow    (6h, offset 30min)
+        ├── */5 * * * *    → /api/cron/audit-escalate        (escalation Pushover)
+        ├── 0 12 * * 1     → /api/cron/audit-weekly-report   (UTC seg 12:00 = 09:00 BRT)
+        └── 0 4 * * 1      → /api/cron/audit-cleanup         (UTC seg 04:00 = 01:00 BRT)
 
-  src/lib/audit-state.js
+  src/index.js
+    └── SCHEDULE_MAP ganha 6 entries novas (sem outra lógica)
+
+functions/_lib/ (NOVOS — lib compartilhada das Pages Functions)
+  audit-state.js
     - insertEvent({ run_id, auditor, severity, payload, evidence, suggested_subagent })
-    - getCurrentState(auditor)              # consulta view
+    - getCurrentState(auditor)              # consulta view audit_current_state
     - dedupePolicy(current, new)            # 'fire' | 'silent' | 'escalate' | 'resolve' | 'supersede'
-    - sendTelegram(event)                   # formata e envia
-    - sendPushover(event)                   # escalation only
+    - sendTelegram(env, event)              # formata e envia
+    - sendPushover(env, event)              # escalation only
+    - startRun(supabase, auditor)
+    - endRun(supabase, run_id, {...})
 
-  src/auditors/
-    - key-expiry.js     # detect(input) puro
+  auditors/
+    - key-expiry.js     # detect(input) puro — testável com fixtures
     - deploy-health.js  # detect(input) puro
     - billing-flow.js   # detect(input) puro
 
-Routines (Anthropic /schedule)
+functions/api/cron/ (NOVOS — endpoints chamados pelo cron-worker)
+  audit-key-expiry.js     # importa _lib/auditors/key-expiry + _lib/audit-state
+  audit-deploy-health.js  # idem
+  audit-billing-flow.js   # idem
+  audit-escalate.js       # itera audit_events critical sem ack >2h, dispara Pushover
+  audit-weekly-report.js  # gera report, INSERT audit_reports, dispara Telegram resumo
+  audit-cleanup.js        # DELETE rows old
+
+functions/api/audit/ (NOVOS — endpoints customer-facing do bot)
+  telegram-webhook.js     # recebe update Telegram, parseia reply "ack <id>"
+
+admin.html
+  └── #reports            # list view dos audit_reports + modal markdown
+
+Routines (Anthropic /schedule — capabilities a confirmar §9.0)
   ├── audit-vps-limits     (cron */6 hours, BRT)
   └── audit-rls-drift      (cron 24h, BRT)
-  ambas chamam mesma lib/audit-state via Supabase REST
+  ambas chamam endpoints `/api/cron/audit-vps-limits` e `/api/cron/audit-rls-drift` em Pages
+  (ou Supabase REST direto pra inserir audit_events). Decisão final em §9.0.
 
 Supabase
   ├── audit_events           # uma row por evento
@@ -112,13 +141,8 @@ Supabase
   ├── audit_reports          # relatórios semanais
   └── view audit_current_state
 
-CF Pages Functions
-  ├── /api/audit/telegram-webhook  # recebe update do bot, parsea reply "ack <id>"
-  ├── /api/cron/audit-*            # endpoints chamados pelo Worker e Routines
-  └── /admin.html#reports          # list view dos audit_reports
-
 Telegram bot
-  ├── setWebhook → /api/audit/telegram-webhook
+  ├── setWebhook → /api/audit/telegram-webhook (NOTA: bot só tem 1 webhook — ver §9.0)
   ├── envia alerts com event_id curto + suggested_subagent
   └── recebe reply "ack <id>" → POST /api/audit/ack
 ```
@@ -128,6 +152,8 @@ Telegram bot
 ## §4. Schema Supabase
 
 Migration nova: `2026-04-27_auditores_mvp.sql`.
+
+**Distinção vs `approvals` (Sub-projeto 5):** `audit_events` é estado de **detecção** (auditor → founder notification). `approvals` é flow de **aprovação** (subagent → founder ✅ → action). São tabelas distintas com finalidades distintas — não unificar nem cross-reference por design.
 
 ### 4.1. `audit_events`
 
@@ -144,8 +170,9 @@ CREATE TABLE audit_events (
   last_alerted_at TIMESTAMPTZ,                    -- última vez que Telegram disparou
   alert_count INT DEFAULT 1,                      -- quantos alertas pra esse evento (INSERT já é 1ª notificação)
   superseded_by UUID REFERENCES audit_events(id), -- preenchido quando severity escalou e novo evento substituiu
+  escalated_at TIMESTAMPTZ,                       -- quando Pushover disparou (não confunde com ack humano)
   acknowledged_at TIMESTAMPTZ,
-  acknowledged_by TEXT,                           -- telegram_user_id ou 'auto-escalated'
+  acknowledged_by TEXT,                           -- telegram_user_id (humano) — escalation grava em escalated_at separado
   resolved_at TIMESTAMPTZ,
   resolved_reason TEXT                            -- 'next_run_clean' | 'manual' | 'superseded' | 'expired'
 );
@@ -274,15 +301,21 @@ Cada subseção: frequência, source de dados, política de severity, payload, r
 | `SUPABASE_SERVICE_ROLE_KEY` | `/rest/v1/?limit=1` | ✅ |
 | `EVO_GLOBAL_KEY` | `/instance/fetchInstances` | ✅ |
 
-**Camada 3 — Cross-replica drift** (CF Pages env vs Worker env):
+**Camada 3 — Cross-replica drift** (CF Pages env vs Worker env) — ⚠️ **OPT-IN, EXPERIMENTAL:**
 
-API calls necessários:
-- CF Pages: `GET /accounts/{account_id}/pages/projects/{project_name}` retorna `latest_deployment.modified_on` (proxy pra última atualização de env)
+Proxy frágil: comparar `modified_on` entre Pages e Worker via API. **Risco alto de false positive** — Pages deploy normal toca Pages.modified_on sem tocar Worker, gerando |diff|>24h legítimo.
+
+**Política do MVP:**
+- Camada 3 fica **desabilitada por default** (env flag `AUDIT_KEY_EXPIRY_LAYER3=true` pra ligar).
+- Ligar opcionalmente após Camadas 1+2 estabilizadas (≥7d sem falsa-positiva).
+- Se 7d ligada gerar ≥2 false positive → cortar definitivamente, repensar pós-MVP quando CF API expor algo melhor (hash dos secrets, lastUpdated por secret).
+
+API calls necessários (quando ligada):
+- CF Pages: `GET /accounts/{account_id}/pages/projects/{project_name}` retorna `latest_deployment.modified_on`
 - Workers: `GET /accounts/{account_id}/workers/scripts/{script_name}` retorna `modified_on`
+- Comparação: se `|cf_pages.modified_on - worker.modified_on| > 24h` → warn
 
-Comparação: se diferença `|cf_pages.modified_on - worker.modified_on| > 24h` → warn. Indica que rotação parcial pode ter acontecido (bug pattern documentado em `telegram-bot-down.md` Ação B).
-
-**Caveat:** requer `CLOUDFLARE_API_TOKEN` com scope `Account → Cloudflare Pages → Read` + `Account → Workers Scripts → Read`. Adicionar ao DoD da Infra (validar token atual ou criar dedicado). Campo exato (`modified_on`, `latest_deployment.modified_on`, ou outro) pode variar por endpoint — validar response da API durante implementação e ajustar comparação.
+**Caveat:** requer `CLOUDFLARE_API_TOKEN` com scope `Account → Cloudflare Pages → Read` + `Account → Workers Scripts → Read`. Adicionar ao pré-req §9.0 (validar token atual ou criar dedicado). Campo exato (`modified_on`, `latest_deployment.modified_on`) pode variar — validar response da API durante implementação e ajustar comparação.
 
 #### Payload
 
@@ -337,28 +370,40 @@ Source: GitHub Actions API + Cloudflare Workers API.
 **Onde:** Routine Anthropic (`/schedule`)
 **Frequência:** 6h (cron BRT)
 **suggested_subagent:** `vps-ops`
-**Runbook:** _gap registrado_ — adjacente a `outage-wa.md`. Se incidente real ocorrer, criar `vps-disk-cheio.md` ou similar (regra do `runbooks/README.md`).
+**Runbook:** _gap registrado_ — `runbook_path: null` significa founder cai no Telegram alert sem runbook (escolha consciente do MVP, alinha com regra do `runbooks/README.md` de criar runbook na 2ª ocorrência ad-hoc). Adjacente a `outage-wa.md`.
 
-#### Hierarquia de fallback pra coleta de dados
+#### Hierarquia de coleta de dados — **default = endpoint custom**
 
-Validar durante implementação na ordem:
+⚠️ **Realismo operacional:** Routines Anthropic rodam em contexto remoto. SSH key local do founder NÃO é acessível pela Routine. Vultr API requer API key no contexto. Por isso, **default = endpoint custom** desde dia 1. SSH/API ficam como aspiracionais teóricos só se Routine API expandir capabilities.
 
-1. **SSH via Routine Bash tool** (preferido):
-   ```bash
-   ssh root@<vps> "free -m && df -h / && uptime"
-   ```
-   Retorna RAM/disk live + load average. Granularidade máxima.
+**Default (implementar primeiro):**
+- `vps-ops` agent cria endpoint `/health/metrics` no VPS (Express simples ou nginx static? — decisão na implementação) retornando JSON:
+  ```json
+  {
+    "ram_used_pct": 0.42,
+    "ram_total_mb": 4096,
+    "disk_used_pct": 0.31,
+    "disk_total_gb": 50,
+    "load_avg_5m": 0.7,
+    "vcpu_count": 2,
+    "egress_month_pct": 0.18,
+    "ts": "2026-04-27T03:00:00Z"
+  }
+  ```
+- Auth via header `X-Health-Token` (secret `VPS_HEALTH_TOKEN` em CF Pages env + VPS env)
+- Routine faz `curl` com header, parsea JSON, aplica thresholds
 
-2. **Fallback Vultr API** (se SSH não disponível em Routine):
-   - `GET /v2/instances/{id}` retorna `ram` (MB total), `disk` (GB total), `vcpu_count`
-   - `GET /v2/instances/{id}/bandwidth` retorna egress mensal
-   - **Limitação:** sem RAM/disk usage live granular. Threshold cai pra "egress mensal" + "Vultr panel snapshot diário"
+**Aspiracional (avaliar pós-MVP, não bloqueia DoD):**
 
-3. **Último recurso — endpoint custom** (se nem SSH nem API resolver):
-   - vps-ops agent cria `/health/metrics` no VPS retornando `{ram_used_pct, disk_used_pct, load_avg_5m}` em JSON, autenticado via header `X-Health-Token`
-   - Routine chama via HTTPS
+1. **Vultr API** se Routine ganhar `VULTR_API_KEY` no contexto:
+   - `GET /v2/instances/{id}` → `ram`, `disk`, `vcpu_count`
+   - `GET /v2/instances/{id}/bandwidth` → egress mensal
+   - Limitação conhecida: sem RAM/disk usage live granular
 
-Decisão da hierarquia fica registrada em `docs/canonical/decisions/<data>-vps-limits-data-source.md` durante implementação.
+2. **SSH via Routine Bash** se Routine ganhar SSH key forwarding:
+   - `ssh root@<vps> "free -m && df -h / && uptime"` — granularidade máxima
+
+Decisão final + capability check fica registrada em `docs/canonical/decisions/<data>-vps-limits-data-source.md` durante implementação (Task 9.4).
 
 #### Política de severity
 
@@ -391,11 +436,18 @@ const THRESHOLDS = {
 **Onde:** Routine Anthropic (`/schedule`)
 **Frequência:** 24h
 **suggested_subagent:** `supabase-dba`
-**Runbook:** _gap registrado_ — "Supabase advisor crítico" listado em `incident-response.md §6.3`. Se incidente real, criar runbook dedicado.
+**Runbook:** _gap registrado_ — `runbook_path: null` (mesma regra do auditor #3). "Supabase advisor crítico" listado em `incident-response.md §6.3` como gap. Se incidente real, criar runbook dedicado.
 
 #### Detecção
 
-Source: Supabase Management API `mcp__plugin_supabase_supabase__get_advisors` + `git log` (correlação com migrations recentes).
+Source: **Supabase Management API REST direto** (não MCP — Routines remotas não têm MCP plugins).
+
+- `GET https://api.supabase.com/v1/projects/{ref}/advisors?lint_type=security` (security findings)
+- `GET https://api.supabase.com/v1/projects/{ref}/advisors?lint_type=performance` (performance findings)
+- Auth: `Authorization: Bearer <SUPABASE_PAT>` — usa Personal Access Token (escopo project-specific se Supabase suportar; se não, PAT global do founder).
+- Cross-ref `git log --since='7 days ago' -- supabase/migrations/` pra correlacionar findings com migrations recentes.
+
+**Pré-req §9.0:** confirmar que Routine pode (a) fazer outbound HTTP com Bearer token, (b) ter `SUPABASE_PAT` no contexto seguro. Se não, considerar fallback: Routine chama endpoint `/api/cron/audit-rls-drift` em CF Pages, que tem acesso ao token e roda a lógica.
 
 #### Reasoning Claude (justificativa pra Routine)
 
@@ -540,9 +592,11 @@ Reply "ack <event_id_short>" pra acknowledge.
 5. UPDATE `audit_events SET acknowledged_at=now(), acknowledged_by=<user_id>`
 6. Bot envia confirmação: `"✅ Acknowledged: <auditor> <severity>"`
 
+**Nota:** `TELEGRAM_ADMIN_USER_ID` é distinto de `TELEGRAM_CHAT_ID` (usado pelo cron-worker pra envio outbound). Se o bot está em DM com founder (caso atual), os dois valores SÃO IGUAIS. Se virar group chat futuro, são diferentes (`CHAT_ID` = id do grupo, `ADMIN_USER_ID` = user id do founder). MVP assume DM — coletar `ADMIN_USER_ID` 1x via `@userinfobot` no Telegram.
+
 ### 6.5. Escalation flow (cron `*/5 * * * *`)
 
-Endpoint `/api/cron/audit-escalate-critical`:
+Endpoint `/api/cron/audit-escalate`:
 
 ```sql
 SELECT id, auditor, payload
@@ -550,19 +604,16 @@ FROM audit_events
 WHERE severity = 'critical'
   AND resolved_at IS NULL
   AND acknowledged_at IS NULL
-  AND detected_at < now() - interval '2 hours'
-  AND id NOT IN (
-    -- já escalado
-    SELECT id FROM audit_events WHERE acknowledged_by = 'auto-escalated'
-  );
+  AND escalated_at IS NULL
+  AND detected_at < now() - interval '2 hours';
 ```
 
 Pra cada row:
 1. Dispara Pushover priority=2, retry=60, expire=1800
-2. UPDATE `acknowledged_by='auto-escalated' acknowledged_at=now()` (registra que escalou — não confunde com ack humano)
-3. Loga em `tool_calls_log` ou similar pra audit trail
+2. UPDATE `escalated_at=now()` (coluna dedicada — não confunde com ack humano que vem em campo separado)
+3. Loga em `audit_runs` (campo `error_message` reutilizado pra audit trail) ou cria entry específica em `tool_calls_log`
 
-Nota: `acknowledged_by='auto-escalated'` previne re-escalation infinita. Pós-MVP pode separar em coluna dedicada `escalated_at`.
+Vantagem da coluna dedicada `escalated_at`: humano que dá ack DEPOIS do escalation grava `acknowledged_at + acknowledged_by=user_id` sem sobrescrever fato do escalation. Histórico preservado.
 
 ### 6.6. Cleanup flow (cron `0 4 * * 1`)
 
@@ -653,6 +704,16 @@ Detalhes: https://inkflowbrasil.com/admin.html#reports/<report_date>
 > - `audit_events` é estado de auditor, NÃO substitui investigação direta da fonte (logs, dashboards, queries primárias).
 > - Em dúvida, prefira consultar a fonte primária. `audit_events` é resumo, fonte primária é verdade.
 
+### Como cada agent consulta (tools whitelists divergem)
+
+| Agent | Tools disponíveis | Como consulta `audit_events` |
+|---|---|---|
+| `supabase-dba` | `mcp__plugin_supabase_supabase__execute_sql` | Direto via MCP — query SQL nativa |
+| `deploy-engineer` | Bash + MCP cloudflare/github (sem MCP supabase) | Via `Bash` com `curl` Supabase REST: `GET /rest/v1/audit_events?auditor=eq.<X>&resolved_at=is.null&order=detected_at.desc&limit=5` + `apikey: <SERVICE_ROLE>` |
+| `vps-ops` | Read + Bash (Haiku) | Via `Bash` com `curl` Supabase REST (mesmo pattern do `deploy-engineer`). Founder passa `SUPABASE_SERVICE_KEY` no prompt quando relevante — agent não busca em arquivo. |
+
+**Não** adicionar `mcp__plugin_supabase_supabase__execute_sql` ao `deploy-engineer` ou `vps-ops` — cada agent fica com tools whitelist enxuta. `curl` REST resolve sem expandir surface area.
+
 `.claude/agents/README.md` ganha seção:
 
 ```markdown
@@ -675,16 +736,26 @@ Sequencial. Cada item é gate pro próximo.
 
 ### 9.0. Infra (1 sprint, antes do auditor #1)
 
-- [ ] Migration `2026-04-27_auditores_mvp.sql` aplicada em prod
-- [ ] `cron-worker/src/lib/audit-state.js` implementado (insertEvent, getCurrentState, dedupePolicy, sendTelegram, sendPushover, startRun, endRun)
-- [ ] Endpoint `/api/audit/telegram-webhook` deployado
+**Pré-requisitos de capability (validar PRIMEIRO — antes de qualquer code):**
+
+- [ ] **Cron triggers limit** — confirmar plano CF Workers atual (Free vs Paid Bundled vs Unbound) e limite de cron triggers por Worker. Hoje `inkflow-cron` tem 4 triggers; spec adiciona 6 (total 10). Se ultrapassar limite: agrupar (`audit-cleanup` + `audit-weekly-report` num cron único) ou criar Worker dedicado `inkflow-cron-audit`. Atualizar `limits.md` seção CF Workers.
+- [ ] **Telegram webhook conflict** — `getWebhookInfo` no bot atual; se já existe webhook, decidir merge ou bot dedicado pra audit. Convention "webhook do bot é dedicado a audit ack" cravada se MVP único.
+- [ ] **Routine capabilities** — smoke test mínimo via `/schedule`: confirmar (a) Bash com `curl` outbound autenticado funciona, (b) acesso a secrets/env no contexto. Se falhar (a), Routines viram fallback "chamar `/api/cron/audit-vps-limits` em CF Pages".
+
+**Implementação infra:**
+
+- [ ] Migration `2026-04-27_auditores_mvp.sql` aplicada em prod (audit_events + audit_runs + audit_reports + view + RLS + `escalated_at`)
+- [ ] `functions/_lib/audit-state.js` implementado (insertEvent, getCurrentState, dedupePolicy, sendTelegram, sendPushover, startRun, endRun)
+- [ ] Endpoint `functions/api/audit/telegram-webhook.js` deployado
 - [ ] `setWebhook` configurado no bot Telegram pra `https://inkflowbrasil.com/api/audit/telegram-webhook` com secret token
 - [ ] `TELEGRAM_ADMIN_USER_ID` cadastrado em CF Pages env (coletado via @userinfobot 1x)
 - [ ] `TELEGRAM_WEBHOOK_SECRET` cadastrado em CF Pages env
-- [ ] `CLOUDFLARE_API_TOKEN` validado com scopes Account/Pages/Workers Read (criar dedicado se necessário)
-- [ ] Cron `*/5 * * * *` (escalation) configurado e testado com event simulado
-- [ ] Cron `0 4 * * 1` (cleanup) configurado
-- [ ] Smoke test infra: INSERT manual `audit_events critical` → Telegram chega → reply "ack <id>" → resolve
+- [ ] `CLOUDFLARE_API_TOKEN` validado com scopes Account/Pages/Workers Read (criar dedicado se necessário) — só obrigatório se Camada 3 do auditor #1 for ligada
+- [ ] `cron-worker/src/index.js` SCHEDULE_MAP ganha 6 entries novas
+- [ ] `cron-worker/wrangler.toml` triggers atualizado (após confirmação do limit)
+- [ ] Cron `*/5 * * * *` (escalation) deployado e testado com event simulado
+- [ ] Cron `0 4 * * 1` (cleanup) deployado
+- [ ] Smoke test infra: INSERT manual `audit_events critical` → Telegram chega → reply "ack <id>" → `acknowledged_at` preenchido → próximo run clean → `resolved_at` preenchido
 
 ### 9.1. Auditor #1 — `key-expiry`
 
@@ -715,9 +786,17 @@ Sequencial. Cada item é gate pro próximo.
 
 ### 9.4. Auditor #3 — `vps-limits` (primeira Routine)
 
-- [ ] Decisão de hierarquia data-source (SSH > Vultr API > endpoint custom) registrada em `docs/canonical/decisions/<data>-vps-limits-data-source.md`
-- [ ] Routine criada via `/schedule` skill com prompt que invoca `detect` + chama Supabase REST pra `audit-state`
-- [ ] Smoke test: simular VPS >90% via fixture
+**Pré-requisitos específicos deste auditor:**
+
+- [ ] **Resolver `[confirmar]`s de Vultr em `limits.md`**: RAM total (2GB ou 4GB), Disk total (50GB ou 80GB), vCPU count (1 ou 2), egress mensal contratado. Sem estes valores o auditor não consegue calcular % de usage corretamente (denominador ausente).
+- [ ] `vps-ops` agent cria endpoint `/health/metrics` no VPS com auth `X-Health-Token` (default da hierarquia §5.3)
+- [ ] `VPS_HEALTH_TOKEN` em CF Pages env + VPS env (rotacionado simultâneo)
+- [ ] Decisão de hierarquia final (default endpoint custom + aspiracionais) registrada em `docs/canonical/decisions/<data>-vps-limits-data-source.md`
+
+**Implementação:**
+
+- [ ] Routine criada via `/schedule` skill com prompt que invoca `detect` + chama `/api/cron/audit-vps-limits` (que faz fetch ao endpoint custom + INSERT audit_events) — OU chama Supabase REST direto se Routine tiver capability
+- [ ] Smoke test: simular VPS >90% via fixture (mock response do endpoint custom)
 - [ ] 48h em prod sem falsa-positiva
 
 ### 9.5. Auditor #4 — `rls-drift` (última)
@@ -746,7 +825,7 @@ Checklist binário. Sub-projeto 3 declarado done quando 100% PASS.
 - [ ] Cron de cleanup audit_events resolved >90d configurado
 - [ ] Cron de cleanup audit_runs >30d configurado
 - [ ] Cron de escalation `*/5 * * * *` configurado
-- [ ] `cron-worker/src/lib/audit-state.js` implementado (todas as 7 funções)
+- [ ] `functions/_lib/audit-state.js` implementado (todas as 7 funções)
 - [ ] Endpoint `/api/audit/telegram-webhook` deployado e testado
 - [ ] `setWebhook` Telegram configurado com secret token
 - [ ] `TELEGRAM_ADMIN_USER_ID`, `TELEGRAM_WEBHOOK_SECRET`, `CLOUDFLARE_API_TOKEN` (com scopes Read) em CF Pages env
@@ -778,7 +857,10 @@ Cada auditor declara done quando TODOS:
 
 - [ ] `docs/canonical/auditores.md` criado, seção por auditor (frequência, severity, source de cap, threshold const, runbook linkado, suggested_subagent)
 - [ ] `docs/canonical/methodology/incident-response.md §6.3` atualizado com novos auditores (mapping sintoma → runbook quando aplicável)
-- [ ] `docs/canonical/limits.md` `[confirmar]`s da lista resolvidos: Vultr egress mensal, MailerLite plano, Supabase plano, VPS_HEALTH_TOKEN se criado
+- [ ] `docs/canonical/limits.md` `[confirmar]`s relevantes resolvidos por auditor:
+  - Auditor #3 pré-req (§9.4): Vultr RAM total, Disk total, vCPU count, egress mensal
+  - Auditor #5 pré-req (§9.3): MailerLite plano + limit subscribers, Supabase plano + limits
+  - Auditor #1 pré-req se Camada 3 ligada (§9.1): plano CF + cron triggers limit (já no §9.0)
 - [ ] Spec do Sub-projeto 3 (`docs/superpowers/specs/2026-04-27-auditores-mvp-design.md`) committado em main
 - [ ] Nota-âncora vault Obsidian criada (link pro spec + status)
 
@@ -833,3 +915,4 @@ Cada auditor declara done quando TODOS:
 | Data | Versão | Mudança |
 |---|---|---|
 | 2026-04-27 | v1.0 | Spec inicial criado em sessão de brainstorm 2026-04-27. 11 perguntas de clarificação (postura, secret-expiry pre-BWS, estado, stack split, ack, thresholds, ordem, relatório, validação, cross-refs, DoD). 2 retratações registradas (Inc-1 rls-drift mover, Inc-2 vps-limits mover) — ambas reverted após análise de fidelidade ao spec-mestre §3. 8 gaps identificados e refinados antes de escrever spec. Decisões finais alinhadas com spec-mestre Fábrica §2.1, §2.4, §3. |
+| 2026-04-27 | v1.1 | Auditoria pós-brainstorm (sessão `/daily-start` 2026-04-27 manhã). 4 blockers + 6 atenções + 3 explicitações corrigidos antes de `/plan`: **B1** stack split corrigido (lib em `functions/_lib/` não em `cron-worker/src/lib/` — pattern do repo); **B2** pré-req cron triggers limit no §9.0; **B3** severity scheme mapeado pra P1/P2 doctrine + P0 reconhecido como não-coberto pelos auditores MVP; **B4** Routines viabilidade — vps-limits default = endpoint custom, rls-drift via Management API REST direto (sem MCP); **A1** limits.md `[confirmar]`s movidos pra pré-req específico do auditor #3 e #5; **A2** access pattern de `audit_events` por agent (MCP supabase-dba, REST deploy/vps-ops); **A3** coluna `escalated_at` separada de `acknowledged_by`; **A4** Camada 3 de key-expiry opt-in via env flag; **A5** TELEGRAM_ADMIN_USER_ID vs CHAT_ID clarificado; **A6** setWebhook conflict check no §9.0; **O1** `audit_events` ≠ `approvals` explicitado em §4; **O2** `runbook_path: null` como gap consciente em #3 e #4; **O3** runs clean ficam em `audit_runs.status='success'` (heartbeat). |
