@@ -13,6 +13,7 @@ crons = [
   "*/30 * * * *",   # a cada 30min     → /api/cron/monitor-whatsapp
   "*/5 * * * *",    # a cada 5min      → /api/cron/audit-escalate
   "0 4 * * 1",      # seg 01:00 BRT    → /api/cron/audit-cleanup
+  "0 6 * * *",      # 03:00 BRT diario → /api/cron/audit-key-expiry
 ]
 
 # Observability: todos os console.log aparecem em Workers → inkflow-cron → Logs
