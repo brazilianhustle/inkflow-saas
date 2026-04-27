@@ -35,15 +35,6 @@ async function sendBotConfirmation(env, text) {
 }
 
 export async function onRequest(context) {
-  try {
-    return await handleRequest(context);
-  } catch (e) {
-    console.error('telegram-webhook UNCAUGHT:', e?.message, e?.stack);
-    return json({ error: 'handler_crash', message: String(e?.message || e), stack: String(e?.stack || '').slice(0, 500) }, 500);
-  }
-}
-
-async function handleRequest(context) {
   const { request, env } = context;
   if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
 
@@ -87,23 +78,21 @@ async function handleRequest(context) {
     'Content-Type': 'application/json',
   };
 
-  // DEBUG: testar fetch a Supabase SEM wildcard '*' pra ver se eh isso
-  let supabaseTrivial;
-  try {
-    supabaseTrivial = await fetch(`${SUPABASE_URL}/rest/v1/audit_events?limit=1&select=id`, {
-      headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` },
-    });
-  } catch (e) {
-    return json({ error: 'supabase_trivial_threw', name: String(e?.name), message: String(e?.message) }, 500);
-  }
-  const trivialBody = await supabaseTrivial.text();
-  return json({ debug: 'supabase_trivial_ok', status: supabaseTrivial.status, body: trivialBody.slice(0, 200) }, 200);
-  let lookupRes;
+  // Resolver UUID por prefix. CF Pages runtime crasha com wildcard `*` na URL
+  // de fetch (descoberto via bisect 2026-04-27). Solução: buscar todos eventos
+  // abertos (max 5 — um por auditor — pela política de dedupe §6.2) e filtrar
+  // por prefix no JS. Tradeoff aceito: payload pequeno, sem perda de correção.
+  const lookupUrl = `${SUPABASE_URL}/rest/v1/audit_events?resolved_at=is.null&select=id,auditor,severity`;
+  const lookupRes = await fetch(lookupUrl, {
+    headers: sbHeaders,
+    signal: timeoutSignal(8000),
+  });
   if (!lookupRes.ok) {
     console.error('telegram-webhook: lookup failed:', lookupRes.status);
     return json({ error: 'lookup_failed' }, 502);
   }
-  const matches = await lookupRes.json();
+  const allOpen = await lookupRes.json();
+  const matches = allOpen.filter((e) => String(e.id).startsWith(idShort.toLowerCase()));
 
   if (matches.length === 0) {
     await sendBotConfirmation(env, `❌ ack ${idShort}: evento não encontrado (já resolvido?)`);
