@@ -149,3 +149,25 @@ test('layer2: PUSHOVER without USER_KEY → skip (incomplete config)', async () 
   const evt = events.find((e) => e.payload?.secret_name === 'PUSHOVER_APP_TOKEN');
   assert.equal(evt, undefined);
 });
+
+test('layer2: 403 from CLOUDFLARE → critical event (same as 401)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['cloudflare.com', { ok: false, status: 403, text: async () => '{"errors":[{"code":1006}]}' }],
+  ]);
+  const events = await detect({ env: { CLOUDFLARE_API_TOKEN: 'forbidden' }, fetchImpl, now: NOW });
+  const evt = events.find((e) => e.payload?.layer === 'self-check' && e.payload?.secret_name === 'CLOUDFLARE_API_TOKEN');
+  assert.ok(evt, 'Critical event for 403 should exist');
+  assert.equal(evt.severity, 'critical');
+  assert.equal(evt.payload.status, 403);
+});
+
+test('layer2: 500 from MERCADOPAGO → warn (transient, not critical)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['mercadopago.com', { ok: false, status: 500, text: async () => 'Internal Server Error' }],
+  ]);
+  const events = await detect({ env: { MP_ACCESS_TOKEN: 'mp-tok' }, fetchImpl, now: NOW });
+  const evt = events.find((e) => e.payload?.layer === 'self-check' && e.payload?.secret_name === 'MP_ACCESS_TOKEN');
+  assert.ok(evt, 'Warn event for 500 should exist');
+  assert.equal(evt.severity, 'warn');
+  assert.equal(evt.payload.status, 500);
+});

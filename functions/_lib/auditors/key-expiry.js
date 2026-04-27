@@ -84,12 +84,6 @@ const SELF_CHECK_TARGETS = [
   },
 ];
 
-function timeoutSignal(ms) {
-  const c = new AbortController();
-  setTimeout(() => c.abort(), ms);
-  return c.signal;
-}
-
 async function selfCheckOne(target, env, fetchImpl) {
   const key = env[target.name];
   if (!key) return null;
@@ -102,7 +96,7 @@ async function selfCheckOne(target, env, fetchImpl) {
   const opts = {
     method: target.method || 'GET',
     headers: typeof target.headers === 'function' ? target.headers(key) : (target.headers || {}),
-    signal: timeoutSignal(5000),
+    signal: AbortSignal.timeout(5000),
   };
   if (target.body) {
     opts.body = target.body(key, env);
@@ -161,6 +155,8 @@ async function selfCheckOne(target, env, fetchImpl) {
     };
   }
 
+  // Free CF Workers connection pool — body unused on success
+  try { res.body?.cancel?.(); } catch { /* ignore */ }
   return null;
 }
 
