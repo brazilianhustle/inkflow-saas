@@ -89,8 +89,12 @@ async function handleRequest(context) {
 
   // Resolver UUID por prefix (apenas eventos abertos pra evitar colisão histórica)
   const lookupUrl = `${SUPABASE_URL}/rest/v1/audit_events?id=like.${idShort}*&resolved_at=is.null&select=id,auditor,severity&limit=2`;
-  return json({ debug: 'reached_fetch_point', lookupUrl, sbKeyPrefix: String(sbKey).slice(0, 6), idShort, fromId, adminId }, 200);
-  const lookupRes = await fetch(lookupUrl, { headers: sbHeaders });
+  let lookupRes;
+  try {
+    lookupRes = await fetch(lookupUrl, { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } });
+  } catch (e) {
+    return json({ error: 'fetch_threw', name: String(e?.name), message: String(e?.message), stack: String(e?.stack || '').slice(0, 600) }, 500);
+  }
   if (!lookupRes.ok) {
     console.error('telegram-webhook: lookup failed:', lookupRes.status);
     return json({ error: 'lookup_failed' }, 502);
