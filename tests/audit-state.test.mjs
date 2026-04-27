@@ -200,3 +200,74 @@ test('insertEvent POSTs to audit_events and returns inserted row', async () => {
   assert.equal(inserted.id, 'evt-1');
   assert.equal(mock.calls.length, 1);
 });
+
+// sendTelegram + sendPushover ————————————————————————————————————————————————
+
+test('sendTelegram formats event per spec §6.3 and POSTs to bot API', async () => {
+  let captured = null;
+  globalThis.fetch = async (url, opts) => { captured = { url, opts }; return { ok: true }; };
+  const evt = {
+    ...FIXTURE_EVENT_WARN,
+    payload: {
+      runbook_path: 'docs/canonical/runbooks/secrets-expired.md',
+      suggested_subagent: 'deploy-engineer',
+      summary: 'CF token expira em 5 dias',
+    },
+  };
+  const res = await sendTelegram(FIXTURE_ENV, evt);
+  assert.equal(res.ok, true);
+  assert.match(captured.url, /api\.telegram\.org\/bottg-token\/sendMessage/);
+  const body = JSON.parse(captured.opts.body);
+  assert.equal(body.chat_id, '999');
+  assert.match(body.text, /\[warn\] \[key-expiry\]/);
+  assert.match(body.text, /CF token expira em 5 dias/);
+  assert.match(body.text, /ID: a3f1b9c2/);
+  assert.match(body.text, /Runbook: secrets-expired\.md/);
+  assert.match(body.text, /Suggested: @deploy-engineer/);
+  assert.match(body.text, /Reply "ack a3f1b9c2"/);
+});
+
+test('sendTelegram omits Suggested line when suggested_subagent is null', async () => {
+  let captured = null;
+  globalThis.fetch = async (url, opts) => { captured = { url, opts }; return { ok: true }; };
+  const evt = {
+    ...FIXTURE_EVENT_WARN,
+    payload: { runbook_path: 'docs/canonical/runbooks/x.md', suggested_subagent: null, summary: 's' },
+  };
+  await sendTelegram(FIXTURE_ENV, evt);
+  const body = JSON.parse(captured.opts.body);
+  assert.doesNotMatch(body.text, /Suggested:/);
+});
+
+test('sendTelegram returns skipped when env missing', async () => {
+  const res = await sendTelegram({}, FIXTURE_EVENT_WARN);
+  assert.equal(res.ok, false);
+  assert.equal(res.skipped, true);
+});
+
+test('sendPushover POSTs priority=2 retry=60 expire=1800', async () => {
+  let captured = null;
+  globalThis.fetch = async (url, opts) => { captured = { url, opts }; return { ok: true }; };
+  const res = await sendPushover(FIXTURE_ENV, FIXTURE_EVENT_CRITICAL);
+  assert.equal(res.ok, true);
+  assert.match(captured.url, /api\.pushover\.net.*messages/);
+  const body = captured.opts.body;
+  assert.match(body, /priority=2/);
+  assert.match(body, /retry=60/);
+  assert.match(body, /expire=1800/);
+  assert.match(body, /token=po-app/);
+  assert.match(body, /user=po-user/);
+});
+
+test('sendPushover returns skipped when env missing', async () => {
+  const res = await sendPushover({}, FIXTURE_EVENT_CRITICAL);
+  assert.equal(res.ok, false);
+  assert.equal(res.skipped, true);
+});
+
+test('sendTelegram fail-open when fetch throws', async () => {
+  globalThis.fetch = async () => { throw new Error('network'); };
+  const res = await sendTelegram(FIXTURE_ENV, FIXTURE_EVENT_WARN);
+  assert.equal(res.ok, false);
+  assert.equal(res.error, 'network');
+});

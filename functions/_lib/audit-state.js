@@ -92,10 +92,86 @@ export function dedupePolicy(current, next, { now = Date.now() } = {}) {
 
 // ── Outbound alerts ─────────────────────────────────────────────────────────
 
+function eventIdShort(uuid) {
+  return uuid.slice(0, 8);
+}
+
+function basenameOf(p) {
+  if (!p) return 'none';
+  const idx = p.lastIndexOf('/');
+  return idx === -1 ? p : p.slice(idx + 1);
+}
+
+function formatTelegramText(event) {
+  const p = event.payload || {};
+  const idShort = eventIdShort(event.id);
+  const runbookFile = basenameOf(p.runbook_path);
+  const evidenceShort = event.evidence
+    ? JSON.stringify(event.evidence).slice(0, 120)
+    : 'n/a';
+
+  const lines = [
+    `[${event.severity}] [${event.auditor}] ${p.summary || '(sem summary)'}`,
+    `ID: ${idShort} | Runbook: ${runbookFile}`,
+  ];
+  if (p.suggested_subagent) {
+    lines.push(`Suggested: @${p.suggested_subagent}`);
+  }
+  lines.push(`Evidence: ${evidenceShort}`);
+  lines.push(`Reply "ack ${idShort}" pra acknowledge.`);
+
+  return lines.join('\n');
+}
+
 export async function sendTelegram(env, event) {
-  throw new Error('not implemented');
+  const token = env.TELEGRAM_BOT_TOKEN;
+  const chatId = env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) {
+    console.warn('audit: TELEGRAM_* ausente, alerta não enviado');
+    return { ok: false, skipped: true };
+  }
+  try {
+    const text = formatTelegramText(event);
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text }),
+      signal: AbortSignal.timeout(5000),
+    });
+    return { ok: res.ok };
+  } catch (e) {
+    console.error('audit: Telegram send failed:', e.message);
+    return { ok: false, error: e.message };
+  }
 }
 
 export async function sendPushover(env, event) {
-  throw new Error('not implemented');
+  const token = env.PUSHOVER_APP_TOKEN;
+  const user = env.PUSHOVER_USER_KEY;
+  if (!token || !user) {
+    console.warn('audit: PUSHOVER_* ausente, escalation não enviado');
+    return { ok: false, skipped: true };
+  }
+  try {
+    const p = event.payload || {};
+    const idShort = eventIdShort(event.id);
+    const params = new URLSearchParams({
+      token, user,
+      title: `[CRITICAL ESCALATION] ${event.auditor}`,
+      message: `${p.summary || ''} (id: ${idShort}). Sem ack >2h.`,
+      priority: '2',
+      retry: '60',
+      expire: '1800',
+    });
+    const res = await fetch('https://api.pushover.net/1/messages.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+      signal: AbortSignal.timeout(5000),
+    });
+    return { ok: res.ok };
+  } catch (e) {
+    console.error('audit: Pushover send failed:', e.message);
+    return { ok: false, error: e.message };
+  }
 }
