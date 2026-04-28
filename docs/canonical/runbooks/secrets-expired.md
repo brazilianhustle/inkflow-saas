@@ -170,6 +170,28 @@ Pra casos com procedure documentada, seguir as seções específicas de `secrets
 
 Pra secrets sem procedure dedicada (OpenAI, Pushover, Supabase keys): seguir o caminho geral acima.
 
+### Pareamento: `CLOUDFLARE_API_TOKEN` ↔ `CLOUDFLARE_API_TOKEN_EXPIRES_AT`
+
+Auditor `key-expiry` (Layer 1 TTL — `functions/_lib/auditors/key-expiry.js`) lê a env var **`CLOUDFLARE_API_TOKEN_EXPIRES_AT`** (formato ISO 8601, ex: `2026-07-26T00:00:00Z`) pra calcular `days_until_expiry` e disparar `warn` (≤14d) ou `critical` (≤6d). Sem essa env, Layer 1 fica em "skip" e auditor perde a única defesa pré-falha contra expiração silenciosa.
+
+**Toda vez que rotacionar `CLOUDFLARE_API_TOKEN`:**
+
+1. Após criar o token novo no CF dashboard, anotar o TTL escolhido (default 90d).
+2. Calcular ISO date da expiração e atualizar a env var:
+   ```bash
+   # Exemplo: token criado hoje com TTL 90d
+   EXPIRES=$(date -u -v+90d +%FT%TZ 2>/dev/null || date -u -d '+90 days' +%FT%TZ)
+   printf %s "$EXPIRES" | npx wrangler pages secret put CLOUDFLARE_API_TOKEN_EXPIRES_AT --project-name=inkflow-saas
+   ```
+3. Empty commit + push pra disparar redeploy CF Pages (env edit não dispara redeploy automático — Bug B doctrine):
+   ```bash
+   git commit --allow-empty -m "chore: refresh CLOUDFLARE_API_TOKEN_EXPIRES_AT pós-rotação"
+   git push origin main
+   ```
+4. Próximo run do `audit-key-expiry` (cron `0 6 * * *`) já roda com TTL fresh.
+
+**Se o token foi criado **sem** TTL** (token "perpétuo"): considerar definir uma data de revisão arbitrária (ex: 1 ano) e setar `CLOUDFLARE_API_TOKEN_EXPIRES_AT=<+365d>`. Caso contrário, Layer 1 fica skip e auditor depende só de Layer 2 (self-check) — que detecta key inválida mas só **depois** de quebrar.
+
 ## Ação B — Token rolled mas permissions ruins (caso especial)
 
 Cenário validado em 2026-04-26: token rotacionado via "Roll" no CF dashboard MAS deploys continuaram falhando porque o token original **nunca teve** `Cloudflare Pages: Edit` permission. Roll preserva permissions, não consegue mudar.

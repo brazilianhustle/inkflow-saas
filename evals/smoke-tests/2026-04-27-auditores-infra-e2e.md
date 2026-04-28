@@ -19,18 +19,26 @@ INSERT novo evento (id_short=`e1bafd45`) → founder mandou `ack e1bafd45` no ch
 
 **Validação DB:** `acknowledged_at = 2026-04-27 21:43:15.403+00`, `acknowledged_by = 8529665470`. ✅
 
-### Smoke #2 — Escalation Pushover ⏳ PENDENTE
+### Smoke #2 — Escalation Pushover ✅ FECHADO 2026-04-28
 
-INSERT evento (id_short=`bda45bdd`) com `detected_at = now() - interval '3 hours'` (atende todos os filtros do `audit-escalate`: severity=critical, resolved_at=null, acknowledged_at=null, escalated_at=null, detected_at < now-2h).
+**Sessão de rotação geral de secrets (madrugada 2026-04-28).** Após `CRON_SECRET` regenerado e propagado pra CF Pages env + cron-worker, smoke #2 foi re-executado.
 
-**Status:** evento criado mas `escalated_at` permaneceu null após múltiplos triggers do cron `*/5`. Causa provável: `PUSHOVER_APP_TOKEN` / `PUSHOVER_USER_KEY` não estão sendo lidos corretamente do CF Pages env (founder cadastrou mas não pôde validar runtime sem `CRON_SECRET` em mãos).
+**Setup:** evento original `bda45bdd` foi cleanup-resolved manualmente em sessão anterior (`smoke_test_done`). Novo evento fixture criado via SQL: `9a6c7440-46d2-40b6-98e4-c36343691654` (auditor=`smoke-escalation`, severity=critical, detected_at = NOW() - 3h).
 
-**O que falta validar pra fechar:**
-- `CRON_SECRET` recuperado (Bitwarden ou regeneração) → trigger manual via `curl POST /api/cron/audit-escalate`
-- Output do endpoint deve mostrar `escalated_count: 1` E founder deve receber notification Pushover priority=2 no celular
-- `audit_events.escalated_at` preenchido após o trigger
+**Trigger:** `curl POST https://inkflow-cron.lmf4200.workers.dev/?cron=*/5+*+*+*+*` com Bearer CRON_SECRET.
 
-**Tracking:** smoke #2 fica registrado como TODO no Painel; pode ser executado em sessão dedicada de rotação de secrets (founder mencionou isso como follow-up).
+**Response endpoint:**
+```json
+{"ok":true,"escalated_count":1,"skipped_count":0,"error_count":0,"candidates":1}
+```
+
+**Validação DB:** `audit_events.escalated_at = 2026-04-28 01:55:37.577+00` (3h após detected_at). `acknowledged_at` e `resolved_at` permanecem null (escalation é coluna dedicada, não confunde com ack humano — correção v1.1 do spec).
+
+**Validação Pushover:** [confirmado pelo founder] notification priority=2 chegou no Android com summary "Smoke #2 — escalation Pushover (event 3h atras...)". Bypass DnD funcionou.
+
+**Diagnóstico do "false negative" da sessão anterior:** o que parecia "PUSHOVER env não lendo" na verdade era ausência de trigger manual real (cron `*/5` precisava de CRON_SECRET pra rodar via Workers). Após CRON_SECRET disponível, primeira execução já fechou — env Pushover sempre estava OK.
+
+**Doctrine:** quando smoke E2E precisar de CRON_SECRET pra dispatch, rotacionar antes (não tentar disparar o `scheduled` handler diretamente — ele tem CRON_SECRET injetado pelo Worker mas humano não consegue trigger sem o `fetch` handler).
 
 ## Bugs encontrados e fixados durante smoke
 
@@ -74,7 +82,7 @@ Quatro bugs reais encontrados e corrigidos no caminho — todos via commits sepa
 
 ## Findings / TODOs pós-MVP
 
-- **Smoke #2 (escalation Pushover) pendente** — fechar antes de declarar Sub-projeto 3 DoD ✅. Coordenar com sessão de rotação geral de secrets do founder.
+- **Smoke #2 (escalation Pushover) FECHADO 2026-04-28** ✅ — evento `9a6c7440` escalado em 1ª execução pós-rotação CRON_SECRET. Detalhes no header da seção Smoke #2 acima.
 - **Doctrine de redeploy após env edit** — registrar em runbook (Bug B).
 - **Doctrine de sincronização Telegram secret** — registrar em runbook (Bug C).
 - **Bug latente:** outros endpoints novos (`audit-escalate`, `audit-cleanup`) também usam `AbortController + setTimeout` (substituição preventiva do `AbortSignal.timeout` durante debug do Bug A — descobriu-se depois que `AbortSignal.timeout` funcionava em CF Pages, era o `*` o real culpado). Nenhum deles tem o `*` da query Supabase, mas vale auditar futuros endpoints contra o pattern: **nunca colocar `*` literal em URL fetch**.
