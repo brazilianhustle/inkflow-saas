@@ -107,7 +107,7 @@ export async function onRequest(context) {
         await sendTelegram(env, inserted);
 
         if (action === 'supersede' && current) {
-          await fetchImpl(`${SUPABASE_URL}/rest/v1/audit_events?id=eq.${current.id}`, {
+          await fetchImpl(`${SUPABASE_URL}/rest/v1/audit_events?id=eq.${current.event_id}`, {
             method: 'PATCH',
             headers: sbHeaders,
             body: JSON.stringify({
@@ -119,7 +119,7 @@ export async function onRequest(context) {
           });
         }
       } else if (action === 'resolve' && current) {
-        await fetchImpl(`${SUPABASE_URL}/rest/v1/audit_events?id=eq.${current.id}`, {
+        await fetchImpl(`${SUPABASE_URL}/rest/v1/audit_events?id=eq.${current.event_id}`, {
           method: 'PATCH',
           headers: sbHeaders,
           body: JSON.stringify({
@@ -129,7 +129,7 @@ export async function onRequest(context) {
           signal: AbortSignal.timeout(5000),
         });
         await sendTelegram(env, {
-          id: current.id,
+          id: current.event_id,
           severity: 'resolved',
           auditor: 'key-expiry',
           payload: { runbook_path: 'docs/canonical/runbooks/secrets-expired.md', summary: 'key-expiry: resolved (next run clean)' },
