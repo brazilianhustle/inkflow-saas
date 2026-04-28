@@ -103,7 +103,6 @@ export async function onRequest(context) {
           severity: collapsed.severity,
           payload: collapsed.payload,
           evidence: collapsed.evidence,
-          suggested_subagent: 'deploy-engineer',
         });
         await sendTelegram(env, inserted);
 
