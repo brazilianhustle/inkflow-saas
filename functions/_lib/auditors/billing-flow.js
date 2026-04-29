@@ -279,11 +279,82 @@ async function detectSymptomC(env, fetchImpl) {
   }];
 }
 
+const INCONSISTENT_PAYLOAD_CAP = 5;
+
+async function fetchInconsistentTenantsCount(env, fetchImpl) {
+  const sbKey = env.SUPABASE_SERVICE_KEY;
+  if (!sbKey) return null;
+  const url = `${SUPABASE_URL}/rest/v1/tenants?select=count&status_pagamento=eq.trial_expirado&ativo=eq.true`;
+  try {
+    const res = await fetchImpl(url, {
+      headers: sbHeaders(sbKey, { Prefer: 'count=exact' }),
+      signal: timeoutSignal(5000),
+    });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    return Array.isArray(rows) && rows[0]?.count !== undefined ? rows[0].count : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchInconsistentTenantIds(env, fetchImpl) {
+  const sbKey = env.SUPABASE_SERVICE_KEY;
+  if (!sbKey) return [];
+  const url = `${SUPABASE_URL}/rest/v1/tenants?select=id,email&status_pagamento=eq.trial_expirado&ativo=eq.true&order=created_at.desc&limit=20`;
+  try {
+    const res = await fetchImpl(url, { headers: sbHeaders(sbKey), signal: timeoutSignal(5000) });
+    if (!res.ok) return [];
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
+}
+
+async function detectSymptomD(env, fetchImpl) {
+  if (!env.SUPABASE_SERVICE_KEY) return [];
+
+  const count = await fetchInconsistentTenantsCount(env, fetchImpl);
+  if (count === null) return []; // Query error → skip silently
+
+  if (count === 0) {
+    return [{
+      severity: 'clean',
+      payload: { symptom: 'db-consistency', inconsistent_count: 0 },
+      evidence: { source: 'supabase/tenants' },
+    }];
+  }
+
+  const inconsistent = await fetchInconsistentTenantIds(env, fetchImpl);
+  const affectedIds = inconsistent.map((t) => t.id);
+
+  return [{
+    severity: 'critical',
+    payload: {
+      runbook_path: RUNBOOK_PATH,
+      suggested_subagent: SUGGESTED_SUBAGENT,
+      summary: `${count} tenants em estado inconsistente: trial_expirado + ativo=true`,
+      symptom: 'db-consistency',
+      inconsistent_count: count,
+      affected_tenant_ids: affectedIds.slice(0, INCONSISTENT_PAYLOAD_CAP),
+      drift_type: 'db_invariant_violation',
+    },
+    evidence: {
+      source: 'supabase/tenants',
+      query_predicate: 'status_pagamento=trial_expirado AND ativo=true',
+      full_affected_count: count,
+      sample_size: affectedIds.length,
+    },
+  }];
+}
+
 export async function detect({ env = {}, fetchImpl, now = Date.now() } = {}) {
   const events = [];
   if (!fetchImpl) return events;
   events.push(...await detectSymptomA(env, fetchImpl, now));
   events.push(...await detectSymptomB(env, fetchImpl, now));
   events.push(...await detectSymptomC(env, fetchImpl));
+  events.push(...await detectSymptomD(env, fetchImpl));
   return events;
 }

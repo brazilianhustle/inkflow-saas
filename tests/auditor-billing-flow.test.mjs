@@ -258,3 +258,59 @@ test('symptomC: ML API transient error on all calls → skip silently (no false 
   // All ML calls failed → skip Sintoma C (don't false-positive on network blip)
   assert.equal(c, undefined);
 });
+
+// ── Sintoma D: DB consistency (trial_expirado + ativo=true) ─────────────────
+
+test('symptomD: zero inconsistent tenants → clean', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(1)] }],
+    ['tenants?select=count&plano=neq.trial&ativo=eq.true&mp_subscription_id', { ok: true, status: 200, json: async () => [{ count: 1 }] }],
+    ['tenants?select=count&status_pagamento=eq.trial_expirado&ativo=eq.true', { ok: true, status: 200, json: async () => [{ count: 0 }] }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const d = events.find((e) => e.payload?.symptom === 'db-consistency');
+  assert.equal(d?.severity, 'clean');
+});
+
+test('symptomD: 1 inconsistent tenant → critical', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(1)] }],
+    ['tenants?select=count&plano=neq.trial&ativo=eq.true&mp_subscription_id', { ok: true, status: 200, json: async () => [{ count: 1 }] }],
+    ['tenants?select=count&status_pagamento=eq.trial_expirado&ativo=eq.true', { ok: true, status: 200, json: async () => [{ count: 1 }] }],
+    ['tenants?select=id,email&status_pagamento=eq.trial_expirado&ativo=eq.true', { ok: true, status: 200, json: async () => [
+      { id: 'bad-tenant-id', email: 'broken@test.com' },
+    ] }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const d = events.find((e) => e.payload?.symptom === 'db-consistency');
+  assert.equal(d?.severity, 'critical');
+  assert.equal(d.payload.inconsistent_count, 1);
+  assert.deepEqual(d.payload.affected_tenant_ids, ['bad-tenant-id']);
+});
+
+test('symptomD: 7 inconsistent tenants → critical with capped tenant ids list', async () => {
+  const tenants = Array.from({ length: 7 }, (_, i) => ({ id: `bad-${i}`, email: `e${i}@t.com` }));
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(1)] }],
+    ['tenants?select=count&plano=neq.trial&ativo=eq.true&mp_subscription_id', { ok: true, status: 200, json: async () => [{ count: 5 }] }],
+    ['tenants?select=count&status_pagamento=eq.trial_expirado&ativo=eq.true', { ok: true, status: 200, json: async () => [{ count: 7 }] }],
+    ['tenants?select=id,email&status_pagamento=eq.trial_expirado&ativo=eq.true', { ok: true, status: 200, json: async () => tenants }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const d = events.find((e) => e.payload?.symptom === 'db-consistency');
+  assert.equal(d.severity, 'critical');
+  assert.equal(d.payload.inconsistent_count, 7);
+  // Cap at 5 in payload (full list in evidence)
+  assert.equal(d.payload.affected_tenant_ids.length, 5);
+});
+
+test('symptomD: query error → skip silently (no false critical)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(1)] }],
+    ['tenants?select=count&plano=neq.trial&ativo=eq.true&mp_subscription_id', { ok: true, status: 200, json: async () => [{ count: 1 }] }],
+    ['tenants?select=count&status_pagamento=eq.trial_expirado&ativo=eq.true', { ok: false, status: 500, json: async () => ({}) }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const d = events.find((e) => e.payload?.symptom === 'db-consistency');
+  assert.equal(d, undefined);
+});
