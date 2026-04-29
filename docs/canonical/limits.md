@@ -24,6 +24,7 @@ VPS dedicado que roda Evolution API + Postgres dela + n8n (3 containers) + n8n P
 
 **Dashboard:** https://my.vultr.com (login Bitwarden item `vultr`) — instance `InkFlow SaaS` ID `d111655f-f57b-4fd6-bc27-577f6b04b0b0`.
 **Provisionamento:** Ubuntu 22.04 x64, 4 vCPU / 8 GB RAM / 160 GB SSD, Miami location, $37.72/mês (validado painel 2026-04-29). Plano Vultr Cloud Compute Regular Performance.
+**Endpoint health metrics:** `https://n8n.inkflowbrasil.com/_health/metrics` (auth via header `X-Health-Token`). Coleta via bash script + cron 1min no host (`/usr/local/bin/inkflow-health-metrics.sh`), servido por container `inkflow-health-1` (nginx:alpine) via Traefik labels. Decisão arquitetural em [decisions/2026-04-29-vps-limits-data-source.md](decisions/2026-04-29-vps-limits-data-source.md).
 
 ## Cloudflare Workers (`inkflow-cron`)
 
