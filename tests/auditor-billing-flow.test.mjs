@@ -13,3 +13,92 @@ test('detect with empty env returns empty array', async () => {
   });
   assert.deepEqual(events, []);
 });
+
+const NOW = new Date('2026-04-29T12:00:00Z').getTime();
+const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+
+const baseEnv = {
+  SUPABASE_SERVICE_KEY: 'sb-key-test',
+  MP_ACCESS_TOKEN: 'mp-tok',
+  MAILERLITE_API_KEY: 'ml-tok',
+  MAILERLITE_GROUP_CLIENTES_ATIVOS: '184387920768009398',
+};
+
+function paymentLogRow(hoursAgo) {
+  return { created_at: new Date(NOW - hoursAgo * 3600 * 1000).toISOString() };
+}
+
+function makeFetchImpl(routes) {
+  return async (url, opts) => {
+    for (const [pattern, response] of routes) {
+      if (String(url).includes(pattern)) {
+        if (response instanceof Error) throw response;
+        return typeof response === 'function' ? response(url, opts) : response;
+      }
+    }
+    return { ok: true, status: 200, text: async () => '[]', json: async () => [] };
+  };
+}
+
+// ── Sintoma A: webhook delay ────────────────────────────────────────────────
+
+test('symptomA: env missing SUPABASE_SERVICE_KEY → skip silently', async () => {
+  const fetchImpl = makeFetchImpl([]);
+  const events = await detect({ env: {}, fetchImpl, now: NOW });
+  const a = events.find((e) => e.payload?.symptom === 'webhook-delay');
+  assert.equal(a, undefined);
+});
+
+test('symptomA: payment_logs empty + zero active subs → skip silently', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [] }],
+    ['tenants?', { ok: true, status: 200, json: async () => [{ count: 0 }] }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const a = events.find((e) => e.payload?.symptom === 'webhook-delay');
+  assert.equal(a, undefined);
+});
+
+test('symptomA: last webhook 2h ago → clean (under 6h threshold)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(2)] }],
+    ['tenants?', { ok: true, status: 200, json: async () => [{ count: 3 }] }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const a = events.find((e) => e.payload?.symptom === 'webhook-delay');
+  assert.equal(a?.severity, 'clean');
+});
+
+test('symptomA: last webhook 8h ago + 2 active subs → warn', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(8)] }],
+    ['tenants?', { ok: true, status: 200, json: async () => [{ count: 2 }] }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const a = events.find((e) => e.payload?.symptom === 'webhook-delay');
+  assert.equal(a.severity, 'warn');
+  assert.equal(a.payload.hours_since_last_webhook, 8);
+  assert.equal(a.payload.active_subscriptions_count, 2);
+  assert.equal(a.payload.runbook_path, 'docs/canonical/runbooks/mp-webhook-down.md');
+});
+
+test('symptomA: last webhook 8h ago + 0 active subs → clean (no subs explains absence)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(8)] }],
+    ['tenants?', { ok: true, status: 200, json: async () => [{ count: 0 }] }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const a = events.find((e) => e.payload?.symptom === 'webhook-delay');
+  assert.equal(a?.severity, 'clean');
+});
+
+test('symptomA: respects AUDIT_BILLING_FLOW_WEBHOOK_DELAY_HOURS env override', async () => {
+  const env = { ...baseEnv, AUDIT_BILLING_FLOW_WEBHOOK_DELAY_HOURS: '12' };
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(8)] }],
+    ['tenants?', { ok: true, status: 200, json: async () => [{ count: 2 }] }],
+  ]);
+  const events = await detect({ env, fetchImpl, now: NOW });
+  const a = events.find((e) => e.payload?.symptom === 'webhook-delay');
+  assert.equal(a?.severity, 'clean'); // 8h < 12h threshold → clean
+});
