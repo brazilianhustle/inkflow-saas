@@ -56,7 +56,7 @@ Validar antes de começar Task 1:
 
 - [ ] Estado git limpo em `main` (commit `40698ea` ou descendente). `git status` retorna "working tree clean".
 - [ ] Branch novo `feat/auditor-billing-flow` criado a partir de main: `git switch -c feat/auditor-billing-flow`.
-- [ ] `npm test` passa em main com 76 tests (24 deploy-health unit + 7 deploy-health endpoint + 45 regression).
+- [ ] `node --test tests/*.test.mjs` passa em main com 105 tests (todos os 11 arquivos `.test.mjs` em `tests/`). Não há `package.json` na raiz — usar invocação direta do node test runner.
 - [ ] Env vars já em prod (zero novos secrets a cadastrar):
   - `SUPABASE_SERVICE_KEY` ✅ — já em CF Pages env (usado por todos auditores).
   - `MP_ACCESS_TOKEN` ✅ — já em CF Pages env (usado por mp-ipn.js, key-expiry, create-subscription).
@@ -1412,8 +1412,8 @@ Expected: PASS — `tests 7 | pass 7 | fail 0`.
 
 - [ ] **Step 5: Rodar a suite COMPLETA (regression check)**
 
-Run: `npm test`
-Expected: PASS — todos os tests do repo passing. **Atual baseline: 76 → novo total esperado: 76 + 22 + 7 = 105 tests.** Se algum dos 76 antigos falhar, é regression introduzida — fix antes de prosseguir.
+Run: `node --test tests/*.test.mjs`
+Expected: PASS — todos os tests do repo passing. **Atual baseline: 105 → novo total esperado: 105 + 22 + 7 = 134 tests.** Se algum dos 105 antigos falhar, é regression introduzida — fix antes de prosseguir.
 
 - [ ] **Step 6: Commit**
 
@@ -1621,7 +1621,7 @@ Implementa Auditor #5 `billing-flow` (4 sintomas: webhook delay/silent + MailerL
 
 ## Test plan
 
-- [ ] `npm test` — 105 tests passing (76 baseline + 22 unit billing-flow + 7 endpoint billing-flow)
+- [ ] `node --test tests/*.test.mjs` — 134 tests passing (105 baseline + 22 unit billing-flow + 7 endpoint billing-flow)
 - [ ] `npx wrangler deploy --dry-run` em `cron-worker/` — TOML válido, 9 triggers listados
 - [ ] Após merge: GHA `Deploy to Cloudflare Pages` success → endpoint live (HTTP 401 sem auth)
 - [ ] Cron natural dispara 18:30 UTC (próximo) e exercita pipeline em prod
@@ -1715,10 +1715,10 @@ Expected: 9 triggers ativos. Próximo `30 */6 * * *` será 18:30 UTC do dia.
 
 ```bash
 git checkout main && git pull origin main
-npm test
+node --test tests/*.test.mjs
 ```
 
-Expected: PASS — 105 tests `tests 105 | pass 105 | fail 0`.
+Expected: PASS — 134 tests `tests 134 | pass 134 | fail 0`.
 
 - [ ] **Step 3: Criar eval doc**
 
@@ -1799,7 +1799,7 @@ Edit `/Users/brazilianhustler/.claude/projects/-Users-brazilianhustler/memory/In
 
 **Cron:** `30 */6 * * *` — 4x ao dia (00:30/06:30/12:30/18:30 UTC), offset 30min do deploy-health. cron-worker `inkflow-cron` agora com 9 triggers (cap 30 do plano Paid).
 
-**Tests:** 105 verde (76 baseline + 22 unit billing-flow + 7 endpoint billing-flow). TDD strict.
+**Tests:** 134 verde (105 baseline + 22 unit billing-flow + 7 endpoint billing-flow). TDD strict.
 
 **Endpoint live em prod:** `POST https://inkflowbrasil.com/api/cron/audit-billing-flow` retorna HTTP 401 sem auth (sanity check OK).
 
@@ -1921,5 +1921,5 @@ Expected: 1 row com `status='success'`, `events_emitted=0` (estado inicial, sem 
 
 - **Modo execução autônoma + qualidade > pressa:** subagent dispatch deve seguir TDD strict (red→green per step), não pular steps. Code review é parte do processo, não opcional.
 - **PR# placeholder:** vai ser substituído em runtime após `gh pr create` retornar o número real.
-- **Tests baseline atual main:** 76. Se ao começar Task 1 esse número não bater, parar e investigar regression antes de prosseguir.
+- **Tests baseline atual main:** 105 (verificado pre-flight via `node --test tests/*.test.mjs`). Se ao começar Task 1 esse número não bater, parar e investigar regression antes de prosseguir.
 - **CRON_SECRET smoke E2E full:** aceitar smoke parcial conscientemente — bloqueio operacional já documentado em backlog.
