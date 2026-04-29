@@ -191,9 +191,9 @@ test('symptomC: all 3 active tenants in MailerLite group → clean', async () =>
       tenantWithEmail('t2', 'b@test.com'),
       tenantWithEmail('t3', 'c@test.com'),
     ] }],
-    ['/api/subscribers/a@test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [{ id: '184387920768009398' }] } }) }],
-    ['/api/subscribers/b@test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [{ id: '184387920768009398' }] } }) }],
-    ['/api/subscribers/c@test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [{ id: '184387920768009398' }] } }) }],
+    ['/api/subscribers/a%40test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [{ id: '184387920768009398' }] } }) }],
+    ['/api/subscribers/b%40test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [{ id: '184387920768009398' }] } }) }],
+    ['/api/subscribers/c%40test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [{ id: '184387920768009398' }] } }) }],
   ]);
   const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
   const c = events.find((e) => e.payload?.symptom === 'mailerlite-drift');
@@ -209,9 +209,9 @@ test('symptomC: 2 of 3 tenants missing in group → warn with emails', async () 
       tenantWithEmail('t2', 'b@test.com'),
       tenantWithEmail('t3', 'c@test.com'),
     ] }],
-    ['/api/subscribers/a@test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [{ id: '184387920768009398' }] } }) }],
-    ['/api/subscribers/b@test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [] } }) }],
-    ['/api/subscribers/c@test.com', { ok: false, status: 404, json: async () => ({ message: 'not found' }) }],
+    ['/api/subscribers/a%40test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [{ id: '184387920768009398' }] } }) }],
+    ['/api/subscribers/b%40test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [] } }) }],
+    ['/api/subscribers/c%40test.com', { ok: false, status: 404, json: async () => ({ message: 'not found' }) }],
   ]);
   const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
   const c = events.find((e) => e.payload?.symptom === 'mailerlite-drift');

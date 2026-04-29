@@ -215,7 +215,7 @@ async function fetchActiveTenantEmailsSample(env, fetchImpl) {
 async function checkSubscriberInGroup(email, groupId, env, fetchImpl) {
   const token = env.MAILERLITE_API_KEY;
   if (!token) return 'unknown';
-  const url = `${ML_BASE}/subscribers/${email}`;
+  const url = `${ML_BASE}/subscribers/${encodeURIComponent(email)}`;
   try {
     const res = await fetchImpl(url, {
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
