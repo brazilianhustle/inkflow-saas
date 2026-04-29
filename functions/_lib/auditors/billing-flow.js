@@ -112,9 +112,92 @@ async function detectSymptomA(env, fetchImpl, now) {
   }];
 }
 
+const DEFAULT_WEBHOOK_SILENT_HOURS = 24;
+const ACTIVE_TENANTS_SAMPLE_LIMIT = 5;
+
+function webhookSilentThresholdMs(env) {
+  const h = parseInt(env.AUDIT_BILLING_FLOW_WEBHOOK_SILENT_HOURS || `${DEFAULT_WEBHOOK_SILENT_HOURS}`, 10);
+  return Number.isFinite(h) && h > 0 ? h * 3600 * 1000 : DEFAULT_WEBHOOK_SILENT_HOURS * 3600 * 1000;
+}
+
+async function fetchActiveTenantsSample(env, fetchImpl) {
+  const sbKey = env.SUPABASE_SERVICE_KEY;
+  if (!sbKey) return [];
+  const url = `${SUPABASE_URL}/rest/v1/tenants?select=id,mp_subscription_id&plano=neq.trial&ativo=eq.true&mp_subscription_id=not.is.null&order=created_at.asc&limit=${ACTIVE_TENANTS_SAMPLE_LIMIT}`;
+  try {
+    const res = await fetchImpl(url, { headers: sbHeaders(sbKey), signal: timeoutSignal(5000) });
+    if (!res.ok) return [];
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
+}
+
+async function confirmActiveInMP(mpSubId, env, fetchImpl) {
+  const token = env.MP_ACCESS_TOKEN;
+  if (!token) return false;
+  try {
+    const res = await fetchImpl(`https://api.mercadopago.com/preapproval/${encodeURIComponent(mpSubId)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: timeoutSignal(5000),
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data?.status === 'authorized';
+  } catch {
+    return false;
+  }
+}
+
+async function detectSymptomB(env, fetchImpl, now) {
+  if (!env.SUPABASE_SERVICE_KEY || !env.MP_ACCESS_TOKEN) return [];
+
+  const lastWebhookMs = await fetchMostRecentWebhookAt(env, fetchImpl);
+  if (lastWebhookMs === null) return []; // No payment_logs → no signal
+
+  const elapsedMs = now - lastWebhookMs;
+  const thresholdMs = webhookSilentThresholdMs(env);
+  if (elapsedMs <= thresholdMs) return []; // Under 24h → only Sintoma A applies
+
+  const sample = await fetchActiveTenantsSample(env, fetchImpl);
+  if (sample.length === 0) return []; // No active subs → no signal
+
+  // Confirm via MP API in parallel (≤5 calls, 5s timeout each)
+  const confirmations = await Promise.all(
+    sample.map((t) => confirmActiveInMP(t.mp_subscription_id, env, fetchImpl))
+  );
+  const confirmedActive = confirmations.filter(Boolean).length;
+
+  const hoursSince = Math.round(elapsedMs / 3600000);
+  const severity = confirmedActive >= 1 ? 'critical' : 'warn';
+
+  return [{
+    severity,
+    payload: {
+      runbook_path: RUNBOOK_PATH,
+      suggested_subagent: SUGGESTED_SUBAGENT,
+      summary: confirmedActive >= 1
+        ? `Webhook MP silente há ${hoursSince}h com ${confirmedActive} subs ativas confirmadas no MP`
+        : `Webhook MP silente há ${hoursSince}h mas zero subs ativas confirmadas (demoted)`,
+      symptom: 'webhook-silent',
+      hours_since_last_webhook: hoursSince,
+      last_webhook_at: new Date(lastWebhookMs).toISOString(),
+      sample_size: sample.length,
+      confirmed_active_in_mp: confirmedActive,
+      drift_type: 'webhook_silent',
+    },
+    evidence: {
+      source: 'supabase/payment_logs+tenants + mercadopago/preapproval',
+      sampled_subscription_ids: sample.map((t) => t.mp_subscription_id),
+    },
+  }];
+}
+
 export async function detect({ env = {}, fetchImpl, now = Date.now() } = {}) {
   const events = [];
   if (!fetchImpl) return events;
   events.push(...await detectSymptomA(env, fetchImpl, now));
+  events.push(...await detectSymptomB(env, fetchImpl, now));
   return events;
 }

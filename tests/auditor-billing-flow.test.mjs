@@ -102,3 +102,76 @@ test('symptomA: respects AUDIT_BILLING_FLOW_WEBHOOK_DELAY_HOURS env override', a
   const a = events.find((e) => e.payload?.symptom === 'webhook-delay');
   assert.equal(a?.severity, 'clean'); // 8h < 12h threshold → clean
 });
+
+// ── Sintoma B: webhook silent + MP confirm ──────────────────────────────────
+
+function tenantRow(id, mpSubId) {
+  return { id, mp_subscription_id: mpSubId, plano: 'estudio', ativo: true };
+}
+
+test('symptomB: last webhook 30h + 1 MP sub authorized → critical', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(30)] }],
+    ['tenants?select=count', { ok: true, status: 200, json: async () => [{ count: 2 }] }],
+    ['tenants?select=id', { ok: true, status: 200, json: async () => [
+      tenantRow('t1', 'mp-sub-1'),
+      tenantRow('t2', 'mp-sub-2'),
+    ] }],
+    ['preapproval/mp-sub-1', { ok: true, status: 200, json: async () => ({ status: 'authorized' }) }],
+    ['preapproval/mp-sub-2', { ok: true, status: 200, json: async () => ({ status: 'paused' }) }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'webhook-silent');
+  assert.equal(b?.severity, 'critical');
+  assert.equal(b.payload.confirmed_active_in_mp, 1);
+  assert.equal(b.payload.runbook_path, 'docs/canonical/runbooks/mp-webhook-down.md');
+});
+
+test('symptomB: last webhook 30h + 0 MP subs authorized → demote to warn', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(30)] }],
+    ['tenants?select=count', { ok: true, status: 200, json: async () => [{ count: 1 }] }],
+    ['tenants?select=id', { ok: true, status: 200, json: async () => [tenantRow('t1', 'mp-sub-1')] }],
+    ['preapproval/mp-sub-1', { ok: true, status: 200, json: async () => ({ status: 'cancelled' }) }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'webhook-silent');
+  assert.equal(b?.severity, 'warn');
+  assert.equal(b.payload.confirmed_active_in_mp, 0);
+});
+
+test('symptomB: last webhook 12h (under 24h threshold) → no symptomB event', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(12)] }],
+    ['tenants?select=count', { ok: true, status: 200, json: async () => [{ count: 1 }] }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'webhook-silent');
+  assert.equal(b, undefined); // Only Sintoma A applies (warn)
+});
+
+test('symptomB: MP API transient error → silent skip (no critical from network blip)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(30)] }],
+    ['tenants?select=count', { ok: true, status: 200, json: async () => [{ count: 1 }] }],
+    ['tenants?select=id', { ok: true, status: 200, json: async () => [tenantRow('t1', 'mp-sub-1')] }],
+    ['preapproval/mp-sub-1', new Error('ECONNRESET')],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'webhook-silent');
+  // Network error = 0 confirmed → demote to warn (not critical from blip)
+  assert.equal(b?.severity, 'warn');
+  assert.equal(b.payload.confirmed_active_in_mp, 0);
+});
+
+test('symptomB: missing MP_ACCESS_TOKEN → skip Sintoma B silently', async () => {
+  const env = { ...baseEnv };
+  delete env.MP_ACCESS_TOKEN;
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(30)] }],
+    ['tenants?select=count', { ok: true, status: 200, json: async () => [{ count: 1 }] }],
+  ]);
+  const events = await detect({ env, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'webhook-silent');
+  assert.equal(b, undefined);
+});
