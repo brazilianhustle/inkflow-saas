@@ -57,3 +57,4 @@ Os 6 gaps ficam registrados em `[[InkFlow — Pendências (backlog)]]` com prior
 Auditores que detectam sintomas mapeados em §6.3 e disparam alerta com `payload.runbook_path` apontando pra fonte única acima:
 
 - **key-expiry** (2026-04-27): detecta secrets expirando ou inválidos via TTL/self-check/drift. Alerta `[critical] [key-expiry]` → seguir [secrets-expired.md](../runbooks/secrets-expired.md). Doc canônico: [auditores.md#key-expiry](../auditores.md#key-expiry).
+- **deploy-health** (2026-04-29): detecta falhas recentes na pipeline de deploy via GHA Actions API + CF Pages API. Alerta `[critical] [deploy-health]` → seguir [rollback.md](../runbooks/rollback.md). Doc canônico: [auditores.md#deploy-health](../auditores.md#deploy-health).

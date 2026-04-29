@@ -56,6 +56,7 @@ Auditores em prod sugerem qual subagent é especialista no domínio do alerta. F
 | Auditor | Suggested subagent | Doctrine reason |
 |---|---|---|
 | `key-expiry` | `deploy-engineer` | Secrets vivem em CF Pages env; rotação envolve `wrangler` + GHA Secrets. Domain match. |
+| `deploy-health` | `deploy-engineer` | Failures de pipeline (GHA + CF Pages + Wrangler). Domain match — agent já roteia rollback.md. |
 
 Doc canonical dos auditores: [`docs/canonical/auditores.md`](../../docs/canonical/auditores.md).
 
