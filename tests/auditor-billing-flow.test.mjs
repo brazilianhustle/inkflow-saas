@@ -175,3 +175,86 @@ test('symptomB: missing MP_ACCESS_TOKEN → skip Sintoma B silently', async () =
   const b = events.find((e) => e.payload?.symptom === 'webhook-silent');
   assert.equal(b, undefined);
 });
+
+// ── Sintoma C: MailerLite group drift ───────────────────────────────────────
+
+function tenantWithEmail(id, email) {
+  return { id, email, mp_subscription_id: `mp-${id}`, plano: 'estudio', ativo: true };
+}
+
+test('symptomC: all 3 active tenants in MailerLite group → clean', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(1)] }],
+    ['tenants?select=count', { ok: true, status: 200, json: async () => [{ count: 3 }] }],
+    ['tenants?select=id,email', { ok: true, status: 200, json: async () => [
+      tenantWithEmail('t1', 'a@test.com'),
+      tenantWithEmail('t2', 'b@test.com'),
+      tenantWithEmail('t3', 'c@test.com'),
+    ] }],
+    ['/api/subscribers/a@test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [{ id: '184387920768009398' }] } }) }],
+    ['/api/subscribers/b@test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [{ id: '184387920768009398' }] } }) }],
+    ['/api/subscribers/c@test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [{ id: '184387920768009398' }] } }) }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const c = events.find((e) => e.payload?.symptom === 'mailerlite-drift');
+  assert.equal(c?.severity, 'clean');
+});
+
+test('symptomC: 2 of 3 tenants missing in group → warn with emails', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(1)] }],
+    ['tenants?select=count', { ok: true, status: 200, json: async () => [{ count: 3 }] }],
+    ['tenants?select=id,email', { ok: true, status: 200, json: async () => [
+      tenantWithEmail('t1', 'a@test.com'),
+      tenantWithEmail('t2', 'b@test.com'),
+      tenantWithEmail('t3', 'c@test.com'),
+    ] }],
+    ['/api/subscribers/a@test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [{ id: '184387920768009398' }] } }) }],
+    ['/api/subscribers/b@test.com', { ok: true, status: 200, json: async () => ({ data: { groups: [] } }) }],
+    ['/api/subscribers/c@test.com', { ok: false, status: 404, json: async () => ({ message: 'not found' }) }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const c = events.find((e) => e.payload?.symptom === 'mailerlite-drift');
+  assert.equal(c?.severity, 'warn');
+  assert.equal(c.payload.missing_count, 2);
+  assert.deepEqual(c.payload.missing_emails.sort(), ['b@test.com', 'c@test.com']);
+});
+
+test('symptomC: missing MAILERLITE_API_KEY → skip silently', async () => {
+  const env = { ...baseEnv };
+  delete env.MAILERLITE_API_KEY;
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(1)] }],
+    ['tenants?select=count', { ok: true, status: 200, json: async () => [{ count: 1 }] }],
+  ]);
+  const events = await detect({ env, fetchImpl, now: NOW });
+  const c = events.find((e) => e.payload?.symptom === 'mailerlite-drift');
+  assert.equal(c, undefined);
+});
+
+test('symptomC: zero active tenants → skip silently', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(1)] }],
+    ['tenants?select=count', { ok: true, status: 200, json: async () => [{ count: 0 }] }],
+    ['tenants?select=id,email', { ok: true, status: 200, json: async () => [] }],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const c = events.find((e) => e.payload?.symptom === 'mailerlite-drift');
+  assert.equal(c, undefined);
+});
+
+test('symptomC: ML API transient error on all calls → skip silently (no false warn)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['payment_logs?', { ok: true, status: 200, json: async () => [paymentLogRow(1)] }],
+    ['tenants?select=count', { ok: true, status: 200, json: async () => [{ count: 2 }] }],
+    ['tenants?select=id,email', { ok: true, status: 200, json: async () => [
+      tenantWithEmail('t1', 'a@test.com'),
+      tenantWithEmail('t2', 'b@test.com'),
+    ] }],
+    ['/api/subscribers/', new Error('ETIMEDOUT')],
+  ]);
+  const events = await detect({ env: baseEnv, fetchImpl, now: NOW });
+  const c = events.find((e) => e.payload?.symptom === 'mailerlite-drift');
+  // All ML calls failed → skip Sintoma C (don't false-positive on network blip)
+  assert.equal(c, undefined);
+});

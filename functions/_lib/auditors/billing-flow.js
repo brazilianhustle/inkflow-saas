@@ -194,10 +194,96 @@ async function detectSymptomB(env, fetchImpl, now) {
   }];
 }
 
+const ML_BASE = 'https://connect.mailerlite.com/api';
+const DEFAULT_ML_GROUP_CLIENTES = '184387920768009398';
+
+async function fetchActiveTenantEmailsSample(env, fetchImpl) {
+  const sbKey = env.SUPABASE_SERVICE_KEY;
+  if (!sbKey) return [];
+  const url = `${SUPABASE_URL}/rest/v1/tenants?select=id,email&plano=neq.trial&ativo=eq.true&email=not.is.null&order=created_at.asc&limit=${ACTIVE_TENANTS_SAMPLE_LIMIT}`;
+  try {
+    const res = await fetchImpl(url, { headers: sbHeaders(sbKey), signal: timeoutSignal(5000) });
+    if (!res.ok) return [];
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows.filter((r) => r.email) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Returns: 'in' | 'missing' | 'unknown' (network error or 5xx — not 404)
+async function checkSubscriberInGroup(email, groupId, env, fetchImpl) {
+  const token = env.MAILERLITE_API_KEY;
+  if (!token) return 'unknown';
+  const url = `${ML_BASE}/subscribers/${email}`;
+  try {
+    const res = await fetchImpl(url, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      signal: timeoutSignal(5000),
+    });
+    if (res.status === 404) return 'missing'; // Subscriber doesn't exist in ML at all
+    if (!res.ok) return 'unknown'; // 5xx, 401, 403 → don't false-positive
+    const body = await res.json();
+    const groups = body?.data?.groups;
+    if (!Array.isArray(groups)) return 'unknown';
+    return groups.some((g) => String(g.id) === String(groupId)) ? 'in' : 'missing';
+  } catch {
+    return 'unknown';
+  }
+}
+
+async function detectSymptomC(env, fetchImpl) {
+  if (!env.SUPABASE_SERVICE_KEY || !env.MAILERLITE_API_KEY) return [];
+
+  const sample = await fetchActiveTenantEmailsSample(env, fetchImpl);
+  if (sample.length === 0) return [];
+
+  const groupId = env.MAILERLITE_GROUP_CLIENTES_ATIVOS || DEFAULT_ML_GROUP_CLIENTES;
+  const results = await Promise.all(
+    sample.map(async (t) => ({
+      email: t.email,
+      status: await checkSubscriberInGroup(t.email, groupId, env, fetchImpl),
+    }))
+  );
+
+  // If ALL came back 'unknown' → all calls failed; suppress (network blip)
+  const allUnknown = results.every((r) => r.status === 'unknown');
+  if (allUnknown) return [];
+
+  const missing = results.filter((r) => r.status === 'missing').map((r) => r.email);
+  if (missing.length === 0) {
+    return [{
+      severity: 'clean',
+      payload: { symptom: 'mailerlite-drift', sample_size: sample.length, missing_count: 0 },
+      evidence: { source: 'supabase/tenants + mailerlite/subscribers' },
+    }];
+  }
+
+  return [{
+    severity: 'warn',
+    payload: {
+      runbook_path: RUNBOOK_PATH,
+      suggested_subagent: SUGGESTED_SUBAGENT,
+      summary: `${missing.length} de ${sample.length} tenants ativos sem inscrição no grupo MailerLite "Clientes Ativos"`,
+      symptom: 'mailerlite-drift',
+      sample_size: sample.length,
+      missing_count: missing.length,
+      missing_emails: missing.slice(0, 5),
+      group_id: groupId,
+      drift_type: 'mailerlite_sync',
+    },
+    evidence: {
+      source: 'supabase/tenants + mailerlite/subscribers',
+      checked_emails: sample.map((t) => t.email),
+    },
+  }];
+}
+
 export async function detect({ env = {}, fetchImpl, now = Date.now() } = {}) {
   const events = [];
   if (!fetchImpl) return events;
   events.push(...await detectSymptomA(env, fetchImpl, now));
   events.push(...await detectSymptomB(env, fetchImpl, now));
+  events.push(...await detectSymptomC(env, fetchImpl));
   return events;
 }
