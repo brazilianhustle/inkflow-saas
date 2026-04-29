@@ -25,7 +25,7 @@ async function detectSymptomA(env, fetchImpl, now) {
   if (!token) return [];
 
   const repo = env.GITHUB_REPO_FULL_NAME || DEFAULT_REPO;
-  const url = `https://api.github.com/repos/${repo}/actions/runs?per_page=10`;
+  const url = `https://api.github.com/repos/${repo}/actions/runs?per_page=20`;
   const headers = {
     Authorization: `Bearer ${token}`,
     Accept: 'application/vnd.github+json',
@@ -65,14 +65,24 @@ async function detectSymptomA(env, fetchImpl, now) {
   }
 
   const runs = Array.isArray(data?.workflow_runs) ? data.workflow_runs : [];
-  const cutoff = now - windowMs(env);
-  const failed = runs.filter((r) =>
-    r.name === GHA_WORKFLOW_NAME &&
-    r.conclusion === 'failure' &&
-    new Date(r.created_at).getTime() >= cutoff
-  );
 
-  if (failed.length === 0) {
+  const sortedTargetRuns = runs
+    .filter((r) => r.name === GHA_WORKFLOW_NAME)
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  const cutoff = now - windowMs(env);
+  const inWindow = sortedTargetRuns.filter((r) => new Date(r.created_at).getTime() >= cutoff);
+
+  const consecutiveFailures = [];
+  for (const r of inWindow) {
+    if (r.conclusion === 'failure') {
+      consecutiveFailures.push(r);
+    } else {
+      break;
+    }
+  }
+
+  if (consecutiveFailures.length === 0) {
     return [{
       severity: 'clean',
       payload: { symptom: 'gha-failures', failed_count: 0 },
@@ -80,22 +90,20 @@ async function detectSymptomA(env, fetchImpl, now) {
     }];
   }
 
-  const severity = failed.length >= 2 ? 'critical' : 'warn';
-  const lastSuccess = runs.find((r) =>
-    r.name === GHA_WORKFLOW_NAME && r.conclusion === 'success'
-  );
+  const severity = consecutiveFailures.length >= 2 ? 'critical' : 'warn';
+  const lastSuccess = sortedTargetRuns.find((r) => r.conclusion === 'success');
 
   return [{
     severity,
     payload: {
       runbook_path: RUNBOOK_PATH,
       suggested_subagent: SUGGESTED_SUBAGENT,
-      summary: failed.length >= 2
-        ? `${failed.length} GHA deploys consecutivos falharam`
+      summary: consecutiveFailures.length >= 2
+        ? `${consecutiveFailures.length} GHA deploys consecutivos falharam`
         : `1 GHA deploy falhou`,
       symptom: 'gha-failures',
-      failed_count: failed.length,
-      failed_runs: failed.map((r) => ({
+      failed_count: consecutiveFailures.length,
+      failed_runs: consecutiveFailures.map((r) => ({
         id: r.id,
         conclusion: r.conclusion,
         created_at: r.created_at,

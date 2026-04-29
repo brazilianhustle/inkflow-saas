@@ -144,3 +144,46 @@ test('symptomA: ignora failures fora da janela (>6h)', async () => {
   const a = events.find((e) => e.payload?.symptom === 'gha-failures' && e.severity !== 'clean');
   assert.equal(a, undefined);
 });
+
+test('symptomA: failure → success → failure (não-consecutivo) → warn', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['api.github.com/repos/', {
+      ok: true, status: 200,
+      json: async () => ({
+        workflow_runs: [
+          ghaRun({ id: 1, conclusion: 'failure', hoursAgo: 1 }),
+          ghaRun({ id: 2, conclusion: 'success', hoursAgo: 2 }),
+          ghaRun({ id: 3, conclusion: 'failure', hoursAgo: 3 }),
+        ],
+      }),
+    }],
+  ]);
+  const events = await detect({ env: ghaEnv, fetchImpl, now: NOW });
+  const a = events.find((e) => e.payload?.symptom === 'gha-failures');
+  assert.equal(a.severity, 'warn', 'Não-consecutivo deve ser warn (1 falha mais recente)');
+  assert.equal(a.payload.failed_count, 1);
+});
+
+test('symptomA: GHA API 500 → warn (transient HTTP error)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['api.github.com/repos/', { ok: false, status: 500, text: async () => 'Internal Server Error' }],
+  ]);
+  const events = await detect({ env: ghaEnv, fetchImpl, now: NOW });
+  const a = events.find((e) => e.payload?.symptom === 'gha-failures');
+  assert.ok(a);
+  assert.equal(a.severity, 'warn');
+  assert.equal(a.payload.status, 500);
+  assert.match(a.payload.summary, /500/);
+});
+
+test('symptomA: network error → warn (network_error status)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['api.github.com/repos/', new Error('ECONNRESET')],
+  ]);
+  const events = await detect({ env: ghaEnv, fetchImpl, now: NOW });
+  const a = events.find((e) => e.payload?.symptom === 'gha-failures');
+  assert.ok(a);
+  assert.equal(a.severity, 'warn');
+  assert.equal(a.payload.status, 'network_error');
+  assert.match(a.payload.summary, /transient|ECONNRESET|error/i);
+});
