@@ -57,9 +57,49 @@ Quando alerta `[critical] [key-expiry]` chegar no Telegram, seguir [secrets-expi
 
 ---
 
+## deploy-health
+
+**Status:** ✅ Em produção (2026-04-29)
+**Onde:** `inkflow-cron` Worker
+**Frequência:** A cada 6h (cron `0 */6 * * *`)
+**Endpoint:** `functions/api/cron/audit-deploy-health.js`
+**Lib `detect()`:** `functions/_lib/auditors/deploy-health.js`
+**Tests:** `tests/auditor-deploy-health.test.mjs` + `tests/audit-deploy-health-endpoint.test.mjs`
+**Runbook:** [rollback.md](runbooks/rollback.md)
+**Suggested subagent:** `deploy-engineer`
+
+### Detecção em 3 sintomas
+
+| Symptom | Source | Severity rules |
+|---|---|---|
+| A (gha-failures) | GitHub Actions API — `Deploy to Cloudflare Pages` workflow | 0 fail clean / 1 warn / 2+ consecutivos critical (janela `AUDIT_DEPLOY_HEALTH_WINDOW_HOURS`, default 6h) |
+| B (pages-failures) | CF Pages API — `deployments?per_page=20` `latest_stage.status='failure'` | 0 fail clean / 1 warn / 2+ consecutivos critical (mesma janela) |
+| C (wrangler-drift) | CF Workers API `modified_on` vs GitHub `commits?path=cron-worker` | opt-in via `AUDIT_DEPLOY_HEALTH_WRANGLER_DRIFT='true'`. lag > 1h → warn |
+
+### Env vars necessárias
+
+- **`GITHUB_API_TOKEN`** (fine-grained PAT, repo `brazilianhustle/inkflow-saas`, Actions:Read + Contents:Read) — sem ele Sintomas A + C ficam skip silencioso.
+- **`CLOUDFLARE_API_TOKEN`** (já em prod) — Sintomas B + C.
+- **`CLOUDFLARE_ACCOUNT_ID`** (já em prod) — Sintomas B + C.
+- **`AUDIT_DEPLOY_HEALTH_WINDOW_HOURS`** (opcional, default 6) — janela de detecção pra Sintomas A + B.
+- **`AUDIT_DEPLOY_HEALTH_WRANGLER_DRIFT`** (opcional, default off) — opt-in pra Sintoma C.
+- **`CF_PAGES_PROJECT_NAME`** (opcional, default `inkflow-saas`).
+- **`CF_WORKER_SCRIPT_NAME`** (opcional, default `inkflow-cron`).
+- **`GITHUB_REPO_FULL_NAME`** (opcional, default `brazilianhustle/inkflow-saas`).
+
+### Dedupe
+
+Single-state per auditor (collapse). Múltiplos sintomas no mesmo run colapsam em 1 evento top-severity. `payload.affected_symptoms` lista todos. Trade-off pós-MVP: granularidade fina por sintoma requer migration.
+
+### Runbook trigger
+
+Quando alerta `[critical] [deploy-health]` chegar no Telegram, seguir [rollback.md](runbooks/rollback.md) — diagnóstico (1 min) → rollback (CF Pages + Worker) → fix git depois.
+
+---
+
 ## (Próximos auditores)
 
-`deploy-health`, `billing-flow`, `vps-limits`, `rls-drift` — pendentes. Ver spec §5 e plano-mestre Fábrica `2026-04-25-fabrica-inkflow-design.md` §3.
+`billing-flow`, `vps-limits`, `rls-drift` — pendentes. Ver spec §5 e plano-mestre Fábrica `2026-04-25-fabrica-inkflow-design.md` §3.
 
 ## Pipeline core (compartilhado)
 
