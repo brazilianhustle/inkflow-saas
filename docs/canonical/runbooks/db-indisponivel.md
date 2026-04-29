@@ -11,7 +11,7 @@ Banco principal fora do ar. Endpoints CF Pages que dependem dele (quase todos `/
 ## Sintomas
 
 - Endpoints `/api/create-subscription`, `/api/update-tenant`, `/api/mp-ipn`, `/api/get-tenant` retornando 500/503 simultaneamente
-- Telegram alert do auditor `billing-flow-health` (Sub-projeto 3) reportando spike de erros
+- Telegram alert do auditor `billing-flow` (Sub-projeto 3) reportando spike de erros
 - Reclamações simultâneas: "site não funciona", "não consigo logar"
 - Bot WhatsApp parado (workflow n8n falha em queries de `bot_state`/`conversas`)
 - Logs CF Pages com `ECONNREFUSED`, `fetch failed`, ou `5xx upstream` apontando pro hostname Supabase

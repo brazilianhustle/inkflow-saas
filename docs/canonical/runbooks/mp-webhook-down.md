@@ -10,7 +10,7 @@ Webhook IPN do Mercado Pago parou de chegar ou chega com erro. Endpoint alvo: `h
 
 ## Sintomas
 
-- Telegram alert do auditor `billing-flow-health` (Sub-projeto 3) — quando ativo
+- Telegram alert do auditor `billing-flow` (Sub-projeto 3, em prod desde 2026-04-29)
 - `payment_logs.created_at` sem entradas recentes apesar de pagamentos visíveis no MP dashboard
 - Cliente reclamando: "paguei e bot não me liberou" / "voltei pra trial após pagar"
 - MP dashboard → Webhooks → Histórico mostra falhas de delivery
