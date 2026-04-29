@@ -290,3 +290,46 @@ test('symptomB: failures fora da janela ignorados', async () => {
   const b = events.find((e) => e.payload?.symptom === 'pages-failures' && e.severity !== 'clean');
   assert.equal(b, undefined);
 });
+
+test('symptomB: failure → success → failure (não-consecutivo) → warn', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['/pages/projects/', {
+      ok: true, status: 200,
+      json: async () => ({
+        result: [
+          pagesDeployment({ id: 'a', status: 'failure', hoursAgo: 1 }),
+          pagesDeployment({ id: 'b', status: 'success', hoursAgo: 2 }),
+          pagesDeployment({ id: 'c', status: 'failure', hoursAgo: 3 }),
+        ],
+      }),
+    }],
+  ]);
+  const events = await detect({ env: cfEnv, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'pages-failures');
+  assert.equal(b.severity, 'warn', 'Não-consecutivo: após success, segunda falha não é contada → 1 consecutivo → warn');
+  assert.equal(b.payload.failed_count, 1);
+});
+
+test('symptomB: CF Pages API 500 → warn (transient HTTP error)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['/pages/projects/', { ok: false, status: 500, text: async () => 'Internal Server Error' }],
+  ]);
+  const events = await detect({ env: cfEnv, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'pages-failures');
+  assert.ok(b);
+  assert.equal(b.severity, 'warn');
+  assert.equal(b.payload.status, 500);
+  assert.match(b.payload.summary, /500/);
+});
+
+test('symptomB: network error → warn (network_error status)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['/pages/projects/', new Error('ECONNRESET')],
+  ]);
+  const events = await detect({ env: cfEnv, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'pages-failures');
+  assert.ok(b);
+  assert.equal(b.severity, 'warn');
+  assert.equal(b.payload.status, 'network_error');
+  assert.match(b.payload.summary, /transient|ECONNRESET|error/i);
+});
