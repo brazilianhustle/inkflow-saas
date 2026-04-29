@@ -99,7 +99,7 @@ Quando alerta `[critical] [deploy-health]` chegar no Telegram, seguir [rollback.
 
 ## (Próximos auditores)
 
-`deploy-health`, `billing-flow`, `vps-limits`, `rls-drift` — pendentes. Ver spec §5 e plano-mestre Fábrica `2026-04-25-fabrica-inkflow-design.md` §3.
+`billing-flow`, `vps-limits`, `rls-drift` — pendentes. Ver spec §5 e plano-mestre Fábrica `2026-04-25-fabrica-inkflow-design.md` §3.
 
 ## Pipeline core (compartilhado)
 
