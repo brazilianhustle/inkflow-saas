@@ -187,3 +187,106 @@ test('symptomA: network error → warn (network_error status)', async () => {
   assert.equal(a.payload.status, 'network_error');
   assert.match(a.payload.summary, /transient|ECONNRESET|error/i);
 });
+
+// Sintoma B — CF Pages build failures ───────────────────────────────────────
+
+const cfEnv = {
+  CLOUDFLARE_API_TOKEN: 'cf-tok',
+  CLOUDFLARE_ACCOUNT_ID: 'acc-123',
+};
+
+function pagesDeployment({ id, status, hoursAgo }) {
+  return {
+    id,
+    created_on: new Date(NOW - hoursAgo * 3600 * 1000).toISOString(),
+    latest_stage: { name: 'deploy', status },
+    url: `https://${id}.inkflow-saas.pages.dev`,
+  };
+}
+
+test('symptomB: env missing CLOUDFLARE_API_TOKEN → skip', async () => {
+  const fetchImpl = makeFetchImpl([]);
+  const events = await detect({ env: {}, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'pages-failures');
+  assert.equal(b, undefined);
+});
+
+test('symptomB: env missing CLOUDFLARE_ACCOUNT_ID → skip', async () => {
+  const fetchImpl = makeFetchImpl([]);
+  const events = await detect({
+    env: { CLOUDFLARE_API_TOKEN: 'cf' },
+    fetchImpl, now: NOW,
+  });
+  const b = events.find((e) => e.payload?.symptom === 'pages-failures');
+  assert.equal(b, undefined);
+});
+
+test('symptomB: 0 failures → clean (no warn/critical)', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['/pages/projects/', {
+      ok: true, status: 200,
+      json: async () => ({
+        result: [
+          pagesDeployment({ id: 'a', status: 'success', hoursAgo: 1 }),
+          pagesDeployment({ id: 'b', status: 'success', hoursAgo: 4 }),
+        ],
+      }),
+    }],
+  ]);
+  const events = await detect({ env: cfEnv, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'pages-failures' && e.severity !== 'clean');
+  assert.equal(b, undefined);
+});
+
+test('symptomB: 1 failure consecutive → warn', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['/pages/projects/', {
+      ok: true, status: 200,
+      json: async () => ({
+        result: [
+          pagesDeployment({ id: 'a', status: 'failure', hoursAgo: 2 }),
+          pagesDeployment({ id: 'b', status: 'success', hoursAgo: 8 }),
+        ],
+      }),
+    }],
+  ]);
+  const events = await detect({ env: cfEnv, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'pages-failures');
+  assert.ok(b);
+  assert.equal(b.severity, 'warn');
+  assert.equal(b.payload.failed_count, 1);
+});
+
+test('symptomB: 2 failures consecutive → critical', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['/pages/projects/', {
+      ok: true, status: 200,
+      json: async () => ({
+        result: [
+          pagesDeployment({ id: 'a', status: 'failure', hoursAgo: 1 }),
+          pagesDeployment({ id: 'b', status: 'failure', hoursAgo: 4 }),
+        ],
+      }),
+    }],
+  ]);
+  const events = await detect({ env: cfEnv, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'pages-failures');
+  assert.equal(b.severity, 'critical');
+  assert.equal(b.payload.failed_count, 2);
+});
+
+test('symptomB: failures fora da janela ignorados', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['/pages/projects/', {
+      ok: true, status: 200,
+      json: async () => ({
+        result: [
+          pagesDeployment({ id: 'a', status: 'failure', hoursAgo: 12 }),
+        ],
+      }),
+    }],
+  ]);
+  const events = await detect({ env: cfEnv, fetchImpl, now: NOW });
+  const b = events.find((e) => e.payload?.symptom === 'pages-failures' && e.severity !== 'clean');
+  assert.equal(b, undefined);
+});

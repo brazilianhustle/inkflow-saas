@@ -115,12 +115,107 @@ async function detectSymptomA(env, fetchImpl, now) {
   }];
 }
 
+// Sintoma B: CF Pages build failures ────────────────────────────────────────
+
+async function detectSymptomB(env, fetchImpl, now) {
+  const token = env.CLOUDFLARE_API_TOKEN;
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+  if (!token || !accountId) return [];
+
+  const projectName = env.CF_PAGES_PROJECT_NAME || 'inkflow-saas';
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments?per_page=20`;
+  const headers = { Authorization: `Bearer ${token}` };
+
+  let data;
+  try {
+    const res = await fetchImpl(url, { headers, signal: timeoutSignal(5000) });
+    if (!res.ok) {
+      return [{
+        severity: 'warn',
+        payload: {
+          runbook_path: RUNBOOK_PATH,
+          suggested_subagent: SUGGESTED_SUBAGENT,
+          summary: `CF Pages API self-check returned ${res.status}`,
+          symptom: 'pages-failures',
+          status: res.status,
+        },
+        evidence: { status: res.status, source: 'cloudflare/pages/deployments' },
+      }];
+    }
+    data = await res.json();
+  } catch (err) {
+    return [{
+      severity: 'warn',
+      payload: {
+        runbook_path: RUNBOOK_PATH,
+        suggested_subagent: SUGGESTED_SUBAGENT,
+        summary: `CF Pages API transient error: ${err.message}`,
+        symptom: 'pages-failures',
+        status: 'network_error',
+      },
+      evidence: { error: err.message, source: 'cloudflare/pages/deployments' },
+    }];
+  }
+
+  const deployments = Array.isArray(data?.result) ? data.result : [];
+
+  // Sort by created_on descending (don't trust API order)
+  const sorted = deployments
+    .slice()
+    .sort((a, b) => new Date(b.created_on).getTime() - new Date(a.created_on).getTime());
+
+  const cutoff = now - windowMs(env);
+  const inWindow = sorted.filter((d) => new Date(d.created_on).getTime() >= cutoff);
+
+  // Count CONSECUTIVE failures from most recent (same pattern as Sintoma A)
+  const consecutiveFailures = [];
+  for (const d of inWindow) {
+    if (d.latest_stage?.status === 'failure') {
+      consecutiveFailures.push(d);
+    } else {
+      break;
+    }
+  }
+
+  if (consecutiveFailures.length === 0) {
+    return [{
+      severity: 'clean',
+      payload: { symptom: 'pages-failures', failed_count: 0 },
+      evidence: { source: 'cloudflare/pages/deployments' },
+    }];
+  }
+
+  const severity = consecutiveFailures.length >= 2 ? 'critical' : 'warn';
+  const lastSuccess = sorted.find((d) => d.latest_stage?.status === 'success');
+
+  return [{
+    severity,
+    payload: {
+      runbook_path: RUNBOOK_PATH,
+      suggested_subagent: SUGGESTED_SUBAGENT,
+      summary: consecutiveFailures.length >= 2
+        ? `${consecutiveFailures.length} CF Pages builds consecutivos falharam`
+        : `1 CF Pages build falhou`,
+      symptom: 'pages-failures',
+      failed_count: consecutiveFailures.length,
+      failed_deployments: consecutiveFailures.map((d) => ({
+        id: d.id,
+        created_on: d.created_on,
+        url: d.url,
+      })),
+      last_successful_deploy: lastSuccess?.created_on || null,
+    },
+    evidence: { source: 'cloudflare/pages/deployments', total_inspected: deployments.length },
+  }];
+}
+
 // detect ────────────────────────────────────────────────────────────────────
 
 export async function detect({ env = {}, fetchImpl, now = Date.now() } = {}) {
   const events = [];
   if (fetchImpl) {
     events.push(...await detectSymptomA(env, fetchImpl, now));
+    events.push(...await detectSymptomB(env, fetchImpl, now));
   }
   return events;
 }
