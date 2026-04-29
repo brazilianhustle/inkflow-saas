@@ -209,6 +209,73 @@ async function detectSymptomB(env, fetchImpl, now) {
   }];
 }
 
+// Sintoma C: Wrangler drift (opt-in) ────────────────────────────────────────
+
+const ONE_HOUR_MS = 3600 * 1000;
+
+async function fetchJson(url, headers, fetchImpl) {
+  try {
+    const res = await fetchImpl(url, { headers, signal: timeoutSignal(5000) });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function detectSymptomC(env, fetchImpl) {
+  if (env.AUDIT_DEPLOY_HEALTH_WRANGLER_DRIFT !== 'true') return [];
+
+  const cfToken = env.CLOUDFLARE_API_TOKEN;
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+  const ghToken = env.GITHUB_API_TOKEN;
+  if (!cfToken || !accountId || !ghToken) return [];
+
+  const scriptName = env.CF_WORKER_SCRIPT_NAME || 'inkflow-cron';
+  const repo = env.GITHUB_REPO_FULL_NAME || DEFAULT_REPO;
+
+  const workerUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${scriptName}`;
+  const commitsUrl = `https://api.github.com/repos/${repo}/commits?path=cron-worker&per_page=1`;
+
+  const [workerData, commitsData] = await Promise.all([
+    fetchJson(workerUrl, { Authorization: `Bearer ${cfToken}` }, fetchImpl),
+    fetchJson(commitsUrl, {
+      Authorization: `Bearer ${ghToken}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'inkflow-audit-deploy-health',
+    }, fetchImpl),
+  ]);
+
+  const workerModifiedOn = workerData?.result?.modified_on;
+  const lastCommitDate = commitsData?.[0]?.commit?.author?.date;
+  if (!workerModifiedOn || !lastCommitDate) return [];
+
+  const workerMs = new Date(workerModifiedOn).getTime();
+  const commitMs = new Date(lastCommitDate).getTime();
+  const lagMs = commitMs - workerMs;
+  if (lagMs <= ONE_HOUR_MS) return [];
+
+  const lagHours = Math.round(lagMs / ONE_HOUR_MS);
+  return [{
+    severity: 'warn',
+    payload: {
+      runbook_path: RUNBOOK_PATH,
+      suggested_subagent: SUGGESTED_SUBAGENT,
+      summary: `Wrangler drift: worker ${lagHours}h atrás do commit mais recente em cron-worker/`,
+      symptom: 'wrangler-drift',
+      lag_hours: lagHours,
+      worker_modified_on: workerModifiedOn,
+      last_commit_date: lastCommitDate,
+    },
+    evidence: {
+      source: 'cloudflare/workers/scripts + github/repos/commits',
+      worker_script: scriptName,
+      repo,
+    },
+  }];
+}
+
 // detect ────────────────────────────────────────────────────────────────────
 
 export async function detect({ env = {}, fetchImpl, now = Date.now() } = {}) {
@@ -216,6 +283,7 @@ export async function detect({ env = {}, fetchImpl, now = Date.now() } = {}) {
   if (fetchImpl) {
     events.push(...await detectSymptomA(env, fetchImpl, now));
     events.push(...await detectSymptomB(env, fetchImpl, now));
+    events.push(...await detectSymptomC(env, fetchImpl));
   }
   return events;
 }

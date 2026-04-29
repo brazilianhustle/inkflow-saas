@@ -333,3 +333,102 @@ test('symptomB: network error → warn (network_error status)', async () => {
   assert.equal(b.payload.status, 'network_error');
   assert.match(b.payload.summary, /transient|ECONNRESET|error/i);
 });
+
+// Sintoma C — Wrangler drift (opt-in) ───────────────────────────────────────
+
+const driftEnv = (extras = {}) => ({
+  CLOUDFLARE_API_TOKEN: 'cf-tok',
+  CLOUDFLARE_ACCOUNT_ID: 'acc-123',
+  GITHUB_API_TOKEN: 'gh-tok',
+  AUDIT_DEPLOY_HEALTH_WRANGLER_DRIFT: 'true',
+  ...extras,
+});
+
+function makeDriftFetch({ workerModifiedOn, commitDate, ghaSuccess = true, pagesSuccess = true }) {
+  return makeFetchImpl([
+    ['api.github.com/repos/brazilianhustle/inkflow-saas/commits?path=cron-worker', {
+      ok: true, status: 200,
+      json: async () => ([{ commit: { author: { date: commitDate } } }]),
+    }],
+    ['api.github.com/repos/', {
+      ok: true, status: 200,
+      json: async () => ({
+        workflow_runs: ghaSuccess
+          ? [ghaRun({ id: 1, conclusion: 'success', hoursAgo: 1 })]
+          : [ghaRun({ id: 1, conclusion: 'failure', hoursAgo: 1 })],
+      }),
+    }],
+    ['/workers/scripts/', {
+      ok: true, status: 200,
+      json: async () => ({ result: { modified_on: workerModifiedOn } }),
+    }],
+    ['/pages/projects/', {
+      ok: true, status: 200,
+      json: async () => ({
+        result: pagesSuccess
+          ? [pagesDeployment({ id: 'a', status: 'success', hoursAgo: 1 })]
+          : [pagesDeployment({ id: 'a', status: 'failure', hoursAgo: 1 })],
+      }),
+    }],
+  ]);
+}
+
+test('symptomC: flag missing → skip (no drift event)', async () => {
+  const fetchImpl = makeDriftFetch({
+    workerModifiedOn: '2026-04-20T10:00:00Z',
+    commitDate: '2026-04-29T10:00:00Z',
+  });
+  const events = await detect({
+    env: { CLOUDFLARE_API_TOKEN: 'x', CLOUDFLARE_ACCOUNT_ID: 'acc', GITHUB_API_TOKEN: 'gh' },
+    fetchImpl, now: NOW,
+  });
+  const c = events.find((e) => e.payload?.symptom === 'wrangler-drift');
+  assert.equal(c, undefined);
+});
+
+test('symptomC: flag on, worker recent (newer than commit) → no event', async () => {
+  const fetchImpl = makeDriftFetch({
+    workerModifiedOn: '2026-04-29T10:00:00Z',
+    commitDate: '2026-04-29T08:00:00Z',
+  });
+  const events = await detect({ env: driftEnv(), fetchImpl, now: NOW });
+  const c = events.find((e) => e.payload?.symptom === 'wrangler-drift' && e.severity !== 'clean');
+  assert.equal(c, undefined);
+});
+
+test('symptomC: flag on, worker stale > 1h vs commit → warn drift', async () => {
+  const fetchImpl = makeDriftFetch({
+    workerModifiedOn: '2026-04-25T10:00:00Z',
+    commitDate: '2026-04-29T10:00:00Z',
+  });
+  const events = await detect({ env: driftEnv(), fetchImpl, now: NOW });
+  const c = events.find((e) => e.payload?.symptom === 'wrangler-drift');
+  assert.ok(c, 'Drift event should exist');
+  assert.equal(c.severity, 'warn');
+  assert.match(c.payload.summary, /drift/i);
+  assert.ok(c.payload.lag_hours > 1);
+});
+
+test('symptomC: flag on, GitHub API 404 (no commits) → skip silently', async () => {
+  const fetchImpl = makeFetchImpl([
+    ['api.github.com/repos/brazilianhustle/inkflow-saas/commits?path=cron-worker', {
+      ok: true, status: 200,
+      json: async () => ([]),
+    }],
+    ['api.github.com/repos/', {
+      ok: true, status: 200,
+      json: async () => ({ workflow_runs: [] }),
+    }],
+    ['/workers/scripts/', {
+      ok: true, status: 200,
+      json: async () => ({ result: { modified_on: '2026-04-29T10:00:00Z' } }),
+    }],
+    ['/pages/projects/', {
+      ok: true, status: 200,
+      json: async () => ({ result: [] }),
+    }],
+  ]);
+  const events = await detect({ env: driftEnv(), fetchImpl, now: NOW });
+  const c = events.find((e) => e.payload?.symptom === 'wrangler-drift');
+  assert.equal(c, undefined);
+});
