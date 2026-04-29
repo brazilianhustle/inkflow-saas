@@ -58,3 +58,4 @@ Auditores que detectam sintomas mapeados em §6.3 e disparam alerta com `payload
 
 - **key-expiry** (2026-04-27): detecta secrets expirando ou inválidos via TTL/self-check/drift. Alerta `[critical] [key-expiry]` → seguir [secrets-expired.md](../runbooks/secrets-expired.md). Doc canônico: [auditores.md#key-expiry](../auditores.md#key-expiry).
 - **deploy-health** (2026-04-29): detecta falhas recentes na pipeline de deploy via GHA Actions API + CF Pages API. Alerta `[critical] [deploy-health]` → seguir [rollback.md](../runbooks/rollback.md). Doc canônico: [auditores.md#deploy-health](../auditores.md#deploy-health).
+- **billing-flow** ✅ em prod 2026-04-29 (PR #13): detecta problemas no fluxo de pagamento — webhook delay/silence, MailerLite drift e inconsistências de DB. Alerta `[critical] [billing-flow]` → seguir [mp-webhook-down.md](../runbooks/mp-webhook-down.md). Doc canônico: [auditores.md#billing-flow](../auditores.md#billing-flow).

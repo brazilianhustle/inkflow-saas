@@ -97,9 +97,54 @@ Quando alerta `[critical] [deploy-health]` chegar no Telegram, seguir [rollback.
 
 ---
 
+## billing-flow
+
+**Status:** ✅ Em produção (2026-04-29)
+**Onde:** `inkflow-cron` Worker
+**Frequência:** A cada 6h (cron `30 */6 * * *`, offset 30min do deploy-health)
+**Endpoint:** `functions/api/cron/audit-billing-flow.js`
+**Lib `detect()`:** `functions/_lib/auditors/billing-flow.js`
+**Tests:** `tests/auditor-billing-flow.test.mjs` + `tests/audit-billing-flow-endpoint.test.mjs`
+**Runbook:** [mp-webhook-down.md](runbooks/mp-webhook-down.md)
+**Suggested subagent:** _none_ (MP é manual no MVP — runbook é a doutrina)
+
+### Detecção em 4 sintomas
+
+| Symptom | Source | Severity rules |
+|---|---|---|
+| A (webhook-delay) | `payment_logs.created_at` (latest, tenant_id NOT NULL) | warn quando >`AUDIT_BILLING_FLOW_WEBHOOK_DELAY_HOURS` (default 6h) E ≥1 active sub. Clean caso contrário. |
+| B (webhook-silent) | mesmo + Mercado Pago `preapproval/{id}` API | critical quando >`AUDIT_BILLING_FLOW_WEBHOOK_SILENT_HOURS` (default 24h) E ≥1 sub `status='authorized'` em amostra de 5. Demote pra warn se 0 confirmadas. |
+| C (mailerlite-drift) | Supabase tenants + MailerLite `/subscribers/{email}` | warn quando ≥1 tenant ativo (sample 5) não está no group `MAILERLITE_GROUP_CLIENTES_ATIVOS`. Network errors → silent skip. |
+| D (db-consistency) | Supabase `tenants WHERE status_pagamento='trial_expirado' AND ativo=true` | critical quando count > 0 (invariante violada — bug em `expira-trial` cron ou race). |
+
+### Spec deviations vs §5.5
+
+1. **Source pra "último webhook":** `payment_logs.created_at` (não `tenants.mp_webhook_received_at` que não existe no schema). Filtra `tenant_id IS NOT NULL` pra ignorar signup attempts.
+2. **MP API check (Sintoma B):** amostragem LIMIT 5 (top 5 tenants ativos por `created_at` asc). Se 0 confirmadas → demote critical → warn.
+3. **MailerLite drift (Sintoma C):** mesma amostragem LIMIT 5, com `payload.missing_emails` capped em 5.
+
+### Env vars necessárias
+
+- **`SUPABASE_SERVICE_KEY`** ✅ (já em prod) — base de todos os 4 sintomas.
+- **`MP_ACCESS_TOKEN`** ✅ (já em prod) — Sintoma B (sem ele Sintoma B fica skip silencioso).
+- **`MAILERLITE_API_KEY`** ✅ (já em prod) — Sintoma C (sem ele Sintoma C fica skip silencioso).
+- **`MAILERLITE_GROUP_CLIENTES_ATIVOS`** (default `184387920768009398`) — Sintoma C target group.
+- **`AUDIT_BILLING_FLOW_WEBHOOK_DELAY_HOURS`** (opcional, default 6) — Sintoma A threshold.
+- **`AUDIT_BILLING_FLOW_WEBHOOK_SILENT_HOURS`** (opcional, default 24) — Sintoma B threshold.
+
+### Dedupe
+
+Single-state per auditor (collapse). Múltiplos sintomas no mesmo run colapsam em 1 evento top-severity. `payload.affected_symptoms` lista todos. Mesmo trade-off do deploy-health.
+
+### Runbook trigger
+
+Quando alerta `[critical] [billing-flow]` chegar no Telegram, seguir [mp-webhook-down.md](runbooks/mp-webhook-down.md) — 4 ações (A: webhook config, B: endpoint health, C: signature validation, D: parsing/lógica). Sintoma D (`db-consistency`) requer query SQL adicional pra encontrar root cause em `expira-trial` cron.
+
+---
+
 ## (Próximos auditores)
 
-`billing-flow`, `vps-limits`, `rls-drift` — pendentes. Ver spec §5 e plano-mestre Fábrica `2026-04-25-fabrica-inkflow-design.md` §3.
+`vps-limits`, `rls-drift` — pendentes. Ver spec §5 e plano-mestre Fábrica `2026-04-25-fabrica-inkflow-design.md` §3.
 
 ## Pipeline core (compartilhado)
 
