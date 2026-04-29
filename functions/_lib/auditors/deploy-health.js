@@ -210,6 +210,13 @@ async function detectSymptomB(env, fetchImpl, now) {
 }
 
 // Sintoma C: Wrangler drift (opt-in) ────────────────────────────────────────
+// Severity capped at 'warn' (not critical per spec §5.2 table) per plan
+// Decisão #5: false-positive risk MVP. Promotion to critical post-7d baseline
+// via decision doc.
+//
+// Silent skip on API error (returns null from fetchJson) is intentional:
+// auth failures will be caught by Sintoma A (GH token) or Sintoma B (CF token)
+// since they share the same env vars. Sintoma C is opt-in, less aggressive.
 
 const ONE_HOUR_MS = 3600 * 1000;
 
