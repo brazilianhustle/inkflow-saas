@@ -144,12 +144,12 @@ Quando alerta `[critical] [billing-flow]` chegar no Telegram, seguir [mp-webhook
 
 ## vps-limits
 
-**Status:** ✅ Endpoint em prod desde 2026-04-29 / Routine pendente ativação manual (Task 12 do plano)
+**Status:** ✅ Em prod desde 2026-04-30 (pivot Routine→cron-worker — CCR allowlist bloqueio)
 **Endpoint:** `functions/api/cron/audit-vps-limits.js`
 **Lib detect():** `functions/_lib/auditors/vps-limits.js`
 **Tests:** `tests/auditor-vps-limits.test.mjs` (22 unit) + `tests/audit-vps-limits-endpoint.test.mjs` (11 integration)
-**Onde:** Routine Anthropic (`/schedule`) — primeira Routine do MVP
-**Frequência:** `15 */6 * * *` UTC (00:15/06:15/12:15/18:15 — offset 15min do deploy-health)
+**Onde:** `inkflow-cron` Worker (cron-worker dispatcher — pivotado de Routine devido a CCR `Host not in allowlist` bloqueando outbound HTTPS pra `inkflowbrasil.com`)
+**Frequência:** `15 */6 * * *` UTC (00:15/06:15/12:15/18:15 — offset 15min do deploy-health, 15min antes do billing-flow)
 **suggested_subagent:** `vps-ops` (agent ainda não existe — Sub-projeto 2 pendente; valor é hint pra futuro)
 **Runbook:** `null` (gap consciente — adjacente a `outage-wa.md`. Founder cai no Telegram alert sem runbook dedicado por escolha consciente do MVP, alinhada com `runbooks/README.md` regra "criar runbook na 2ª ocorrência ad-hoc").
 **Spec source:** `docs/superpowers/specs/2026-04-27-auditores-mvp-design.md` §5.3 + §9.4.
@@ -167,7 +167,7 @@ Quando alerta `[critical] [billing-flow]` chegar no Telegram, seguir [mp-webhook
 
 1. **Hosting endpoint VPS:** container `inkflow-health-1` (nginx:alpine) adicionado ao stack `/opt/inkflow/docker-compose.yml`, exposto via Traefik labels `Host(${N8N_DOMAIN}) && PathPrefix(/_health)` priority 100 (espelha pattern `evoadmin`). Bash collector host + cron 1min escreve `/var/www/health/metrics.json`. Decisão em `docs/canonical/decisions/2026-04-29-vps-limits-data-source.md`.
 2. **Sintoma D opt-in:** ativa só se `AUDIT_VPS_LIMITS_EGRESS_MONTHLY_GB` env setada. Valor recomendado: 5290 GB (pool atual Vultr). Razão: bash collector não emite `egress_month_gb` ainda — gap pós-MVP pra integrar Vultr API.
-3. **Routine pure-trigger:** Routine NÃO faz reasoning sobre metrics — só POST ao endpoint. Endpoint faz fetch ao VPS e toda a lógica (consistente com #1/#2/#5).
+3. **Pivotado de Routine pra cron-worker:** Spec §5.3 cravou Routine Anthropic, mas CCR sandbox bloqueia outbound HTTPS pra hosts não-allowlisted (`Host not in allowlist` 403 ao testar com `inkflowbrasil.com` em 2026-04-30). Como o auditor é puramente determinístico (thresholds numéricos sobre metrics, sem reasoning Claude — alinhado com decisão original de "pure-trigger"), **pivot pra cron-worker é zero-loss em capability**. Backlog cravado: "Promover vps-limits cron-worker → Routine quando Anthropic permitir adicionar custom hosts à allowlist OU quando MCP connector funcionar como HTTP proxy". Auditores `rls-drift` (#4) que de fato precisam reasoning Claude continuam Routine — usam MCP Supabase já allowlisted.
 4. **Backups Vultr não cobertos:** sem API consistente. Check manual periódico no Vultr panel — gap pós-MVP. Backups configurados Weekly Monday 07:00 UTC (Vultr default — validado painel 2026-04-29).
 5. **CPU thresholds escalam com vcpu_count:** detect lê `vcpu_count` do JSON metrics (não hardcoded), thresholds escalam se VPS for redimensionado.
 

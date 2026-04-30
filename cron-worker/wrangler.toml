@@ -16,6 +16,7 @@ crons = [
   "0 6 * * *",      # 03:00 BRT diario → /api/cron/audit-key-expiry
   "0 */6 * * *",    # 00:00/06:00/12:00/18:00 UTC → /api/cron/audit-deploy-health
   "30 */6 * * *",   # 00:30/06:30/12:30/18:30 UTC → /api/cron/audit-billing-flow
+  "15 */6 * * *",   # 00:15/06:15/12:15/18:15 UTC → /api/cron/audit-vps-limits (pivot Routine→cron-worker — CCR allowlist bloqueio)
 ]
 
 # Observability: todos os console.log aparecem em Workers → inkflow-cron → Logs

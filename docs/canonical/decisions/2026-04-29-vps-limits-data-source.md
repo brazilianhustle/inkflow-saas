@@ -53,7 +53,8 @@ related: [auditores.md, limits.md, runbooks/outage-wa.md]
 | Smoke positivo (`curl` com header válido) → 200 + JSON | ✅ |
 | Smoke negativo (sem header) → 401 | ✅ |
 | Smoke negativo (header errado) → 401 | ✅ |
-| Routine Anthropic chama endpoint via `curl` (Task 12) | ⏳ Pendente Task 12 |
+| Routine Anthropic chama endpoint via `curl` (Task 12 original) | ❌ Bloqueado — CCR `Host not in allowlist` 403 |
+| **Pivot 2026-04-30:** cron-worker dispatcher chama endpoint (`15 */6 * * *` UTC) | ✅ Validado — run_id `cea7e2ee...` 03:43:11 UTC |
 
 ## Lições aprendidas durante Task 2
 
@@ -68,6 +69,8 @@ related: [auditores.md, limits.md, runbooks/outage-wa.md]
 1. **Heredoc em SSH precisa cuidado** — primeira tentativa de criar bash collector via `ssh "cat > /usr/local/bin/script << EOF ..."` corrompeu aspas escape. Caminho confiável: criar local com `Write` + `scp`.
 2. **Substituição de placeholder via sed** funciona se o placeholder for único e não tiver caracteres especiais. `VPS_HEALTH_TOKEN_PLACEHOLDER` → token de 64 hex chars: OK.
 3. **Compose sem `services:` declarado em modificação** funciona se inserir bloco antes de `volumes:`. YAML respeita indentação 2-space (consistente com pattern do stack).
+4. **🚨 CCR sandbox tem allowlist restrita de hosts outbound HTTPS.** Descoberto 2026-04-30 ao tentar Routine pure-trigger contra `inkflowbrasil.com` — retornou `HTTP 403 "Host not in allowlist"`. Caminhos viáveis pra hosts custom: (a) MCP connector como proxy (a investigar — Cloudflare bindings MCP pode permitir?), (b) ticket Anthropic pedindo whitelist de domínio, (c) pivot pra cron-worker (caminho escolhido — auditor é determinístico, sem perda).
+5. **TODA chamada `RemoteTrigger` (get/run/update) retorna o config completo do trigger no body**, incluindo o prompt. Se prompt tem secret hardcoded, esse secret vaza no contexto. Lição cravada em `bws_setup.md` lesson 12.
 
 ## Limitações conhecidas
 
