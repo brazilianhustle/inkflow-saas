@@ -123,6 +123,46 @@ function detectSymptomC(metrics) {
   };
 }
 
+function detectSymptomD(env, metrics) {
+  const quotaStr = env.AUDIT_VPS_LIMITS_EGRESS_MONTHLY_GB;
+  if (!quotaStr) return null;
+
+  const quota = parseFloat(quotaStr);
+  if (!Number.isFinite(quota) || quota <= 0) return null;
+
+  const usedGb = metrics.egress_month_gb;
+  if (typeof usedGb !== 'number') return null;
+
+  const pct = usedGb / quota;
+  let severity = 'clean';
+  if (pct >= THRESHOLDS.egress.critical) severity = 'critical';
+  else if (pct >= THRESHOLDS.egress.warn) severity = 'warn';
+
+  const pctStr = `${Math.round(pct * 100)}%`;
+  return {
+    severity,
+    payload: {
+      symptom: 'egress',
+      runbook_path: RUNBOOK_PATH,
+      suggested_subagent: SUGGESTED_SUBAGENT,
+      summary: severity === 'clean'
+        ? `Egress mensal em ${pctStr} (${usedGb}/${quota} GB, saudável)`
+        : `Egress mensal em ${pctStr} (${usedGb}/${quota} GB)`,
+      resource: 'egress_monthly',
+      live_value: pct,
+      threshold_warn: THRESHOLDS.egress.warn,
+      threshold_critical: THRESHOLDS.egress.critical,
+      source: 'custom_endpoint',
+    },
+    evidence: {
+      egress_used_gb: usedGb,
+      egress_quota_gb: quota,
+      egress_used_pct: pct,
+      ts: metrics.ts,
+    },
+  };
+}
+
 export async function detect({ env = {}, metrics = null, now = Date.now() } = {}) {
   const events = [];
   if (!metrics) return events;
@@ -135,6 +175,9 @@ export async function detect({ env = {}, metrics = null, now = Date.now() } = {}
 
   const symC = detectSymptomC(metrics);
   if (symC) events.push(symC);
+
+  const symD = detectSymptomD(env, metrics);
+  if (symD) events.push(symD);
 
   return events;
 }

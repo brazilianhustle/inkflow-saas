@@ -168,3 +168,42 @@ test('symptom C: missing vcpu_count skips silently', async () => {
   const loadEvents = events.filter((e) => e.payload.symptom === 'load_avg');
   assert.equal(loadEvents.length, 0);
 });
+
+test('symptom D: missing env (egress quota) skips silently', async () => {
+  const events = await detect({
+    env: {},
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.20, disk_total_gb: 150, load_avg_5m: 0.5, vcpu_count: 4, egress_month_gb: 1500 },
+  });
+  const egressEvents = events.filter((e) => e.payload.symptom === 'egress');
+  assert.equal(egressEvents.length, 0);
+});
+
+test('symptom D: env set but missing metric skips silently', async () => {
+  const events = await detect({
+    env: { AUDIT_VPS_LIMITS_EGRESS_MONTHLY_GB: '4000' },
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.20, disk_total_gb: 150, load_avg_5m: 0.5, vcpu_count: 4 },
+  });
+  const egressEvents = events.filter((e) => e.payload.symptom === 'egress');
+  assert.equal(egressEvents.length, 0);
+});
+
+test('symptom D: env set + metric below warn returns clean', async () => {
+  const events = await detect({
+    env: { AUDIT_VPS_LIMITS_EGRESS_MONTHLY_GB: '4000' },
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.20, disk_total_gb: 150, load_avg_5m: 0.5, vcpu_count: 4, egress_month_gb: 1000 },
+  });
+  const egressEvent = events.find((e) => e.payload.symptom === 'egress');
+  assert.equal(egressEvent?.severity, 'clean');
+  assert.equal(egressEvent.payload.live_value, 0.25);
+});
+
+test('symptom D: env set + metric above critical fires critical', async () => {
+  const events = await detect({
+    env: { AUDIT_VPS_LIMITS_EGRESS_MONTHLY_GB: '4000' },
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.20, disk_total_gb: 150, load_avg_5m: 0.5, vcpu_count: 4, egress_month_gb: 3700 },
+  });
+  const egressEvent = events.find((e) => e.payload.symptom === 'egress');
+  assert.equal(egressEvent?.severity, 'critical');
+  assert.equal(egressEvent.payload.threshold_critical, 0.90);
+  assert.match(egressEvent.payload.summary, /Egress mensal/);
+});
