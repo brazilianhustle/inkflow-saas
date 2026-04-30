@@ -26,6 +26,12 @@ test('validateFieldTypes — fewshots_por_modo rejeita chave desconhecida', asyn
   assert.match(r.erro, /chave/i);
 });
 
+test('validateFieldTypes — fewshots_por_modo aceita objeto vazio (partial update intencional)', async () => {
+  const { validateFieldTypes } = await import('../functions/api/update-tenant.js');
+  const r = validateFieldTypes({ fewshots_por_modo: {} });
+  assert.equal(r.ok, true);
+});
+
 test('validateConfigPrecificacao — modo=coleta REJEITADO em PR 1 (flag virá em PR 2)', async () => {
   const { validateConfigPrecificacao } = await import('../functions/api/update-tenant.js');
   const r = validateConfigPrecificacao({ modo: 'coleta' });
@@ -52,9 +58,32 @@ test('validateConfigPrecificacao — coleta_submode aceito como schema (sem modo
   assert.equal(r.ok, true);
 });
 
-test('validateConfigPrecificacao — trigger_handoff length range 2-50', async () => {
+test('validateConfigPrecificacao — trigger_handoff rejeita length 1 (abaixo do minimo)', async () => {
   const { validateConfigPrecificacao } = await import('../functions/api/update-tenant.js');
-  assert.equal(validateConfigPrecificacao({ modo: 'faixa', trigger_handoff: 'X' }).ok, false);
-  assert.equal(validateConfigPrecificacao({ modo: 'faixa', trigger_handoff: 'A'.repeat(51) }).ok, false);
-  assert.equal(validateConfigPrecificacao({ modo: 'faixa', trigger_handoff: 'Lina, assume' }).ok, true);
+  const r = validateConfigPrecificacao({ modo: 'faixa', trigger_handoff: 'X' });
+  assert.equal(r.ok, false);
+});
+
+test('validateConfigPrecificacao — trigger_handoff aceita length 2 (limite inferior)', async () => {
+  const { validateConfigPrecificacao } = await import('../functions/api/update-tenant.js');
+  const r = validateConfigPrecificacao({ modo: 'faixa', trigger_handoff: 'AB' });
+  assert.equal(r.ok, true);
+});
+
+test('validateConfigPrecificacao — trigger_handoff aceita length 50 (limite superior)', async () => {
+  const { validateConfigPrecificacao } = await import('../functions/api/update-tenant.js');
+  const r = validateConfigPrecificacao({ modo: 'faixa', trigger_handoff: 'A'.repeat(50) });
+  assert.equal(r.ok, true);
+});
+
+test('validateConfigPrecificacao — trigger_handoff rejeita length 51 (acima do maximo)', async () => {
+  const { validateConfigPrecificacao } = await import('../functions/api/update-tenant.js');
+  const r = validateConfigPrecificacao({ modo: 'faixa', trigger_handoff: 'A'.repeat(51) });
+  assert.equal(r.ok, false);
+});
+
+test('validateConfigPrecificacao — trigger_handoff aceita string mid-range valida', async () => {
+  const { validateConfigPrecificacao } = await import('../functions/api/update-tenant.js');
+  const r = validateConfigPrecificacao({ modo: 'faixa', trigger_handoff: 'Lina, assume' });
+  assert.equal(r.ok, true);
 });

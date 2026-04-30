@@ -119,6 +119,7 @@ export function validateFieldTypes(fields) {
     if (invalidKey) {
       return { ok: false, erro: `fewshots_por_modo: chave invalida "${invalidKey}" (validas: ${FEWSHOT_KEYS_VALIDAS.join(', ')})` };
     }
+    // Element-level validation (cliente/agente shape) deferida pra PR 2 quando o schema for ativo.
     for (const k of keys) {
       if (!Array.isArray(v[k])) {
         return { ok: false, erro: `fewshots_por_modo.${k} deve ser array` };
