@@ -1,14 +1,47 @@
 ---
 date: 2026-04-29
 auditor: vps-limits
-status: PARTIAL
+status: DONE
 pr: 14
 merge_sha: 8095fc7
+smoke_full_completed: 2026-04-30
 ---
 
-# Smoke E2E — Auditor #3 vps-limits (primeira Routine Anthropic)
+# Smoke E2E — Auditor #3 vps-limits (cron-worker pós-pivot)
 
-## Status: PARTIAL (sanity passed, full E2E aguardando Routine ativada por founder)
+## Status: ✅ DONE (smoke E2E forçado completo via fixture metrics.json — 2026-04-30 sessão parte 2)
+
+## Update 2026-04-30 (sessão parte 2) — smoke full executado
+
+**Pré-condição que destravou:** CRON_SECRET salvo em BWS na rotação 2026-04-30 madrugada (id `180b8bf9-36ea-490a-9d0d-b43c002ff013`). Smoke manual via `bws secret get` + curl direto pro cron-worker.
+
+**Fluxo executado (~5min):**
+
+1. SSH VPS, backup `/var/www/health/metrics.json`, suspender cron `* * * * *` via `crontab` rewrite.
+2. Sobrescrever metrics.json com `disk_used_pct: 0.92` (fixture critical) — timestamp 2026-04-30T17:03:38Z.
+3. Trigger via cron-worker: `POST https://inkflow-cron.lmf4200.workers.dev/?cron=15+%2A%2F6+%2A+%2A+%2A` → HTTP 200, `run_id=5cc8d0e4-8305-4e24-9565-fa858a90654d`, `events_count=1`, `actions.fire=1`.
+4. Validação DB: event `e8d5b178-4993-459e-80b4-7e41a10da3a5` criado — `severity=critical`, `symptom=disk`, summary `"Disco em 92%"`, evidence `{disk_used_pct: 0.92, disk_used_gb: 138, disk_total_gb: 150, ts: 2026-04-30T17:03:38Z}`.
+5. Restore VPS: descomentar cron + run collector imediato (metrics rewrite com valores reais 22.36% RAM / 22.67% disk).
+6. Resolve detected naturalmente em run secundário `0ec354f2-d57f-469f-96ca-400c55c0de2a` em 17:12:14 — `events_count=0`, `actions.resolve=1`. Event `e8d5b178` updated: `resolved_at=2026-04-30 17:12:15.087+00`, `resolved_reason='next_run_clean'`.
+
+**✅ Pipeline completo validado:** trigger → endpoint → fetchVpsMetrics → detect (sintoma B fire) → collapseEvents (top severity = critical) → audit_events INSERT → sendTelegram → audit_runs row → resolve flow.
+
+**Concerns levantados (não-bloqueantes):**
+
+- ⚠️ `last_alerted_at` = null apesar de `alert_count = 1` no event resolved. Possível bug latente em `insertEvent` ou na ordem de UPDATEs do orchestrator. Investigar separately (P3 backlog).
+- ⚠️ Run secundário `0ec354f2` em 17:12:14 disparou sem trigger manual. Cron natural vps-limits é `15 */6 * * *` (próximo seria 18:15). Possíveis fontes: Routine `trig_01H2PQ6JENSpzAKaWZ3tNZWT` desabilitada ainda dispara? Cron-worker tem retry? Investigar separately (P3 backlog).
+
+**Telegram alerts esperados:**
+- `[critical] [vps-limits] Disco em 92%` ~17:08 UTC
+- `[resolved] [vps-limits] resolved (next run clean)` ~17:12 UTC
+
+Founder confirmação visual pendente.
+
+---
+
+## Status original 2026-04-29 (mantido pra histórico)
+
+PARTIAL (sanity passed, full E2E aguardando Routine ativada por founder)
 
 ## O que rodou
 

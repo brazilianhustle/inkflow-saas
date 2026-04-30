@@ -1,14 +1,48 @@
 ---
 date: 2026-04-29
 auditor: billing-flow
-status: PARTIAL
+status: DONE
 pr: 13
 merge_sha: 08ed84c
+smoke_full_completed: 2026-04-30
 ---
 
 # Smoke E2E — Auditor #5 billing-flow
 
-## Status: PARTIAL (sanity passed, full E2E aguardando cron natural ou sessão dedicada)
+## Status: ✅ DONE (smoke E2E full via fixture tenant — 2026-04-30 sessão parte 2)
+
+## Update 2026-04-30 (sessão parte 2) — smoke full executado
+
+**Pré-condição que destravou:** CRON_SECRET no BWS (id `180b8bf9-...`).
+
+**Fluxo executado (~3min):**
+
+1. INSERT tenant fixture: `nome=SMOKE_FIXTURE_billing_flow`, `status_pagamento=trial_expirado`, `ativo=true`, `plano=estudio` — id `3ede5c89-2f67-4f49-bc21-a60ab476b49a`.
+2. Trigger via cron-worker `30 */6 * * *` → HTTP 200, `run_id=0e2d388e-0fec-4600-8888-8e67f83eebde`, `events_count=1`, `actions.fire=1`.
+3. Validação DB: event `9269b66a-3e0d-4bb6-9a50-08a82388f964` criado — `severity=critical`, `symptom=db-consistency`, summary `"1 tenants em estado inconsistente: trial_expirado + ativo=true"`, evidence `{query_predicate: "status_pagamento=trial_expirado AND ativo=true", full_affected_count: 1, sample_size: 1}`.
+4. DELETE tenant fixture (state limpo).
+5. Trigger novamente → HTTP 200, `run_id=47c8dccd-e9ba-4ce8-981c-699b29430d52`, `events_count=0`, `actions.resolve=1`. Event `9269b66a` updated: `resolved_at=2026-04-30 17:51:56.754+00`, `resolved_reason='next_run_clean'`.
+
+**✅ Pipeline completo validado:** Sintoma D detect (REST query `status_pagamento=eq.trial_expirado&ativo=eq.true`) → collapseEvents (single critical) → audit_events INSERT → sendTelegram → resolve via dedupePolicy clean→critical→clean transition.
+
+**Sintomas A/B/C não exercitados:**
+- A (webhook-delay): requer ≥1 active sub + payment_logs com gap >6h — estado MVP atual (0 tenants) não permite fixture barata.
+- B (webhook-silent): requer MP API mock (preapproval status authorized + >24h).
+- C (mailerlite-drift): requer integração MailerLite real (group lookup).
+
+A/B/C ficam validados via **unit tests** (22 unit + 7 endpoint) + cron natural quando primeiro tenant pagante real entrar.
+
+**Telegram alerts esperados:**
+- `[critical] [billing-flow] 1 tenants em estado inconsistente: trial_expirado + ativo=true` ~17:51 UTC
+- `[resolved] [billing-flow] resolved (next run clean)` ~17:52 UTC
+
+Founder confirmação visual pendente.
+
+---
+
+## Status original 2026-04-29 (mantido pra histórico)
+
+PARTIAL (sanity passed, full E2E aguardando cron natural ou sessão dedicada)
 
 ## O que rodou
 

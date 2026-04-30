@@ -4,7 +4,23 @@
 **Branch:** feat/auditor-deploy-health (mergeada via PR #12, merge commit `4250be0`)
 **Spec:** `docs/superpowers/specs/2026-04-27-auditores-mvp-design.md` §5.2
 **Plano:** `docs/superpowers/plans/2026-04-29-auditor-deploy-health.md`
-**Status:** ⚠️ PARTIAL (sanity check + unit/regression tests OK; full E2E aguardando cron natural ou sessão dedicada)
+**Status:** ⚠️ PARTIAL — full smoke bloqueado por bug real em prod (GHA self-check 401), descoberto via fixture INSERT em 2026-04-30 sessão parte 2.
+
+## Update 2026-04-30 — smoke parcial via fixture INSERT + bug discovery
+
+**Tentativa:** fixture INSERT em `audit_events` simulando 2 GHA failures consecutivas críticas, depois trigger auditor real esperando `actions.resolve=1`.
+
+**Resultado:** trigger retornou `actions.silent=1` (não resolve). Investigação revelou:
+
+🚨 **Bug real em prod descoberto:** auditor #2 deploy-health tem emitido `warn` "GHA API self-check returned 401" desde 06:00 UTC do mesmo dia. Validei diretamente: `curl -H "Authorization: Bearer $GITHUB_API_TOKEN" https://api.github.com/repos/.../actions/runs?per_page=1` retorna **HTTP 401**. Token salvo em BWS + CF Pages é classic PAT (`ghp_3wYSuT...`, length 40) — esperava-se fine-grained PAT (`github_pat_*`, scope `inkflow-audit-deploy-health` cadastrado em 2026-04-29 com expiração 2026-07-29).
+
+**Hipótese:** rotação manual em algum momento substituiu o fine-grained pelo classic, ou o salvamento em BWS gravou o classic antigo (não o fine-grained novo). Sem visibilidade de quando exatamente.
+
+**Validação dedupePolicy:** com fixture critical inserido + detect retornando warn (401 self-check) → dedupePolicy linha 88 (`current=critical && next=warn → silent`). Lógica está **correta**, mas significa que silent path do dedupePolicy é o que foi exercitado, não resolve.
+
+**Cleanup:** fixture event `14b7df2c-dfbc-48b1-bfd6-69fb0515fd28` + audit_runs row `6f539df1-...` deletados. Estado DB limpo. Os 2 warns reais (`92a62c88` 12:00, `05615b25` 06:00) ficam abertos como **evidência forense** do bug.
+
+**Followup P1 (criado no backlog):** rotacionar `GITHUB_API_TOKEN` — gerar fine-grained PAT novo, atualizar CF Pages env + BWS, validar GHA self-check passa, retesar smoke E2E full quando token funcional.
 
 ---
 
