@@ -39,6 +39,7 @@ const ALLOWED_FIELDS = new Set([
   'portfolio_urls',         // TEXT[]: URLs de portfolio
   'faq_texto',              // texto livre de FAQ
   'modo_atendimento',       // TEXT: individual | tatuador_dono | recepcionista | artista_slot
+  'fewshots_por_modo',      // JSONB: { faixa: [...], exato: [...], coleta_info: [...], coleta_agendamento: [...] } — preparação Modo Coleta PR 1
 ]);
 
 // FIX AUDIT #4: Campos adicionais que o admin pode editar via dashboard
@@ -51,7 +52,37 @@ const ADMIN_EXTRA_FIELDS = new Set([
 // Valida tipo basico de campos JSONB/array antes de mandar pro Supabase.
 // Retorna { ok: boolean, erro?: string }
 const MODOS_ATENDIMENTO = ['individual', 'tatuador_dono', 'recepcionista', 'artista_slot'];
-function validateFieldTypes(fields) {
+const MODOS_VALIDOS = ['faixa', 'exato']; // 'coleta' adicionado em PR 2 quando ENABLE_COLETA_MODE virar
+const SUBMODES_COLETA = ['puro', 'reentrada'];
+const FEWSHOT_KEYS_VALIDAS = ['faixa', 'exato', 'coleta_info', 'coleta_agendamento'];
+
+// Valida o sub-objeto config_precificacao (campos relevantes pra Modo Coleta).
+// Retorna { ok: boolean, erro?: string }.
+export function validateConfigPrecificacao(cfg) {
+  if (!cfg || typeof cfg !== 'object') return { ok: true }; // campo não enviado = sem validação
+  if (cfg.modo !== undefined) {
+    if (cfg.modo === 'coleta') {
+      return { ok: false, erro: 'modo coleta ainda nao disponivel (feature flag chega em PR 2)' };
+    }
+    if (!MODOS_VALIDOS.includes(cfg.modo)) {
+      return { ok: false, erro: `modo deve ser um de: ${MODOS_VALIDOS.join(', ')}` };
+    }
+  }
+  if (cfg.coleta_submode !== undefined && !SUBMODES_COLETA.includes(cfg.coleta_submode)) {
+    return { ok: false, erro: `coleta_submode deve ser um de: ${SUBMODES_COLETA.join(', ')}` };
+  }
+  if (cfg.trigger_handoff !== undefined) {
+    if (typeof cfg.trigger_handoff !== 'string') {
+      return { ok: false, erro: 'trigger_handoff deve ser string' };
+    }
+    if (cfg.trigger_handoff.length < 2 || cfg.trigger_handoff.length > 50) {
+      return { ok: false, erro: 'trigger_handoff deve ter entre 2 e 50 caracteres' };
+    }
+  }
+  return { ok: true };
+}
+
+export function validateFieldTypes(fields) {
   const jsonbFields = ['config_agente', 'config_precificacao', 'horario_funcionamento'];
   const arrayFields = ['gatilhos_handoff', 'portfolio_urls'];
   const intFields = ['duracao_sessao_padrao_h', 'sinal_percentual'];
@@ -77,6 +108,26 @@ function validateFieldTypes(fields) {
   }
   if (fields.modo_atendimento !== undefined && !MODOS_ATENDIMENTO.includes(fields.modo_atendimento)) {
     return { ok: false, erro: `modo_atendimento deve ser um de: ${MODOS_ATENDIMENTO.join(', ')}` };
+  }
+  if (fields.fewshots_por_modo !== undefined) {
+    const v = fields.fewshots_por_modo;
+    if (typeof v !== 'object' || v === null || Array.isArray(v)) {
+      return { ok: false, erro: 'fewshots_por_modo deve ser objeto' };
+    }
+    const keys = Object.keys(v);
+    const invalidKey = keys.find(k => !FEWSHOT_KEYS_VALIDAS.includes(k));
+    if (invalidKey) {
+      return { ok: false, erro: `fewshots_por_modo: chave invalida "${invalidKey}" (validas: ${FEWSHOT_KEYS_VALIDAS.join(', ')})` };
+    }
+    for (const k of keys) {
+      if (!Array.isArray(v[k])) {
+        return { ok: false, erro: `fewshots_por_modo.${k} deve ser array` };
+      }
+    }
+  }
+  if (fields.config_precificacao !== undefined) {
+    const r = validateConfigPrecificacao(fields.config_precificacao);
+    if (!r.ok) return r;
   }
   return { ok: true };
 }
