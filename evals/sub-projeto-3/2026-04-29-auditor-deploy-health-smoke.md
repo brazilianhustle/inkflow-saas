@@ -4,9 +4,41 @@
 **Branch:** feat/auditor-deploy-health (mergeada via PR #12, merge commit `4250be0`)
 **Spec:** `docs/superpowers/specs/2026-04-27-auditores-mvp-design.md` §5.2
 **Plano:** `docs/superpowers/plans/2026-04-29-auditor-deploy-health.md`
-**Status:** ⚠️ PARTIAL — full smoke bloqueado por bug real em prod (GHA self-check 401), descoberto via fixture INSERT em 2026-04-30 sessão parte 2.
+**Status:** ✅ DONE 2026-04-30 (parte 2, pós-rotação token) — bug discovery + fix + retest completo.
 
-## Update 2026-04-30 — smoke parcial via fixture INSERT + bug discovery
+## Update 2026-04-30 (parte 2 final) — smoke E2E full DONE pós-rotação
+
+**Sequência completa:**
+
+1. **Bug discovery** (via fixture INSERT inicial — ver seção abaixo): GHA self-check 401, token classic PAT inválido em prod.
+2. **Rotação completa GITHUB_API_TOKEN** (~10min):
+   - Founder gerou fine-grained PAT novo via GitHub UI (`inkflow-audit-deploy-health-v2`, scopes `Actions:Read + Contents:Read`, repo `inkflow-saas` only)
+   - Validação `curl` retornou HTTP 200 (309 runs visíveis)
+   - BWS secret id `1336556a-...` updated via `bws secret edit`
+   - CF Pages env updated via `wrangler pages secret put GITHUB_API_TOKEN --project-name=inkflow-saas` (production)
+   - Empty/eval-doc commit `fe7a84a` + push → GHA `Deploy to Cloudflare Pages` run `25183241465` deployed CF Pages com novo token
+3. **Trigger pós-rotação** validou clean state: run `4822a902-015c-49aa-aaa9-dc54f508b5a9` retornou `events_count=0`, `actions.resolve=1`. Event warn `11a347b7` (cron natural 18:01) resolveu automaticamente. 2 warns antigos (`92a62c88` 12:00, `05615b25` 06:00) resolvidos manualmente com `resolved_reason='token_rotated'`.
+4. **Smoke E2E full retest (cenário resolve flow):**
+   - Fixture INSERT critical event `52c4800b-14dc-4236-9df3-42123699e919` simulando 2 GHA failures consecutivas
+   - Trigger `0 */6 * * *` → run `c09840ac-e67d-47be-b03b-a0eeb9129dee`, **`events_count=0`, `actions.resolve=1`**
+   - Event `52c4800b` updated: `resolved_at=2026-04-30 18:58:02.711+00`, `resolved_reason='next_run_clean'`
+   - Cleanup fixture: DELETE event + DELETE run row
+5. **Estado final:** 0 open events, 3 resolved (1 `next_run_clean` real + 2 `token_rotated` manual + fixture cleanup).
+
+✅ **Pipeline completo validado:** trigger → endpoint → fetchGitHubRuns (com token novo) → detect (sintoma A clean) → collapseEvents → dedupePolicy (current=critical fixture, next=clean → resolve) → audit_events UPDATE → sendTelegram resolved → audit_runs status=success.
+
+**Sintomas B/C cobertura:**
+- B (CF Pages build failures): mesmo pipeline, validado via 21 unit tests + cron natural quando primeiro CF Pages build falhar
+- C (wrangler-drift): opt-in via env (default OFF), validado por unit tests
+
+**Telegram alert esperado:**
+- `[resolved] [deploy-health] resolved (next run clean)` ~18:58 UTC
+
+**Sub-projeto 3 agora 5/5 smokes E2E full DONE.** Gate 48h passivo único restante (~02/05).
+
+---
+
+## Update 2026-04-30 (parte 2 inicial) — bug discovery via fixture
 
 **Tentativa:** fixture INSERT em `audit_events` simulando 2 GHA failures consecutivas críticas, depois trigger auditor real esperando `actions.resolve=1`.
 
