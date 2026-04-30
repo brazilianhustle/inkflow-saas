@@ -46,8 +46,15 @@ function severityRank(s) {
 }
 
 // Collapse múltiplos eventos do auditor em um único top-event (severity max).
+// Empty array → state limpo (zero drift detectado) — sinaliza pra dedupePolicy
+// disparar resolve se houver evento crítico aberto. Diferente dos outros
+// auditores (vps-limits, billing-flow) que sempre emitem ≥1 event com severity
+// clean por sintoma, rls-drift retorna empty quando schema tá limpo (cada row
+// das SQL queries representa um issue, não um check OK).
 function collapseEvents(events) {
-  if (events.length === 0) return null;
+  if (events.length === 0) {
+    return { severity: 'clean', payload: { symptom: 'aggregate', summary: 'no rls drift detected' }, evidence: {} };
+  }
   const sorted = [...events].sort((a, b) => severityRank(b.severity) - severityRank(a.severity));
   const top = sorted[0];
   if (top.severity === 'clean') {
