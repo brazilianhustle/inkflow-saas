@@ -144,6 +144,10 @@ Quando alerta `[critical] [billing-flow]` chegar no Telegram, seguir [mp-webhook
 
 ## vps-limits
 
+**Status:** ✅ Endpoint em prod desde 2026-04-29 / Routine pendente ativação manual (Task 12 do plano)
+**Endpoint:** `functions/api/cron/audit-vps-limits.js`
+**Lib detect():** `functions/_lib/auditors/vps-limits.js`
+**Tests:** `tests/auditor-vps-limits.test.mjs` (22 unit) + `tests/audit-vps-limits-endpoint.test.mjs` (11 integration)
 **Onde:** Routine Anthropic (`/schedule`) — primeira Routine do MVP
 **Frequência:** `15 */6 * * *` UTC (00:15/06:15/12:15/18:15 — offset 15min do deploy-health)
 **suggested_subagent:** `vps-ops` (agent ainda não existe — Sub-projeto 2 pendente; valor é hint pra futuro)
