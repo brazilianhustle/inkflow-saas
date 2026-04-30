@@ -142,9 +142,72 @@ Quando alerta `[critical] [billing-flow]` chegar no Telegram, seguir [mp-webhook
 
 ---
 
+## vps-limits
+
+**Onde:** Routine Anthropic (`/schedule`) — primeira Routine do MVP
+**Frequência:** `15 */6 * * *` UTC (00:15/06:15/12:15/18:15 — offset 15min do deploy-health)
+**suggested_subagent:** `vps-ops` (agent ainda não existe — Sub-projeto 2 pendente; valor é hint pra futuro)
+**Runbook:** `null` (gap consciente — adjacente a `outage-wa.md`. Founder cai no Telegram alert sem runbook dedicado por escolha consciente do MVP, alinhada com `runbooks/README.md` regra "criar runbook na 2ª ocorrência ad-hoc").
+**Spec source:** `docs/superpowers/specs/2026-04-27-auditores-mvp-design.md` §5.3 + §9.4.
+
+### Detecção em 4 sintomas
+
+| Sintoma | Resource | Severity |
+|---|---|---|
+| **A — RAM** | `ram_used_pct` | warn ≥75% / critical ≥90% |
+| **B — Disk** | `disk_used_pct` | warn ≥75% / critical ≥90% |
+| **C — Load avg 5m** | `load_avg_5m` (relativo a `vcpu_count`) | warn ≥1.0×N / critical ≥1.5×N |
+| **D — Egress mensal** | `egress_month_gb / quota` | warn ≥70% / critical ≥90% — **opt-in** |
+
+### Spec deviations vs §5.3
+
+1. **Hosting endpoint VPS:** container `inkflow-health-1` (nginx:alpine) adicionado ao stack `/opt/inkflow/docker-compose.yml`, exposto via Traefik labels `Host(${N8N_DOMAIN}) && PathPrefix(/_health)` priority 100 (espelha pattern `evoadmin`). Bash collector host + cron 1min escreve `/var/www/health/metrics.json`. Decisão em `docs/canonical/decisions/2026-04-29-vps-limits-data-source.md`.
+2. **Sintoma D opt-in:** ativa só se `AUDIT_VPS_LIMITS_EGRESS_MONTHLY_GB` env setada. Valor recomendado: 5290 GB (pool atual Vultr). Razão: bash collector não emite `egress_month_gb` ainda — gap pós-MVP pra integrar Vultr API.
+3. **Routine pure-trigger:** Routine NÃO faz reasoning sobre metrics — só POST ao endpoint. Endpoint faz fetch ao VPS e toda a lógica (consistente com #1/#2/#5).
+4. **Backups Vultr não cobertos:** sem API consistente. Check manual periódico no Vultr panel — gap pós-MVP. Backups configurados Weekly Monday 07:00 UTC (Vultr default — validado painel 2026-04-29).
+5. **CPU thresholds escalam com vcpu_count:** detect lê `vcpu_count` do JSON metrics (não hardcoded), thresholds escalam se VPS for redimensionado.
+
+### Env vars necessárias
+
+- `VPS_HEALTH_URL` — `https://n8n.inkflowbrasil.com/_health/metrics` (CF Pages env)
+- `VPS_HEALTH_TOKEN` — 64-char hex (CF Pages env + `/opt/inkflow/.env` no VPS — manter sincronizados)
+- `CRON_SECRET` — Bearer pro endpoint (já em prod)
+- `SUPABASE_SERVICE_KEY` — INSERT em audit_events (já em prod)
+- `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` — alerts (já em prod)
+- `AUDIT_VPS_LIMITS_EGRESS_MONTHLY_GB` — **opcional**, ativa Sintoma D (recomendado: 5290)
+
+### Dedupe
+
+Comportamento padrão de `audit-state.dedupePolicy` (§6.2):
+- Mesma severity, < 24h desde último alert → silent (UPDATE last_seen)
+- Mesma severity, ≥ 24h → fire lembrete
+- warn → critical → supersede + Telegram
+- critical → warn → silent (não rebaixa)
+- next_run_clean → resolve + Telegram `[resolved]`
+
+### Runbook trigger
+
+Não tem runbook dedicado. Quando alert chega, founder usa hint `suggested_subagent='vps-ops'` (futuro Sub-projeto 2) ou investiga manualmente via SSH ao VPS:
+```bash
+ssh root@104.207.145.47 'free -m && df -h / && uptime && ps aux --sort=-%mem | head'
+```
+
+### Não cobertos no MVP
+
+- **Backups Vultr** — sem API; check manual no Vultr panel (gap pós-MVP). Schedule: Weekly Monday 07:00 UTC.
+- **Egress live (sub-mensal)** — bash collector não coleta egress instantâneo. Cobertura mensal só (e ainda opt-in pendente integração Vultr API).
+
+### Próximos passos pós-MVP
+
+1. Salvar `VPS_HEALTH_TOKEN` em BWS (followup §"P3 Salvar secrets" no backlog).
+2. Avaliar híbrido endpoint+Vultr API quando primeiro tenant pagante entrar (necessário pra ativar Sintoma D efetivo).
+3. Investigar causa-raiz do bug `container_name` + Traefik (deletado durante setup pra fazer routing funcionar — ver decision doc).
+
+---
+
 ## (Próximos auditores)
 
-`vps-limits`, `rls-drift` — pendentes. Ver spec §5 e plano-mestre Fábrica `2026-04-25-fabrica-inkflow-design.md` §3.
+`rls-drift` — pendente. Ver spec §5 e plano-mestre Fábrica `2026-04-25-fabrica-inkflow-design.md` §3.
 
 ## Pipeline core (compartilhado)
 
