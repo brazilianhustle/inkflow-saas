@@ -132,3 +132,63 @@ test('Empty schemaState fields handled gracefully', async () => {
   });
   assert.deepEqual(events, []);
 });
+
+test('allowlist: table_no_rls com table_name allowlisted é silent skip', async () => {
+  const events = await detect({
+    env: { RLS_INTENTIONAL_NO_PUBLIC: 'audit_events,audit_runs,approvals' },
+    schemaState: {
+      tables_no_rls: [{ schema: 'public', table_name: 'audit_events' }],
+      functions_no_search_path: [],
+    },
+  });
+  assert.equal(events.length, 0);
+});
+
+test('allowlist: table_no_rls com table_name NÃO allowlisted fires warn', async () => {
+  const events = await detect({
+    env: { RLS_INTENTIONAL_NO_PUBLIC: 'audit_events,approvals' },
+    schemaState: {
+      tables_no_rls: [{ schema: 'public', table_name: 'tenants' }],
+      functions_no_search_path: [],
+    },
+  });
+  assert.equal(events.length, 1);
+  assert.equal(events[0].severity, 'warn');
+});
+
+test('allowlist: function_no_search_path NÃO é afetado pela allowlist', async () => {
+  // Allowlist só aplica a tables_no_rls — functions sempre fire critical
+  const events = await detect({
+    env: { RLS_INTENTIONAL_NO_PUBLIC: 'audit_events,audit_runs' },
+    schemaState: {
+      tables_no_rls: [],
+      functions_no_search_path: [{ schema: 'public', function_name: 'audit_events' }], // mesmo nome de tabela allowlisted
+    },
+  });
+  assert.equal(events.length, 1);
+  assert.equal(events[0].severity, 'critical');
+});
+
+test('allowlist: empty env var = nothing whitelisted = todas tables fire warn', async () => {
+  const events = await detect({
+    env: { RLS_INTENTIONAL_NO_PUBLIC: '' },
+    schemaState: {
+      tables_no_rls: [{ schema: 'public', table_name: 'audit_events' }],
+      functions_no_search_path: [],
+    },
+  });
+  assert.equal(events.length, 1);
+  assert.equal(events[0].severity, 'warn');
+});
+
+test('allowlist: missing env var = nothing whitelisted', async () => {
+  const events = await detect({
+    env: {}, // sem RLS_INTENTIONAL_NO_PUBLIC
+    schemaState: {
+      tables_no_rls: [{ schema: 'public', table_name: 'audit_events' }],
+      functions_no_search_path: [],
+    },
+  });
+  assert.equal(events.length, 1);
+  assert.equal(events[0].severity, 'warn');
+});

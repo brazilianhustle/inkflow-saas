@@ -18,6 +18,16 @@
 const RUNBOOK_PATH = null; // gap consciente — spec §5.4
 const SUGGESTED_SUBAGENT = 'supabase-dba'; // hint pro futuro Sub-projeto 2
 
+function parseAllowlist(env) {
+  const csv = env.RLS_INTENTIONAL_NO_PUBLIC;
+  if (!csv || typeof csv !== 'string') return new Set();
+  return new Set(
+    csv.split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+  );
+}
+
 function buildTableEvent(row) {
   const schema = row.schema || 'public';
   const tableName = row.table_name || 'unknown';
@@ -69,12 +79,15 @@ export async function detect({ env = {}, schemaState = { tables_no_rls: [], func
   const tables = schemaState?.tables_no_rls || [];
   const functions = schemaState?.functions_no_search_path || [];
 
-  // Sintoma A — tables sem RLS (allowlist filter aplicado em Task 4)
+  const allowlist = parseAllowlist(env);
+
+  // Sintoma A — tables sem RLS, com filtro de allowlist
   for (const row of tables) {
+    if (allowlist.has(row.table_name)) continue; // silent skip
     events.push(buildTableEvent(row));
   }
 
-  // Sintoma B — functions sem search_path (sempre critical)
+  // Sintoma B — functions sem search_path (allowlist NÃO aplica)
   for (const row of functions) {
     events.push(buildFunctionEvent(row));
   }
