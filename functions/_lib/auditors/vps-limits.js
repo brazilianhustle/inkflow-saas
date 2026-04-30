@@ -88,6 +88,41 @@ function detectSymptomB(metrics) {
   };
 }
 
+function detectSymptomC(metrics) {
+  const load = metrics.load_avg_5m;
+  const vcpu = metrics.vcpu_count;
+  if (typeof load !== 'number' || typeof vcpu !== 'number' || vcpu <= 0) return null;
+
+  const warn = THRESHOLDS.load_multiplier.warn * vcpu;
+  const critical = THRESHOLDS.load_multiplier.critical * vcpu;
+
+  let severity = 'clean';
+  if (load >= critical) severity = 'critical';
+  else if (load >= warn) severity = 'warn';
+
+  return {
+    severity,
+    payload: {
+      symptom: 'load_avg',
+      runbook_path: RUNBOOK_PATH,
+      suggested_subagent: SUGGESTED_SUBAGENT,
+      summary: severity === 'clean'
+        ? `Load avg 5m em ${load.toFixed(2)} (vCPU ${vcpu}, saudável)`
+        : `Load avg 5m em ${load.toFixed(2)} (vCPU ${vcpu})`,
+      resource: 'load_avg_5m',
+      live_value: load,
+      threshold_warn: warn,
+      threshold_critical: critical,
+      source: 'custom_endpoint',
+    },
+    evidence: {
+      load_avg_5m: load,
+      vcpu_count: vcpu,
+      ts: metrics.ts,
+    },
+  };
+}
+
 export async function detect({ env = {}, metrics = null, now = Date.now() } = {}) {
   const events = [];
   if (!metrics) return events;
@@ -97,6 +132,9 @@ export async function detect({ env = {}, metrics = null, now = Date.now() } = {}
 
   const symB = detectSymptomB(metrics);
   if (symB) events.push(symB);
+
+  const symC = detectSymptomC(metrics);
+  if (symC) events.push(symC);
 
   return events;
 }

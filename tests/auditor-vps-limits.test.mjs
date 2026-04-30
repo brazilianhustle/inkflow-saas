@@ -120,3 +120,51 @@ test('symptom B: missing disk_used_pct skips silently', async () => {
   const diskEvents = events.filter((e) => e.payload.symptom === 'disk');
   assert.equal(diskEvents.length, 0);
 });
+
+test('symptom C: load below vcpu_count returns clean', async () => {
+  const events = await detect({
+    env: {},
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.20, disk_total_gb: 150, load_avg_5m: 0.5, vcpu_count: 4 },
+  });
+  const loadEvent = events.find((e) => e.payload.symptom === 'load_avg');
+  assert.equal(loadEvent?.severity, 'clean');
+});
+
+test('symptom C: load at vcpu_count boundary (4.0) fires warn', async () => {
+  const events = await detect({
+    env: {},
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.20, disk_total_gb: 150, load_avg_5m: 4.0, vcpu_count: 4 },
+  });
+  const loadEvent = events.find((e) => e.payload.symptom === 'load_avg');
+  assert.equal(loadEvent?.severity, 'warn');
+});
+
+test('symptom C: load at 1.5×vcpu_count (6.0) fires critical', async () => {
+  const events = await detect({
+    env: {},
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.20, disk_total_gb: 150, load_avg_5m: 6.0, vcpu_count: 4 },
+  });
+  const loadEvent = events.find((e) => e.payload.symptom === 'load_avg');
+  assert.equal(loadEvent?.severity, 'critical');
+});
+
+test('symptom C: thresholds scale with vcpu_count', async () => {
+  const events = await detect({
+    env: {},
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.20, disk_total_gb: 150, load_avg_5m: 2.5, vcpu_count: 2 },
+  });
+  const loadEvent = events.find((e) => e.payload.symptom === 'load_avg');
+  // 2.5 > 2.0 (warn=1.0×2) and 2.5 < 3.0 (critical=1.5×2) → warn
+  assert.equal(loadEvent?.severity, 'warn');
+  assert.equal(loadEvent.payload.threshold_warn, 2.0);
+  assert.equal(loadEvent.payload.threshold_critical, 3.0);
+});
+
+test('symptom C: missing vcpu_count skips silently', async () => {
+  const events = await detect({
+    env: {},
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.20, disk_total_gb: 150, load_avg_5m: 5.0 },
+  });
+  const loadEvents = events.filter((e) => e.payload.symptom === 'load_avg');
+  assert.equal(loadEvents.length, 0);
+});
