@@ -59,6 +59,7 @@ Auditores em prod sugerem qual subagent é especialista no domínio do alerta. F
 | `deploy-health` | `deploy-engineer` | Failures de pipeline (GHA + CF Pages + Wrangler). Domain match — agent já roteia rollback.md. |
 | `billing-flow` | _none_ | MP webhook é integração externa (Mercado Pago dashboard) sem agent dedicado no MVP. Runbook `mp-webhook-down.md` é a doutrina — founder executa as 4 ações manuais. |
 | `vps-limits` | `vps-ops` | Hint pra futuro — agent não existe ainda (Sub-projeto 2 pendente). Quando existir, Domain match completo: SSH ao Vultr, resize resources, container restart. |
+| `rls-drift` | `supabase-dba` | Hint pra futuro — agent não existe ainda (Sub-projeto 2 pendente). Quando existir: investiga findings, sugere migrations, atualiza allowlist `RLS_INTENTIONAL_NO_PUBLIC`. |
 
 Doc canonical dos auditores: [`docs/canonical/auditores.md`](../../docs/canonical/auditores.md).
 

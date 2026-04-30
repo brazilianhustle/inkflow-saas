@@ -209,9 +209,65 @@ ssh root@104.207.145.47 'free -m && df -h / && uptime && ps aux --sort=-%mem | h
 
 ---
 
-## (Próximos auditores)
+## rls-drift
 
-`rls-drift` — pendente. Ver spec §5 e plano-mestre Fábrica `2026-04-25-fabrica-inkflow-design.md` §3.
+**Status:** ✅ Em prod desde 2026-04-30 (Sub-projeto 3 5/5 DONE)
+**Endpoint:** `functions/api/cron/audit-rls-drift.js`
+**Lib detect():** `functions/_lib/auditors/rls-drift.js`
+**Tests:** `tests/auditor-rls-drift.test.mjs` (15 unit) + `tests/audit-rls-drift-endpoint.test.mjs` (8 endpoint)
+**Onde:** Routine Anthropic (`/schedule`) primary; cron-worker pivot pré-configurado mas comentado em `wrangler.toml`
+**Frequência:** `0 7 * * *` UTC (04:00 BRT diário)
+**suggested_subagent:** `supabase-dba` (agent ainda não existe — Sub-projeto 2 pendente; valor é hint pra futuro)
+**Runbook:** `null` (gap consciente — adjacente a `db-indisponivel.md`. Founder cai no Telegram alert sem runbook dedicado)
+**Spec source:** `docs/superpowers/specs/2026-04-27-auditores-mvp-design.md` §5.4 + §9.5
+
+### Detecção em 2 sintomas
+
+| Sintoma | Source | Severity |
+|---|---|---|
+| **Tabela em public sem RLS** (não allowlisted) | SQL `pg_class` introspection | warn |
+| **Tabela em public sem RLS** (allowlisted) | SQL `pg_class` introspection | silent skip |
+| **Function em public sem search_path** | SQL `pg_proc` introspection | critical (allowlist NÃO aplica) |
+
+### Spec deviations vs §5.4
+
+1. **Arquitetura híbrida resiliente.** Spec original cravou Routine pura. Aprendizado #3 vps-limits (CCR allowlist 403) força mitigação: lib detect + endpoint CF Pages funcional ALÉM de Routine. Decision doc com pivot path explícito em `decisions/2026-04-30-rls-drift-architecture.md`.
+2. **🚨 Source: SQL queries diretas via `/database/query` (não advisor REST).** Spec §5.4 cravou `/v1/.../advisors?lint_type=...` mas esse endpoint **não existe** (404 confirmado 2026-04-30). Database Linter Supabase é client-side no dashboard. Pivotamos pra 2 SQL queries via `pg_class`/`pg_proc` introspection.
+3. **Reasoning Claude vive APENAS na Routine.** Endpoint fallback é determinístico (sem reasoning). Trade-off: alertas Telegram perdem narrativas contextuais se pivot ativar — mas detection continua funcional.
+4. **Cobertura MVP: 2 sintomas (RLS + search_path).** Outros lints do dashboard (performance, policies WITH CHECK true) ficam backlog P3 fase 2.
+5. **Allowlist expandida** com `signups_log` (6 tables): `audit_events`, `audit_runs`, `audit_reports`, `approvals`, `tool_calls_log`, `signups_log`.
+
+### Env vars necessárias
+
+- `SUPABASE_PAT` — Personal Access Token Supabase (CF Pages env + BWS id `46a0d806-...`)
+- `RLS_INTENTIONAL_NO_PUBLIC` — CSV `audit_events,audit_runs,audit_reports,approvals,tool_calls_log,signups_log` (CF Pages env)
+- `CRON_SECRET` — Bearer pro endpoint (já em prod)
+- `SUPABASE_SERVICE_KEY` — INSERT em audit_events (já em prod)
+- `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` — alerts (já em prod)
+
+(`SUPABASE_PROJECT_REF=bfzuxxuscyplfoimvomh` fica hardcoded no source.)
+
+### Dedupe
+
+Comportamento padrão de `audit-state.dedupePolicy` (§6.2) — mesmo dos outros auditores.
+
+### Pivot path (se Routine quebrar)
+
+Detalhes em `docs/canonical/decisions/2026-04-30-rls-drift-architecture.md`. Resumo: descomentar 1 linha em `cron-worker/wrangler.toml` + redeploy = ~30min.
+
+### Runbook trigger
+
+Sem runbook dedicado. Quando alert chega:
+1. Olhar narrativa do payload (Routine geralmente cita PR/commit relacionado)
+2. Investigar manualmente: `SELECT * FROM pg_class WHERE relname = '<X>'` ou `SELECT proconfig FROM pg_proc WHERE proname = '<Y>'`
+3. Decidir: corrigir via migration nova OU adicionar à `RLS_INTENTIONAL_NO_PUBLIC`
+
+### Não cobertos no MVP (backlog P3 fase 2)
+
+- **Policies `WITH CHECK (true)` em endpoint anon** — detect via SQL adicional
+- **RLS-on-com-policies-zero** (silent fail comum em dev)
+- **Performance lints** — índices missing, queries lentas
+- **Auto-allowlist via PR detection** — Routine reasoning marca tabela como intentional
 
 ## Pipeline core (compartilhado)
 
