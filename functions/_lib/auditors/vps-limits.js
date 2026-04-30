@@ -55,12 +55,48 @@ function detectSymptomA(metrics) {
   };
 }
 
+function detectSymptomB(metrics) {
+  const pct = metrics.disk_used_pct;
+  if (typeof pct !== 'number') return null;
+
+  let severity = 'clean';
+  if (pct >= THRESHOLDS.disk.critical) severity = 'critical';
+  else if (pct >= THRESHOLDS.disk.warn) severity = 'warn';
+
+  const pctStr = `${Math.round(pct * 100)}%`;
+  return {
+    severity,
+    payload: {
+      symptom: 'disk',
+      runbook_path: RUNBOOK_PATH,
+      suggested_subagent: SUGGESTED_SUBAGENT,
+      summary: severity === 'clean'
+        ? `Disco em ${pctStr} (saudável)`
+        : `Disco em ${pctStr}`,
+      resource: 'disk',
+      live_value: pct,
+      threshold_warn: THRESHOLDS.disk.warn,
+      threshold_critical: THRESHOLDS.disk.critical,
+      source: 'custom_endpoint',
+    },
+    evidence: {
+      disk_used_pct: pct,
+      disk_total_gb: metrics.disk_total_gb,
+      disk_used_gb: metrics.disk_used_gb,
+      ts: metrics.ts,
+    },
+  };
+}
+
 export async function detect({ env = {}, metrics = null, now = Date.now() } = {}) {
   const events = [];
   if (!metrics) return events;
 
   const symA = detectSymptomA(metrics);
   if (symA) events.push(symA);
+
+  const symB = detectSymptomB(metrics);
+  if (symB) events.push(symB);
 
   return events;
 }

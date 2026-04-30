@@ -72,3 +72,51 @@ test('symptom A: missing ram_used_pct skips silently', async () => {
   const ramEvents = events.filter((e) => e.payload.symptom === 'ram');
   assert.equal(ramEvents.length, 0);
 });
+
+test('symptom B: disk below warn threshold returns clean', async () => {
+  const events = await detect({
+    env: {},
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.50, disk_total_gb: 150, load_avg_5m: 0.5, vcpu_count: 4 },
+  });
+  const diskEvent = events.find((e) => e.payload.symptom === 'disk');
+  assert.equal(diskEvent?.severity, 'clean');
+});
+
+test('symptom B: disk at warn threshold fires warn', async () => {
+  const events = await detect({
+    env: {},
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.75, disk_total_gb: 150, load_avg_5m: 0.5, vcpu_count: 4 },
+  });
+  const diskEvent = events.find((e) => e.payload.symptom === 'disk');
+  assert.equal(diskEvent?.severity, 'warn');
+});
+
+test('symptom B: disk above critical fires critical with summary text', async () => {
+  const events = await detect({
+    env: {},
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.92, disk_total_gb: 150, load_avg_5m: 0.5, vcpu_count: 4 },
+  });
+  const diskEvent = events.find((e) => e.payload.symptom === 'disk');
+  assert.equal(diskEvent?.severity, 'critical');
+  assert.match(diskEvent.payload.summary, /Disco em 92%/);
+  assert.equal(diskEvent.payload.live_value, 0.92);
+});
+
+test('symptom B: payload includes disk_total_gb in evidence', async () => {
+  const events = await detect({
+    env: {},
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, disk_used_pct: 0.78, disk_total_gb: 150, disk_used_gb: 117, load_avg_5m: 0.5, vcpu_count: 4 },
+  });
+  const diskEvent = events.find((e) => e.payload.symptom === 'disk');
+  assert.equal(diskEvent.evidence.disk_total_gb, 150);
+  assert.equal(diskEvent.evidence.disk_used_gb, 117);
+});
+
+test('symptom B: missing disk_used_pct skips silently', async () => {
+  const events = await detect({
+    env: {},
+    metrics: { ram_used_pct: 0.30, ram_total_mb: 8000, load_avg_5m: 0.5, vcpu_count: 4 },
+  });
+  const diskEvents = events.filter((e) => e.payload.symptom === 'disk');
+  assert.equal(diskEvents.length, 0);
+});
