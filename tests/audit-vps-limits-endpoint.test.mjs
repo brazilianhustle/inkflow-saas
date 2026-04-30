@@ -81,7 +81,7 @@ test('endpoint handles VPS fetch failure (5xx) gracefully — endRun error', asy
       respond: async (url, init) => {
         runEnded = true;
         runEndStatus = JSON.parse(init.body).status;
-        return new Response('', { status: 204 });
+        return { ok: true, status: 204, text: async () => '' };
       },
     },
     {
@@ -105,7 +105,7 @@ test('endpoint clean run (all metrics healthy) returns ok with 0 events', async 
     },
     {
       match: (url) => url.includes('audit_runs') && url.includes('?id='),
-      respond: async () => new Response('', { status: 204 }),
+      respond: async () => { return { ok: true, status: 204, text: async () => '' }; },
     },
     {
       match: (url) => url.includes('_health/metrics'),
@@ -138,7 +138,7 @@ test('endpoint critical run (disk 92%) fires + sends Telegram', async () => {
     },
     {
       match: (url) => url.includes('audit_runs') && url.includes('?id='),
-      respond: async () => new Response('', { status: 204 }),
+      respond: async () => { return { ok: true, status: 204, text: async () => '' }; },
     },
     {
       match: (url) => url.includes('_health/metrics'),

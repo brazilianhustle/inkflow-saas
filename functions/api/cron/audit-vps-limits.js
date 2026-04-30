@@ -162,12 +162,10 @@ export async function onRequest(context) {
       // 'silent' e 'no-op' → nada.
     }
 
-    try {
-      await endRun(supabase, runId, {
-        status: 'success',
-        eventsEmitted: actions.fire + actions.supersede,
-      });
-    } catch { /* non-fatal: run lifecycle logging best-effort */ }
+    await endRun(supabase, runId, {
+      status: 'success',
+      eventsEmitted: actions.fire + actions.supersede,
+    });
     return json({ ok: true, run_id: runId, events_count: collapsed && collapsed.severity !== 'clean' ? 1 : 0, actions });
   } catch (err) {
     if (runId) {
