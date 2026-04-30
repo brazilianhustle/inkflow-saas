@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-27
+last_reviewed: 2026-04-29
 owner: leandro
 status: stable
 related: [stack.md, runbooks/outage-wa.md, runbooks/db-indisponivel.md]
@@ -12,18 +12,19 @@ Limites contratados + thresholds de alerta. Alimenta os auditores **#3 (VPS limi
 
 ## Vultr (Evolution VPS)
 
-VPS dedicado que roda Evolution API + Postgres dela + nginx. Único serviço auto-hospedado.
+VPS dedicado que roda Evolution API + Postgres dela + n8n (3 containers) + n8n Postgres + redis + Traefik + admin-bridge. Único serviço auto-hospedado. Hostname `inkflow-vps`, IP `104.207.145.47`, Ubuntu 22.04 x64 (kernel 5.15), CPU Intel Broadwell, swap 8 GB. Location: Miami. Custo atual: ~$37.72/mês.
 
 | Recurso | Limite | Threshold warn | Threshold critical | Como medir |
 |---|---|---|---|---|
-| RAM | `[confirmar — 2GB ou 4GB]` | 75% | 90% | `ssh root@<vps> "free -m"` |
-| Disco | `[confirmar — 50GB ou 80GB]` | 75% | 90% | `ssh root@<vps> "df -h /"` |
-| CPU (load avg 5min) | `[confirmar — 1 ou 2 vCPU]` | load > N | load > 1.5×N | `ssh root@<vps> "uptime"` |
-| Network egress | `[confirmar — Vultr panel mostra TB/mês]` | 70% | 90% | Vultr dashboard |
-| Backups automáticos | `[confirmar — diário ou semanal]` | falhar 1x | falhar 2x consecutivos | Vultr dashboard → Backups |
+| RAM | **8 GB** (8192 MB no painel; 7931 MB usable em `free -m`) | 75% (≈ 5.95 GB) | 90% (≈ 7.14 GB) | `ssh root@<vps> "free -m"` |
+| Disco | **160 GB SSD** contratado (150 GB usable em `/dev/vda2`, ~10 GB overhead boot/swap) | 75% (≈ 112 GB usable) | 90% (≈ 135 GB usable) | `ssh root@<vps> "df -h /"` |
+| CPU (load avg 5min) | **4 vCPU** | load > 4.0 (1.0×N) | load > 6.0 (1.5×N) | `ssh root@<vps> "uptime"` |
+| Network egress (outbound mensal) | **5.29 TB / 5290 GB** pool total (Instance 3.14 TB + Free 2.00 TB; validado painel Dashboard "Bandwidth Pool" 2026-04-29; usage atual 0.00 TB) | 70% (≈ 3700 GB) | 90% (≈ 4760 GB) | Vultr dashboard → Dashboard → "Bandwidth Usage" |
+| Backups automáticos | `Enabled` — **Weekly, Monday 07:00 UTC** (próximo: 2026-05-04 07:00 UTC; histórico: 2026-04-27 + 2026-04-20 confirma cadência 7d) | falhar 1x | falhar 2x consecutivos | Vultr dashboard → Backups |
 
-**Dashboard:** https://my.vultr.com (login Bitwarden item `vultr`)
-**Provisionamento:** ver [Padrão de provisionamento Vultr](https://docs.vultr.com/) — VM atual rodando Ubuntu LTS.
+**Dashboard:** https://my.vultr.com (login Bitwarden item `vultr`) — instance `InkFlow SaaS` ID `d111655f-f57b-4fd6-bc27-577f6b04b0b0`.
+**Provisionamento:** Ubuntu 22.04 x64, 4 vCPU / 8 GB RAM / 160 GB SSD, Miami location, $37.72/mês (validado painel 2026-04-29). Plano Vultr Cloud Compute Regular Performance.
+**Endpoint health metrics:** `https://n8n.inkflowbrasil.com/_health/metrics` (auth via header `X-Health-Token`). Coleta via bash script + cron 1min no host (`/usr/local/bin/inkflow-health-metrics.sh`), servido por container `inkflow-health-1` (nginx:alpine) via Traefik labels. Decisão arquitetural em [decisions/2026-04-29-vps-limits-data-source.md](decisions/2026-04-29-vps-limits-data-source.md).
 
 ## Cloudflare Workers (`inkflow-cron`)
 

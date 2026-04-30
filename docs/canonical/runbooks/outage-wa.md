@@ -6,6 +6,8 @@ related: [README.md, ../stack.md, ../flows.md]
 ---
 # Runbook — Outage WhatsApp (Evolution API)
 
+> **Auditor `vps-limits` pode ter alertado antes:** se VPS estava saturado (RAM/disk/load), Auditor #3 dispara alert Telegram cada 6h via Routine Anthropic. Conferir histórico de alerts antes de iniciar este runbook — se há alert recente, ler `audit_events` pra contexto. Cross-ref `docs/canonical/auditores.md#vps-limits`.
+
 Quando mensagens WhatsApp param de fluir — não enviam, não recebem, ou QR não gera. Stack alvo: Evolution API rodando no VPS Vultr (`https://evo.inkflowbrasil.com`).
 
 ## Sintomas
