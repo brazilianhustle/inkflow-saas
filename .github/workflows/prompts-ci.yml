@@ -4,14 +4,18 @@ on:
   pull_request:
     paths:
       - 'functions/_lib/prompts/**'
+      - 'functions/api/update-tenant.js'
       - 'tests/prompts/**'
+      - 'tests/update-tenant-validation.test.mjs'
       - 'scripts/test-prompts.sh'
       - 'scripts/update-prompt-snapshots.sh'
   push:
     branches: [main]
     paths:
       - 'functions/_lib/prompts/**'
+      - 'functions/api/update-tenant.js'
       - 'tests/prompts/**'
+      - 'tests/update-tenant-validation.test.mjs'
 
 jobs:
   prompts-tests:

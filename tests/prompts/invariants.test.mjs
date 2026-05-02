@@ -50,3 +50,13 @@ test('invariante: separator "---" presente entre blocos', () => {
     assert.match(out, /\n---\n/, `[${nome}] sem separadores`);
   }
 });
+
+// MVP: Faixa e Exato devem ser identicos (decisao do plan §6.1 PR 1).
+// Quando Coleta divergir em PR 2, este invariante ainda exige Faixa==Exato
+// — Coleta sera comparado contra seu proprio snapshot, nao contra Faixa/Exato.
+test('invariante: Faixa output === Exato output (sync entre modos espelhados)', () => {
+  const outFaixa = generateSystemPrompt(TENANT_CANONICO, CONVERSA_CANONICA, CLIENT_CONTEXT_CANONICO);
+  const outExato = generateSystemPrompt(TENANT_CANONICO_EXATO, CONVERSA_CANONICA, CLIENT_CONTEXT_CANONICO);
+  assert.strictEqual(outFaixa, outExato,
+    'Faixa e Exato divergiram — esperado bit-a-bit identico no MVP. Verifique se mudou faixa/* sem espelhar em exato/* (ou vice-versa).');
+});

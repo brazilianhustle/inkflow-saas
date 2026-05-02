@@ -16,4 +16,7 @@ node --test tests/prompts/invariants.test.mjs
 echo "▶ Contamination..."
 node --test tests/prompts/contamination.test.mjs
 
+echo "▶ Update-tenant validation..."
+node --test tests/update-tenant-validation.test.mjs
+
 echo "✓ Todos os tests de prompts passaram."
