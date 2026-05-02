@@ -1,0 +1,59 @@
+# ── InkFlow Headers ─────────────────────────────────────────────────────────
+# Cloudflare Pages _headers file.
+# Documentação: https://developers.cloudflare.com/pages/configuration/headers/
+
+# === Cache imutável pra assets versionados (1 ano) ===
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.jpeg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+# === Cache HTML curto (5 min) — permite atualizações rápidas ===
+/*.html
+  Cache-Control: public, max-age=300, must-revalidate
+
+/
+  Cache-Control: public, max-age=300, must-revalidate
+
+# === Sitemap e robots — cache 1h ===
+/sitemap.xml
+  Cache-Control: public, max-age=3600, must-revalidate
+  Content-Type: application/xml; charset=utf-8
+
+/robots.txt
+  Cache-Control: public, max-age=3600, must-revalidate
+  Content-Type: text/plain; charset=utf-8
+
+# === Security headers em TODAS as páginas ===
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(self)
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-XSS-Protection: 1; mode=block

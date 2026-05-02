@@ -3,16 +3,111 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>InkFlow &mdash; Assistente virtual para est&uacute;dios de tatuagem</title>
-<meta name="description" content="O InkFlow atende, or&ccedil;a e agenda seus clientes pelo WhatsApp 24/7. Seu est&uacute;dio n&atilde;o para nem quando voc&ecirc; dorme."/>
+
+<!-- ── SEO Básico ────────────────────────────────────────────────────── -->
+<title>InkFlow — Atendimento WhatsApp Automático pra Tatuadores</title>
+<meta name="description" content="Bot que atende, orça e agenda no WhatsApp do teu estúdio 24h. Trial grátis 7 dias, sem cartão. Pra tatuadores brasileiros que perdem cliente por demora."/>
+<meta name="keywords" content="sistema para tatuador, automação WhatsApp tatuagem, agenda online tatuagem, chatbot tatuador, atendimento automático estúdio tatuagem"/>
+<meta name="author" content="InkFlow Brasil"/>
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1"/>
+<link rel="canonical" href="https://inkflowbrasil.com/"/>
+
+<!-- ── Idioma + Geo ─────────────────────────────────────────────────── -->
+<meta name="language" content="Portuguese"/>
+<meta name="geo.region" content="BR"/>
+<meta name="geo.placename" content="Brasil"/>
+
+<!-- ── Open Graph (Facebook, WhatsApp, LinkedIn) ────────────────────── -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://inkflowbrasil.com/"/>
+<meta property="og:title" content="InkFlow — Atendimento WhatsApp Automático pra Tatuadores"/>
+<meta property="og:description" content="Bot que atende, orça e agenda no WhatsApp do teu estúdio 24h. Trial grátis 7 dias. Pra tatuadores brasileiros."/>
+<meta property="og:image" content="https://inkflowbrasil.com/images/og-default.svg"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="InkFlow — Atendimento WhatsApp pra estúdios de tatuagem"/>
+<meta property="og:locale" content="pt_BR"/>
+<meta property="og:site_name" content="InkFlow"/>
+
+<!-- ── Twitter Card ─────────────────────────────────────────────────── -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="InkFlow — Atendimento WhatsApp Automático pra Tatuadores"/>
+<meta name="twitter:description" content="Bot que atende, orça e agenda no WhatsApp do teu estúdio 24h. Trial grátis 7 dias."/>
+<meta name="twitter:image" content="https://inkflowbrasil.com/images/og-default.svg"/>
+<meta name="twitter:image:alt" content="InkFlow — Atendimento WhatsApp pra estúdios de tatuagem"/>
+
+<!-- ── Favicon + Apple Touch ────────────────────────────────────────── -->
 <link rel="icon" type="image/svg+xml" href="/images/favicon.svg"/>
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png"/>
+
+<!-- ── Performance: preconnect CDNs críticos ────────────────────────── -->
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-<meta property="og:title" content="InkFlow &mdash; Assistente virtual para est&uacute;dios"/>
-<meta property="og:description" content="Atende clientes 24/7 pelo WhatsApp. Or&ccedil;a, agenda, faz follow-up."/>
-<meta property="og:type" content="website"/>
-<meta property="og:url" content="https://inkflowbrasil.com/"/>
+
+<!-- ── Schema.org JSON-LD (SoftwareApplication + Organization + WebSite) ── -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://inkflowbrasil.com/#software",
+      "name": "InkFlow",
+      "applicationCategory": "BusinessApplication",
+      "applicationSubCategory": "Customer Service Software",
+      "operatingSystem": "Web",
+      "description": "Sistema brasileiro de automação de atendimento via WhatsApp para estúdios de tatuagem. Bot conversa com clientes, calcula orçamento (faixa, valor exato ou só coleta de info), agenda sessões e cobra sinal automático via PIX/Mercado Pago.",
+      "url": "https://inkflowbrasil.com/",
+      "inLanguage": "pt-BR",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BRL",
+        "description": "Trial grátis 7 dias, sem cartão de crédito",
+        "availability": "https://schema.org/InStock"
+      },
+      "featureList": [
+        "Bot conversacional WhatsApp 24/7",
+        "3 modos de precificação (Faixa, Exato, Coleta)",
+        "Agenda integrada com Google Calendar",
+        "Cobrança automática de sinal via PIX",
+        "Reconhecimento de fotos de referência",
+        "Customização total do agente"
+      ],
+      "screenshot": "https://inkflowbrasil.com/images/og-default.svg"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://inkflowbrasil.com/#organization",
+      "name": "InkFlow",
+      "url": "https://inkflowbrasil.com/",
+      "logo": "https://inkflowbrasil.com/images/favicon.svg",
+      "description": "SaaS brasileiro que automatiza o atendimento via WhatsApp para estúdios de tatuagem.",
+      "areaServed": {
+        "@type": "Country",
+        "name": "Brasil"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "email": "contato@inkflowbrasil.com",
+        "availableLanguage": ["Portuguese"]
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://inkflowbrasil.com/#website",
+      "url": "https://inkflowbrasil.com/",
+      "name": "InkFlow",
+      "description": "Atendimento WhatsApp automático para tatuadores brasileiros",
+      "publisher": {"@id": "https://inkflowbrasil.com/#organization"},
+      "inLanguage": "pt-BR"
+    }
+  ]
+}
+</script>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{

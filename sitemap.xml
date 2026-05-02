@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- ========= PÁGINAS EXISTENTES EM PROD (Fase 1) ========= -->
+
+  <url>
+    <loc>https://inkflowbrasil.com/</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/termos</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- ========= PÁGINAS PLANEJADAS (Fase 2 — descomentar conforme deploy) ========= -->
+  <!--
+  Comentadas pra evitar 404s no Google crawler enquanto não existem.
+  Descomentar cada bloco APÓS criar a página correspondente em prod.
+  -->
+
+  <!--
+  <url>
+    <loc>https://inkflowbrasil.com/funcionalidades</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/precos</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/modos</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/como-funciona</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/faq</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/sobre</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/contato</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/privacidade</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  -->
+
+  <!-- ========= BLOG (HUB + 10 ARTIGOS PLANEJADOS — Fase 4) ========= -->
+
+  <!--
+  <url>
+    <loc>https://inkflowbrasil.com/blog</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  -->
+
+  <!-- Cada artigo descomentar quando publicado -->
+
+  <!--
+  <url>
+    <loc>https://inkflowbrasil.com/blog/como-precificar-tatuagem</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/blog/como-cobrar-sinal-tatuagem</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/blog/whatsapp-business-tatuador-guia-completo</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/blog/como-organizar-agenda-estudio-tatuagem</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/blog/chatbot-whatsapp-tatuagem-vale-a-pena</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/blog/atendimento-automatico-estudio-tatuagem</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/blog/precificacao-tatuagem-faixa-vs-fechado</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/blog/como-perder-menos-cliente-whatsapp-tatuagem</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/blog/sistemas-de-agenda-tatuagem-comparativo</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/blog/lgpd-para-tatuadores-o-que-precisa-saber</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  -->
+
+  <!-- ========= COMPARATIVOS ========= -->
+
+  <!--
+  <url>
+    <loc>https://inkflowbrasil.com/comparar/inkflow-vs-planilha</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://inkflowbrasil.com/comparar/inkflow-vs-secretaria</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  -->
+
+</urlset>

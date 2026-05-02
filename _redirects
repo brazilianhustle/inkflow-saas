@@ -1,2 +1,30 @@
 # InkFlow — Cloudflare Pages Redirect Rules
 # Redirects de /start/:token sao tratados pela Pages Function em functions/start/[[token]].js
+#
+# Formato: source destination [status]
+# Status 301 = permanent redirect | 302 = temporary | 200 = rewrite (sem mudar URL)
+# Documentação: https://developers.cloudflare.com/pages/configuration/redirects/
+
+# === Legacy URLs (.html) → URLs limpas (sem extensão) ===
+/index.html              /                       301
+/onboarding.html         /onboarding             301
+/studio.html             /studio                 301
+/admin.html              /admin                  301
+/reconnect.html          /reconnect              301
+/termos.html             /termos                 301
+
+# === Trailing slash consistency (sem trailing slash) ===
+/funcionalidades/        /funcionalidades        301
+/precos/                 /precos                 301
+/modos/                  /modos                  301
+/como-funciona/          /como-funciona          301
+/faq/                    /faq                    301
+/sobre/                  /sobre                  301
+/contato/                /contato                301
+/privacidade/            /privacidade            301
+/blog/                   /blog                   301
+
+# === Forçar HTTPS + canonical apex (sem www) ===
+http://inkflowbrasil.com/*     https://inkflowbrasil.com/:splat        301!
+http://www.inkflowbrasil.com/* https://inkflowbrasil.com/:splat        301!
+https://www.inkflowbrasil.com/* https://inkflowbrasil.com/:splat       301!

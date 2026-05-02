@@ -1,0 +1,49 @@
+# InkFlow — robots.txt
+# https://www.robotstxt.org/
+
+User-agent: *
+Allow: /
+
+# === Áreas internas/logadas — não indexar ===
+Disallow: /onboarding
+Disallow: /onboarding/
+Disallow: /studio
+Disallow: /admin
+Disallow: /reconnect
+Disallow: /api/
+
+# === Crawlers agressivos não-essenciais (rate limit) ===
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: DotBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Crawl-delay: 10
+
+# === Bloquear scrapers de IA não-autorizados (proteção conteúdo) ===
+# (Permitidos: Googlebot, Bingbot, Anthropic-AI, ChatGPT-User, GPTBot, PerplexityBot, ClaudeBot)
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# === Sitemap ===
+Sitemap: https://inkflowbrasil.com/sitemap.xml
