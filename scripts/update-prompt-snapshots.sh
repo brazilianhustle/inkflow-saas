@@ -9,7 +9,7 @@ cd "$(dirname "$0")/.."
 # Heredoc com quote ('EOF') evita expansao de bash em $vars/template literals
 # do node script — robusto pra futuras edicoes que adicionem strings JS complexas.
 node --input-type=module <<'NODE_EOF'
-import { generateSystemPrompt } from './functions/_lib/generate-prompt.js';
+import { generateSystemPrompt } from './functions/_lib/prompts/index.js';
 import { TENANT_CANONICO, TENANT_CANONICO_EXATO, CONVERSA_CANONICA, CLIENT_CONTEXT_CANONICO } from './tests/prompts/fixtures/tenant-canonico.mjs';
 import { writeSnapshot } from './tests/prompts/helpers.mjs';
 
