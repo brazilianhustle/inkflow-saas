@@ -1,5 +1,5 @@
 // ── §7 FEW-SHOT BASE Faixa — extraido de generate-prompt.js linhas 420-521 ──
-// MVP: identico ao Exato.
+// MVP: identico ao Exato (copia bit-a-bit).
 export function fewShotBase(tenant) {
   const nomeAg = tenant.nome_agente || 'atendente';
   const nomeEst = tenant.nome_estudio || 'estudio';
