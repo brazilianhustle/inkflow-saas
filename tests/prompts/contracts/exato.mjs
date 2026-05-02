@@ -1,4 +1,6 @@
 // Contrato Exato — MVP: identico ao Faixa.
+// Quando Coleta for implementado em PR 2, Faixa/Exato vao divergir de Coleta —
+// manter espelhados entre si ate la (mudanca em um => mesma mudanca no outro).
 //
 // max_tokens: 6000 (não 5000).
 // Razão: approxTokens = ceil(chars/4). Snapshots atuais têm 20200 chars

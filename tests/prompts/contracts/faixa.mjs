@@ -1,5 +1,6 @@
 // Contrato do prompt Faixa: o que DEVE/NAO DEVE aparecer + limite.
 // CI bloqueia PR que quebra qualquer assertion.
+// Espelhado em exato.mjs (MVP) — manter sync ate Coleta divergir em PR 2.
 //
 // max_tokens: 6000 (não 5000).
 // Razão: approxTokens = ceil(chars/4). Snapshots atuais têm 20200 chars
