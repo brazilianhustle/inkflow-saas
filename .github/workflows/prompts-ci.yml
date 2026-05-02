@@ -1,0 +1,32 @@
+name: Prompts CI
+
+on:
+  pull_request:
+    paths:
+      - 'functions/_lib/prompts/**'
+      - 'functions/api/update-tenant.js'
+      - 'tests/prompts/**'
+      - 'tests/update-tenant-validation.test.mjs'
+      - 'scripts/test-prompts.sh'
+      - 'scripts/update-prompt-snapshots.sh'
+  push:
+    branches: [main]
+    paths:
+      - 'functions/_lib/prompts/**'
+      - 'functions/api/update-tenant.js'
+      - 'tests/prompts/**'
+      - 'tests/update-tenant-validation.test.mjs'
+
+jobs:
+  prompts-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run prompts test suite
+        run: bash scripts/test-prompts.sh
