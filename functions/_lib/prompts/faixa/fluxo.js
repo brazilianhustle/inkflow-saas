@@ -1,7 +1,9 @@
 // ── §3 FLUXO Faixa — extraido de generate-prompt.js linhas 167-281 ──────────
-// MVP: bit-a-bit identico ao Exato. Mantem branching valor_tipo dentro
-// pra preservar texto exato do snapshot baseline. Diferenciacao real
-// (ex: remover branch desnecessario por modo) fica pra PR futuro se preciso.
+// MVP: bit-a-bit identico ao Exato. O branching `valor_tipo === "exato"` no
+// §3.3 e DEAD CODE intencional aqui (Faixa tenants sempre recebem
+// valor_tipo === "faixa" da tool calcular_orcamento) — mantido pra preservar
+// texto exato do snapshot baseline. Limpeza do dead branch fica explicita
+// pra PR futuro de simplificacao (NAO incluir em PR 1/2/3 do Modo Coleta).
 export function fluxo(tenant, clientContext) {
   const isEstudio = tenant.plano === 'estudio' || tenant.plano === 'premium';
   const nomeAg = tenant.nome_agente || 'atendente';

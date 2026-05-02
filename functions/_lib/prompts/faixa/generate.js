@@ -1,5 +1,5 @@
 // ── Generator Faixa — agrega blocos shared + faixa-specific ─────────────────
-// Espelha a montagem final de generate-prompt.js linhas 542-555 (zero diff).
+// Espelha a montagem final de generate-prompt.js linhas 542-556 (zero diff).
 import { identidade } from '../_shared/identidade.js';
 import { checklistCritico } from '../_shared/checklist-critico.js';
 import { tom } from '../_shared/tom.js';
