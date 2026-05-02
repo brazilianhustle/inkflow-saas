@@ -1,6 +1,8 @@
-// Tenant contaminado — FAQ e few-shots mencionam valores.
-// Em modos sensíveis (Coleta — chega em PR 2), regra R3 deve suprimir.
-// Em PR 1, usado pra invariantes Faixa/Exato (que PODEM falar valor).
+// Tenant contaminado — FAQ menciona 'R$ 500' e 'pix'; few-shots do agente
+// mencionam 'R$ 500-800' (e 'pix' aparece só no lado cliente, não no agente).
+// Em modos sensíveis (Coleta — chega em PR 2), regra R3 deve suprimir
+// menções monetárias do agent output. Em PR 1, usado pra invariantes
+// Faixa/Exato (que PODEM falar valor).
 import { TENANT_CANONICO } from './tenant-canonico.mjs';
 
 export const TENANT_CONTAMINADO = {

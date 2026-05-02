@@ -1,4 +1,9 @@
-// Tenant canônico — exercita TODOS os ramos do generator atual.
+// Tenant canônico — exercita o positive-path sweep do generator atual
+// (emoji_level, usa_giria=true, usa_identificador=false, aceita_cobertura=true,
+// frases_naturais com 3 sub-arrays, estilos_recusados não-vazio, faq presente,
+// few-shot custom, gatilhos custom, observacoes_tatuador). Negation-path
+// branches (aceita_cobertura=false, usa_giria=false, usa_identificador=true,
+// plano=estudio, eh_recorrente=true) ficam pra spread inline em tests futuros.
 // Mudanças aqui invalidam snapshots — atualize conscientemente.
 export const TENANT_CANONICO = {
   id: '00000000-0000-0000-0000-000000000001',
