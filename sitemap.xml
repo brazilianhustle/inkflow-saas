@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- ========= PÁGINAS INSTITUCIONAIS ========= -->
+  <!-- ========= PÁGINAS EXISTENTES EM PROD (Fase 1) ========= -->
 
   <url>
     <loc>https://inkflowbrasil.com/</loc>
@@ -10,6 +10,20 @@
     <priority>1.0</priority>
   </url>
 
+  <url>
+    <loc>https://inkflowbrasil.com/termos</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- ========= PÁGINAS PLANEJADAS (Fase 2 — descomentar conforme deploy) ========= -->
+  <!--
+  Comentadas pra evitar 404s no Google crawler enquanto não existem.
+  Descomentar cada bloco APÓS criar a página correspondente em prod.
+  -->
+
+  <!--
   <url>
     <loc>https://inkflowbrasil.com/funcionalidades</loc>
     <lastmod>2026-05-02</lastmod>
@@ -60,29 +74,25 @@
   </url>
 
   <url>
-    <loc>https://inkflowbrasil.com/termos</loc>
-    <lastmod>2026-05-02</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <url>
     <loc>https://inkflowbrasil.com/privacidade</loc>
     <lastmod>2026-05-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+  -->
 
-  <!-- ========= BLOG (HUB + 10 ARTIGOS PLANEJADOS) ========= -->
+  <!-- ========= BLOG (HUB + 10 ARTIGOS PLANEJADOS — Fase 4) ========= -->
 
+  <!--
   <url>
     <loc>https://inkflowbrasil.com/blog</loc>
     <lastmod>2026-05-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  -->
 
-  <!-- Comentado: descomentar conforme cada post for publicado -->
+  <!-- Cada artigo descomentar quando publicado -->
 
   <!--
   <url>
