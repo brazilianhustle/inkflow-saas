@@ -22,4 +22,7 @@ node --test tests/update-tenant-validation.test.mjs
 echo "▶ Tools — dados-coletados helpers..."
 node --test tests/tools/dados-coletados-helpers.test.mjs
 
+echo "▶ Tools — reentrada helpers..."
+node --test tests/tools/reentrada-helpers.test.mjs
+
 echo "✓ Todos os tests passaram."
