@@ -622,7 +622,7 @@ select.fi option{background:var(--card);color:var(--t1)}
       </div>
       <div class="chat-bubble" id="cb2">
         <div class="chat-name">InkFlow</div>
-        Aqui você terá duas opções: trabalhar com valores do mercado geral em uma configuração rápida, ou montar um robô treinado com o valor do seu trabalho <strong>(recomendado)</strong>.
+        Aqui você escolhe como o agente trabalha com os orçamentos: <strong>Coleta</strong> (você decide cada valor — recomendado) ou <strong>Exato beta</strong> (calculadora InkFlow fecha o valor sozinha). Em qualquer um dos modos, eu cuido da conversa com o cliente e do agendamento.
         <div class="chat-tap">Toque para continuar</div>
       </div>
       <div class="chat-bubble" id="cb3">
@@ -696,8 +696,9 @@ select.fi option{background:var(--card);color:var(--t1)}
           <div id="tg-qr-container" style="margin-bottom:14px;min-height:200px;display:flex;align-items:center;justify-content:center">
             <div style="color:var(--t3);font-size:13px">Carregando QR…</div>
           </div>
+          <div style="font-size:11px;color:var(--t3);margin-bottom:14px;line-height:1.5">📱 Aponte a <strong>câmera do celular</strong> (app de câmera padrão, não a função "Connect Device" do Telegram) para o QR acima.</div>
           <div id="tg-deep-link" style="margin-bottom:10px;font-size:12px;color:var(--t3)"></div>
-          <div style="font-size:13px;color:var(--t2);margin-bottom:8px">Ou clique no botão abaixo no celular</div>
+          <div style="font-size:13px;color:var(--t2);margin-bottom:8px">Ou se já está no celular, clica direto no botão</div>
           <a id="tg-open-btn" href="#" target="_blank" rel="noopener" class="sbtn" style="display:inline-block;text-decoration:none;font-size:13px">Abrir Telegram &rarr;</a>
           <div style="margin-top:14px;font-size:12px;color:var(--t3)">
             <span id="tg-status-icon">⏳</span> <span id="tg-status-text">Aguardando conexão…</span>
@@ -710,7 +711,7 @@ select.fi option{background:var(--card);color:var(--t1)}
         <div style="background:rgba(0,212,170,.08);border:1px solid var(--teal);border-radius:14px;padding:16px;text-align:center;color:var(--teal)">
           ✅ Telegram conectado<span id="tg-username-display" style="color:var(--t2);font-weight:normal"></span>
         </div>
-        <button class="sbtn" type="button" style="margin-top:14px;font-size:13px;width:100%" onclick="showQA('qa-test')">Continuar &rarr;</button>
+        <button class="sbtn" type="button" id="tg-continuar-btn" style="margin-top:14px;font-size:13px;width:100%" onclick="continueAfterTelegram()">Continuar &rarr;</button>
       </div>
     </div>
 
@@ -994,18 +995,34 @@ select.fi option{background:var(--card);color:var(--t1)}
         <textarea class="fi" id="p-saudacao" rows="2" placeholder="Escreva sua própria saudação ou edite um preset acima" style="margin-top:8px"></textarea>
       </div>
 
-      <div class="fg" style="margin-top:12px">
+      <!-- ── Preview em tempo real PRIMEIRO (Fix 4) ── -->
+      <!-- Mobile-first: chat fica no topo das configs pra cliente ver toggles
+           e preview juntos sem precisar scroll. Girias agora vem implicitas
+           pelo tom (sem chip-wrap separado). -->
+      <div class="fg" style="margin-top:14px">
+        <label class="fl">Como o cliente vai ver no WhatsApp</label>
+        <div class="fi-hint" style="margin-bottom:10px">Atualiza em tempo real conforme tu mexe nas opções abaixo (tom, emoji, prefixo).</div>
+        <div id="persona-preview" style="background:rgba(0,0,0,.3);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px">
+          <div class="wa-preview right"><div class="wa-msg client" id="prev-c1">Oi, quero fazer uma tatuagem<span class="wa-msg-time">14:30 ✓✓</span></div></div>
+          <div class="wa-preview"><div class="wa-msg" id="prev-a1"><span class="wa-msg-text"></span><span class="wa-msg-time">14:30 ✓✓</span></div></div>
+          <div class="wa-preview right"><div class="wa-msg client" id="prev-c2">Fechou, quero agendar!<span class="wa-msg-time">14:31 ✓✓</span></div></div>
+          <div class="wa-preview"><div class="wa-msg" id="prev-a2"><span class="wa-msg-text"></span><span class="wa-msg-time">14:31 ✓✓</span></div></div>
+        </div>
+      </div>
+
+      <!-- Configs: emoji + prefixo, abaixo do preview pra mobile -->
+      <div class="fg" style="margin-top:14px">
         <label class="fl">Uso de emojis</label>
         <div class="chip-wrap" id="p-emoji-chips">
           <button class="chip active" type="button" onclick="selectEmoji('moderado',this)">Uso moderado</button>
           <button class="chip" type="button" onclick="selectEmoji('nenhum',this)">Nenhum uso</button>
         </div>
         <div class="emoji-prefs" id="emoji-prefs">
-          <label class="fl" style="margin-top:10px">Emojis de preferência</label>
-          <div class="fi-hint">Clique nos emojis pra ver como o assistente vai escrever em tempo real abaixo:</div>
+          <label class="fl" style="margin-top:10px">Emoji favorito</label>
+          <div class="fi-hint">Escolhe <strong>UM</strong> emoji que aparece em algumas mensagens do assistente. Atualiza no preview acima ao clicar.</div>
           <div class="chip-wrap" style="margin-top:8px" id="emoji-pref-chips">
             <button class="chip active" type="button" data-emoji="😁">😁</button>
-            <button class="chip active" type="button" data-emoji="😊">😊</button>
+            <button class="chip" type="button" data-emoji="😊">😊</button>
             <button class="chip" type="button" data-emoji="🔥">🔥</button>
             <button class="chip" type="button" data-emoji="✨">✨</button>
             <button class="chip" type="button" data-emoji="💪">💪</button>
@@ -1014,24 +1031,12 @@ select.fi option{background:var(--card);color:var(--t1)}
             <button class="chip" type="button" data-emoji="💉">💉</button>
             <button class="chip" type="button" data-emoji="🎨">🎨</button>
             <button class="chip" type="button" data-emoji="❤️">❤️</button>
+            <button class="chip" type="button" data-emoji="__outro__" onclick="toggleEmojiCustom(this)">Outro…</button>
           </div>
-        </div>
-      </div>
-
-      <div class="fg" style="margin-top:12px">
-        <label class="fl">Usar gírias brasileiras</label>
-        <div class="chip-wrap" id="p-girias-chips">
-          <button class="chip giria-chip active" type="button" data-giria="massa" onclick="this.classList.toggle('active')">Massa</button>
-          <button class="chip giria-chip active" type="button" data-giria="irmão" onclick="this.classList.toggle('active')">Irmão</button>
-          <button class="chip giria-chip active" type="button" data-giria="show" onclick="this.classList.toggle('active')">Show</button>
-          <button class="chip giria-chip active" type="button" data-giria="boa" onclick="this.classList.toggle('active')">Boa</button>
-          <button class="chip giria-chip active" type="button" data-giria="beleza" onclick="this.classList.toggle('active')">Beleza</button>
-          <button class="chip giria-chip active" type="button" data-giria="fechou" onclick="this.classList.toggle('active')">Fechou</button>
-          <button class="chip giria-chip active" type="button" data-giria="tranquilo" onclick="this.classList.toggle('active')">Tranquilo</button>
-          <button class="chip giria-chip" type="button" data-giria="outras" onclick="toggleGiriasCustom(this)">Outras</button>
-        </div>
-        <div id="girias-custom-wrap" style="display:none;margin-top:8px">
-          <input class="fi" id="p-girias-custom" type="text" placeholder="Coloque gírias separadas por vírgulas, ex: é isso, meu mano, parceiro"/>
+          <div id="emoji-custom-wrap" style="display:none;margin-top:8px">
+            <input class="fi" id="p-emoji-custom" type="text" maxlength="6" placeholder="Coloque somente UM emoji (ex: 🌟)" oninput="onEmojiCustomInput()"/>
+            <div class="fi-hint" id="emoji-custom-err" style="display:none;color:#ff6b6b;margin-top:6px"></div>
+          </div>
         </div>
       </div>
 
@@ -1040,19 +1045,7 @@ select.fi option{background:var(--card);color:var(--t1)}
           <span class="toggle-label">Usar prefixo com nome do agente</span>
           <label class="toggle"><input type="checkbox" id="p-identificador"/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
         </div>
-        <div class="fi-hint" style="margin-top:6px">Marque pra incluir o nome do agente na primeira linha da mensagem.</div>
-      </div>
-
-      <!-- ── Preview em tempo real (Fix 5) ── -->
-      <div class="fg" style="margin-top:14px">
-        <label class="fl">Como o cliente vai ver no WhatsApp</label>
-        <div class="fi-hint" style="margin-bottom:10px">Atualiza em tempo real conforme tu mexe nas opções acima (tom, emoji, prefixo).</div>
-        <div id="persona-preview" style="background:rgba(0,0,0,.3);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px">
-          <div class="wa-preview right"><div class="wa-msg client" id="prev-c1">Oi, quero fazer uma tatuagem<span class="wa-msg-time">14:30 ✓✓</span></div></div>
-          <div class="wa-preview"><div class="wa-msg" id="prev-a1"><span class="wa-msg-text"></span><span class="wa-msg-time">14:30 ✓✓</span></div></div>
-          <div class="wa-preview right"><div class="wa-msg client" id="prev-c2">Fechou, quero agendar!<span class="wa-msg-time">14:31 ✓✓</span></div></div>
-          <div class="wa-preview"><div class="wa-msg" id="prev-a2"><span class="wa-msg-text"></span><span class="wa-msg-time">14:31 ✓✓</span></div></div>
-        </div>
+        <div class="fi-hint" style="margin-top:6px">Marque pra incluir o nome do agente na primeira linha da mensagem. Veja o efeito ao vivo no preview acima.</div>
       </div>
 
       <hr class="divider"/>
@@ -2077,6 +2070,29 @@ async function validateEmail(email) {
 })();
 
 // ── [Melhoria 3] Welcome redirect para donos de estúdio ──────────────────
+// Fix 5: Configura o botao "Ir para o painel" no sucesso.
+// Caminho 1 (pareamento WhatsApp normal) ja chama esse mesmo bloco em
+// linha 1888-1906; caminho 2 (savePersona quando WA ja conectado) NAO chamava
+// e o botao ficava sem onclick — clicar nao fazia nada. Esta funcao centraliza.
+function configureSucCta() {
+  const cta = document.getElementById('suc-cta');
+  if (!cta) return;
+  const isStudioPlan = ['estudio', 'premium'].includes(selectedPlan);
+  const isArtist = !!isArtistInvite;
+  if (isArtist) {
+    cta.textContent = 'Concluído ✓';
+    cta.onclick = () => { window.location.href = 'https://inkflowbrasil.com/'; };
+  } else if (isStudioPlan) {
+    cta.textContent = 'Ir para o painel do estúdio →';
+    cta.onclick = fetchStudioTokenAndRedirect;
+    setTimeout(() => { if (document.getElementById('s6')?.classList.contains('active')) fetchStudioTokenAndRedirect(); }, 4000);
+  } else {
+    // Individual/trial: tambem leva pro studio panel (token do tenant)
+    cta.textContent = 'Ir para o painel →';
+    cta.onclick = fetchStudioTokenAndRedirect;
+  }
+}
+
 let _studioRedirectInFlight = false;
 async function fetchStudioTokenAndRedirect(pendingWhatsapp = false) {
   if (_studioRedirectInFlight) return;
@@ -2190,6 +2206,20 @@ function selectModo(modo, btn) {
   } else {
     // Exato (beta): fluxo legacy com sinal/faixas/ajustes/limites
     showQA('qa-sinal');
+  }
+}
+
+// Apos conectar Telegram (modo Coleta), o botao Continuar avanca direto pra
+// proxima fase (saveValoresAndNext salva config + vai pra spi). Em Coleta nao
+// existe testador de orcamento — esse step intermediario seria redundante.
+async function continueAfterTelegram() {
+  const btn = document.getElementById('tg-continuar-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
+  try {
+    await saveValoresAndNext();
+  } catch (e) {
+    console.error('continueAfterTelegram:', e);
+    if (btn) { btn.disabled = false; btn.textContent = 'Continuar →'; }
   }
 }
 
@@ -2703,10 +2733,17 @@ function toggleGiriasCustom(btn) {
 // emoji level + emoji preferido. Sem prefixo "Agente:" hardcoded — fica
 // como WhatsApp real.
 function getActiveEmoji() {
-  // Pega o primeiro emoji ativo da lista de preferencias
-  const chips = document.querySelectorAll('#emoji-pref-chips .chip.active');
-  if (chips.length === 0) return '';
-  return chips[0].dataset.emoji || chips[0].textContent.trim();
+  // Single-select: pega o chip ativo. Se for "Outro…", usa input custom.
+  const chip = document.querySelector('#emoji-pref-chips .chip.active');
+  if (!chip) return '';
+  if (chip.dataset.emoji === '__outro__') {
+    const custom = (document.getElementById('p-emoji-custom')?.value || '').trim();
+    // So retorna se passou na validacao (1 emoji)
+    if (!custom) return '';
+    const hasEmoji = /\p{Extended_Pictographic}/u.test(custom);
+    return hasEmoji ? custom : '';
+  }
+  return chip.dataset.emoji || chip.textContent.trim();
 }
 
 function updatePersonaPreview() {
@@ -2745,16 +2782,20 @@ function initPersonaPreviewHooks() {
     nomeInput._previewHooked = true;
     nomeInput.addEventListener('input', updatePersonaPreview);
   }
-  // 3. Emoji preference chips — toggle + atualiza preview
+  // 3. Emoji preference chips — SINGLE select (Fix 4: emoji unico)
+  // Cada chip representa 1 emoji, so um pode estar ativo por vez.
+  // Chip "Outro…" abre input custom em vez de marcar diretamente.
   document.querySelectorAll('#emoji-pref-chips .chip').forEach(chip => {
     if (chip._previewHooked) return;
     chip._previewHooked = true;
+    if (chip.dataset.emoji === '__outro__') return; // tem onclick proprio
     chip.addEventListener('click', () => {
-      // Single-select pra preview ficar previsivel: desmarca todos os outros,
-      // marca esse. (User pode marcar mais ainda, mas o preview usa o primeiro.)
-      // Deixei como toggle multi-select tradicional pra manter compat com
-      // expressoes_emoji[] no save — o preview pega so o primeiro ativo.
-      chip.classList.toggle('active');
+      // Desmarca todos os outros, marca apenas esse
+      document.querySelectorAll('#emoji-pref-chips .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      // Esconde input custom se estava aberto
+      const wrap = document.getElementById('emoji-custom-wrap');
+      if (wrap) wrap.style.display = 'none';
       updatePersonaPreview();
     });
   });
@@ -2765,6 +2806,61 @@ function initPersonaPreviewHooks() {
 // Stub legacy pra compat
 function toggleEmojiExemplos() {}
 function toggleExemplosNome() {}
+
+// ── Emoji custom (Fix 4) ──────────────────────────────────────────────────
+function toggleEmojiCustom(btn) {
+  const wrap = document.getElementById('emoji-custom-wrap');
+  const input = document.getElementById('p-emoji-custom');
+  // Desmarca outros chips, marca esse
+  document.querySelectorAll('#emoji-pref-chips .chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  if (wrap) {
+    wrap.style.display = 'block';
+    if (input) setTimeout(() => input.focus(), 50);
+  }
+  updatePersonaPreview();
+}
+
+// Validacao + atualizacao de preview pro emoji custom.
+// Aceita exatamente 1 emoji (1 grapheme). Conta com Intl.Segmenter quando
+// disponivel; fallback regex pra emoji unicode.
+function onEmojiCustomInput() {
+  const input = document.getElementById('p-emoji-custom');
+  const errEl = document.getElementById('emoji-custom-err');
+  if (!input || !errEl) return;
+  const v = (input.value || '').trim();
+  let valid = false;
+  let count = 0;
+  if (v) {
+    try {
+      // Intl.Segmenter conta graphemes corretamente (emoji compostos como ❤️)
+      if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+        const seg = new Intl.Segmenter('pt-BR', { granularity: 'grapheme' });
+        count = [...seg.segment(v)].length;
+      } else {
+        // Fallback: usa Array.from (split por code unit pode quebrar emojis)
+        count = [...v].length;
+      }
+      // Heurística: tem que conter pelo menos 1 char emoji (range alto unicode)
+      const hasEmoji = /\p{Extended_Pictographic}/u.test(v);
+      valid = count === 1 && hasEmoji;
+    } catch { valid = false; }
+  }
+  if (!v) {
+    errEl.style.display = 'none';
+    input.style.borderColor = '';
+  } else if (!valid) {
+    errEl.style.display = 'block';
+    errEl.textContent = count > 1
+      ? '⚠ Coloque APENAS 1 emoji (você colocou ' + count + ')'
+      : '⚠ Coloque exatamente 1 emoji';
+    input.style.borderColor = '#ff6b6b';
+  } else {
+    errEl.style.display = 'none';
+    input.style.borderColor = 'var(--teal)';
+  }
+  updatePersonaPreview();
+}
 
 async function aprimorarPersona() {
   const btn = document.getElementById('btn-aprimorar');
@@ -2839,14 +2935,21 @@ function addCustomFaq() {
 }
 
 function buildConfigAgente() {
-  const giriasAtivas = [...document.querySelectorAll('.giria-chip.active')].map(c => c.dataset.giria).filter(g => g !== 'outras');
-  const giriasCustom = (document.getElementById('p-girias-custom')?.value || '').split(',').map(g => g.trim()).filter(Boolean);
+  // Fix 4: girias agora vem implicitas pelo tom (sem chip-wrap separado).
+  // usa_giria mapeado conforme tom: amigavel/descontraido/zoeiro=true,
+  // profissional/formal=false. Backend pode refinar.
+  const tom = document.getElementById('p-tom').value;
+  const usaGiria = ['amigavel', 'descontraido', 'zoeiro'].includes(tom);
+
+  // Emoji unico (single-select). getActiveEmoji() ja resolve custom.
+  const emoji = (selectedEmojiLevel === 'moderado') ? getActiveEmoji() : '';
+  const emojisPreferidos = emoji ? [emoji] : [];
+
   return {
-    tom: document.getElementById('p-tom').value,
+    tom,
     emoji_level: selectedEmojiLevel,
-    emojis_preferidos: selectedEmojiLevel === 'moderado' ? [...document.querySelectorAll('#emoji-pref-chips .chip.active')].map(c => c.textContent) : [],
-    usa_giria: giriasAtivas.length > 0,
-    girias: [...giriasAtivas, ...giriasCustom],
+    emojis_preferidos: emojisPreferidos,
+    usa_giria: usaGiria,
     usa_identificador: document.getElementById('p-identificador').checked,
     persona_livre: (document.getElementById('p-persona').value || '').trim() || null,
     saudacao: (document.getElementById('p-saudacao')?.value || '').trim() || null,
@@ -2888,6 +2991,24 @@ async function savePersonaAndNext() {
   try {
     const nomeAgente = (document.getElementById('p-nome-agente')?.value || '').trim();
     if (!nomeAgente) { throw new Error('Preencha o nome do agente.'); }
+    // Fix 4: Validar emoji custom se "Outro…" estiver ativo
+    const outroChip = document.querySelector('#emoji-pref-chips .chip.active[data-emoji="__outro__"]');
+    if (outroChip) {
+      const customVal = (document.getElementById('p-emoji-custom')?.value || '').trim();
+      if (!customVal) {
+        throw new Error('Você selecionou "Outro…" mas não digitou um emoji. Escolha 1 emoji ou volte pra outra opção.');
+      }
+      const hasEmoji = /\p{Extended_Pictographic}/u.test(customVal);
+      let count = 0;
+      try {
+        if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+          count = [...new Intl.Segmenter('pt-BR', { granularity: 'grapheme' }).segment(customVal)].length;
+        } else { count = [...customVal].length; }
+      } catch { count = customVal.length; }
+      if (!hasEmoji || count !== 1) {
+        throw new Error('Coloque exatamente 1 emoji no campo "Outro…".');
+      }
+    }
     const config_agente = buildConfigAgente();
     const horario = buildHorario();
     const faq = buildFaqTexto();
@@ -2918,7 +3039,12 @@ async function savePersonaAndNext() {
           const sucPlanLabels = { trial:'Trial 7 dias', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' };
           document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
           goStep(6);
+          // Fix 5: configurar botao "Ir para o painel" — caminho savePersona
+          // tambem precisa setar o onclick (igual ao caminho de pareamento WA).
+          configureSucCta();
           localStorage.removeItem('inkflow_ob');
+          // NAO limpar inkflow_gk aqui — fetchStudioTokenAndRedirect precisa
+          // dele pra trocar por studio_token. Limpeza acontece la apos redirect.
           return;
         }
       } catch (e) { console.warn('evo-status check failed:', e); }
@@ -2978,8 +3104,43 @@ function navForward() {
   const idx = NAV_STEPS.indexOf(currentNavStep);
   if (idx >= NAV_STEPS.length - 1) return;
   const next = NAV_STEPS[idx + 1];
+
+  // Validacao: pra sair do step 'sv' (precificacao + telegram) o user precisa
+  // ter selecionado um modo. Em modo Coleta, ainda precisa ter conectado o
+  // Telegram (sem chat_id, fluxo Coleta nao funciona).
+  if (currentNavStep === 'sv') {
+    if (!selectedModo) {
+      showNavError('Escolhe primeiro como o agente trabalha com os orçamentos (Coleta ou Exato)');
+      return;
+    }
+    if (selectedModo === 'coleta') {
+      const tgConnected = document.getElementById('tg-connected')?.style.display === 'block';
+      if (!tgConnected) {
+        showNavError('Conecte seu Telegram antes de avançar — sem isso o Modo Coleta não funciona');
+        // Garante que o user veja o step de Telegram
+        showQA('qa-tatuador-telegram');
+        return;
+      }
+    }
+  }
+
   if (next === 'spi') { initPersonaIntro(); }
   goStep(next);
+}
+
+function showNavError(msg) {
+  // Toast simples no topo
+  let toast = document.getElementById('nav-error-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'nav-error-toast';
+    toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(255,107,107,.15);border:1px solid #ff6b6b;color:#ff6b6b;padding:12px 18px;border-radius:10px;font-size:13px;z-index:300;max-width:90%;text-align:center;backdrop-filter:blur(10px);box-shadow:0 4px 20px rgba(0,0,0,.3)';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = '⚠ ' + msg;
+  toast.style.display = 'block';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.style.display = 'none'; }, 4000);
 }
 
 const FIELD_STORAGE_KEY = 'inkflow_fields';
@@ -3004,10 +3165,7 @@ function saveFieldsToStorage() {
     chips[wrap.id] = [...wrap.querySelectorAll('.chip.active')].map(c => c.textContent);
   });
   fields._chips = chips;
-  document.querySelectorAll('.giria-chip').forEach(c => {
-    if (!fields._girias) fields._girias = [];
-    if (c.classList.contains('active')) fields._girias.push(c.dataset.giria);
-  });
+  // Girias removidas (Fix 4) — agora derivam do tom no buildConfigAgente
   try { localStorage.setItem(FIELD_STORAGE_KEY, JSON.stringify(fields)); } catch {}
 }
 
@@ -3031,14 +3189,7 @@ function restoreFieldsFromStorage() {
       });
     });
   }
-  if (fields._girias) {
-    document.querySelectorAll('.giria-chip').forEach(c => {
-      c.classList.toggle('active', fields._girias.includes(c.dataset.giria));
-    });
-    const outrasActive = fields._girias.includes('outras');
-    const customWrap = document.getElementById('girias-custom-wrap');
-    if (customWrap) customWrap.style.display = outrasActive ? 'block' : 'none';
-  }
+  // Girias legacy (Fix 4 — removidas) — ignorar campo _girias se ainda existir
   if (fields['p-tom']) {
     const sel = document.getElementById('p-tom');
     if (sel) sel.value = fields['p-tom'];
