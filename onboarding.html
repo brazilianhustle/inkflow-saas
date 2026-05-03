@@ -646,9 +646,10 @@ select.fi option{background:var(--card);color:var(--t1)}
         <!-- Exemplo dinâmico — só aparece após user clicar num modo -->
         <div id="modo-example-container" style="margin-top:14px"></div>
 
-        <!-- Botão Continuar (escondido até seleção) -->
-        <div id="sw-advance-wrap" style="display:none;margin-top:14px">
-          <button class="sbtn" type="button" id="sw-advance-btn" style="width:100%;font-size:14px;font-weight:600" onclick="advanceFromSw()">Continuar &rarr;</button>
+        <!-- Botão Continuar — SEMPRE visível, desabilitado até modo selecionado -->
+        <div id="sw-advance-wrap" style="margin-top:14px">
+          <button class="sbtn" type="button" id="sw-advance-btn" style="width:100%;font-size:14px;font-weight:600;opacity:0.4;cursor:not-allowed" onclick="advanceFromSw()" disabled>Continuar &rarr;</button>
+          <div id="sw-advance-hint" style="margin-top:8px;font-size:11px;color:var(--t3);text-align:center">↑ Selecione um modo acima pra continuar</div>
         </div>
       </div>
     </div>
@@ -2225,9 +2226,19 @@ function selectModoSw(modo, btn) {
   // Renderiza/troca exemplo embaixo dos botões
   const container = document.getElementById('modo-example-container');
   if (container) container.innerHTML = MODO_EXEMPLOS_HTML[modo] || '';
-  // Mostra botão Continuar
-  const wrap = document.getElementById('sw-advance-wrap');
-  if (wrap) wrap.style.display = 'block';
+  // Habilita botão Continuar (sempre visível mas era disabled)
+  const advBtn = document.getElementById('sw-advance-btn');
+  if (advBtn) {
+    advBtn.disabled = false;
+    advBtn.style.opacity = '1';
+    advBtn.style.cursor = 'pointer';
+  }
+  const hint = document.getElementById('sw-advance-hint');
+  if (hint) hint.textContent = '✓ Modo escolhido — clica em Continuar';
+  // Auto-scroll pra mostrar o botão (caso esteja abaixo do fold no mobile)
+  setTimeout(() => {
+    if (advBtn) advBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 300);
 }
 
 async function advanceFromSw() {
