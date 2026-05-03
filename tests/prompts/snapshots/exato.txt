@@ -173,7 +173,7 @@ Se retoque de OUTRO estudio: siga regra de aceita_retoque — se aceita, trate c
 
 # §5 CONTEXTO
 ## Estudio
-- Sinal: 30% do minimo da faixa do orcamento.
+- Sinal: 30% do valor do orcamento.
 - Horario: seg-sex 10:00-19:00 | sab 10:00-15:00.
 - Estilos em que o estudio e especializado: blackwork, fineline, realismo. (Outros estilos podem ser consultados.)
 - Estilos que NAO faz: tribal.

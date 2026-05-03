@@ -1,12 +1,6 @@
-// Contrato Exato — MVP: identico ao Faixa.
-// Quando Coleta for implementado em PR 2, Faixa/Exato vao divergir de Coleta —
-// manter espelhados entre si ate la (mudanca em um => mesma mudanca no outro).
-//
-// max_tokens: 6000 (não 5000).
-// Razão: approxTokens = ceil(chars/4). Snapshots atuais têm 20200 chars
-// → 5050 tokens, marginalmente acima de 5000. Usamos 6000 (~20% de margem)
-// para absorver crescimento orgânico sem falsos-positivos frequentes.
-// Se o prompt ultrapassar 6000 tokens (~24000 chars), investigar e otimizar.
+// Contrato Exato — beta secundario (v2). Comportamento linear como antes:
+// agente coleta, calcula via calcular_orcamento, agenda. Faixa foi removida
+// (a unica diferenca v1 era valor_tipo na resposta da tool).
 export const CONTRACT_EXATO = {
   must_contain: [
     'calcular_orcamento',
@@ -21,10 +15,12 @@ export const CONTRACT_EXATO = {
     'CONTEXTO',
   ],
   must_not_contain: [
-    'coleta_completa',
-    'coleta_completa_reentrada',
-    // Nota: 'cliente_sem_referencia_tamanho' removido — e motivo de handoff
-    // legitimo em Exato (exato/fluxo.js:47), nao exclusivo do modo Coleta.
+    // Coleta v2 markers (Exato nao deve conter)
+    'enviar_orcamento_tatuador',
+    'enviar_objecao_tatuador',
+    'valor_proposto',
+    'contraproposta',
+    'contra-oferta',
   ],
-  max_tokens: 6000, // ~24K chars (atual ~20K chars / ~5050 tokens)
+  max_tokens: 6000,
 };
