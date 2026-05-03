@@ -73,19 +73,27 @@ async function answerCallbackQuery(env, callback_query_id, text) {
 }
 
 async function disparaReentrada(env, conversa_id, evento, extra = {}) {
-  const url = env.N8N_REENTRADA_WEBHOOK_URL;
-  if (!url) {
-    console.warn('N8N_REENTRADA_WEBHOOK_URL ausente — bot nao vai reentrar automaticamente');
+  // Reentrada e um endpoint CF Pages interno (substitui o workflow n8n
+  // original — simples o bastante pra nao precisar de n8n). URL configuravel
+  // via env REENTRADA_URL; default e a URL relativa do mesmo deploy.
+  const url = env.REENTRADA_URL || 'https://inkflowbrasil.com/api/telegram/reentrada';
+  const secret = env.INKFLOW_TOOL_SECRET;
+  if (!secret) {
+    console.warn('INKFLOW_TOOL_SECRET ausente — reentrada vai falhar com 401');
     return;
   }
   try {
-    await fetch(url, {
+    const r = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Inkflow-Tool-Secret': secret },
       body: JSON.stringify({ conversa_id, evento, ...extra }),
     });
+    if (!r.ok) {
+      const detail = await r.text().catch(() => '');
+      console.error(`Reentrada falhou ${r.status}:`, detail.slice(0, 200));
+    }
   } catch (e) {
-    console.error('Falha ao disparar reentrada n8n:', e.message);
+    console.error('Falha ao disparar reentrada:', e.message);
   }
 }
 
