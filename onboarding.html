@@ -631,32 +631,24 @@ select.fi option{background:var(--card);color:var(--t1)}
         <div style="margin-bottom:8px">Aqui você escolhe como eu vou trabalhar com os orçamentos:</div>
         <div style="margin-bottom:8px"><strong style="color:var(--teal)">🎯 Coleta (recomendado):</strong> você decide cada valor que eu envio. Eu coleto os pedidos, mando pro seu Telegram, e você fecha o preço.</div>
         <div style="margin-bottom:8px"><strong>⚡ Valor Exato (<span class="beta-badge">BETA</span>):</strong> calculadora inteligente do InkFlow fecha o valor automaticamente baseado na tabela que você configura.</div>
-        <div style="margin-top:10px;color:var(--t2)">Aqui segue alguns exemplos para decidir <span style="color:var(--t3)">(o modo pode sempre ser alterado depois na página do studio)</span>:</div>
-        <div class="chat-tap">Toque para ver os exemplos</div>
+        <div style="margin-top:10px;color:var(--t2)">Toque pra escolher o modo <span style="color:var(--t3)">(o modo pode sempre ser alterado depois na página do studio)</span>:</div>
+        <div class="chat-tap">Toque para escolher</div>
       </div>
       <div class="chat-bubble" id="cb4">
         <div class="chat-name">InkFlow</div>
 
-        <div class="qa-ex" style="margin-top:0">
-          <div class="qa-ex-label">🎯 Modo Coleta</div>
-          <div class="wa-preview right reveal"><div class="wa-msg client">queria orçar uma rosa fineline<span class="wa-msg-time">14:20 ✓✓</span></div></div>
-          <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Show! Conta mais — tem ideia de tamanho e local? Pra fechar o orçamento vou pegar uns dados rapidinho e mandar pro tatuador analisar.<span class="wa-msg-time">14:20 ✓✓</span></div></div>
-          <div style="margin-top:6px;font-size:11px;color:var(--t3)">→ Agente coleta dados, manda pro Telegram, você decide o valor, agente fecha agendamento</div>
-        </div>
-        <div class="qa-ex" style="margin-top:8px">
-          <div class="qa-ex-label">⚡ Modo Exato (<span class="beta-badge" style="font-size:10px">BETA</span>)</div>
-          <div class="wa-preview right reveal"><div class="wa-msg client">Fechou, e quanto ficaria?<span class="wa-msg-time">14:22 ✓✓</span></div></div>
-          <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Essa tatuagem fica em R$ 750 nessa pegada de tamanho. Bora agendar?<span class="wa-msg-time">14:22 ✓✓</span></div></div>
-          <div style="margin-top:6px;font-size:11px;color:var(--t3)">→ Agente fecha o valor sozinho usando sua tabela. Mais rápido, mas exige tabela bem ajustada.</div>
-        </div>
-
-        <div class="qa-opt" style="margin-top:14px">
+        <!-- Botões de seleção (sempre visíveis) -->
+        <div class="qa-opt" style="margin-top:0">
           <button class="qa-btn" type="button" onclick="selectModoSw('coleta',this)">🎯 Coleta — você decide cada orçamento (recomendado)</button>
           <button class="qa-btn" type="button" onclick="selectModoSw('exato',this)">⚡ Exato (<span class="beta-badge" style="font-size:11px">BETA</span>) — calculadora fecha o valor</button>
         </div>
 
+        <!-- Exemplo dinâmico — só aparece após user clicar num modo -->
+        <div id="modo-example-container" style="margin-top:14px"></div>
+
+        <!-- Botão Continuar (escondido até seleção) -->
         <div id="sw-advance-wrap" style="display:none;margin-top:14px">
-          <button class="sbtn" type="button" id="sw-advance-btn" style="width:100%;font-size:14px;font-weight:600" onclick="advanceFromSw()">Avançar &rarr;</button>
+          <button class="sbtn" type="button" id="sw-advance-btn" style="width:100%;font-size:14px;font-weight:600" onclick="advanceFromSw()">Continuar &rarr;</button>
         </div>
       </div>
     </div>
@@ -2208,12 +2200,32 @@ function showNextBubble() {
 }
 
 // Refator: seleção de modo agora é no welcome chat (sw/cb4) em vez de qa-intro.
-// Botões só selecionam — não disparam ação imediata. Botão "Avançar" só aparece
-// após user selecionar um modo.
+// Botões só selecionam — não disparam ação imediata. Exemplo do modo aparece
+// dinamicamente abaixo dos botões. Botão "Continuar" só aparece após seleção.
+
+const MODO_EXEMPLOS_HTML = {
+  coleta: '<div class="qa-ex" style="margin-top:0">'
+    + '<div class="qa-ex-label">🎯 Modo Coleta</div>'
+    + '<div class="wa-preview right reveal"><div class="wa-msg client">queria orçar uma rosa fineline<span class="wa-msg-time">14:20 ✓✓</span></div></div>'
+    + '<div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Show! Conta mais — tem ideia de tamanho e local? Pra fechar o orçamento vou pegar uns dados rapidinho e mandar pro tatuador analisar.<span class="wa-msg-time">14:20 ✓✓</span></div></div>'
+    + '<div style="margin-top:6px;font-size:11px;color:var(--t3)">→ Agente coleta dados, manda pro Telegram, você decide o valor, agente fecha agendamento</div>'
+    + '</div>',
+  exato: '<div class="qa-ex" style="margin-top:0">'
+    + '<div class="qa-ex-label">⚡ Modo Exato (<span class="beta-badge" style="font-size:10px">BETA</span>)</div>'
+    + '<div class="wa-preview right reveal"><div class="wa-msg client">Fechou, e quanto ficaria?<span class="wa-msg-time">14:22 ✓✓</span></div></div>'
+    + '<div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Essa tatuagem fica em R$ 750 nessa pegada de tamanho. Bora agendar?<span class="wa-msg-time">14:22 ✓✓</span></div></div>'
+    + '<div style="margin-top:6px;font-size:11px;color:var(--t3)">→ Agente fecha o valor sozinho usando sua tabela. Mais rápido, mas exige tabela bem ajustada.</div>'
+    + '</div>',
+};
+
 function selectModoSw(modo, btn) {
   selectedModo = modo;
   document.querySelectorAll('#cb4 .qa-opt .qa-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
+  // Renderiza/troca exemplo embaixo dos botões
+  const container = document.getElementById('modo-example-container');
+  if (container) container.innerHTML = MODO_EXEMPLOS_HTML[modo] || '';
+  // Mostra botão Continuar
   const wrap = document.getElementById('sw-advance-wrap');
   if (wrap) wrap.style.display = 'block';
 }
@@ -2292,8 +2304,10 @@ function initSvByModo() {
 }
 
 // ── Q&A progressivo ─────────────────────────────────────────────────────────
-// Modo Coleta v2: default 'coleta'. Modo Exato e beta secundario.
-let selectedModo = 'coleta';
+// Modo Coleta v2: backend default e 'coleta', mas no UI inicia null pra
+// FORCAR escolha explicita no cb4 (evita avanco acidental).
+// Fallback pra 'coleta' ocorre em buildConfigPrecificacao se chegar lá sem modo.
+let selectedModo = null;
 function showQA(id) {
   const el = document.getElementById(id);
   if (!el || el.classList.contains('show')) return;
