@@ -340,6 +340,7 @@ select.fi option{background:var(--card);color:var(--t1)}
 .qa-btn{padding:12px 16px;border:1px solid var(--border2);border-radius:10px;background:transparent;color:var(--t2);font-size:13px;cursor:pointer;font-family:inherit;text-align:left;transition:all .15s;line-height:1.5}
 .qa-btn:hover{border-color:var(--teal-mid);color:var(--t1)}
 .qa-btn.selected{border-color:var(--teal);background:var(--teal-dim);color:var(--teal)}
+.beta-badge{color:#f5a623;font-weight:700;letter-spacing:.5px}
 
 /* Exemplo conversa na Q&A */
 .qa-ex{background:rgba(0,0,0,.3);border-radius:10px;padding:12px 14px;margin-top:10px;font-size:12px;line-height:1.6}
@@ -622,14 +623,41 @@ select.fi option{background:var(--card);color:var(--t1)}
       </div>
       <div class="chat-bubble" id="cb2">
         <div class="chat-name">InkFlow</div>
-        <div style="margin-bottom:6px;font-size:11px;color:var(--teal);font-weight:600;letter-spacing:.5px">⭐ RECOMENDADO</div>
-        Aqui você escolhe como o agente trabalha com os orçamentos: <strong>Coleta</strong> (você decide cada valor) ou <strong>Exato beta</strong> (calculadora InkFlow fecha o valor sozinha). Em qualquer um dos modos, eu cuido da conversa com o cliente e do agendamento.
+        Recomendo tirar 15 minutos pra fazer a configuração completa — assim eu começo a atender com o melhor desempenho pro seu estúdio. Bora?
         <div class="chat-tap">Toque para continuar</div>
       </div>
       <div class="chat-bubble" id="cb3">
         <div class="chat-name">InkFlow</div>
-        Recomendo tirar 15 minutos para realizar a configuração completa, e seu robô poder começar a trabalhar com o melhor desempenho pro seu estúdio! Vamos lá?
-        <div class="chat-tap cta">Vamos lá! &rarr;</div>
+        <div style="margin-bottom:8px">Aqui você escolhe como eu vou trabalhar com os orçamentos:</div>
+        <div style="margin-bottom:8px"><strong style="color:var(--teal)">🎯 Coleta (recomendado):</strong> você decide cada valor que eu envio. Eu coleto os pedidos, mando pro seu Telegram, e você fecha o preço.</div>
+        <div style="margin-bottom:8px"><strong>⚡ Valor Exato (<span class="beta-badge">BETA</span>):</strong> calculadora inteligente do InkFlow fecha o valor automaticamente baseado na tabela que você configura.</div>
+        <div style="margin-top:10px;color:var(--t2)">Aqui segue alguns exemplos para decidir <span style="color:var(--t3)">(o modo pode sempre ser alterado depois na página do studio)</span>:</div>
+        <div class="chat-tap">Toque para ver os exemplos</div>
+      </div>
+      <div class="chat-bubble" id="cb4">
+        <div class="chat-name">InkFlow</div>
+
+        <div class="qa-ex" style="margin-top:0">
+          <div class="qa-ex-label">🎯 Modo Coleta</div>
+          <div class="wa-preview right reveal"><div class="wa-msg client">queria orçar uma rosa fineline<span class="wa-msg-time">14:20 ✓✓</span></div></div>
+          <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Show! Conta mais — tem ideia de tamanho e local? Pra fechar o orçamento vou pegar uns dados rapidinho e mandar pro tatuador analisar.<span class="wa-msg-time">14:20 ✓✓</span></div></div>
+          <div style="margin-top:6px;font-size:11px;color:var(--t3)">→ Agente coleta dados, manda pro Telegram, você decide o valor, agente fecha agendamento</div>
+        </div>
+        <div class="qa-ex" style="margin-top:8px">
+          <div class="qa-ex-label">⚡ Modo Exato (<span class="beta-badge" style="font-size:10px">BETA</span>)</div>
+          <div class="wa-preview right reveal"><div class="wa-msg client">Fechou, e quanto ficaria?<span class="wa-msg-time">14:22 ✓✓</span></div></div>
+          <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Essa tatuagem fica em R$ 750 nessa pegada de tamanho. Bora agendar?<span class="wa-msg-time">14:22 ✓✓</span></div></div>
+          <div style="margin-top:6px;font-size:11px;color:var(--t3)">→ Agente fecha o valor sozinho usando sua tabela. Mais rápido, mas exige tabela bem ajustada.</div>
+        </div>
+
+        <div class="qa-opt" style="margin-top:14px">
+          <button class="qa-btn" type="button" onclick="selectModoSw('coleta',this)">🎯 Coleta — você decide cada orçamento (recomendado)</button>
+          <button class="qa-btn" type="button" onclick="selectModoSw('exato',this)">⚡ Exato (<span class="beta-badge" style="font-size:11px">BETA</span>) — calculadora fecha o valor</button>
+        </div>
+
+        <div id="sw-advance-wrap" style="display:none;margin-top:14px">
+          <button class="sbtn" type="button" id="sw-advance-btn" style="width:100%;font-size:14px;font-weight:600" onclick="advanceFromSw()">Avançar &rarr;</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1340,12 +1368,17 @@ async function init() {
         plano: selectedPlan, isArtist: t.is_artist_slot,
       }));
 
-      // Refator (WA pair como ultimo passo): a ordem agora e
-      // sw → sv → spi → sp → s5 (QR) → s6 (sucesso/ativo).
+      // Refator (WA pair como ultimo passo + modo no welcome chat): a ordem
+      // agora e sw → sv → spi → sp → s5 (QR) → s6 (sucesso/ativo).
       // ativo=true significa "WA pareado + agente operando".
       if (t.evo_instance) {
         const hasConfig = t.config_precificacao && Object.keys(t.config_precificacao).length > 1;
         const hasAgente = t.config_agente && Object.keys(t.config_agente).length > 1;
+        // Restaurar selectedModo a partir do DB (gravado em advanceFromSw)
+        const savedModo = t.config_precificacao?.modo;
+        if (savedModo === 'coleta' || savedModo === 'exato') {
+          selectedModo = savedModo;
+        }
 
         if (t.ativo) {
           // Estado terminal: WA pareado + tenant ativo
@@ -1361,13 +1394,17 @@ async function init() {
         }
 
         // ativo=false → ainda em algum passo. Resume conforme progresso:
-        if (!t.welcome_shown) {
-          console.log('[inkflow] smart-resume → welcome chat (sw)');
+        // welcome_shown=true significa que user passou pelo sw e escolheu modo.
+        if (!t.welcome_shown || !savedModo) {
+          console.log('[inkflow] smart-resume → welcome chat (sw, sem modo escolhido)');
           initWelcomeChat(); goStep('sw'); return;
         }
         if (!hasConfig) {
-          console.log('[inkflow] smart-resume → valores (sv)');
-          initEstilosGrid(); goStep('sv'); return;
+          // hasConfig considera config_precificacao com >1 keys. Como modo
+          // sozinho conta como 1, podemos ter modo+welcome_shown mas !hasConfig.
+          // Isso e raro porque sv salva mais coisas, mas tratamos.
+          console.log('[inkflow] smart-resume → valores (sv) com modo=' + selectedModo);
+          initSvByModo(); goStep('sv'); return;
         }
         if (!hasAgente) {
           console.log('[inkflow] smart-resume → personalizar intro (spi)');
@@ -1403,9 +1440,13 @@ async function init() {
       tenantId = savedOb.tenantId;
       instanceSlug = savedOb.instanceSlug;
       if (savedOb.plano) selectedPlan = savedOb.plano;
+      // Restaurar modo escolhido no sw (welcome chat)
+      if (savedOb.modo === 'coleta' || savedOb.modo === 'exato') {
+        selectedModo = savedOb.modo;
+      }
       const step = savedOb.step;
       if (step === 'sw') { initWelcomeChat(); goStep('sw'); return; }
-      if (step === 'sv') { initEstilosGrid(); goStep('sv'); return; }
+      if (step === 'sv') { initSvByModo(); goStep('sv'); return; }
       if (step === 'spi') { initPersonaIntro(); goStep('spi'); return; }
       if (step === 'sp') { goStep('sp'); return; }
       if (step === 'qr') { goStep(5); initConnectStep(); pollInterval = setInterval(checkConnection, 5000); return; }
@@ -2160,24 +2201,94 @@ function showNextBubble() {
   el.classList.add('show');
   setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'end' }), 150);
   el.onclick = () => {
-    if (chatStep < 3) { showNextBubble(); }
-    else {
-      let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-      ob.step = 'sv'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
-      // Marcar welcome_shown=true no DB pra smart-resume backend funcionar
-      // (user que fecha browser depois desse ponto retoma a partir de sv,
-      // nao volta pro sw). Nao bloqueia UI.
-      const obKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk');
-      if (tenantId && obKey) {
-        fetch('/api/update-tenant', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tenant_id: tenantId, onboarding_key: obKey, welcome_shown: true }),
-        }).catch(e => console.warn('welcome_shown update falhou:', e?.message));
-      }
-      initEstilosGrid();
-      goStep('sv');
-    }
+    // cb1, cb2, cb3 → tap pra avançar pra próxima bubble
+    // cb4 (modo selection) → não auto-avança; user clica modo + Avançar
+    if (chatStep < 4) { showNextBubble(); }
   };
+}
+
+// Refator: seleção de modo agora é no welcome chat (sw/cb4) em vez de qa-intro.
+// Botões só selecionam — não disparam ação imediata. Botão "Avançar" só aparece
+// após user selecionar um modo.
+function selectModoSw(modo, btn) {
+  selectedModo = modo;
+  document.querySelectorAll('#cb4 .qa-opt .qa-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const wrap = document.getElementById('sw-advance-wrap');
+  if (wrap) wrap.style.display = 'block';
+}
+
+async function advanceFromSw() {
+  if (!selectedModo) return;
+  const advBtn = document.getElementById('sw-advance-btn');
+  if (advBtn) { advBtn.disabled = true; advBtn.textContent = 'Carregando…'; }
+  try {
+    let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
+    ob.step = 'sv';
+    ob.modo = selectedModo;
+    localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+    // Persist welcome_shown + config_precificacao.modo no DB pra smart-resume
+    // pegar o modo correto se user fechar browser entre sw e sv.
+    const obKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk');
+    if (tenantId && obKey) {
+      try {
+        await fetch('/api/update-tenant', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenant_id: tenantId, onboarding_key: obKey,
+            welcome_shown: true,
+            config_precificacao: { modo: selectedModo },
+          }),
+        });
+      } catch (e) { console.warn('advanceFromSw save falhou:', e?.message); }
+    }
+    initSvByModo();
+    goStep('sv');
+  } finally {
+    if (advBtn) { advBtn.disabled = false; advBtn.textContent = 'Avançar →'; }
+  }
+}
+
+// Inicializa step sv mostrando APENAS o QA do modo escolhido. Substitui o
+// uso do qa-intro (que tinha os 2 botões inline). Agora qa-intro fica
+// permanentemente oculto.
+function initSvByModo() {
+  // Esconde TODOS os QAs (incluindo qa-intro que nunca mais é usado)
+  const todosQAs = ['qa-intro', 'qa-tatuador-telegram', 'qa-sinal', 'qa-faixas', 'qa-ajustes', 'qa-limites', 'qa-test'];
+  todosQAs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('show');
+      el.style.display = 'none';
+    }
+  });
+
+  // Atualiza o título da página (form-badge) baseado no modo
+  const badge = document.querySelector('#sv .form-badge');
+  if (badge) {
+    badge.textContent = selectedModo === 'coleta' ? 'Conectando seu Telegram' : 'Configurar valores';
+  }
+
+  // Mostra o QA específico do modo
+  if (selectedModo === 'coleta') {
+    const el = document.getElementById('qa-tatuador-telegram');
+    if (el) {
+      el.style.display = '';
+      el.classList.add('show');
+      // initTelegramQR já é chamado por showQA — mas chamamos direto pra
+      // garantir caso showQA não rode pelo path normal
+      if (typeof initTelegramQR === 'function') initTelegramQR();
+    }
+  } else {
+    // Modo Exato: libera o display dos QAs do fluxo legacy
+    ['qa-sinal', 'qa-faixas', 'qa-ajustes', 'qa-limites', 'qa-test'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = '';
+    });
+    const sinal = document.getElementById('qa-sinal');
+    if (sinal) sinal.classList.add('show');
+    initEstilosGrid();
+  }
 }
 
 // ── Q&A progressivo ─────────────────────────────────────────────────────────
@@ -3195,9 +3306,23 @@ function navForward() {
   if (idx >= NAV_STEPS.length - 1) return;
   const next = NAV_STEPS[idx + 1];
 
-  // Validacao: pra sair do step 'sv' (precificacao + telegram) o user precisa
-  // ter selecionado um modo. Em modo Coleta, ainda precisa ter conectado o
-  // Telegram (sem chat_id, fluxo Coleta nao funciona).
+  // Validacao por step:
+  // - sw: precisa ter selecionado um modo (Coleta ou Exato) no chat-bubble cb4
+  // - sv: em modo Coleta, precisa ter conectado o Telegram (sem chat_id,
+  //   fluxo Coleta nao funciona).
+  if (currentNavStep === 'sw') {
+    if (!selectedModo) {
+      showNavError('Selecione um modo (Coleta ou Exato) antes de avançar');
+      // Faz scroll pra cb4 onde estão os botões
+      const cb4 = document.getElementById('cb4');
+      if (cb4) cb4.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      return;
+    }
+    // Modo escolhido — mas usar o caminho normal (advanceFromSw) que persiste
+    // tudo no DB. Aqui só seguimos para sv via initSvByModo.
+    advanceFromSw();
+    return;
+  }
   if (currentNavStep === 'sv') {
     if (!selectedModo) {
       showNavError('Escolhe primeiro como o agente trabalha com os orçamentos (Coleta ou Exato)');
