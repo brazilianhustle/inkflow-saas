@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-25
+last_reviewed: 2026-05-03
 owner: leandro
 status: stable
 related: [flows.md, ids.md, runbooks/deploy.md]
@@ -24,9 +24,11 @@ Leandro (founder).
 - → Mercado Pago (via `MP_ACCESS_TOKEN` em `/api/create-subscription`; recebe webhook em `/api/mp-ipn`)
 - → Evolution API (via `EVO_GLOBAL_KEY` / `EVOLUTION_GLOBAL_KEY` em `/api/evo-*`)
 - → MailerLite (via `MAILERLITE_API_KEY`)
-- → Telegram (alertas críticos via `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`)
+- → Telegram alertas internos (founder, via `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`)
+- → Telegram orçamentos Modo Coleta (tatuador, via `INKFLOW_TELEGRAM_BOT_TOKEN` — bot separado, ver seção Telegram)
+- ← Telegram bot webhook (`/api/telegram/webhook`, autenticado via `INKFLOW_TELEGRAM_WEBHOOK_SECRET`)
 - ← Cloudflare Worker `inkflow-cron` (via `CRON_SECRET` no header)
-- ← n8n (via `N8N_WEBHOOK_SECRET` em `/api/tools/*`)
+- ← n8n (via `N8N_WEBHOOK_SECRET` em `/api/tools/*` e `N8N_REENTRADA_WEBHOOK_URL` outbound pra reentrada)
 
 ### Config técnica
 Bindings e flags em `wrangler.toml` (raiz do repo). Endpoints code em `functions/api/` (root: `create-subscription.js`, `create-tenant.js`, `evo-*.js`, `mp-ipn.js`; subdirs: `cron/`, `tools/`, `webhooks/`). Libs compartilhadas em `functions/_lib/`. Env vars referenciadas listadas em `scripts/preflight-envvars.sh` (executado pré-deploy).
@@ -75,7 +77,14 @@ Leandro.
 - ← Worker `inkflow-cron` indireto (via endpoints CF Pages)
 
 ### Config técnica
-Schema gerenciado direto via Supabase MCP (`mcp__plugin_supabase_supabase__list_migrations` / `apply_migration`) — não há diretório `supabase/migrations/` versionado no repo neste momento. Tabelas core: `tenants` (com `evo_apikey`, `evo_base_url`, `evo_instance`, `ativo`, etc.), `payment_logs`, `conversas`, `agendamentos`, `tool_calls_log`, `chat_messages`, `bot_state`. RLS policies aplicadas via MCP.
+Schema gerenciado via `supabase/migrations/` (versionado no repo desde 2026-04-26) + aplicado manualmente no Dashboard SQL Editor. Tabelas core: `tenants`, `payment_logs`, `conversas`, `agendamentos`, `tool_calls_log`, `chat_messages`, `bot_state`, `audit_runs`, `approvals`. RLS policies aplicadas via MCP.
+
+**Modo Coleta v2 (2026-05-02) adicionou:**
+- `tenants.tatuador_telegram_chat_id` (TEXT) + `tatuador_telegram_username` (TEXT) — canal Telegram do tatuador
+- `conversas.valor_proposto` (NUMERIC) + `valor_pedido_cliente` (NUMERIC) — valores de proposta/objeção
+- `conversas.orcid` (TEXT UNIQUE) — identificador curto do orçamento (callback Telegram → conversa)
+- `conversas.dados_cadastro` (JSONB) — nome, data_nascimento, email do cliente
+- `conversas.estado_agente` valores novos: `coletando_tattoo`, `coletando_cadastro`, `aguardando_tatuador`, `propondo_valor`, `aguardando_decisao_desconto`, `escolhendo_horario`, `aguardando_sinal`, `lead_frio`, `fechado`
 
 ### Health check
 `curl -s -o /dev/null -w "%{http_code}\n" -H "apikey: $SUPABASE_ANON_KEY" https://bfzuxxuscyplfoimvomh.supabase.co/rest/v1/` (esperado `200`).
@@ -171,21 +180,36 @@ Workflows hospedados no servidor n8n; inspeção / edição via MCP `n8n` (`get_
 ## Telegram
 
 ### Propósito
-Canal de alertas e aprovações (incidentes, deploys, rotações de secret, divergências detectadas pelos auditores do Sub-projeto 3). Bidirecional — bot pode receber comandos / aprovações.
+Dois bots separados, papéis distintos:
+
+1. **Bot de alertas internos** (founder) — `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`. Canal pessoal do Leandro: incidentes, deploys, rotações de secret, divergências detectadas pelos auditores do Sub-projeto 3, aprovações.
+2. **Bot do Modo Coleta v2** (tatuador) — `INKFLOW_TELEGRAM_BOT_TOKEN`. Canal por-tatuador: orçamentos novos, objeções de desconto, com inline keyboard `[Fechar valor / Recusar / Aceitar X / Manter Y]`. Cada tatuador conecta seu chat via deep link `t.me/<bot>?start=<onboarding_key>` no onboarding; chat_id salvo em `tenants.tatuador_telegram_chat_id`.
 
 ### URL principal
-Bot configurado via `TELEGRAM_BOT_TOKEN`; chat alvo `TELEGRAM_CHAT_ID`. API base: `https://api.telegram.org`.
+API base: `https://api.telegram.org` (mesma pros 2 bots, tokens distintos). Webhook do bot Modo Coleta: `https://inkflowbrasil.com/api/telegram/webhook` (autenticado via `INKFLOW_TELEGRAM_WEBHOOK_SECRET`). Bot de alertas usa polling/manual via MCP — não tem webhook.
 
 ### Owner
 Leandro.
 
 ### Pontos de integração
-- ← CF Worker `inkflow-cron` (alertas de falha em qualquer cron — implementado em `cron-worker/src/index.js`)
+
+**Bot de alertas:**
+- ← CF Worker `inkflow-cron` (alertas de falha em qualquer cron — `cron-worker/src/index.js`)
 - ← CF Pages (alertas críticos vindos dos endpoints `/api/*`)
-- ← Auditores do Sub-projeto 3 (futuro — divergências canonical-vs-real)
+- ← Auditores do Sub-projeto 3 (divergências canonical-vs-real)
+
+**Bot do Modo Coleta v2:**
+- ← CF Pages tools `enviar_orcamento_tatuador` + `enviar_objecao_tatuador` (outbound — manda mensagem com inline keyboard)
+- → CF Pages `/api/telegram/webhook` (inbound — recebe `/start <key>` e callbacks de botões)
+- → CF Pages `/api/check-telegram-connected?onboarding_key=<key>` (polling do onboarding UI pra detectar conexão)
+- → n8n via `N8N_REENTRADA_WEBHOOK_URL` (após callback do tatuador, dispara reentrada do bot na conversa do cliente)
 
 ### Config técnica
-Token `TELEGRAM_BOT_TOKEN` e chat id `TELEGRAM_CHAT_ID` configurados em ambos: CF Pages env e Worker env (replicados). Integração também acessível via MCP `plugin_telegram_telegram__*` quando precisar mandar / editar mensagens fora de código.
+**Bot de alertas:** `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` em CF Pages env e Worker env. MCP `plugin_telegram_telegram__*` pra interação manual.
+
+**Bot do Modo Coleta v2:** `INKFLOW_TELEGRAM_BOT_TOKEN` em CF Pages env (production + preview) + BWS project `inkflow`. `INKFLOW_TELEGRAM_WEBHOOK_SECRET` (32 chars hex random) em CF Pages env + BWS. Setup do webhook 1× via `setWebhook` (script `/tmp/inkflow-tg-setup-webhook.sh`). Idempotência pelos updates do Telegram: webhook responde sempre 200 mesmo em casos no-op.
 
 ### Health check
-`curl -s "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getMe" | jq '.ok'` (esperado `true`).
+`curl -s "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getMe" | jq '.ok'` (esperado `true`) — mesma sintaxe pros 2 tokens.
+
+`curl -s "https://api.telegram.org/bot$INKFLOW_TELEGRAM_BOT_TOKEN/getWebhookInfo" | jq '.result.url'` (esperado `https://inkflowbrasil.com/api/telegram/webhook`).

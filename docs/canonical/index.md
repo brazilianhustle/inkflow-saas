@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-25
+last_reviewed: 2026-05-03
 owner: leandro
 status: stable
 related: [stack.md, flows.md, ids.md, secrets.md, limits.md, runbooks/README.md, methodology/index.md]
@@ -21,8 +21,8 @@ related: [stack.md, flows.md, ids.md, secrets.md, limits.md, runbooks/README.md,
 | Arquivo | Conteúdo |
 |---|---|
 | `stack.md` | Os 8 serviços do InkFlow (CF Pages, CF Worker, Supabase, Evolution, MP, MailerLite, n8n, Telegram). Propósito, owner, integração, health check de cada um. |
-| `flows.md` | 8 fluxos críticos com diagramas Mermaid: signup→trial, trial→pago, payment recorrente IPN, webhook Evolution→n8n→bot, 3 crons (expira-trial, cleanup-tenants, monitor-whatsapp), delete-tenant cascata. |
-| `ids.md` | IDs de domínio, 11 tabelas Supabase, workflows n8n, group IDs MailerLite, 38+ endpoints `/api/*`. |
+| `flows.md` | 9 fluxos críticos com diagramas Mermaid: signup→trial, trial→pago, payment recorrente IPN, webhook Evolution→n8n→bot, **Modo Coleta v2** (Telegram tatuador), 3 crons (expira-trial, cleanup-tenants, monitor-whatsapp), delete-tenant cascata. |
+| `ids.md` | IDs de domínio (incluindo `orcid` e `tatuador_telegram_chat_id`), 13 tabelas Supabase, workflows n8n, group IDs MailerLite, 42+ endpoints `/api/*` (com 4 tools novas + webhook Telegram + check-connected). |
 | `secrets.md` | Mapa de secrets — APENAS nomes e ponteiros pra fonte canônica (Bitwarden + CF Pages env). Procedure de rotação. **ZERO valores plaintext.** |
 | `limits.md` | Quotas de Vultr / CF Workers / CF Pages / Supabase / MP / MailerLite / Telegram / n8n / LLM providers + thresholds warn/critical. Alimenta auditores #3 (VPS limits) e #5 (billing health) do Sub-projeto 3. |
 | `runbooks/` | Procedimentos operacionais. Ver `runbooks/README.md` pro índice completo + `runbooks/<incidente>.md` por procedimento. |
