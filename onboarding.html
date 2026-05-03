@@ -2235,7 +2235,9 @@ async function initTelegramQR() {
   document.getElementById('tg-deep-link').textContent = `t.me/${username}`;
 
   // Renderiza QR via Google Chart API (gratuito, sem dependencia)
-  const qrUrl = `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(deepLink)}&choe=UTF-8`;
+  // QR via api.qrserver.com (free, sem auth, sem deprecação). Google Charts
+  // foi deprecada anos atrás. Alternativa: quickchart.io ou bundle JS local.
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(deepLink)}&margin=10`;
   document.getElementById('tg-qr-container').innerHTML = `<img src="${qrUrl}" alt="QR Telegram" style="width:200px;height:200px;border-radius:8px"/>`;
 
   // Polling a cada 3s
