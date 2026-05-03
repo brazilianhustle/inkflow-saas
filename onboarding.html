@@ -622,7 +622,8 @@ select.fi option{background:var(--card);color:var(--t1)}
       </div>
       <div class="chat-bubble" id="cb2">
         <div class="chat-name">InkFlow</div>
-        Aqui você escolhe como o agente trabalha com os orçamentos: <strong>Coleta</strong> (você decide cada valor — recomendado) ou <strong>Exato beta</strong> (calculadora InkFlow fecha o valor sozinha). Em qualquer um dos modos, eu cuido da conversa com o cliente e do agendamento.
+        <div style="margin-bottom:6px;font-size:11px;color:var(--teal);font-weight:600;letter-spacing:.5px">⭐ RECOMENDADO</div>
+        Aqui você escolhe como o agente trabalha com os orçamentos: <strong>Coleta</strong> (você decide cada valor) ou <strong>Exato beta</strong> (calculadora InkFlow fecha o valor sozinha). Em qualquer um dos modos, eu cuido da conversa com o cliente e do agendamento.
         <div class="chat-tap">Toque para continuar</div>
       </div>
       <div class="chat-bubble" id="cb3">
@@ -2209,12 +2210,33 @@ function selectModo(modo, btn) {
   selectedModo = modo;
   btn.closest('.qa-opt').querySelectorAll('.qa-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
-  // Coleta pula steps de pricing (faixas/ajustes/limites — esses sao do Exato).
-  // Coleta vai direto pra conexao Telegram → qa-test.
+
+  // Fix 2: Garantir coerencia de estado quando user clica num modo e troca
+  // pro outro. Esconder TODOS os QAs do outro modo antes de mostrar o atual.
+  const QAS_COLETA = ['qa-tatuador-telegram'];
+  const QAS_EXATO = ['qa-sinal', 'qa-faixas', 'qa-ajustes', 'qa-limites', 'qa-test'];
+  const todosQAs = [...QAS_COLETA, ...QAS_EXATO];
+
+  // Esconde todos antes (idempotente em cliques repetidos)
+  todosQAs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('show');
+      el.style.display = 'none';
+    }
+  });
+
+  // Mostra so os QAs do modo escolhido
+  const aMostrar = modo === 'coleta' ? QAS_COLETA : QAS_EXATO;
+  // Restaura display dos que serão mostrados (apaga o style.display='none')
+  aMostrar.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = '';
+  });
+
   if (modo === 'coleta') {
     showQA('qa-tatuador-telegram');
   } else {
-    // Exato (beta): fluxo legacy com sinal/faixas/ajustes/limites
     showQA('qa-sinal');
   }
 }
@@ -2229,6 +2251,9 @@ async function continueAfterTelegram() {
     await saveValoresAndNext();
   } catch (e) {
     console.error('continueAfterTelegram:', e);
+  } finally {
+    // Reseta SEMPRE — se user navegar de volta, botao deve estar pronto pra
+    // proximo clique (sucesso = avancou pra outra tela; erro = mostrar pronto)
     if (btn) { btn.disabled = false; btn.textContent = 'Continuar →'; }
   }
 }
@@ -2669,9 +2694,12 @@ async function applyPresetAndAdvance(btn) {
     pollInterval = setInterval(checkConnection, 5000);
   } catch (e) {
     console.error('applyPreset error:', e);
+    alert('Erro ao aplicar configuração padrão: ' + (e?.message || e) + '\n\nTente "Montar sozinho" ou recarregue a página.');
+  } finally {
+    // Reseta SEMPRE — sucesso = user avancou (botao volta pronto se ele
+    // navegar de volta); erro = botao volta clicavel.
     btn.disabled = false;
     btn.innerHTML = origText;
-    alert('Erro ao aplicar configuração padrão: ' + (e?.message || e) + '\n\nTente "Montar sozinho" ou recarregue a página.');
   }
 }
 
