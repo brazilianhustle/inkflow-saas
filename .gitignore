@@ -7,3 +7,4 @@ pixel-agents-standalone/
 # Dependencias instaladas localmente
 cron-worker/node_modules/
 node_modules/
+docs/superpowers/.DS_Store
