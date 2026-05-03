@@ -927,10 +927,20 @@ select.fi option{background:var(--card);color:var(--t1)}
       </div>
       <div class="chat-bubble" id="pi3">
         <div class="chat-name">InkFlow</div>
-        Aqui você pode optar por montar sozinho toda a personalização ou comprar o pacote de personalização exclusivo montado pela nossa equipe para o seu estúdio! Qual opção prefere?<br><span style="font-size:11px;color:var(--t3)">(oferta estará sempre disponível no painel do estúdio)</span>
+        Como você quer configurar a personalização do agente?<br><span style="font-size:11px;color:var(--t3)">(qualquer opção que escolher pode ser ajustada depois no painel do estúdio)</span>
         <div class="qa-opt" style="margin-top:12px">
-          <button class="qa-btn" type="button" onclick="selectPersonaMode('diy')">Montar sozinho</button>
-          <button class="qa-btn" type="button" onclick="selectPersonaMode('consultor')">Chamar um consultor humano</button>
+          <button class="qa-btn" type="button" onclick="selectPersonaMode('preset')" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left">
+            <span style="font-weight:600">⚡ Configure por mim <span style="color:var(--teal);font-size:11px">(mais rápido)</span></span>
+            <span style="font-size:11px;color:var(--t3);font-weight:normal;line-height:1.4">Siga sem configurar nada manualmente. Aplico presets profissionais de atendimento já testados, e seu agente fica pronto pra trabalhar em segundos. Você ajusta o que quiser depois.</span>
+          </button>
+          <button class="qa-btn" type="button" onclick="selectPersonaMode('diy')" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left">
+            <span style="font-weight:600">✏️ Montar sozinho</span>
+            <span style="font-size:11px;color:var(--t3);font-weight:normal;line-height:1.4">Configure cada detalhe (nome do agente, tom, emojis, FAQ, horários). Leva ~10 min.</span>
+          </button>
+          <button class="qa-btn" type="button" onclick="selectPersonaMode('consultor')" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left">
+            <span style="font-weight:600">👤 Chamar um consultor humano</span>
+            <span style="font-size:11px;color:var(--t3);font-weight:normal;line-height:1.4">Nossa equipe configura tudo pra você sob medida (pacote pago).</span>
+          </button>
         </div>
       </div>
       <div class="chat-bubble" id="pi4" style="display:none">
@@ -2570,11 +2580,23 @@ function showNextPI() {
   if (piStep < 3) { el.onclick = () => showNextPI(); }
 }
 function selectPersonaMode(mode) {
+  // event.target pode ser o <span> filho do botao — sobe pra encontrar o botao
+  const btn = (typeof event !== 'undefined' && event?.target) ? (event.target.closest('.qa-btn') || event.target) : null;
   document.querySelectorAll('#pi3 .qa-btn').forEach(b => b.classList.remove('selected'));
-  event.target.classList.add('selected');
+  if (btn) btn.classList.add('selected');
+
   if (mode === 'consultor') {
     window.open('https://wa.me/5521970789797?text=Ol%C3%A1!%20Gostaria%20de%20contratar%20o%20pacote%20de%20personaliza%C3%A7%C3%A3o%20exclusivo%20para%20meu%20est%C3%BAdio.', '_blank');
   }
+
+  // Configure por mim: aplica defaults profissionais e pula direto pra
+  // pareamento WhatsApp (s5).
+  if (mode === 'preset') {
+    if (btn) applyPresetAndAdvance(btn);
+    return;
+  }
+
+  // diy / consultor: continua pro pi4 e depois pra tela de personalizacao
   const pi4 = document.getElementById('pi4');
   pi4.style.display = '';
   setTimeout(() => { pi4.classList.add('show'); pi4.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, 200);
@@ -2583,6 +2605,74 @@ function selectPersonaMode(mode) {
     ob.step = 'sp'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
     goStep('sp');
   };
+}
+
+// Configure-por-mim: salva defaults profissionais via API e avanca direto
+// pra pareamento WhatsApp (s5). User pode ajustar tudo depois no painel.
+async function applyPresetAndAdvance(btn) {
+  const origText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span style="font-weight:600">Aplicando configuração padrão…</span>';
+  try {
+    let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
+    const obKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk');
+    const nomeAgenteDefault = ob.agente || 'Atendente';
+    const estudio = ob.estudio || '';
+
+    const presetConfig = {
+      tom: 'amigavel',
+      emoji_level: 'moderado',
+      emojis_preferidos: ['😁'],
+      usa_giria: true,
+      usa_identificador: false,
+      persona_livre: null,
+      saudacao: 'Oi! Aqui é o ' + nomeAgenteDefault + ' do ' + (estudio || 'estúdio') + '. Tudo bem? Como posso te ajudar?',
+      nome_agente: nomeAgenteDefault,
+      estilos_recusados: [],
+    };
+
+    const horarioDefault = {
+      'seg-sex': '10:00-19:00',
+      'sab': '10:00-15:00',
+    };
+
+    const faqDefault = [
+      'P: Aceita PIX?',
+      'R: Sim, aceitamos PIX, crédito e débito.',
+      '',
+      'P: Quais cuidados pré-tatuagem?',
+      'R: Durma bem, hidrate-se, evite bebidas alcoólicas 24h antes e passe hidratante na região nos dias anteriores.',
+    ].join('\n');
+
+    const res = await fetch('/api/update-tenant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenant_id: tenantId,
+        onboarding_key: obKey,
+        config_agente: presetConfig,
+        nome_agente: nomeAgenteDefault,
+        horario_funcionamento: horarioDefault,
+        faq_texto: faqDefault,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Erro ao salvar configuração padrão');
+    }
+
+    ob.step = 'qr';
+    ob.agente = nomeAgenteDefault;
+    localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+    goStep(5);
+    initConnectStep();
+    pollInterval = setInterval(checkConnection, 5000);
+  } catch (e) {
+    console.error('applyPreset error:', e);
+    btn.disabled = false;
+    btn.innerHTML = origText;
+    alert('Erro ao aplicar configuração padrão: ' + (e?.message || e) + '\n\nTente "Montar sozinho" ou recarregue a página.');
+  }
 }
 
 // ── Wizard: Personalizar (agente + agenda + FAQ) ─────────────────────────────
