@@ -1340,10 +1340,27 @@ async function init() {
         plano: selectedPlan, isArtist: t.is_artist_slot,
       }));
 
-      if (t.evo_instance && t.ativo) {
+      // Refator (WA pair como ultimo passo): a ordem agora e
+      // sw → sv → spi → sp → s5 (QR) → s6 (sucesso/ativo).
+      // ativo=true significa "WA pareado + agente operando".
+      if (t.evo_instance) {
         const hasConfig = t.config_precificacao && Object.keys(t.config_precificacao).length > 1;
         const hasAgente = t.config_agente && Object.keys(t.config_agente).length > 1;
 
+        if (t.ativo) {
+          // Estado terminal: WA pareado + tenant ativo
+          console.log('[inkflow] smart-resume → sucesso (s6)');
+          document.getElementById('suc-estudio').textContent = t.nome_estudio || instanceSlug;
+          document.getElementById('suc-agente').textContent = t.nome_agente || '';
+          document.getElementById('suc-inst').textContent = instanceSlug;
+          const sucPlanLabels = { trial:'Trial 7 dias', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' };
+          document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
+          goStep(6);
+          configureSucCta();
+          return;
+        }
+
+        // ativo=false → ainda em algum passo. Resume conforme progresso:
         if (!t.welcome_shown) {
           console.log('[inkflow] smart-resume → welcome chat (sw)');
           initWelcomeChat(); goStep('sw'); return;
@@ -1356,18 +1373,10 @@ async function init() {
           console.log('[inkflow] smart-resume → personalizar intro (spi)');
           initPersonaIntro(); goStep('spi'); return;
         }
-        console.log('[inkflow] smart-resume → sucesso (s6)');
-        document.getElementById('suc-estudio').textContent = t.nome_estudio || instanceSlug;
-        document.getElementById('suc-agente').textContent = t.nome_agente || '';
-        document.getElementById('suc-inst').textContent = instanceSlug;
-        const sucPlanLabels = { trial:'Trial 7 dias', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' };
-        document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
-        goStep(6); return;
-      }
-
-      if (t.evo_instance && !t.ativo) {
-        console.log('[inkflow] smart-resume → QR (instance exists, not ativo)');
-        goStep(5); initConnectStep(); pollInterval = setInterval(checkConnection, 5000); return;
+        // Tudo configurado, falta WA pair
+        console.log('[inkflow] smart-resume → QR (config done, need WA pair)');
+        goStep(5); initConnectStep(); pollInterval = setInterval(checkConnection, 5000);
+        return;
       }
 
       console.log('[inkflow] smart-resume → tenant exists but no instance, showing form');
@@ -1744,14 +1753,20 @@ async function doEvoSetup() {
     let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
     const isArtist = isArtistInvite || ob.isArtist;
     if (isArtist) {
+      ob.step = 'qr';
+      localStorage.setItem('inkflow_ob', JSON.stringify(ob));
       goStep(5); initConnectStep();
       pollInterval = setInterval(checkConnection, 5000);
       return;
     }
 
-    // Todos os planos: conectar WhatsApp primeiro, depois config
-    goStep(5); initConnectStep();
-    pollInterval = setInterval(checkConnection, 5000);
+    // Refator (config → WA pair como ultimo passo): nao-artistas vao agora
+    // pro welcome chat; configuram tudo (Coleta/Exato + Telegram + persona);
+    // e SO entao caem em s5 (QR WA) como ato final de "ativar".
+    ob.step = 'sw';
+    localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+    initWelcomeChat();
+    goStep('sw');
   } catch (err) {
     console.error('doEvoSetup error:', err); let msg = err.message || 'Erro inesperado.';
     if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) { msg = 'Erro de rede ao conectar com a API. Verifique sua conexão e tente novamente.'; }
@@ -1866,48 +1881,16 @@ async function checkConnection() {
       // Pequena pausa visual para o usuario ver o "Conectado!"
       await new Promise(r => setTimeout(r, 1200));
 
-      // Nao-artistas: ir pra welcome chat → config ANTES do sucesso
-      if (!isArtist) {
-        // Ativa tenant (nao bloqueia)
-        const obKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk') || undefined;
-        const emailVal = document.getElementById('f-email')?.value?.trim() || ob.email || '';
-        fetch('/api/update-tenant', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tenant_id: tenantId, email: emailVal, onboarding_key: obKey, ativo: true }),
-        }).catch(e => console.warn('[inkflow] update-tenant ativo falhou:', e?.message));
-
-        // Loading transition suave
-        const loader = document.getElementById('step-loader');
-        const loaderMsg = document.getElementById('step-loader-msg');
-        if (loader) { loader.style.display = 'flex'; if (loaderMsg) loaderMsg.textContent = 'Preparando configuracao...'; }
-        await new Promise(r => setTimeout(r, 1500));
-        if (loader) loader.style.display = 'none';
-
-        ob.step = 'sw'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
-        initWelcomeChat();
-        goStep('sw');
-        return;
-      }
-
-      // Artistas: direto pro sucesso
+      // Refator (config → WA pair como ultimo passo): WA pareado SEMPRE
+      // significa "ativar o agente". Tanto artist quanto nao-artist (este
+      // ja passou por sw/sv/spi/sp ou Configure por mim antes).
+      // Vai direto pro sucesso, com ativacao + signup_log abaixo.
       goStep(6);
+      ob.step = 'done'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
 
-      // Configurar botao CTA de acordo com o tipo de usuario
-      const cta = document.getElementById('suc-cta');
-      if (cta) {
-        if (isArtist) {
-          cta.textContent = 'Concluído ✓';
-          cta.onclick = () => { window.location.href = 'https://inkflowbrasil.com/'; };
-        } else if (isStudioPlan) {
-          cta.textContent = 'Ir para o painel do estúdio →';
-          cta.onclick = fetchStudioTokenAndRedirect;
-          // Redireciona automaticamente depois de 4s
-          setTimeout(() => { if (document.getElementById('s6')?.classList.contains('active')) fetchStudioTokenAndRedirect(); }, 4000);
-        } else {
-          cta.textContent = 'Ir para o site →';
-          cta.onclick = () => { window.location.href = 'https://inkflowbrasil.com/'; };
-        }
-      }
+      // Configurar botao CTA — usa funcao centralizada (Individual/trial
+      // tambem vai pro studio panel, nao mais inkflowbrasil.com).
+      configureSucCta();
 
       // ── Chamadas de ativacao em paralelo (apos UI ja estar em step 6) ──
       const obKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk') || undefined;
@@ -2181,6 +2164,16 @@ function showNextBubble() {
     else {
       let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
       ob.step = 'sv'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+      // Marcar welcome_shown=true no DB pra smart-resume backend funcionar
+      // (user que fecha browser depois desse ponto retoma a partir de sv,
+      // nao volta pro sw). Nao bloqueia UI.
+      const obKey = gConfig?.globalKey || localStorage.getItem('inkflow_gk');
+      if (tenantId && obKey) {
+        fetch('/api/update-tenant', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenant_id: tenantId, onboarding_key: obKey, welcome_shown: true }),
+        }).catch(e => console.warn('welcome_shown update falhou:', e?.message));
+      }
       initEstilosGrid();
       goStep('sv');
     }
@@ -2687,45 +2680,14 @@ async function applyPresetAndAdvance(btn) {
     }
 
     ob.agente = nomeAgenteDefault;
+    // Refator: WA pair e o ULTIMO passo. Configure por mim pula a config
+    // manual mas ainda passa por s5 (QR) — checkConnection detecta pair
+    // e move pra s6.
+    ob.step = 'qr';
     localStorage.setItem('inkflow_ob', JSON.stringify(ob));
-
-    // Mesma logica de savePersonaAndNext: se WA ja esta conectado (pareado
-    // no step 1 logo apos signup), pular direto pro sucesso. So mostra QR
-    // novamente se nao estiver conectado (raro — instance criada mas QR
-    // expirou/nao foi pareado, ou desconectou).
-    let waConnected = false;
-    if (instanceSlug) {
-      try {
-        const statusRes = await fetch('/api/evo-status?instance=' + encodeURIComponent(instanceSlug));
-        const statusData = await statusRes.json();
-        const state = (statusData?.state || '').toString().toLowerCase();
-        waConnected = ['open', 'connected', 'online'].includes(state);
-      } catch (e) { console.warn('evo-status check (preset):', e); }
-    }
-
-    if (waConnected) {
-      ob.step = 'done';
-      localStorage.setItem('inkflow_ob', JSON.stringify(ob));
-      const sucEstudio = document.getElementById('suc-estudio');
-      const sucAgente = document.getElementById('suc-agente');
-      const sucInst = document.getElementById('suc-inst');
-      const sucPlano = document.getElementById('suc-plano');
-      if (sucEstudio) sucEstudio.textContent = ob.estudio || instanceSlug || '';
-      if (sucAgente) sucAgente.textContent = nomeAgenteDefault;
-      if (sucInst) sucInst.textContent = instanceSlug || '';
-      const sucPlanLabels = { trial: 'Trial 7 dias', individual: 'Individual', estudio: 'Estúdio', premium: 'Estúdio VIP' };
-      if (sucPlano) sucPlano.textContent = sucPlanLabels[selectedPlan] || selectedPlan;
-      goStep(6);
-      configureSucCta();
-      localStorage.removeItem('inkflow_ob');
-    } else {
-      // Fallback: se por algum motivo WA nao tiver conectado, manda pro QR
-      ob.step = 'qr';
-      localStorage.setItem('inkflow_ob', JSON.stringify(ob));
-      goStep(5);
-      initConnectStep();
-      pollInterval = setInterval(checkConnection, 5000);
-    }
+    goStep(5);
+    initConnectStep();
+    pollInterval = setInterval(checkConnection, 5000);
   } catch (e) {
     console.error('applyPreset error:', e);
     alert('Erro ao aplicar configuração padrão: ' + (e?.message || e) + '\n\nTente "Montar sozinho" ou recarregue a página.');
@@ -3175,33 +3137,9 @@ async function savePersonaAndNext() {
     if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || 'Erro ao salvar'); }
     let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
     ob.agente = nomeAgente;
-    localStorage.setItem('inkflow_ob', JSON.stringify(ob));
-
-    // Se WhatsApp já está conectado, pular direto pro sucesso
-    if (instanceSlug) {
-      try {
-        const statusRes = await fetch('/api/evo-status?instance=' + encodeURIComponent(instanceSlug));
-        const statusData = await statusRes.json();
-        const state = (statusData?.state || '').toString().toLowerCase();
-        if (['open','connected','online'].includes(state)) {
-          ob.step = 'done'; localStorage.setItem('inkflow_ob', JSON.stringify(ob));
-          document.getElementById('suc-estudio').textContent = ob.estudio || instanceSlug;
-          document.getElementById('suc-agente').textContent = nomeAgente || '';
-          document.getElementById('suc-inst').textContent = instanceSlug;
-          const sucPlanLabels = { trial:'Trial 7 dias', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' };
-          document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
-          goStep(6);
-          // Fix 5: configurar botao "Ir para o painel" — caminho savePersona
-          // tambem precisa setar o onclick (igual ao caminho de pareamento WA).
-          configureSucCta();
-          localStorage.removeItem('inkflow_ob');
-          // NAO limpar inkflow_gk aqui — fetchStudioTokenAndRedirect precisa
-          // dele pra trocar por studio_token. Limpeza acontece la apos redirect.
-          return;
-        }
-      } catch (e) { console.warn('evo-status check failed:', e); }
-    }
-
+    // Refator: WA pair e o ULTIMO passo. Aqui (final da personalizacao
+    // manual) sempre mandar pra s5 — checkConnection vai detectar o pair
+    // e mover pra s6.
     ob.step = 'qr';
     localStorage.setItem('inkflow_ob', JSON.stringify(ob));
     goStep(5); initConnectStep();
