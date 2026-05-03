@@ -12,8 +12,13 @@ export function contexto(tenant, conversa, clientContext) {
 
   const linhas = ['# §5 CONTEXTO'];
 
+  const modoCfg = cfg.modo || 'coleta';
   linhas.push('## Estudio');
-  linhas.push(`- Sinal: ${sinalPct}% do minimo da faixa do orcamento.`);
+  if (modoCfg === 'coleta') {
+    linhas.push(`- Sinal: ${sinalPct}% do valor combinado pelo tatuador.`);
+  } else {
+    linhas.push(`- Sinal: ${sinalPct}% do valor do orcamento.`);
+  }
   if (Object.keys(h).length) {
     const hstr = Object.entries(h).map(([d, hs]) => `${d} ${hs}`).join(' | ');
     linhas.push(`- Horario: ${hstr}.`);
@@ -48,7 +53,8 @@ export function contexto(tenant, conversa, clientContext) {
   linhas.push('');
 
   linhas.push(`## Estado da conversa: ${estado}`);
-  const estadoHint = {
+  const modo = tenant?.config_precificacao?.modo || 'coleta';
+  const estadoHintExato = {
     qualificando: 'Colete os dados pra poder orcar.',
     orcando: 'Ja tem dados. Pode chamar calcular_orcamento.',
     escolhendo_horario: 'Cliente quer agendar. Use consultar_horarios_livres.',
@@ -57,6 +63,16 @@ export function contexto(tenant, conversa, clientContext) {
     handoff: 'NAO RESPONDA. Humano assumiu.',
     expirado: 'Slot caiu. Se quer retomar, consultar_horarios_livres + se livre, gerar_link_sinal mesmo agendamento_id.',
   };
+  const estadoHintColeta = {
+    qualificando: 'Colete os 3 OBR da tattoo (descricao, tamanho, local).',
+    orcando: 'Cliente esta na fase de proposta — valor vem de conversa.valor_proposto.',
+    escolhendo_horario: 'Cliente aceitou o valor. Use consultar_horarios_livres.',
+    aguardando_sinal: 'Slot reservado. Se cliente avisar que link venceu, consultar_horarios_livres + gerar_link_sinal com mesmo agendamento_id.',
+    confirmado: 'Sinal pago. So duvidas leves. Mudanca de data = handoff.',
+    handoff: 'NAO RESPONDA. Humano assumiu.',
+    expirado: 'Slot caiu. Se quer retomar, consultar_horarios_livres + se livre, gerar_link_sinal mesmo agendamento_id.',
+  };
+  const estadoHint = modo === 'coleta' ? estadoHintColeta : estadoHintExato;
   linhas.push(estadoHint[estado] || estadoHint.qualificando);
   linhas.push('');
 

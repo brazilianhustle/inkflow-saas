@@ -19,4 +19,7 @@ node --test tests/prompts/contamination.test.mjs
 echo "▶ Update-tenant validation..."
 node --test tests/update-tenant-validation.test.mjs
 
-echo "✓ Todos os tests de prompts passaram."
+echo "▶ Tools — dados-coletados helpers..."
+node --test tests/tools/dados-coletados-helpers.test.mjs
+
+echo "✓ Todos os tests passaram."

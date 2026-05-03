@@ -1,16 +1,15 @@
-// ── Generator Faixa — agrega blocos shared + faixa-specific ─────────────────
-// Espelha a montagem final de generate-prompt.js linhas 542-556 (zero diff).
-import { identidade } from '../_shared/identidade.js';
-import { checklistCritico } from '../_shared/checklist-critico.js';
-import { tom } from '../_shared/tom.js';
-import { contexto } from '../_shared/contexto.js';
-import { faqBlock } from '../_shared/faq.js';
+// ── Generator — modo Coleta v2, fase PROPOSTA ─────────────────────────────
+import { identidade } from '../../_shared/identidade.js';
+import { checklistCritico } from '../../_shared/checklist-critico.js';
+import { tom } from '../../_shared/tom.js';
+import { contexto } from '../../_shared/contexto.js';
+import { faqBlock } from '../../_shared/faq.js';
 import { fluxo } from './fluxo.js';
 import { regras } from './regras.js';
 import { fewShotBase } from './few-shot.js';
 import { fewShotTenant } from './few-shot-tenant.js';
 
-export function generatePromptFaixa(tenant, conversa, clientContext) {
+export function generatePromptColetaProposta(tenant, conversa, clientContext) {
   const ctx = clientContext || {};
   const blocks = [
     identidade(tenant),

@@ -243,6 +243,114 @@ sequenceDiagram
 
 ---
 
+## Modo Coleta v2 — Orçamento via Telegram tatuador
+
+Modo principal do SaaS desde 2026-05-02. Coleta dados → handoff Telegram → tatuador analisa → bot reentra → agendamento. Cliente nunca vê o tatuador no chat.
+
+```mermaid
+sequenceDiagram
+    actor C as Cliente
+    participant EVO as Evolution
+    participant N8N as n8n principal
+    participant TOOLS as /api/tools/*
+    participant SB as Supabase
+    participant TG as Telegram InkFlow
+    actor T as Tatuador (Telegram)
+    participant TGW as /api/telegram/webhook
+    participant N8R as n8n reentrada
+
+    Note over C,SB: FASE 1 — Coletando tattoo (estado_agente=coletando_tattoo)
+    C->>EVO: "queria orçar uma rosa"
+    EVO->>N8N: webhook
+    N8N->>TOOLS: prompt (carrega coleta-tattoo)
+    N8N->>TOOLS: dados_coletados (descricao, tamanho, local)
+    TOOLS->>SB: PATCH conversas (3 OBR completos)
+    TOOLS-->>N8N: {proxima_fase: "cadastro", estado_agente: "coletando_cadastro"}
+    N8N->>EVO: "Show, anotei tudo. Pra fechar o orçamento preciso de uns dados:..."
+
+    Note over C,SB: FASE 2 — Cadastro (estado_agente=coletando_cadastro)
+    C->>EVO: "Maria Silva, 12/03/1995"
+    EVO->>N8N: webhook
+    N8N->>TOOLS: prompt (carrega coleta-cadastro)
+    N8N->>TOOLS: dados_coletados (nome, data_nascimento)
+    TOOLS->>SB: PATCH conversas.dados_cadastro
+    N8N->>TOOLS: enviar_orcamento_tatuador (conversa_id)
+    TOOLS->>SB: PATCH conversas (orcid, estado=aguardando_tatuador)
+    TOOLS->>TG: sendMessage (Markdown + inline keyboard)
+    TG-->>T: 📋 Novo orçamento [✅ Fechar valor / ❌ Recusar]
+    TOOLS-->>N8N: {orcid, telegram_message_id}
+    N8N->>EVO: "Anotei tudo! Vou passar pro tatuador avaliar. Em breve te volto"
+
+    Note over C,N8R: AGUARDANDO TATUADOR (bot não responde — prompt=null)
+    T->>TG: clica "Fechar valor"
+    TG->>TGW: callback_query (fechar:orcid)
+    TGW->>TG: pede "Qual valor pra orcid?" (force_reply)
+    T->>TG: digita "750"
+    TG->>TGW: message reply
+    TGW->>SB: PATCH conversas (valor_proposto=750, estado=propondo_valor)
+    TGW->>N8R: webhook reentrada (conversa_id, evento=fechar, valor=750)
+    N8R->>TOOLS: prompt (carrega coleta-proposta)
+    N8R->>EVO: "Show! Pelo trabalho ficou em R$ 750. Bora marcar?"
+
+    Note over C,SB: FASE 3 — Proposta (3 caminhos)
+    alt Cliente ACEITA
+        C->>EVO: "fechado"
+        EVO->>N8N: webhook
+        N8N->>TOOLS: consultar_horarios_livres + reservar_horario + gerar_link_sinal
+        N8N->>EVO: "Tenho ter 14h, qui 10h" → reserva → URL sinal
+    else Cliente PEDE DESCONTO (caminho B)
+        C->>EVO: "consegue por 600?"
+        EVO->>N8N: webhook
+        N8N->>TOOLS: enviar_objecao_tatuador (valor_pedido_cliente=600)
+        TOOLS->>SB: PATCH conversas (valor_pedido=600, estado=aguardando_decisao_desconto)
+        TOOLS->>TG: sendMessage (Markdown + [✅ Aceitar 600 / ❌ Manter 750])
+        N8N->>EVO: "Vou levar pra ele analisar essa proposta — quem fecha o valor é o tatuador. Em breve te dou um retorno."
+        T->>TG: clica "Aceitar 600"
+        TG->>TGW: callback_query (aceitar:orcid:600)
+        TGW->>SB: PATCH (valor_proposto=600, decisao_desconto=aceito, estado=propondo_valor)
+        TGW->>N8R: webhook reentrada (evento=aceitar_desconto)
+        N8R->>EVO: "Show! Ele topou em R$ 600. Bora marcar?"
+    else Cliente ADIA (caminho C)
+        C->>EVO: "vou ver e te volto"
+        EVO->>N8N: webhook
+        N8N->>SB: PATCH conversas (estado=lead_frio)
+        N8N->>EVO: "Tranquilo! Qualquer coisa é só me chamar."
+    end
+```
+
+### Estados da conversa (Modo Coleta v2)
+
+| Estado | Bot responde? | Próxima transição |
+|---|:---:|---|
+| `coletando_tattoo` | ✅ | `dados_coletados` com 3 OBR completos → `coletando_cadastro` |
+| `coletando_cadastro` | ✅ | `enviar_orcamento_tatuador` → `aguardando_tatuador` |
+| `aguardando_tatuador` | ❌ | Callback Telegram (fechar/recusar) → `propondo_valor` ou `lead_frio` |
+| `propondo_valor` | ✅ | Aceita → `escolhendo_horario` / Desconto → `aguardando_decisao_desconto` / Adia → `lead_frio` |
+| `aguardando_decisao_desconto` | ❌ | Callback Telegram (aceitar/manter) → `propondo_valor` |
+| `escolhendo_horario` | ✅ | `reservar_horario` + `gerar_link_sinal` → `aguardando_sinal` |
+| `aguardando_sinal` | ✅ | Pagamento MP → `fechado` |
+| `lead_frio` | ❌ | (terminal — follow-up via cron futuro) |
+| `fechado` | ❌ | Terminal |
+
+### Pré-condições
+
+1. **Tenant tem `tatuador_telegram_chat_id` setado** — onboarding força conexão via deep link `t.me/<bot>?start=<onboarding_key>`. Sem isso, `enviar_orcamento_tatuador` retorna 400.
+2. **Variáveis env:** `INKFLOW_TELEGRAM_BOT_TOKEN`, `INKFLOW_TELEGRAM_WEBHOOK_SECRET`, `N8N_REENTRADA_WEBHOOK_URL` em CF Pages.
+3. **Webhook Telegram configurado** apontando pra `https://inkflowbrasil.com/api/telegram/webhook` (setup via `/tmp/inkflow-tg-setup-webhook.sh`).
+4. **Workflow n8n principal** entende `prompt:null` (estados de espera) e curto-circuita o LLM.
+5. **Workflow n8n reentrada** existe e ouve em `N8N_REENTRADA_WEBHOOK_URL`.
+
+### Pontos de falha conhecidos
+
+- **Tatuador não responde no Telegram:** estado fica em `aguardando_tatuador`/`aguardando_decisao_desconto` indefinidamente. Cliente espera. Mitigação v2: admin dashboard mostra orçamentos abertos. Mitigação v3 (roadmap): cron alerta tatuador em 24h + follow-up cliente.
+- **Telegram bot deletado/banido:** `enviar_orcamento_tatuador` retorna 5xx. Mitigação: monitorar `tool_calls_log` filtrando `tool=enviar_orcamento_tatuador AND sucesso=false`.
+- **`INKFLOW_TELEGRAM_WEBHOOK_SECRET` desalinhado** entre Telegram (setWebhook) e CF Pages env: webhook retorna 401, callbacks ficam sem efeito. Re-rodar `inkflow-tg-setup-webhook.sh` re-sincroniza.
+- **Cliente engana data nascimento (declara maior sendo menor):** bot não tem como provar idade. Tatuador verifica presencialmente. Risco aceito documentado em spec.
+- **Race entre callback Telegram e mensagem do cliente:** se cliente manda mensagem entre callback "fechar" e tatuador digitar valor, bot já está em `aguardando_tatuador` → não responde. Mensagem do cliente fica em backlog até tatuador completar valor. Esperado.
+- **Reentrada n8n falha:** `N8N_REENTRADA_WEBHOOK_URL` ausente ou n8n down → tatuador clicou mas bot não reentra. Estado fica correto no DB, mas cliente fica esperando. Manual: admin reativa via painel forçando re-execução.
+
+---
+
 ## Cron: expira-trial
 
 Worker `inkflow-cron` dispara `/api/cron/expira-trial` diariamente. Endpoint marca tenants com `trial_ate < now()` como `trial_expirado` e move grupo MailerLite.

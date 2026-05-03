@@ -39,7 +39,9 @@ const ALLOWED_FIELDS = new Set([
   'portfolio_urls',         // TEXT[]: URLs de portfolio
   'faq_texto',              // texto livre de FAQ
   'modo_atendimento',       // TEXT: individual | tatuador_dono | recepcionista | artista_slot
-  'fewshots_por_modo',      // JSONB: { faixa: [...], exato: [...], coleta_info: [...], coleta_agendamento: [...] } — preparação Modo Coleta PR 1
+  'fewshots_por_modo',      // JSONB: { coleta_tattoo, coleta_cadastro, coleta_proposta, exato } — Modo Coleta v2
+  'tatuador_telegram_chat_id',    // TEXT: chat_id Telegram do tatuador (canal handoff Coleta v2)
+  'tatuador_telegram_username',   // TEXT: @username Telegram (display)
 ]);
 
 // FIX AUDIT #4: Campos adicionais que o admin pode editar via dashboard
@@ -52,33 +54,23 @@ const ADMIN_EXTRA_FIELDS = new Set([
 // Valida tipo basico de campos JSONB/array antes de mandar pro Supabase.
 // Retorna { ok: boolean, erro?: string }
 const MODOS_ATENDIMENTO = ['individual', 'tatuador_dono', 'recepcionista', 'artista_slot'];
-const MODOS_VALIDOS = ['faixa', 'exato']; // 'coleta' adicionado em PR 2 quando ENABLE_COLETA_MODE virar
-const SUBMODES_COLETA = ['puro', 'reentrada'];
-const FEWSHOT_KEYS_VALIDAS = ['faixa', 'exato', 'coleta_info', 'coleta_agendamento'];
+const MODOS_VALIDOS = ['coleta', 'exato']; // Modo Coleta v2: 'faixa' REMOVIDO; 'coleta' default novo
+const FEWSHOT_KEYS_VALIDAS = ['coleta_tattoo', 'coleta_cadastro', 'coleta_proposta', 'exato'];
 
-// Valida o sub-objeto config_precificacao (campos relevantes pra Modo Coleta).
+// Valida o sub-objeto config_precificacao (campos relevantes pra Modo Coleta v2).
 // Retorna { ok: boolean, erro?: string }.
 export function validateConfigPrecificacao(cfg) {
   if (!cfg || typeof cfg !== 'object') return { ok: true }; // campo não enviado = sem validação
   if (cfg.modo !== undefined) {
-    if (cfg.modo === 'coleta') {
-      return { ok: false, erro: 'modo coleta ainda nao disponivel (feature flag chega em PR 2)' };
+    if (cfg.modo === 'faixa') {
+      return { ok: false, erro: 'modo faixa removido na v2 — use coleta (recomendado) ou exato (beta)' };
     }
     if (!MODOS_VALIDOS.includes(cfg.modo)) {
       return { ok: false, erro: `modo deve ser um de: ${MODOS_VALIDOS.join(', ')}` };
     }
   }
-  if (cfg.coleta_submode !== undefined && !SUBMODES_COLETA.includes(cfg.coleta_submode)) {
-    return { ok: false, erro: `coleta_submode deve ser um de: ${SUBMODES_COLETA.join(', ')}` };
-  }
-  if (cfg.trigger_handoff !== undefined) {
-    if (typeof cfg.trigger_handoff !== 'string') {
-      return { ok: false, erro: 'trigger_handoff deve ser string' };
-    }
-    if (cfg.trigger_handoff.length < 2 || cfg.trigger_handoff.length > 50) {
-      return { ok: false, erro: 'trigger_handoff deve ter entre 2 e 50 caracteres' };
-    }
-  }
+  // Campos legacy v1 (coleta_submode, trigger_handoff) silenciosamente ignorados —
+  // v2 só tem reentrada e callback Telegram. Migration de banco já apagou esses.
   return { ok: true };
 }
 

@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-25
+last_reviewed: 2026-05-03
 owner: leandro
 status: stable
 related: [stack.md, secrets.md]
@@ -19,10 +19,12 @@ Inventário de identificadores estáveis do InkFlow (IDs de domínio, tabelas Su
 | `evo_instance` | string custom | `central` ou `tenant-<uuid-prefix>` | `tenants.evo_instance`, path da Evolution API e nome da instância no Evo |
 | `onboarding_key` | UUID v4 | `b2c3d4e5-f6a7-8901-bcde-f01234567890` | `onboarding_links.onboarding_key`, header / body em endpoints de self-checkout |
 | `studio_token` | string opaca | `studio_<random>` | `tenants.studio_token`, cookie/body para acesso ao painel do estúdio |
+| `tatuador_telegram_chat_id` | int (string) | `123456789` | `tenants.tatuador_telegram_chat_id` — Modo Coleta v2 canal tatuador |
+| `orcid` | string curto base36 | `orc_a1b2c3` | `conversas.orcid` — identificador do orçamento (Modo Coleta v2). Usado em `callback_data` Telegram pra rotear callback → conversa |
 
 ## Tabelas Supabase
 
-Sem `supabase/migrations/` no repo, o esquema vive na própria base. As tabelas abaixo foram identificadas via grep `rest/v1/<tabela>` em `functions/` **e** via inspeção do helper wrapper `del()` em `functions/api/delete-tenant.js` (que constrói a URL `rest/v1/` internamente, então não aparece no grep direto).
+Esquema vive em `supabase/migrations/` (versionado desde 2026-04-26) + aplicado no Dashboard SQL Editor. As tabelas abaixo foram identificadas via grep `rest/v1/<tabela>` em `functions/` **e** via inspeção do helper wrapper `del()` em `functions/api/delete-tenant.js` (que constrói a URL `rest/v1/` internamente, então não aparece no grep direto).
 
 > Nota: nem toda tabela aparece via grep `rest/v1/` — algumas só são acessadas por wrappers (`del()`, etc.). Sempre validar contra `delete-tenant.js` ao mapear o esquema.
 
@@ -39,6 +41,8 @@ Sem `supabase/migrations/` no repo, o esquema vive na própria base. As tabelas 
 | `chats` | sessões/threads de chat WhatsApp (parent de `chat_messages`) | `functions/api/delete-tenant.js:220,235` |
 | `logs` | logs genéricos da aplicação (eventos diversos por tenant) | `functions/api/delete-tenant.js:222,237` |
 | `signups_log` | log de eventos de signup (auditoria de cadastros) | `functions/api/delete-tenant.js:223,238` |
+| `audit_runs` | execuções dos auditores Sub-projeto 3 (key-expiry, deploy-health, etc) | `functions/api/audit/*` |
+| `approvals` | tabela de aprovações pendentes (Telegram bot down runbook) | `functions/api/approvals/decide.js`, `functions/api/approvals/list.js` |
 
 ## Workflows n8n
 
@@ -112,6 +116,8 @@ Todos os endpoints aceitam `OPTIONS` (CORS preflight) e `POST` no método princi
 |---|---|---|---|
 | `/api/mp-ipn` | POST | header `x-signature` (HMAC MP) | recebe IPN de assinatura MP |
 | `/api/webhooks/mp-sinal` | POST | header `x-signature` (HMAC MP) | recebe pagamento de sinal de agendamento |
+| `/api/telegram/webhook` | POST | header `X-Telegram-Bot-Api-Secret-Token` (`INKFLOW_TELEGRAM_WEBHOOK_SECRET`) | recebe updates do bot Modo Coleta v2 (start/callbacks/replies) |
+| `/api/check-telegram-connected` | GET | onboarding_key (query string) | polling do onboarding UI pra detectar quando tatuador conectou Telegram |
 
 ### Cron (chamados pelo `cron-worker`)
 
@@ -131,8 +137,8 @@ Todas validam `X-Inkflow-Tool-Secret` contra `INKFLOW_TOOL_SECRET` (ver `functio
 
 | Endpoint | Método | Auth | Propósito |
 |---|---|---|---|
-| `/api/tools/prompt` | POST | Tool Secret | retorna prompt de sistema do tenant |
-| `/api/tools/calcular-orcamento` | POST | Tool Secret | calcula preço de tatuagem |
+| `/api/tools/prompt` | POST | Tool Secret | retorna prompt de sistema do tenant (mode-aware Coleta v2) |
+| `/api/tools/calcular-orcamento` | POST | Tool Secret | calcula preço (modo Exato apenas — Coleta v2 não usa) |
 | `/api/tools/preview-orcamento` | POST | Tool Secret | preview rápido de orçamento (sem persistir) |
 | `/api/tools/consultar-horarios` | POST | Tool Secret | lista horários disponíveis |
 | `/api/tools/reservar-horario` | POST | Tool Secret | cria hold/agendamento |
@@ -144,6 +150,10 @@ Todas validam `X-Inkflow-Tool-Secret` contra `INKFLOW_TOOL_SECRET` (ver `functio
 | `/api/tools/simular-conversa` | POST | Tool Secret | simulador de conversa (admin/debug) |
 | `/api/tools/guardrails/pre` | POST | Tool Secret | guardrail antes da resposta do bot |
 | `/api/tools/guardrails/post` | POST | Tool Secret | guardrail depois da resposta + log |
+| `/api/tools/dados-coletados` | POST | Tool Secret | **Modo Coleta v2** — persiste 1 campo em `dados_coletados`/`dados_cadastro`. Side-effects: 3 OBR completos → estado=coletando_cadastro; menor de idade → estado=aguardando_tatuador (gatilho) |
+| `/api/tools/enviar-orcamento-tatuador` | POST | Tool Secret | **Modo Coleta v2** — monta orçamento, envia Telegram com inline keyboard, gera `orcid`, estado=aguardando_tatuador |
+| `/api/tools/enviar-objecao-tatuador` | POST | Tool Secret | **Modo Coleta v2** — manda objeção de desconto pro Telegram do tatuador (Aceitar X / Manter Y), estado=aguardando_decisao_desconto |
+| `/api/tools/consultar-proposta-tatuador` | POST | Tool Secret | **Modo Coleta v2** — lê estado da conversa pra agente saber se tatuador já decidiu |
 
 ## Identificadores externos relevantes
 

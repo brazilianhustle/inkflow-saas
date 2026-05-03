@@ -1,10 +1,15 @@
-// ── §0 CHECKLIST CRITICO — extraido de generate-prompt.js linhas 64-109 ─────
+// ── §0 CHECKLIST CRITICO — shared entre modos ──────────────────────────────
+// Mode-aware: itens 5 e 6 (que mencionam calcular_orcamento) sao SUPRIMIDOS
+// quando modo=coleta — Coleta nao usa essa tool. Mode-specific regras (R1-R8
+// nas regras.js de cada fase Coleta) cobrem o equivalente.
 import { GATILHOS_DEFAULT, quoteList } from './helpers.js';
 
 export function checklistCritico(tenant) {
   const gatilhos = Array.isArray(tenant.gatilhos_handoff) && tenant.gatilhos_handoff.length
     ? tenant.gatilhos_handoff : GATILHOS_DEFAULT;
   const recusados = tenant.config_agente?.estilos_recusados || [];
+  const modo = tenant?.config_precificacao?.modo || 'coleta';
+  const isColeta = modo === 'coleta';
 
   const linhas = ['# §0 CHECKLIST ANTES DE CADA RESPOSTA (OBRIGATORIO)'];
   linhas.push('');
@@ -32,9 +37,17 @@ export function checklistCritico(tenant) {
   linhas.push('- 3a vez: PARE de insistir. Reconheca que cliente nao quer responder: "Beleza! Sem problema, posso passar uma faixa geral e o tatuador fecha o detalhe pessoalmente, tudo bem?" e ou (a) siga com o que ja sabe se for suficiente, ou (b) chame `acionar_handoff` com motivo "cliente_evasivo_infos_incompletas".');
   linhas.push('- NUNCA faca a MESMA pergunta 4x na mesma conversa. Se cliente muda de assunto 3x seguidas sem responder, reconheca: "Percebi que voce ta pensando em varias coisas ainda — que tal o tatuador conversar direto contigo? Ja chamo ele" e PARE de coletar.');
   linhas.push('');
-  linhas.push('**5. POSSO CHAMAR `calcular_orcamento` AGORA?** So chame a tool quando tiver COLETADO TODOS os 5 dados destes: `tamanho_cm`, `estilo`, `regiao`, `cor_bool`, `nivel_detalhe`. Se QUALQUER um faltar, pergunte o que falta — NUNCA chame a tool com valor chutado (ex: `cor_bool: false` por default quando cliente ainda nao disse). Ordem sugerida da coleta: local -> foto -> tamanho -> estilo -> cor -> detalhe. Foto e referencia visual sao OPCIONAIS — se cliente nao tem, pule e siga. NAO trave pedindo foto repetidas vezes.');
-  linhas.push('');
-  linhas.push('**6. GATILHO JA FOI DETECTADO NESTA CONVERSA?** Leia o historico completo. Se em QUALQUER mensagem sua anterior aparece "ja te direciono pra ele", "ja sinalizei pro tatuador", "ja chamo ele" ou equivalente, voce entrou em modo handoff. Dai pra frente a UNICA resposta valida, nao importa o que o cliente diga, e uma variacao curta de: "Ja sinalizei pro tatuador, em breve ele vai chamar voce aqui". NUNCA: pergunte nova info, chame `calcular_orcamento`, retome coleta. MESMO se o cliente mudar de assunto ou dar novas informacoes, mantenha modo handoff.');
+  if (isColeta) {
+    // Modo Coleta: itens 5/6 reescritos sem calcular_orcamento.
+    linhas.push('**5. POSSO ENVIAR PRO TATUADOR AGORA?** So chame `enviar_orcamento_tatuador` quando: (a) os 3 OBR de tattoo (descricao_tattoo, tamanho_cm, local_corpo) estao em `dados_coletados`; E (b) os 2 OBR de cadastro (nome, data_nascimento) estao em `dados_cadastro`. Se QUALQUER um faltar, pergunte o que falta — NUNCA chame com valor faltando.');
+    linhas.push('');
+    linhas.push('**6. GATILHO JA FOI DETECTADO NESTA CONVERSA?** Leia o historico completo. Se em QUALQUER mensagem sua anterior aparece "ja te direciono pra ele", "ja sinalizei pro tatuador", "ja chamo ele" ou equivalente, voce entrou em modo handoff. Dai pra frente a UNICA resposta valida, nao importa o que o cliente diga, e uma variacao curta de: "Ja sinalizei pro tatuador, em breve ele vai chamar voce aqui". NUNCA: pergunte nova info, retome coleta. MESMO se o cliente mudar de assunto ou dar novas informacoes, mantenha modo handoff.');
+  } else {
+    // Modo Exato: comportamento legacy.
+    linhas.push('**5. POSSO CHAMAR `calcular_orcamento` AGORA?** So chame a tool quando tiver COLETADO TODOS os 5 dados destes: `tamanho_cm`, `estilo`, `regiao`, `cor_bool`, `nivel_detalhe`. Se QUALQUER um faltar, pergunte o que falta — NUNCA chame a tool com valor chutado (ex: `cor_bool: false` por default quando cliente ainda nao disse). Ordem sugerida da coleta: local -> foto -> tamanho -> estilo -> cor -> detalhe. Foto e referencia visual sao OPCIONAIS — se cliente nao tem, pule e siga. NAO trave pedindo foto repetidas vezes.');
+    linhas.push('');
+    linhas.push('**6. GATILHO JA FOI DETECTADO NESTA CONVERSA?** Leia o historico completo. Se em QUALQUER mensagem sua anterior aparece "ja te direciono pra ele", "ja sinalizei pro tatuador", "ja chamo ele" ou equivalente, voce entrou em modo handoff. Dai pra frente a UNICA resposta valida, nao importa o que o cliente diga, e uma variacao curta de: "Ja sinalizei pro tatuador, em breve ele vai chamar voce aqui". NUNCA: pergunte nova info, chame `calcular_orcamento`, retome coleta. MESMO se o cliente mudar de assunto ou dar novas informacoes, mantenha modo handoff.');
+  }
   linhas.push('');
   linhas.push('**7. GATILHO vs ESTILO RECUSADO sao COISAS DIFERENTES:**');
   linhas.push('- Gatilho (ex: rosto, mao, pescoco, cobertura, retoque, menor_idade) = handoff TOTAL, modo 6 acima.');
