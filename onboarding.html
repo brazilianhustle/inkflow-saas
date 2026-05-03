@@ -319,6 +319,13 @@ select.fi option{background:var(--card);color:var(--t1)}
 .step-nav-btn.disabled{opacity:.3;pointer-events:none}
 .step-nav-indicator{display:flex;gap:6px}
 .step-nav-dot{width:8px;height:8px;border-radius:50%;background:var(--border2)}
+/* Sticky CTA bar (modo selection no welcome chat) — solução pro cb4 cortado */
+#sw-sticky-bar{position:fixed;left:0;right:0;bottom:0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent 0%,var(--bg) 28%,var(--bg) 100%);z-index:95;display:none}
+#sw-sticky-bar.active{display:block}
+#sw-sticky-bar .sw-sticky-inner{max-width:480px;margin:0 auto}
+#sw-sticky-bar .sbtn:disabled{opacity:.4;cursor:not-allowed}
+#sw-sticky-hint{margin-top:8px;font-size:11px;color:var(--t3);text-align:center}
+.step#sw .form-body, .step#sw .page-center{padding-bottom:120px} /* espaço pra sticky bar não cobrir conteúdo */
 .step-nav-dot.active{background:var(--teal)}
 .step-nav-dot.done{background:rgba(0,212,170,.4)}
 
@@ -646,11 +653,10 @@ select.fi option{background:var(--card);color:var(--t1)}
         <!-- Exemplo dinâmico — só aparece após user clicar num modo -->
         <div id="modo-example-container" style="margin-top:14px"></div>
 
-        <!-- Botão Continuar — SEMPRE visível, desabilitado até modo selecionado -->
-        <div id="sw-advance-wrap" style="margin-top:14px">
-          <button class="sbtn" type="button" id="sw-advance-btn" style="width:100%;font-size:14px;font-weight:600;opacity:0.4;cursor:not-allowed" onclick="advanceFromSw()" disabled>Continuar &rarr;</button>
-          <div id="sw-advance-hint" style="margin-top:8px;font-size:11px;color:var(--t3);text-align:center">↑ Selecione um modo acima pra continuar</div>
-        </div>
+        <!-- Continuar agora vive em #sw-sticky-bar (fora do chat-bubble),
+             posicionado fixo no rodapé da viewport. Soluciona o problema do
+             botão cortado em mobile + auto-scroll agressivo. -->
+      </div>
       </div>
     </div>
   </div>
@@ -1303,6 +1309,16 @@ select.fi option{background:var(--card);color:var(--t1)}
   <button class="step-nav-btn" id="nav-fwd" onclick="navForward()">Avançar →</button>
 </div>
 
+<!-- ══════════ STICKY CTA BAR (apenas no welcome chat / sw step) ══════════ -->
+<!-- Solução pro problema de "Continuar cortado" no mobile: CTA em barra fixa
+     no rodapé, sempre visível, decoplada do conteúdo. Padrão SaaS standard. -->
+<div id="sw-sticky-bar">
+  <div class="sw-sticky-inner">
+    <button class="sbtn" type="button" id="sw-advance-btn" style="width:100%;font-size:14px;font-weight:600" onclick="advanceFromSw()" disabled>Continuar &rarr;</button>
+    <div id="sw-sticky-hint">↑ Selecione um modo acima pra continuar</div>
+  </div>
+</div>
+
 <script>
 // ── Configurações ──────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
@@ -1479,6 +1495,7 @@ function goStep(n) {
   if (n === 'sp') { initSaudacaoPresets(); initPersonaPreviewHooks(); }
   const stepId = typeof n === 'number' ? 's' + n : n;
   updateStepNav(stepId);
+  if (typeof updateStickyBar === 'function') updateStickyBar(stepId);
   restoreFieldsFromStorage();
   window.scrollTo(0, 0);
 }
@@ -2226,19 +2243,23 @@ function selectModoSw(modo, btn) {
   // Renderiza/troca exemplo embaixo dos botões
   const container = document.getElementById('modo-example-container');
   if (container) container.innerHTML = MODO_EXEMPLOS_HTML[modo] || '';
-  // Habilita botão Continuar (sempre visível mas era disabled)
+  // Habilita botão Continuar no sticky bar (sempre visível na viewport)
   const advBtn = document.getElementById('sw-advance-btn');
-  if (advBtn) {
-    advBtn.disabled = false;
-    advBtn.style.opacity = '1';
-    advBtn.style.cursor = 'pointer';
-  }
-  const hint = document.getElementById('sw-advance-hint');
+  if (advBtn) advBtn.disabled = false;
+  const hint = document.getElementById('sw-sticky-hint');
   if (hint) hint.textContent = '✓ Modo escolhido — clica em Continuar';
-  // Auto-scroll pra mostrar o botão (caso esteja abaixo do fold no mobile)
-  setTimeout(() => {
-    if (advBtn) advBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 300);
+  // Sem auto-scroll: o botão já está fixado no rodapé, sempre visível.
+}
+
+// Mostra/esconde o sticky CTA bar conforme step. Chamado por goStep.
+function updateStickyBar(stepId) {
+  const bar = document.getElementById('sw-sticky-bar');
+  if (!bar) return;
+  if (stepId === 'sw') {
+    bar.classList.add('active');
+  } else {
+    bar.classList.remove('active');
+  }
 }
 
 async function advanceFromSw() {
