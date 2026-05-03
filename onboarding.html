@@ -867,10 +867,10 @@ select.fi option{background:var(--card);color:var(--t1)}
       <button class="sbtn" type="button" style="margin-top:14px;font-size:13px" onclick="showQA('qa-test')">Continuar &rarr;</button>
     </div>
 
-    <!-- ── Testador ── -->
+    <!-- ── Testador (só Exato — em Coleta o tatuador decide cada valor manualmente) ── -->
     <div id="qa-test" class="qa">
       <hr class="divider"/>
-      <div class="test-box">
+      <div class="test-box" id="qa-test-box">
         <div class="test-title"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm1 10H7V7h2v4zm0-5H7V4h2v2z"/></svg> Testar orçamento</div>
         <div class="fi-hint" style="margin-bottom:10px">Agora simule os valores baseado nos seus dados, simulando como o agente vai responder para o seu cliente! Use o simulador e altere informações futuramente na sua página do estúdio (liberada nos próximos passos). Caso queira melhorar sua precificação, <span class="link-cta" onclick="scrollToVideo()">clique aqui</span> e confira um tutorial exclusivo!</div>
         <div class="fgrid">
@@ -916,7 +916,7 @@ select.fi option{background:var(--card);color:var(--t1)}
     <div class="chat-wrap">
       <div class="chat-bubble" id="pi1">
         <div class="chat-name">InkFlow</div>
-        Agora que você já organizou o preço que irei cobrar, chegou a hora de definir minha personalidade do seu jeito! Vamos começar?
+        <span id="pi1-msg">Agora que você já organizou o preço que irei cobrar, chegou a hora de definir minha personalidade do seu jeito! Vamos começar?</span>
         <div class="chat-tap">Toque para continuar</div>
       </div>
       <div class="chat-bubble" id="pi2">
@@ -1002,24 +1002,18 @@ select.fi option{background:var(--card);color:var(--t1)}
         </div>
         <div class="emoji-prefs" id="emoji-prefs">
           <label class="fl" style="margin-top:10px">Emojis de preferência</label>
-          <div class="fi-hint">Selecione o emoji de preferência para o assistente entender sua vibe! <span class="link-cta" onclick="toggleEmojiExemplos()">Clique para ver exemplos de uso de emoji</span></div>
-          <div id="emoji-exemplos" style="display:none;margin-top:8px">
-            <div class="wa-preview right reveal"><div class="wa-msg client">Fechou, quero agendar!<span class="wa-msg-time">14:31 ✓✓</span></div></div>
-            <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Fechou! Fico no aguardo da imagem de referência 😁<span class="wa-msg-time">14:32 ✓✓</span></div></div>
-            <div class="wa-preview right reveal"><div class="wa-msg client">Gostei do orçamento!<span class="wa-msg-time">14:33 ✓✓</span></div></div>
-            <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Que bom que gostou 😁<br>Preciso somente da sua altura para finalizar seu orçamento!<span class="wa-msg-time">14:33 ✓✓</span></div></div>
-          </div>
+          <div class="fi-hint">Clique nos emojis pra ver como o assistente vai escrever em tempo real abaixo:</div>
           <div class="chip-wrap" style="margin-top:8px" id="emoji-pref-chips">
-            <button class="chip active" type="button" onclick="this.classList.toggle('active')">😁</button>
-            <button class="chip active" type="button" onclick="this.classList.toggle('active')">😊</button>
-            <button class="chip" type="button" onclick="this.classList.toggle('active')">🔥</button>
-            <button class="chip" type="button" onclick="this.classList.toggle('active')">✨</button>
-            <button class="chip" type="button" onclick="this.classList.toggle('active')">💪</button>
-            <button class="chip" type="button" onclick="this.classList.toggle('active')">👊</button>
-            <button class="chip" type="button" onclick="this.classList.toggle('active')">🤙</button>
-            <button class="chip" type="button" onclick="this.classList.toggle('active')">💉</button>
-            <button class="chip" type="button" onclick="this.classList.toggle('active')">🎨</button>
-            <button class="chip" type="button" onclick="this.classList.toggle('active')">❤️</button>
+            <button class="chip active" type="button" data-emoji="😁">😁</button>
+            <button class="chip active" type="button" data-emoji="😊">😊</button>
+            <button class="chip" type="button" data-emoji="🔥">🔥</button>
+            <button class="chip" type="button" data-emoji="✨">✨</button>
+            <button class="chip" type="button" data-emoji="💪">💪</button>
+            <button class="chip" type="button" data-emoji="👊">👊</button>
+            <button class="chip" type="button" data-emoji="🤙">🤙</button>
+            <button class="chip" type="button" data-emoji="💉">💉</button>
+            <button class="chip" type="button" data-emoji="🎨">🎨</button>
+            <button class="chip" type="button" data-emoji="❤️">❤️</button>
           </div>
         </div>
       </div>
@@ -1046,22 +1040,18 @@ select.fi option{background:var(--card);color:var(--t1)}
           <span class="toggle-label">Usar prefixo com nome do agente</span>
           <label class="toggle"><input type="checkbox" id="p-identificador"/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
         </div>
-        <label class="fl" style="margin-top:8px">Nome do agente deve aparecer na mensagem?</label>
-        <div class="fi-hint"><span class="link-cta" onclick="toggleExemplosNome()">Veja exemplos</span></div>
-        <div id="exemplos-nome" style="display:none;margin-top:6px">
-          <div class="fi-hint" style="margin-bottom:4px;font-weight:600;color:var(--t2)">Com prefixo:</div>
-          <div class="wa-preview">
-            <div class="wa-msg" id="ex-nome-com">
-              <div class="wa-msg-name"></div>
-              <span class="wa-msg-time">14:30 ✓✓</span>
-            </div>
-          </div>
-          <div class="fi-hint" style="margin-bottom:4px;margin-top:10px;font-weight:600;color:var(--t3)">Sem prefixo:</div>
-          <div class="wa-preview">
-            <div class="wa-msg" id="ex-nome-sem">
-              <span class="wa-msg-time">14:30 ✓✓</span>
-            </div>
-          </div>
+        <div class="fi-hint" style="margin-top:6px">Marque pra incluir o nome do agente na primeira linha da mensagem.</div>
+      </div>
+
+      <!-- ── Preview em tempo real (Fix 5) ── -->
+      <div class="fg" style="margin-top:14px">
+        <label class="fl">Como o cliente vai ver no WhatsApp</label>
+        <div class="fi-hint" style="margin-bottom:10px">Atualiza em tempo real conforme tu mexe nas opções acima (tom, emoji, prefixo).</div>
+        <div id="persona-preview" style="background:rgba(0,0,0,.3);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px">
+          <div class="wa-preview right"><div class="wa-msg client" id="prev-c1">Oi, quero fazer uma tatuagem<span class="wa-msg-time">14:30 ✓✓</span></div></div>
+          <div class="wa-preview"><div class="wa-msg" id="prev-a1"><span class="wa-msg-text"></span><span class="wa-msg-time">14:30 ✓✓</span></div></div>
+          <div class="wa-preview right"><div class="wa-msg client" id="prev-c2">Fechou, quero agendar!<span class="wa-msg-time">14:31 ✓✓</span></div></div>
+          <div class="wa-preview"><div class="wa-msg" id="prev-a2"><span class="wa-msg-text"></span><span class="wa-msg-time">14:31 ✓✓</span></div></div>
         </div>
       </div>
 
@@ -1257,7 +1247,7 @@ select.fi option{background:var(--card);color:var(--t1)}
         &#10003; Seu WhatsApp j&#225; recebe mensagens automaticamente<br/>
         &#10003; O assistente responde agendamentos e d&#250;vidas<br/>
         &#10003; Voc&#234; recebe alertas no grupo de notifica&#231;&#227;o<br/><br/>
-        Em caso de d&#250;vidas, entre em contato com o suporte InkFlow.
+        Em caso de d&#250;vidas, entre em contato com o <a href="https://wa.me/5521970789797?text=Oi%2C%20preciso%20de%20ajuda%20com%20o%20InkFlow" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline">suporte InkFlow</a>.
       </div>
       <button class="suc-cta" id="suc-cta" type="button">Ir para o painel &rarr;</button>
     </div>
@@ -1439,7 +1429,7 @@ function goStep(n) {
     el.style.opacity = '0'; el.style.transform = 'translateX(30px)';
     requestAnimationFrame(() => { el.style.transition = 'opacity .4s ease, transform .4s ease'; el.style.opacity = '1'; el.style.transform = 'translateX(0)'; });
   }
-  if (n === 'sp') { initSaudacaoPresets(); }
+  if (n === 'sp') { initSaudacaoPresets(); initPersonaPreviewHooks(); }
   const stepId = typeof n === 'number' ? 's' + n : n;
   updateStepNav(stepId);
   restoreFieldsFromStorage();
@@ -2177,7 +2167,15 @@ function showQA(id) {
   const el = document.getElementById(id);
   if (!el || el.classList.contains('show')) return;
   el.classList.add('show');
-  if (id === 'qa-test') { initTestadorRegions(); initTestadorEstilos(); }
+  if (id === 'qa-test') {
+    // Em Coleta, esconder o testador de orcamento (tatuador decide cada valor
+    // manualmente, sem calculadora). Mostrar so o botao Proximo.
+    const box = document.getElementById('qa-test-box');
+    if (box) box.style.display = (selectedModo === 'coleta') ? 'none' : '';
+    if (selectedModo !== 'coleta') {
+      initTestadorRegions(); initTestadorEstilos();
+    }
+  }
   if (id === 'qa-tatuador-telegram') { initTelegramQR(); }
   setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 }
@@ -2523,6 +2521,13 @@ function initPersonaIntro() {
   piStep = 0;
   document.querySelectorAll('#spi .chat-bubble').forEach(b => { b.classList.remove('show'); b.style.display = ''; });
   document.getElementById('pi4').style.display = 'none';
+  // Mensagem pi1 muda conforme o modo: Coleta nao configura preco aqui.
+  const pi1Msg = document.getElementById('pi1-msg');
+  if (pi1Msg) {
+    pi1Msg.textContent = (selectedModo === 'coleta')
+      ? 'Agora que já estamos conectados via Telegram, chegou a hora de definir minha personalidade do seu jeito! Vamos começar?'
+      : 'Agora que você já organizou o preço que irei cobrar, chegou a hora de definir minha personalidade do seu jeito! Vamos começar?';
+  }
   setTimeout(() => showNextPI(), 400);
 }
 function showNextPI() {
@@ -2538,7 +2543,7 @@ function selectPersonaMode(mode) {
   document.querySelectorAll('#pi3 .qa-btn').forEach(b => b.classList.remove('selected'));
   event.target.classList.add('selected');
   if (mode === 'consultor') {
-    window.open('https://wa.me/5511999999999?text=Olá! Gostaria de contratar o pacote de personalização exclusivo para meu estúdio.', '_blank');
+    window.open('https://wa.me/5521970789797?text=Ol%C3%A1!%20Gostaria%20de%20contratar%20o%20pacote%20de%20personaliza%C3%A7%C3%A3o%20exclusivo%20para%20meu%20est%C3%BAdio.', '_blank');
   }
   const pi4 = document.getElementById('pi4');
   pi4.style.display = '';
@@ -2593,10 +2598,43 @@ function getSaudacaoPresets() {
   let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
   const agente = document.getElementById('p-nome-agente')?.value || ob.agente || '{nome do agente}';
   const estudio = ob.estudio || '{nome do estúdio}';
+  const tom = document.getElementById('p-tom')?.value || 'amigavel';
+
+  // Cada tom tem 3 presets distintos refletindo o estilo de fala. Customizado
+  // sempre disponivel pra escrever do zero.
+  const PRESETS_POR_TOM = {
+    amigavel: [
+      'Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem? Como posso te ajudar?',
+      'E aí! Bem-vindo ao ' + estudio + '! Sou o ' + agente + ', o assistente virtual aqui do estúdio. Como posso ajudar?',
+      'Bem-vindo ao ' + estudio + '! Me chamo ' + agente + ' e tô aqui para montar seu orçamento. Qual sua ideia de tatuagem?',
+    ],
+    descontraido: [
+      'Eaí, beleza? Aqui é o ' + agente + ' lá do ' + estudio + '. Conta aí, o que rola na cabeça pra tatuar?',
+      'Salve! Sou o ' + agente + ' do ' + estudio + '. Bora ver essa tattoo aí? Manda a ideia.',
+      'Opa! ' + agente + ' aqui do ' + estudio + '. Bora destrinchar tua ideia juntos?',
+    ],
+    profissional: [
+      'Olá! Sou o ' + agente + ', assistente do ' + estudio + '. Em que posso te ajudar hoje?',
+      'Bem-vindo ao ' + estudio + '. Aqui é o ' + agente + ' — pronto pra te orientar com seu projeto de tatuagem.',
+      'Olá! Aqui é o ' + agente + ' do ' + estudio + '. Vamos conversar sobre sua próxima tatuagem?',
+    ],
+    zoeiro: [
+      'Eita, mais um cliente top! Aqui é o ' + agente + ' do ' + estudio + ' — bora deixar tua pele mais bonita?',
+      'Salve, parceiro(a)! ' + agente + ' falando do ' + estudio + '. Tu chegou no lugar certo, conta aí o que tu quer.',
+      'Opa! Sou o ' + agente + ' do ' + estudio + '. Deixa eu adivinhar — tu veio fazer uma arte daquelas, né?',
+    ],
+    formal: [
+      'Prezado(a), aqui é o ' + agente + ' do ' + estudio + '. Como posso atendê-lo(a) hoje?',
+      'Olá, seja bem-vindo(a) ao ' + estudio + '. Sou o ' + agente + ', assistente virtual à sua disposição.',
+      'Bom atendê-lo(a). Aqui é o ' + agente + ' do ' + estudio + '. Em que podemos ajudar com seu projeto?',
+    ],
+  };
+
+  const textos = PRESETS_POR_TOM[tom] || PRESETS_POR_TOM.amigavel;
   return [
-    { label: 'Preset 1', text: 'Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem? Como posso te ajudar?' },
-    { label: 'Preset 2', text: 'E aí! Bem-vindo ao ' + estudio + '! Sou o ' + agente + ', o assistente virtual aqui do estúdio. Como posso ajudar?' },
-    { label: 'Preset 3', text: 'Bem-vindo ao ' + estudio + '! Me chamo ' + agente + ' e tô aqui para montar seu orçamento. Qual sua ideia de tatuagem?' },
+    { label: 'Preset 1', text: textos[0] },
+    { label: 'Preset 2', text: textos[1] },
+    { label: 'Preset 3', text: textos[2] },
     { label: 'Customizado', text: '' },
   ];
 }
@@ -2622,6 +2660,16 @@ function initSaudacaoPresets() {
     wrap.appendChild(btn);
   });
   document.getElementById('p-saudacao').value = presets[0].text;
+  // Re-render presets quando tom muda — cada tom tem variacoes proprias.
+  const tomSelect = document.getElementById('p-tom');
+  if (tomSelect && !tomSelect._saudacaoHooked) {
+    tomSelect._saudacaoHooked = true;
+    tomSelect.addEventListener('change', () => {
+      initSaudacaoPresets();
+      // Atualiza preview chat (Fix 5) tambem se existir
+      if (typeof updatePersonaPreview === 'function') updatePersonaPreview();
+    });
+  }
   const nomeInput = document.getElementById('p-nome-agente');
   if (nomeInput && !nomeInput._saudacaoHooked) {
     nomeInput._saudacaoHooked = true;
@@ -2642,11 +2690,7 @@ function selectEmoji(level, btn) {
   btn.classList.add('active');
   const prefs = document.getElementById('emoji-prefs');
   if (prefs) prefs.style.display = level === 'moderado' ? 'block' : 'none';
-}
-
-function toggleEmojiExemplos() {
-  const el = document.getElementById('emoji-exemplos');
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  updatePersonaPreview();
 }
 
 function toggleGiriasCustom(btn) {
@@ -2654,17 +2698,73 @@ function toggleGiriasCustom(btn) {
   document.getElementById('girias-custom-wrap').style.display = btn.classList.contains('active') ? 'block' : 'none';
 }
 
-function toggleExemplosNome() {
-  const el = document.getElementById('exemplos-nome');
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
-  const agente = document.getElementById('p-nome-agente').value || '{nome do agente}';
-  let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-  const estudio = ob.estudio || '{nome do estúdio}';
-  const comEl = document.getElementById('ex-nome-com');
-  comEl.innerHTML = '<div class="wa-msg-name">' + agente + '</div>' + agente + ': <em>Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem?</em><span class="wa-msg-time">14:30 ✓✓</span>';
-  const semEl = document.getElementById('ex-nome-sem');
-  semEl.innerHTML = '<div class="wa-msg-name">' + agente + '</div>Oi! Aqui é o ' + agente + ' do ' + estudio + '. Tudo bem?<span class="wa-msg-time">14:30 ✓✓</span>';
+// ── Live preview da persona (Fix 5) ────────────────────────────────────────
+// Atualiza o chat preview em tempo real conforme: nome agente, prefixo,
+// emoji level + emoji preferido. Sem prefixo "Agente:" hardcoded — fica
+// como WhatsApp real.
+function getActiveEmoji() {
+  // Pega o primeiro emoji ativo da lista de preferencias
+  const chips = document.querySelectorAll('#emoji-pref-chips .chip.active');
+  if (chips.length === 0) return '';
+  return chips[0].dataset.emoji || chips[0].textContent.trim();
 }
+
+function updatePersonaPreview() {
+  const a1 = document.querySelector('#prev-a1 .wa-msg-text');
+  const a2 = document.querySelector('#prev-a2 .wa-msg-text');
+  if (!a1 || !a2) return;
+
+  const agente = (document.getElementById('p-nome-agente')?.value || '').trim() || 'Lina';
+  const usaPrefixo = document.getElementById('p-identificador')?.checked === true;
+  const emojiLevel = selectedEmojiLevel || 'moderado';
+  const emoji = (emojiLevel === 'moderado') ? (getActiveEmoji() || '') : '';
+
+  // Mensagens do agente — variam quando emoji ativo / inativo
+  const msg1Base = 'Oi! Tudo bem? Conta o que tu pensou em fazer';
+  const msg2Base = 'Show, vou separar uns horários pra ti';
+
+  const linha1 = (usaPrefixo ? agente + ':\n' : '') + msg1Base + (emoji ? ' ' + emoji : '');
+  const linha2 = (usaPrefixo ? agente + ':\n' : '') + msg2Base + (emoji ? ' ' + emoji : '');
+
+  // Preserva quebras de linha como <br>
+  a1.innerHTML = linha1.replace(/\n/g, '<br>');
+  a2.innerHTML = linha2.replace(/\n/g, '<br>');
+}
+
+// Hook listeners pra atualizar preview em tempo real
+function initPersonaPreviewHooks() {
+  // 1. Toggle prefixo
+  const prefixToggle = document.getElementById('p-identificador');
+  if (prefixToggle && !prefixToggle._previewHooked) {
+    prefixToggle._previewHooked = true;
+    prefixToggle.addEventListener('change', updatePersonaPreview);
+  }
+  // 2. Nome agente (input)
+  const nomeInput = document.getElementById('p-nome-agente');
+  if (nomeInput && !nomeInput._previewHooked) {
+    nomeInput._previewHooked = true;
+    nomeInput.addEventListener('input', updatePersonaPreview);
+  }
+  // 3. Emoji preference chips — toggle + atualiza preview
+  document.querySelectorAll('#emoji-pref-chips .chip').forEach(chip => {
+    if (chip._previewHooked) return;
+    chip._previewHooked = true;
+    chip.addEventListener('click', () => {
+      // Single-select pra preview ficar previsivel: desmarca todos os outros,
+      // marca esse. (User pode marcar mais ainda, mas o preview usa o primeiro.)
+      // Deixei como toggle multi-select tradicional pra manter compat com
+      // expressoes_emoji[] no save — o preview pega so o primeiro ativo.
+      chip.classList.toggle('active');
+      updatePersonaPreview();
+    });
+  });
+  // Render inicial
+  updatePersonaPreview();
+}
+
+// Stub legacy pra compat
+function toggleEmojiExemplos() {}
+function toggleExemplosNome() {}
 
 async function aprimorarPersona() {
   const btn = document.getElementById('btn-aprimorar');
