@@ -325,7 +325,9 @@ select.fi option{background:var(--card);color:var(--t1)}
 #sw-sticky-bar .sw-sticky-inner{max-width:480px;margin:0 auto}
 #sw-sticky-bar .sbtn:disabled{opacity:.4;cursor:not-allowed}
 #sw-sticky-hint{margin-top:8px;font-size:11px;color:var(--t3);text-align:center}
-.step#sw .form-body, .step#sw .page-center{padding-bottom:120px} /* espaço pra sticky bar não cobrir conteúdo */
+/* padding-bottom do sw está em inline style do page-center (160px) pra
+   acomodar sticky bar + folga visual. Backup CSS pra outras step variantes. */
+.step#sw .form-body{padding-bottom:160px}
 .step-nav-dot.active{background:var(--teal)}
 .step-nav-dot.done{background:rgba(0,212,170,.4)}
 
@@ -621,7 +623,7 @@ select.fi option{background:var(--card);color:var(--t1)}
 
 <!-- ══════════ STEP W: BOAS-VINDAS CHAT ══════════ -->
 <div class="step" id="sw">
-  <div class="page-center" style="justify-content:flex-end;padding-bottom:60px">
+  <div class="page-center" style="justify-content:flex-end;padding-bottom:160px">
     <div class="chat-wrap">
       <div class="chat-bubble" id="cb1">
         <div class="chat-name">InkFlow</div>
