@@ -619,6 +619,27 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
                 </div>
               </div>
 
+              <!-- ─── Conexão Telegram (Modo Coleta v2) ─── -->
+              <div class="ag-section" id="ag-telegram-section" style="display:none;margin-top:24px;padding:16px;border:1px solid var(--border2);border-radius:14px">
+                <div style="font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+                  <span>📱 Telegram do tatuador</span>
+                  <span id="ag-telegram-status-badge" style="font-size:12px;padding:2px 8px;border-radius:10px;background:rgba(0,0,0,.3);color:var(--t3)">Verificando…</span>
+                </div>
+                <div class="ag-hint" style="margin-bottom:12px">No Modo Coleta, o agente manda os pedidos de orçamento aqui. Você analisa, fecha o valor, e o agente continua a conversa com o cliente.</div>
+
+                <div id="ag-telegram-connected" style="display:none;background:rgba(0,212,170,.08);border:1px solid var(--teal);border-radius:10px;padding:12px;margin-bottom:10px;color:var(--teal);font-size:13px">
+                  ✅ Conectado <span id="ag-telegram-username" style="color:var(--t2);font-weight:normal"></span>
+                </div>
+
+                <div id="ag-telegram-disconnected" style="display:none">
+                  <div style="background:rgba(255,107,107,.08);border:1px solid #ff6b6b;border-radius:10px;padding:12px;margin-bottom:10px;color:#ff6b6b;font-size:13px">
+                    ⚠️ Telegram não conectado — sem isso o Modo Coleta não funciona
+                  </div>
+                </div>
+
+                <button class="ag-save-btn" id="ag-telegram-reconnect" type="button" onclick="reconnectTelegram()" style="font-size:13px;background:transparent;border:1px solid var(--teal);color:var(--teal)">Reconectar Telegram</button>
+              </div>
+
               <!-- Save -->
               <div class="ag-save-row">
                 <button class="ag-save-btn" id="ag-save-btn" onclick="saveAgentConfig()">Salvar configurações</button>
@@ -926,6 +947,12 @@ function loadAgentConfig(tenant) {
     ? JSON.stringify(tenant.config_precificacao, null, 2) : '';
   document.getElementById('ag-portfolio').value = arrayToLines(tenant.portfolio_urls);
   document.getElementById('ag-faq').value = tenant.faq_texto || '';
+
+  // Modo Coleta v2: mostra status Telegram se modo for coleta
+  const modo = tenant.config_precificacao?.modo || 'coleta';
+  if (modo === 'coleta') {
+    renderTelegramStatus(tenant);
+  }
 }
 
 async function saveAgentConfig() {
@@ -1009,6 +1036,101 @@ async function saveAgentConfig() {
     btn.disabled = false;
     btn.textContent = 'Salvar configurações';
   }
+}
+
+// ── Modo Coleta v2: status Telegram do tatuador ──
+function renderTelegramStatus(tenant) {
+  const section = document.getElementById('ag-telegram-section');
+  if (!section) return;
+  section.style.display = 'block';
+
+  const badge = document.getElementById('ag-telegram-status-badge');
+  const connectedBox = document.getElementById('ag-telegram-connected');
+  const disconnectedBox = document.getElementById('ag-telegram-disconnected');
+  const usernameSpan = document.getElementById('ag-telegram-username');
+
+  const conectado = !!tenant.tatuador_telegram_chat_id;
+  if (conectado) {
+    badge.textContent = 'Conectado';
+    badge.style.background = 'rgba(0,212,170,.12)';
+    badge.style.color = 'var(--teal)';
+    connectedBox.style.display = 'block';
+    disconnectedBox.style.display = 'none';
+    const u = tenant.tatuador_telegram_username;
+    usernameSpan.textContent = u ? ` — @${u}` : '';
+  } else {
+    badge.textContent = 'Não conectado';
+    badge.style.background = 'rgba(255,107,107,.12)';
+    badge.style.color = '#ff6b6b';
+    connectedBox.style.display = 'none';
+    disconnectedBox.style.display = 'block';
+  }
+}
+
+async function reconnectTelegram() {
+  const btn = document.getElementById('ag-telegram-reconnect');
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Carregando…';
+
+  try {
+    // Pega bot username
+    const r = await fetch('/api/telegram-bot-info');
+    if (!r.ok) {
+      alert('Erro ao buscar bot Telegram. Tente novamente em alguns segundos.');
+      return;
+    }
+    const info = await r.json();
+    const username = info.username;
+
+    // onboarding_key do tenant atual (precisa estar exposto via studio token)
+    // Studio carrega tenant — pegamos a key dele
+    const obKey = window.studioOnboardingKey || '';
+    if (!obKey) {
+      alert('Onboarding key indisponível nesta sessão. Recarregue a página.');
+      return;
+    }
+
+    // Abre Telegram em nova aba com deep link
+    const deepLink = `https://t.me/${username}?start=${encodeURIComponent(obKey)}`;
+    window.open(deepLink, '_blank', 'noopener');
+
+    // Mostra hint de polling
+    btn.textContent = 'Aguardando conexão…';
+    pollTelegramReconnect(obKey);
+  } catch (e) {
+    alert('Erro: ' + (e?.message || e));
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+
+let reconnectPollInterval = null;
+function pollTelegramReconnect(obKey) {
+  if (reconnectPollInterval) clearInterval(reconnectPollInterval);
+  let tries = 0;
+  reconnectPollInterval = setInterval(async () => {
+    tries++;
+    if (tries > 60) {  // 60 × 3s = 3 min timeout
+      clearInterval(reconnectPollInterval);
+      reconnectPollInterval = null;
+      const btn = document.getElementById('ag-telegram-reconnect');
+      btn.disabled = false;
+      btn.textContent = 'Reconectar Telegram';
+      return;
+    }
+    try {
+      const r = await fetch(`/api/check-telegram-connected?onboarding_key=${encodeURIComponent(obKey)}`);
+      if (!r.ok) return;
+      const data = await r.json();
+      if (data.connected) {
+        clearInterval(reconnectPollInterval);
+        reconnectPollInterval = null;
+        // Recarrega tenant pra refrescar UI
+        location.reload();
+      }
+    } catch {}
+  }, 3000);
 }
 
 // ── Generate invite ──

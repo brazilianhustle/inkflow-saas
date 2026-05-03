@@ -656,31 +656,61 @@ select.fi option{background:var(--card);color:var(--t1)}
     <!-- ── Intro ── -->
     <div id="qa-intro" class="qa">
       <div class="form-title">Treine seu agente</div>
-      <div class="form-sub" style="margin-bottom:16px">Personalize seu agente com o valor da sua arte.</div>
-      <div class="form-sub" style="margin-bottom:20px">Responda o questionário abaixo e atinja o máximo potencial do seu assistente virtual. Caso nunca tenha precificado, não tem problema! <span class="link-cta" onclick="scrollToVideo()">Clique aqui</span> e veja como precificar seu trabalho corretamente. Caso prefira usar o valor geral do mercado, use os valores já previamente definidos e leia as dicas para facilitar sua precificação!</div>
+      <div class="form-sub" style="margin-bottom:16px">Escolha como o agente vai trabalhar com os orçamentos.</div>
       <div class="form-err" id="sv-err"></div>
 
-      <!-- ── Q1: Faixa vs Exato ── -->
+      <!-- ── Q1: Modo de precificação (Coleta v2) ── -->
       <div class="qa-q">
         <div class="chat-name">InkFlow</div>
-        Você gostaria que o agente responda com uma média de preços (e o valor final é fechado pelo tatuador), ou gostaria que seu agente passasse o orçamento completo com base na calculadora personalizada InkFlow com os seus valores reais?
+        Como você quer que o agente lide com os orçamentos? Recomendamos o modo <b>Coleta</b> — você decide cada valor, o agente faz o resto.
 
         <div class="qa-ex" style="margin-top:12px">
-          <div class="qa-ex-label">Exemplo 1 — Faixa de preço</div>
-          <div class="wa-preview right reveal"><div class="wa-msg client">Fechou, e quanto ficaria essa tattoo?<span class="wa-msg-time">14:20 ✓✓</span></div></div>
-          <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Essa tatuagem fica na faixa de R$ 600 a R$ 900, o valor final e detalhes sobre as sessões é passado diretamente com o tatuador, gostaria de agendar?<span class="wa-msg-time">14:20 ✓✓</span></div></div>
+          <div class="qa-ex-label">Modo Coleta — recomendado</div>
+          <div class="wa-preview right reveal"><div class="wa-msg client">queria orçar uma rosa fineline<span class="wa-msg-time">14:20 ✓✓</span></div></div>
+          <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Show! Conta mais — tem ideia de tamanho e local? Pra fechar o orçamento vou pegar uns dados rapidinho e mandar pro tatuador analisar.<span class="wa-msg-time">14:20 ✓✓</span></div></div>
+          <div style="margin-top:6px;font-size:11px;color:var(--t3)">→ Agente coleta dados, manda pro Telegram, você decide o valor, agente fecha agendamento</div>
         </div>
         <div class="qa-ex" style="margin-top:8px">
-          <div class="qa-ex-label">Exemplo 2 — Valor exato</div>
-          <div class="wa-preview right reveal"><div class="wa-msg client">Fechou, e quanto ficaria essa tattoo?<span class="wa-msg-time">14:22 ✓✓</span></div></div>
-          <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Essa tatuagem fica em R$ 750 nessa pegada de tamanho, os detalhes da sessão é passado diretamente com o tatuador, gostaria de agendar?<span class="wa-msg-time">14:22 ✓✓</span></div></div>
+          <div class="qa-ex-label">Modo Exato (beta) — calculadora automática</div>
+          <div class="wa-preview right reveal"><div class="wa-msg client">Fechou, e quanto ficaria?<span class="wa-msg-time">14:22 ✓✓</span></div></div>
+          <div class="wa-preview reveal"><div class="wa-msg"><div class="wa-msg-name">Agente</div>Essa tatuagem fica em R$ 750 nessa pegada de tamanho. Bora agendar?<span class="wa-msg-time">14:22 ✓✓</span></div></div>
+          <div style="margin-top:6px;font-size:11px;color:var(--t3)">→ Agente fecha o valor sozinho usando sua tabela. Mais rápido, mas exige tabela bem ajustada.</div>
         </div>
 
         <div class="qa-opt" style="margin-top:14px">
-          <button class="qa-btn" type="button" onclick="selectModo('faixa',this)">Faixa de preço (valor final pelo tatuador)</button>
-          <button class="qa-btn" type="button" onclick="selectModo('exato',this)">Valor exato (calculadora InkFlow)</button>
+          <button class="qa-btn" type="button" onclick="selectModo('coleta',this)" style="border-color:var(--teal);background:var(--teal-dim);color:var(--teal)">🎯 Coleta — você decide cada orçamento (recomendado)</button>
+          <button class="qa-btn" type="button" onclick="selectModo('exato',this)">⚡ Exato (beta) — calculadora InkFlow fecha o valor</button>
         </div>
-        <div style="margin-top:10px;font-size:11px;color:var(--t3)">Caso queira entender como funciona a calculadora inteligente InkFlow, <span class="link-cta" onclick="scrollToVideo()">clique aqui</span></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--t3)">Modo Exato usa a calculadora — caso queira entender como funciona, <span class="link-cta" onclick="scrollToVideo()">clique aqui</span></div>
+      </div>
+    </div>
+
+    <!-- ── Modo Coleta: Conexão Telegram do tatuador ── -->
+    <div id="qa-tatuador-telegram" class="qa">
+      <hr class="divider"/>
+      <div class="fsec">Conecte seu Telegram</div>
+      <div class="fi-hint" style="margin-bottom:14px">No Modo Coleta, o agente manda os pedidos de orçamento pro seu Telegram. Você analisa, fecha o valor, e o agente continua a conversa com o cliente automaticamente.</div>
+
+      <div id="tg-not-connected" style="display:block">
+        <div style="background:rgba(0,0,0,.3);border:1px solid var(--border2);border-radius:14px;padding:20px;text-align:center">
+          <div id="tg-qr-container" style="margin-bottom:14px;min-height:200px;display:flex;align-items:center;justify-content:center">
+            <div style="color:var(--t3);font-size:13px">Carregando QR…</div>
+          </div>
+          <div id="tg-deep-link" style="margin-bottom:10px;font-size:12px;color:var(--t3)"></div>
+          <div style="font-size:13px;color:var(--t2);margin-bottom:8px">Ou clique no botão abaixo no celular</div>
+          <a id="tg-open-btn" href="#" target="_blank" rel="noopener" class="sbtn" style="display:inline-block;text-decoration:none;font-size:13px">Abrir Telegram &rarr;</a>
+          <div style="margin-top:14px;font-size:12px;color:var(--t3)">
+            <span id="tg-status-icon">⏳</span> <span id="tg-status-text">Aguardando conexão…</span>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--t3);text-align:center">Vai abrir o app do Telegram. Toque em "Iniciar" e pronto.</div>
+      </div>
+
+      <div id="tg-connected" style="display:none">
+        <div style="background:rgba(0,212,170,.08);border:1px solid var(--teal);border-radius:14px;padding:16px;text-align:center;color:var(--teal)">
+          ✅ Telegram conectado<span id="tg-username-display" style="color:var(--t2);font-weight:normal"></span>
+        </div>
+        <button class="sbtn" type="button" style="margin-top:14px;font-size:13px;width:100%" onclick="showQA('qa-test')">Continuar &rarr;</button>
       </div>
     </div>
 
@@ -2141,19 +2171,99 @@ function showNextBubble() {
 }
 
 // ── Q&A progressivo ─────────────────────────────────────────────────────────
-let selectedModo = 'faixa';
+// Modo Coleta v2: default 'coleta'. Modo Exato e beta secundario.
+let selectedModo = 'coleta';
 function showQA(id) {
   const el = document.getElementById(id);
   if (!el || el.classList.contains('show')) return;
   el.classList.add('show');
   if (id === 'qa-test') { initTestadorRegions(); initTestadorEstilos(); }
+  if (id === 'qa-tatuador-telegram') { initTelegramQR(); }
   setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 }
 function selectModo(modo, btn) {
   selectedModo = modo;
   btn.closest('.qa-opt').querySelectorAll('.qa-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
-  showQA('qa-sinal');
+  // Coleta pula steps de pricing (faixas/ajustes/limites — esses sao do Exato).
+  // Coleta vai direto pra conexao Telegram → qa-test.
+  if (modo === 'coleta') {
+    showQA('qa-tatuador-telegram');
+  } else {
+    // Exato (beta): fluxo legacy com sinal/faixas/ajustes/limites
+    showQA('qa-sinal');
+  }
+}
+
+// ── Telegram QR + polling ───────────────────────────────────────────────────
+let telegramPollInterval = null;
+let telegramQRInitialized = false;
+let telegramBotUsername = null;
+
+async function fetchTelegramBotUsername() {
+  if (telegramBotUsername) return telegramBotUsername;
+  try {
+    const r = await fetch('/api/telegram-bot-info');
+    if (!r.ok) return null;
+    const data = await r.json();
+    telegramBotUsername = data.username;
+    return telegramBotUsername;
+  } catch (e) {
+    console.error('telegram-bot-info:', e);
+    return null;
+  }
+}
+
+async function initTelegramQR() {
+  if (telegramQRInitialized) return;
+  telegramQRInitialized = true;
+
+  const obKey = (gConfig?.globalKey || localStorage.getItem('inkflow_gk') || '').trim();
+  if (!obKey) {
+    document.getElementById('tg-qr-container').innerHTML = '<div style="color:#ff6b6b;font-size:13px">Erro: onboarding_key ausente. Recarregue a página.</div>';
+    return;
+  }
+
+  const username = await fetchTelegramBotUsername();
+  if (!username) {
+    document.getElementById('tg-qr-container').innerHTML = '<div style="color:#ff6b6b;font-size:13px">Erro: bot Telegram não configurado. Avise o suporte.</div>';
+    return;
+  }
+
+  const deepLink = `https://t.me/${username}?start=${encodeURIComponent(obKey)}`;
+  document.getElementById('tg-open-btn').href = deepLink;
+  document.getElementById('tg-deep-link').textContent = `t.me/${username}`;
+
+  // Renderiza QR via Google Chart API (gratuito, sem dependencia)
+  const qrUrl = `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(deepLink)}&choe=UTF-8`;
+  document.getElementById('tg-qr-container').innerHTML = `<img src="${qrUrl}" alt="QR Telegram" style="width:200px;height:200px;border-radius:8px"/>`;
+
+  // Polling a cada 3s
+  telegramPollInterval = setInterval(() => checkTelegramConnected(obKey), 3000);
+  // Primeira checagem imediata
+  checkTelegramConnected(obKey);
+}
+
+async function checkTelegramConnected(obKey) {
+  try {
+    const r = await fetch(`/api/check-telegram-connected?onboarding_key=${encodeURIComponent(obKey)}`);
+    if (!r.ok) return;
+    const data = await r.json();
+    if (data.connected) {
+      // Para o polling
+      if (telegramPollInterval) {
+        clearInterval(telegramPollInterval);
+        telegramPollInterval = null;
+      }
+      document.getElementById('tg-not-connected').style.display = 'none';
+      document.getElementById('tg-connected').style.display = 'block';
+      const userBadge = data.username ? ` (@${data.username})` : '';
+      document.getElementById('tg-username-display').textContent = userBadge;
+    }
+  } catch (e) {
+    // silencioso — proxima iteracao tenta de novo
+    console.warn('check-telegram polling:', e.message);
+  }
 }
 function showTip(id) {
   document.querySelectorAll('.field-tip').forEach(t => t.classList.remove('show'));
@@ -2229,8 +2339,9 @@ function syncEstilosHidden() {
 
 // ── Wizard: Valores (Testador A local) ──────────────────────────────────────
 function buildConfigPrecificacao() {
+  // Modo Coleta v2: 'faixa' rejeitado pelo backend. Default 'coleta'.
   return {
-    modo: selectedModo || 'faixa',
+    modo: selectedModo || 'coleta',
     tabela_tamanho: {
       P: [+document.getElementById('v-p-min').value || 200, +document.getElementById('v-p-max').value || 400],
       M: [+document.getElementById('v-m-min').value || 400, +document.getElementById('v-m-max').value || 800],
