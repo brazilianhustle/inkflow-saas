@@ -2686,12 +2686,46 @@ async function applyPresetAndAdvance(btn) {
       throw new Error(err.error || 'Erro ao salvar configuração padrão');
     }
 
-    ob.step = 'qr';
     ob.agente = nomeAgenteDefault;
     localStorage.setItem('inkflow_ob', JSON.stringify(ob));
-    goStep(5);
-    initConnectStep();
-    pollInterval = setInterval(checkConnection, 5000);
+
+    // Mesma logica de savePersonaAndNext: se WA ja esta conectado (pareado
+    // no step 1 logo apos signup), pular direto pro sucesso. So mostra QR
+    // novamente se nao estiver conectado (raro — instance criada mas QR
+    // expirou/nao foi pareado, ou desconectou).
+    let waConnected = false;
+    if (instanceSlug) {
+      try {
+        const statusRes = await fetch('/api/evo-status?instance=' + encodeURIComponent(instanceSlug));
+        const statusData = await statusRes.json();
+        const state = (statusData?.state || '').toString().toLowerCase();
+        waConnected = ['open', 'connected', 'online'].includes(state);
+      } catch (e) { console.warn('evo-status check (preset):', e); }
+    }
+
+    if (waConnected) {
+      ob.step = 'done';
+      localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+      const sucEstudio = document.getElementById('suc-estudio');
+      const sucAgente = document.getElementById('suc-agente');
+      const sucInst = document.getElementById('suc-inst');
+      const sucPlano = document.getElementById('suc-plano');
+      if (sucEstudio) sucEstudio.textContent = ob.estudio || instanceSlug || '';
+      if (sucAgente) sucAgente.textContent = nomeAgenteDefault;
+      if (sucInst) sucInst.textContent = instanceSlug || '';
+      const sucPlanLabels = { trial: 'Trial 7 dias', individual: 'Individual', estudio: 'Estúdio', premium: 'Estúdio VIP' };
+      if (sucPlano) sucPlano.textContent = sucPlanLabels[selectedPlan] || selectedPlan;
+      goStep(6);
+      configureSucCta();
+      localStorage.removeItem('inkflow_ob');
+    } else {
+      // Fallback: se por algum motivo WA nao tiver conectado, manda pro QR
+      ob.step = 'qr';
+      localStorage.setItem('inkflow_ob', JSON.stringify(ob));
+      goStep(5);
+      initConnectStep();
+      pollInterval = setInterval(checkConnection, 5000);
+    }
   } catch (e) {
     console.error('applyPreset error:', e);
     alert('Erro ao aplicar configuração padrão: ' + (e?.message || e) + '\n\nTente "Montar sozinho" ou recarregue a página.');
