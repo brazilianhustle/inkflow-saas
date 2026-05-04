@@ -1330,7 +1330,10 @@ function startConnectFlow() {
 // Aceita variações: P:/R:, p:/r:, Pergunta:/Resposta:, etc.
 function parseFaqs(text) {
   if (!text || typeof text !== 'string') return [];
-  const blocks = text.split(/\n\s*\n/).filter(b => b.trim());
+  // Normaliza CRLF → LF (Windows clipboard) e split por lookahead em "P:"/"Pergunta:" no início de linha,
+  // evitando merge de entries quando user cola sem blank-line entre blocks.
+  const normalized = text.replace(/\r\n/g, '\n');
+  const blocks = normalized.split(/\n(?=\s*(?:p|pergunta)\s*[:.\-])/i).filter(b => b.trim());
   const result = [];
   for (const block of blocks) {
     const m = block.match(/^\s*(?:p|pergunta)\s*[:.\-]?\s*(.+?)\n\s*(?:r|resposta)\s*[:.\-]?\s*(.+)/is);
@@ -1353,18 +1356,45 @@ function serializeFaqs(faqs) {
 
 // ── Modal management ──
 let faqsState = [];
+let faqsTriggerEl = null;  // pra restore focus quando fechar
 
 function openFaqsModal() {
+  faqsTriggerEl = document.activeElement;
   const raw = document.getElementById('ag-faq').value;
   faqsState = parseFaqs(raw);
   if (faqsState.length === 0) faqsState = [{ p: '', r: '' }];
   renderFaqsList();
-  document.getElementById('faqs-overlay').classList.add('show');
+  const overlay = document.getElementById('faqs-overlay');
+  overlay.classList.add('show');
+  // Move focus pro primeiro input visível (a11y)
+  const firstInput = overlay.querySelector('input, textarea, button');
+  if (firstInput) firstInput.focus();
 }
 
 function closeFaqsModal() {
   document.getElementById('faqs-overlay').classList.remove('show');
+  // Restore focus pro botão que abriu
+  if (faqsTriggerEl && typeof faqsTriggerEl.focus === 'function') {
+    faqsTriggerEl.focus();
+    faqsTriggerEl = null;
+  }
 }
+
+// A11y: ESC fecha + click outside (no overlay) fecha
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const overlay = document.getElementById('faqs-overlay');
+    if (overlay && overlay.classList.contains('show')) closeFaqsModal();
+  }
+});
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('faqs-overlay');
+  if (overlay) {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) closeFaqsModal();
+    });
+  }
+});
 
 function renderFaqsList() {
   const list = document.getElementById('faqs-list');
@@ -1424,9 +1454,9 @@ init();
 
 <!-- ═══ Modal: Meus FAQs ═══ -->
 <div class="faqs-overlay" id="faqs-overlay">
-  <div class="faqs-modal">
+  <div class="faqs-modal" role="dialog" aria-modal="true" aria-labelledby="faqs-title">
     <div class="faqs-header">
-      <h3>Meus FAQs</h3>
+      <h3 id="faqs-title">Meus FAQs</h3>
       <button class="faqs-close-btn" onclick="closeFaqsModal()" aria-label="Fechar">×</button>
     </div>
     <div class="faqs-body" id="faqs-list">
