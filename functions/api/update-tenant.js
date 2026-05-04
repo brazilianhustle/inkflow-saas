@@ -77,7 +77,7 @@ export function validateConfigPrecificacao(cfg) {
 }
 
 export function validateFieldTypes(fields) {
-  const jsonbFields = ['config_agente', 'config_precificacao', 'horario_funcionamento'];
+  const jsonbFields = ['config_agente', 'config_precificacao', 'horario_funcionamento', 'config_notificacoes'];
   const arrayFields = ['gatilhos_handoff', 'portfolio_urls'];
   const intFields = ['duracao_sessao_padrao_h', 'sinal_percentual'];
 
