@@ -842,6 +842,9 @@ function switchTab(tabName) {
   // Carregar conteúdo dinâmico ao abrir Conversas (PR 4)
   if (tabName === 'conversas' && typeof onAbrirTabConversas === 'function') {
     onAbrirTabConversas();
+    if (typeof startConvPolling === 'function') startConvPolling();
+  } else {
+    if (typeof stopConvPolling === 'function') stopConvPolling();
   }
 }
 
@@ -1994,6 +1997,84 @@ async function executarAcaoConversa(action) {
     }
   }
 }
+
+// ═══ Polling 8s (Caminho B — Real-time) ═══
+//
+// CONTEXT: RLS policies em conversas e n8n_chat_histories bloqueiam
+// access via anon key (`n8n_chat_histories.anon_no_access` policy = `false`,
+// `conversas` RLS enabled sem policy anon). Supabase Realtime via anon key
+// não funciona sem hardening RLS — P2 backlog "n8n_chat_histories tenant
+// isolation proper" cobre isso. Pra PR 4: polling 8s usando os mesmos
+// endpoints já implementados (que usam service-role key server-side).
+//
+// Cadência: 8s (balance entre freshness e custo de fetch).
+// Pause quando: tab Conversas não está ativa (saved data when user noutra tab).
+// Resume quando: user volta pra Conversas.
+
+let _convPollTimer = null;
+let _threadPollTimer = null;
+
+async function pollListaAtual() {
+  if (!CONV_STATE.grupoAtivo || !currentStudioToken) return;
+  // Re-fetch the active group's first page (preserves cursor for paginated content).
+  await carregarGrupo(CONV_STATE.grupoAtivo, false);
+}
+
+async function pollThreadAtual() {
+  if (!CONV_STATE.conversaAberta || !currentStudioToken) return;
+  // Refresh open thread without invalidating cursor for "carregar mais antigas".
+  // We re-fetch the latest 50 messages (same as initial load) and re-render.
+  // _threadReqSeq is incremented by abrirConversa, so call directly avoids the
+  // race-guard. Use a separate fetch helper to refresh in place.
+  const conversaAtual = CONV_STATE.conversaAberta;
+  try {
+    const params = new URLSearchParams({
+      studio_token: currentStudioToken,
+      conversa_id: conversaAtual.id,
+      limit: '50',
+    });
+    const r = await fetch(`/api/conversas/thread?${params}`);
+    if (!r.ok) {
+      console.warn('pollThreadAtual: HTTP', r.status);
+      return;
+    }
+    const body = await r.json();
+    // If user opened a different conversa during the fetch, skip render.
+    if (!CONV_STATE.conversaAberta || CONV_STATE.conversaAberta.id !== conversaAtual.id) return;
+    CONV_STATE.conversaAberta = body.conversa;
+    CONV_STATE.threadCursor = body.next_cursor;
+    renderThreadHeader(body.conversa);
+    renderThread(body.conversa, body.mensagens || [], false);
+    const loadOlder = document.getElementById('conv-load-older');
+    if (loadOlder) loadOlder.style.display = body.next_cursor ? 'block' : 'none';
+  } catch (err) {
+    console.warn('pollThreadAtual: exception', err);
+  }
+}
+
+function startConvPolling() {
+  stopConvPolling();
+  _convPollTimer = setInterval(pollListaAtual, 8000);
+  _threadPollTimer = setInterval(pollThreadAtual, 8000);
+}
+
+function stopConvPolling() {
+  if (_convPollTimer) { clearInterval(_convPollTimer); _convPollTimer = null; }
+  if (_threadPollTimer) { clearInterval(_threadPollTimer); _threadPollTimer = null; }
+}
+
+// Pause polling quando user troca pra outra tab (do navegador).
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopConvPolling();
+  } else {
+    // Resume only if Conversas tab is the active panel.
+    const conversasPanel = document.getElementById('tab-conversas');
+    if (conversasPanel && conversasPanel.classList.contains('active')) {
+      startConvPolling();
+    }
+  }
+});
 
 // Wire load-older + back-btn (mobile).
 function setupConvThread() {
