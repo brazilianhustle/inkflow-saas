@@ -19,7 +19,7 @@
 
 1. Coleta v2 backend já em produção (PRs #19 + #20 mergeados em main 03/05) ✅
 2. Branch `main` atualizada e clean (sem mudanças não-commitadas)
-3. Bateria de testes existente em `main` verde — `npm test` retorna 0 falhas
+3. Bateria de testes existente em `main` verde — `bash scripts/test-prompts.sh` retorna 0 falhas
 4. Acesso ao Supabase Dashboard pra aplicar migration SQL após merge
 
 ---
@@ -82,7 +82,7 @@ Expected: branch nova criada, working tree clean.
 - [ ] **Step 2: Rodar baseline de testes — capturar resultado pra comparação no fim**
 
 ```bash
-npm test 2>&1 | tee /tmp/baseline-pr1.log | tail -10
+bash scripts/test-prompts.sh 2>&1 | tee /tmp/baseline-pr1.log | tail -10
 ```
 
 Expected: todos os tests passam (`pass` count > 0, `fail` count = 0). Se algum falha aqui, **NÃO seguir** — corrigir baseline antes de começar refactor.
@@ -527,10 +527,10 @@ Pra cada arquivo listado, abrir, localizar a string ofensiva (case-insensitive),
 - [ ] **Step 4 (condicional): Rodar snapshot tests pra confirmar zero regressão**
 
 ```bash
-npm test -- tests/prompts/snapshot.test.mjs 2>&1 | tail -5
+node --test tests/prompts/snapshot.test.mjs 2>&1 | tail -5
 ```
 
-Expected: tests passam. Se quebra, mandar `UPDATE_SNAPSHOTS=1 npm test -- tests/prompts/snapshot.test.mjs` pra atualizar baseline e revisar diff manualmente:
+Expected: tests passam. Se quebra, mandar `UPDATE_SNAPSHOTS=1 node --test tests/prompts/snapshot.test.mjs` (ou `bash scripts/update-prompt-snapshots.sh`) pra atualizar baseline e revisar diff manualmente:
 
 ```bash
 git diff tests/prompts/snapshots/
@@ -1308,7 +1308,7 @@ Expected: tests passam (count `# pass` aumentou pelos 7 novos). Se quebra, depur
 - [ ] **Step 5: Rodar bateria completa pra zero regressão**
 
 ```bash
-npm test 2>&1 | tail -10
+bash scripts/test-prompts.sh 2>&1 | tail -10
 ```
 
 Expected: `# fail 0`. Comparar com `/tmp/baseline-pr1.log`: count de `pass` deve ter aumentado pelos 7 novos.
@@ -1346,7 +1346,7 @@ git commit -m "chore: remove script de audit (descartável após PR1)"
 - [ ] **Step 3: Bateria completa de tests**
 
 ```bash
-npm test 2>&1 | tee /tmp/final-pr1.log | tail -15
+bash scripts/test-prompts.sh 2>&1 | tee /tmp/final-pr1.log | tail -15
 ```
 
 Expected: `# fail 0`. Comparar com baseline `/tmp/baseline-pr1.log` — deve ter mais tests (pelos novos em update-tenant-validation), zero regressões.
@@ -1442,7 +1442,7 @@ ADD em `conversas`: `estado_agente_anterior`, `pausada_em`. CHECK constraint est
 
 ## Test plan
 
-- [x] Bateria local `npm test` verde (zero regressões + 7 tests novos em update-tenant-validation)
+- [x] Bateria local `bash scripts/test-prompts.sh` verde (zero regressões + 7 tests novos em update-tenant-validation)
 - [x] Smoke E2E manual: studio.html, onboarding.html, admin.html (checklist no plano §Task 15)
 - [ ] Aplicar migration SQL no Supabase Dashboard pós-merge
 - [ ] Verificar Cloudflare Pages preview (deploy automático após PR open) renderiza sem erros JS
