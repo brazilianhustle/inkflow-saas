@@ -9,3 +9,4 @@ cron-worker/node_modules/
 node_modules/
 docs/superpowers/.DS_Store
 **/.DS_Store
+.superpowers/
