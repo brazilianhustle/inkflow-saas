@@ -250,6 +250,17 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   .kpi-card{padding:12px}
   .kpi-value{font-size:20px}
 }
+/* ── Toggle pill (substitui checkbox em todo o site) ── */
+.toggle-pill{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-family:inherit}
+.toggle-pill input[type="checkbox"]{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.toggle-pill .toggle-track{width:36px;height:20px;background:rgba(255,255,255,.12);border-radius:10px;position:relative;transition:background .15s ease;flex-shrink:0}
+.toggle-pill .toggle-thumb{position:absolute;left:2px;top:2px;width:16px;height:16px;background:#888;border-radius:50%;transition:left .15s ease,background .15s ease}
+.toggle-pill input:checked + .toggle-track{background:rgba(0,212,170,.3)}
+.toggle-pill input:checked + .toggle-track .toggle-thumb{left:18px;background:var(--teal)}
+.toggle-pill .toggle-label{font-size:12px;color:var(--t1);line-height:1.3}
+.toggle-pill .toggle-label small{display:block;color:var(--t3);font-size:10px;margin-top:2px;line-height:1.3}
+.toggle-pill:hover .toggle-track{background:rgba(255,255,255,.18)}
+.toggle-pill:hover input:checked + .toggle-track{background:rgba(0,212,170,.4)}
 </style>
 </head>
 <body>
@@ -518,9 +529,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
                   </select>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-checkbox">
+                  <label class="toggle-pill">
                     <input type="checkbox" id="ag-identificador"/>
-                    <span class="ag-checkbox-label">Usar nome do agente como prefixo na 1ª msg<br><span style="color:var(--t3);font-size:10px">Ex: "Isabela: Oi tudo bem?" — senão texto direto sem prefixo</span></span>
+                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                    <span class="toggle-label">Usar nome do agente como prefixo na 1ª msg<small>Ex: "Isabela: Oi tudo bem?" — senão texto direto sem prefixo</small></span>
                   </label>
                 </div>
               </div>
@@ -576,9 +588,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
                   <div class="ag-hint">Bot recusa pedido desses estilos educadamente</div>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-checkbox">
+                  <label class="toggle-pill">
                     <input type="checkbox" id="ag-cobertura" checked/>
-                    <span class="ag-checkbox-label">Estúdio aceita cobertura (cover up)<br><span style="color:var(--t3);font-size:10px">Se não, bot recusa e encerra educadamente sem chamar você</span></span>
+                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                    <span class="toggle-label">Estúdio aceita cobertura (cover up)<small>Se não, bot recusa e encerra educadamente sem chamar você</small></span>
                   </label>
                 </div>
               </div>
@@ -724,6 +737,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 </div>
 
 <script>
+// ── Toggle pill component (substitui <input type=checkbox>) ──
+// Uso:
+//   HTML: <label class="toggle-pill"><input type="checkbox" id="X"/><span class="toggle-track"><span class="toggle-thumb"></span></span><span class="toggle-label">Texto<small>Subtexto opcional</small></span></label>
+//   JS reads: document.getElementById('X').checked
+//   JS writes: document.getElementById('X').checked = true
+function makeTogglePillHTML(id, labelText, smallText, checked) {
+  const checkAttr = checked ? 'checked' : '';
+  const small = smallText ? `<small>${smallText}</small>` : '';
+  return `<label class="toggle-pill">
+    <input type="checkbox" id="${id}" ${checkAttr}/>
+    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+    <span class="toggle-label">${labelText}${small}</span>
+  </label>`;
+}
+
 // ── Tab switching ──
 function switchTab(tabName) {
   // Update nav buttons
