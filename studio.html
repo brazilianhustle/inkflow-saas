@@ -1554,6 +1554,7 @@ const CONV_STATE = {
   cursors: { hoje: null, aguardando: null, negociacao: null, historico: null },
   ultimo: { hoje: [], aguardando: [], negociacao: [], historico: [] },
   _setup: false,
+  _reqSeq: 0,
 };
 
 // Formato de timestamp relativo: "agora", "5min", "2h", "ontem", "3d".
@@ -1645,7 +1646,7 @@ function renderConvLista(conversas, append) {
   const ul = document.getElementById('conv-list');
   const empty = document.getElementById('conv-list-empty');
   const loadMore = document.getElementById('conv-load-more');
-  if (!ul) return;
+  if (!ul || !empty || !loadMore) return;
   if (!append) {
     while (ul.firstChild) ul.removeChild(ul.firstChild);
   }
@@ -1675,6 +1676,7 @@ function renderConvListaErro(msg) {
 // Fetch + render. Call ao trocar grupo OU abrir tab Conversas.
 async function carregarGrupo(grupo, append) {
   CONV_STATE.grupoAtivo = grupo;
+  const reqId = ++CONV_STATE._reqSeq;
   const cursor = append ? CONV_STATE.cursors[grupo] : null;
   if (!currentStudioToken) {
     renderConvListaErro('Token do studio não disponível ainda. Aguarda...');
@@ -1684,12 +1686,15 @@ async function carregarGrupo(grupo, append) {
   if (cursor) params.set('before_ts', cursor);
   try {
     const r = await fetch(`/api/conversas/list?${params}`);
+    // Bail if a newer request started while we were waiting (rapid tab clicks).
+    if (reqId !== CONV_STATE._reqSeq) return;
     if (!r.ok) {
       console.error('carregarGrupo: HTTP', r.status);
       renderConvListaErro('Erro ao carregar conversas. Tente novamente em alguns segundos.');
       return;
     }
     const body = await r.json();
+    if (reqId !== CONV_STATE._reqSeq) return;
     if (append) {
       CONV_STATE.ultimo[grupo] = (CONV_STATE.ultimo[grupo] || []).concat(body.conversas);
     } else {
@@ -1702,6 +1707,7 @@ async function carregarGrupo(grupo, append) {
     renderConvLista(body.conversas, append);
   } catch (err) {
     console.error('carregarGrupo: exception', err);
+    if (reqId !== CONV_STATE._reqSeq) return;
     renderConvListaErro('Erro de rede. Verifica tua conexão e tenta de novo.');
   }
 }
