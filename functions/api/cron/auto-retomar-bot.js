@@ -39,7 +39,7 @@ export function pickConversasToResume(conversas, now = new Date()) {
 async function fetchConversasPausadas(env) {
   const SB_KEY = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
   // Embedded join via select pra puxar config_agente + evo creds do tenant junto.
-  const url = `${SUPABASE_URL}/rest/v1/conversas?estado_agente=eq.pausada_tatuador&select=id,tenant_id,estado_agente,estado_agente_anterior,pausada_em,telefone_cliente,tenants(config_agente,evo_instance,evo_apikey,evo_base_url)`;
+  const url = `${SUPABASE_URL}/rest/v1/conversas?estado_agente=eq.pausada_tatuador&select=id,tenant_id,estado_agente,estado_agente_anterior,pausada_em,telefone,tenants(config_agente,evo_instance,evo_apikey,evo_base_url)`;
   const r = await fetch(url, {
     headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
   });
@@ -78,8 +78,8 @@ async function applyResume(env, conversa) {
     },
     body: JSON.stringify({
       estado_agente: transition.new_state,
-      estado_agente_anterior: null,
-      pausada_em: null,
+      estado_agente_anterior: transition.estado_agente_anterior,
+      pausada_em: transition.pausada_em,
     }),
   });
   if (!upd.ok) {
@@ -90,7 +90,7 @@ async function applyResume(env, conversa) {
   // Send mensagem_ao_retomar via Evolution (best-effort — não falha o resume se Evolution cair)
   const config = conversa.tenant_config_agente || {};
   const mensagem = config.mensagem_ao_retomar || 'Voltei! Alguma dúvida sobre o orçamento?';
-  if (conversa.telefone_cliente && conversa.tenant_evo_instance && conversa.tenant_evo_base_url && conversa.tenant_evo_apikey) {
+  if (conversa.telefone && conversa.tenant_evo_instance && conversa.tenant_evo_base_url && conversa.tenant_evo_apikey) {
     try {
       await fetch(`${conversa.tenant_evo_base_url}/message/sendText/${conversa.tenant_evo_instance}`, {
         method: 'POST',
@@ -99,7 +99,7 @@ async function applyResume(env, conversa) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          number: conversa.telefone_cliente,
+          number: conversa.telefone,
           text: mensagem,
         }),
       });
@@ -116,6 +116,11 @@ export async function onRequest(context) {
   const auth = request.headers.get('Authorization') || '';
   if (!env.CRON_SECRET || auth !== `Bearer ${env.CRON_SECRET}`) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+  }
+
+  const SB_KEY = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
+  if (!SB_KEY) {
+    return new Response(JSON.stringify({ error: 'Configuração interna ausente (SUPABASE_SERVICE_KEY)' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
   }
 
   const conversas = await fetchConversasPausadas(env);
