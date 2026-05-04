@@ -25,4 +25,7 @@ node --test tests/tools/dados-coletados-helpers.test.mjs
 echo "▶ Tools — reentrada helpers..."
 node --test tests/tools/reentrada-helpers.test.mjs
 
+echo "▶ API — kill-switch-detect..."
+node --test tests/api/kill-switch-detect.test.mjs
+
 echo "✓ Todos os tests passaram."
