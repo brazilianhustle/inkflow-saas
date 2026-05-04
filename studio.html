@@ -104,8 +104,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--teal);color:#000;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:transform .3s ease,opacity .3s ease;z-index:100}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
 /* ── Support ── */
 .support-box{margin-top:8px;margin-bottom:16px;text-align:center}
 .support-link{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;font-family:inherit}
@@ -692,7 +690,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   </main>
 </div><!-- /app-layout -->
 
-<div class="toast" id="toast">Link copiado!</div>
+<div class="toast" id="toast"></div>
 
 <script>
 // ── Toggle pill component (substitui <input type=checkbox>) ──
@@ -1174,7 +1172,7 @@ function openSupport() {
   } catch (e) {}
   const studioName = (studioData && studioData.tenant && studioData.tenant.nome_estudio) || '';
   const msg = encodeURIComponent(
-    `Olá! Sou dono do estúdio${studioName ? ' ' + studioName : ''} e preciso de ajuda com o onboarding de artistas.`
+    `Olá! Sou dono do estúdio${studioName ? ' ' + studioName : ''} e preciso de ajuda com o InkFlow.`
   );
   window.open(`https://wa.me/5521970789797?text=${msg}`, '_blank');
 }
