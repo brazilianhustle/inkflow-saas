@@ -236,20 +236,6 @@ select.fi option{background:var(--card);color:var(--t1)}
 .suc-val{font-weight:600;color:var(--t1);font-size:13px}
 .suc-next{font-size:12px;color:var(--t3);line-height:1.7}
 
-/* ── Invite artists (success screen) ── */
-.invite-section{background:var(--card2);border:1px solid rgba(0,212,170,.15);border-radius:12px;padding:20px;margin-top:20px;text-align:center;display:none}
-.invite-section.show{display:block}
-.invite-title{font-size:14px;font-weight:700;color:var(--teal);margin-bottom:6px}
-.invite-sub{font-size:12px;color:var(--t3);margin-bottom:16px;line-height:1.5}
-.invite-slots{font-size:11px;color:var(--t2);margin-bottom:12px;background:rgba(0,0,0,.3);border-radius:8px;padding:8px 12px}
-.invite-btn{background:var(--teal);color:#111;border:none;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
-.invite-btn:hover:not(:disabled){opacity:.9}
-.invite-btn:disabled{opacity:.4;cursor:default}
-.invite-link-box{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:12px;display:none;word-break:break-all}
-.invite-link-url{font-size:12px;color:var(--teal);font-weight:500;display:block;margin-bottom:8px}
-.invite-copy-btn{background:var(--card2);border:1px solid var(--border2);color:var(--t2);padding:6px 14px;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
-.invite-copy-btn:hover{border-color:var(--teal-mid);color:var(--teal)}
-
 /* ── Error overlay ── */
 #err-overlay{display:none;position:fixed;inset:0;background:var(--bg);align-items:center;justify-content:center;z-index:100;padding:24px;text-align:center;flex-direction:column}
 #err-overlay.show{display:flex}
@@ -520,10 +506,10 @@ select.fi option{background:var(--card);color:var(--t1)}
         <div class="po-price">R$ 497/m&#234;s</div>
         <ul class="po-features">
           <li class="po-feat">Tudo do Plano Individual, incluído</li>
-          <li class="po-feat">Suporte para até 5 tatuadores no mesmo plano</li>
           <li class="po-feat">Até 2.000 conversas mensais gerenciadas pela IA</li>
-          <li class="po-feat">Assistente virtual individual para cada artista</li>
-          <li class="po-feat">Agenda separada e autônoma por tatuador</li>
+          <li class="po-feat">Integração avançada com Google Calendar</li>
+          <li class="po-feat">Portfólio com galeria personalizada</li>
+          <li class="po-feat">Resumo semanal com análise de desempenho por IA</li>
         </ul>
       </div>
       <div class="plan-opt" id="plan-premium" onclick="selectPlan('premium')">
@@ -533,11 +519,10 @@ select.fi option{background:var(--card);color:var(--t1)}
         <div class="po-price">R$ 997/m&#234;s</div>
         <ul class="po-features">
           <li class="po-feat">Tudo do Plano Estúdio, incluído</li>
-          <li class="po-feat">Suporte para até 10 tatuadores</li>
           <li class="po-feat">Até 4.000 conversas mensais gerenciadas pela IA</li>
-          <li class="po-feat">Atendimento personalizado com IA por artista</li>
+          <li class="po-feat">Atendimento prioritário e onboarding personalizado</li>
+          <li class="po-feat">Acesso antecipado a todas as novas funcionalidades</li>
           <li class="po-feat">Roteamento inteligente por estilo de tatuagem</li>
-          <li class="po-feat">Acesso prioritário a todas as novas funcionalidades</li>
         </ul>
       </div>
     </div>
@@ -1273,9 +1258,6 @@ select.fi option{background:var(--card);color:var(--t1)}
         <div class="suc-row"><span class="suc-key">plano</span><span class="suc-val" id="suc-plano">—</span></div>
         <div class="suc-row" style="border-bottom:none"><span class="suc-key">status</span><span style="background:var(--teal-dim);color:var(--teal);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">● ativo</span></div>
       </div>
-      <!-- Aviso de email para estúdio (preenchido via JS) — antes do suc-next para ser visível -->
-      <div class="invite-section" id="invite-section"></div>
-
       <div class="suc-next">
         &#10003; Seu WhatsApp j&#225; recebe mensagens automaticamente<br/>
         &#10003; O assistente responde agendamentos e d&#250;vidas<br/>
@@ -1334,10 +1316,6 @@ let selectedPlan = 'individual';
 const MP_PUBLIC_KEY = 'APP_USR-36990647-ad0a-4978-a672-499f635f9b03';
 let mpBrickController = null;
 
-// ── Multi-artista: dados do convite ──
-let isArtistInvite = false;
-let artistInviteData = {};
-
 async function init() {
   const urlParams    = new URLSearchParams(window.location.search);
   const preapprovalId = urlParams.get('preapproval_id');
@@ -1350,17 +1328,6 @@ async function init() {
     const valData = await valRes.json();
     if (!valData.valid) { showErrOverlay(valData.error || 'Link de onboarding inválido ou expirado.'); return; }
     plano = valData.plano || 'individual';
-
-    // ── Detectar convite de artista ──
-    if (valData.is_artist_invite && valData.parent_tenant_id) {
-      isArtistInvite = true;
-      artistInviteData = {
-        parent_tenant_id: valData.parent_tenant_id,
-        parent_google_calendar_id: valData.parent_google_calendar_id || null,
-        parent_nome_estudio: valData.parent_nome_estudio || '',
-        parent_evo_base_url: valData.parent_evo_base_url || '',
-      };
-    }
 
     // ── Smart resume via server-side tenant state ──
     if (valData.tenant && valData.tenant.id) {
@@ -1376,7 +1343,7 @@ async function init() {
         globalKey: key,
         tenantId, instanceSlug, nome: t.nome, estudio: t.nome_estudio,
         agente: t.nome_agente, cidade: t.cidade, email: t.email,
-        plano: selectedPlan, isArtist: t.is_artist_slot,
+        plano: selectedPlan,
       }));
 
       // Refator (WA pair como ultimo passo + modo no welcome chat): a ordem
@@ -1467,21 +1434,8 @@ async function init() {
     }
   } catch {}
 
-  if (isArtistInvite) {
-    // Artista: adaptar tela de boas-vindas
-    document.getElementById('w-plano').textContent = 'convite de artista';
-    document.getElementById('w-plano').style.borderColor = 'rgba(0,212,170,.5)';
-    document.querySelector('.w-title').textContent = 'Configure seu assistente virtual';
-    document.querySelector('.w-sub').textContent = 'Você foi convidado para o estúdio ' + (artistInviteData.parent_nome_estudio || '') + '. Conecte seu WhatsApp para ativar seu assistente pessoal.';
-    // Esconder steps de pagamento na lista de boas-vindas
-    const welcomeSteps = document.querySelectorAll('.w-step');
-    if (welcomeSteps[3]) welcomeSteps[3].style.display = 'none'; // Pagamento
-    // Adaptar formulario
-    setupArtistForm();
-  } else {
-    const planLabels = { trial:'trial 7 dias', individual:'individual', estudio:'estúdio', premium:'estúdio vip' };
-    document.getElementById('w-plano').textContent = 'plano ' + (planLabels[plano] || plano);
-  }
+  const planLabels = { trial:'trial 7 dias', individual:'individual', estudio:'estúdio', premium:'estúdio vip' };
+  document.getElementById('w-plano').textContent = 'plano ' + (planLabels[plano] || plano);
   selectPlan(plano);
 }
 
@@ -1502,41 +1456,6 @@ function goStep(n) {
   window.scrollTo(0, 0);
 }
 
-function setupArtistForm() {
-  // Esconder secao de plano
-  const planSec = document.querySelector('.fsec:last-of-type');
-  // Esconder todo o bloco de planos
-  const planSelEl = document.getElementById('plan-sel');
-  if (planSelEl) planSelEl.style.display = 'none';
-  // Esconder os dividers e labels de plano
-  const planHints = document.querySelectorAll('.fi-hint');
-  planHints.forEach(h => { if (h.textContent.includes('Plano pr')) h.style.display = 'none'; });
-  // Esconder dividers e secao "Plano"
-  const fsecs = document.querySelectorAll('.fsec');
-  fsecs.forEach(s => { if (s.textContent.trim() === 'Plano') s.style.display = 'none'; });
-  // Esconder divider antes de Plano (ultimo hr.divider)
-  const dividers = document.querySelectorAll('hr.divider');
-  if (dividers.length >= 2) dividers[dividers.length - 1].style.display = 'none';
-  // Esconder campos de estudio (artista herda do pai)
-  const estudioField = document.getElementById('f-estudio');
-  if (estudioField) {
-    estudioField.value = artistInviteData.parent_nome_estudio || '';
-    estudioField.closest('.fg').style.display = 'none';
-  }
-  // Mudar titulo e subtitulo do form
-  const formTitle = document.querySelector('.form-title');
-  const formSub = document.querySelector('.form-sub');
-  if (formTitle) formTitle.textContent = 'Seus dados de artista';
-  if (formSub) formSub.textContent = 'Essas informações configuram seu assistente virtual pessoal.';
-  // Mudar badge
-  const formBadge = document.querySelector('.form-badge');
-  if (formBadge) formBadge.textContent = 'Convite de Artista';
-  // Mudar label do campo nome
-  const nomeLabel = document.querySelector('label[for="f-nome"], #f-nome')?.closest('.fg')?.querySelector('.fl');
-  // Mudar texto do botao
-  const formBtn = document.getElementById('form-btn');
-  if (formBtn) formBtn.textContent = 'Conectar meu WhatsApp →';
-}
 function makeSlug(text) { return (text || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '').substring(0, 16); }
 function autoAgent() {}
 function selectPlan(plan) { selectedPlan = plan; ['individual','estudio','premium'].forEach(p => { document.getElementById('plan-' + p)?.classList.toggle('active', p === plan); }); if(window.posthog) posthog.capture('plan_selected',{plan:selectedPlan}); }
@@ -1655,10 +1574,8 @@ async function chargeCard(formData) {
 async function showPaymentStep() {
   const nome = document.getElementById('f-nome').value.trim(); const estudio = (document.getElementById('f-estudio').value || '').trim(); const agente = document.getElementById('f-agente').value.trim() || nome.split(' ')[0]; const cidade = document.getElementById('f-cidade').value.trim(); const enderecoBase = document.getElementById('f-endereco').value.trim(); const numero = document.getElementById('f-numero')?.value?.trim() || ''; const endereco = enderecoBase + (numero ? (enderecoBase.includes(',') ? ' nº ' + numero : ', ' + numero) : ''); const email = document.getElementById('f-email').value.trim();
   const telefoneRaw = document.getElementById('f-telefone')?.value?.trim() || ''; const telefone = telefoneRaw.replace(/\D/g, '');
-  // Artista nao precisa de nome_estudio
-  if (!isArtistInvite && (!nome || !estudio)) { showFormError('Preencha o nome e o nome do estúdio.'); return; }
-  if (isArtistInvite && !nome) { showFormError('Preencha seu nome.'); return; }
-  if (!isArtistInvite && (!telefone || telefone.length < 10)) { showFormError('WhatsApp válido com DDD é obrigatório.'); return; }
+  if (!nome || !estudio) { showFormError('Preencha o nome e o nome do estúdio.'); return; }
+  if (!telefone || telefone.length < 10) { showFormError('WhatsApp válido com DDD é obrigatório.'); return; }
   if (!email || !email.includes('@')) { showFormError('Email válido é obrigatório.'); return; }
   // [Melhoria 2] Se a validacao ja rodou e falhou, ou ainda não rodou, forçar agora
   if (emailValidState.email !== email || emailValidState.valid === null) {
@@ -1670,22 +1587,9 @@ async function showPaymentStep() {
   document.getElementById('form-err').style.display = 'none';
   const btn = document.getElementById('form-btn'); btn.disabled = true; btn.textContent = 'Aguarde...';
   try {
-    const slugBase = makeSlug(isArtistInvite ? nome : (estudio || nome)); const suffix = Math.floor(Math.random() * 900) + 100; instanceSlug = slugBase + suffix;
-    const promptEstudio = isArtistInvite ? (artistInviteData.parent_nome_estudio || 'Estúdio') : estudio;
-    const prompt = generatePrompt(agente, promptEstudio, cidade, endereco);
-    const tenantData = { nome, nome_agente: agente, nome_estudio: estudio || (isArtistInvite ? artistInviteData.parent_nome_estudio : ''), email: email || null, telefone: telefone || null, cidade: cidade || null, endereco: endereco || null, evo_instance: instanceSlug, webhook_path: 'inkflow', evo_apikey: 'pending', plano: selectedPlan, ativo: false, prompt_sistema: prompt, onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || null };
-    // Artista: incluir dados de vinculacao ao estudio pai
-    if (isArtistInvite && artistInviteData.parent_tenant_id) {
-      tenantData.parent_tenant_id = artistInviteData.parent_tenant_id;
-      tenantData.is_artist_slot = true;
-      if (artistInviteData.parent_google_calendar_id) {
-        tenantData.google_calendar_id = artistInviteData.parent_google_calendar_id;
-        tenantData.parent_google_calendar_id = artistInviteData.parent_google_calendar_id;
-      }
-      if (artistInviteData.parent_evo_base_url) {
-        tenantData.evo_base_url = artistInviteData.parent_evo_base_url;
-      }
-    }
+    const slugBase = makeSlug(estudio || nome); const suffix = Math.floor(Math.random() * 900) + 100; instanceSlug = slugBase + suffix;
+    const prompt = generatePrompt(agente, estudio, cidade, endereco);
+    const tenantData = { nome, nome_agente: agente, nome_estudio: estudio, email: email || null, telefone: telefone || null, cidade: cidade || null, endereco: endereco || null, evo_instance: instanceSlug, webhook_path: 'inkflow', evo_apikey: 'pending', plano: selectedPlan, ativo: false, prompt_sistema: prompt, onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || null };
     const existCheck = await fetch('/api/get-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, fields: 'id,ativo' }) });
     if (existCheck.ok) {
       const existData = await existCheck.json(); const existing = existData.tenants || [];
@@ -1694,22 +1598,10 @@ async function showPaymentStep() {
         if (ex.ativo) { throw new Error('Este email já está cadastrado em um estúdio ativo. Use outro email ou entre em contato com o suporte.'); }
         if (!ex.ativo) {
           tenantId = ex.id;
-          const retryUpdate = { tenant_id: ex.id, email, onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || undefined, nome_agente: agente, nome_estudio: estudio || (isArtistInvite ? artistInviteData.parent_nome_estudio : ''), evo_instance: instanceSlug, webhook_path: 'inkflow', plano: selectedPlan };
-          if (isArtistInvite && artistInviteData.parent_tenant_id) {
-            retryUpdate.parent_tenant_id = artistInviteData.parent_tenant_id;
-            retryUpdate.is_artist_slot = true;
-            if (artistInviteData.parent_evo_base_url) retryUpdate.evo_base_url = artistInviteData.parent_evo_base_url;
-          }
+          const retryUpdate = { tenant_id: ex.id, email, onboarding_key: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || undefined, nome_agente: agente, nome_estudio: estudio, evo_instance: instanceSlug, webhook_path: 'inkflow', plano: selectedPlan };
           await fetch('/api/update-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(retryUpdate) });
           tenantId = ex.id;
-          localStorage.setItem('inkflow_ob', JSON.stringify({ globalKey: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || '', tenantId, instanceSlug, nome, estudio: estudio || artistInviteData?.parent_nome_estudio || '', agente, cidade, email, plano: selectedPlan, isArtist: isArtistInvite }));
-          // ── Artista em retry: pular pagamento, ir direto para setup WhatsApp ──
-          if (isArtistInvite) {
-            goStep(4); for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
-            await doEvoSetup();
-            if (window.posthog) posthog.capture('artist_onboarding_started', { plan: selectedPlan, tenant: tenantId, parent: artistInviteData.parent_tenant_id, retry: true });
-            return;
-          }
+          localStorage.setItem('inkflow_ob', JSON.stringify({ globalKey: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || '', tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan }));
           const planNames = { trial:'Trial 7 dias', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' }; const planPrices = { trial:'Grátis', individual:'R$ 197', estudio:'R$ 497', premium:'R$ 997' }; const planCycles = { trial:'/7 dias · sem cartão', individual:'/mês · cobrança recorrente', estudio:'/mês · cobrança recorrente', premium:'/mês · cobrança recorrente' };
           document.getElementById('pay-plan-box').innerHTML = '<div class="pay-plan-name">' + (planNames[selectedPlan] || selectedPlan) + '</div><div class="pay-plan-price">' + (planPrices[selectedPlan] || '') + '</div><div class="pay-plan-cycle">' + (planCycles[selectedPlan] || '') + '</div>';
           resetPayForm();
@@ -1721,15 +1613,7 @@ async function showPaymentStep() {
     const createRes = await fetch('/api/create-tenant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tenantData) });
     if (!createRes.ok) { const errData = await createRes.json().catch(() => ({})); throw new Error(errData.error || 'Erro ao criar perfil'); }
     const createData = await createRes.json(); tenantId = createData.tenant.id; instanceSlug = createData.tenant.evo_instance || instanceSlug;
-    localStorage.setItem('inkflow_ob', JSON.stringify({ globalKey: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || '', tenantId, instanceSlug, nome, estudio: estudio || artistInviteData?.parent_nome_estudio || '', agente, cidade, email, plano: selectedPlan, isArtist: isArtistInvite }));
-
-    // ── Artista: pular pagamento, ir direto para setup WhatsApp ──
-    if (isArtistInvite) {
-      goStep(4); for (let i = 0; i < 5; i++) setStatus(i, null, 'wait');
-      await doEvoSetup();
-      if (window.posthog) posthog.capture('artist_onboarding_started', { plan: selectedPlan, tenant: tenantId, parent: artistInviteData.parent_tenant_id });
-      return;
-    }
+    localStorage.setItem('inkflow_ob', JSON.stringify({ globalKey: gConfig?.globalKey || localStorage.getItem('inkflow_gk') || '', tenantId, instanceSlug, nome, estudio, agente, cidade, email, plano: selectedPlan }));
 
     const planNames = { trial:'Trial 7 dias', individual:'Individual', estudio:'Estúdio', premium:'Estúdio VIP' }; const planPrices = { trial:'Grátis', individual:'R$ 197', estudio:'R$ 497', premium:'R$ 997' }; const planCycles = { trial:'/7 dias · sem cartão', individual:'/mês · cobrança recorrente', estudio:'/mês · cobrança recorrente', premium:'/mês · cobrança recorrente' };
     document.getElementById('pay-plan-box').innerHTML = `<div class="pay-plan-name">${planNames[selectedPlan] || selectedPlan}</div><div class="pay-plan-price">${planPrices[selectedPlan] || ''}</div><div class="pay-plan-cycle">${planCycles[selectedPlan] || ''}</div>`;
@@ -1802,20 +1686,7 @@ async function doEvoSetup() {
     await new Promise(r => setTimeout(r, 1500));
     setStatus(4, 'Pronto para conectar!', 'done');
 
-    // Artistas herdam config do pai — pula valores/personalizar, vai direto pro QR
     let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
-    const isArtist = isArtistInvite || ob.isArtist;
-    if (isArtist) {
-      ob.step = 'qr';
-      localStorage.setItem('inkflow_ob', JSON.stringify(ob));
-      goStep(5); initConnectStep();
-      pollInterval = setInterval(checkConnection, 5000);
-      return;
-    }
-
-    // Refator (config → WA pair como ultimo passo): nao-artistas vao agora
-    // pro welcome chat; configuram tudo (Coleta/Exato + Telegram + persona);
-    // e SO entao caem em s5 (QR WA) como ato final de "ativar".
     ob.step = 'sw';
     localStorage.setItem('inkflow_ob', JSON.stringify(ob));
     initWelcomeChat();
@@ -1912,9 +1783,8 @@ async function checkConnection() {
       // Antes: signup_log/update-tenant/etc podiam throw e o catch silencioso travava em step 5.
       let ob = {}; try { ob = JSON.parse(localStorage.getItem('inkflow_ob') || '{}'); } catch {}
       if (ob.plano) selectedPlan = ob.plano;
-      const isArtist = isArtistInvite || ob.isArtist;
       const isStudioPlan = ['estudio','premium'].includes(selectedPlan);
-      console.log('[inkflow] success: plan=' + selectedPlan + ' isArtist=' + isArtist + ' isStudio=' + isStudioPlan);
+      console.log('[inkflow] success: plan=' + selectedPlan + ' isStudio=' + isStudioPlan);
 
       // Preenche tela de sucesso (DOM existe mesmo em step 5)
       try {
@@ -1923,12 +1793,6 @@ async function checkConnection() {
         document.getElementById('suc-inst').textContent = instanceSlug;
         const sucPlanLabels = { trial:'Trial 7 dias', individual:'Individual · R$ 197/mês', estudio:'Estúdio · R$ 497/mês', premium:'Estúdio VIP · R$ 997/mês' };
         document.getElementById('suc-plano').textContent = sucPlanLabels[selectedPlan] || selectedPlan;
-        if (isArtist) {
-          document.querySelector('.suc-title').textContent = 'Seu WhatsApp está conectado!';
-          document.querySelector('.suc-sub').textContent = 'Seu assistente virtual pessoal já está ativo. Os clientes que entrarem em contato pelo seu número serão atendidos automaticamente.';
-          document.getElementById('suc-plano').textContent = 'artista · ' + (ob.estudio || '');
-          document.querySelector('.suc-next').innerHTML = '✓ Seu WhatsApp já recebe mensagens automaticamente<br/>✓ O assistente responde agendamentos e dúvidas<br/>✓ Os agendamentos vão para o calendário do estúdio<br/><br/>Em caso de dúvidas, fale com o dono do estúdio.';
-        }
       } catch (uiErr) { console.warn('[inkflow] UI fill failed (nao fatal):', uiErr); }
 
       // Pequena pausa visual para o usuario ver o "Conectado!"
@@ -1968,8 +1832,7 @@ async function checkConnection() {
       } catch (e) { console.warn('[inkflow] signup_log throw:', e?.message); }
 
       // Email + WhatsApp link do estudio (nao bloqueia)
-      if (!isArtist && isStudioPlan) {
-        showStudioEmailNotice();
+      if (isStudioPlan) {
         fetch('/api/send-studio-email', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tenant_id: tenantId }),
@@ -1984,31 +1847,12 @@ async function checkConnection() {
 
       // Limpar estado salvo (mantem inkflow_gk se for redirect pra studio — fetchStudioTokenAndRedirect precisa)
       localStorage.removeItem('inkflow_ob');
-      if (!isStudioPlan || isArtist) localStorage.removeItem('inkflow_gk');
-
-      // Scroll para aviso de email se aplicavel
-      if (isStudioPlan && !isArtist) {
-        setTimeout(() => { const inv = document.getElementById('invite-section'); if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500);
-      }
+      if (!isStudioPlan) localStorage.removeItem('inkflow_gk');
     }
   } catch (e) {
     // [FIX debug] Logar erro real em vez de silenciar — antes era 'Poll error' sem stack
     console.error('[inkflow] checkConnection threw:', e?.message, e?.stack);
   }
-}
-
-// ── Aviso de email para donos de estúdio ──
-function showStudioEmailNotice() {
-  const section = document.getElementById('invite-section');
-  if (!section) return;
-  const maxSlots = selectedPlan === 'premium' ? 9 : 4;
-  section.innerHTML = `
-    <div class="invite-title">📩 Verifique seu email!</div>
-    <div class="invite-sub">Enviamos um email com o link para gerenciar seu estúdio.<br/>
-    Lá você poderá convidar até <strong>${maxSlots} artistas</strong> para conectarem seus WhatsApps.</div>
-    <div style="font-size:12px;color:var(--t3);margin-top:8px">Não recebeu? Verifique a pasta de spam ou entre em contato com o suporte.</div>
-  `;
-  section.classList.add('show');
 }
 
 // ── [Melhoria 1] Autopreenchimento CEP via ViaCEP ─────────────────────────
@@ -2125,11 +1969,7 @@ function configureSucCta() {
   const cta = document.getElementById('suc-cta');
   if (!cta) return;
   const isStudioPlan = ['estudio', 'premium'].includes(selectedPlan);
-  const isArtist = !!isArtistInvite;
-  if (isArtist) {
-    cta.textContent = 'Concluído ✓';
-    cta.onclick = () => { window.location.href = 'https://inkflowbrasil.com/'; };
-  } else if (isStudioPlan) {
+  if (isStudioPlan) {
     cta.textContent = 'Ir para o painel do estúdio →';
     cta.onclick = fetchStudioTokenAndRedirect;
     setTimeout(() => { if (document.getElementById('s6')?.classList.contains('active')) fetchStudioTokenAndRedirect(); }, 4000);

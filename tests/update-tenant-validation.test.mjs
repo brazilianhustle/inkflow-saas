@@ -83,3 +83,73 @@ test('validateConfigPrecificacao — trigger_handoff legacy v1 ignorado', async 
   const r = validateConfigPrecificacao({ modo: 'coleta', trigger_handoff: 'qualquer coisa' });
   assert.equal(r.ok, true);
 });
+
+// ── Testes PR 1: config_notificacoes (novo campo JSONB) ───────────────────────
+
+test('validateFieldTypes — config_notificacoes aceita objeto JSON', async () => {
+  const { validateFieldTypes } = await import('../functions/api/update-tenant.js');
+  const r = validateFieldTypes({ config_notificacoes: { email_enabled: true, push_enabled: false } });
+  assert.equal(r.ok, true);
+});
+
+test('validateFieldTypes — config_notificacoes rejeita string', async () => {
+  const { validateFieldTypes } = await import('../functions/api/update-tenant.js');
+  const r = validateFieldTypes({ config_notificacoes: 'not-an-object' });
+  assert.equal(r.ok, false);
+  assert.match(r.erro, /config_notificacoes/);
+});
+
+test('validateFieldTypes — config_notificacoes rejeita array', async () => {
+  const { validateFieldTypes } = await import('../functions/api/update-tenant.js');
+  const r = validateFieldTypes({ config_notificacoes: [] });
+  assert.equal(r.ok, false);
+  assert.match(r.erro, /config_notificacoes/);
+});
+
+// ── Testes PR 1: ALLOWED_FIELDS — campos Artistas removidos ──────────────────
+
+test('ALLOWED_FIELDS — exclui parent_tenant_id (campo Artistas removido)', async () => {
+  const { ALLOWED_FIELDS } = await import('../functions/api/update-tenant.js');
+  assert.equal(ALLOWED_FIELDS.has('parent_tenant_id'), false);
+});
+
+test('ALLOWED_FIELDS — exclui is_artist_slot (campo Artistas removido)', async () => {
+  const { ALLOWED_FIELDS } = await import('../functions/api/update-tenant.js');
+  assert.equal(ALLOWED_FIELDS.has('is_artist_slot'), false);
+});
+
+test('ALLOWED_FIELDS — exclui max_artists (campo Artistas removido)', async () => {
+  const { ALLOWED_FIELDS } = await import('../functions/api/update-tenant.js');
+  assert.equal(ALLOWED_FIELDS.has('max_artists'), false);
+});
+
+// ── Testes PR 1: ALLOWED_FIELDS — novos campos adicionados ───────────────────
+
+test('ALLOWED_FIELDS — inclui ativo_ate (novo campo PR 1)', async () => {
+  const { ALLOWED_FIELDS } = await import('../functions/api/update-tenant.js');
+  assert.equal(ALLOWED_FIELDS.has('ativo_ate'), true);
+});
+
+test('ALLOWED_FIELDS — inclui deletado_em (novo campo PR 1)', async () => {
+  const { ALLOWED_FIELDS } = await import('../functions/api/update-tenant.js');
+  assert.equal(ALLOWED_FIELDS.has('deletado_em'), true);
+});
+
+test('ALLOWED_FIELDS — inclui config_notificacoes (novo campo PR 1)', async () => {
+  const { ALLOWED_FIELDS } = await import('../functions/api/update-tenant.js');
+  assert.equal(ALLOWED_FIELDS.has('config_notificacoes'), true);
+});
+
+// ── Testes PR 1: MODOS_ATENDIMENTO — artista_slot removido ───────────────────
+
+test('MODOS_ATENDIMENTO — exclui artista_slot (valor removido)', async () => {
+  const { MODOS_ATENDIMENTO } = await import('../functions/api/update-tenant.js');
+  assert.equal(MODOS_ATENDIMENTO.includes('artista_slot'), false);
+});
+
+test('MODOS_ATENDIMENTO — inclui individual, tatuador_dono, recepcionista', async () => {
+  const { MODOS_ATENDIMENTO } = await import('../functions/api/update-tenant.js');
+  assert.equal(MODOS_ATENDIMENTO.includes('individual'), true);
+  assert.equal(MODOS_ATENDIMENTO.includes('tatuador_dono'), true);
+  assert.equal(MODOS_ATENDIMENTO.includes('recepcionista'), true);
+});

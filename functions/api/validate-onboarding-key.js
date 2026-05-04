@@ -6,7 +6,7 @@ const CORS = {
 };
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
-const TENANT_SELECT = 'id,ativo,welcome_shown,config_precificacao,config_agente,evo_instance,nome,nome_estudio,nome_agente,email,cidade,plano,is_artist_slot';
+const TENANT_SELECT = 'id,ativo,welcome_shown,config_precificacao,config_agente,evo_instance,nome,nome_estudio,nome_agente,email,cidade,plano';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: CORS });
@@ -65,7 +65,7 @@ export async function onRequest(context) {
 
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/onboarding_links?key=eq.${encodeURIComponent(key)}&select=id,key,plano,email,used,expires_at,parent_tenant_id,is_artist_invite`,
+      `${SUPABASE_URL}/rest/v1/onboarding_links?key=eq.${encodeURIComponent(key)}&select=id,key,plano,email,used,expires_at`,
       { headers: sbHeaders(SB_KEY) }
     );
 
@@ -120,30 +120,7 @@ export async function onRequest(context) {
         plano: existingTenant.plano || link.plano,
         config_precificacao: existingTenant.config_precificacao || null,
         config_agente: existingTenant.config_agente || null,
-        is_artist_slot: !!existingTenant.is_artist_slot,
       };
-    }
-
-    if (link.is_artist_invite && link.parent_tenant_id) {
-      response.is_artist_invite = true;
-      response.parent_tenant_id = link.parent_tenant_id;
-
-      try {
-        const parentRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(link.parent_tenant_id)}&select=google_calendar_id,nome_estudio,evo_base_url`,
-          { headers: sbHeaders(SB_KEY) }
-        );
-        if (parentRes.ok) {
-          const parents = await parentRes.json();
-          if (parents[0]) {
-            response.parent_google_calendar_id = parents[0].google_calendar_id;
-            response.parent_nome_estudio = parents[0].nome_estudio;
-            response.parent_evo_base_url = parents[0].evo_base_url;
-          }
-        }
-      } catch (e) {
-        console.warn('validate-onboarding-key: erro ao buscar dados do tenant pai:', e);
-      }
     }
 
     console.log('validate-onboarding-key: key válida, plano:', link.plano, 'tenant:', existingTenant?.id || 'novo');

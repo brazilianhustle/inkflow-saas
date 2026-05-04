@@ -51,6 +51,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .status-dot.online{background:var(--green);box-shadow:0 0 6px var(--green)}
 .status-dot.offline{background:var(--red)}
 .status-dot.pending{background:var(--amber)}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s}
+.status-pill:hover{border-color:var(--border2)}
+.status-pill .status-label{font-size:10px;color:var(--t3);font-weight:600}
+.status-pill.connected .status-label{color:var(--green)}
+.status-pill.disconnected .status-label{color:var(--red)}
+.status-pill.pending .status-label{color:var(--amber)}
 
 /* ── Content area ── */
 .content-area{flex:1;padding:24px;display:flex;justify-content:center}
@@ -86,45 +92,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .studio-info{font-size:13px;color:var(--t2);line-height:1.8}
 .studio-info span{color:var(--t1);font-weight:500}
 
-/* ── Slots bar ── */
-.slots-section{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
-.slots-title{font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.slots-bar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:8px}
-.slots-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .5s ease}
-.slots-fill.full{background:var(--amber)}
-.slots-label{font-size:12px;color:var(--t3)}
-.slots-label span{color:var(--teal);font-weight:600}
-
-/* ── Artists list ── */
-.artists-list{margin-top:14px;display:flex;flex-direction:column;gap:6px}
-.artist-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px}
-.artist-avatar{width:34px;height:34px;border-radius:50%;background:var(--teal-dim);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--teal);flex-shrink:0}
-.artist-info{flex:1;min-width:0}
-.artist-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.artist-status{font-size:11px;color:var(--t3)}
-.artist-badge{font-size:10px;padding:3px 8px;border-radius:8px;font-weight:600;flex-shrink:0}
-.badge-active{background:var(--green-bg);color:var(--green)}
-.badge-pending{background:var(--amber-bg);color:var(--amber)}
-
-/* ── Invite section ── */
-.invite-section{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
-.invite-title{font-size:14px;font-weight:600;margin-bottom:8px}
-.invite-sub{font-size:13px;color:var(--t2);margin-bottom:14px;line-height:1.6}
-.invite-btn{width:100%;padding:12px;border:none;border-radius:10px;background:var(--teal);color:#000;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s;font-family:inherit}
-.invite-btn:hover{opacity:.9}
-.invite-btn:disabled{opacity:.4;cursor:not-allowed}
-
-/* ── Generated link box ── */
-.link-box{display:none;margin-top:14px;background:rgba(0,212,170,.06);border:1px solid var(--teal-mid);border-radius:10px;padding:14px}
-.link-box.show{display:block;animation:fadeUp .3s ease}
-.link-label{font-size:11px;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.link-url{font-size:12px;color:var(--t1);word-break:break-all;background:rgba(0,0,0,.3);padding:10px;border-radius:6px;margin-bottom:10px;font-family:'Courier New',monospace;display:block}
-.link-actions{display:flex;gap:8px}
-.link-copy{flex:1;padding:10px;border:1px solid var(--teal-mid);background:transparent;color:var(--teal);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;font-family:inherit}
-.link-copy:hover{background:var(--teal-dim)}
-.link-share{flex:1;padding:10px;border:1px solid var(--border2);background:transparent;color:var(--t2);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;font-family:inherit}
-.link-share:hover{background:rgba(255,255,255,.04)}
-
 /* ── Loading / Error ── */
 .loading{text-align:center;padding:60px 20px;color:var(--t2);font-size:14px}
 .loading .spinner{width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--teal);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 16px}
@@ -137,31 +104,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--teal);color:#000;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:transform .3s ease,opacity .3s ease;z-index:100}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
 /* ── Support ── */
 .support-box{margin-top:8px;margin-bottom:16px;text-align:center}
 .support-link{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;font-family:inherit}
 .support-link:hover{border-color:var(--teal-mid);color:var(--teal);background:var(--teal-dim)}
-
-/* ── Welcome modal ── */
-.wc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;animation:fadeUp .3s ease}
-.wc-overlay.show{display:flex}
-.wc-card{background:var(--card);border:1px solid var(--teal-mid);border-radius:16px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 0 40px rgba(0,212,170,.25)}
-.wc-emoji{font-size:40px;text-align:center;margin-bottom:8px;animation:fadeUp .5s ease}
-.wc-title{font-size:20px;font-weight:800;color:var(--teal);text-align:center;margin-bottom:8px}
-.wc-sub{font-size:13px;color:var(--t2);text-align:center;margin-bottom:20px;line-height:1.5}
-.wc-invite{background:rgba(0,212,170,.06);border:1px solid var(--teal-mid);border-radius:10px;padding:14px;margin-bottom:14px}
-.wc-invite-label{font-size:11px;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.wc-invite-link{font-size:11px;font-family:'Courier New',monospace;background:rgba(0,0,0,.3);padding:8px;border-radius:6px;word-break:break-all;color:var(--t1);margin-bottom:8px;max-height:60px;overflow:auto}
-.wc-slots{font-size:12px;color:var(--t3);text-align:center;margin-bottom:14px}
-.wc-slots span{color:var(--teal);font-weight:700}
-.wc-actions{display:flex;gap:8px;flex-direction:column}
-.wc-btn{padding:12px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s}
-.wc-btn.primary{background:var(--teal);color:#000}
-.wc-btn.primary:hover{opacity:.88}
-.wc-btn.secondary{background:transparent;color:var(--t2);border:1px solid var(--border)}
-.wc-btn.secondary:hover{color:var(--t1);border-color:var(--border2)}
 
 /* ── Connect WhatsApp ── */
 .connect-section{background:var(--card2);border:1px solid var(--teal-mid);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 0 24px rgba(0,212,170,.1)}
@@ -250,6 +196,18 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   .kpi-card{padding:12px}
   .kpi-value{font-size:20px}
 }
+/* ── Toggle pill (substitui checkbox em todo o site) ── */
+.toggle-pill{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-family:inherit}
+.toggle-pill input[type="checkbox"]{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.toggle-pill .toggle-track{width:36px;height:20px;background:rgba(255,255,255,.12);border-radius:10px;position:relative;transition:background .15s ease;flex-shrink:0}
+.toggle-pill .toggle-thumb{position:absolute;left:2px;top:2px;width:16px;height:16px;background:#888;border-radius:50%;transition:left .15s ease,background .15s ease}
+.toggle-pill input:checked + .toggle-track{background:rgba(0,212,170,.3)}
+.toggle-pill input:checked + .toggle-track .toggle-thumb{left:18px;background:var(--teal)}
+.toggle-pill .toggle-label{font-size:12px;color:var(--t1);line-height:1.3}
+.toggle-pill .toggle-label small{display:block;color:var(--t3);font-size:10px;margin-top:2px;line-height:1.3}
+.toggle-pill:hover .toggle-track{background:rgba(255,255,255,.18)}
+.toggle-pill:hover input:checked + .toggle-track{background:rgba(0,212,170,.4)}
+.toggle-pill input:focus-visible + .toggle-track{box-shadow:0 0 0 2px var(--teal)}
 </style>
 </head>
 <body>
@@ -257,32 +215,61 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 <!-- ── Sidebar (desktop) / Bottom bar (mobile) ── -->
 <nav class="sidebar">
   <div class="sidebar-logo">IF</div>
+
   <button class="nav-btn active" onclick="switchTab('dashboard')" data-tab="dashboard">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     <span class="nav-label">Dashboard</span>
     <span class="nav-tooltip">Dashboard</span>
   </button>
+
   <button class="nav-btn" onclick="switchTab('agente')" data-tab="agente">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4l2 2-2 2"/></svg>
     <span class="nav-label">Agente</span>
     <span class="nav-tooltip">Agente</span>
   </button>
+
   <button class="nav-btn" onclick="switchTab('conversas')" data-tab="conversas">
     <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
     <span class="nav-label">Conversas</span>
     <span class="nav-tooltip">Conversas</span>
   </button>
-  <button class="nav-btn" onclick="switchTab('agendamentos')" data-tab="agendamentos">
-    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="12" y1="14" x2="12" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/></svg>
+
+  <button class="nav-btn" onclick="switchTab('agenda')" data-tab="agenda">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     <span class="nav-label">Agenda</span>
-    <span class="nav-tooltip">Agendamentos</span>
+    <span class="nav-tooltip">Agenda</span>
   </button>
-  <div class="sidebar-bottom">
-    <button class="nav-btn" onclick="openSupport()" title="Suporte">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      <span class="nav-tooltip">Suporte</span>
-    </button>
-  </div>
+
+  <button class="nav-btn" onclick="switchTab('portfolio')" data-tab="portfolio">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L13 16"/></svg>
+    <span class="nav-label">Portfólio</span>
+    <span class="nav-tooltip">Portfólio</span>
+  </button>
+
+  <button class="nav-btn" onclick="switchTab('sugestoes')" data-tab="sugestoes">
+    <svg viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.6 1 1.5 1 2.3v1h6v-1c0-.8.4-1.7 1-2.3A7 7 0 0 0 12 2z"/></svg>
+    <span class="nav-label">Ideias</span>
+    <span class="nav-tooltip">Ideias &amp; Sugestões</span>
+  </button>
+
+  <button class="nav-btn" onclick="switchTab('suporte')" data-tab="suporte">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span class="nav-label">Suporte</span>
+    <span class="nav-tooltip">Suporte e dúvidas</span>
+  </button>
+
+  <button class="nav-btn" onclick="switchTab('settings')" data-tab="settings">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span class="nav-label">Settings</span>
+    <span class="nav-tooltip">Configurações</span>
+  </button>
+
+  <!-- Painel 9 (Modo Exato only) — exibido condicionalmente via JS -->
+  <button class="nav-btn nav-btn-exato" onclick="switchTab('calculadora')" data-tab="calculadora" style="display:none">
+    <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg>
+    <span class="nav-label">Calc</span>
+    <span class="nav-tooltip">Calculadora InkFlow</span>
+  </button>
 </nav>
 
 <!-- ── App ── -->
@@ -293,8 +280,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="top-header-name" id="header-studio-name">Meu Estúdio</div>
     <div class="top-header-badge" id="header-plan-badge">estúdio</div>
     <div class="top-header-status" id="header-status">
-      <span class="status-dot pending"></span>
-      <span>verificando...</span>
+      <span class="status-pill" id="status-whatsapp" title="WhatsApp">
+        <span class="status-dot pending"></span>
+        <span class="status-label">WhatsApp</span>
+      </span>
+      <span class="status-pill" id="status-telegram" title="Telegram do tatuador" style="display:none">
+        <span class="status-dot pending"></span>
+        <span class="status-label">Telegram</span>
+      </span>
     </div>
   </header>
 
@@ -412,32 +405,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
             <div class="conn-status" id="conn-status">• verificando conexão...</div>
           </div>
 
-          <!-- Slots -->
-          <div class="slots-section">
-            <div class="slots-title">
-              <svg style="width:16px;height:16px;stroke:var(--teal);fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-              Artistas do Estúdio
-            </div>
-            <div class="slots-bar"><div class="slots-fill" id="slots-fill"></div></div>
-            <div class="slots-label"><span id="slots-used">0</span> de <span id="slots-max">4</span> slots ocupados</div>
-            <div class="artists-list" id="artists-list"></div>
-          </div>
-
-          <!-- Invite -->
-          <div class="invite-section" id="invite-section">
-            <div class="invite-title">Convidar Artista</div>
-            <div class="invite-sub">Gere um link de convite para um artista conectar o WhatsApp dele ao estúdio. Cada artista terá seu próprio assistente virtual.</div>
-            <button class="invite-btn" id="invite-btn" onclick="generateInvite()">Gerar link de convite</button>
-            <div class="link-box" id="link-box">
-              <div class="link-label">Link de convite (válido por 7 dias)</div>
-              <span class="link-url" id="link-url"></span>
-              <div class="link-actions">
-                <button class="link-copy" onclick="copyLink()">&#128203; Copiar link</button>
-                <button class="link-share" onclick="shareLink()">&#128228; Compartilhar</button>
-              </div>
-            </div>
-          </div>
-
           <!-- Support (mobile) -->
           <div class="support-box" style="display:none" id="mobile-support">
             <button type="button" class="support-link" onclick="openSupport()">
@@ -489,9 +456,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
                   </select>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-checkbox">
+                  <label class="toggle-pill">
                     <input type="checkbox" id="ag-identificador"/>
-                    <span class="ag-checkbox-label">Usar nome do agente como prefixo na 1ª msg<br><span style="color:var(--t3);font-size:10px">Ex: "Isabela: Oi tudo bem?" — senão texto direto sem prefixo</span></span>
+                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                    <span class="toggle-label">Usar nome do agente como prefixo na 1ª msg<small>Ex: "Isabela: Oi tudo bem?" — senão texto direto sem prefixo</small></span>
                   </label>
                 </div>
               </div>
@@ -547,9 +515,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
                   <div class="ag-hint">Bot recusa pedido desses estilos educadamente</div>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-checkbox">
+                  <label class="toggle-pill">
                     <input type="checkbox" id="ag-cobertura" checked/>
-                    <span class="ag-checkbox-label">Estúdio aceita cobertura (cover up)<br><span style="color:var(--t3);font-size:10px">Se não, bot recusa e encerra educadamente sem chamar você</span></span>
+                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                    <span class="toggle-label">Estúdio aceita cobertura (cover up)<small>Se não, bot recusa e encerra educadamente sem chamar você</small></span>
                   </label>
                 </div>
               </div>
@@ -658,12 +627,60 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
           </div>
         </div>
 
-        <!-- ═══ TAB: Agendamentos ═══ -->
-        <div class="tab-panel" id="tab-agendamentos">
+        <!-- ═══ TAB: Agenda ═══ -->
+        <div class="tab-panel" id="tab-agenda">
           <div class="empty-state">
             <div class="empty-state-icon">&#128197;</div>
-            <div class="empty-state-title">Agendamentos</div>
-            Em breve — Seus agendamentos e confirmações
+            <div class="empty-state-title">Agenda</div>
+            Em breve — Integração com Google Calendar (PR 6)
+          </div>
+        </div>
+
+        <!-- ═══ TAB: Portfólio (NEW PR 5) ═══ -->
+        <div class="tab-panel" id="tab-portfolio">
+          <div class="empty-state">
+            <div class="empty-state-icon">&#127912;</div>
+            <div class="empty-state-title">Portfólio</div>
+            Em breve — Galeria com favoritas, filtro por estilo, upload e migração das fotos atuais (PR 5)
+          </div>
+        </div>
+
+        <!-- ═══ TAB: Ideias & Sugestões (NEW PR 7) ═══ -->
+        <div class="tab-panel" id="tab-sugestoes">
+          <div class="empty-state">
+            <div class="empty-state-icon">&#128161;</div>
+            <div class="empty-state-title">Ideias &amp; Sugestões</div>
+            Em breve — Canal direto pra mandar ideias e ver status (PR 7)
+          </div>
+        </div>
+
+        <!-- ═══ TAB: Suporte e dúvidas (NEW PR 8) ═══ -->
+        <div class="tab-panel" id="tab-suporte">
+          <div class="empty-state">
+            <div class="empty-state-icon">&#10067;</div>
+            <div class="empty-state-title">Suporte e dúvidas</div>
+            <div style="margin-top:16px">
+              <button class="ag-save-btn" onclick="openSupport()" style="max-width:240px;margin:0 auto">Falar com Leandro no WhatsApp</button>
+            </div>
+            <div style="margin-top:12px;font-size:12px;color:var(--t3)">FAQ completo + tutoriais virão em breve (PR 8)</div>
+          </div>
+        </div>
+
+        <!-- ═══ TAB: Settings (NEW PR 9) ═══ -->
+        <div class="tab-panel" id="tab-settings">
+          <div class="empty-state">
+            <div class="empty-state-icon">&#9881;</div>
+            <div class="empty-state-title">Configurações</div>
+            Em breve — Estúdio, Conta, Plano, Notificações, Integrações, Zona de perigo (PR 9)
+          </div>
+        </div>
+
+        <!-- ═══ TAB: Calculadora InkFlow (Modo Exato only) ═══ -->
+        <div class="tab-panel" id="tab-calculadora">
+          <div class="empty-state">
+            <div class="empty-state-icon">&#129518;</div>
+            <div class="empty-state-title">Calculadora InkFlow</div>
+            Em breve — Calculadora InkFlow para precificar tatuagens (Modo Exato)
           </div>
         </div>
 
@@ -673,28 +690,39 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   </main>
 </div><!-- /app-layout -->
 
-<div class="toast" id="toast">Link copiado!</div>
-
-<!-- Welcome modal (primeiro acesso pós-onboarding) -->
-<div class="wc-overlay" id="wc-overlay">
-  <div class="wc-card">
-    <div class="wc-emoji">&#127881;</div>
-    <div class="wc-title">Seu InkFlow está pronto!</div>
-    <div class="wc-sub">Agora convide os artistas do seu estúdio para conectarem os WhatsApps deles.</div>
-    <div class="wc-slots" id="wc-slots">Você pode convidar até <span id="wc-slot-count">&mdash;</span> artistas</div>
-    <div class="wc-invite" id="wc-invite-box" style="display:none">
-      <div class="wc-invite-label">Link de convite (válido por 7 dias)</div>
-      <div class="wc-invite-link" id="wc-invite-link"></div>
-      <button class="wc-btn primary" onclick="copyWelcomeLink()">&#128203; Copiar link de convite</button>
-    </div>
-    <div class="wc-actions">
-      <button class="wc-btn primary" id="wc-generate" onclick="generateWelcomeInvite()">Gerar primeiro link de convite</button>
-      <button class="wc-btn secondary" onclick="closeWelcome()">Fazer isso depois</button>
-    </div>
-  </div>
-</div>
+<div class="toast" id="toast"></div>
 
 <script>
+// ── Toggle pill component (substitui <input type=checkbox>) ──
+// Uso:
+//   HTML: <label class="toggle-pill"><input type="checkbox" id="X"/><span class="toggle-track"><span class="toggle-thumb"></span></span><span class="toggle-label">Texto<small>Subtexto opcional</small></span></label>
+//   JS reads: document.getElementById('X').checked
+//   JS writes: document.getElementById('X').checked = true
+//   Programmatic: const node = makeTogglePill({id, label, hint, checked}); container.appendChild(node);
+function makeTogglePill({ id, label, hint, checked = false }) {
+  const lbl = document.createElement('label');
+  lbl.className = 'toggle-pill';
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.id = id;
+  input.checked = !!checked;
+  const track = document.createElement('span');
+  track.className = 'toggle-track';
+  const thumb = document.createElement('span');
+  thumb.className = 'toggle-thumb';
+  track.appendChild(thumb);
+  const labelSpan = document.createElement('span');
+  labelSpan.className = 'toggle-label';
+  labelSpan.textContent = label;
+  if (hint) {
+    const small = document.createElement('small');
+    small.textContent = hint;
+    labelSpan.appendChild(small);
+  }
+  lbl.append(input, track, labelSpan);
+  return lbl;
+}
+
 // ── Tab switching ──
 function switchTab(tabName) {
   // Update nav buttons
@@ -711,17 +739,32 @@ function switchTab(tabName) {
 
 // Restore tab from URL hash on load
 function restoreTab() {
-  const hash = window.location.hash.replace('#', '');
+  let hash = window.location.hash.replace('#', '');
+  if (hash === 'agendamentos') hash = 'agenda';
   if (hash && document.getElementById('tab-' + hash)) {
     switchTab(hash);
   }
 }
 window.addEventListener('hashchange', restoreTab);
 
+// Status pills — click navega pra Settings (PR 9 irá rolar pra seção específica)
+document.getElementById('status-whatsapp').addEventListener('click', () => {
+  switchTab('settings');
+});
+document.getElementById('status-telegram').addEventListener('click', () => {
+  switchTab('settings');
+});
+
+// Show/hide Calculadora nav button based on Modo Exato
+function updateModoExatoUI(tenant) {
+  const isExato = tenant?.config_precificacao?.modo === 'exato';
+  const calcBtn = document.querySelector('.nav-btn-exato');
+  if (calcBtn) calcBtn.style.display = isExato ? '' : 'none';
+}
+
 // ── State ──
 let studioData = null;
 let tenantId = null;
-let lastGeneratedLink = '';
 let currentStudioToken = null;
 
 // ── Init ──
@@ -774,7 +817,7 @@ async function init() {
       // Mostra banner verde persistente + esconde seção conectar
       showConnectedBanner();
       // Update header status
-      updateHeaderStatus('online', 'WhatsApp conectado');
+      updateHeaderStatus('whatsapp', 'connected');
       // Limpa ?pending_whatsapp=true da URL
       try {
         const url = new URL(window.location.href);
@@ -785,7 +828,7 @@ async function init() {
       } catch {}
     } else {
       // Não conectado — abre seção conectar
-      updateHeaderStatus('pending', 'WhatsApp desconectado');
+      updateHeaderStatus('whatsapp', 'disconnected');
       startConnectFlow();
     }
 
@@ -801,8 +844,15 @@ async function init() {
       } catch (e) { console.warn('[studio] falha ao persistir token renovado:', e); }
     }
     renderStudio(data);
-    maybeShowWelcome(data);
     restoreTab();
+
+    // Telegram status pill (só Modo Coleta)
+    const isColeta = (data.tenant.config_precificacao?.modo || 'coleta') === 'coleta';
+    if (isColeta) {
+      document.getElementById('status-telegram').style.display = '';
+      const telegramConnected = !!data.tenant.tatuador_telegram_chat_id;
+      updateHeaderStatus('telegram', telegramConnected ? 'connected' : 'disconnected');
+    }
 
   } catch (err) {
     console.error('init error:', err);
@@ -810,11 +860,24 @@ async function init() {
   }
 }
 
-function updateHeaderStatus(state, label) {
-  const el = document.getElementById('header-status');
+function updateHeaderStatus(target, state) {
+  // target: 'whatsapp' | 'telegram'
+  // state: 'online'|'connected' | 'offline'|'disconnected' | 'pending'|'unknown'
+  const el = document.getElementById('status-' + target);
   if (!el) return;
-  const dotClass = state === 'online' ? 'online' : state === 'offline' ? 'offline' : 'pending';
-  el.innerHTML = '<span class="status-dot ' + dotClass + '"></span><span>' + label + '</span>';
+  const dot = el.querySelector('.status-dot');
+  const cssState = (state === 'online' || state === 'connected') ? 'online'
+                 : (state === 'offline' || state === 'disconnected') ? 'offline'
+                 : 'pending';
+  const pillState = (state === 'online' || state === 'connected') ? 'connected'
+                 : (state === 'offline' || state === 'disconnected') ? 'disconnected'
+                 : 'pending';
+  dot.className = 'status-dot ' + cssState;
+  el.classList.remove('connected', 'disconnected', 'pending');
+  el.classList.add(pillState);
+  const labels = { whatsapp: 'WhatsApp', telegram: 'Telegram' };
+  const states = { connected: 'conectado', disconnected: 'desconectado', pending: 'verificando...' };
+  el.title = labels[target] + ' ' + states[pillState];
 }
 
 function showError(msg) {
@@ -829,7 +892,6 @@ function renderStudio(data) {
   document.getElementById('top-header').style.display = '';
 
   const t = data.tenant;
-  const s = data.slots;
 
   // Header
   const studioName = t.nome_estudio || 'Meu Estúdio';
@@ -844,49 +906,9 @@ function renderStudio(data) {
   document.getElementById('st-owner').textContent = t.nome || t.email || '—';
   document.getElementById('st-instance').textContent = t.evo_instance || '—';
 
-  // Slots bar
-  const maxArtistSlots = s.max - 1; // dono ocupa 1
-  const usedSlots = s.used;
-  const pct = maxArtistSlots > 0 ? Math.min((usedSlots / maxArtistSlots) * 100, 100) : 0;
-  const fill = document.getElementById('slots-fill');
-  fill.style.width = pct + '%';
-  if (pct >= 100) fill.classList.add('full');
-  document.getElementById('slots-used').textContent = usedSlots;
-  document.getElementById('slots-max').textContent = maxArtistSlots;
-
-  // Artists list
-  const listEl = document.getElementById('artists-list');
-  if (data.artists && data.artists.length > 0) {
-    listEl.innerHTML = data.artists.map(a => {
-      const initials = (a.nome || '?').substring(0, 2).toUpperCase();
-      const badge = a.ativo
-        ? '<span class="artist-badge badge-active">Ativo</span>'
-        : '<span class="artist-badge badge-pending">Pendente</span>';
-      return `
-        <div class="artist-item">
-          <div class="artist-avatar">${initials}</div>
-          <div class="artist-info">
-            <div class="artist-name">${a.nome || 'Sem nome'}</div>
-            <div class="artist-status">${a.evo_instance || 'WhatsApp não conectado'}</div>
-          </div>
-          ${badge}
-        </div>
-      `;
-    }).join('');
-  } else {
-    listEl.innerHTML = '<div style="font-size:13px;color:var(--t3);text-align:center;padding:12px">Nenhum artista vinculado ainda</div>';
-  }
-
-  // Hide invite if no slots remaining
-  if (s.remaining <= 0) {
-    document.getElementById('invite-section').innerHTML = `
-      <div class="invite-title">Limite atingido</div>
-      <div class="invite-sub">Todos os slots de artista estão preenchidos (${usedSlots}/${maxArtistSlots}).</div>
-    `;
-  }
-
   // Popular formulário de Agente & Preços com configs atuais
   loadAgentConfig(t);
+  updateModoExatoUI(t);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1133,81 +1155,6 @@ function pollTelegramReconnect(obKey) {
   }, 3000);
 }
 
-// ── Generate invite ──
-async function generateInvite() {
-  const btn = document.getElementById('invite-btn');
-  btn.disabled = true;
-  btn.textContent = 'Gerando...';
-
-  try {
-    const res = await fetch('/api/create-artist-invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenantId }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || data.error) {
-      alert(data.error || 'Erro ao gerar convite');
-      btn.disabled = false;
-      btn.textContent = 'Gerar link de convite';
-      return;
-    }
-
-    lastGeneratedLink = data.link;
-    document.getElementById('link-url').textContent = data.link;
-    document.getElementById('link-box').classList.add('show');
-    btn.textContent = 'Gerar outro convite';
-    btn.disabled = false;
-
-    // Update slots display
-    if (data.slots) {
-      document.getElementById('slots-used').textContent = data.slots.used;
-      if (data.slots.remaining <= 0) {
-        btn.disabled = true;
-        btn.textContent = 'Todos os slots preenchidos';
-      }
-    }
-
-  } catch (err) {
-    console.error('generateInvite error:', err);
-    alert('Erro de conexão. Tente novamente.');
-    btn.disabled = false;
-    btn.textContent = 'Gerar link de convite';
-  }
-}
-
-// ── Copy & Share ──
-function copyLink() {
-  if (!lastGeneratedLink) return;
-  navigator.clipboard.writeText(lastGeneratedLink).then(() => {
-    showToast('Link copiado!');
-  }).catch(() => {
-    // Fallback for older browsers
-    const ta = document.createElement('textarea');
-    ta.value = lastGeneratedLink;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('Link copiado!');
-  });
-}
-
-function shareLink() {
-  if (!lastGeneratedLink) return;
-  if (navigator.share) {
-    navigator.share({
-      title: 'Convite InkFlow',
-      text: 'Use este link para conectar seu WhatsApp ao estúdio:',
-      url: lastGeneratedLink,
-    }).catch(() => {});
-  } else {
-    copyLink();
-  }
-}
-
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1225,7 +1172,7 @@ function openSupport() {
   } catch (e) {}
   const studioName = (studioData && studioData.tenant && studioData.tenant.nome_estudio) || '';
   const msg = encodeURIComponent(
-    `Olá! Sou dono do estúdio${studioName ? ' ' + studioName : ''} e preciso de ajuda com o onboarding de artistas.`
+    `Olá! Sou dono do estúdio${studioName ? ' ' + studioName : ''} e preciso de ajuda com o InkFlow.`
   );
   window.open(`https://wa.me/5521970789797?text=${msg}`, '_blank');
 }
@@ -1368,7 +1315,7 @@ async function pollConnection() {
       } catch {}
       setTimeout(() => {
         showConnectedBanner();
-        updateHeaderStatus('online', 'WhatsApp conectado');
+        updateHeaderStatus('whatsapp', 'connected');
         showToast('WhatsApp conectado!');
       }, 1500);
     }
@@ -1381,73 +1328,6 @@ function startConnectFlow() {
   connPollHandle = setInterval(pollConnection, 5000);
   // Auto-pick pairing no mobile
   if (/Android|iPhone|iPad/i.test(navigator.userAgent)) switchConnTab('pair');
-}
-
-// ── Welcome modal (pos-onboarding) ──
-function maybeShowWelcome(data) {
-  const params = new URLSearchParams(window.location.search);
-  const forceWelcome = params.get('welcome') === 'true';
-  const alreadyShown = !!data?.tenant?.welcome_shown;
-  // Solo/individual nao tem artistas — pula welcome
-  const isStudioPlan = ['estudio','premium'].includes(data?.tenant?.plano);
-  if (!isStudioPlan) return;
-  if (!forceWelcome && alreadyShown) return;
-  const maxSlots = (data?.slots?.max || 1) - 1; // -1 por dono
-  const remaining = data?.slots?.remaining ?? 0;
-  const slotCountEl = document.getElementById('wc-slot-count');
-  if (slotCountEl) slotCountEl.textContent = maxSlots;
-  document.getElementById('wc-overlay').classList.add('show');
-}
-
-async function generateWelcomeInvite() {
-  const btn = document.getElementById('wc-generate');
-  btn.disabled = true; btn.textContent = 'Gerando...';
-  try {
-    const res = await fetch('/api/create-artist-invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenantId }),
-    });
-    const data = await res.json();
-    if (!res.ok || data.error) {
-      alert(data.error || 'Erro ao gerar convite');
-      btn.disabled = false; btn.textContent = 'Gerar primeiro link de convite';
-      return;
-    }
-    document.getElementById('wc-invite-link').textContent = data.link;
-    document.getElementById('wc-invite-box').style.display = 'block';
-    btn.style.display = 'none';
-    lastGeneratedLink = data.link;
-  } catch (e) {
-    console.error('generateWelcomeInvite error:', e);
-    alert('Erro de conexão. Tente novamente.');
-    btn.disabled = false; btn.textContent = 'Gerar primeiro link de convite';
-  }
-}
-
-function copyWelcomeLink() {
-  const link = document.getElementById('wc-invite-link').textContent;
-  if (!link) return;
-  navigator.clipboard.writeText(link).then(() => showToast('Link copiado!')).catch(() => {});
-}
-
-async function closeWelcome() {
-  document.getElementById('wc-overlay').classList.remove('show');
-  // Persiste welcome_shown=true via update-tenant autenticado com studio_token
-  if (!tenantId || !currentStudioToken) return;
-  try {
-    await fetch('/api/update-tenant', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenantId, studio_token: currentStudioToken, welcome_shown: true }),
-    });
-  } catch (e) { console.warn('[welcome] falha ao salvar welcome_shown:', e?.message); }
-  // Limpar ?welcome=true da URL sem recarregar
-  try {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('welcome');
-    window.history.replaceState({}, '', url.toString());
-  } catch {}
 }
 
 // ── Start ──

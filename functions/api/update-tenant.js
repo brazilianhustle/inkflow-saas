@@ -22,12 +22,11 @@ const CORS = {
 };
 
 // Campos que o onboarding pode atualizar
-const ALLOWED_FIELDS = new Set([
+export const ALLOWED_FIELDS = new Set([
   'evo_instance', 'evo_apikey', 'evo_base_url', 'webhook_path',
   'grupo_notificacao', 'grupo_orcamento',
   'google_calendar_id', 'google_drive_folder',
   'nome_agente', 'nome_estudio', 'ativo', 'plano', 'trial_ate',
-  'parent_tenant_id', 'is_artist_slot',
   'welcome_shown',
   // [v5 agente IA] Configs do agente editaveis pelo dono via studio.html
   'config_agente',          // JSONB: persona, tom, emoji_level, usa_giria, expressoes_proibidas, frases_naturais, usa_identificador, aceita_cobertura, estilos_aceitos, estilos_recusados, few_shot_exemplos, tester_usage
@@ -38,10 +37,13 @@ const ALLOWED_FIELDS = new Set([
   'gatilhos_handoff',       // TEXT[]: ['cobertura','retoque','rosto',...]
   'portfolio_urls',         // TEXT[]: URLs de portfolio
   'faq_texto',              // texto livre de FAQ
-  'modo_atendimento',       // TEXT: individual | tatuador_dono | recepcionista | artista_slot
+  'modo_atendimento',       // TEXT: individual | tatuador_dono | recepcionista
   'fewshots_por_modo',      // JSONB: { coleta_tattoo, coleta_cadastro, coleta_proposta, exato } — Modo Coleta v2
   'tatuador_telegram_chat_id',    // TEXT: chat_id Telegram do tatuador (canal handoff Coleta v2)
   'tatuador_telegram_username',   // TEXT: @username Telegram (display)
+  'ativo_ate',                    // TIMESTAMPTZ: data de expiração do plano
+  'deletado_em',                  // TIMESTAMPTZ: soft-delete timestamp
+  'config_notificacoes',          // JSONB: preferências de notificação do tenant
 ]);
 
 // FIX AUDIT #4: Campos adicionais que o admin pode editar via dashboard
@@ -53,7 +55,7 @@ const ADMIN_EXTRA_FIELDS = new Set([
 
 // Valida tipo basico de campos JSONB/array antes de mandar pro Supabase.
 // Retorna { ok: boolean, erro?: string }
-const MODOS_ATENDIMENTO = ['individual', 'tatuador_dono', 'recepcionista', 'artista_slot'];
+export const MODOS_ATENDIMENTO = ['individual', 'tatuador_dono', 'recepcionista'];
 const MODOS_VALIDOS = ['coleta', 'exato']; // Modo Coleta v2: 'faixa' REMOVIDO; 'coleta' default novo
 const FEWSHOT_KEYS_VALIDAS = ['coleta_tattoo', 'coleta_cadastro', 'coleta_proposta', 'exato'];
 
@@ -75,7 +77,7 @@ export function validateConfigPrecificacao(cfg) {
 }
 
 export function validateFieldTypes(fields) {
-  const jsonbFields = ['config_agente', 'config_precificacao', 'horario_funcionamento'];
+  const jsonbFields = ['config_agente', 'config_precificacao', 'horario_funcionamento', 'config_notificacoes'];
   const arrayFields = ['gatilhos_handoff', 'portfolio_urls'];
   const intFields = ['duracao_sessao_padrao_h', 'sinal_percentual'];
 

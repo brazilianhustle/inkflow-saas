@@ -153,7 +153,7 @@ export async function onRequest(context) {
   if (!authorized) return toolJson({ ok: false, error: 'unauthorized' }, 401);
 
   // Carrega tenant completo (pro prompt + pro cálculo)
-  const tFields = 'id,nome_agente,nome_estudio,plano,faq_texto,config_precificacao,config_agente,horario_funcionamento,duracao_sessao_padrao_h,sinal_percentual,gatilhos_handoff,portfolio_urls,modo_atendimento,parent_tenant_id,is_artist_slot';
+  const tFields = 'id,nome_agente,nome_estudio,plano,faq_texto,config_precificacao,config_agente,horario_funcionamento,duracao_sessao_padrao_h,sinal_percentual,gatilhos_handoff,portfolio_urls,modo_atendimento';
   const tRes = await supaFetch(env, `/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=${tFields}`);
   if (!tRes.ok) return toolJson({ ok: false, error: 'db-error' }, 500);
   const tenants = await tRes.json();

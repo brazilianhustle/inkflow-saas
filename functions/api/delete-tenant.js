@@ -197,40 +197,7 @@ export async function onRequest(context) {
       }
     }
 
-    // ── 1. Buscar IDs + info EVO dos tenants filhos (artistas) ──
-    const childRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/tenants?parent_tenant_id=eq.${encodeURIComponent(tenant_id)}&select=id,evo_instance,evo_base_url`,
-      { headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY } }
-    );
-    const childTenants = childRes.ok ? await childRes.json() : [];
-    const childIds = childTenants.map(c => c.id);
-
-    // Deletar instancias EVO dos filhos (artistas) antes de remover linhas
-    for (const child of childTenants) {
-      if (child.evo_instance) {
-        const r = await deleteEvoInstance(child.evo_instance, child.evo_base_url);
-        if (r.ok) evoDeleted.push({ instance: r.instance, cleanup: r.cleanup });
-        else evoErrors.push(r);
-      }
-    }
-
-    // ── 2. Deletar dados dos filhos (se existirem) ──
-    for (const childId of childIds) {
-      await del('chat_messages', 'tenant_id=eq.' + childId);
-      await del('chats', 'tenant_id=eq.' + childId);
-      await del('dados_cliente', 'tenant_id=eq.' + childId);
-      await del('logs', 'tenant_id=eq.' + childId);
-      await del('signups_log', 'tenant_id=eq.' + childId);
-      await del('payment_logs', 'tenant_id=eq.' + childId);
-    }
-
-    // ── 3. Limpar onboarding_links e tenants filhos ──
-    await del('onboarding_links', 'parent_tenant_id=eq.' + tenant_id);
-    if (childIds.length > 0) {
-      await del('tenants', 'parent_tenant_id=eq.' + tenant_id);
-    }
-
-    // ── 4. Deletar dados do tenant pai ──
+    // ── 1. Deletar dados do tenant ──
     await del('chat_messages', 'tenant_id=eq.' + tenant_id);
     await del('chats', 'tenant_id=eq.' + tenant_id);
     await del('dados_cliente', 'tenant_id=eq.' + tenant_id);
@@ -238,7 +205,7 @@ export async function onRequest(context) {
     await del('signups_log', 'tenant_id=eq.' + tenant_id);
     await del('payment_logs', 'tenant_id=eq.' + tenant_id);
 
-    // ── 5. Deletar o tenant pai ──
+    // ── 2. Deletar o tenant ──
     const finalRes = await fetch(`${SUPABASE_URL}/rest/v1/tenants?id=eq.${tenant_id}`, { method: 'DELETE', headers });
     if (!finalRes.ok) {
       const err = await finalRes.text();
