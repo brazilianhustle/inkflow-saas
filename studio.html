@@ -1936,6 +1936,65 @@ async function carregarMaisAntigas() {
   }
 }
 
+async function executarAcaoConversa(action) {
+  if (!CONV_STATE.conversaAberta) return;
+  if (action !== 'assumir' && action !== 'devolver') return;
+  if (!currentStudioToken) {
+    alert('Token do studio não disponível. Recarrega a página.');
+    return;
+  }
+
+  const conversa_id = CONV_STATE.conversaAberta.id;
+  const endpoint = action === 'assumir' ? '/api/conversas/assumir' : '/api/conversas/devolver';
+  const btnId = action === 'assumir' ? 'conv-action-assumir' : 'conv-action-devolver';
+  const btn = document.getElementById(btnId);
+  const originalText = action === 'assumir' ? 'Assumir' : 'Devolver pro bot';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = action === 'assumir' ? 'Assumindo…' : 'Devolvendo…';
+  }
+
+  try {
+    const r = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversa_id, studio_token: currentStudioToken }),
+    });
+    if (!r.ok) {
+      console.error(`executarAcaoConversa(${action}): HTTP`, r.status);
+      alert(action === 'assumir' ? 'Erro ao assumir conversa.' : 'Erro ao devolver pro bot.');
+      return;
+    }
+    const body = await r.json();
+
+    // Atualizar conversa local conforme novo estado.
+    if (body.new_state) {
+      const prevEstado = CONV_STATE.conversaAberta.estado_agente;
+      CONV_STATE.conversaAberta.estado_agente = body.new_state;
+      if (action === 'assumir' && body.new_state === 'pausada_tatuador') {
+        // Salva estado anterior pra eventual devolver.
+        CONV_STATE.conversaAberta.estado_agente_anterior = prevEstado;
+        CONV_STATE.conversaAberta.pausada_em = new Date().toISOString();
+      } else if (action === 'devolver') {
+        CONV_STATE.conversaAberta.estado_agente_anterior = null;
+        CONV_STATE.conversaAberta.pausada_em = null;
+      }
+    }
+    // Re-render header pra refletir mudança de botões + badge.
+    renderThreadHeader(CONV_STATE.conversaAberta);
+    // Recarregar grupo ativo pra refletir mudança no badge da lista.
+    await carregarGrupo(CONV_STATE.grupoAtivo, false);
+  } catch (err) {
+    console.error(`executarAcaoConversa(${action}): exception`, err);
+    alert('Erro de rede. Tente novamente.');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+}
+
 // Wire load-older + back-btn (mobile).
 function setupConvThread() {
   const loadOlderBtn = document.getElementById('conv-load-older');
@@ -1948,6 +2007,12 @@ function setupConvThread() {
       if (layout) layout.classList.remove('show-thread');
     });
   }
+
+  const assumirBtn = document.getElementById('conv-action-assumir');
+  if (assumirBtn) assumirBtn.addEventListener('click', () => executarAcaoConversa('assumir'));
+
+  const devolverBtn = document.getElementById('conv-action-devolver');
+  if (devolverBtn) devolverBtn.addEventListener('click', () => executarAcaoConversa('devolver'));
 }
 
 // Expose abrirConversa globally pra uso pelos cards.
