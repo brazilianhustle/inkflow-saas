@@ -28,4 +28,7 @@ node --test tests/tools/reentrada-helpers.test.mjs
 echo "▶ API — kill-switch-detect..."
 node --test tests/api/kill-switch-detect.test.mjs
 
+echo "▶ API — conversas assumir/devolver..."
+node --test tests/api/conversas-assumir-devolver.test.mjs
+
 echo "✓ Todos os tests passaram."
