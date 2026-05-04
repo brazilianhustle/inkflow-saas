@@ -51,6 +51,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .status-dot.online{background:var(--green);box-shadow:0 0 6px var(--green)}
 .status-dot.offline{background:var(--red)}
 .status-dot.pending{background:var(--amber)}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s}
+.status-pill:hover{border-color:var(--border2)}
+.status-pill .status-label{font-size:10px;color:var(--t3);font-weight:600}
+.status-pill.connected .status-label{color:var(--green)}
+.status-pill.disconnected .status-label{color:var(--red)}
+.status-pill.pending .status-label{color:var(--amber)}
 
 /* ── Content area ── */
 .content-area{flex:1;padding:24px;display:flex;justify-content:center}
@@ -334,8 +340,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="top-header-name" id="header-studio-name">Meu Estúdio</div>
     <div class="top-header-badge" id="header-plan-badge">estúdio</div>
     <div class="top-header-status" id="header-status">
-      <span class="status-dot pending"></span>
-      <span>verificando...</span>
+      <span class="status-pill" id="status-whatsapp" title="WhatsApp">
+        <span class="status-dot pending"></span>
+        <span class="status-label">WhatsApp</span>
+      </span>
+      <span class="status-pill" id="status-telegram" title="Telegram do tatuador" style="display:none">
+        <span class="status-dot pending"></span>
+        <span class="status-label">Telegram</span>
+      </span>
     </div>
   </header>
 
@@ -840,6 +852,14 @@ function restoreTab() {
 }
 window.addEventListener('hashchange', restoreTab);
 
+// Status pills — click navega pra Settings (PR 9 irá rolar pra seção específica)
+document.getElementById('status-whatsapp').addEventListener('click', () => {
+  switchTab('settings');
+});
+document.getElementById('status-telegram').addEventListener('click', () => {
+  switchTab('settings');
+});
+
 // Show/hide Calculadora nav button based on Modo Exato
 function updateModoExatoUI(tenant) {
   const isExato = tenant?.config_precificacao?.modo === 'exato';
@@ -903,7 +923,7 @@ async function init() {
       // Mostra banner verde persistente + esconde seção conectar
       showConnectedBanner();
       // Update header status
-      updateHeaderStatus('online', 'WhatsApp conectado');
+      updateHeaderStatus('whatsapp', 'connected');
       // Limpa ?pending_whatsapp=true da URL
       try {
         const url = new URL(window.location.href);
@@ -914,7 +934,7 @@ async function init() {
       } catch {}
     } else {
       // Não conectado — abre seção conectar
-      updateHeaderStatus('pending', 'WhatsApp desconectado');
+      updateHeaderStatus('whatsapp', 'disconnected');
       startConnectFlow();
     }
 
@@ -933,17 +953,35 @@ async function init() {
     maybeShowWelcome(data);
     restoreTab();
 
+    // Telegram status pill (só Modo Coleta)
+    const isColeta = (data.tenant.config_precificacao?.modo || 'coleta') === 'coleta';
+    if (isColeta) {
+      document.getElementById('status-telegram').style.display = '';
+      const telegramConnected = !!data.tenant.tatuador_telegram_chat_id;
+      updateHeaderStatus('telegram', telegramConnected ? 'connected' : 'disconnected');
+    }
+
   } catch (err) {
     console.error('init error:', err);
     showError('Erro ao carregar dados. Verifique sua conexão e tente novamente.');
   }
 }
 
-function updateHeaderStatus(state, label) {
-  const el = document.getElementById('header-status');
+function updateHeaderStatus(target, state) {
+  // target: 'whatsapp' | 'telegram'
+  // state: 'online'|'connected' | 'offline'|'disconnected' | 'pending'|'unknown'
+  const el = document.getElementById('status-' + target);
   if (!el) return;
-  const dotClass = state === 'online' ? 'online' : state === 'offline' ? 'offline' : 'pending';
-  el.innerHTML = '<span class="status-dot ' + dotClass + '"></span><span>' + label + '</span>';
+  const dot = el.querySelector('.status-dot');
+  const cssState = (state === 'online' || state === 'connected') ? 'online'
+                 : (state === 'offline' || state === 'disconnected') ? 'offline'
+                 : 'pending';
+  const pillState = (state === 'online' || state === 'connected') ? 'connected'
+                 : (state === 'offline' || state === 'disconnected') ? 'disconnected'
+                 : 'pending';
+  dot.className = 'status-dot ' + cssState;
+  el.classList.remove('connected', 'disconnected', 'pending');
+  el.classList.add(pillState);
 }
 
 function showError(msg) {
@@ -1498,7 +1536,7 @@ async function pollConnection() {
       } catch {}
       setTimeout(() => {
         showConnectedBanner();
-        updateHeaderStatus('online', 'WhatsApp conectado');
+        updateHeaderStatus('whatsapp', 'connected');
         showToast('WhatsApp conectado!');
       }, 1500);
     }
