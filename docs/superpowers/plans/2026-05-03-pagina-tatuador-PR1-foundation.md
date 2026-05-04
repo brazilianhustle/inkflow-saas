@@ -40,10 +40,18 @@ scripts/
 
 ```
 studio.html                                          ← sidebar 8 painéis, toggle component, header indicadores, 4 placeholders, remoção total Artistas
-onboarding.html                                      ← remoção da invite-section CSS+HTML+JS + correção copy planos (sem "tatuadores")
+onboarding.html                                      ← remoção invite-section + lógica artist invite (welcome screen, form, payment skip, post-success) + copy planos
 admin.html                                           ← remoção da visualização de Artistas (linhas 664, 692, 779-826)
-functions/api/update-tenant.js                       ← remove campos Artistas de SETTABLE_FIELDS + remove valor 'artista_slot' de MODOS_ATENDIMENTO + accept ativo_ate, deletado_em, config_notificacoes, estado_agente_anterior, pausada_em
+functions/api/update-tenant.js                       ← remove campos Artistas de SETTABLE_FIELDS + remove valor 'artista_slot' de MODOS_ATENDIMENTO + accept ativo_ate, deletado_em, config_notificacoes
 functions/api/validate-onboarding-key.js             ← remove lógica is_artist_invite + parent_tenant_id no select e response
+functions/api/create-tenant.js                       ← remove SETTABLE_FIELDS Artistas + isArtistRequest validation + lógica force is_artist_slot=true
+functions/api/delete-tenant.js                       ← remove cascade pra deletar artists filhos (parent_tenant_id queries)
+functions/api/evo-create-instance.js                 ← remove branch is_artist_slot/status_pagamento='artist_slot'
+functions/api/get-studio-token.js                    ← remove block se is_artist_slot=true
+functions/api/validate-studio-token.js               ← remove SELECT children artists no response
+functions/api/create-subscription.js                 ← remove block is_artist_slot=true (artistas não pagavam)
+functions/api/tools/simular-conversa.js              ← remove parent_tenant_id, is_artist_slot do tFields SELECT
+functions/_lib/pricing.js                            ← remove lógica "herda config do parent_tenant" (afetava artistas que herdavam preços do estúdio)
 tests/update-tenant-validation.test.mjs              ← adiciona testes pros campos novos + remove testes que usam parent_tenant_id/is_artist_slot
 ```
 
@@ -456,7 +464,11 @@ git commit -m "refactor(api): validate-onboarding-key sem lógica is_artist_invi
 
 ---
 
-## Task 5: Deletar `create-artist-invite.js`
+## Task 5: Backend cleanup amplo — deletar create-artist-invite.js + patch 8 arquivos
+
+Esta task agrupa o cleanup completo de **9 arquivos backend** que tocam Artistas. Foi expandida após audit (Task 1) revelar que `create-artist-invite.js` não era a única ref — havia lógica espalhada em 8 outros endpoints/libs. Tratar tudo numa task única evita PRs intermediários quebrados (qualquer endpoint que ainda referencia `is_artist_slot` num arquivo deletado falha em runtime).
+
+### Subtask 5.1: Deletar `create-artist-invite.js`
 
 **Files:**
 - Delete: `functions/api/create-artist-invite.js`
@@ -490,6 +502,240 @@ Expected: `DELETED`.
 ```bash
 git add -A functions/api/create-artist-invite.js
 git commit -m "feat(api): remove endpoint create-artist-invite (feature Artistas eliminada)"
+```
+
+### Subtask 5.2: Patch `functions/_lib/pricing.js`
+
+**Arquivo:** `functions/_lib/pricing.js` linhas 71, 79-80
+
+- [ ] **Step 1: Localizar lógica de herança**
+
+```bash
+grep -n "parent_tenant_id\|is_artist_slot\|herda" functions/_lib/pricing.js
+```
+
+Expected: linha 71 (SELECT inclui campos), 79-80 (`if (herda && t.parent_tenant_id) { ... fetch parent ... }`).
+
+- [ ] **Step 2: Remover campos do SELECT**
+
+Buscar:
+```javascript
+const r = await supaFetch(`/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=config_precificacao,config_agente,sinal_percentual,parent_tenant_id,is_artist_slot,modo_atendimento`);
+```
+
+Trocar por:
+```javascript
+const r = await supaFetch(`/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=config_precificacao,config_agente,sinal_percentual,modo_atendimento`);
+```
+
+- [ ] **Step 3: Remover bloco de herança**
+
+Buscar bloco que começa com `if (herda && t.parent_tenant_id) {` e termina no `}` correspondente. Remover bloco inteiro + qualquer variável `herda` se ficou órfã.
+
+- [ ] **Step 4: Validar JS**
+
+```bash
+node --check functions/_lib/pricing.js
+```
+
+### Subtask 5.3: Patch `functions/api/create-tenant.js`
+
+**Arquivo:** `functions/api/create-tenant.js` linhas 32, 64, 99, 105, 130-131, 137-138
+
+- [ ] **Step 1: Remover de SETTABLE_FIELDS (linha 32)**
+
+Buscar:
+```javascript
+'parent_tenant_id', 'is_artist_slot', 'google_calendar_id',
+```
+
+Trocar por:
+```javascript
+'google_calendar_id',
+```
+
+- [ ] **Step 2: Remover validação `isArtistRequest` (linha 64)**
+
+Buscar:
+```javascript
+const isArtistRequest = body.is_artist_slot === true && body.parent_tenant_id;
+```
+
+Remover essa linha. Buscar usos posteriores de `isArtistRequest` no arquivo e remover blocos `if`/`else` correspondentes.
+
+- [ ] **Step 3: Remover bloco completo de validação parent (linhas 99-138)**
+
+Buscar bloco que começa em `const isArtist = tenantData.parent_tenant_id && tenantData.is_artist_slot === true;` e termina depois do `delete tenantData.is_artist_slot;`. Remover bloco inteiro.
+
+- [ ] **Step 4: Validar JS**
+
+```bash
+node --check functions/api/create-tenant.js
+```
+
+### Subtask 5.4: Patch `functions/api/delete-tenant.js`
+
+**Arquivo:** `functions/api/delete-tenant.js` linhas 202, 228, 230
+
+- [ ] **Step 1: Remover queries cascade pra artists filhos**
+
+Buscar bloco que começa em ~linha 202 (`SELECT id,evo_instance,evo_base_url FROM tenants WHERE parent_tenant_id=eq.${tenant_id}`) e segue até `del('tenants', 'parent_tenant_id=eq.' + tenant_id)`. Remover bloco inteiro de cascade — feature de Artistas foi removida, sem filhos a deletar.
+
+- [ ] **Step 2: Remover delete de onboarding_links com parent_tenant_id (linha 228)**
+
+Buscar:
+```javascript
+await del('onboarding_links', 'parent_tenant_id=eq.' + tenant_id);
+```
+
+Remover essa linha. Coluna `parent_tenant_id` está sendo dropada da tabela na migration (Task 2).
+
+- [ ] **Step 3: Validar JS**
+
+```bash
+node --check functions/api/delete-tenant.js
+```
+
+### Subtask 5.5: Patch `functions/api/evo-create-instance.js`
+
+**Arquivo:** `functions/api/evo-create-instance.js` linhas 65, 75
+
+- [ ] **Step 1: Remover `is_artist_slot` do SELECT (linha 65)**
+
+Buscar:
+```javascript
+`${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=status_pagamento,plano,is_artist_slot,trial_ate`,
+```
+
+Trocar por:
+```javascript
+`${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=status_pagamento,plano,trial_ate`,
+```
+
+- [ ] **Step 2: Remover branch isArtist (linha ~75)**
+
+Buscar:
+```javascript
+const isArtist = t.is_artist_slot === true || t.status_pagamento === 'artist_slot';
+```
+
+Remover essa linha. Remover qualquer `if (isArtist)` block subsequente.
+
+- [ ] **Step 3: Validar JS**
+
+```bash
+node --check functions/api/evo-create-instance.js
+```
+
+### Subtask 5.6: Patch `functions/api/get-studio-token.js`
+
+**Arquivo:** `functions/api/get-studio-token.js` linhas 61, 70
+
+- [ ] **Step 1: Remover `is_artist_slot` do SELECT**
+
+Buscar:
+```javascript
+`${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=plano,ativo,is_artist_slot`,
+```
+
+Trocar por:
+```javascript
+`${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=plano,ativo`,
+```
+
+- [ ] **Step 2: Remover bloco `if (t.is_artist_slot)`**
+
+Buscar:
+```javascript
+if (t.is_artist_slot) {
+```
+
+Remover bloco completo (até `}` correspondente).
+
+- [ ] **Step 3: Validar JS**
+
+```bash
+node --check functions/api/get-studio-token.js
+```
+
+### Subtask 5.7: Patch `functions/api/validate-studio-token.js`
+
+**Arquivo:** `functions/api/validate-studio-token.js` linha 89
+
+- [ ] **Step 1: Remover SELECT children artists**
+
+Buscar bloco que faz fetch de `/rest/v1/tenants?parent_tenant_id=eq.${tenant.id}&is_artist_slot=eq.true&select=id,nome,evo_instance,ativo`. Remover linha + qualquer uso do resultado (provavelmente `data.artists = ...`).
+
+- [ ] **Step 2: Validar JS**
+
+```bash
+node --check functions/api/validate-studio-token.js
+```
+
+### Subtask 5.8: Patch `functions/api/create-subscription.js`
+
+**Arquivo:** `functions/api/create-subscription.js` linhas 216, 220
+
+- [ ] **Step 1: Remover SELECT is_artist_slot**
+
+Buscar:
+```javascript
+`${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=is_artist_slot`,
+```
+
+Remover linha + bloco `if (artData[0]?.is_artist_slot === true)` que segue.
+
+- [ ] **Step 2: Validar JS**
+
+```bash
+node --check functions/api/create-subscription.js
+```
+
+### Subtask 5.9: Patch `functions/api/tools/simular-conversa.js`
+
+**Arquivo:** `functions/api/tools/simular-conversa.js` linha 156
+
+- [ ] **Step 1: Remover do tFields**
+
+Buscar:
+```javascript
+const tFields = 'id,nome_agente,nome_estudio,plano,faq_texto,config_precificacao,config_agente,horario_funcionamento,duracao_sessao_padrao_h,sinal_percentual,gatilhos_handoff,portfolio_urls,modo_atendimento,parent_tenant_id,is_artist_slot';
+```
+
+Trocar por:
+```javascript
+const tFields = 'id,nome_agente,nome_estudio,plano,faq_texto,config_precificacao,config_agente,horario_funcionamento,duracao_sessao_padrao_h,sinal_percentual,gatilhos_handoff,portfolio_urls,modo_atendimento';
+```
+
+- [ ] **Step 2: Validar JS**
+
+```bash
+node --check functions/api/tools/simular-conversa.js
+```
+
+### Subtask 5.10: Bateria final + commit único
+
+- [ ] **Step 1: Rodar bateria completa**
+
+```bash
+bash scripts/test-prompts.sh 2>&1 | tail -10
+```
+
+Expected: todos os tests passam (provavelmente sem afetar tests pq são prompts/validation, não endpoints).
+
+- [ ] **Step 2: Audit confirmando zero refs em backend**
+
+```bash
+grep -rn "is_artist_slot\|parent_tenant_id" functions/ 2>/dev/null
+```
+
+Expected: zero linhas (toda lógica de Artistas removida do backend).
+
+- [ ] **Step 3: Commit único**
+
+```bash
+git add functions/
+git commit -m "refactor(backend): cleanup amplo — remove is_artist_slot/parent_tenant_id de 8 endpoints + pricing lib"
 ```
 
 ---
