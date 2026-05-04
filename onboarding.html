@@ -2640,7 +2640,7 @@ async function applyPresetAndAdvance(btn) {
       tom: 'amigavel',
       emoji_level: 'moderado',
       emojis_preferidos: ['😁'],
-      usa_giria: true,
+      // PR 3: usa_giria removido. Estilo das mensagens agora é só via tom + expressoes_proibidas.
       usa_identificador: false,
       persona_livre: null,
       saudacao: 'Oi! Aqui é o ' + nomeAgenteDefault + ' do ' + (estudio || 'estúdio') + '. Tudo bem? Como posso te ajudar?',
@@ -3048,11 +3048,8 @@ function addCustomFaq() {
 }
 
 function buildConfigAgente() {
-  // Fix 4: girias agora vem implicitas pelo tom (sem chip-wrap separado).
-  // usa_giria mapeado conforme tom: amigavel/descontraido/zoeiro=true,
-  // profissional/formal=false. Backend pode refinar.
+  // PR 3: usa_giria removido — backend rejeita o campo. Estilo agora é só via tom.
   const tom = document.getElementById('p-tom').value;
-  const usaGiria = ['amigavel', 'descontraido', 'zoeiro'].includes(tom);
 
   // Emoji unico (single-select). getActiveEmoji() ja resolve custom.
   const emoji = (selectedEmojiLevel === 'moderado') ? getActiveEmoji() : '';
@@ -3062,7 +3059,6 @@ function buildConfigAgente() {
     tom,
     emoji_level: selectedEmojiLevel,
     emojis_preferidos: emojisPreferidos,
-    usa_giria: usaGiria,
     usa_identificador: document.getElementById('p-identificador').checked,
     persona_livre: (document.getElementById('p-persona').value || '').trim() || null,
     saudacao: (document.getElementById('p-saudacao')?.value || '').trim() || null,
