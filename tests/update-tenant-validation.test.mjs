@@ -153,3 +153,57 @@ test('MODOS_ATENDIMENTO — inclui individual, tatuador_dono, recepcionista', as
   assert.equal(MODOS_ATENDIMENTO.includes('tatuador_dono'), true);
   assert.equal(MODOS_ATENDIMENTO.includes('recepcionista'), true);
 });
+
+// ── Testes PR 3: config_agente — kill-switch fields + emoji_favorito + reject usa_giria ───
+
+test('validateFieldTypes — config_agente rejeita usa_giria (campo removido PR 3)', async () => {
+  const { validateFieldTypes } = await import('../functions/api/update-tenant.js');
+  const r = validateFieldTypes({ config_agente: { tom: 'amigavel', usa_giria: true } });
+  assert.equal(r.ok, false);
+  assert.match(r.erro, /usa_giria/);
+});
+
+test('validateFieldTypes — config_agente.frase_assumir aceita string', async () => {
+  const { validateFieldTypes } = await import('../functions/api/update-tenant.js');
+  const r = validateFieldTypes({ config_agente: { frase_assumir: '/eu assumo' } });
+  assert.equal(r.ok, true);
+});
+
+test('validateFieldTypes — config_agente.frase_assumir rejeita string > 60', async () => {
+  const { validateFieldTypes } = await import('../functions/api/update-tenant.js');
+  const r = validateFieldTypes({ config_agente: { frase_assumir: 'a'.repeat(61) } });
+  assert.equal(r.ok, false);
+  assert.match(r.erro, /frase_assumir/);
+});
+
+test('validateFieldTypes — config_agente.auto_retomar_horas aceita null', async () => {
+  const { validateFieldTypes } = await import('../functions/api/update-tenant.js');
+  const r = validateFieldTypes({ config_agente: { auto_retomar_horas: null } });
+  assert.equal(r.ok, true);
+});
+
+test('validateFieldTypes — config_agente.auto_retomar_horas aceita 6', async () => {
+  const { validateFieldTypes } = await import('../functions/api/update-tenant.js');
+  const r = validateFieldTypes({ config_agente: { auto_retomar_horas: 6 } });
+  assert.equal(r.ok, true);
+});
+
+test('validateFieldTypes — config_agente.auto_retomar_horas rejeita 5 (fora do enum)', async () => {
+  const { validateFieldTypes } = await import('../functions/api/update-tenant.js');
+  const r = validateFieldTypes({ config_agente: { auto_retomar_horas: 5 } });
+  assert.equal(r.ok, false);
+  assert.match(r.erro, /auto_retomar_horas/);
+});
+
+test('validateFieldTypes — config_agente.emoji_favorito aceita emoji curto', async () => {
+  const { validateFieldTypes } = await import('../functions/api/update-tenant.js');
+  const r = validateFieldTypes({ config_agente: { emoji_favorito: '🔥' } });
+  assert.equal(r.ok, true);
+});
+
+test('validateFieldTypes — config_agente.mensagem_ao_retomar rejeita > 280 chars', async () => {
+  const { validateFieldTypes } = await import('../functions/api/update-tenant.js');
+  const r = validateFieldTypes({ config_agente: { mensagem_ao_retomar: 'a'.repeat(281) } });
+  assert.equal(r.ok, false);
+  assert.match(r.erro, /mensagem_ao_retomar/);
+});

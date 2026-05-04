@@ -29,7 +29,7 @@ export const ALLOWED_FIELDS = new Set([
   'nome_agente', 'nome_estudio', 'ativo', 'plano', 'trial_ate',
   'welcome_shown',
   // [v5 agente IA] Configs do agente editaveis pelo dono via studio.html
-  'config_agente',          // JSONB: persona, tom, emoji_level, usa_giria, expressoes_proibidas, frases_naturais, usa_identificador, aceita_cobertura, estilos_aceitos, estilos_recusados, few_shot_exemplos, tester_usage
+  'config_agente',          // JSONB: persona, tom, emoji_level, emoji_favorito, expressoes_proibidas, frases_naturais, usa_identificador, aceita_cobertura, estilos_aceitos, estilos_recusados, frase_assumir, frase_devolver, mensagem_ao_retomar, auto_retomar_horas, few_shot_exemplos, tester_usage
   'config_precificacao',    // JSONB: modo, tabela_tamanho, multiplicadores, sinal_percentual, minimo, formula, tamanho_maximo_sessao_cm, valor_maximo_orcado, estilo_fallback, observacoes_tatuador, herda_do_pai
   'horario_funcionamento',  // JSONB: { 'seg-sex': '10:00-19:00', 'sab': '10:00-15:00' }
   'duracao_sessao_padrao_h',
@@ -123,6 +123,32 @@ export function validateFieldTypes(fields) {
   if (fields.config_precificacao !== undefined) {
     const r = validateConfigPrecificacao(fields.config_precificacao);
     if (!r.ok) return r;
+  }
+  if (fields.config_agente !== undefined) {
+    const ca = fields.config_agente;
+    if (ca && typeof ca === 'object' && !Array.isArray(ca)) {
+      if ('usa_giria' in ca) {
+        return { ok: false, erro: 'config_agente.usa_giria foi removido — use apenas estilo das mensagens via tom + expressoes_proibidas' };
+      }
+      if (ca.frase_assumir !== undefined && (typeof ca.frase_assumir !== 'string' || ca.frase_assumir.length > 60)) {
+        return { ok: false, erro: 'config_agente.frase_assumir deve ser string ate 60 chars' };
+      }
+      if (ca.frase_devolver !== undefined && (typeof ca.frase_devolver !== 'string' || ca.frase_devolver.length > 60)) {
+        return { ok: false, erro: 'config_agente.frase_devolver deve ser string ate 60 chars' };
+      }
+      if (ca.mensagem_ao_retomar !== undefined && (typeof ca.mensagem_ao_retomar !== 'string' || ca.mensagem_ao_retomar.length > 280)) {
+        return { ok: false, erro: 'config_agente.mensagem_ao_retomar deve ser string ate 280 chars' };
+      }
+      if (ca.emoji_favorito !== undefined && (typeof ca.emoji_favorito !== 'string' || ca.emoji_favorito.length > 8)) {
+        return { ok: false, erro: 'config_agente.emoji_favorito deve ser string curta (1-8 chars)' };
+      }
+      if (ca.auto_retomar_horas !== undefined && ca.auto_retomar_horas !== null) {
+        const v = ca.auto_retomar_horas;
+        if (!Number.isInteger(v) || ![2, 6, 12, 24].includes(v)) {
+          return { ok: false, erro: 'config_agente.auto_retomar_horas deve ser null ou um de [2,6,12,24]' };
+        }
+      }
+    }
   }
   return { ok: true };
 }
