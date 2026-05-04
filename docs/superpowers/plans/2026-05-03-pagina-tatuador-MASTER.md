@@ -172,9 +172,9 @@ PR 1 é fundação — bloqueia todos. Depois de PR 1 mergeado, **PRs 2, 3, 5, 6
 
 ## PR 4 — Conversas: 3 grupos + thread WhatsApp Web + botões UI
 
-- [ ] Sub-plan escrito? **NÃO**
-- [ ] PR criado e mergeado
-- **Bloqueado por:** PR 3 (kill-switch backend tem que existir)
+- [x] Sub-plan escrito? `docs/superpowers/plans/2026-05-04-pagina-tatuador-PR4-conversas.md`
+- [x] PR criado e mergeado (PR #24, squash `90a8c2e` em 2026-05-04)
+- **Bloqueado por:** PR 3 (kill-switch backend tem que existir) ✅ DONE PR #23
 
 **Caminho:** `docs/superpowers/plans/2026-05-03-pagina-tatuador-PR4-conversas.md`
 
@@ -432,10 +432,10 @@ PR 1 é fundação — bloqueia todos. Depois de PR 1 mergeado, **PRs 2, 3, 5, 6
 
 ## Checklist mestre
 
-- [ ] PR 1 — Foundation
+- [x] PR 1 — Foundation (PR #21)
 - [ ] PR 2 — Dashboard
-- [ ] PR 3 — Agente + kill-switch backend
-- [ ] PR 4 — Conversas
+- [x] PR 3 — Agente + kill-switch backend (PR #23)
+- [x] PR 4 — Conversas (PR #24)
 - [ ] PR 5 — Portfólio
 - [ ] PR 6 — Agenda
 - [ ] PR 7 — Sugestões
