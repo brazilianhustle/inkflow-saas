@@ -3,6 +3,7 @@ pixel-agents-standalone/
 
 .wrangler/
 .claude/worktrees/
+.worktrees/
 
 # Dependencias instaladas localmente
 cron-worker/node_modules/
