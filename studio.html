@@ -1746,7 +1746,11 @@ function renderMsg(msg, conversa) {
   const div = document.createElement('div');
   let cls = 'conv-msg ';
   // role: 'human' = cliente; 'ai' = bot.
-  // Heurística: se conversa estava pausada e msg foi gerada APÓS pausada_em, trata como tatuador.
+  // Heurística: se conversa AGORA está pausada_tatuador e msg foi gerada APÓS pausada_em, trata como tatuador.
+  // LIMITAÇÃO CONHECIDA: após "Devolver pro bot", estado_agente sai de pausada_tatuador,
+  // e ao reabrir a conversa (ou ver no Histórico) as mensagens enviadas durante a pausa
+  // renderizam como bot (preto) em vez de tatuador (amarelo). Fix futuro: persistir flag
+  // por mensagem ou range pausado em conversa (P2 backlog).
   if (msg.role === 'human') {
     cls += 'conv-msg-cliente';
   } else if (msg.role === 'ai') {
@@ -1782,22 +1786,28 @@ function renderThread(conversa, mensagens, append) {
   const wrap = document.getElementById('conv-thread-messages');
   const loadOlder = document.getElementById('conv-load-older');
   if (!wrap || !loadOlder) return;
+
   if (!append) {
-    // Limpar mantendo o botão "Carregar mais antigas" no topo.
+    // Initial load: clear, re-attach loadOlder at top, then append in ASC order.
     while (wrap.firstChild) wrap.removeChild(wrap.firstChild);
     wrap.appendChild(loadOlder);
+    const ordered = mensagens.slice().reverse(); // server DESC → visual ASC
+    for (const m of ordered) wrap.appendChild(renderMsg(m, conversa));
+    wrap.scrollTop = wrap.scrollHeight; // scroll pro fim em load inicial
+    return;
   }
-  // mensagens vem DESC (mais recente primeiro) → reverter pra ordem cronológica.
-  const ordered = mensagens.slice().reverse();
-  for (const m of ordered) {
-    if (append) {
-      // Insert depois do botão load-older (no topo da thread).
-      wrap.insertBefore(renderMsg(m, conversa), loadOlder.nextSibling);
-    } else {
-      wrap.appendChild(renderMsg(m, conversa));
-    }
+
+  // Append (carregar mais antigas): server returns DESC. Iterate DESC and
+  // insertBefore loadOlder.nextSibling each time — each insertion becomes the
+  // new "first child after loadOlder", and the previous insert moves down,
+  // producing visual ASC order at the top of the thread.
+  // Preserve scroll position relative to the top of the existing content.
+  const heightBefore = wrap.scrollHeight;
+  for (const m of mensagens) {
+    wrap.insertBefore(renderMsg(m, conversa), loadOlder.nextSibling);
   }
-  if (!append) wrap.scrollTop = wrap.scrollHeight; // scroll pro fim em load inicial
+  const heightAfter = wrap.scrollHeight;
+  wrap.scrollTop += (heightAfter - heightBefore);
 }
 
 // Atualiza header da thread (nome, estado, botões).
@@ -1855,7 +1865,8 @@ async function abrirConversa(c) {
 
   // Marcar card ativo na lista.
   document.querySelectorAll('.conv-list-item.active').forEach(el => el.classList.remove('active'));
-  const targetCard = document.querySelector(`.conv-list-item[data-conversa-id="${c.id}"]`);
+  const safeId = (typeof CSS !== 'undefined' && CSS.escape) ? CSS.escape(c.id) : String(c.id).replace(/[^a-zA-Z0-9-]/g, '');
+  const targetCard = document.querySelector(`.conv-list-item[data-conversa-id="${safeId}"]`);
   if (targetCard) targetCard.classList.add('active');
 
   // Mostrar thread, esconder empty state, ativar mobile fullscreen.
