@@ -31,4 +31,7 @@ node --test tests/api/kill-switch-detect.test.mjs
 echo "▶ API — conversas assumir/devolver..."
 node --test tests/api/conversas-assumir-devolver.test.mjs
 
+echo "▶ API — auto-retomar-bot..."
+node --test tests/api/auto-retomar-bot.test.mjs
+
 echo "✓ Todos os tests passaram."
