@@ -225,6 +225,60 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .faq-entry textarea{min-height:50px;resize:vertical}
 .faq-entry .faq-delete{background:transparent;border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px}
 .faq-entry .faq-delete:hover{background:var(--red);color:#fff}
+
+/* ═══ Painel Conversas (PR 4) ═══ */
+.conv-layout { display: flex; height: calc(100vh - 80px); border: 1px solid #e5e5e5; border-radius: 8px; overflow: hidden; background: #fff; }
+.conv-sidebar { width: 300px; min-width: 300px; border-right: 1px solid #e5e5e5; display: flex; flex-direction: column; background: #fafafa; }
+.conv-tabs { display: flex; gap: 4px; padding: 8px; border-bottom: 1px solid #e5e5e5; background: #fff; }
+.conv-tab { flex: 1; padding: 6px 8px; border: 1px solid transparent; border-radius: 4px; background: transparent; cursor: pointer; font-size: 13px; color: #666; transition: all .15s; }
+.conv-tab:hover { background: #eee; }
+.conv-tab.active { background: #000; color: #fff; }
+.conv-tab-historico { flex: 0 0 36px; padding: 6px; }
+.conv-list-scroll { flex: 1; overflow-y: auto; }
+.conv-list { list-style: none; margin: 0; padding: 0; }
+.conv-list-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; transition: background .1s; }
+.conv-list-item:hover { background: #f0f0f0; }
+.conv-list-item.active { background: #e8f0ff; border-left: 3px solid #000; }
+.conv-list-item-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; color: #1a1a1a; }
+.conv-list-item-preview { font-size: 12px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-list-item-meta { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; color: #999; }
+.conv-list-item-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; background: #ddd; color: #555; }
+.conv-list-item-badge.pausada { background: #fef3c7; color: #92400e; }
+.conv-list-item-badge.aguardando { background: #fed7aa; color: #9a3412; }
+.conv-list-empty { padding: 32px 16px; text-align: center; color: #999; font-size: 13px; }
+.conv-load-more, .conv-load-older { display: block; width: 100%; padding: 8px; border: none; border-top: 1px solid #eee; background: #f5f5f5; cursor: pointer; font-size: 12px; color: #666; }
+.conv-load-more:hover, .conv-load-older:hover { background: #eaeaea; }
+.conv-thread { flex: 1; display: flex; flex-direction: column; }
+.conv-thread-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; padding: 32px; }
+.conv-thread-content { flex: 1; display: flex; flex-direction: column; }
+.conv-thread-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #e5e5e5; background: #fff; }
+.conv-back-btn { display: none; padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; font-size: 14px; }
+.conv-thread-info { flex: 1; }
+.conv-thread-name { font-weight: 600; font-size: 15px; color: #1a1a1a; }
+.conv-thread-state { font-size: 11px; color: #999; margin-top: 2px; }
+.conv-thread-actions { display: flex; gap: 8px; }
+.conv-action-btn { padding: 6px 12px; border: 1px solid #000; border-radius: 4px; background: #000; color: #fff; cursor: pointer; font-size: 13px; }
+.conv-action-btn:hover { background: #333; }
+.conv-action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.conv-action-devolver { background: #fff; color: #000; }
+.conv-action-devolver:hover { background: #f0f0f0; }
+.conv-thread-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; background: #f9f9f9; }
+.conv-msg { max-width: 70%; padding: 8px 12px; border-radius: 12px; font-size: 14px; line-height: 1.4; word-wrap: break-word; white-space: pre-wrap; }
+.conv-msg-cliente { align-self: flex-start; background: #fff; border: 1px solid #e5e5e5; border-bottom-left-radius: 4px; }
+.conv-msg-bot { align-self: flex-end; background: #000; color: #fff; border-bottom-right-radius: 4px; }
+.conv-msg-tatuador { align-self: flex-end; background: #fef3c7; color: #92400e; border-bottom-right-radius: 4px; }
+.conv-msg-tatuador::before { content: "🔇 "; }
+.conv-msg-time { font-size: 10px; opacity: .7; margin-top: 2px; }
+
+/* Mobile: lista em uma tela, thread fullscreen ao selecionar */
+@media (max-width: 768px) {
+  .conv-layout { flex-direction: column; height: calc(100vh - 60px); border: none; border-radius: 0; }
+  .conv-sidebar { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid #e5e5e5; }
+  .conv-thread { display: none; }
+  .conv-layout.show-thread .conv-sidebar { display: none; }
+  .conv-layout.show-thread .conv-thread { display: flex; }
+  .conv-back-btn { display: block; }
+}
 </style>
 </head>
 <body>
@@ -630,10 +684,50 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
         <!-- ═══ TAB: Conversas ═══ -->
         <div class="tab-panel" id="tab-conversas">
-          <div class="empty-state">
-            <div class="empty-state-icon">&#128172;</div>
-            <div class="empty-state-title">Conversas</div>
-            Em breve — Histórico de conversas com clientes
+          <div class="conv-layout">
+            <!-- Lista lateral 300px -->
+            <aside class="conv-sidebar" id="conv-sidebar">
+              <div class="conv-tabs" role="tablist">
+                <button class="conv-tab active" role="tab" aria-selected="true" data-grupo="hoje">Hoje</button>
+                <button class="conv-tab" role="tab" aria-selected="false" data-grupo="aguardando">Aguardando</button>
+                <button class="conv-tab" role="tab" aria-selected="false" data-grupo="negociacao">Em negociação</button>
+                <button class="conv-tab conv-tab-historico" role="tab" aria-selected="false" data-grupo="historico" title="Histórico (conversas fechadas)">&#128193;</button>
+              </div>
+              <div class="conv-list-scroll">
+                <ul class="conv-list" id="conv-list" aria-live="polite"></ul>
+                <div class="conv-list-empty" id="conv-list-empty" style="display:none">
+                  Nenhuma conversa neste grupo ainda.
+                </div>
+                <button class="conv-load-more" id="conv-load-more" style="display:none">Carregar mais</button>
+              </div>
+            </aside>
+
+            <!-- Thread (painel direita) -->
+            <section class="conv-thread" id="conv-thread">
+              <div class="conv-thread-empty" id="conv-thread-empty">
+                <div class="empty-state-icon">&#128172;</div>
+                <p>Selecione uma conversa pra ver as mensagens.</p>
+              </div>
+
+              <div class="conv-thread-content" id="conv-thread-content" style="display:none">
+                <header class="conv-thread-header">
+                  <button class="conv-back-btn" id="conv-back-btn" aria-label="Voltar pra lista">&larr;</button>
+                  <div class="conv-thread-info">
+                    <div class="conv-thread-name" id="conv-thread-name">&mdash;</div>
+                    <div class="conv-thread-state" id="conv-thread-state"></div>
+                  </div>
+                  <div class="conv-thread-actions">
+                    <button class="conv-action-btn" id="conv-action-assumir" style="display:none">Assumir</button>
+                    <button class="conv-action-btn conv-action-devolver" id="conv-action-devolver" style="display:none">Devolver pro bot</button>
+                  </div>
+                </header>
+
+                <div class="conv-thread-messages" id="conv-thread-messages" aria-live="polite">
+                  <button class="conv-load-older" id="conv-load-older" style="display:none">Carregar mensagens antigas</button>
+                  <!-- mensagens renderizadas aqui dinamicamente (Task 6+7) -->
+                </div>
+              </div>
+            </section>
           </div>
         </div>
 
@@ -745,6 +839,13 @@ function switchTab(tabName) {
   });
   // Save to URL hash
   window.location.hash = tabName;
+  // Carregar conteúdo dinâmico ao abrir Conversas (PR 4)
+  if (tabName === 'conversas' && typeof onAbrirTabConversas === 'function') {
+    onAbrirTabConversas();
+    if (typeof startConvPolling === 'function') startConvPolling();
+  } else {
+    if (typeof stopConvPolling === 'function') stopConvPolling();
+  }
 }
 
 // Restore tab from URL hash on load
@@ -1447,6 +1548,573 @@ function saveFaqs() {
     setTimeout(() => { msg.style.display = 'none'; msg.textContent = ''; msg.className = 'ag-save-msg'; }, 4000);
   }
 }
+
+// ═══ Painel Conversas (PR 4) ═══
+
+const CONV_STATE = {
+  grupoAtivo: 'hoje',
+  conversaAberta: null,
+  cursors: { hoje: null, aguardando: null, negociacao: null, historico: null },
+  ultimo: { hoje: [], aguardando: [], negociacao: [], historico: [] },
+  _setup: false,
+  _reqSeq: 0,
+};
+
+// Formato de timestamp relativo: "agora", "5min", "2h", "ontem", "3d".
+function fmtTempoRelativo(iso) {
+  if (!iso) return '';
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return '';
+  const diffMs = Date.now() - t;
+  const min = Math.floor(diffMs / 60000);
+  if (min < 1) return 'agora';
+  if (min < 60) return `${min}min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h}h`;
+  const d = Math.floor(h / 24);
+  if (d === 1) return 'ontem';
+  if (d < 7) return `${d}d`;
+  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+
+// Nome de exibição: prioridade dados_cadastro.nome > dados_coletados.nome > telefone.
+function nomeExibicao(c) {
+  const n1 = c?.dados_cadastro?.nome;
+  if (typeof n1 === 'string' && n1.trim()) return n1.trim();
+  const n2 = c?.dados_coletados?.nome;
+  if (typeof n2 === 'string' && n2.trim()) return n2.trim();
+  return c?.telefone || 'Sem identificação';
+}
+
+// Mapping estado → label + classe badge.
+function badgeFromEstado(estado) {
+  const map = {
+    coletando_tattoo: { label: 'Coletando tatuagem', cls: '' },
+    coletando_cadastro: { label: 'Cadastrando', cls: '' },
+    aguardando_tatuador: { label: 'Aguardando você', cls: 'aguardando' },
+    propondo_valor: { label: 'Propondo valor', cls: '' },
+    aguardando_decisao_desconto: { label: 'Decisão de desconto', cls: 'aguardando' },
+    escolhendo_horario: { label: 'Escolhendo horário', cls: '' },
+    aguardando_sinal: { label: 'Aguardando sinal', cls: '' },
+    lead_frio: { label: 'Lead frio', cls: '' },
+    fechado: { label: 'Fechado', cls: '' },
+    pausada_tatuador: { label: '🔇 Você assumiu', cls: 'pausada' },
+    ativo: { label: 'Ativo', cls: '' },
+  };
+  return map[estado] || { label: estado || '—', cls: '' };
+}
+
+// Renderiza UM card via DOM API (textContent — XSS-safe).
+function renderConvCard(c) {
+  const li = document.createElement('li');
+  li.className = 'conv-list-item';
+  li.dataset.conversaId = c.id;
+  if (CONV_STATE.conversaAberta && CONV_STATE.conversaAberta.id === c.id) {
+    li.classList.add('active');
+  }
+
+  const nameDiv = document.createElement('div');
+  nameDiv.className = 'conv-list-item-name';
+  nameDiv.textContent = nomeExibicao(c);
+  li.appendChild(nameDiv);
+
+  const previewDiv = document.createElement('div');
+  previewDiv.className = 'conv-list-item-preview';
+  previewDiv.textContent = c.last_msg_preview || '(sem mensagens)';
+  li.appendChild(previewDiv);
+
+  const metaDiv = document.createElement('div');
+  metaDiv.className = 'conv-list-item-meta';
+
+  const badge = badgeFromEstado(c.estado_agente);
+  const badgeSpan = document.createElement('span');
+  badgeSpan.className = 'conv-list-item-badge ' + badge.cls;
+  badgeSpan.textContent = badge.label;
+  metaDiv.appendChild(badgeSpan);
+
+  const timeSpan = document.createElement('span');
+  timeSpan.textContent = fmtTempoRelativo(c.last_msg_at);
+  metaDiv.appendChild(timeSpan);
+
+  li.appendChild(metaDiv);
+
+  li.addEventListener('click', () => {
+    if (typeof abrirConversa === 'function') abrirConversa(c);
+  });
+  return li;
+}
+
+// Render lista inteira na ul#conv-list.
+function renderConvLista(conversas, append) {
+  const ul = document.getElementById('conv-list');
+  const empty = document.getElementById('conv-list-empty');
+  const loadMore = document.getElementById('conv-load-more');
+  if (!ul || !empty || !loadMore) return;
+  if (!append) {
+    while (ul.firstChild) ul.removeChild(ul.firstChild);
+  }
+  const total = (CONV_STATE.ultimo[CONV_STATE.grupoAtivo] || []).length;
+  if (total === 0 && !append) {
+    empty.style.display = 'block';
+    loadMore.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  for (const c of conversas) ul.appendChild(renderConvCard(c));
+  loadMore.style.display = CONV_STATE.cursors[CONV_STATE.grupoAtivo] ? 'block' : 'none';
+}
+
+// Renderiza erro user-friendly na lista.
+function renderConvListaErro(msg) {
+  const ul = document.getElementById('conv-list');
+  const empty = document.getElementById('conv-list-empty');
+  const loadMore = document.getElementById('conv-load-more');
+  if (!ul) return;
+  while (ul.firstChild) ul.removeChild(ul.firstChild);
+  empty.style.display = 'block';
+  empty.textContent = msg;
+  loadMore.style.display = 'none';
+}
+
+// Fetch + render. Call ao trocar grupo OU abrir tab Conversas.
+async function carregarGrupo(grupo, append) {
+  CONV_STATE.grupoAtivo = grupo;
+  const reqId = ++CONV_STATE._reqSeq;
+  const cursor = append ? CONV_STATE.cursors[grupo] : null;
+  if (!currentStudioToken) {
+    renderConvListaErro('Token do studio não disponível ainda. Aguarda...');
+    return;
+  }
+  const params = new URLSearchParams({ studio_token: currentStudioToken, grupo, limit: '30' });
+  if (cursor) params.set('before_ts', cursor);
+  try {
+    const r = await fetch(`/api/conversas/list?${params}`);
+    // Bail if a newer request started while we were waiting (rapid tab clicks).
+    if (reqId !== CONV_STATE._reqSeq) return;
+    if (!r.ok) {
+      console.error('carregarGrupo: HTTP', r.status);
+      renderConvListaErro('Erro ao carregar conversas. Tente novamente em alguns segundos.');
+      return;
+    }
+    const body = await r.json();
+    if (reqId !== CONV_STATE._reqSeq) return;
+    if (append) {
+      CONV_STATE.ultimo[grupo] = (CONV_STATE.ultimo[grupo] || []).concat(body.conversas);
+    } else {
+      CONV_STATE.ultimo[grupo] = body.conversas;
+    }
+    CONV_STATE.cursors[grupo] = body.next_cursor || null;
+    // Reset empty state default text in case it was overridden.
+    const empty = document.getElementById('conv-list-empty');
+    if (empty) empty.textContent = 'Nenhuma conversa neste grupo ainda.';
+    renderConvLista(body.conversas, append);
+  } catch (err) {
+    console.error('carregarGrupo: exception', err);
+    if (reqId !== CONV_STATE._reqSeq) return;
+    renderConvListaErro('Erro de rede. Verifica tua conexão e tenta de novo.');
+  }
+}
+
+// Wire: cliques nas tabs trocam grupo.
+function setupConvTabs() {
+  const tabs = document.querySelectorAll('#tab-conversas .conv-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      carregarGrupo(tab.dataset.grupo, false);
+    });
+  });
+  const loadMoreBtn = document.getElementById('conv-load-more');
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', () => {
+      carregarGrupo(CONV_STATE.grupoAtivo, true);
+    });
+  }
+}
+
+// Hook: chamado quando user troca pra tab Conversas.
+function onAbrirTabConversas() {
+  if (!CONV_STATE._setup) {
+    setupConvTabs();
+    setupConvThread();
+    CONV_STATE._setup = true;
+  }
+  carregarGrupo(CONV_STATE.grupoAtivo, false);
+}
+
+// Render UMA mensagem como bolha. content via textContent (XSS-safe).
+function renderMsg(msg, conversa) {
+  const div = document.createElement('div');
+  let cls = 'conv-msg ';
+  // role: 'human' = cliente; 'ai' = bot.
+  // Heurística: se conversa AGORA está pausada_tatuador e msg foi gerada APÓS pausada_em, trata como tatuador.
+  // LIMITAÇÃO CONHECIDA: após "Devolver pro bot", estado_agente sai de pausada_tatuador,
+  // e ao reabrir a conversa (ou ver no Histórico) as mensagens enviadas durante a pausa
+  // renderizam como bot (preto) em vez de tatuador (amarelo). Fix futuro: persistir flag
+  // por mensagem ou range pausado em conversa (P2 backlog).
+  if (msg.role === 'human') {
+    cls += 'conv-msg-cliente';
+  } else if (msg.role === 'ai') {
+    if (conversa && conversa.estado_agente === 'pausada_tatuador'
+        && conversa.pausada_em
+        && msg.created_at
+        && new Date(msg.created_at).getTime() > new Date(conversa.pausada_em).getTime()) {
+      cls += 'conv-msg-tatuador';
+    } else {
+      cls += 'conv-msg-bot';
+    }
+  } else {
+    cls += 'conv-msg-bot'; // fallback (shouldn't happen — endpoint filtra tool/system)
+  }
+  div.className = cls;
+  div.textContent = msg.content || '';
+
+  const time = document.createElement('div');
+  time.className = 'conv-msg-time';
+  if (msg.created_at) {
+    const t = new Date(msg.created_at);
+    if (Number.isFinite(t.getTime())) {
+      time.textContent = t.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    }
+  }
+  div.appendChild(time);
+
+  return div;
+}
+
+// Render thread inteira a partir de array de mensagens (DESC vinda do servidor → reverter pra ASC visual).
+function renderThread(conversa, mensagens, append) {
+  const wrap = document.getElementById('conv-thread-messages');
+  const loadOlder = document.getElementById('conv-load-older');
+  if (!wrap || !loadOlder) return;
+
+  if (!append) {
+    // Initial load: clear, re-attach loadOlder at top, then append in ASC order.
+    while (wrap.firstChild) wrap.removeChild(wrap.firstChild);
+    wrap.appendChild(loadOlder);
+    const ordered = mensagens.slice().reverse(); // server DESC → visual ASC
+    for (const m of ordered) wrap.appendChild(renderMsg(m, conversa));
+    wrap.scrollTop = wrap.scrollHeight; // scroll pro fim em load inicial
+    return;
+  }
+
+  // Append (carregar mais antigas): server returns DESC. Iterate DESC and
+  // insertBefore loadOlder.nextSibling each time — each insertion becomes the
+  // new "first child after loadOlder", and the previous insert moves down,
+  // producing visual ASC order at the top of the thread.
+  // Preserve scroll position relative to the top of the existing content.
+  const heightBefore = wrap.scrollHeight;
+  for (const m of mensagens) {
+    wrap.insertBefore(renderMsg(m, conversa), loadOlder.nextSibling);
+  }
+  const heightAfter = wrap.scrollHeight;
+  wrap.scrollTop += (heightAfter - heightBefore);
+}
+
+// Atualiza header da thread (nome, estado, botões).
+function renderThreadHeader(conversa) {
+  if (!conversa) return;
+  const nameEl = document.getElementById('conv-thread-name');
+  const stateEl = document.getElementById('conv-thread-state');
+  const assumirBtn = document.getElementById('conv-action-assumir');
+  const devolverBtn = document.getElementById('conv-action-devolver');
+  if (!nameEl || !stateEl || !assumirBtn || !devolverBtn) return;
+
+  nameEl.textContent = nomeExibicao(conversa);
+  const badge = badgeFromEstado(conversa.estado_agente);
+  stateEl.textContent = badge.label + ' · ' + (conversa.telefone || '');
+
+  if (conversa.estado_agente === 'pausada_tatuador') {
+    assumirBtn.style.display = 'none';
+    devolverBtn.style.display = 'inline-block';
+  } else {
+    assumirBtn.style.display = 'inline-block';
+    devolverBtn.style.display = 'none';
+  }
+}
+
+// Limpa thread + mostra loading.
+function clearThreadMessages() {
+  const wrap = document.getElementById('conv-thread-messages');
+  const loadOlder = document.getElementById('conv-load-older');
+  if (!wrap || !loadOlder) return;
+  while (wrap.firstChild) wrap.removeChild(wrap.firstChild);
+  wrap.appendChild(loadOlder);
+  loadOlder.style.display = 'none';
+}
+
+// Mostra erro user-friendly na thread.
+function renderThreadErro(msg) {
+  const wrap = document.getElementById('conv-thread-messages');
+  if (!wrap) return;
+  while (wrap.firstChild) wrap.removeChild(wrap.firstChild);
+  const err = document.createElement('div');
+  err.className = 'conv-msg conv-msg-cliente';
+  err.textContent = msg;
+  wrap.appendChild(err);
+}
+
+// Counter pra evitar race condition em rapid clicks entre conversas.
+CONV_STATE._threadReqSeq = 0;
+
+// Abre thread de UMA conversa: fetch + render.
+async function abrirConversa(c) {
+  if (!c || !c.id) return;
+  CONV_STATE.conversaAberta = c;
+  CONV_STATE.threadCursor = null;
+  const reqId = ++CONV_STATE._threadReqSeq;
+
+  // Marcar card ativo na lista.
+  document.querySelectorAll('.conv-list-item.active').forEach(el => el.classList.remove('active'));
+  const safeId = (typeof CSS !== 'undefined' && CSS.escape) ? CSS.escape(c.id) : String(c.id).replace(/[^a-zA-Z0-9-]/g, '');
+  const targetCard = document.querySelector(`.conv-list-item[data-conversa-id="${safeId}"]`);
+  if (targetCard) targetCard.classList.add('active');
+
+  // Mostrar thread, esconder empty state, ativar mobile fullscreen.
+  const empty = document.getElementById('conv-thread-empty');
+  const content = document.getElementById('conv-thread-content');
+  const layout = document.querySelector('#tab-conversas .conv-layout');
+  if (empty) empty.style.display = 'none';
+  if (content) content.style.display = 'flex';
+  if (layout) layout.classList.add('show-thread');
+
+  clearThreadMessages();
+  renderThreadHeader(c);
+
+  if (!currentStudioToken) {
+    renderThreadErro('Token do studio não disponível ainda.');
+    return;
+  }
+
+  try {
+    const params = new URLSearchParams({ studio_token: currentStudioToken, conversa_id: c.id, limit: '50' });
+    const r = await fetch(`/api/conversas/thread?${params}`);
+    if (reqId !== CONV_STATE._threadReqSeq) return; // stale
+    if (!r.ok) {
+      console.error('abrirConversa: HTTP', r.status);
+      renderThreadErro('Erro ao carregar mensagens.');
+      return;
+    }
+    const body = await r.json();
+    if (reqId !== CONV_STATE._threadReqSeq) return; // stale
+    CONV_STATE.conversaAberta = body.conversa;
+    CONV_STATE.threadCursor = body.next_cursor;
+    renderThreadHeader(body.conversa);
+    renderThread(body.conversa, body.mensagens || [], false);
+    const loadOlder = document.getElementById('conv-load-older');
+    if (loadOlder) loadOlder.style.display = body.next_cursor ? 'block' : 'none';
+  } catch (err) {
+    console.error('abrirConversa: exception', err);
+    if (reqId !== CONV_STATE._threadReqSeq) return;
+    renderThreadErro('Erro de rede. Tente novamente.');
+  }
+}
+
+async function carregarMaisAntigas() {
+  if (!CONV_STATE.conversaAberta || !CONV_STATE.threadCursor) return;
+  const reqId = CONV_STATE._threadReqSeq; // não incrementa — não invalida abrirConversa em curso
+  const params = new URLSearchParams({
+    studio_token: currentStudioToken,
+    conversa_id: CONV_STATE.conversaAberta.id,
+    limit: '50',
+    before_ts: CONV_STATE.threadCursor,
+  });
+  try {
+    const r = await fetch(`/api/conversas/thread?${params}`);
+    if (reqId !== CONV_STATE._threadReqSeq) return; // user trocou de conversa
+    if (!r.ok) {
+      console.error('carregarMaisAntigas: HTTP', r.status);
+      return;
+    }
+    const body = await r.json();
+    if (reqId !== CONV_STATE._threadReqSeq) return;
+    renderThread(CONV_STATE.conversaAberta, body.mensagens || [], true);
+    CONV_STATE.threadCursor = body.next_cursor;
+    const loadOlder = document.getElementById('conv-load-older');
+    if (loadOlder) loadOlder.style.display = body.next_cursor ? 'block' : 'none';
+  } catch (err) {
+    console.error('carregarMaisAntigas: exception', err);
+  }
+}
+
+async function executarAcaoConversa(action) {
+  if (!CONV_STATE.conversaAberta) return;
+  if (action !== 'assumir' && action !== 'devolver') return;
+  if (!currentStudioToken) {
+    alert('Token do studio não disponível. Recarrega a página.');
+    return;
+  }
+
+  const conversa_id = CONV_STATE.conversaAberta.id;
+  const endpoint = action === 'assumir' ? '/api/conversas/assumir' : '/api/conversas/devolver';
+  const btnId = action === 'assumir' ? 'conv-action-assumir' : 'conv-action-devolver';
+  const btn = document.getElementById(btnId);
+  const originalText = action === 'assumir' ? 'Assumir' : 'Devolver pro bot';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = action === 'assumir' ? 'Assumindo…' : 'Devolvendo…';
+  }
+
+  try {
+    const r = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversa_id, studio_token: currentStudioToken }),
+    });
+    if (!r.ok) {
+      console.error(`executarAcaoConversa(${action}): HTTP`, r.status);
+      alert(action === 'assumir' ? 'Erro ao assumir conversa.' : 'Erro ao devolver pro bot.');
+      return;
+    }
+    const body = await r.json();
+
+    // Atualizar conversa local conforme novo estado.
+    if (body.new_state) {
+      const prevEstado = CONV_STATE.conversaAberta.estado_agente;
+      CONV_STATE.conversaAberta.estado_agente = body.new_state;
+      if (action === 'assumir' && body.new_state === 'pausada_tatuador') {
+        // Salva estado anterior pra eventual devolver.
+        CONV_STATE.conversaAberta.estado_agente_anterior = prevEstado;
+        CONV_STATE.conversaAberta.pausada_em = new Date().toISOString();
+      } else if (action === 'devolver') {
+        CONV_STATE.conversaAberta.estado_agente_anterior = null;
+        CONV_STATE.conversaAberta.pausada_em = null;
+      }
+    }
+    // Re-render header pra refletir mudança de botões + badge.
+    renderThreadHeader(CONV_STATE.conversaAberta);
+    // Recarregar grupo ativo pra refletir mudança no badge da lista.
+    await carregarGrupo(CONV_STATE.grupoAtivo, false);
+  } catch (err) {
+    console.error(`executarAcaoConversa(${action}): exception`, err);
+    alert('Erro de rede. Tente novamente.');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+}
+
+// ═══ Polling 8s (Caminho B — Real-time) ═══
+//
+// CONTEXT: RLS policies em conversas e n8n_chat_histories bloqueiam
+// access via anon key (`n8n_chat_histories.anon_no_access` policy = `false`,
+// `conversas` RLS enabled sem policy anon). Supabase Realtime via anon key
+// não funciona sem hardening RLS — P2 backlog "n8n_chat_histories tenant
+// isolation proper" cobre isso. Pra PR 4: polling 8s usando os mesmos
+// endpoints já implementados (que usam service-role key server-side).
+//
+// Cadência: 8s (balance entre freshness e custo de fetch).
+// Pause quando: tab Conversas não está ativa (saved data when user noutra tab).
+// Resume quando: user volta pra Conversas.
+
+let _convPollTimer = null;
+let _threadPollTimer = null;
+
+async function pollListaAtual() {
+  if (!CONV_STATE.grupoAtivo || !currentStudioToken) return;
+  // Re-fetch the active group's first page (preserves cursor for paginated content).
+  await carregarGrupo(CONV_STATE.grupoAtivo, false);
+}
+
+async function pollThreadAtual() {
+  if (!CONV_STATE.conversaAberta || !currentStudioToken) return;
+
+  // Skip if user has scrolled up to read history — yanking them back to the
+  // bottom every 8s feels like data loss.
+  const wrap = document.getElementById('conv-thread-messages');
+  if (wrap) {
+    const scrolledFromBottom = wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight;
+    if (scrolledFromBottom > 200) return;
+  }
+
+  const conversaAtual = CONV_STATE.conversaAberta;
+  const reqId = CONV_STATE._threadReqSeq;
+
+  try {
+    const params = new URLSearchParams({
+      studio_token: currentStudioToken,
+      conversa_id: conversaAtual.id,
+      limit: '50',
+    });
+    const r = await fetch(`/api/conversas/thread?${params}`);
+    // Honor the same race-guard as abrirConversa: if a fresher request bumped
+    // the seq during our fetch (user re-opened or switched conversa), bail.
+    if (reqId !== CONV_STATE._threadReqSeq) return;
+    if (!r.ok) {
+      console.warn('pollThreadAtual: HTTP', r.status);
+      return;
+    }
+    const body = await r.json();
+    if (reqId !== CONV_STATE._threadReqSeq) return;
+    // Defense-in-depth: also confirm same conversa (race-guard above already
+    // covers it, but explicit id check protects against any future seq usage drift).
+    if (!CONV_STATE.conversaAberta || CONV_STATE.conversaAberta.id !== conversaAtual.id) return;
+    CONV_STATE.conversaAberta = body.conversa;
+    CONV_STATE.threadCursor = body.next_cursor;
+    renderThreadHeader(body.conversa);
+    renderThread(body.conversa, body.mensagens || [], false);
+    const loadOlder = document.getElementById('conv-load-older');
+    if (loadOlder) loadOlder.style.display = body.next_cursor ? 'block' : 'none';
+  } catch (err) {
+    console.warn('pollThreadAtual: exception', err);
+  }
+}
+
+function startConvPolling() {
+  stopConvPolling();
+  _convPollTimer = setInterval(pollListaAtual, 8000);
+  _threadPollTimer = setInterval(pollThreadAtual, 8000);
+  // Fire once immediately so resume after visibilitychange shows fresh data.
+  // (Initial entry to Conversas already calls carregarGrupo via onAbrirTabConversas,
+  // so the immediate fire is mostly redundant on first open but harmless.)
+  pollListaAtual();
+  pollThreadAtual();
+}
+
+function stopConvPolling() {
+  if (_convPollTimer) { clearInterval(_convPollTimer); _convPollTimer = null; }
+  if (_threadPollTimer) { clearInterval(_threadPollTimer); _threadPollTimer = null; }
+}
+
+// Pause polling quando user troca pra outra tab (do navegador).
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopConvPolling();
+  } else {
+    // Resume only if Conversas tab is the active panel.
+    const conversasPanel = document.getElementById('tab-conversas');
+    if (conversasPanel && conversasPanel.classList.contains('active')) {
+      startConvPolling();
+    }
+  }
+});
+
+// Wire load-older + back-btn (mobile).
+function setupConvThread() {
+  const loadOlderBtn = document.getElementById('conv-load-older');
+  if (loadOlderBtn) loadOlderBtn.addEventListener('click', carregarMaisAntigas);
+
+  const backBtn = document.getElementById('conv-back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      const layout = document.querySelector('#tab-conversas .conv-layout');
+      if (layout) layout.classList.remove('show-thread');
+    });
+  }
+
+  const assumirBtn = document.getElementById('conv-action-assumir');
+  if (assumirBtn) assumirBtn.addEventListener('click', () => executarAcaoConversa('assumir'));
+
+  const devolverBtn = document.getElementById('conv-action-devolver');
+  if (devolverBtn) devolverBtn.addEventListener('click', () => executarAcaoConversa('devolver'));
+}
+
+// Expose abrirConversa globally pra uso pelos cards.
+window.abrirConversa = abrirConversa;
 
 // ── Start ──
 init();
