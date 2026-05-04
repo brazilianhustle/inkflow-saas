@@ -87,6 +87,16 @@ test('list — happy path: stub Supabase, retorna conversas + previews', async (
     for (const url of conversaCalls) {
       assert.ok(url.includes(`tenant_id=eq.${tenantId}`), `Esperava tenant_id=eq.${tenantId} em ${url}`);
     }
+    const histCalls = calls.filter(u => u.includes('/rest/v1/n8n_chat_histories?'));
+    assert.equal(histCalls.length, 2, 'deve fazer 1 fetch de preview por conversa');
+    assert.ok(
+      histCalls.some(u => u.includes(`session_id=eq.${encodeURIComponent(`${tenantId}_5511999999999`)}`)),
+      `Esperava session_id pra cliente 1 em uma das chamadas. URLs: ${histCalls.join(', ')}`
+    );
+    assert.ok(
+      histCalls.some(u => u.includes(`session_id=eq.${encodeURIComponent(`${tenantId}_5511888888888`)}`)),
+      `Esperava session_id pra cliente 2 em uma das chamadas. URLs: ${histCalls.join(', ')}`
+    );
   } finally {
     globalThis.fetch = origFetch;
   }
@@ -114,6 +124,43 @@ test('list — limit fora de range → clamped pra 100', async () => {
   } finally {
     globalThis.fetch = origFetch;
   }
+});
+
+test('list — limit edge cases (zero, negative, non-numeric, empty) → default 30', async () => {
+  const env = mockEnv();
+  const tenantId = '00000000-0000-0000-0000-000000000001';
+  const token = await makeStudioToken(tenantId, env);
+
+  const cases = ['0', '-1', 'abc', ''];
+  for (const raw of cases) {
+    const origFetch = globalThis.fetch;
+    let lastUrl = '';
+    globalThis.fetch = async (url) => {
+      lastUrl = url;
+      if (url.includes('conversas?')) return new Response('[]', { status: 200 });
+      return new Response('[]', { status: 200 });
+    };
+    try {
+      const { onRequest } = await import('../../functions/api/conversas/list.js');
+      const req = new Request(`https://x.com/api/conversas/list?studio_token=${token}&grupo=hoje&limit=${encodeURIComponent(raw)}`, { method: 'GET' });
+      await onRequest({ request: req, env });
+      assert.match(lastUrl, /limit=30/, `Esperava limit=30 quando raw=${JSON.stringify(raw)}, recebi: ${lastUrl}`);
+    } finally {
+      globalThis.fetch = origFetch;
+    }
+  }
+});
+
+test('list — before_ts inválido (não-ISO) → 400', async () => {
+  const env = mockEnv();
+  const tenantId = '00000000-0000-0000-0000-000000000001';
+  const token = await makeStudioToken(tenantId, env);
+  const { onRequest } = await import('../../functions/api/conversas/list.js');
+  const req = new Request(`https://x.com/api/conversas/list?studio_token=${token}&grupo=hoje&before_ts=not-a-date`, { method: 'GET' });
+  const res = await onRequest({ request: req, env });
+  assert.equal(res.status, 400);
+  const body = await res.json();
+  assert.match(body.error, /before_ts/i);
 });
 
 test('list — before_ts cursor → adiciona last_msg_at=lt na query', async () => {

@@ -50,6 +50,14 @@ export async function onRequest(context) {
   const grupoFilter = getGrupoFilter(grupo);
   if (!grupoFilter) return json({ error: 'grupo inválido', grupos_validos: GRUPOS_VALIDOS }, 400);
 
+  if (before_ts) {
+    // Validate as parseable ISO date
+    const d = new Date(before_ts);
+    if (!Number.isFinite(d.getTime())) {
+      return json({ error: 'before_ts inválido (esperava ISO timestamp)' }, 400);
+    }
+  }
+
   const SB_KEY = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
   if (!SB_KEY) return json({ error: 'Configuração interna ausente' }, 503);
 
@@ -90,16 +98,21 @@ export async function onRequest(context) {
 
   // Buscar last_msg_preview pra cada conversa em paralelo (até `limit` calls).
   const previews = await Promise.all(conversas.map(async (c) => {
-    const session_id = `${tenant_id}_${c.telefone}`;
-    const pr = await fetch(`${SUPABASE_URL}/rest/v1/n8n_chat_histories?session_id=eq.${encodeURIComponent(session_id)}&select=message&order=id.desc&limit=1`, {
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` },
-    });
-    if (!pr.ok) return '';
-    const rows = await pr.json();
-    if (!Array.isArray(rows) || rows.length === 0) return '';
-    const content = rows[0]?.message?.content;
-    if (typeof content !== 'string') return '';
-    return content.slice(0, 60);
+    try {
+      const session_id = `${tenant_id}_${c.telefone}`;
+      const pr = await fetch(`${SUPABASE_URL}/rest/v1/n8n_chat_histories?session_id=eq.${encodeURIComponent(session_id)}&select=message&order=id.desc&limit=1`, {
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` },
+      });
+      if (!pr.ok) return '';
+      const rows = await pr.json();
+      if (!Array.isArray(rows) || rows.length === 0) return '';
+      const content = rows[0]?.message?.content;
+      if (typeof content !== 'string') return '';
+      return content.slice(0, 60);
+    } catch (e) {
+      console.warn('list: preview fetch falhou', c.id, e?.message);
+      return '';
+    }
   }));
 
   const conversasComPreview = conversas.map((c, i) => ({ ...c, last_msg_preview: previews[i] }));
