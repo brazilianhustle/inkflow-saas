@@ -982,6 +982,9 @@ function updateHeaderStatus(target, state) {
   dot.className = 'status-dot ' + cssState;
   el.classList.remove('connected', 'disconnected', 'pending');
   el.classList.add(pillState);
+  const labels = { whatsapp: 'WhatsApp', telegram: 'Telegram' };
+  const states = { connected: 'conectado', disconnected: 'desconectado', pending: 'verificando...' };
+  el.title = labels[target] + ' ' + states[pillState];
 }
 
 function showError(msg) {
