@@ -2022,11 +2022,18 @@ async function pollListaAtual() {
 
 async function pollThreadAtual() {
   if (!CONV_STATE.conversaAberta || !currentStudioToken) return;
-  // Refresh open thread without invalidating cursor for "carregar mais antigas".
-  // We re-fetch the latest 50 messages (same as initial load) and re-render.
-  // _threadReqSeq is incremented by abrirConversa, so call directly avoids the
-  // race-guard. Use a separate fetch helper to refresh in place.
+
+  // Skip if user has scrolled up to read history — yanking them back to the
+  // bottom every 8s feels like data loss.
+  const wrap = document.getElementById('conv-thread-messages');
+  if (wrap) {
+    const scrolledFromBottom = wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight;
+    if (scrolledFromBottom > 200) return;
+  }
+
   const conversaAtual = CONV_STATE.conversaAberta;
+  const reqId = CONV_STATE._threadReqSeq;
+
   try {
     const params = new URLSearchParams({
       studio_token: currentStudioToken,
@@ -2034,12 +2041,17 @@ async function pollThreadAtual() {
       limit: '50',
     });
     const r = await fetch(`/api/conversas/thread?${params}`);
+    // Honor the same race-guard as abrirConversa: if a fresher request bumped
+    // the seq during our fetch (user re-opened or switched conversa), bail.
+    if (reqId !== CONV_STATE._threadReqSeq) return;
     if (!r.ok) {
       console.warn('pollThreadAtual: HTTP', r.status);
       return;
     }
     const body = await r.json();
-    // If user opened a different conversa during the fetch, skip render.
+    if (reqId !== CONV_STATE._threadReqSeq) return;
+    // Defense-in-depth: also confirm same conversa (race-guard above already
+    // covers it, but explicit id check protects against any future seq usage drift).
     if (!CONV_STATE.conversaAberta || CONV_STATE.conversaAberta.id !== conversaAtual.id) return;
     CONV_STATE.conversaAberta = body.conversa;
     CONV_STATE.threadCursor = body.next_cursor;
@@ -2056,6 +2068,11 @@ function startConvPolling() {
   stopConvPolling();
   _convPollTimer = setInterval(pollListaAtual, 8000);
   _threadPollTimer = setInterval(pollThreadAtual, 8000);
+  // Fire once immediately so resume after visibilitychange shows fresh data.
+  // (Initial entry to Conversas already calls carregarGrupo via onAbrirTabConversas,
+  // so the immediate fire is mostly redundant on first open but harmless.)
+  pollListaAtual();
+  pollThreadAtual();
 }
 
 function stopConvPolling() {
