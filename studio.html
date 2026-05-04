@@ -839,6 +839,10 @@ function switchTab(tabName) {
   });
   // Save to URL hash
   window.location.hash = tabName;
+  // Carregar conteúdo dinâmico ao abrir Conversas (PR 4)
+  if (tabName === 'conversas' && typeof onAbrirTabConversas === 'function') {
+    onAbrirTabConversas();
+  }
 }
 
 // Restore tab from URL hash on load
@@ -1540,6 +1544,201 @@ function saveFaqs() {
     msg.textContent = '✓ FAQs atualizadas — clica "Salvar configurações" pra persistir';
     setTimeout(() => { msg.style.display = 'none'; msg.textContent = ''; msg.className = 'ag-save-msg'; }, 4000);
   }
+}
+
+// ═══ Painel Conversas (PR 4) ═══
+
+const CONV_STATE = {
+  grupoAtivo: 'hoje',
+  conversaAberta: null,
+  cursors: { hoje: null, aguardando: null, negociacao: null, historico: null },
+  ultimo: { hoje: [], aguardando: [], negociacao: [], historico: [] },
+  _setup: false,
+};
+
+// Formato de timestamp relativo: "agora", "5min", "2h", "ontem", "3d".
+function fmtTempoRelativo(iso) {
+  if (!iso) return '';
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return '';
+  const diffMs = Date.now() - t;
+  const min = Math.floor(diffMs / 60000);
+  if (min < 1) return 'agora';
+  if (min < 60) return `${min}min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h}h`;
+  const d = Math.floor(h / 24);
+  if (d === 1) return 'ontem';
+  if (d < 7) return `${d}d`;
+  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+
+// Nome de exibição: prioridade dados_cadastro.nome > dados_coletados.nome > telefone.
+function nomeExibicao(c) {
+  const n1 = c?.dados_cadastro?.nome;
+  if (typeof n1 === 'string' && n1.trim()) return n1.trim();
+  const n2 = c?.dados_coletados?.nome;
+  if (typeof n2 === 'string' && n2.trim()) return n2.trim();
+  return c?.telefone || 'Sem identificação';
+}
+
+// Mapping estado → label + classe badge.
+function badgeFromEstado(estado) {
+  const map = {
+    coletando_tattoo: { label: 'Coletando tatuagem', cls: '' },
+    coletando_cadastro: { label: 'Cadastrando', cls: '' },
+    aguardando_tatuador: { label: 'Aguardando você', cls: 'aguardando' },
+    propondo_valor: { label: 'Propondo valor', cls: '' },
+    aguardando_decisao_desconto: { label: 'Decisão de desconto', cls: 'aguardando' },
+    escolhendo_horario: { label: 'Escolhendo horário', cls: '' },
+    aguardando_sinal: { label: 'Aguardando sinal', cls: '' },
+    lead_frio: { label: 'Lead frio', cls: '' },
+    fechado: { label: 'Fechado', cls: '' },
+    pausada_tatuador: { label: '🔇 Você assumiu', cls: 'pausada' },
+    ativo: { label: 'Ativo', cls: '' },
+  };
+  return map[estado] || { label: estado || '—', cls: '' };
+}
+
+// Renderiza UM card via DOM API (textContent — XSS-safe).
+function renderConvCard(c) {
+  const li = document.createElement('li');
+  li.className = 'conv-list-item';
+  li.dataset.conversaId = c.id;
+  if (CONV_STATE.conversaAberta && CONV_STATE.conversaAberta.id === c.id) {
+    li.classList.add('active');
+  }
+
+  const nameDiv = document.createElement('div');
+  nameDiv.className = 'conv-list-item-name';
+  nameDiv.textContent = nomeExibicao(c);
+  li.appendChild(nameDiv);
+
+  const previewDiv = document.createElement('div');
+  previewDiv.className = 'conv-list-item-preview';
+  previewDiv.textContent = c.last_msg_preview || '(sem mensagens)';
+  li.appendChild(previewDiv);
+
+  const metaDiv = document.createElement('div');
+  metaDiv.className = 'conv-list-item-meta';
+
+  const badge = badgeFromEstado(c.estado_agente);
+  const badgeSpan = document.createElement('span');
+  badgeSpan.className = 'conv-list-item-badge ' + badge.cls;
+  badgeSpan.textContent = badge.label;
+  metaDiv.appendChild(badgeSpan);
+
+  const timeSpan = document.createElement('span');
+  timeSpan.textContent = fmtTempoRelativo(c.last_msg_at);
+  metaDiv.appendChild(timeSpan);
+
+  li.appendChild(metaDiv);
+
+  li.addEventListener('click', () => {
+    if (typeof abrirConversa === 'function') abrirConversa(c);
+  });
+  return li;
+}
+
+// Render lista inteira na ul#conv-list.
+function renderConvLista(conversas, append) {
+  const ul = document.getElementById('conv-list');
+  const empty = document.getElementById('conv-list-empty');
+  const loadMore = document.getElementById('conv-load-more');
+  if (!ul) return;
+  if (!append) {
+    while (ul.firstChild) ul.removeChild(ul.firstChild);
+  }
+  const total = (CONV_STATE.ultimo[CONV_STATE.grupoAtivo] || []).length;
+  if (total === 0 && !append) {
+    empty.style.display = 'block';
+    loadMore.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  for (const c of conversas) ul.appendChild(renderConvCard(c));
+  loadMore.style.display = CONV_STATE.cursors[CONV_STATE.grupoAtivo] ? 'block' : 'none';
+}
+
+// Renderiza erro user-friendly na lista.
+function renderConvListaErro(msg) {
+  const ul = document.getElementById('conv-list');
+  const empty = document.getElementById('conv-list-empty');
+  const loadMore = document.getElementById('conv-load-more');
+  if (!ul) return;
+  while (ul.firstChild) ul.removeChild(ul.firstChild);
+  empty.style.display = 'block';
+  empty.textContent = msg;
+  loadMore.style.display = 'none';
+}
+
+// Fetch + render. Call ao trocar grupo OU abrir tab Conversas.
+async function carregarGrupo(grupo, append) {
+  CONV_STATE.grupoAtivo = grupo;
+  const cursor = append ? CONV_STATE.cursors[grupo] : null;
+  if (!currentStudioToken) {
+    renderConvListaErro('Token do studio não disponível ainda. Aguarda...');
+    return;
+  }
+  const params = new URLSearchParams({ studio_token: currentStudioToken, grupo, limit: '30' });
+  if (cursor) params.set('before_ts', cursor);
+  try {
+    const r = await fetch(`/api/conversas/list?${params}`);
+    if (!r.ok) {
+      console.error('carregarGrupo: HTTP', r.status);
+      renderConvListaErro('Erro ao carregar conversas. Tente novamente em alguns segundos.');
+      return;
+    }
+    const body = await r.json();
+    if (append) {
+      CONV_STATE.ultimo[grupo] = (CONV_STATE.ultimo[grupo] || []).concat(body.conversas);
+    } else {
+      CONV_STATE.ultimo[grupo] = body.conversas;
+    }
+    CONV_STATE.cursors[grupo] = body.next_cursor || null;
+    // Reset empty state default text in case it was overridden.
+    const empty = document.getElementById('conv-list-empty');
+    if (empty) empty.textContent = 'Nenhuma conversa neste grupo ainda.';
+    renderConvLista(body.conversas, append);
+  } catch (err) {
+    console.error('carregarGrupo: exception', err);
+    renderConvListaErro('Erro de rede. Verifica tua conexão e tenta de novo.');
+  }
+}
+
+// Wire: cliques nas tabs trocam grupo.
+function setupConvTabs() {
+  const tabs = document.querySelectorAll('#tab-conversas .conv-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      carregarGrupo(tab.dataset.grupo, false);
+    });
+  });
+  const loadMoreBtn = document.getElementById('conv-load-more');
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', () => {
+      carregarGrupo(CONV_STATE.grupoAtivo, true);
+    });
+  }
+}
+
+// Hook: chamado quando user troca pra tab Conversas.
+function onAbrirTabConversas() {
+  if (!CONV_STATE._setup) {
+    setupConvTabs();
+    CONV_STATE._setup = true;
+  }
+  carregarGrupo(CONV_STATE.grupoAtivo, false);
+}
+
+// Stub temporário de abrirConversa — Task 7 implementa de verdade.
+if (typeof window.abrirConversa !== 'function') {
+  window.abrirConversa = function(c) {
+    console.log('abrirConversa stub (Task 7 implementa render thread):', c?.id);
+  };
 }
 
 // ── Start ──
