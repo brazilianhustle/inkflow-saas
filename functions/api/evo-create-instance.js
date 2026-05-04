@@ -56,7 +56,7 @@ export async function onRequest(context) {
 
   // ── Gate: só cria instancia Evolution se tenant tem pagamento confirmado ──
   // Evita instancia orfa quando card e recusado ou retry falha no meio do fluxo.
-  // Status liberados: authorized|approved|paid (MP confirmou), artist_slot (heredado),
+  // Status liberados: authorized|approved|paid (MP confirmou), artist_slot (legacy, sem novos tenants pos refator PR1),
   // trial (free trial 7 dias). Bloqueia: rascunho, pending, cancelled, refused.
   const SB_KEY = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
   if (SB_KEY) {

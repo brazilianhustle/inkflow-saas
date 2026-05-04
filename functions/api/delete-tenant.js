@@ -197,7 +197,7 @@ export async function onRequest(context) {
       }
     }
 
-    // ── 2. Deletar dados do tenant ──
+    // ── 1. Deletar dados do tenant ──
     await del('chat_messages', 'tenant_id=eq.' + tenant_id);
     await del('chats', 'tenant_id=eq.' + tenant_id);
     await del('dados_cliente', 'tenant_id=eq.' + tenant_id);
@@ -205,7 +205,7 @@ export async function onRequest(context) {
     await del('signups_log', 'tenant_id=eq.' + tenant_id);
     await del('payment_logs', 'tenant_id=eq.' + tenant_id);
 
-    // ── 3. Deletar o tenant ──
+    // ── 2. Deletar o tenant ──
     const finalRes = await fetch(`${SUPABASE_URL}/rest/v1/tenants?id=eq.${tenant_id}`, { method: 'DELETE', headers });
     if (!finalRes.ok) {
       const err = await finalRes.text();

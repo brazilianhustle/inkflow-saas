@@ -202,7 +202,6 @@ export function calcularOrcamento({ tamanho_cm, estilo, regiao, cor_bool, nivel_
         bucket,
         multiplicador_total: Number(multTotal.toFixed(2)),
         breakdown,
-        herdou_do_pai: tenant?._herdou_do_pai || false,
       };
     }
 
@@ -217,7 +216,6 @@ export function calcularOrcamento({ tamanho_cm, estilo, regiao, cor_bool, nivel_
       bucket,
       multiplicador_total: Number(multTotal.toFixed(2)),
       breakdown,
-      herdou_do_pai: tenant?._herdou_do_pai || false,
     };
   }
 
@@ -271,7 +269,6 @@ export function calcularOrcamento({ tamanho_cm, estilo, regiao, cor_bool, nivel_
       min: valor, max: valor,
       multiplicador_total: Number(multTotal.toFixed(2)),
       breakdown,
-      herdou_do_pai: tenant?._herdou_do_pai || false,
     };
   }
 
