@@ -11,7 +11,6 @@
 //   - tamanho_maximo_sessao_cm → handoff
 //   - valor_maximo_orcado → handoff (teto de segurança)
 //   - estilo_fallback quando cliente pede estilo fora do catalogo
-//   - herda_do_pai pra artistas-slot
 
 const DEFAULTS = {
   moeda: 'BRL',
@@ -65,28 +64,14 @@ function arredondar(valor, unidade) {
   return Math.round(valor / unidade) * unidade;
 }
 
-// Busca config do tenant (ou do pai se artista com herda_do_pai=true).
+// Busca config do tenant.
 // supaFetch: função injetada pelo caller.
 export async function loadConfigPrecificacao(supaFetch, tenant_id) {
-  const r = await supaFetch(`/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=config_precificacao,config_agente,sinal_percentual,parent_tenant_id,is_artist_slot,modo_atendimento`);
+  const r = await supaFetch(`/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=config_precificacao,config_agente,sinal_percentual,modo_atendimento`);
   if (!r.ok) throw new Error(`db-error-${r.status}`);
   const rows = await r.json();
   if (!Array.isArray(rows) || rows.length === 0) return null;
   const t = rows[0];
-
-  // Herança: se artista com herda_do_pai=true, busca config do pai
-  const herda = t.config_precificacao?.herda_do_pai === true;
-  if (herda && t.parent_tenant_id) {
-    const r2 = await supaFetch(`/rest/v1/tenants?id=eq.${encodeURIComponent(t.parent_tenant_id)}&select=config_precificacao,sinal_percentual`);
-    if (r2.ok) {
-      const paiRows = await r2.json();
-      if (Array.isArray(paiRows) && paiRows.length > 0) {
-        t.config_precificacao = paiRows[0].config_precificacao || t.config_precificacao;
-        t.sinal_percentual = paiRows[0].sinal_percentual || t.sinal_percentual;
-        t._herdou_do_pai = true;
-      }
-    }
-  }
 
   return t;
 }

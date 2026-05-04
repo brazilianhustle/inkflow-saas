@@ -1,7 +1,7 @@
 // ── InkFlow — Valida studio_token (acesso à página de gestão do estúdio) ─────
 // POST /api/validate-studio-token
 // Body: { token: "v1.<...>" | "<uuid-legacy>" }
-// Resposta sucesso: { valid: true, tenant: {...}, slots: {...}, artists: [...], refreshed_token? }
+// Resposta sucesso: { valid: true, tenant: {...}, refreshed_token? }
 // Resposta falha:   { valid: false, error: "..." }
 
 import { verifyStudioTokenOrLegacy, generateStudioToken } from './_auth-helpers.js';
@@ -84,25 +84,6 @@ export async function onRequest(context) {
     // quando tenant.ativo=false. Se tivesse bloqueado aqui, cliente nunca chegaria
     // no painel pra conectar.
 
-    // Contar artistas já vinculados
-    const slotsRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/tenants?parent_tenant_id=eq.${tenant.id}&is_artist_slot=eq.true&select=id,nome,evo_instance,ativo`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-      }
-    );
-
-    let artists = [];
-    if (slotsRes.ok) {
-      artists = await slotsRes.json();
-    }
-
-    const maxSlots = tenant.plano === 'premium' ? 10 : 5;
-    const usedSlots = artists.length;
-
     // Sliding window: se HMAC e restam <7d, emite token renovado.
     // Se token UUID legacy, também renova promovendo para HMAC.
     let refreshedToken = null;
@@ -140,17 +121,6 @@ export async function onRequest(context) {
         gatilhos_handoff: tenant.gatilhos_handoff || null,
         portfolio_urls: tenant.portfolio_urls || null,
       },
-      slots: {
-        max: maxSlots,
-        used: usedSlots,
-        remaining: maxSlots - usedSlots - 1, // -1 porque o dono ocupa 1 slot
-      },
-      artists: artists.map(a => ({
-        id: a.id,
-        nome: a.nome,
-        evo_instance: a.evo_instance,
-        ativo: a.ativo,
-      })),
       token_exp: verified.exp || null,
       refreshed_token: refreshedToken,
     });

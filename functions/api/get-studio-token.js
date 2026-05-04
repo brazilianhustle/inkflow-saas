@@ -58,18 +58,13 @@ export async function onRequest(context) {
   // que sempre redireciona pro painel apos ativacao, independente do plano.
   try {
     const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=plano,ativo,is_artist_slot`,
+      `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenant_id)}&select=plano,ativo`,
       { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
     );
     if (!r.ok) return json({ error: 'Erro ao verificar tenant' }, 500);
     const rows = await r.json();
     if (!rows?.[0]) return json({ error: 'Tenant não encontrado' }, 404);
     const t = rows[0];
-    // Artistas (sub-tenants de plano estudio) nao tem acesso ao painel
-    // proprio — sao gerenciados pelo painel do estudio dono.
-    if (t.is_artist_slot) {
-      return json({ error: 'Artista vinculado não tem painel próprio' }, 400);
-    }
     const PLANOS_VALIDOS = ['trial', 'individual', 'estudio', 'premium'];
     if (!PLANOS_VALIDOS.includes(t.plano)) {
       return json({ error: 'Plano não reconhecido: ' + t.plano }, 400);
