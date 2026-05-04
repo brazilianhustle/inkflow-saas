@@ -1735,17 +1735,212 @@ function setupConvTabs() {
 function onAbrirTabConversas() {
   if (!CONV_STATE._setup) {
     setupConvTabs();
+    setupConvThread();
     CONV_STATE._setup = true;
   }
   carregarGrupo(CONV_STATE.grupoAtivo, false);
 }
 
-// Stub temporário de abrirConversa — Task 7 implementa de verdade.
-if (typeof window.abrirConversa !== 'function') {
-  window.abrirConversa = function(c) {
-    console.log('abrirConversa stub (Task 7 implementa render thread):', c?.id);
-  };
+// Render UMA mensagem como bolha. content via textContent (XSS-safe).
+function renderMsg(msg, conversa) {
+  const div = document.createElement('div');
+  let cls = 'conv-msg ';
+  // role: 'human' = cliente; 'ai' = bot.
+  // Heurística: se conversa estava pausada e msg foi gerada APÓS pausada_em, trata como tatuador.
+  if (msg.role === 'human') {
+    cls += 'conv-msg-cliente';
+  } else if (msg.role === 'ai') {
+    if (conversa && conversa.estado_agente === 'pausada_tatuador'
+        && conversa.pausada_em
+        && msg.created_at
+        && new Date(msg.created_at).getTime() > new Date(conversa.pausada_em).getTime()) {
+      cls += 'conv-msg-tatuador';
+    } else {
+      cls += 'conv-msg-bot';
+    }
+  } else {
+    cls += 'conv-msg-bot'; // fallback (shouldn't happen — endpoint filtra tool/system)
+  }
+  div.className = cls;
+  div.textContent = msg.content || '';
+
+  const time = document.createElement('div');
+  time.className = 'conv-msg-time';
+  if (msg.created_at) {
+    const t = new Date(msg.created_at);
+    if (Number.isFinite(t.getTime())) {
+      time.textContent = t.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    }
+  }
+  div.appendChild(time);
+
+  return div;
 }
+
+// Render thread inteira a partir de array de mensagens (DESC vinda do servidor → reverter pra ASC visual).
+function renderThread(conversa, mensagens, append) {
+  const wrap = document.getElementById('conv-thread-messages');
+  const loadOlder = document.getElementById('conv-load-older');
+  if (!wrap || !loadOlder) return;
+  if (!append) {
+    // Limpar mantendo o botão "Carregar mais antigas" no topo.
+    while (wrap.firstChild) wrap.removeChild(wrap.firstChild);
+    wrap.appendChild(loadOlder);
+  }
+  // mensagens vem DESC (mais recente primeiro) → reverter pra ordem cronológica.
+  const ordered = mensagens.slice().reverse();
+  for (const m of ordered) {
+    if (append) {
+      // Insert depois do botão load-older (no topo da thread).
+      wrap.insertBefore(renderMsg(m, conversa), loadOlder.nextSibling);
+    } else {
+      wrap.appendChild(renderMsg(m, conversa));
+    }
+  }
+  if (!append) wrap.scrollTop = wrap.scrollHeight; // scroll pro fim em load inicial
+}
+
+// Atualiza header da thread (nome, estado, botões).
+function renderThreadHeader(conversa) {
+  if (!conversa) return;
+  const nameEl = document.getElementById('conv-thread-name');
+  const stateEl = document.getElementById('conv-thread-state');
+  const assumirBtn = document.getElementById('conv-action-assumir');
+  const devolverBtn = document.getElementById('conv-action-devolver');
+  if (!nameEl || !stateEl || !assumirBtn || !devolverBtn) return;
+
+  nameEl.textContent = nomeExibicao(conversa);
+  const badge = badgeFromEstado(conversa.estado_agente);
+  stateEl.textContent = badge.label + ' · ' + (conversa.telefone || '');
+
+  if (conversa.estado_agente === 'pausada_tatuador') {
+    assumirBtn.style.display = 'none';
+    devolverBtn.style.display = 'inline-block';
+  } else {
+    assumirBtn.style.display = 'inline-block';
+    devolverBtn.style.display = 'none';
+  }
+}
+
+// Limpa thread + mostra loading.
+function clearThreadMessages() {
+  const wrap = document.getElementById('conv-thread-messages');
+  const loadOlder = document.getElementById('conv-load-older');
+  if (!wrap || !loadOlder) return;
+  while (wrap.firstChild) wrap.removeChild(wrap.firstChild);
+  wrap.appendChild(loadOlder);
+  loadOlder.style.display = 'none';
+}
+
+// Mostra erro user-friendly na thread.
+function renderThreadErro(msg) {
+  const wrap = document.getElementById('conv-thread-messages');
+  if (!wrap) return;
+  while (wrap.firstChild) wrap.removeChild(wrap.firstChild);
+  const err = document.createElement('div');
+  err.className = 'conv-msg conv-msg-cliente';
+  err.textContent = msg;
+  wrap.appendChild(err);
+}
+
+// Counter pra evitar race condition em rapid clicks entre conversas.
+CONV_STATE._threadReqSeq = 0;
+
+// Abre thread de UMA conversa: fetch + render.
+async function abrirConversa(c) {
+  if (!c || !c.id) return;
+  CONV_STATE.conversaAberta = c;
+  CONV_STATE.threadCursor = null;
+  const reqId = ++CONV_STATE._threadReqSeq;
+
+  // Marcar card ativo na lista.
+  document.querySelectorAll('.conv-list-item.active').forEach(el => el.classList.remove('active'));
+  const targetCard = document.querySelector(`.conv-list-item[data-conversa-id="${c.id}"]`);
+  if (targetCard) targetCard.classList.add('active');
+
+  // Mostrar thread, esconder empty state, ativar mobile fullscreen.
+  const empty = document.getElementById('conv-thread-empty');
+  const content = document.getElementById('conv-thread-content');
+  const layout = document.querySelector('#tab-conversas .conv-layout');
+  if (empty) empty.style.display = 'none';
+  if (content) content.style.display = 'flex';
+  if (layout) layout.classList.add('show-thread');
+
+  clearThreadMessages();
+  renderThreadHeader(c);
+
+  if (!currentStudioToken) {
+    renderThreadErro('Token do studio não disponível ainda.');
+    return;
+  }
+
+  try {
+    const params = new URLSearchParams({ studio_token: currentStudioToken, conversa_id: c.id, limit: '50' });
+    const r = await fetch(`/api/conversas/thread?${params}`);
+    if (reqId !== CONV_STATE._threadReqSeq) return; // stale
+    if (!r.ok) {
+      console.error('abrirConversa: HTTP', r.status);
+      renderThreadErro('Erro ao carregar mensagens.');
+      return;
+    }
+    const body = await r.json();
+    if (reqId !== CONV_STATE._threadReqSeq) return; // stale
+    CONV_STATE.conversaAberta = body.conversa;
+    CONV_STATE.threadCursor = body.next_cursor;
+    renderThreadHeader(body.conversa);
+    renderThread(body.conversa, body.mensagens || [], false);
+    const loadOlder = document.getElementById('conv-load-older');
+    if (loadOlder) loadOlder.style.display = body.next_cursor ? 'block' : 'none';
+  } catch (err) {
+    console.error('abrirConversa: exception', err);
+    if (reqId !== CONV_STATE._threadReqSeq) return;
+    renderThreadErro('Erro de rede. Tente novamente.');
+  }
+}
+
+async function carregarMaisAntigas() {
+  if (!CONV_STATE.conversaAberta || !CONV_STATE.threadCursor) return;
+  const reqId = CONV_STATE._threadReqSeq; // não incrementa — não invalida abrirConversa em curso
+  const params = new URLSearchParams({
+    studio_token: currentStudioToken,
+    conversa_id: CONV_STATE.conversaAberta.id,
+    limit: '50',
+    before_ts: CONV_STATE.threadCursor,
+  });
+  try {
+    const r = await fetch(`/api/conversas/thread?${params}`);
+    if (reqId !== CONV_STATE._threadReqSeq) return; // user trocou de conversa
+    if (!r.ok) {
+      console.error('carregarMaisAntigas: HTTP', r.status);
+      return;
+    }
+    const body = await r.json();
+    if (reqId !== CONV_STATE._threadReqSeq) return;
+    renderThread(CONV_STATE.conversaAberta, body.mensagens || [], true);
+    CONV_STATE.threadCursor = body.next_cursor;
+    const loadOlder = document.getElementById('conv-load-older');
+    if (loadOlder) loadOlder.style.display = body.next_cursor ? 'block' : 'none';
+  } catch (err) {
+    console.error('carregarMaisAntigas: exception', err);
+  }
+}
+
+// Wire load-older + back-btn (mobile).
+function setupConvThread() {
+  const loadOlderBtn = document.getElementById('conv-load-older');
+  if (loadOlderBtn) loadOlderBtn.addEventListener('click', carregarMaisAntigas);
+
+  const backBtn = document.getElementById('conv-back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      const layout = document.querySelector('#tab-conversas .conv-layout');
+      if (layout) layout.classList.remove('show-thread');
+    });
+  }
+}
+
+// Expose abrirConversa globally pra uso pelos cards.
+window.abrirConversa = abrirConversa;
 
 // ── Start ──
 init();
