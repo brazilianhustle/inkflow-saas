@@ -22,7 +22,7 @@ const CORS = {
 };
 
 // Campos que o onboarding pode atualizar
-const ALLOWED_FIELDS = new Set([
+export const ALLOWED_FIELDS = new Set([
   'evo_instance', 'evo_apikey', 'evo_base_url', 'webhook_path',
   'grupo_notificacao', 'grupo_orcamento',
   'google_calendar_id', 'google_drive_folder',
@@ -55,7 +55,7 @@ const ADMIN_EXTRA_FIELDS = new Set([
 
 // Valida tipo basico de campos JSONB/array antes de mandar pro Supabase.
 // Retorna { ok: boolean, erro?: string }
-const MODOS_ATENDIMENTO = ['individual', 'tatuador_dono', 'recepcionista'];
+export const MODOS_ATENDIMENTO = ['individual', 'tatuador_dono', 'recepcionista'];
 const MODOS_VALIDOS = ['coleta', 'exato']; // Modo Coleta v2: 'faixa' REMOVIDO; 'coleta' default novo
 const FEWSHOT_KEYS_VALIDAS = ['coleta_tattoo', 'coleta_cadastro', 'coleta_proposta', 'exato'];
 
