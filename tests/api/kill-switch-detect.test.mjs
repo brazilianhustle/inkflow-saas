@@ -78,3 +78,39 @@ test('kill-switch — frase_devolver em estado ativo → noop', async () => {
   });
   assert.equal(r.action, 'noop');
 });
+
+// ── Edge cases (post-review hardening) ──
+
+test('kill-switch — mensagem=null com from_me=true → noop (não crashes)', async () => {
+  const { decideAction } = await import('../../functions/api/kill-switch-detect.js');
+  const r = decideAction({
+    mensagem: null,
+    from_me: true,
+    estado_atual: 'ativo',
+    config: {}
+  });
+  assert.equal(r.action, 'noop');
+});
+
+test('kill-switch — from_me=string("true") → noop (truthy mas não literal true)', async () => {
+  const { decideAction } = await import('../../functions/api/kill-switch-detect.js');
+  const r = decideAction({
+    mensagem: '/eu assumo',
+    from_me: 'true',
+    estado_atual: 'ativo',
+    config: {}
+  });
+  assert.equal(r.action, 'noop');
+});
+
+test('kill-switch — estado=aguardando_tatuador (não-pausado) + frase_assumir → pause (binário isPaused generaliza)', async () => {
+  const { decideAction } = await import('../../functions/api/kill-switch-detect.js');
+  const r = decideAction({
+    mensagem: '/eu assumo',
+    from_me: true,
+    estado_atual: 'aguardando_tatuador',
+    config: {}
+  });
+  assert.equal(r.action, 'pause');
+  assert.equal(r.new_state, 'pausada_tatuador');
+});

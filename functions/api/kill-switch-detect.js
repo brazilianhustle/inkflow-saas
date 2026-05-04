@@ -7,6 +7,7 @@
 // Endpoint só decide. Lê config do request body — sem chamada Supabase.
 // Auth: Bearer com KILL_SWITCH_SECRET (compartilhado com n8n via secrets).
 
+// CORS '*': caller é n8n server-to-server, não browser. Wildcard ok.
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
@@ -27,15 +28,20 @@ function normalize(s) {
  * Exportada pra ser testável sem mock de Request.
  */
 export function decideAction({ mensagem, from_me, estado_atual, config }) {
-  if (!from_me) return { action: 'noop' };
+  // Defesa em profundidade: from_me precisa ser literal true (não truthy).
+  // String 'true' ou número 1 NÃO disparam — evita bypass se caller mandar payload errado.
+  if (from_me !== true) return { action: 'noop' };
 
   const msg = normalize(mensagem);
-  const fraseAssumir = normalize(config?.frase_assumir || '/eu assumo');
-  const fraseDevolver = normalize(config?.frase_devolver || '/bot volta');
-  const mensagemRetomar = config?.mensagem_ao_retomar || 'Voltei! Alguma dúvida sobre o orçamento?';
+  // ?? (não ||): tenant que define string vazia desabilita conscientemente o trigger.
+  const fraseAssumir = normalize(config?.frase_assumir ?? '/eu assumo');
+  const fraseDevolver = normalize(config?.frase_devolver ?? '/bot volta');
+  const mensagemRetomar = config?.mensagem_ao_retomar ?? 'Voltei! Alguma dúvida sobre o orçamento?';
 
   const isPaused = estado_atual === 'pausada_tatuador';
 
+  // Strict equality (após normalize). Punctuation/extra words não casam —
+  // false positives custariam uma conversa real do estúdio.
   if (msg === fraseAssumir) {
     if (isPaused) return { action: 'noop' };
     return {
@@ -49,7 +55,7 @@ export function decideAction({ mensagem, from_me, estado_atual, config }) {
     if (!isPaused) return { action: 'noop' };
     return {
       action: 'resume',
-      new_state: 'ativo',
+      new_state: 'ativo', // caller deve usar estado_agente_anterior se preferir restore preciso
       mensagem_ao_retomar: mensagemRetomar,
       ack_message: '✅ Bot retomou.',
     };
@@ -74,6 +80,9 @@ export async function onRequest(context) {
 
   const { mensagem, from_me, estado_atual, config_agente } = body;
   if (typeof from_me !== 'boolean') return json({ error: 'from_me obrigatorio (boolean)' }, 400);
+  if (mensagem != null && typeof mensagem !== 'string') {
+    return json({ error: 'mensagem deve ser string ou null' }, 400);
+  }
 
   const result = decideAction({
     mensagem,
