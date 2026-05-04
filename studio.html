@@ -225,6 +225,60 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .faq-entry textarea{min-height:50px;resize:vertical}
 .faq-entry .faq-delete{background:transparent;border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px}
 .faq-entry .faq-delete:hover{background:var(--red);color:#fff}
+
+/* ═══ Painel Conversas (PR 4) ═══ */
+.conv-layout { display: flex; height: calc(100vh - 80px); border: 1px solid #e5e5e5; border-radius: 8px; overflow: hidden; background: #fff; }
+.conv-sidebar { width: 300px; min-width: 300px; border-right: 1px solid #e5e5e5; display: flex; flex-direction: column; background: #fafafa; }
+.conv-tabs { display: flex; gap: 4px; padding: 8px; border-bottom: 1px solid #e5e5e5; background: #fff; }
+.conv-tab { flex: 1; padding: 6px 8px; border: 1px solid transparent; border-radius: 4px; background: transparent; cursor: pointer; font-size: 13px; color: #666; transition: all .15s; }
+.conv-tab:hover { background: #eee; }
+.conv-tab.active { background: #000; color: #fff; }
+.conv-tab-historico { flex: 0 0 36px; padding: 6px; }
+.conv-list-scroll { flex: 1; overflow-y: auto; }
+.conv-list { list-style: none; margin: 0; padding: 0; }
+.conv-list-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; transition: background .1s; }
+.conv-list-item:hover { background: #f0f0f0; }
+.conv-list-item.active { background: #e8f0ff; border-left: 3px solid #000; }
+.conv-list-item-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; color: #1a1a1a; }
+.conv-list-item-preview { font-size: 12px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-list-item-meta { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; color: #999; }
+.conv-list-item-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; background: #ddd; color: #555; }
+.conv-list-item-badge.pausada { background: #fef3c7; color: #92400e; }
+.conv-list-item-badge.aguardando { background: #fed7aa; color: #9a3412; }
+.conv-list-empty { padding: 32px 16px; text-align: center; color: #999; font-size: 13px; }
+.conv-load-more, .conv-load-older { display: block; width: 100%; padding: 8px; border: none; border-top: 1px solid #eee; background: #f5f5f5; cursor: pointer; font-size: 12px; color: #666; }
+.conv-load-more:hover, .conv-load-older:hover { background: #eaeaea; }
+.conv-thread { flex: 1; display: flex; flex-direction: column; }
+.conv-thread-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; padding: 32px; }
+.conv-thread-content { flex: 1; display: flex; flex-direction: column; }
+.conv-thread-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #e5e5e5; background: #fff; }
+.conv-back-btn { display: none; padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; font-size: 14px; }
+.conv-thread-info { flex: 1; }
+.conv-thread-name { font-weight: 600; font-size: 15px; color: #1a1a1a; }
+.conv-thread-state { font-size: 11px; color: #999; margin-top: 2px; }
+.conv-thread-actions { display: flex; gap: 8px; }
+.conv-action-btn { padding: 6px 12px; border: 1px solid #000; border-radius: 4px; background: #000; color: #fff; cursor: pointer; font-size: 13px; }
+.conv-action-btn:hover { background: #333; }
+.conv-action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.conv-action-devolver { background: #fff; color: #000; }
+.conv-action-devolver:hover { background: #f0f0f0; }
+.conv-thread-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; background: #f9f9f9; }
+.conv-msg { max-width: 70%; padding: 8px 12px; border-radius: 12px; font-size: 14px; line-height: 1.4; word-wrap: break-word; white-space: pre-wrap; }
+.conv-msg-cliente { align-self: flex-start; background: #fff; border: 1px solid #e5e5e5; border-bottom-left-radius: 4px; }
+.conv-msg-bot { align-self: flex-end; background: #000; color: #fff; border-bottom-right-radius: 4px; }
+.conv-msg-tatuador { align-self: flex-end; background: #fef3c7; color: #92400e; border-bottom-right-radius: 4px; }
+.conv-msg-tatuador::before { content: "🔇 "; }
+.conv-msg-time { font-size: 10px; opacity: .7; margin-top: 2px; }
+
+/* Mobile: lista em uma tela, thread fullscreen ao selecionar */
+@media (max-width: 768px) {
+  .conv-layout { flex-direction: column; height: calc(100vh - 60px); border: none; border-radius: 0; }
+  .conv-sidebar { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid #e5e5e5; }
+  .conv-thread { display: none; }
+  .conv-layout.show-thread .conv-sidebar { display: none; }
+  .conv-layout.show-thread .conv-thread { display: flex; }
+  .conv-back-btn { display: block; }
+}
 </style>
 </head>
 <body>
@@ -630,10 +684,50 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
         <!-- ═══ TAB: Conversas ═══ -->
         <div class="tab-panel" id="tab-conversas">
-          <div class="empty-state">
-            <div class="empty-state-icon">&#128172;</div>
-            <div class="empty-state-title">Conversas</div>
-            Em breve — Histórico de conversas com clientes
+          <div class="conv-layout">
+            <!-- Lista lateral 300px -->
+            <aside class="conv-sidebar" id="conv-sidebar">
+              <div class="conv-tabs" role="tablist">
+                <button class="conv-tab active" role="tab" aria-selected="true" data-grupo="hoje">Hoje</button>
+                <button class="conv-tab" role="tab" aria-selected="false" data-grupo="aguardando">Aguardando</button>
+                <button class="conv-tab" role="tab" aria-selected="false" data-grupo="negociacao">Em negociação</button>
+                <button class="conv-tab conv-tab-historico" role="tab" aria-selected="false" data-grupo="historico" title="Histórico (conversas fechadas)">&#128193;</button>
+              </div>
+              <div class="conv-list-scroll">
+                <ul class="conv-list" id="conv-list" aria-live="polite"></ul>
+                <div class="conv-list-empty" id="conv-list-empty" style="display:none">
+                  Nenhuma conversa neste grupo ainda.
+                </div>
+                <button class="conv-load-more" id="conv-load-more" style="display:none">Carregar mais</button>
+              </div>
+            </aside>
+
+            <!-- Thread (painel direita) -->
+            <section class="conv-thread" id="conv-thread">
+              <div class="conv-thread-empty" id="conv-thread-empty">
+                <div class="empty-state-icon">&#128172;</div>
+                <p>Selecione uma conversa pra ver as mensagens.</p>
+              </div>
+
+              <div class="conv-thread-content" id="conv-thread-content" style="display:none">
+                <header class="conv-thread-header">
+                  <button class="conv-back-btn" id="conv-back-btn" aria-label="Voltar pra lista">&larr;</button>
+                  <div class="conv-thread-info">
+                    <div class="conv-thread-name" id="conv-thread-name">&mdash;</div>
+                    <div class="conv-thread-state" id="conv-thread-state"></div>
+                  </div>
+                  <div class="conv-thread-actions">
+                    <button class="conv-action-btn" id="conv-action-assumir" style="display:none">Assumir</button>
+                    <button class="conv-action-btn conv-action-devolver" id="conv-action-devolver" style="display:none">Devolver pro bot</button>
+                  </div>
+                </header>
+
+                <div class="conv-thread-messages" id="conv-thread-messages" aria-live="polite">
+                  <button class="conv-load-older" id="conv-load-older" style="display:none">Carregar mensagens antigas</button>
+                  <!-- mensagens renderizadas aqui dinamicamente (Task 6+7) -->
+                </div>
+              </div>
+            </section>
           </div>
         </div>
 
