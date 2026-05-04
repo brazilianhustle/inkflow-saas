@@ -13,6 +13,6 @@
     "test-monitor": "curl -X POST \"https://inkflow-cron.workers.dev/?cron=*/30+*+*+*+*\" -H \"Authorization: Bearer $CRON_SECRET\""
   },
   "devDependencies": {
-    "wrangler": "^3.0.0"
+    "wrangler": "^4.84.1"
   }
 }
