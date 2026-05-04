@@ -740,7 +740,8 @@ function switchTab(tabName) {
 
 // Restore tab from URL hash on load
 function restoreTab() {
-  const hash = window.location.hash.replace('#', '');
+  let hash = window.location.hash.replace('#', '');
+  if (hash === 'agendamentos') hash = 'agenda';
   if (hash && document.getElementById('tab-' + hash)) {
     switchTab(hash);
   }
