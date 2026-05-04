@@ -172,6 +172,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .ag-chips-hint{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .ag-chip{font-size:10px;padding:2px 8px;background:rgba(0,212,170,.08);border:1px solid var(--teal-mid);border-radius:10px;color:var(--teal);cursor:pointer}
 .ag-chip:hover{background:rgba(0,212,170,.18)}
+.ag-secondary-btn{background:transparent;border:1px solid var(--border);color:var(--t1);padding:8px 16px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px;transition:border-color .15s}
+.ag-secondary-btn:hover{border-color:var(--teal)}
 
 /* ── Mobile: bottom tab bar ── */
 @media(max-width:768px){
@@ -442,11 +444,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
                   <div class="ag-hint">Nome que aparece pro cliente quando o bot se apresenta</div>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-label" for="ag-persona">Personalidade (descrição livre)</label>
-                  <textarea class="ag-textarea" id="ag-persona" rows="3" placeholder="Ex: Carioca descontraida, empatica com clientes nervosos na primeira tatuagem."></textarea>
-                  <div class="ag-hint">Descreva em 1-3 frases o jeito do seu agente</div>
-                </div>
-                <div class="ag-field">
                   <label class="ag-label" for="ag-tom">Tom de voz</label>
                   <select class="ag-select" id="ag-tom">
                     <option value="amigavel">Amigável (padrão)</option>
@@ -457,47 +454,49 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
                   </select>
                 </div>
                 <div class="ag-field">
-                  <label class="toggle-pill">
-                    <input type="checkbox" id="ag-identificador"/>
-                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
-                    <span class="toggle-label">Usar nome do agente como prefixo na 1ª msg<small>Ex: "Isabela: Oi tudo bem?" — senão texto direto sem prefixo</small></span>
-                  </label>
+                  <label class="ag-label" for="ag-persona">Personalidade (1–3 frases)</label>
+                  <textarea class="ag-textarea" id="ag-persona" rows="3" placeholder="Ex: Carioca descontraída, empática com clientes nervosos na primeira tatuagem."></textarea>
+                  <div class="ag-hint">Descreva em 1-3 frases o jeito do seu agente</div>
                 </div>
               </div>
 
-              <!-- Grupo 2: Tom / estilo de mensagem -->
+              <!-- Grupo 2: Estilo das mensagens -->
               <div class="ag-group">
                 <div class="ag-group-title">Estilo das mensagens</div>
                 <div class="ag-field">
                   <label class="ag-label" for="ag-emoji">Uso de emojis</label>
                   <select class="ag-select" id="ag-emoji">
-                    <option value="nenhum">Nenhum</option>
-                    <option value="raro" selected>Raro (1 a cada 3 msgs)</option>
                     <option value="moderado">Moderado (1 por msg quando encaixa)</option>
-                    <option value="muitos">Muitos</option>
+                    <option value="nenhum">Nenhum</option>
                   </select>
+                  <div class="ag-hint">Removidos: "raro" e "muitos" — bot ficava cansativo</div>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-checkbox">
-                    <input type="checkbox" id="ag-giria" checked/>
-                    <span class="ag-checkbox-label">Usa gírias brasileiras (massa, fechou, top)</span>
+                  <label class="ag-label" for="ag-emoji-favorito">Emoji favorito (opcional)</label>
+                  <input class="ag-input" id="ag-emoji-favorito" maxlength="8" placeholder="🔥 ou ✨"/>
+                  <div class="ag-hint">Aparece com mais frequência nas msgs do bot</div>
+                </div>
+                <div class="ag-field">
+                  <label class="toggle-pill">
+                    <input type="checkbox" id="ag-identificador"/>
+                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                    <span class="toggle-label">Usar nome do agente como prefixo na 1ª msg<small>Ex: "Isabela: Oi tudo bem?"</small></span>
                   </label>
                 </div>
                 <div class="ag-field">
                   <label class="ag-label" for="ag-proibidas">Expressões proibidas (uma por linha)</label>
                   <textarea class="ag-textarea" id="ag-proibidas" rows="3" placeholder="senhor&#10;senhora&#10;caro cliente"></textarea>
-                  <div class="ag-hint">Lista de frases que o bot NUNCA deve usar. Padrão já bloqueia "caro cliente", "atenciosamente", etc.</div>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-label" for="ag-frases-sau">Saudações variadas (uma por linha)</label>
+                  <label class="ag-label" for="ag-frases-sau">Frases naturais — saudação</label>
                   <textarea class="ag-textarea" id="ag-frases-sau" rows="2" placeholder="Oii&#10;Fala&#10;Opa"></textarea>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-label" for="ag-frases-conf">Confirmações variadas (uma por linha)</label>
+                  <label class="ag-label" for="ag-frases-conf">Frases naturais — confirmação</label>
                   <textarea class="ag-textarea" id="ag-frases-conf" rows="2" placeholder="Fechou&#10;Combinado&#10;Show"></textarea>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-label" for="ag-frases-enc">Encerramentos variados (uma por linha)</label>
+                  <label class="ag-label" for="ag-frases-enc">Frases naturais — encerramento</label>
                   <textarea class="ag-textarea" id="ag-frases-enc" rows="2" placeholder="Tmj&#10;Até mais&#10;Qualquer coisa me chama"></textarea>
                 </div>
               </div>
@@ -506,29 +505,27 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
               <div class="ag-group">
                 <div class="ag-group-title">Escopo do estúdio</div>
                 <div class="ag-field">
-                  <label class="ag-label" for="ag-est-aceitos">Estilos em que o estúdio é especializado</label>
+                  <label class="ag-label" for="ag-est-aceitos">Estilos aceitos (um por linha)</label>
                   <textarea class="ag-textarea" id="ag-est-aceitos" rows="2" placeholder="blackwork&#10;fineline&#10;realismo"></textarea>
-                  <div class="ag-hint">Uma por linha. Bot menciona estes quando relevante</div>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-label" for="ag-est-recusados">Estilos que o estúdio NÃO faz</label>
+                  <label class="ag-label" for="ag-est-recusados">Estilos recusados (um por linha)</label>
                   <textarea class="ag-textarea" id="ag-est-recusados" rows="2" placeholder="old_school"></textarea>
-                  <div class="ag-hint">Bot recusa pedido desses estilos educadamente</div>
                 </div>
                 <div class="ag-field">
                   <label class="toggle-pill">
                     <input type="checkbox" id="ag-cobertura" checked/>
                     <span class="toggle-track"><span class="toggle-thumb"></span></span>
-                    <span class="toggle-label">Estúdio aceita cobertura (cover up)<small>Se não, bot recusa e encerra educadamente sem chamar você</small></span>
+                    <span class="toggle-label">Estúdio aceita cobertura (cover up)<small>Se não, bot recusa e encerra educadamente</small></span>
                   </label>
                 </div>
               </div>
 
-              <!-- Grupo 4: Gatilhos de handoff -->
+              <!-- Grupo 4: Casos que o agente passa pra você -->
               <div class="ag-group">
-                <div class="ag-group-title">Gatilhos de handoff</div>
+                <div class="ag-group-title">Casos que o agente passa pra você</div>
                 <div class="ag-field">
-                  <label class="ag-label" for="ag-gatilhos">Palavras/situações que fazem o bot chamar você (uma por linha)</label>
+                  <label class="ag-label" for="ag-gatilhos">Termos que disparam handoff automático (uma por linha)</label>
                   <textarea class="ag-textarea" id="ag-gatilhos" rows="4" placeholder="cobertura&#10;retoque&#10;rosto&#10;mao&#10;pescoco&#10;menor_idade"></textarea>
                   <div class="ag-chips-hint">
                     <span class="ag-chip" onclick="appendChip('ag-gatilhos','cobertura')">+ cobertura</span>
@@ -544,48 +541,46 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
                 </div>
               </div>
 
-              <!-- Grupo 5: Agenda e preços -->
+              <!-- Grupo 5: Controle manual (kill-switch) -->
               <div class="ag-group">
-                <div class="ag-group-title">Agenda e preços</div>
+                <div class="ag-group-title">Controle manual</div>
+                <div class="ag-hint" style="margin-bottom:12px">Frases mágicas pra pausar o bot direto pelo WhatsApp + retomada automática</div>
                 <div class="ag-field">
-                  <label class="ag-label" for="ag-horario">Horário de funcionamento (JSON)</label>
-                  <textarea class="ag-textarea" id="ag-horario" rows="3" placeholder='{"seg-sex":"10:00-19:00","sab":"10:00-15:00","dom":"closed"}'></textarea>
-                  <div class="ag-hint">Formato JSON. Use "seg", "ter", ..., "dom" ou intervalos "seg-sex". Valor "closed" pra dia fechado.</div>
+                  <label class="ag-label" for="ag-frase-assumir">Frase pra assumir conversa</label>
+                  <input class="ag-input" id="ag-frase-assumir" maxlength="60" placeholder="/eu assumo"/>
+                  <div class="ag-hint">Quando você manda essa frase no chat do cliente, bot pausa</div>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-label" for="ag-duracao">Duração padrão de sessão (horas)</label>
-                  <input class="ag-input" id="ag-duracao" type="number" min="1" max="12" step="1" placeholder="3"/>
-                  <div class="ag-hint">Usado só internamente pra reservar slot. Bot nunca diz isso ao cliente.</div>
+                  <label class="ag-label" for="ag-frase-devolver">Frase pra devolver</label>
+                  <input class="ag-input" id="ag-frase-devolver" maxlength="60" placeholder="/bot volta"/>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-label" for="ag-sinal">Percentual do sinal (%)</label>
-                  <input class="ag-input" id="ag-sinal" type="number" min="0" max="100" step="1" placeholder="30"/>
-                  <div class="ag-hint">Quanto o cliente paga antecipado pra fechar agendamento</div>
+                  <label class="ag-label" for="ag-mensagem-retomar">Mensagem ao retomar</label>
+                  <textarea class="ag-textarea" id="ag-mensagem-retomar" rows="2" maxlength="280" placeholder="Voltei! Alguma dúvida sobre o orçamento?"></textarea>
                 </div>
                 <div class="ag-field">
-                  <label class="ag-label" for="ag-precificacao">Tabela de preços (JSON avançado)</label>
-                  <textarea class="ag-textarea" id="ag-precificacao" rows="4" placeholder='{"tabela_tamanho":{"P":[200,400],"M":[400,800],"G":[800,1500],"GG":[1500,3000]},"minimo":200}'></textarea>
-                  <div class="ag-hint">Edição JSON direto. UI visual virá em breve. Default aplicado se vazio.</div>
+                  <label class="ag-label" for="ag-auto-retomar">Retomar automaticamente após</label>
+                  <select class="ag-select" id="ag-auto-retomar">
+                    <option value="">Nunca</option>
+                    <option value="2">2 horas</option>
+                    <option value="6" selected>6 horas (padrão)</option>
+                    <option value="12">12 horas</option>
+                    <option value="24">24 horas</option>
+                  </select>
                 </div>
               </div>
 
-              <!-- Grupo 6: Portfolio -->
-              <div class="ag-group">
-                <div class="ag-group-title">Portfólio</div>
-                <div class="ag-field">
-                  <label class="ag-label" for="ag-portfolio">URLs de fotos/vídeos (uma por linha)</label>
-                  <textarea class="ag-textarea" id="ag-portfolio" rows="4" placeholder="https://exemplo.com/blackwork1.jpg&#10;https://exemplo.com/fineline1.jpg"></textarea>
-                  <div class="ag-hint">Dica: inclua o estilo no nome do arquivo pra bot filtrar por estilo (ex: "blackwork1.jpg"). Upload direto virá em breve.</div>
-                </div>
-              </div>
-
-              <!-- Grupo 7: FAQ -->
+              <!-- Grupo 6: FAQ do estúdio -->
               <div class="ag-group">
                 <div class="ag-group-title">FAQ do estúdio</div>
+                <div class="ag-hint" style="margin-bottom:12px">Perguntas frequentes que o bot responde sem precisar te chamar</div>
                 <div class="ag-field">
-                  <label class="ag-label" for="ag-faq">Perguntas e respostas frequentes</label>
-                  <textarea class="ag-textarea" id="ag-faq" rows="6" placeholder="P: Aceita PIX?&#10;R: Sim, aceitamos PIX, crédito e débito.&#10;&#10;P: Onde fica o estúdio?&#10;R: Rua Exemplo 123, Rio de Janeiro."></textarea>
-                  <div class="ag-hint">Bot consulta quando cliente pergunta sobre localização, pagamentos, cuidados, etc.</div>
+                  <button class="ag-secondary-btn" type="button" onclick="openFaqsModal()">📝 Meus FAQs</button>
+                </div>
+                <div class="ag-field">
+                  <label class="ag-label" for="ag-faq">FAQ raw (texto livre — fallback)</label>
+                  <textarea class="ag-textarea" id="ag-faq" rows="6" placeholder="P: Vocês fazem fineline?&#10;R: Sim, é nossa especialidade!&#10;&#10;P: Aceitam cartão?&#10;R: Sim, parcelamos em até 3x."></textarea>
+                  <div class="ag-hint">Use o botão "Meus FAQs" pra editar visualmente, ou cole texto direto aqui</div>
                 </div>
               </div>
 
@@ -951,8 +946,10 @@ function loadAgentConfig(tenant) {
   document.getElementById('ag-persona').value = cfg.persona_livre || '';
   document.getElementById('ag-tom').value = cfg.tom || 'amigavel';
   document.getElementById('ag-identificador').checked = cfg.usa_identificador === true;
-  document.getElementById('ag-emoji').value = cfg.emoji_level || 'raro';
-  document.getElementById('ag-giria').checked = cfg.usa_giria !== false;
+  // emoji_level legado pode ser 'raro'|'muitos' — mapear pra 'moderado' default
+  const emojiLegacy = cfg.emoji_level || 'moderado';
+  document.getElementById('ag-emoji').value = (emojiLegacy === 'nenhum') ? 'nenhum' : 'moderado';
+  document.getElementById('ag-emoji-favorito').value = cfg.emoji_favorito || '';
   document.getElementById('ag-proibidas').value = arrayToLines(cfg.expressoes_proibidas);
   const frases = cfg.frases_naturais || {};
   document.getElementById('ag-frases-sau').value = arrayToLines(frases.saudacao);
@@ -962,14 +959,13 @@ function loadAgentConfig(tenant) {
   document.getElementById('ag-est-recusados').value = arrayToLines(cfg.estilos_recusados);
   document.getElementById('ag-cobertura').checked = cfg.aceita_cobertura !== false;
   document.getElementById('ag-gatilhos').value = arrayToLines(tenant.gatilhos_handoff);
-  document.getElementById('ag-horario').value = tenant.horario_funcionamento
-    ? JSON.stringify(tenant.horario_funcionamento, null, 2) : '';
-  document.getElementById('ag-duracao').value = tenant.duracao_sessao_padrao_h || '';
-  document.getElementById('ag-sinal').value = tenant.sinal_percentual || '';
-  document.getElementById('ag-precificacao').value = tenant.config_precificacao
-    ? JSON.stringify(tenant.config_precificacao, null, 2) : '';
-  document.getElementById('ag-portfolio').value = arrayToLines(tenant.portfolio_urls);
   document.getElementById('ag-faq').value = tenant.faq_texto || '';
+
+  // Kill-switch fields (defaults se ausentes)
+  document.getElementById('ag-frase-assumir').value = cfg.frase_assumir || '/eu assumo';
+  document.getElementById('ag-frase-devolver').value = cfg.frase_devolver || '/bot volta';
+  document.getElementById('ag-mensagem-retomar').value = cfg.mensagem_ao_retomar || 'Voltei! Alguma dúvida sobre o orçamento?';
+  document.getElementById('ag-auto-retomar').value = cfg.auto_retomar_horas === null ? '' : String(cfg.auto_retomar_horas ?? 6);
 
   // Modo Coleta v2: mostra status Telegram se modo for coleta
   const modo = tenant.config_precificacao?.modo || 'coleta';
@@ -984,27 +980,16 @@ async function saveAgentConfig() {
   msg.className = 'ag-save-msg';
   msg.style.display = 'none';
 
-  // Parse JSON dos campos avançados
-  const horarioStr = document.getElementById('ag-horario').value.trim();
-  const horario = horarioStr ? tryParseJson(horarioStr, null) : null;
-  if (horarioStr && !horario) {
-    msg.textContent = 'JSON inválido no horário de funcionamento.';
-    msg.classList.add('err'); return;
-  }
-  const precificacaoStr = document.getElementById('ag-precificacao').value.trim();
-  const precificacao = precificacaoStr ? tryParseJson(precificacaoStr, null) : null;
-  if (precificacaoStr && !precificacao) {
-    msg.textContent = 'JSON inválido na tabela de preços.';
-    msg.classList.add('err'); return;
-  }
+  const autoVal = document.getElementById('ag-auto-retomar').value;
 
-  // Monta config_agente
+  // Monta config_agente preservando campos legacy via spread (PR 6/5 vão remove-los desse JSONB)
   const config_agente = {
+    ...(studioData?.tenant?.config_agente || {}),
     persona_livre: document.getElementById('ag-persona').value.trim(),
     tom: document.getElementById('ag-tom').value,
     usa_identificador: document.getElementById('ag-identificador').checked,
     emoji_level: document.getElementById('ag-emoji').value,
-    usa_giria: document.getElementById('ag-giria').checked,
+    emoji_favorito: document.getElementById('ag-emoji-favorito').value || undefined,
     expressoes_proibidas: linesToArray('ag-proibidas'),
     frases_naturais: {
       saudacao: linesToArray('ag-frases-sau'),
@@ -1014,27 +999,22 @@ async function saveAgentConfig() {
     estilos_aceitos: linesToArray('ag-est-aceitos'),
     estilos_recusados: linesToArray('ag-est-recusados'),
     aceita_cobertura: document.getElementById('ag-cobertura').checked,
+    // Kill-switch
+    frase_assumir: document.getElementById('ag-frase-assumir').value || '/eu assumo',
+    frase_devolver: document.getElementById('ag-frase-devolver').value || '/bot volta',
+    mensagem_ao_retomar: document.getElementById('ag-mensagem-retomar').value || 'Voltei! Alguma dúvida sobre o orçamento?',
+    auto_retomar_horas: autoVal === '' ? null : parseInt(autoVal, 10),
   };
+  delete config_agente.usa_giria;
 
-  // Payload pro update-tenant
   const body = {
     tenant_id: tenantId,
     studio_token: currentStudioToken,
     nome_agente: document.getElementById('ag-nome-agente').value.trim() || undefined,
     config_agente,
     gatilhos_handoff: linesToArray('ag-gatilhos'),
-    portfolio_urls: linesToArray('ag-portfolio'),
     faq_texto: document.getElementById('ag-faq').value.trim() || null,
   };
-
-  const duracao = parseInt(document.getElementById('ag-duracao').value, 10);
-  if (Number.isFinite(duracao) && duracao > 0) body.duracao_sessao_padrao_h = duracao;
-
-  const sinal = parseInt(document.getElementById('ag-sinal').value, 10);
-  if (Number.isFinite(sinal) && sinal >= 0) body.sinal_percentual = sinal;
-
-  if (horario) body.horario_funcionamento = horario;
-  if (precificacao) body.config_precificacao = precificacao;
 
   btn.disabled = true;
   btn.textContent = 'Salvando...';
