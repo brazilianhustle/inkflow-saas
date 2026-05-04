@@ -92,45 +92,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .studio-info{font-size:13px;color:var(--t2);line-height:1.8}
 .studio-info span{color:var(--t1);font-weight:500}
 
-/* ── Slots bar ── */
-.slots-section{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
-.slots-title{font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.slots-bar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:8px}
-.slots-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .5s ease}
-.slots-fill.full{background:var(--amber)}
-.slots-label{font-size:12px;color:var(--t3)}
-.slots-label span{color:var(--teal);font-weight:600}
-
-/* ── Artists list ── */
-.artists-list{margin-top:14px;display:flex;flex-direction:column;gap:6px}
-.artist-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px}
-.artist-avatar{width:34px;height:34px;border-radius:50%;background:var(--teal-dim);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--teal);flex-shrink:0}
-.artist-info{flex:1;min-width:0}
-.artist-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.artist-status{font-size:11px;color:var(--t3)}
-.artist-badge{font-size:10px;padding:3px 8px;border-radius:8px;font-weight:600;flex-shrink:0}
-.badge-active{background:var(--green-bg);color:var(--green)}
-.badge-pending{background:var(--amber-bg);color:var(--amber)}
-
-/* ── Invite section ── */
-.invite-section{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
-.invite-title{font-size:14px;font-weight:600;margin-bottom:8px}
-.invite-sub{font-size:13px;color:var(--t2);margin-bottom:14px;line-height:1.6}
-.invite-btn{width:100%;padding:12px;border:none;border-radius:10px;background:var(--teal);color:#000;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s;font-family:inherit}
-.invite-btn:hover{opacity:.9}
-.invite-btn:disabled{opacity:.4;cursor:not-allowed}
-
-/* ── Generated link box ── */
-.link-box{display:none;margin-top:14px;background:rgba(0,212,170,.06);border:1px solid var(--teal-mid);border-radius:10px;padding:14px}
-.link-box.show{display:block;animation:fadeUp .3s ease}
-.link-label{font-size:11px;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.link-url{font-size:12px;color:var(--t1);word-break:break-all;background:rgba(0,0,0,.3);padding:10px;border-radius:6px;margin-bottom:10px;font-family:'Courier New',monospace;display:block}
-.link-actions{display:flex;gap:8px}
-.link-copy{flex:1;padding:10px;border:1px solid var(--teal-mid);background:transparent;color:var(--teal);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;font-family:inherit}
-.link-copy:hover{background:var(--teal-dim)}
-.link-share{flex:1;padding:10px;border:1px solid var(--border2);background:transparent;color:var(--t2);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;font-family:inherit}
-.link-share:hover{background:rgba(255,255,255,.04)}
-
 /* ── Loading / Error ── */
 .loading{text-align:center;padding:60px 20px;color:var(--t2);font-size:14px}
 .loading .spinner{width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--teal);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 16px}
@@ -149,25 +110,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .support-box{margin-top:8px;margin-bottom:16px;text-align:center}
 .support-link{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;font-family:inherit}
 .support-link:hover{border-color:var(--teal-mid);color:var(--teal);background:var(--teal-dim)}
-
-/* ── Welcome modal ── */
-.wc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;animation:fadeUp .3s ease}
-.wc-overlay.show{display:flex}
-.wc-card{background:var(--card);border:1px solid var(--teal-mid);border-radius:16px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 0 40px rgba(0,212,170,.25)}
-.wc-emoji{font-size:40px;text-align:center;margin-bottom:8px;animation:fadeUp .5s ease}
-.wc-title{font-size:20px;font-weight:800;color:var(--teal);text-align:center;margin-bottom:8px}
-.wc-sub{font-size:13px;color:var(--t2);text-align:center;margin-bottom:20px;line-height:1.5}
-.wc-invite{background:rgba(0,212,170,.06);border:1px solid var(--teal-mid);border-radius:10px;padding:14px;margin-bottom:14px}
-.wc-invite-label{font-size:11px;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.wc-invite-link{font-size:11px;font-family:'Courier New',monospace;background:rgba(0,0,0,.3);padding:8px;border-radius:6px;word-break:break-all;color:var(--t1);margin-bottom:8px;max-height:60px;overflow:auto}
-.wc-slots{font-size:12px;color:var(--t3);text-align:center;margin-bottom:14px}
-.wc-slots span{color:var(--teal);font-weight:700}
-.wc-actions{display:flex;gap:8px;flex-direction:column}
-.wc-btn{padding:12px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s}
-.wc-btn.primary{background:var(--teal);color:#000}
-.wc-btn.primary:hover{opacity:.88}
-.wc-btn.secondary{background:transparent;color:var(--t2);border:1px solid var(--border)}
-.wc-btn.secondary:hover{color:var(--t1);border-color:var(--border2)}
 
 /* ── Connect WhatsApp ── */
 .connect-section{background:var(--card2);border:1px solid var(--teal-mid);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 0 24px rgba(0,212,170,.1)}
@@ -465,32 +407,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
             <div class="conn-status" id="conn-status">• verificando conexão...</div>
           </div>
 
-          <!-- Slots -->
-          <div class="slots-section">
-            <div class="slots-title">
-              <svg style="width:16px;height:16px;stroke:var(--teal);fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-              Artistas do Estúdio
-            </div>
-            <div class="slots-bar"><div class="slots-fill" id="slots-fill"></div></div>
-            <div class="slots-label"><span id="slots-used">0</span> de <span id="slots-max">4</span> slots ocupados</div>
-            <div class="artists-list" id="artists-list"></div>
-          </div>
-
-          <!-- Invite -->
-          <div class="invite-section" id="invite-section">
-            <div class="invite-title">Convidar Artista</div>
-            <div class="invite-sub">Gere um link de convite para um artista conectar o WhatsApp dele ao estúdio. Cada artista terá seu próprio assistente virtual.</div>
-            <button class="invite-btn" id="invite-btn" onclick="generateInvite()">Gerar link de convite</button>
-            <div class="link-box" id="link-box">
-              <div class="link-label">Link de convite (válido por 7 dias)</div>
-              <span class="link-url" id="link-url"></span>
-              <div class="link-actions">
-                <button class="link-copy" onclick="copyLink()">&#128203; Copiar link</button>
-                <button class="link-share" onclick="shareLink()">&#128228; Compartilhar</button>
-              </div>
-            </div>
-          </div>
-
           <!-- Support (mobile) -->
           <div class="support-box" style="display:none" id="mobile-support">
             <button type="button" class="support-link" onclick="openSupport()">
@@ -778,25 +694,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
 <div class="toast" id="toast">Link copiado!</div>
 
-<!-- Welcome modal (primeiro acesso pós-onboarding) -->
-<div class="wc-overlay" id="wc-overlay">
-  <div class="wc-card">
-    <div class="wc-emoji">&#127881;</div>
-    <div class="wc-title">Seu InkFlow está pronto!</div>
-    <div class="wc-sub">Agora convide os artistas do seu estúdio para conectarem os WhatsApps deles.</div>
-    <div class="wc-slots" id="wc-slots">Você pode convidar até <span id="wc-slot-count">&mdash;</span> artistas</div>
-    <div class="wc-invite" id="wc-invite-box" style="display:none">
-      <div class="wc-invite-label">Link de convite (válido por 7 dias)</div>
-      <div class="wc-invite-link" id="wc-invite-link"></div>
-      <button class="wc-btn primary" onclick="copyWelcomeLink()">&#128203; Copiar link de convite</button>
-    </div>
-    <div class="wc-actions">
-      <button class="wc-btn primary" id="wc-generate" onclick="generateWelcomeInvite()">Gerar primeiro link de convite</button>
-      <button class="wc-btn secondary" onclick="closeWelcome()">Fazer isso depois</button>
-    </div>
-  </div>
-</div>
-
 <script>
 // ── Toggle pill component (substitui <input type=checkbox>) ──
 // Uso:
@@ -870,7 +767,6 @@ function updateModoExatoUI(tenant) {
 // ── State ──
 let studioData = null;
 let tenantId = null;
-let lastGeneratedLink = '';
 let currentStudioToken = null;
 
 // ── Init ──
@@ -950,7 +846,6 @@ async function init() {
       } catch (e) { console.warn('[studio] falha ao persistir token renovado:', e); }
     }
     renderStudio(data);
-    maybeShowWelcome(data);
     restoreTab();
 
     // Telegram status pill (só Modo Coleta)
@@ -999,7 +894,6 @@ function renderStudio(data) {
   document.getElementById('top-header').style.display = '';
 
   const t = data.tenant;
-  const s = data.slots;
 
   // Header
   const studioName = t.nome_estudio || 'Meu Estúdio';
@@ -1013,47 +907,6 @@ function renderStudio(data) {
   document.getElementById('st-plano').textContent = planLabel;
   document.getElementById('st-owner').textContent = t.nome || t.email || '—';
   document.getElementById('st-instance').textContent = t.evo_instance || '—';
-
-  // Slots bar
-  const maxArtistSlots = s.max - 1; // dono ocupa 1
-  const usedSlots = s.used;
-  const pct = maxArtistSlots > 0 ? Math.min((usedSlots / maxArtistSlots) * 100, 100) : 0;
-  const fill = document.getElementById('slots-fill');
-  fill.style.width = pct + '%';
-  if (pct >= 100) fill.classList.add('full');
-  document.getElementById('slots-used').textContent = usedSlots;
-  document.getElementById('slots-max').textContent = maxArtistSlots;
-
-  // Artists list
-  const listEl = document.getElementById('artists-list');
-  if (data.artists && data.artists.length > 0) {
-    listEl.innerHTML = data.artists.map(a => {
-      const initials = (a.nome || '?').substring(0, 2).toUpperCase();
-      const badge = a.ativo
-        ? '<span class="artist-badge badge-active">Ativo</span>'
-        : '<span class="artist-badge badge-pending">Pendente</span>';
-      return `
-        <div class="artist-item">
-          <div class="artist-avatar">${initials}</div>
-          <div class="artist-info">
-            <div class="artist-name">${a.nome || 'Sem nome'}</div>
-            <div class="artist-status">${a.evo_instance || 'WhatsApp não conectado'}</div>
-          </div>
-          ${badge}
-        </div>
-      `;
-    }).join('');
-  } else {
-    listEl.innerHTML = '<div style="font-size:13px;color:var(--t3);text-align:center;padding:12px">Nenhum artista vinculado ainda</div>';
-  }
-
-  // Hide invite if no slots remaining
-  if (s.remaining <= 0) {
-    document.getElementById('invite-section').innerHTML = `
-      <div class="invite-title">Limite atingido</div>
-      <div class="invite-sub">Todos os slots de artista estão preenchidos (${usedSlots}/${maxArtistSlots}).</div>
-    `;
-  }
 
   // Popular formulário de Agente & Preços com configs atuais
   loadAgentConfig(t);
@@ -1304,81 +1157,6 @@ function pollTelegramReconnect(obKey) {
   }, 3000);
 }
 
-// ── Generate invite ──
-async function generateInvite() {
-  const btn = document.getElementById('invite-btn');
-  btn.disabled = true;
-  btn.textContent = 'Gerando...';
-
-  try {
-    const res = await fetch('/api/create-artist-invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenantId }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || data.error) {
-      alert(data.error || 'Erro ao gerar convite');
-      btn.disabled = false;
-      btn.textContent = 'Gerar link de convite';
-      return;
-    }
-
-    lastGeneratedLink = data.link;
-    document.getElementById('link-url').textContent = data.link;
-    document.getElementById('link-box').classList.add('show');
-    btn.textContent = 'Gerar outro convite';
-    btn.disabled = false;
-
-    // Update slots display
-    if (data.slots) {
-      document.getElementById('slots-used').textContent = data.slots.used;
-      if (data.slots.remaining <= 0) {
-        btn.disabled = true;
-        btn.textContent = 'Todos os slots preenchidos';
-      }
-    }
-
-  } catch (err) {
-    console.error('generateInvite error:', err);
-    alert('Erro de conexão. Tente novamente.');
-    btn.disabled = false;
-    btn.textContent = 'Gerar link de convite';
-  }
-}
-
-// ── Copy & Share ──
-function copyLink() {
-  if (!lastGeneratedLink) return;
-  navigator.clipboard.writeText(lastGeneratedLink).then(() => {
-    showToast('Link copiado!');
-  }).catch(() => {
-    // Fallback for older browsers
-    const ta = document.createElement('textarea');
-    ta.value = lastGeneratedLink;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('Link copiado!');
-  });
-}
-
-function shareLink() {
-  if (!lastGeneratedLink) return;
-  if (navigator.share) {
-    navigator.share({
-      title: 'Convite InkFlow',
-      text: 'Use este link para conectar seu WhatsApp ao estúdio:',
-      url: lastGeneratedLink,
-    }).catch(() => {});
-  } else {
-    copyLink();
-  }
-}
-
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1552,73 +1330,6 @@ function startConnectFlow() {
   connPollHandle = setInterval(pollConnection, 5000);
   // Auto-pick pairing no mobile
   if (/Android|iPhone|iPad/i.test(navigator.userAgent)) switchConnTab('pair');
-}
-
-// ── Welcome modal (pos-onboarding) ──
-function maybeShowWelcome(data) {
-  const params = new URLSearchParams(window.location.search);
-  const forceWelcome = params.get('welcome') === 'true';
-  const alreadyShown = !!data?.tenant?.welcome_shown;
-  // Solo/individual nao tem artistas — pula welcome
-  const isStudioPlan = ['estudio','premium'].includes(data?.tenant?.plano);
-  if (!isStudioPlan) return;
-  if (!forceWelcome && alreadyShown) return;
-  const maxSlots = (data?.slots?.max || 1) - 1; // -1 por dono
-  const remaining = data?.slots?.remaining ?? 0;
-  const slotCountEl = document.getElementById('wc-slot-count');
-  if (slotCountEl) slotCountEl.textContent = maxSlots;
-  document.getElementById('wc-overlay').classList.add('show');
-}
-
-async function generateWelcomeInvite() {
-  const btn = document.getElementById('wc-generate');
-  btn.disabled = true; btn.textContent = 'Gerando...';
-  try {
-    const res = await fetch('/api/create-artist-invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenantId }),
-    });
-    const data = await res.json();
-    if (!res.ok || data.error) {
-      alert(data.error || 'Erro ao gerar convite');
-      btn.disabled = false; btn.textContent = 'Gerar primeiro link de convite';
-      return;
-    }
-    document.getElementById('wc-invite-link').textContent = data.link;
-    document.getElementById('wc-invite-box').style.display = 'block';
-    btn.style.display = 'none';
-    lastGeneratedLink = data.link;
-  } catch (e) {
-    console.error('generateWelcomeInvite error:', e);
-    alert('Erro de conexão. Tente novamente.');
-    btn.disabled = false; btn.textContent = 'Gerar primeiro link de convite';
-  }
-}
-
-function copyWelcomeLink() {
-  const link = document.getElementById('wc-invite-link').textContent;
-  if (!link) return;
-  navigator.clipboard.writeText(link).then(() => showToast('Link copiado!')).catch(() => {});
-}
-
-async function closeWelcome() {
-  document.getElementById('wc-overlay').classList.remove('show');
-  // Persiste welcome_shown=true via update-tenant autenticado com studio_token
-  if (!tenantId || !currentStudioToken) return;
-  try {
-    await fetch('/api/update-tenant', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenantId, studio_token: currentStudioToken, welcome_shown: true }),
-    });
-  } catch (e) { console.warn('[welcome] falha ao salvar welcome_shown:', e?.message); }
-  // Limpar ?welcome=true da URL sem recarregar
-  try {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('welcome');
-    window.history.replaceState({}, '', url.toString());
-  } catch {}
 }
 
 // ── Start ──
