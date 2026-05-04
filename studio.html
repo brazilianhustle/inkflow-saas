@@ -211,6 +211,20 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .toggle-pill:hover .toggle-track{background:rgba(255,255,255,.18)}
 .toggle-pill:hover input:checked + .toggle-track{background:rgba(0,212,170,.4)}
 .toggle-pill input:focus-visible + .toggle-track{box-shadow:0 0 0 2px var(--teal)}
+.faqs-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+.faqs-overlay.show{display:flex}
+.faqs-modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:600px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+.faqs-header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--border)}
+.faqs-header h3{margin:0;font-size:16px;color:var(--t1)}
+.faqs-close-btn{background:transparent;border:none;color:var(--t3);font-size:28px;line-height:1;cursor:pointer;padding:0;width:32px;height:32px}
+.faqs-close-btn:hover{color:var(--t1)}
+.faqs-body{flex:1;overflow-y:auto;padding:16px 24px}
+.faqs-footer{display:flex;justify-content:space-between;gap:12px;padding:16px 24px;border-top:1px solid var(--border)}
+.faq-entry{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
+.faq-entry input,.faq-entry textarea{width:100%;background:transparent;border:1px solid var(--border);color:var(--t1);padding:8px;border-radius:6px;font-family:inherit;font-size:13px;margin-bottom:6px}
+.faq-entry textarea{min-height:50px;resize:vertical}
+.faq-entry .faq-delete{background:transparent;border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px}
+.faq-entry .faq-delete:hover{background:var(--red);color:#fff}
 </style>
 </head>
 <body>
@@ -1311,8 +1325,118 @@ function startConnectFlow() {
   if (/Android|iPhone|iPad/i.test(navigator.userAgent)) switchConnTab('pair');
 }
 
+// ── FAQ Parser/Serializer ──
+// Formato esperado: blocos "P: pergunta\nR: resposta\n\n" repetidos.
+// Aceita variações: P:/R:, p:/r:, Pergunta:/Resposta:, etc.
+function parseFaqs(text) {
+  if (!text || typeof text !== 'string') return [];
+  const blocks = text.split(/\n\s*\n/).filter(b => b.trim());
+  const result = [];
+  for (const block of blocks) {
+    const m = block.match(/^\s*(?:p|pergunta)\s*[:.\-]?\s*(.+?)\n\s*(?:r|resposta)\s*[:.\-]?\s*(.+)/is);
+    if (m) {
+      result.push({ p: m[1].trim(), r: m[2].trim() });
+    } else {
+      // Fallback: bloco que não bate o padrão vira FAQ "raw" (pergunta vazia, resposta = bloco inteiro)
+      result.push({ p: '', r: block.trim() });
+    }
+  }
+  return result;
+}
+
+function serializeFaqs(faqs) {
+  return faqs
+    .filter(f => f.p?.trim() || f.r?.trim())
+    .map(f => `P: ${f.p.trim()}\nR: ${f.r.trim()}`)
+    .join('\n\n');
+}
+
+// ── Modal management ──
+let faqsState = [];
+
+function openFaqsModal() {
+  const raw = document.getElementById('ag-faq').value;
+  faqsState = parseFaqs(raw);
+  if (faqsState.length === 0) faqsState = [{ p: '', r: '' }];
+  renderFaqsList();
+  document.getElementById('faqs-overlay').classList.add('show');
+}
+
+function closeFaqsModal() {
+  document.getElementById('faqs-overlay').classList.remove('show');
+}
+
+function renderFaqsList() {
+  const list = document.getElementById('faqs-list');
+  list.innerHTML = '';
+  faqsState.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'faq-entry';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Pergunta';
+    input.value = f.p || '';
+    input.addEventListener('input', e => { faqsState[i].p = e.target.value; });
+    const textarea = document.createElement('textarea');
+    textarea.placeholder = 'Resposta';
+    textarea.value = f.r || '';
+    textarea.addEventListener('input', e => { faqsState[i].r = e.target.value; });
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'faq-delete';
+    btn.textContent = 'Deletar';
+    btn.addEventListener('click', () => deleteFaqEntry(i));
+    div.appendChild(input);
+    div.appendChild(textarea);
+    div.appendChild(btn);
+    list.appendChild(div);
+  });
+}
+
+function addFaqEntry() {
+  faqsState.push({ p: '', r: '' });
+  renderFaqsList();
+}
+
+function deleteFaqEntry(idx) {
+  faqsState.splice(idx, 1);
+  if (faqsState.length === 0) faqsState = [{ p: '', r: '' }];
+  renderFaqsList();
+}
+
+function saveFaqs() {
+  const serialized = serializeFaqs(faqsState);
+  document.getElementById('ag-faq').value = serialized;
+  closeFaqsModal();
+  // Toast opcional — usar showToast se existir, senão mensagem inline no ag-save-msg
+  const msg = document.getElementById('ag-save-msg');
+  if (msg) {
+    msg.className = 'ag-save-msg ok';
+    msg.style.display = 'block';
+    msg.textContent = '✓ FAQs atualizadas — clica "Salvar configurações" pra persistir';
+    setTimeout(() => { msg.style.display = 'none'; msg.textContent = ''; msg.className = 'ag-save-msg'; }, 4000);
+  }
+}
+
 // ── Start ──
 init();
 </script>
+
+<!-- ═══ Modal: Meus FAQs ═══ -->
+<div class="faqs-overlay" id="faqs-overlay">
+  <div class="faqs-modal">
+    <div class="faqs-header">
+      <h3>Meus FAQs</h3>
+      <button class="faqs-close-btn" onclick="closeFaqsModal()" aria-label="Fechar">×</button>
+    </div>
+    <div class="faqs-body" id="faqs-list">
+      <!-- preenchido por JS -->
+    </div>
+    <div class="faqs-footer">
+      <button class="ag-secondary-btn" onclick="addFaqEntry()" type="button">+ Nova pergunta</button>
+      <button class="ag-save-btn" onclick="saveFaqs()" type="button">Salvar FAQs</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
