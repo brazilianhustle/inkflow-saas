@@ -35,6 +35,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .nav-btn:hover{color:var(--t1);background:rgba(255,255,255,.04)}
 .nav-btn.active{color:var(--teal);background:var(--teal-dim)}
 .nav-btn.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--teal);border-radius:0 3px 3px 0}
+.nav-btn .nav-label{display:none}
 .nav-tooltip{position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);background:#222;color:var(--t1);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
 .nav-btn:hover .nav-tooltip{opacity:1}
 .sidebar-bottom{margin-top:auto}
