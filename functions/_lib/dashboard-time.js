@@ -36,9 +36,8 @@ export function weekStartBrt(now = new Date()) {
   // Desloca para relógio BRT
   const brtClock = new Date(now.getTime() - BRT_OFFSET_MS);
   const dayOfWeek = brtClock.getUTCDay(); // 0=dom, 1=seg, ..., 6=sáb
-  // segunda (1) ainda não completou o dia → pertence à semana anterior (7 dias atrás)
-  // domingo (0) → 6 dias atrás; demais → dayOfWeek - 1
-  const daysToMonday = dayOfWeek === 1 ? 7 : dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  // segunda (1) → 0 dias atrás; domingo (0) → 6 dias atrás; demais → dayOfWeek - 1
+  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
   // Vai para meia-noite BRT do dia atual, depois subtrai dias até segunda
   brtClock.setUTCHours(0, 0, 0, 0);
   brtClock.setUTCDate(brtClock.getUTCDate() - daysToMonday);

@@ -21,15 +21,21 @@ test('weekStartBrt — quarta 12:00 UTC retorna segunda 03:00 UTC', () => {
   assert.equal(result.toISOString(), '2026-05-04T03:00:00.000Z');
 });
 
-test('weekStartBrt — segunda 04:00 UTC (01:00 BRT) ainda conta como semana passada', () => {
-  // 2026-05-04 segunda 01:00 BRT — week_start_brt deve ser segunda anterior 2026-04-27
+test('weekStartBrt — segunda 04:00 UTC (01:00 BRT segunda) retorna segunda 03:00 UTC (mesma semana)', () => {
+  // 2026-05-04 = segunda. 04:00 UTC = 01:00 BRT segunda — week_start_brt é segunda atual.
   const now = new Date('2026-05-04T04:00:00Z');
   const result = weekStartBrt(now);
-  assert.equal(result.toISOString(), '2026-04-27T03:00:00.000Z');
+  assert.equal(result.toISOString(), '2026-05-04T03:00:00.000Z');
 });
 
 test('daysAgoBrt(30) — retorna 30d antes do today_start_brt', () => {
   const now = new Date('2026-05-05T12:00:00Z');
   const result = daysAgoBrt(30, now);
   assert.equal(result.toISOString(), '2026-04-05T03:00:00.000Z');
+});
+
+test('weekStartBrt — segunda 15:00 UTC (12:00 BRT segunda) retorna mesma segunda 03:00 UTC', () => {
+  const now = new Date('2026-05-04T15:00:00Z');
+  const result = weekStartBrt(now);
+  assert.equal(result.toISOString(), '2026-05-04T03:00:00.000Z');
 });
