@@ -81,6 +81,13 @@ test('list — happy path: stub Supabase, retorna conversas + previews (grupo=ho
     assert.equal(body.ok, true);
     assert.equal(body.conversas.length, 2);
     assert.equal(body.conversas[0].last_msg_preview.length > 0, true);
+    // Coverage: garante que session_id é construído como ${tenantId}_${telefone}
+    const histCalls = calls.filter(u => u.includes('/rest/v1/n8n_chat_histories?'));
+    assert.ok(histCalls.length >= 1, 'pelo menos 1 fetch pra n8n_chat_histories');
+    assert.ok(
+      histCalls.some(u => u.includes(`session_id=eq.${encodeURIComponent(`${tenantId}_5511999999999`)}`)),
+      'session_id deve ser ${tenantId}_${telefone} URL-encoded'
+    );
   } finally {
     globalThis.fetch = origFetch;
   }
@@ -93,10 +100,10 @@ test('list — tenant_id sempre derivado do token (não aceita query param)', as
   const token = await makeStudioToken(realTenantId, env);
 
   const origFetch = globalThis.fetch;
-  let convasCallUrl = null;
+  let conversasCallUrl = null;
   globalThis.fetch = async (url) => {
     if (url.includes('/rest/v1/conversas?') && url.includes('tenant_id')) {
-      convasCallUrl = url;
+      conversasCallUrl = url;
       return new Response('[]', { status: 200 });
     }
     return new Response('[]', { status: 200 });
@@ -106,9 +113,9 @@ test('list — tenant_id sempre derivado do token (não aceita query param)', as
     const { onRequest } = await import('../../functions/api/conversas/list.js');
     const req = new Request(`https://x.com/api/conversas/list?studio_token=${token}&grupo=hoje&tenant_id=${fakeTenantId}`, { method: 'GET' });
     await onRequest({ request: req, env });
-    assert.ok(convasCallUrl, 'fetch foi chamado pra conversas');
-    assert.match(convasCallUrl, new RegExp(`tenant_id=eq\\.${realTenantId}`), 'usa tenant do token');
-    assert.ok(!convasCallUrl.includes(fakeTenantId), 'NÃO usa tenant_id da URL');
+    assert.ok(conversasCallUrl, 'fetch foi chamado pra conversas');
+    assert.match(conversasCallUrl, new RegExp(`tenant_id=eq\\.${realTenantId}`), 'usa tenant do token');
+    assert.ok(!conversasCallUrl.includes(fakeTenantId), 'NÃO usa tenant_id da URL');
   } finally {
     globalThis.fetch = origFetch;
   }
@@ -141,8 +148,10 @@ test('list — limit clamping: valores fora do range (0, -1, "abc", >100) → de
   try {
     const { onRequest } = await import('../../functions/api/conversas/list.js');
     for (const c of cases) {
+      limitObservado = null;
       const req = new Request(`https://x.com/api/conversas/list?studio_token=${token}&grupo=hoje&limit=${c.limit}`, { method: 'GET' });
       await onRequest({ request: req, env });
+      assert.notEqual(limitObservado, null, `fetch deveria ter sido chamado pra limit=${c.limit}`);
       assert.equal(limitObservado, c.expected, `limit=${c.limit} deve clampar pra ${c.expected}`);
     }
   } finally {

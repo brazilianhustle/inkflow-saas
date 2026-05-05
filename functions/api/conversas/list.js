@@ -82,6 +82,8 @@ export async function onRequest(context) {
     `limit=${limit}`,
   ];
 
+  // NOTA: estado/estado_agente enum values são ASCII alfanuméricos + _ apenas (escolhendo_horario, coletando_tattoo, etc.).
+  // Se um estado novo precisar de chars especiais (acento, hífen, parênteses), revisar encoding aqui.
   if (estados_agente.length && estados.length) {
     // Cross-column: ambas listas com itens (caso "hoje")
     const ea = estados_agente.map(encodeURIComponent).join(',');
@@ -92,7 +94,9 @@ export async function onRequest(context) {
     const ea = estados_agente.map(encodeURIComponent).join(',');
     params.push(`estado_agente=in.(${ea})`);
   } else {
-    // Single-col estado (não usado atualmente, mas defensive)
+    // Single-col estado: branch unreachable com mapping atual de _grupos.js
+    // (caller `getGrupoFilter` retorna null se ambas listas vazias).
+    // Mantido pra suportar futuro grupo workflow-only sem precisar tocar list.js.
     const es = estados.map(encodeURIComponent).join(',');
     params.push(`estado=in.(${es})`);
   }
