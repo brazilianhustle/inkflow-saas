@@ -1,7 +1,7 @@
 // ── Tool — enviar_orcamento_tatuador ──────────────────────────────────────
 // POST /api/tools/enviar-orcamento-tatuador
 // Headers: X-Inkflow-Tool-Secret
-// Body: { conversa_id, tenant_id?, telefone? }
+// Body: { tenant_id, telefone }
 //
 // Monta orcamento formatado a partir de dados_coletados + dados_cadastro,
 // envia mensagem Telegram pro chat_id do tatuador (tenants.tatuador_telegram_chat_id),
@@ -88,9 +88,9 @@ function inlineKeyboard(orcid) {
   };
 }
 
-async function carregarConversaComTenant(env, conversa_id) {
+async function carregarConversaPorPar(env, tenant_id, telefone) {
   const r = await supaFetch(env,
-    `/rest/v1/conversas?id=eq.${encodeURIComponent(conversa_id)}` +
+    `/rest/v1/conversas?tenant_id=eq.${encodeURIComponent(tenant_id)}&telefone=eq.${encodeURIComponent(telefone)}` +
     `&select=id,estado_agente,orcid,dados_coletados,dados_cadastro,tenant_id,tenants(${encodeURIComponent(TENANT_FIELDS)})`
   );
   if (!r.ok) throw new Error(`conversa-fetch-${r.status}`);
@@ -113,12 +113,14 @@ async function enviarTelegram(env, chat_id, text, reply_markup) {
 }
 
 async function handle({ env, input }) {
-  const { conversa_id } = input || {};
-  if (!conversa_id) return { status: 400, body: { ok: false, error: 'conversa_id obrigatorio' } };
+  const { tenant_id, telefone } = input || {};
+  if (!tenant_id) return { status: 400, body: { ok: false, error: 'tenant_id obrigatorio' } };
+  if (!telefone)  return { status: 400, body: { ok: false, error: 'telefone obrigatorio' } };
 
-  const conv = await carregarConversaComTenant(env, conversa_id);
+  const conv = await carregarConversaPorPar(env, tenant_id, telefone);
   if (!conv) return { status: 404, body: { ok: false, error: 'conversa-nao-encontrada' } };
 
+  const conversa_id = conv.id;
   const tenant = conv.tenants;
   if (!tenant?.tatuador_telegram_chat_id) {
     return {
