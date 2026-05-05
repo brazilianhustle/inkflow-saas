@@ -1,7 +1,7 @@
 // ── Tool — enviar_objecao_tatuador ────────────────────────────────────────
 // POST /api/tools/enviar-objecao-tatuador
 // Headers: X-Inkflow-Tool-Secret
-// Body: { conversa_id, valor_pedido_cliente, tenant_id?, telefone? }
+// Body: { tenant_id, telefone, valor_pedido_cliente }
 //
 // Quando cliente pede desconto na fase Proposta, esta tool dispara mensagem
 // Telegram pro tatuador com botoes [Aceitar X / Manter Y]. Atualiza estado
@@ -49,9 +49,9 @@ function inlineKeyboardObjecao(orcid, valor_pedido_cliente, valor_proposto) {
   };
 }
 
-async function carregarConversa(env, conversa_id) {
+async function carregarConversaPorPar(env, tenant_id, telefone) {
   const r = await supaFetch(env,
-    `/rest/v1/conversas?id=eq.${encodeURIComponent(conversa_id)}` +
+    `/rest/v1/conversas?tenant_id=eq.${encodeURIComponent(tenant_id)}&telefone=eq.${encodeURIComponent(telefone)}` +
     `&select=id,estado_agente,valor_proposto,valor_pedido_cliente,orcid,dados_cadastro,tenants(${encodeURIComponent(TENANT_FIELDS)})`
   );
   if (!r.ok) throw new Error(`conversa-fetch-${r.status}`);
@@ -74,8 +74,9 @@ async function enviarTelegram(env, chat_id, text, reply_markup) {
 }
 
 async function handle({ env, input }) {
-  const { conversa_id, valor_pedido_cliente } = input || {};
-  if (!conversa_id) return { status: 400, body: { ok: false, error: 'conversa_id obrigatorio' } };
+  const { tenant_id, telefone, valor_pedido_cliente } = input || {};
+  if (!tenant_id) return { status: 400, body: { ok: false, error: 'tenant_id obrigatorio' } };
+  if (!telefone)  return { status: 400, body: { ok: false, error: 'telefone obrigatorio' } };
   if (valor_pedido_cliente === undefined || valor_pedido_cliente === null) {
     return { status: 400, body: { ok: false, error: 'valor_pedido_cliente obrigatorio' } };
   }
@@ -84,8 +85,10 @@ async function handle({ env, input }) {
     return { status: 400, body: { ok: false, error: 'valor_pedido_cliente invalido (esperado numero > 0)' } };
   }
 
-  const conv = await carregarConversa(env, conversa_id);
+  const conv = await carregarConversaPorPar(env, tenant_id, telefone);
   if (!conv) return { status: 404, body: { ok: false, error: 'conversa-nao-encontrada' } };
+
+  const conversa_id = conv.id;
 
   if (!conv.valor_proposto) {
     return { status: 400, body: { ok: false, error: 'valor_proposto-ausente', dica: 'tatuador precisa fechar valor antes de objecao chegar' } };
