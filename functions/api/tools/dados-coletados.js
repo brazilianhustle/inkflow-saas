@@ -1,7 +1,8 @@
 // ── Tool — dados_coletados ─────────────────────────────────────────────────
 // POST /api/tools/dados-coletados
 // Headers: X-Inkflow-Tool-Secret
-// Body: { conversa_id, campo, valor, tenant_id?, telefone? }
+// Body: { tenant_id, telefone, campo, valor }
+// Conversa garantida via UPSERT idempotente (cria na 1ª chamada).
 //
 // Persiste 1 campo coletado pelo agente em conversas.dados_coletados (campos
 // de tattoo) ou conversas.dados_cadastro (campos de cadastro do cliente).
@@ -24,6 +25,7 @@
 // e a tool `enviar_orcamento_tatuador` (chamada pelo agente quando cadastro
 // completa).
 import { withTool, supaFetch } from './_tool-helpers.js';
+import { ensureConversa } from '../../_lib/conversas-upsert.js';
 
 const CAMPOS_TATTOO   = ['descricao_tattoo', 'tamanho_cm', 'local_corpo', 'estilo', 'foto_local', 'refs_imagens'];
 const CAMPOS_CADASTRO = ['nome', 'data_nascimento', 'email'];
@@ -98,15 +100,6 @@ function calcularIdade(isoDate) {
   return idade;
 }
 
-async function carregarConversa(env, conversa_id) {
-  const r = await supaFetch(env,
-    `/rest/v1/conversas?id=eq.${encodeURIComponent(conversa_id)}&select=id,estado_agente,dados_coletados,dados_cadastro`
-  );
-  if (!r.ok) throw new Error(`conversa-fetch-${r.status}`);
-  const rows = await r.json();
-  return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
-}
-
 async function patchConversa(env, conversa_id, fields) {
   const r = await supaFetch(env, `/rest/v1/conversas?id=eq.${encodeURIComponent(conversa_id)}`, {
     method: 'PATCH',
@@ -117,20 +110,37 @@ async function patchConversa(env, conversa_id, fields) {
 }
 
 async function handle({ env, input }) {
-  const { conversa_id, campo, valor } = input || {};
-  if (!conversa_id) return { status: 400, body: { ok: false, error: 'conversa_id obrigatorio' } };
-  if (!campo) return { status: 400, body: { ok: false, error: 'campo obrigatorio' } };
+  const { tenant_id, telefone, campo, valor } = input || {};
 
+  // 1. Validação de input ANTES de qualquer side-effect
+  if (!tenant_id) return { status: 400, body: { ok: false, error: 'tenant_id obrigatorio' } };
+  if (!telefone)  return { status: 400, body: { ok: false, error: 'telefone obrigatorio' } };
+  if (!campo)     return { status: 400, body: { ok: false, error: 'campo obrigatorio' } };
+
+  // 2. Validação de campo
   const isCadastro = CAMPOS_CADASTRO.includes(campo);
   const isTattoo   = CAMPOS_TATTOO.includes(campo);
   if (!isCadastro && !isTattoo) {
     return { status: 400, body: { ok: false, error: `campo invalido: ${campo}` } };
   }
 
-  const conv = await carregarConversa(env, conversa_id);
-  if (!conv) return { status: 404, body: { ok: false, error: 'conversa-nao-encontrada' } };
+  // 3. Garantir conversa via upsert idempotente (defaults só em INSERT)
+  const conv = await ensureConversa(env, {
+    tenant_id,
+    telefone,
+    defaultsOnInsert: { estado_agente: 'coletando_tattoo' },
+  });
+  if (!conv.ok) {
+    return {
+      status: 500,
+      body: { ok: false, error: 'upsert-falhou', detail: { reason: conv.reason, status: conv.status } },
+    };
+  }
 
-  // Validacao especial pra data_nascimento
+  const conversa_id = conv.id;
+  const convData = conv.row;
+
+  // 4. Validação especial pra data_nascimento
   if (campo === 'data_nascimento') {
     const iso = normalizarData(String(valor || ''));
     if (!iso) {
@@ -138,8 +148,7 @@ async function handle({ env, input }) {
     }
     const idade = calcularIdade(iso);
     if (idade !== null && idade < 18) {
-      // Persiste mesmo assim (pra audit trail) + transiciona pra aguardando_tatuador
-      const cadastro = { ...(conv.dados_cadastro || {}), data_nascimento: iso, idade_anos: idade };
+      const cadastro = { ...(convData.dados_cadastro || {}), data_nascimento: iso, idade_anos: idade };
       await patchConversa(env, conversa_id, {
         dados_cadastro: cadastro,
         estado_agente: 'aguardando_tatuador',
@@ -147,38 +156,36 @@ async function handle({ env, input }) {
       return {
         status: 200,
         body: {
-          ok: true, campo: 'data_nascimento', valor: iso,
+          ok: true, campo: 'data_nascimento', valor: iso, conversa_id,
           gatilho: 'menor_idade', idade_anos: idade,
           estado_agente: 'aguardando_tatuador',
         },
       };
     }
-    // Maior de idade — persiste e segue
-    const cadastro = { ...(conv.dados_cadastro || {}), data_nascimento: iso, idade_anos: idade };
+    const cadastro = { ...(convData.dados_cadastro || {}), data_nascimento: iso, idade_anos: idade };
     await patchConversa(env, conversa_id, { dados_cadastro: cadastro });
-    return { status: 200, body: { ok: true, campo: 'data_nascimento', valor: iso, idade_anos: idade } };
+    return { status: 200, body: { ok: true, campo: 'data_nascimento', valor: iso, idade_anos: idade, conversa_id } };
   }
 
-  // Validacao basica do nome (pelo menos 1 char nao-vazio)
+  // 5. Validação básica do nome
   if (campo === 'nome') {
     const v = String(valor || '').trim();
     if (v.length < 1) return { status: 400, body: { ok: false, error: 'nome vazio' } };
-    const cadastro = { ...(conv.dados_cadastro || {}), nome: v };
+    const cadastro = { ...(convData.dados_cadastro || {}), nome: v };
     await patchConversa(env, conversa_id, { dados_cadastro: cadastro });
-    return { status: 200, body: { ok: true, campo: 'nome', valor: v } };
+    return { status: 200, body: { ok: true, campo: 'nome', valor: v, conversa_id } };
   }
 
-  // Email (validacao branda — aceita mesmo sem @ pra nao bloquear cliente
-  // que nao quer dar email correto; tatuador ve no orcamento)
+  // 6. Email (validação branda)
   if (campo === 'email') {
     const v = String(valor || '').trim();
-    const cadastro = { ...(conv.dados_cadastro || {}), email: v };
+    const cadastro = { ...(convData.dados_cadastro || {}), email: v };
     await patchConversa(env, conversa_id, { dados_cadastro: cadastro });
-    return { status: 200, body: { ok: true, campo: 'email', valor: v } };
+    return { status: 200, body: { ok: true, campo: 'email', valor: v, conversa_id } };
   }
 
-  // Campo de tattoo (refs_imagens e array; demais sao escalares)
-  const dadosColetados = { ...(conv.dados_coletados || {}) };
+  // 7. Campo de tattoo
+  const dadosColetados = { ...(convData.dados_coletados || {}) };
   if (campo === 'refs_imagens') {
     const lista = Array.isArray(valor) ? valor : [valor];
     dadosColetados.refs_imagens = [...(dadosColetados.refs_imagens || []), ...lista];
@@ -192,7 +199,7 @@ async function handle({ env, input }) {
     dadosColetados[campo] = valor;
   }
 
-  // Detecta se completou os 3 OBR — transicao pra cadastro
+  // 8. Detecta transição pra cadastro
   const obrCompletos = OBR_TATTOO.every(k => {
     const v = dadosColetados[k];
     return v !== undefined && v !== null && v !== '';
@@ -200,7 +207,7 @@ async function handle({ env, input }) {
 
   let proximaFase = null;
   let novoEstado = null;
-  if (obrCompletos && conv.estado_agente === 'coletando_tattoo') {
+  if (obrCompletos && convData.estado_agente === 'coletando_tattoo') {
     novoEstado = 'coletando_cadastro';
     proximaFase = 'cadastro';
   }
@@ -209,7 +216,7 @@ async function handle({ env, input }) {
   if (novoEstado) patch.estado_agente = novoEstado;
   await patchConversa(env, conversa_id, patch);
 
-  const body = { ok: true, campo, valor: dadosColetados[campo] };
+  const body = { ok: true, campo, valor: dadosColetados[campo], conversa_id };
   if (proximaFase) body.proxima_fase = proximaFase;
   if (novoEstado) body.estado_agente = novoEstado;
 
