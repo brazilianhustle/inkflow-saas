@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InkFlow Hero Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dark:   #010101;
+    --orange: #f42a03;
+    --white:  #ffffff;
+    --grey:   #808080;
+    --container: 1200px;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; font-family: "Montserrat", sans-serif; }
+  html, body { height: 100%; width: 100%; background: var(--dark); color: var(--white); overflow-x: hidden; }
+  a { text-decoration: none; color: var(--white); }
+  ul { list-style: none; }
+  img { display: block; }
+
+  body::-webkit-scrollbar { width: 12px; }
+  body::-webkit-scrollbar-track { background: var(--dark); border-radius: 20px; }
+  body::-webkit-scrollbar-thumb { background-color: var(--orange); border-radius: 20px; }
+
+  .container { width: var(--container); max-width: 100%; margin: 0 auto; padding: 0; height: 100%; position: relative; }
+
+  /* HEADER */
+  .header { position: absolute; top: 0; left: 0; z-index: 10; width: 100%; padding-top: 30px; }
+  .header__inner { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 0 20px; }
+  .header__brand { display: flex; align-items: center; gap: 10px; mix-blend-mode: difference; }
+  .header__brand img { height: 40px; width: auto; }
+  .header__brand .brandtext { font-weight: 800; font-size: 22px; letter-spacing: -0.5px; }
+  .nav { display: flex; gap: 24px; align-items: center; mix-blend-mode: difference; padding-top: 10px; }
+  .nav__link { font-weight: 500; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; position: relative; }
+  .nav__link.active { color: var(--orange); pointer-events: none; }
+  .nav__link::after { content: ""; position: absolute; width: 0; height: 1px; background-color: var(--white); left: 0; bottom: -4px; transition: width 0.6s; }
+  .nav__link:hover::after { width: 100%; }
+  .nav-cta { background: var(--orange); padding: 10px 20px; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; transition: background-color 0.4s; }
+  .nav-cta:hover { background: #741603; }
+
+  /* HERO */
+  .hero {
+    height: 100vh;
+    background-image: url("https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2400&q=85");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(1,1,1,0.45) 0%, rgba(1,1,1,0.65) 60%, rgba(1,1,1,0.85) 100%);
+    z-index: 0;
+  }
+
+  /* HERO INNER — bottom-anchored composition */
+  .hero__inner {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 20px 50px;
+  }
+
+  /* LOGO + TITLE COMPOSITION */
+  .hero__brand {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    position: relative;
+  }
+
+  .hero__symbol {
+    height: 360px;
+    width: auto;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    margin-bottom: -10px;
+    filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+  }
+
+  .hero__title {
+    font-size: clamp(72px, 10vw, 145px);
+    font-weight: 900;
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+    color: var(--white);
+    text-transform: none;
+    position: relative;
+    z-index: 2;
+    margin-left: -40px;
+    text-shadow: 0 2px 30px rgba(0,0,0,0.5);
+  }
+
+  .hero__subtitle {
+    margin-top: 24px;
+    font-size: clamp(15px, 1.5vw, 22px);
+    font-weight: 400;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0.5px;
+    max-width: 720px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 1044px) {
+    :root { --container: 800px; }
+    .hero__symbol { height: 260px; }
+  }
+
+  @media (max-width: 800px) {
+    .header { position: fixed; padding-top: 20px; background: linear-gradient(180deg, rgba(1,1,1,0.85), transparent); }
+    .nav__list-mobile { display: none; }
+    .hero__symbol { height: 200px; }
+    .hero__title { font-size: clamp(56px, 14vw, 96px); }
+  }
+
+  @media (max-width: 600px) {
+    .hero__brand { flex-direction: row; align-items: center; gap: 0; }
+    .hero__symbol { height: 140px; margin-bottom: 0; }
+    .hero__title { font-size: 64px; margin-left: -20px; }
+    .hero__subtitle { font-size: 15px; margin-top: 16px; }
+    .header__inner { padding: 0 20px; }
+    .nav { display: none; }
+  }
+
+  @media (max-width: 375px) {
+    .hero__symbol { height: 110px; }
+    .hero__title { font-size: 52px; margin-left: -16px; }
+  }
+
+  /* Animations */
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+
+  .hero__symbol   { animation: slideUp 1.0s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+  .hero__title    { animation: slideUp 1.0s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both; }
+  .hero__subtitle { animation: slideUp 1.0s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both; }
+  .header         { animation: fadeIn  1.2s ease-out 0.7s both; }
+
+</style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container">
+      <div class="header__inner">
+        <div class="header__brand">
+          <img src="symbols/logo-white-header-240h.png" alt="InkFlow"/>
+          <span class="brandtext">InkFlow</span>
+        </div>
+        <nav class="nav">
+          <a href="#" class="nav__link active">Home</a>
+          <a href="#" class="nav__link">Recursos</a>
+          <a href="#" class="nav__link">Como funciona</a>
+          <a href="#" class="nav__link">Planos</a>
+          <a href="#" class="nav__link">FAQ</a>
+          <a href="#" class="nav-cta">Começar agora</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero__inner">
+        <div class="hero__brand">
+          <img src="symbols/logo-white-transparent.png" alt="" class="hero__symbol" aria-hidden="true"/>
+          <h1 class="hero__title">InkFlow</h1>
+        </div>
+        <p class="hero__subtitle">seu estúdio na palma da sua mão.</p>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>

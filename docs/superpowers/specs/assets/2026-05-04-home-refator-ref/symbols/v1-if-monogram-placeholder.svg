@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <title>InkFlow IF Monogram — placeholder geométrico</title>
+  <desc>Concept placeholder for spec. Final version should be brush-stroke ink style, hand-traced or AI-generated then vectorized.</desc>
+
+  <!-- I letter (left) -->
+  <path d="M 38 28 L 78 28 L 78 48 L 68 48 L 68 152 L 78 152 L 78 172 L 38 172 L 38 152 L 48 152 L 48 48 L 38 48 Z" fill="currentColor"/>
+
+  <!-- F letter (right) -->
+  <path d="M 92 28 L 172 28 L 172 50 L 116 50 L 116 88 L 158 88 L 158 110 L 116 110 L 116 172 L 92 172 Z" fill="currentColor"/>
+
+  <!-- Splatter dots (suggesting ink brush feel) -->
+  <circle cx="30" cy="180" r="2.5" fill="currentColor"/>
+  <circle cx="180" cy="22" r="2" fill="currentColor"/>
+  <circle cx="22" cy="20" r="1.5" fill="currentColor"/>
+  <circle cx="186" cy="178" r="1.8" fill="currentColor"/>
+</svg>
