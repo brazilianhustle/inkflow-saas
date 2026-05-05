@@ -436,6 +436,7 @@ PR 1 é fundação — bloqueia todos. Depois de PR 1 mergeado, **PRs 2, 3, 5, 6
 - [ ] PR 2 — Dashboard
 - [x] PR 3 — Agente + kill-switch backend (PR #23)
 - [x] PR 4 — Conversas (PR #24)
+- [x] PR 4.1 — Fix grupos cross-column query + lifecycle helper (PR #25, smoke 4/4 PASS em prod)
 - [ ] PR 5 — Portfólio
 - [ ] PR 6 — Agenda
 - [ ] PR 7 — Sugestões
