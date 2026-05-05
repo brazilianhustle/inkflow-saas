@@ -46,4 +46,22 @@ node --test tests/api/conversas-thread.test.mjs
 echo "▶ Lib — conversas-lifecycle..."
 node --test tests/_lib/conversas-lifecycle.test.mjs
 
+echo "▶ Lib — dashboard-time (PR 2)..."
+node --test tests/_lib/dashboard-time.test.mjs
+
+echo "▶ Lib — resumo-semanal-prompt (PR 2)..."
+node --test tests/_lib/resumo-semanal-prompt.test.mjs
+
+echo "▶ API — dashboard kpis (PR 2)..."
+node --test tests/api/dashboard-kpis.test.mjs
+
+echo "▶ API — dashboard atividade-recente (PR 2)..."
+node --test tests/api/dashboard-atividade-recente.test.mjs
+
+echo "▶ API — dashboard regenerate-resumo (PR 2)..."
+node --test tests/api/dashboard-regenerate-resumo.test.mjs
+
+echo "▶ API — cron resumo-semanal (PR 2)..."
+node --test tests/api/cron-resumo-semanal.test.mjs
+
 echo "✓ Todos os tests passaram."

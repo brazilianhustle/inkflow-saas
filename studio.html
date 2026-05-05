@@ -58,6 +58,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .status-pill.connected .status-label{color:var(--green)}
 .status-pill.disconnected .status-label{color:var(--red)}
 .status-pill.pending .status-label{color:var(--amber)}
+#status-whatsapp.ok .status-label,#status-telegram.ok .status-label{color:#22c55e}
+#status-whatsapp.warn .status-label,#status-telegram.warn .status-label{color:#f59e0b}
+#status-whatsapp.fail .status-label,#status-telegram.fail .status-label{color:#ef4444}
 
 /* ── Content area ── */
 .content-area{flex:1;padding:24px;display:flex;justify-content:center}
@@ -75,6 +78,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .kpi-value{font-size:28px;font-weight:800;color:var(--t1);line-height:1.2;margin-bottom:4px}
 .kpi-label{font-size:11px;color:var(--t3);font-weight:500;letter-spacing:.3px}
 .kpi-card.accent .kpi-value{color:var(--teal)}
+#tab-dashboard .kpi-card.loading .kpi-value{color:var(--t3)}
 
 /* ── Section blocks ── */
 .section-block{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
@@ -407,8 +411,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
               <div class="kpi-label">Orçamentos esta semana</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-value" id="kpi-agendamentos">&mdash;</div>
-              <div class="kpi-label">Agendamentos pendentes</div>
+              <div class="kpi-value" id="kpi-aguardando-sinal">&mdash;</div>
+              <div class="kpi-label">Aguardando sinal</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-value" id="kpi-conversao">&mdash;</div>
@@ -416,7 +420,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
             </div>
             <div class="kpi-card accent">
               <div class="kpi-value" id="kpi-sinal">&mdash;</div>
-              <div class="kpi-label">Sinal recebido (R$)</div>
+              <div class="kpi-label">Sinal recebido (semana)</div>
             </div>
           </div>
 
@@ -426,9 +430,25 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
               <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
               Atividade recente
             </div>
-            <div class="empty-state" style="padding:24px 12px">
+            <ul id="atividade-recente-lista" class="atividade-lista" style="list-style:none;padding:0;margin:0"></ul>
+            <div id="atividade-recente-empty" class="empty-state" style="padding:24px 12px" hidden>
               <div style="color:var(--t3);font-size:13px">Nenhuma atividade registrada ainda</div>
             </div>
+          </div>
+
+          <!-- Resumo semanal IA -->
+          <div class="section-block">
+            <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
+              <span style="display:flex;align-items:center;gap:8px">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Resumo semanal
+              </span>
+              <button id="btn-atualizar-resumo" type="button" style="padding:6px 12px;border-radius:6px;background:transparent;border:1px solid var(--border);cursor:pointer;font-size:13px;color:var(--t1);font-family:inherit">
+                Atualizar
+              </button>
+            </div>
+            <p id="resumo-texto" style="font-size:14px;line-height:1.5;color:var(--t1);margin:8px 0;min-height:20px"></p>
+            <p id="resumo-meta" style="font-size:12px;color:var(--t3);margin:0"></p>
           </div>
 
           <!-- Studio info -->
@@ -445,6 +465,20 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
                 WhatsApp: <span id="st-instance">&mdash;</span>
               </div>
             </div>
+          </div>
+
+          <!-- Conectar Telegram (condicional — Coleta v2) -->
+          <div id="conectar-telegram-slot" class="section-block" style="background:linear-gradient(135deg,#f3e8ff 0%,#fae8ff 100%);display:none">
+            <div class="section-title">
+              <svg viewBox="0 0 24 24"><path d="M21.5 4.5l-19 8 6 2 2 7 4-4 6 4z"/></svg>
+              Conecte seu Telegram
+            </div>
+            <p style="font-size:14px;color:var(--t1);margin:8px 0">Pra receber orçamentos do InkFlow no Telegram, escaneia o QR ou clica no link:</p>
+            <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:12px">
+              <img id="conectar-tg-qr" alt="QR code Telegram" style="width:120px;height:120px;border-radius:8px;background:#fff"/>
+              <a id="conectar-tg-link" href="" target="_blank" rel="noopener" style="color:#7c3aed;text-decoration:underline;font-weight:500">Abrir no Telegram</a>
+            </div>
+            <p id="conectar-tg-status" style="font-size:13px;color:var(--t3);margin-top:8px">Aguardando conexão…</p>
           </div>
 
           <!-- Conectar WhatsApp -->
@@ -827,6 +861,218 @@ function makeTogglePill({ id, label, hint, checked = false }) {
   return lbl;
 }
 
+// ── Dashboard: Atividade recente ──
+const _ATV_BADGE_COLORS = {
+  coletando_tattoo: '#dbeafe',
+  coletando_cadastro: '#dbeafe',
+  aguardando_tatuador: '#fef3c7',
+  propondo_valor: '#dcfce7',
+  aguardando_decisao_desconto: '#fef3c7',
+  escolhendo_horario: '#dcfce7',
+  aguardando_sinal: '#fef3c7',
+  lead_frio: '#fee2e2',
+  fechado: '#e5e7eb',
+};
+
+function renderAtividadeRecente(atividades) {
+  const lista = document.getElementById('atividade-recente-lista');
+  const empty = document.getElementById('atividade-recente-empty');
+  lista.innerHTML = ''; // safe: no user data here, rebuilt via DOM
+  if (!atividades || atividades.length === 0) {
+    empty.hidden = false;
+    return;
+  }
+  empty.hidden = true;
+  for (const a of atividades) {
+    const li = document.createElement('li');
+    li.style.cssText = 'display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd);cursor:pointer;align-items:center';
+    const avatar = document.createElement('div');
+    avatar.style.cssText = 'width:36px;height:36px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--t1);flex-shrink:0';
+    avatar.textContent = (a.nome || '?').charAt(0).toUpperCase();
+    const info = document.createElement('div');
+    info.style.cssText = 'flex:1;min-width:0';
+    const nome = document.createElement('div');
+    nome.style.cssText = 'font-weight:500;font-size:14px;color:var(--t1)';
+    nome.textContent = a.nome || 'sem nome';
+    const meta = document.createElement('div');
+    meta.style.cssText = 'font-size:12px;color:var(--t3);display:flex;gap:8px;align-items:center;margin-top:2px';
+    const badge = document.createElement('span');
+    badge.style.cssText = 'padding:2px 6px;border-radius:4px;font-size:11px;font-weight:500;color:#000';
+    badge.style.background = _ATV_BADGE_COLORS[a.estado_agente] || '#f3f4f6';
+    badge.textContent = (a.estado_agente || '').replace(/_/g, ' ');
+    const ts = document.createElement('span');
+    ts.textContent = (typeof fmtTempoRelativo === 'function')
+      ? fmtTempoRelativo(a.last_msg_at)
+      : new Date(a.last_msg_at).toLocaleString('pt-BR');
+    meta.append(badge, ts);
+    info.append(nome, meta);
+    li.append(avatar, info);
+    li.addEventListener('click', () => {
+      switchTab('conversas');
+      if (typeof openConversaById === 'function') openConversaById(a.id);
+    });
+    lista.appendChild(li);
+  }
+}
+
+async function loadAtividadeRecente() {
+  if (!currentStudioToken) return;
+  try {
+    const res = await fetch(`/api/dashboard/atividade-recente?studio_token=${encodeURIComponent(currentStudioToken)}`);
+    if (!res.ok) throw new Error('atividade ' + res.status);
+    const { atividades } = await res.json();
+    renderAtividadeRecente(atividades);
+  } catch (err) {
+    console.error('Erro atividade-recente:', err);
+  }
+}
+
+// ── Dashboard: Resumo semanal IA ──
+function renderResumoSemanal() {
+  if (!studioData) return;
+  const texto = document.getElementById('resumo-texto');
+  const meta = document.getElementById('resumo-meta');
+  const btn = document.getElementById('btn-atualizar-resumo');
+  if (!texto || !meta) return;
+  const t = studioData.tenant || studioData;
+  const resumo = t.resumo_semanal_atual;
+  const ultimaManual = t.resumo_semanal_ultima_geracao_manual;
+
+  if (!resumo || !resumo.texto) {
+    texto.textContent = 'Próximo resumo na segunda 9h.';
+    meta.textContent = '';
+  } else {
+    texto.textContent = resumo.texto;
+    const rel = (typeof fmtTempoRelativo === 'function')
+      ? fmtTempoRelativo(resumo.gerado_em)
+      : new Date(resumo.gerado_em).toLocaleString('pt-BR');
+    meta.textContent = `Gerado ${rel}`;
+  }
+
+  // Rate-limit visual: disable se ultima_manual <24h
+  if (btn && ultimaManual) {
+    const ultimaMs = new Date(ultimaManual).getTime();
+    if (Date.now() - ultimaMs < 24 * 3600 * 1000) {
+      btn.disabled = true;
+      btn.title = 'Já atualizado hoje, volta amanhã';
+    } else {
+      btn.disabled = false;
+      btn.title = '';
+    }
+  }
+}
+
+async function regenerateResumoClick() {
+  const btn = document.getElementById('btn-atualizar-resumo');
+  if (!btn || btn.disabled) return;
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Atualizando...';
+  try {
+    const res = await fetch(`/api/dashboard/regenerate-resumo-semanal?studio_token=${encodeURIComponent(currentStudioToken)}`, {
+      method: 'POST',
+    });
+    if (res.status === 429) {
+      const { error } = await res.json();
+      alert(error || 'Já atualizado hoje, volta amanhã.');
+      btn.title = 'Já atualizado hoje';
+      return; // keep disabled
+    }
+    if (!res.ok) throw new Error('regenerate ' + res.status);
+    const { resumo } = await res.json();
+    if (studioData) {
+      const t = studioData.tenant || studioData;
+      t.resumo_semanal_atual = resumo;
+      t.resumo_semanal_ultima_geracao_manual = new Date().toISOString();
+    }
+    renderResumoSemanal();
+  } catch (err) {
+    console.error('Erro regenerate:', err);
+    alert('Erro ao gerar resumo. Tenta de novo em instantes.');
+    btn.disabled = false;
+  } finally {
+    btn.textContent = originalText;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('btn-atualizar-resumo');
+  if (btn) btn.addEventListener('click', regenerateResumoClick);
+});
+
+// ── Dashboard: Conectar Telegram (condicional) ──
+let _telegramPollTimer = null;
+
+function renderConectarTelegram() {
+  const slot = document.getElementById('conectar-telegram-slot');
+  if (!slot || !studioData) return;
+  const t = studioData.tenant || studioData;
+  const tg = t.tatuador_telegram_chat_id;
+  if (tg) {
+    slot.style.display = 'none';
+    if (_telegramPollTimer) {
+      clearInterval(_telegramPollTimer);
+      _telegramPollTimer = null;
+    }
+    return;
+  }
+  slot.style.display = '';
+
+  const onboardingKey = t.onboarding_key || '';
+  const link = `https://t.me/inkflow_studio_bot?start=${encodeURIComponent(onboardingKey)}`;
+  const linkEl = document.getElementById('conectar-tg-link');
+  if (linkEl) linkEl.href = link;
+  const qrEl = document.getElementById('conectar-tg-qr');
+  if (qrEl) qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(link)}`;
+
+  if (_telegramPollTimer) clearInterval(_telegramPollTimer);
+  _telegramPollTimer = setInterval(async () => {
+    if (!onboardingKey) return;
+    try {
+      const res = await fetch(`/api/check-telegram-connected?onboarding_key=${encodeURIComponent(onboardingKey)}`);
+      if (!res.ok) return;
+      const { connected } = await res.json();
+      if (connected) {
+        const statusEl = document.getElementById('conectar-tg-status');
+        if (statusEl) statusEl.textContent = '✅ Conectado!';
+        clearInterval(_telegramPollTimer);
+        _telegramPollTimer = null;
+        // Atualiza estado local sem reload completo
+        const td = studioData.tenant || studioData;
+        td.tatuador_telegram_chat_id = 'connected';
+        setTimeout(() => { slot.style.display = 'none'; }, 1500);
+        // Refresh indicators
+        if (typeof updateHeaderIndicators === 'function') updateHeaderIndicators();
+      }
+    } catch {} // silencioso
+  }, 3000);
+}
+
+// ── Dashboard: KPI cards ──
+async function loadDashboardKpis() {
+  if (!currentStudioToken) return;
+  const cards = document.querySelectorAll('#tab-dashboard .kpi-card');
+  cards.forEach(c => c.classList.add('loading'));
+  try {
+    const res = await fetch(`/api/dashboard/kpis?studio_token=${encodeURIComponent(currentStudioToken)}`);
+    if (!res.ok) throw new Error('kpis ' + res.status);
+    const { kpis } = await res.json();
+    document.getElementById('kpi-conversas').textContent = kpis.conversas_hoje;
+    document.getElementById('kpi-orcamentos').textContent = kpis.orcamentos_esta_semana;
+    document.getElementById('kpi-aguardando-sinal').textContent = kpis.aguardando_sinal;
+    document.getElementById('kpi-conversao').textContent = kpis.taxa_conversao_30d + '%';
+    document.getElementById('kpi-sinal').textContent = 'R$ ' + Number(kpis.sinal_recebido_semana).toFixed(2);
+  } catch (err) {
+    console.error('Erro carregando KPIs:', err);
+    cards.forEach(c => {
+      const v = c.querySelector('.kpi-value');
+      if (v && v.textContent === '—') v.textContent = '?';
+    });
+  } finally {
+    cards.forEach(c => c.classList.remove('loading'));
+  }
+}
+
 // ── Tab switching ──
 function switchTab(tabName) {
   // Update nav buttons
@@ -845,6 +1091,19 @@ function switchTab(tabName) {
     if (typeof startConvPolling === 'function') startConvPolling();
   } else {
     if (typeof stopConvPolling === 'function') stopConvPolling();
+  }
+  // Carregar conteúdo dinâmico ao abrir Dashboard (PR 2)
+  if (tabName === 'dashboard') {
+    loadDashboardKpis();
+    loadAtividadeRecente();
+    renderResumoSemanal();
+    renderConectarTelegram();
+  } else {
+    // Limpa poll Telegram ao sair do dashboard
+    if (_telegramPollTimer) {
+      clearInterval(_telegramPollTimer);
+      _telegramPollTimer = null;
+    }
   }
 }
 
@@ -956,6 +1215,14 @@ async function init() {
     }
     renderStudio(data);
     restoreTab();
+    // Se dashboard está ativo no init, carrega KPIs, atividade, resumo e Telegram imediatamente
+    const activeHash = window.location.hash.replace('#', '') || 'dashboard';
+    if (activeHash === 'dashboard') {
+      loadDashboardKpis();
+      loadAtividadeRecente();
+      renderResumoSemanal();
+      renderConectarTelegram();
+    }
 
     // Telegram status pill (só Modo Coleta)
     const isColeta = (data.tenant.config_precificacao?.modo || 'coleta') === 'coleta';
@@ -964,6 +1231,8 @@ async function init() {
       const telegramConnected = !!data.tenant.tatuador_telegram_chat_id;
       updateHeaderStatus('telegram', telegramConnected ? 'connected' : 'disconnected');
     }
+    // Atualiza indicadores de header (WhatsApp + Telegram) via updateHeaderIndicators
+    updateHeaderIndicators();
 
   } catch (err) {
     console.error('init error:', err);
@@ -989,6 +1258,41 @@ function updateHeaderStatus(target, state) {
   const labels = { whatsapp: 'WhatsApp', telegram: 'Telegram' };
   const states = { connected: 'conectado', disconnected: 'desconectado', pending: 'verificando...' };
   el.title = labels[target] + ' ' + states[pillState];
+}
+
+function updateHeaderIndicators() {
+  if (!studioData) return;
+  const t = studioData.tenant || studioData;
+
+  // WhatsApp
+  const wa = document.getElementById('status-whatsapp');
+  if (wa) {
+    wa.classList.remove('ok', 'warn', 'fail');
+    const waStatus = t.whatsapp_status || 'unknown';
+    if (waStatus === 'online' || waStatus === 'connected') wa.classList.add('ok');
+    else if (waStatus === 'pending' || waStatus === 'unknown') wa.classList.add('warn');
+    else wa.classList.add('fail');
+    wa.title = `WhatsApp: ${waStatus}`;
+  }
+
+  // Telegram (Coleta only)
+  const tg = document.getElementById('status-telegram');
+  if (tg) {
+    const modo = t.config_precificacao?.modo || 'coleta';
+    if (modo === 'exato') {
+      tg.style.display = 'none';
+    } else {
+      tg.style.display = '';
+      tg.classList.remove('ok', 'warn', 'fail');
+      if (t.tatuador_telegram_chat_id) {
+        tg.classList.add('ok');
+        tg.title = 'Telegram: conectado';
+      } else {
+        tg.classList.add('fail');
+        tg.title = 'Telegram: desconectado';
+      }
+    }
+  }
 }
 
 function showError(msg) {

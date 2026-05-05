@@ -28,6 +28,7 @@ const SCHEDULE_MAP = {
   '30 */6 * * *': { path: '/api/cron/audit-billing-flow', secretEnv: 'CRON_SECRET', label: 'audit-billing-flow' },
   '15 */6 * * *': { path: '/api/cron/audit-vps-limits',   secretEnv: 'CRON_SECRET', label: 'audit-vps-limits' },
   '0 7 * * *':    { path: '/api/cron/audit-rls-drift',    secretEnv: 'CRON_SECRET', label: 'audit-rls-drift' }, // pivot-ready (trigger comentado em wrangler.toml)
+  '0 12 * * 1':   { path: '/api/cron/resumo-semanal',     secretEnv: 'CRON_SECRET', label: 'resumo-semanal' }, // PR 2 Dashboard
 };
 
 async function notifyFailure(env, label, detail) {
