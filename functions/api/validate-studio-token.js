@@ -125,6 +125,13 @@ export async function onRequest(context) {
         sinal_percentual: tenant.sinal_percentual || null,
         gatilhos_handoff: tenant.gatilhos_handoff || null,
         portfolio_urls: tenant.portfolio_urls || null,
+        // [PR 2 Dashboard] header pills + slot Conectar Telegram + Resumo IA + QR link
+        tatuador_telegram_chat_id: tenant.tatuador_telegram_chat_id || null,
+        tatuador_telegram_username: tenant.tatuador_telegram_username || null,
+        whatsapp_status: tenant.whatsapp_status || null,
+        resumo_semanal_atual: tenant.resumo_semanal_atual || null,
+        resumo_semanal_ultima_geracao_manual: tenant.resumo_semanal_ultima_geracao_manual || null,
+        onboarding_key: tenant.onboarding_key || null,
       },
       token_exp: verified.exp || null,
       refreshed_token: refreshedToken,
