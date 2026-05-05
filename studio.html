@@ -433,6 +433,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
             </div>
           </div>
 
+          <!-- Resumo semanal IA -->
+          <div class="section-block">
+            <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
+              <span style="display:flex;align-items:center;gap:8px">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Resumo semanal
+              </span>
+              <button id="btn-atualizar-resumo" type="button" style="padding:6px 12px;border-radius:6px;background:transparent;border:1px solid var(--border);cursor:pointer;font-size:13px;color:var(--t1);font-family:inherit">
+                Atualizar
+              </button>
+            </div>
+            <p id="resumo-texto" style="font-size:14px;line-height:1.5;color:var(--t1);margin:8px 0;min-height:20px"></p>
+            <p id="resumo-meta" style="font-size:12px;color:var(--t3);margin:0"></p>
+          </div>
+
           <!-- Studio info -->
           <div class="section-block">
             <div class="section-title">
@@ -895,6 +910,79 @@ async function loadAtividadeRecente() {
   }
 }
 
+// ── Dashboard: Resumo semanal IA ──
+function renderResumoSemanal() {
+  if (!studioData) return;
+  const texto = document.getElementById('resumo-texto');
+  const meta = document.getElementById('resumo-meta');
+  const btn = document.getElementById('btn-atualizar-resumo');
+  if (!texto || !meta) return;
+  const t = studioData.tenant || studioData;
+  const resumo = t.resumo_semanal_atual;
+  const ultimaManual = t.resumo_semanal_ultima_geracao_manual;
+
+  if (!resumo || !resumo.texto) {
+    texto.textContent = 'Próximo resumo na segunda 9h.';
+    meta.textContent = '';
+  } else {
+    texto.textContent = resumo.texto;
+    const rel = (typeof fmtTempoRelativo === 'function')
+      ? fmtTempoRelativo(resumo.gerado_em)
+      : new Date(resumo.gerado_em).toLocaleString('pt-BR');
+    meta.textContent = `Gerado ${rel}`;
+  }
+
+  // Rate-limit visual: disable se ultima_manual <24h
+  if (btn && ultimaManual) {
+    const ultimaMs = new Date(ultimaManual).getTime();
+    if (Date.now() - ultimaMs < 24 * 3600 * 1000) {
+      btn.disabled = true;
+      btn.title = 'Já atualizado hoje, volta amanhã';
+    } else {
+      btn.disabled = false;
+      btn.title = '';
+    }
+  }
+}
+
+async function regenerateResumoClick() {
+  const btn = document.getElementById('btn-atualizar-resumo');
+  if (!btn || btn.disabled) return;
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Atualizando...';
+  try {
+    const res = await fetch(`/api/dashboard/regenerate-resumo-semanal?studio_token=${encodeURIComponent(currentStudioToken)}`, {
+      method: 'POST',
+    });
+    if (res.status === 429) {
+      const { error } = await res.json();
+      alert(error || 'Já atualizado hoje, volta amanhã.');
+      btn.title = 'Já atualizado hoje';
+      return; // keep disabled
+    }
+    if (!res.ok) throw new Error('regenerate ' + res.status);
+    const { resumo } = await res.json();
+    if (studioData) {
+      const t = studioData.tenant || studioData;
+      t.resumo_semanal_atual = resumo;
+      t.resumo_semanal_ultima_geracao_manual = new Date().toISOString();
+    }
+    renderResumoSemanal();
+  } catch (err) {
+    console.error('Erro regenerate:', err);
+    alert('Erro ao gerar resumo. Tenta de novo em instantes.');
+    btn.disabled = false;
+  } finally {
+    btn.textContent = originalText;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('btn-atualizar-resumo');
+  if (btn) btn.addEventListener('click', regenerateResumoClick);
+});
+
 // ── Dashboard: KPI cards ──
 async function loadDashboardKpis() {
   if (!currentStudioToken) return;
@@ -943,6 +1031,7 @@ function switchTab(tabName) {
   if (tabName === 'dashboard') {
     loadDashboardKpis();
     loadAtividadeRecente();
+    renderResumoSemanal();
   }
 }
 
@@ -1054,11 +1143,12 @@ async function init() {
     }
     renderStudio(data);
     restoreTab();
-    // Se dashboard está ativo no init, carrega KPIs e atividade imediatamente
+    // Se dashboard está ativo no init, carrega KPIs, atividade e resumo imediatamente
     const activeHash = window.location.hash.replace('#', '') || 'dashboard';
     if (activeHash === 'dashboard') {
       loadDashboardKpis();
       loadAtividadeRecente();
+      renderResumoSemanal();
     }
 
     // Telegram status pill (só Modo Coleta)
