@@ -464,6 +464,20 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
             </div>
           </div>
 
+          <!-- Conectar Telegram (condicional — Coleta v2) -->
+          <div id="conectar-telegram-slot" class="section-block" style="background:linear-gradient(135deg,#f3e8ff 0%,#fae8ff 100%);display:none">
+            <div class="section-title">
+              <svg viewBox="0 0 24 24"><path d="M21.5 4.5l-19 8 6 2 2 7 4-4 6 4z"/></svg>
+              Conecte seu Telegram
+            </div>
+            <p style="font-size:14px;color:var(--t1);margin:8px 0">Pra receber orçamentos do InkFlow no Telegram, escaneia o QR ou clica no link:</p>
+            <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:12px">
+              <img id="conectar-tg-qr" alt="QR code Telegram" style="width:120px;height:120px;border-radius:8px;background:#fff"/>
+              <a id="conectar-tg-link" href="" target="_blank" rel="noopener" style="color:#7c3aed;text-decoration:underline;font-weight:500">Abrir no Telegram</a>
+            </div>
+            <p id="conectar-tg-status" style="font-size:13px;color:var(--t3);margin-top:8px">Aguardando conexão…</p>
+          </div>
+
           <!-- Conectar WhatsApp -->
           <div class="connect-section" id="connect-section" style="display:none">
             <div class="connect-title">&#128268; Conecte seu WhatsApp</div>
@@ -983,6 +997,54 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btn) btn.addEventListener('click', regenerateResumoClick);
 });
 
+// ── Dashboard: Conectar Telegram (condicional) ──
+let _telegramPollTimer = null;
+
+function renderConectarTelegram() {
+  const slot = document.getElementById('conectar-telegram-slot');
+  if (!slot || !studioData) return;
+  const t = studioData.tenant || studioData;
+  const tg = t.tatuador_telegram_chat_id;
+  if (tg) {
+    slot.style.display = 'none';
+    if (_telegramPollTimer) {
+      clearInterval(_telegramPollTimer);
+      _telegramPollTimer = null;
+    }
+    return;
+  }
+  slot.style.display = '';
+
+  const onboardingKey = t.onboarding_key || '';
+  const link = `https://t.me/inkflow_studio_bot?start=${encodeURIComponent(onboardingKey)}`;
+  const linkEl = document.getElementById('conectar-tg-link');
+  if (linkEl) linkEl.href = link;
+  const qrEl = document.getElementById('conectar-tg-qr');
+  if (qrEl) qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(link)}`;
+
+  if (_telegramPollTimer) clearInterval(_telegramPollTimer);
+  _telegramPollTimer = setInterval(async () => {
+    if (!onboardingKey) return;
+    try {
+      const res = await fetch(`/api/check-telegram-connected?onboarding_key=${encodeURIComponent(onboardingKey)}`);
+      if (!res.ok) return;
+      const { connected } = await res.json();
+      if (connected) {
+        const statusEl = document.getElementById('conectar-tg-status');
+        if (statusEl) statusEl.textContent = '✅ Conectado!';
+        clearInterval(_telegramPollTimer);
+        _telegramPollTimer = null;
+        // Atualiza estado local sem reload completo
+        const td = studioData.tenant || studioData;
+        td.tatuador_telegram_chat_id = 'connected';
+        setTimeout(() => { slot.style.display = 'none'; }, 1500);
+        // Refresh indicators
+        if (typeof updateHeaderIndicators === 'function') updateHeaderIndicators();
+      }
+    } catch {} // silencioso
+  }, 3000);
+}
+
 // ── Dashboard: KPI cards ──
 async function loadDashboardKpis() {
   if (!currentStudioToken) return;
@@ -1032,6 +1094,13 @@ function switchTab(tabName) {
     loadDashboardKpis();
     loadAtividadeRecente();
     renderResumoSemanal();
+    renderConectarTelegram();
+  } else {
+    // Limpa poll Telegram ao sair do dashboard
+    if (_telegramPollTimer) {
+      clearInterval(_telegramPollTimer);
+      _telegramPollTimer = null;
+    }
   }
 }
 
@@ -1143,12 +1212,13 @@ async function init() {
     }
     renderStudio(data);
     restoreTab();
-    // Se dashboard está ativo no init, carrega KPIs, atividade e resumo imediatamente
+    // Se dashboard está ativo no init, carrega KPIs, atividade, resumo e Telegram imediatamente
     const activeHash = window.location.hash.replace('#', '') || 'dashboard';
     if (activeHash === 'dashboard') {
       loadDashboardKpis();
       loadAtividadeRecente();
       renderResumoSemanal();
+      renderConectarTelegram();
     }
 
     // Telegram status pill (só Modo Coleta)
