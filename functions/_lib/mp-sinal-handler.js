@@ -71,12 +71,36 @@ export async function processMpSinal(env, paymentId) {
   }
   const ag = updated[0];
 
-  // Atualiza conversa correspondente para confirmado
+  // Atualiza conversa correspondente para confirmado e marca lifecycle fechado
   if (ag.cliente_telefone && ag.tenant_id) {
-    await supaFetch(env, `/rest/v1/conversas?tenant_id=eq.${encodeURIComponent(ag.tenant_id)}&telefone=eq.${encodeURIComponent(ag.cliente_telefone)}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ estado: 'confirmado', updated_at: new Date().toISOString() }),
-    });
+    const cRes = await supaFetch(
+      env,
+      `/rest/v1/conversas?tenant_id=eq.${encodeURIComponent(ag.tenant_id)}&telefone=eq.${encodeURIComponent(ag.cliente_telefone)}`,
+      {
+        method: 'PATCH',
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify({ estado: 'confirmado', updated_at: new Date().toISOString() }),
+      }
+    );
+
+    // Lifecycle: fecha conversa após sinal pago. Não-bloqueante — falha aqui não invalida sinal.
+    if (cRes.ok) {
+      const updated = await cRes.json().catch(() => []);
+      if (Array.isArray(updated) && updated.length > 0 && updated[0].id) {
+        try {
+          const { markConversaFechada } = await import('./conversas-lifecycle.js');
+          const SB_KEY = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
+          await markConversaFechada({
+            supabaseUrl: SUPABASE_URL,
+            supabaseKey: SB_KEY,
+            conversa_id: updated[0].id,
+            motivo: 'sinal_pago',
+          });
+        } catch (e) {
+          console.warn('mp-sinal-handler: markConversaFechada falhou (não-bloqueante):', e?.message);
+        }
+      }
+    }
   }
 
   console.log(`mp-sinal-handler: agendamento ${agendamento_id} confirmado via payment ${paymentId}`);
