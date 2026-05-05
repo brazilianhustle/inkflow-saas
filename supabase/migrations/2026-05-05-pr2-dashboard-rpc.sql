@@ -32,3 +32,19 @@ AS $$
     AND o.status = 'fechado'
     AND o.pago_em >= p_since;
 $$;
+
+-- dashboard_resumo_periodo: fechados + sum_sinal em janela [p_since, p_until)
+-- Usada por POST /api/dashboard/regenerate-resumo-semanal para calcular
+-- stats de semana atual e semana anterior (2× via Promise.all).
+CREATE OR REPLACE FUNCTION dashboard_resumo_periodo(p_tenant_id UUID, p_since TIMESTAMPTZ, p_until TIMESTAMPTZ)
+RETURNS TABLE(fechados BIGINT, sum_sinal NUMERIC)
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT
+    count(*) FILTER (WHERE o.status = 'fechado' AND o.pago_em >= p_since AND o.pago_em < p_until) AS fechados,
+    COALESCE(sum(o.valor * t.sinal_percentual / 100.0) FILTER (WHERE o.status = 'fechado' AND o.pago_em >= p_since AND o.pago_em < p_until), 0) AS sum_sinal
+  FROM orcamentos o
+  JOIN tenants t ON t.id = o.tenant_id
+  WHERE o.tenant_id = p_tenant_id;
+$$;
