@@ -70,15 +70,33 @@ export async function onRequest(context) {
   if (!verified) return json({ error: 'Token inválido' }, 401);
   const tenant_id = verified.tenantId;
 
-  // Build query string
-  const estadosCsv = grupoFilter.estados.map(s => encodeURIComponent(s)).join(',');
+  // Build query string (cross-column or single-column dependendo do grupo)
+  // PostgREST suporta `or=(estado_agente.in.(a,b),estado.in.(c,d))` pra cruzar colunas.
+  // Painel "Hoje" precisa cruzar (coletando_* em estado_agente OR escolhendo_horario/aguardando_sinal em estado).
+  // Outros painéis filtram só estado_agente — usamos forma direta pra evitar `or=` com 1 cláusula.
+  const { estados_agente, estados } = grupoFilter;
   const params = [
     `tenant_id=eq.${tenant_id}`,
-    `estado_agente=in.(${estadosCsv})`,
-    'select=id,telefone,estado_agente,last_msg_at,valor_proposto,dados_coletados,dados_cadastro,estado_agente_anterior,pausada_em',
+    'select=id,telefone,estado,estado_agente,last_msg_at,valor_proposto,dados_coletados,dados_cadastro,estado_agente_anterior,pausada_em',
     'order=last_msg_at.desc',
     `limit=${limit}`,
   ];
+
+  if (estados_agente.length && estados.length) {
+    // Cross-column: ambas listas com itens (caso "hoje")
+    const ea = estados_agente.map(encodeURIComponent).join(',');
+    const es = estados.map(encodeURIComponent).join(',');
+    params.push(`or=(estado_agente.in.(${ea}),estado.in.(${es}))`);
+  } else if (estados_agente.length) {
+    // Single-col estado_agente (casos "aguardando", "negociacao", "historico")
+    const ea = estados_agente.map(encodeURIComponent).join(',');
+    params.push(`estado_agente=in.(${ea})`);
+  } else {
+    // Single-col estado (não usado atualmente, mas defensive)
+    const es = estados.map(encodeURIComponent).join(',');
+    params.push(`estado=in.(${es})`);
+  }
+
   if (grupoFilter.last_msg_at_gte) {
     params.push(`last_msg_at=gte.${encodeURIComponent(grupoFilter.last_msg_at_gte)}`);
   }
