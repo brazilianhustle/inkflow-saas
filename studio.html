@@ -58,6 +58,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .status-pill.connected .status-label{color:var(--green)}
 .status-pill.disconnected .status-label{color:var(--red)}
 .status-pill.pending .status-label{color:var(--amber)}
+#status-whatsapp.ok .status-label,#status-telegram.ok .status-label{color:#22c55e}
+#status-whatsapp.warn .status-label,#status-telegram.warn .status-label{color:#f59e0b}
+#status-whatsapp.fail .status-label,#status-telegram.fail .status-label{color:#ef4444}
 
 /* ── Content area ── */
 .content-area{flex:1;padding:24px;display:flex;justify-content:center}
@@ -1228,6 +1231,8 @@ async function init() {
       const telegramConnected = !!data.tenant.tatuador_telegram_chat_id;
       updateHeaderStatus('telegram', telegramConnected ? 'connected' : 'disconnected');
     }
+    // Atualiza indicadores de header (WhatsApp + Telegram) via updateHeaderIndicators
+    updateHeaderIndicators();
 
   } catch (err) {
     console.error('init error:', err);
@@ -1253,6 +1258,41 @@ function updateHeaderStatus(target, state) {
   const labels = { whatsapp: 'WhatsApp', telegram: 'Telegram' };
   const states = { connected: 'conectado', disconnected: 'desconectado', pending: 'verificando...' };
   el.title = labels[target] + ' ' + states[pillState];
+}
+
+function updateHeaderIndicators() {
+  if (!studioData) return;
+  const t = studioData.tenant || studioData;
+
+  // WhatsApp
+  const wa = document.getElementById('status-whatsapp');
+  if (wa) {
+    wa.classList.remove('ok', 'warn', 'fail');
+    const waStatus = t.whatsapp_status || 'unknown';
+    if (waStatus === 'online' || waStatus === 'connected') wa.classList.add('ok');
+    else if (waStatus === 'pending' || waStatus === 'unknown') wa.classList.add('warn');
+    else wa.classList.add('fail');
+    wa.title = `WhatsApp: ${waStatus}`;
+  }
+
+  // Telegram (Coleta only)
+  const tg = document.getElementById('status-telegram');
+  if (tg) {
+    const modo = t.config_precificacao?.modo || 'coleta';
+    if (modo === 'exato') {
+      tg.style.display = 'none';
+    } else {
+      tg.style.display = '';
+      tg.classList.remove('ok', 'warn', 'fail');
+      if (t.tatuador_telegram_chat_id) {
+        tg.classList.add('ok');
+        tg.title = 'Telegram: conectado';
+      } else {
+        tg.classList.add('fail');
+        tg.title = 'Telegram: desconectado';
+      }
+    }
+  }
 }
 
 function showError(msg) {
