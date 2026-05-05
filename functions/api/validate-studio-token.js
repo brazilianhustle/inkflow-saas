@@ -58,6 +58,11 @@ export async function onRequest(context) {
       'config_agente', 'config_precificacao',
       'horario_funcionamento', 'duracao_sessao_padrao_h',
       'sinal_percentual', 'gatilhos_handoff', 'portfolio_urls',
+      // PR 2 Dashboard
+      'tatuador_telegram_chat_id', 'tatuador_telegram_username',
+      'whatsapp_status',
+      'resumo_semanal_atual', 'resumo_semanal_ultima_geracao_manual',
+      'onboarding_key',
     ].join(',');
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(verified.tenantId)}&select=${tenantFields}`,
