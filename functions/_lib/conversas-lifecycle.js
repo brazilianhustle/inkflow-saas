@@ -21,6 +21,9 @@ export const MOTIVOS_FECHAR_VALIDOS = Object.freeze([
  * @param {string} args.conversa_id - UUID da conversa
  * @param {string} args.motivo - um de MOTIVOS_FECHAR_VALIDOS
  * @returns {Promise<{fechada: boolean, ja_estava_fechada: boolean}>}
+ *   - `fechada: true` se ESTA chamada efetivamente gravou estado_agente=fechado.
+ *   - `ja_estava_fechada: true` se a conversa já estava fechada (short-circuit GET ou race window PATCH).
+ *   - Pra "está fechada agora?" use `fechada || ja_estava_fechada`.
  * @throws {Error} se motivo inválido, conversa não encontrada, ou rede/PostgREST falhar
  */
 export async function markConversaFechada({ supabaseUrl, supabaseKey, conversa_id, motivo }) {
