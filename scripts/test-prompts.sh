@@ -34,4 +34,16 @@ node --test tests/api/conversas-assumir-devolver.test.mjs
 echo "▶ API — auto-retomar-bot..."
 node --test tests/api/auto-retomar-bot.test.mjs
 
+echo "▶ API — conversas grupos..."
+node --test tests/api/conversas-grupos.test.mjs
+
+echo "▶ API — conversas list..."
+node --test tests/api/conversas-list.test.mjs
+
+echo "▶ API — conversas thread..."
+node --test tests/api/conversas-thread.test.mjs
+
+echo "▶ Lib — conversas-lifecycle..."
+node --test tests/_lib/conversas-lifecycle.test.mjs
+
 echo "✓ Todos os tests passaram."
