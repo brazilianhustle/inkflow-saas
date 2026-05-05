@@ -468,17 +468,17 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
           </div>
 
           <!-- Conectar Telegram (condicional — Coleta v2) -->
-          <div id="conectar-telegram-slot" class="section-block" style="background:linear-gradient(135deg,#f3e8ff 0%,#fae8ff 100%);display:none">
-            <div class="section-title" style="color:#1a1a2e">
-              <svg viewBox="0 0 24 24" style="stroke:#7c3aed"><path d="M21.5 4.5l-19 8 6 2 2 7 4-4 6 4z"/></svg>
+          <div id="conectar-telegram-slot" class="section-block" style="display:none">
+            <div class="section-title">
+              <svg viewBox="0 0 24 24"><path d="M21.5 4.5l-19 8 6 2 2 7 4-4 6 4z"/></svg>
               Conecte seu Telegram
             </div>
-            <p style="font-size:14px;color:#1a1a2e;margin:8px 0">Pra receber orçamentos do InkFlow no Telegram, escaneia o QR ou clica no link:</p>
+            <p style="font-size:14px;color:var(--t1);margin:8px 0">Pra receber orçamentos do InkFlow no Telegram, escaneia o QR ou clica no botão:</p>
             <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:12px">
-              <img id="conectar-tg-qr" alt="QR code Telegram" style="width:120px;height:120px;border-radius:8px;background:#fff"/>
-              <a id="conectar-tg-link" href="" target="_blank" rel="noopener" style="color:#7c3aed;text-decoration:underline;font-weight:600">Abrir no Telegram</a>
+              <img id="conectar-tg-qr" alt="QR code Telegram" style="width:120px;height:120px;border-radius:8px;background:#fff;padding:6px"/>
+              <a id="conectar-tg-link" href="" target="_blank" rel="noopener" style="display:inline-block;padding:6px 12px;border-radius:6px;background:transparent;border:1px solid var(--border);font-size:13px;color:var(--t1);text-decoration:none;font-family:inherit">Abrir no Telegram</a>
             </div>
-            <p id="conectar-tg-status" style="font-size:13px;color:#475569;margin-top:8px">Aguardando conexão…</p>
+            <p id="conectar-tg-status" style="font-size:13px;color:var(--t3);margin-top:8px">Aguardando conexão…</p>
           </div>
 
           <!-- Conectar WhatsApp -->
