@@ -84,5 +84,27 @@ export async function onRequest(context) {
     );
   }
 
-  return json({ ok: true, processadas: conversas.length, canceladas });
+  // 4. Lifecycle: fecha cada conversa em try/catch isolado (uma falha não derruba batch).
+  let lifecycleFechadas = 0;
+  let lifecycleFalhas = 0;
+  if (conversas.length > 0) {
+    const { markConversaFechada } = await import('../../_lib/conversas-lifecycle.js');
+    const SB_KEY = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
+    for (const conv of conversas) {
+      try {
+        const r = await markConversaFechada({
+          supabaseUrl: SUPABASE_URL,
+          supabaseKey: SB_KEY,
+          conversa_id: conv.id,
+          motivo: 'hold_expirado',
+        });
+        if (r.fechada) lifecycleFechadas++;
+      } catch (e) {
+        lifecycleFalhas++;
+        console.warn(`expira-holds: markConversaFechada falhou pra ${conv.id}:`, e?.message);
+      }
+    }
+  }
+
+  return json({ ok: true, processadas: conversas.length, canceladas, lifecycleFechadas, lifecycleFalhas });
 }
