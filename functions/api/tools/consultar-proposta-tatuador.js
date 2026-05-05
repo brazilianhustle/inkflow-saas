@@ -1,7 +1,7 @@
 // ── Tool — consultar_proposta_tatuador ────────────────────────────────────
 // POST /api/tools/consultar-proposta-tatuador
 // Headers: X-Inkflow-Tool-Secret
-// Body: { conversa_id, tenant_id?, telefone? }
+// Body: { tenant_id, telefone }
 //
 // Lê estado atual da conversa pra que o agente saiba qual valor apresentar e
 // se o tatuador ja decidiu sobre algum desconto. Usado pelo agente nas fases
@@ -22,9 +22,9 @@
 // }
 import { withTool, supaFetch } from './_tool-helpers.js';
 
-async function carregarConversa(env, conversa_id) {
+async function carregarConversaPorPar(env, tenant_id, telefone) {
   const r = await supaFetch(env,
-    `/rest/v1/conversas?id=eq.${encodeURIComponent(conversa_id)}` +
+    `/rest/v1/conversas?tenant_id=eq.${encodeURIComponent(tenant_id)}&telefone=eq.${encodeURIComponent(telefone)}` +
     '&select=id,estado_agente,valor_proposto,valor_pedido_cliente,orcid,dados_coletados'
   );
   if (!r.ok) throw new Error(`conversa-fetch-${r.status}`);
@@ -33,10 +33,11 @@ async function carregarConversa(env, conversa_id) {
 }
 
 async function handle({ env, input }) {
-  const { conversa_id } = input || {};
-  if (!conversa_id) return { status: 400, body: { ok: false, error: 'conversa_id obrigatorio' } };
+  const { tenant_id, telefone } = input || {};
+  if (!tenant_id) return { status: 400, body: { ok: false, error: 'tenant_id obrigatorio' } };
+  if (!telefone)  return { status: 400, body: { ok: false, error: 'telefone obrigatorio' } };
 
-  const conv = await carregarConversa(env, conversa_id);
+  const conv = await carregarConversaPorPar(env, tenant_id, telefone);
   if (!conv) return { status: 404, body: { ok: false, error: 'conversa-nao-encontrada' } };
 
   const dados = conv.dados_coletados || {};
