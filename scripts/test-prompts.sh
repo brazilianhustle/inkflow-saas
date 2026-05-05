@@ -64,4 +64,19 @@ node --test tests/api/dashboard-regenerate-resumo.test.mjs
 echo "▶ API — cron resumo-semanal (PR 2)..."
 node --test tests/api/cron-resumo-semanal.test.mjs
 
+echo "▶ Lib — conversas-upsert (Coleta v2 wire)..."
+node --test tests/_lib/conversas-upsert.test.mjs
+
+echo "▶ Tools — dados-coletados handler (Coleta v2 wire)..."
+node --test tests/tools/dados-coletados.test.mjs
+
+echo "▶ Tools — enviar-orcamento-tatuador (Coleta v2 wire)..."
+node --test tests/tools/enviar-orcamento-tatuador.test.mjs
+
+echo "▶ Tools — enviar-objecao-tatuador (Coleta v2 wire)..."
+node --test tests/tools/enviar-objecao-tatuador.test.mjs
+
+echo "▶ Tools — consultar-proposta-tatuador (Coleta v2 wire)..."
+node --test tests/tools/consultar-proposta-tatuador.test.mjs
+
 echo "✓ Todos os tests passaram."
