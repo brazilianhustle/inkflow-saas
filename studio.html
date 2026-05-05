@@ -427,7 +427,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
               <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
               Atividade recente
             </div>
-            <div class="empty-state" style="padding:24px 12px">
+            <ul id="atividade-recente-lista" class="atividade-lista" style="list-style:none;padding:0;margin:0"></ul>
+            <div id="atividade-recente-empty" class="empty-state" style="padding:24px 12px" hidden>
               <div style="color:var(--t3);font-size:13px">Nenhuma atividade registrada ainda</div>
             </div>
           </div>
@@ -828,6 +829,72 @@ function makeTogglePill({ id, label, hint, checked = false }) {
   return lbl;
 }
 
+// ── Dashboard: Atividade recente ──
+const _ATV_BADGE_COLORS = {
+  coletando_tattoo: '#dbeafe',
+  coletando_cadastro: '#dbeafe',
+  aguardando_tatuador: '#fef3c7',
+  propondo_valor: '#dcfce7',
+  aguardando_decisao_desconto: '#fef3c7',
+  escolhendo_horario: '#dcfce7',
+  aguardando_sinal: '#fef3c7',
+  lead_frio: '#fee2e2',
+  fechado: '#e5e7eb',
+};
+
+function renderAtividadeRecente(atividades) {
+  const lista = document.getElementById('atividade-recente-lista');
+  const empty = document.getElementById('atividade-recente-empty');
+  lista.innerHTML = ''; // safe: no user data here, rebuilt via DOM
+  if (!atividades || atividades.length === 0) {
+    empty.hidden = false;
+    return;
+  }
+  empty.hidden = true;
+  for (const a of atividades) {
+    const li = document.createElement('li');
+    li.style.cssText = 'display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd);cursor:pointer;align-items:center';
+    const avatar = document.createElement('div');
+    avatar.style.cssText = 'width:36px;height:36px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--t1);flex-shrink:0';
+    avatar.textContent = (a.nome || '?').charAt(0).toUpperCase();
+    const info = document.createElement('div');
+    info.style.cssText = 'flex:1;min-width:0';
+    const nome = document.createElement('div');
+    nome.style.cssText = 'font-weight:500;font-size:14px;color:var(--t1)';
+    nome.textContent = a.nome || 'sem nome';
+    const meta = document.createElement('div');
+    meta.style.cssText = 'font-size:12px;color:var(--t3);display:flex;gap:8px;align-items:center;margin-top:2px';
+    const badge = document.createElement('span');
+    badge.style.cssText = 'padding:2px 6px;border-radius:4px;font-size:11px;font-weight:500;color:#000';
+    badge.style.background = _ATV_BADGE_COLORS[a.estado_agente] || '#f3f4f6';
+    badge.textContent = (a.estado_agente || '').replace(/_/g, ' ');
+    const ts = document.createElement('span');
+    ts.textContent = (typeof fmtTempoRelativo === 'function')
+      ? fmtTempoRelativo(a.last_msg_at)
+      : new Date(a.last_msg_at).toLocaleString('pt-BR');
+    meta.append(badge, ts);
+    info.append(nome, meta);
+    li.append(avatar, info);
+    li.addEventListener('click', () => {
+      switchTab('conversas');
+      if (typeof openConversaById === 'function') openConversaById(a.id);
+    });
+    lista.appendChild(li);
+  }
+}
+
+async function loadAtividadeRecente() {
+  if (!currentStudioToken) return;
+  try {
+    const res = await fetch(`/api/dashboard/atividade-recente?studio_token=${encodeURIComponent(currentStudioToken)}`);
+    if (!res.ok) throw new Error('atividade ' + res.status);
+    const { atividades } = await res.json();
+    renderAtividadeRecente(atividades);
+  } catch (err) {
+    console.error('Erro atividade-recente:', err);
+  }
+}
+
 // ── Dashboard: KPI cards ──
 async function loadDashboardKpis() {
   if (!currentStudioToken) return;
@@ -875,6 +942,7 @@ function switchTab(tabName) {
   // Carregar conteúdo dinâmico ao abrir Dashboard (PR 2)
   if (tabName === 'dashboard') {
     loadDashboardKpis();
+    loadAtividadeRecente();
   }
 }
 
@@ -986,10 +1054,11 @@ async function init() {
     }
     renderStudio(data);
     restoreTab();
-    // Se dashboard está ativo no init, carrega KPIs imediatamente
+    // Se dashboard está ativo no init, carrega KPIs e atividade imediatamente
     const activeHash = window.location.hash.replace('#', '') || 'dashboard';
     if (activeHash === 'dashboard') {
       loadDashboardKpis();
+      loadAtividadeRecente();
     }
 
     // Telegram status pill (só Modo Coleta)
