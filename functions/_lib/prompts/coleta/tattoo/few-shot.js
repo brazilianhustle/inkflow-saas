@@ -72,7 +72,7 @@ export function fewShotBase(tenant) {
   linhas.push('CLIENTE: uma frase em fineline, tamanho exato da marcacao');
   linhas.push('AGENTE: Frase em fineline nesse tamanho fica delicada e elegante');
   linhas.push('');
-  linhas.push('AGENTE: Quantos cm tem a marcacao? Entre 8-12cm parece bater?');
+  linhas.push('AGENTE: Quantos cm tem a marcacao (entre 8-12cm)?');
   linhas.push('CLIENTE: 10cm');
   linhas.push('AGENTE: Pra eu liberar teu orcamento, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna em breve');
   linhas.push('```');
