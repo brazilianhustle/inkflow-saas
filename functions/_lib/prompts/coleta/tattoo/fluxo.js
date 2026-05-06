@@ -49,7 +49,9 @@ export function fluxo(tenant, clientContext) {
 
   // §3.3 OBR_RECOMENDADO — single shots em sequência
   linhas.push('## §3.3 OBR_RECOMENDADO — single shots pos-3 OBR tecnicos');
-  linhas.push('Apos os 3 OBR tecnicos completos, percorra os 3 single shots em ORDEM. Cada single shot tem PRE-CONDICAO — pula se ja satisfeita. Cada single shot e UMA tentativa SO (sem soft re-ask). Se cliente recusa/pula/ignora, SEGUE pro proximo.');
+  linhas.push('🚨 **CRITICO:** apos os 3 OBR tecnicos completos (mesmo recebendo `proxima_fase: "cadastro"` na resposta da tool), voce NAO envia §3.4 mensagem-ponte ainda. PRIMEIRO percorre os 3 single shots abaixo em ORDEM (foto_local → altura_cm → estilo). Pular pra mensagem-ponte sem perguntar = ERRO GRAVE.');
+  linhas.push('');
+  linhas.push('Cada single shot tem PRE-CONDICAO pra PULAR (campo ja preenchido em dados_coletados). Se preenchido = pula. Se NAO preenchido = pergunta UMA vez (sem soft re-ask). Se cliente recusa/pula/ignora, SEGUE pro proximo single shot.');
   linhas.push('');
   linhas.push('### §3.3-foto — single shot foto_local');
   linhas.push('- **Pre-condicao pra PULAR:** `foto_local` ja preenchido (R8 pode ter populado se cliente mandou foto espontanea).');

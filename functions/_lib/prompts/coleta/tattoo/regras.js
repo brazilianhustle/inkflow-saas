@@ -57,8 +57,16 @@ export function regras(tenant) {
   linhas.push('');
   linhas.push('**T2.** `dados_coletados`:');
   linhas.push('- **T2.1** — chame APOS cliente fornecer cada campo OBR tecnico (descricao_tattoo, tamanho_cm, local_corpo). Uma chamada por campo. Pode encadear no MESMO turno se cliente mandou multi-info ("rosa de 10cm no antebraco" = 3 chamadas).');
-  linhas.push('- **T2.2** — quando 3 OBR tecnicos completos (tool retorna `proxima_fase: "cadastro"`), NAO envie ainda a mensagem-ponte (§3.4). Primeiro percorra os 3 OBR_RECOMENDADO em ordem: foto_local → altura_cm → estilo. Cada single shot tem pre-condicao pra PULAR (campo ja preenchido / estilo ja inferido). Pula se satisfeita.');
-  linhas.push('- **T2.3** — so APOS percorrer (ou pular) os 3 single shots, envie a §3.4 mensagem-ponte de cadastro com Balao 1 condicional aos campos coletados.');
+  linhas.push('- **T2.1b** — SE cliente mencionar estilo dentro da descricao (ex: "rosa fineline", "leao realismo", "frase em blackwork"), SPLITAR: persistir `descricao_tattoo="rosa"` (sem estilo) E em chamada SEPARADA `estilo="fineline"`. Estilos conhecidos: fineline, realismo, blackwork, traditional, aquarela, old school, oriental, pontilhismo, geometrico, minimalista. NAO meter estilo dentro de descricao_tattoo — sao campos separados.');
+  linhas.push('- **T2.2** — quando 3 OBR tecnicos completos (tool retorna `proxima_fase: "cadastro"`):');
+  linhas.push('  🚨 **VOCE PARA AQUI. NAO ENVIA MENSAGEM-PONTE (§3.4) AINDA.** 🚨');
+  linhas.push('  ANTES da mensagem-ponte, voce OBRIGATORIAMENTE percorre os 3 OBR_RECOMENDADO em ordem (uma pergunta por turno):');
+  linhas.push('    1. **foto_local** — pergunta single shot SE foto_local nao foi preenchido (R8 pode ter populado).');
+  linhas.push('    2. **altura_cm** — pergunta single shot SE altura_cm nao foi preenchido.');
+  linhas.push('    3. **estilo** — pergunta single shot SE estilo nao foi preenchido E nao foi inferido da descricao/refs.');
+  linhas.push('  Pre-condicao pra PULAR cada single shot: campo ja esta preenchido em dados_coletados. Se preenchido = pula. Se NAO preenchido = pergunta (uma tentativa, sem soft re-ask, segue se cliente recusar).');
+  linhas.push('  ⚠️ **ENVIAR §3.4 MENSAGEM-PONTE ANTES DE PERGUNTAR foto_local, altura_cm e estilo (cada um nao-preenchido) = ERRO GRAVE.** Mesmo que `proxima_fase: "cadastro"` apareca na resposta da tool, voce IGNORA esse sinal ate completar §3.3.');
+  linhas.push('- **T2.3** — so APOS percorrer (ou pular conforme pre-condicao) os 3 single shots, envie a §3.4 mensagem-ponte de cadastro com Balao 1 condicional aos campos coletados.');
   linhas.push('');
   linhas.push('**T3.** §3.4 Mensagem-ponte: Balao 1 (validacao substantiva) cita os campos OBR_RECOMENDADO coletados (mais campos = validacao mais rica). Balao 2 INTACTO: "Pra eu liberar teu orcamento personalizado, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna em breve". JAMAIS lista bullet (PR #29 fix mantido).');
   linhas.push('');
