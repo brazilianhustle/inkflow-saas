@@ -15,7 +15,7 @@
 // Input: { env, schemaState: { tables_no_rls: [{schema, table_name}], functions_no_search_path: [{schema, function_name}] }, now }
 // Output: Array<{ severity, payload, evidence }> — sem efeitos.
 
-const RUNBOOK_PATH = null; // gap consciente — spec §5.4
+const RUNBOOK_PATH = 'docs/canonical/runbooks/rls-drift.md';
 const SUGGESTED_SUBAGENT = 'supabase-dba'; // hint pro futuro Sub-projeto 2
 
 function parseAllowlist(env) {

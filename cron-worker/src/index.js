@@ -45,6 +45,34 @@ async function notifyFailure(env, label, detail) {
   }
 }
 
+const RETRY_BACKOFF_MS = 3000;
+
+async function tryFetch(url, secret) {
+  const startedAt = Date.now();
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${secret}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    const bodyText = await res.text();
+    return { ok: res.ok, status: res.status, bodyText, elapsedMs: Date.now() - startedAt };
+  } catch (err) {
+    return { ok: false, exception: err, elapsedMs: Date.now() - startedAt };
+  }
+}
+
+// Retry classifier: 504 (transient_timeout — endpoint sinaliza explicit), 502 (bad gateway
+// upstream Supabase REST), 5xx unhandled, ou exception. NÃO faz retry em 4xx (auth/config
+// fail) — fail-fast com alerta imediato.
+function isRetryable(result) {
+  if (result.exception) return true;
+  if (result.status >= 500) return true;
+  return false;
+}
+
 async function dispatch(event, env) {
   const cfg = SCHEDULE_MAP[event.cron];
   if (!cfg) {
@@ -61,32 +89,34 @@ async function dispatch(event, env) {
   }
 
   const url = `${BASE_URL}${cfg.path}`;
-  const startedAt = Date.now();
 
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${secret}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    const bodyText = await res.text();
-    const elapsedMs = Date.now() - startedAt;
+  // Try 1: primeiro attempt
+  let result = await tryFetch(url, secret);
+  let attempts = 1;
 
-    if (!res.ok) {
-      console.error(`[${cfg.label}] HTTP ${res.status} em ${elapsedMs}ms: ${bodyText.slice(0, 500)}`);
-      await notifyFailure(env, cfg.label, `HTTP ${res.status}\nElapsed: ${elapsedMs}ms\nBody: ${bodyText.slice(0, 200)}`);
-      return { ok: false, status: res.status, label: cfg.label, elapsedMs };
-    }
-
-    console.log(`[${cfg.label}] OK em ${elapsedMs}ms: ${bodyText.slice(0, 300)}`);
-    return { ok: true, label: cfg.label, elapsedMs, response: bodyText.slice(0, 300) };
-  } catch (err) {
-    console.error(`[${cfg.label}] exception:`, err.message);
-    await notifyFailure(env, cfg.label, `Exception: ${err.message}`);
-    return { ok: false, error: err.message, label: cfg.label };
+  // Retry 1× se retryable (transient ou 5xx) — absorve hiccups Supabase REST + cold start CF
+  if (isRetryable(result)) {
+    console.warn(`[${cfg.label}] try 1 failed (${result.status || result.exception?.message}), retrying after ${RETRY_BACKOFF_MS}ms...`);
+    await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS));
+    result = await tryFetch(url, secret);
+    attempts = 2;
   }
+
+  // Resultado final do retry (ou primeira tentativa se !retryable)
+  if (result.exception) {
+    console.error(`[${cfg.label}] exception após ${attempts} tentativas:`, result.exception.message);
+    await notifyFailure(env, cfg.label, `Exception após ${attempts} tentativas: ${result.exception.message}`);
+    return { ok: false, error: result.exception.message, label: cfg.label, attempts };
+  }
+
+  if (!result.ok) {
+    console.error(`[${cfg.label}] HTTP ${result.status} após ${attempts} tentativas em ${result.elapsedMs}ms: ${result.bodyText?.slice(0, 500)}`);
+    await notifyFailure(env, cfg.label, `HTTP ${result.status} (após ${attempts} tentativas)\nElapsed: ${result.elapsedMs}ms\nBody: ${result.bodyText?.slice(0, 200)}`);
+    return { ok: false, status: result.status, label: cfg.label, elapsedMs: result.elapsedMs, attempts };
+  }
+
+  console.log(`[${cfg.label}] OK em ${result.elapsedMs}ms (try ${attempts}): ${result.bodyText?.slice(0, 300)}`);
+  return { ok: true, label: cfg.label, elapsedMs: result.elapsedMs, attempts, response: result.bodyText?.slice(0, 300) };
 }
 
 export default {

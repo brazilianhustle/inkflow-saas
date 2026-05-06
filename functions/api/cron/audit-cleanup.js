@@ -1,8 +1,13 @@
 // ── InkFlow — Cron: audit cleanup (§6.6) ────────────────────────────────────
 // Cron 0 4 * * 1 (segunda 01:00 BRT) — DELETE audit_events resolved >90d e
 // audit_runs >30d.
+//
+// Hardening 2026-05-06: timeout 8s→15s + try/catch externo grácil. Mesma
+// motivação que audit-escalate.js — evita 500-default CF Pages quando
+// Supabase REST der hiccup.
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+const FETCH_TIMEOUT_MS = 15000;
 
 function timeoutSignal(ms) {
   const c = new AbortController();
@@ -33,31 +38,41 @@ export async function onRequest(context) {
     'Content-Type': 'application/json',
   };
 
-  const eventsCutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
-  const runsCutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  try {
+    const eventsCutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const runsCutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-  const eventsUrl = `${SUPABASE_URL}/rest/v1/audit_events`
-    + `?resolved_at=not.is.null&resolved_at=lt.${eventsCutoff}`;
-  const runsUrl = `${SUPABASE_URL}/rest/v1/audit_runs?started_at=lt.${runsCutoff}`;
+    const eventsUrl = `${SUPABASE_URL}/rest/v1/audit_events`
+      + `?resolved_at=not.is.null&resolved_at=lt.${eventsCutoff}`;
+    const runsUrl = `${SUPABASE_URL}/rest/v1/audit_runs?started_at=lt.${runsCutoff}`;
 
-  const [eventsRes, runsRes] = await Promise.all([
-    fetch(eventsUrl, {
-      method: 'DELETE',
-      headers: sbHeaders,
-      signal: timeoutSignal(8000),
-    }),
-    fetch(runsUrl, {
-      method: 'DELETE',
-      headers: sbHeaders,
-      signal: timeoutSignal(8000),
-    }),
-  ]);
+    const [eventsRes, runsRes] = await Promise.all([
+      fetch(eventsUrl, {
+        method: 'DELETE',
+        headers: sbHeaders,
+        signal: timeoutSignal(FETCH_TIMEOUT_MS),
+      }),
+      fetch(runsUrl, {
+        method: 'DELETE',
+        headers: sbHeaders,
+        signal: timeoutSignal(FETCH_TIMEOUT_MS),
+      }),
+    ]);
 
-  return json({
-    ok: true,
-    events_deleted: eventsRes.ok,
-    runs_deleted: runsRes.ok,
-    events_status: eventsRes.status,
-    runs_status: runsRes.status,
-  });
+    return json({
+      ok: true,
+      events_deleted: eventsRes.ok,
+      runs_deleted: runsRes.ok,
+      events_status: eventsRes.status,
+      runs_status: runsRes.status,
+    });
+  } catch (err) {
+    const isTransient = err.name === 'AbortError' || err.name === 'TimeoutError';
+    console.error(`audit-cleanup: ${isTransient ? 'transient' : 'unhandled'} exception:`, err.name, err.message);
+    return json({
+      error: isTransient ? 'transient_timeout' : 'internal_error',
+      error_name: err.name,
+      message: err.message,
+    }, isTransient ? 504 : 500);
+  }
 }

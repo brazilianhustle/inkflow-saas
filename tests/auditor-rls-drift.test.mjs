@@ -55,7 +55,7 @@ test('Sintoma A: payload + evidence shape correto', async () => {
     },
   });
   const e = events[0];
-  assert.equal(e.payload.runbook_path, null);
+  assert.equal(e.payload.runbook_path, 'docs/canonical/runbooks/rls-drift.md');
   assert.equal(e.payload.suggested_subagent, 'supabase-dba');
   assert.equal(e.payload.object, 'tenants');
   assert.equal(e.payload.schema, 'public');
@@ -101,7 +101,7 @@ test('Sintoma B: payload + evidence shape correto', async () => {
     },
   });
   const e = events[0];
-  assert.equal(e.payload.runbook_path, null);
+  assert.equal(e.payload.runbook_path, 'docs/canonical/runbooks/rls-drift.md');
   assert.equal(e.payload.suggested_subagent, 'supabase-dba');
   assert.equal(e.payload.object, 'audit_log');
   assert.equal(e.payload.source, 'pg_proc_introspection');

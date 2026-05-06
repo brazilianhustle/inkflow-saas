@@ -2,10 +2,16 @@
 // Cron */5 * * * * → SELECT critical sem ack >2h → Pushover priority=2 +
 // PATCH escalated_at. Coluna dedicada (não confunde com ack humano em
 // acknowledged_*).
+//
+// Hardening 2026-05-06: timeout 8s→15s + try/catch externo grácil. Antes:
+// AbortError do timeoutSignal não era caught, vazava 500-default CF Pages
+// (body genérico) e disparava alerta Telegram falso. Agora: shape JSON
+// debuggable, cron-worker faz retry leve antes de alertar.
 
 import { sendPushover } from '../../_lib/audit-state.js';
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+const FETCH_TIMEOUT_MS = 15000;
 
 function timeoutSignal(ms) {
   const c = new AbortController();
@@ -36,59 +42,69 @@ export async function onRequest(context) {
     'Content-Type': 'application/json',
   };
 
-  // detected_at < now() - 2h, severity=critical, sem ack, sem escalation, sem resolved
-  const cutoff = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-  const url = `${SUPABASE_URL}/rest/v1/audit_events`
-    + `?severity=eq.critical`
-    + `&resolved_at=is.null`
-    + `&acknowledged_at=is.null`
-    + `&escalated_at=is.null`
-    + `&detected_at=lt.${cutoff}`
-    + `&select=id,auditor,payload,evidence,severity,detected_at`;
+  try {
+    // detected_at < now() - 2h, severity=critical, sem ack, sem escalation, sem resolved
+    const cutoff = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    const url = `${SUPABASE_URL}/rest/v1/audit_events`
+      + `?severity=eq.critical`
+      + `&resolved_at=is.null`
+      + `&acknowledged_at=is.null`
+      + `&escalated_at=is.null`
+      + `&detected_at=lt.${cutoff}`
+      + `&select=id,auditor,payload,evidence,severity,detected_at`;
 
-  const queryRes = await fetch(url, {
-    headers: sbHeaders,
-    signal: timeoutSignal(8000),
-  });
-  if (!queryRes.ok) {
-    console.error('audit-escalate: query failed:', queryRes.status);
-    return json({ error: 'query_failed' }, 502);
-  }
-  const rows = await queryRes.json();
-
-  let escalated = 0;
-  let skippedConfig = 0;
-  let errored = 0;
-  for (const evt of rows) {
-    const result = await sendPushover(env, evt);
-    if (result.skipped) {
-      skippedConfig += 1;
-      console.warn(`audit-escalate: pushover skipped for ${evt.id} — PUSHOVER_* env ausente`);
-      continue;
-    }
-    if (!result.ok) {
-      errored += 1;
-      console.error(`audit-escalate: pushover error for ${evt.id}:`, result.error);
-      continue;
-    }
-    const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/audit_events?id=eq.${evt.id}`, {
-      method: 'PATCH',
+    const queryRes = await fetch(url, {
       headers: sbHeaders,
-      body: JSON.stringify({ escalated_at: new Date().toISOString() }),
-      signal: timeoutSignal(8000),
+      signal: timeoutSignal(FETCH_TIMEOUT_MS),
     });
-    if (patchRes.ok) escalated += 1;
-    else {
-      errored += 1;
-      console.error(`audit-escalate: patch failed for ${evt.id}:`, patchRes.status);
+    if (!queryRes.ok) {
+      console.error('audit-escalate: query failed:', queryRes.status);
+      return json({ error: 'query_failed', status: queryRes.status }, 502);
     }
-  }
+    const rows = await queryRes.json();
 
-  return json({
-    ok: true,
-    escalated_count: escalated,
-    skipped_count: skippedConfig,
-    error_count: errored,
-    candidates: rows.length,
-  });
+    let escalated = 0;
+    let skippedConfig = 0;
+    let errored = 0;
+    for (const evt of rows) {
+      const result = await sendPushover(env, evt);
+      if (result.skipped) {
+        skippedConfig += 1;
+        console.warn(`audit-escalate: pushover skipped for ${evt.id} — PUSHOVER_* env ausente`);
+        continue;
+      }
+      if (!result.ok) {
+        errored += 1;
+        console.error(`audit-escalate: pushover error for ${evt.id}:`, result.error);
+        continue;
+      }
+      const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/audit_events?id=eq.${evt.id}`, {
+        method: 'PATCH',
+        headers: sbHeaders,
+        body: JSON.stringify({ escalated_at: new Date().toISOString() }),
+        signal: timeoutSignal(FETCH_TIMEOUT_MS),
+      });
+      if (patchRes.ok) escalated += 1;
+      else {
+        errored += 1;
+        console.error(`audit-escalate: patch failed for ${evt.id}:`, patchRes.status);
+      }
+    }
+
+    return json({
+      ok: true,
+      escalated_count: escalated,
+      skipped_count: skippedConfig,
+      error_count: errored,
+      candidates: rows.length,
+    });
+  } catch (err) {
+    const isTransient = err.name === 'AbortError' || err.name === 'TimeoutError';
+    console.error(`audit-escalate: ${isTransient ? 'transient' : 'unhandled'} exception:`, err.name, err.message);
+    return json({
+      error: isTransient ? 'transient_timeout' : 'internal_error',
+      error_name: err.name,
+      message: err.message,
+    }, isTransient ? 504 : 500);
+  }
 }
