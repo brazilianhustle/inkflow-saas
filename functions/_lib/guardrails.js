@@ -63,6 +63,7 @@ export function questionFingerprint(text) {
   if (/\b(detalhe|detalhado|simples|nivel de detalhe)\b/.test(t) && /\?/.test(t)) keys.push('detalhe');
   if (/\bfoto do local\b|\bmanda uma foto\b/.test(t)) keys.push('foto_local');
   if (/\bfoto de referencia\b|\breferencia visual\b/.test(t)) keys.push('foto_ref');
+  if (/\bmanda tua altura\b|\bqual tua altura\b|\baltura\b.*\?/.test(t)) keys.push('altura_cm');
   return keys.join('|');
 }
 
