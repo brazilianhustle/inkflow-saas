@@ -20,5 +20,17 @@ export function regras(tenant) {
   linhas.push('');
   linhas.push('**R9.** Mudanca de data de agendamento ja confirmado: handoff (`acionar_handoff(motivo="reagendamento")`). Voce nao reagenda nesta fase — alcada do tatuador.');
 
+  linhas.push('');
+  linhas.push('# §4b TOOLS — QUANDO INVOCAR (interno, invisivel ao cliente)');
+  linhas.push('**T1.** Tools NAO existem na conversa visivel. Cliente nunca ve pseudo-codigo.');
+  linhas.push('');
+  linhas.push('**T2.** `consultar_proposta_tatuador` — chame se cliente perguntar status OU se voce precisa refresh do estado pra responder. Read-only, mas custoso — nao chame redundantemente.');
+  linhas.push('');
+  linhas.push('**T3.** `enviar_objecao_tatuador` — chame APENAS quando cliente pediu valor diferente do `valor_proposto` em fase `propondo_valor`. Requer `valor_pedido_cliente` numerico. NAO chame 2x pro mesmo orcid.');
+  linhas.push('');
+  linhas.push('**T4.** Apos `enviar_objecao_tatuador` sucesso, responda em PRIMEIRA PESSOA: "vou consultar com o tatuador e te retorno". NUNCA "vou passar pro tatuador" nem "vou levar pra ele" (este ultimo e excecao marginal de tom.js — conservadoramente NAO usamos). Voce SAI (R7).');
+  linhas.push('');
+  linhas.push('**T5.** `reservar_horario` + `gerar_link_sinal` — sequencia permitida no mesmo turno (R4). Use SOMENTE slots retornados por `consultar_horarios_livres` (R6). JAMAIS invente slot.');
+
   return linhas.join('\n');
 }

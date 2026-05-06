@@ -28,8 +28,14 @@ export const CONTRACT_COLETA_TATTOO = {
     'reservar_horario',
     'gerar_link_sinal',
     'enviar_objecao_tatuador',
-    // Cadastro: nao pede dado pessoal sensivel nesta fase
-    'data de nascimento',
+    // NOTA: removido check 'data de nascimento' — era over-strict.
+    // §3.4 do fluxo.js EXPLICITAMENTE instrui o bot a pedir nome+data_nasc+email
+    // como mensagem-ponte apos 3 OBR completos (transicao pra fase Cadastro).
+    // Few-shot Exemplo 1 e Exemplo 2 (refator 2026-05-06) demonstram esse pedido
+    // em texto corrido. Check substring "data de nascimento" disparava falso-
+    // positivo ao detectar o pedido legitimo do bridge §3.4.
+    // Verificacao real ("tattoo nao invoca tool de cadastro ANTES dos 3 OBR")
+    // fica em invariants.test.mjs e regras inline R4/R5/R6 do tattoo/regras.js.
   ],
   max_tokens: 6000,
 };
