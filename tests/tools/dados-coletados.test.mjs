@@ -29,9 +29,12 @@ function buildContext(body, secret = SECRET) {
   };
 }
 
-// Setup mock de fetch que simula INSERT bem-sucedido + PATCH
+// Setup mock de fetch que simula INSERT bem-sucedido + RPC merge_conversa_jsonb.
+// HOTFIX 2026-05-06: tool agora usa RPC pra merge atomico em vez de PATCH.
+// Mock simula a RPC retornando {merged_field, new_estado} computados a partir
+// do estado inicial + patch do request.
 function mockSuccessFlow(initialRow = null) {
-  const rows = initialRow ? [initialRow] : [{
+  const baseRow = initialRow || {
     id: CONVERSA_ID,
     tenant_id: TENANT_ID,
     telefone: TELEFONE,
@@ -39,19 +42,47 @@ function mockSuccessFlow(initialRow = null) {
     estado: 'qualificando',
     dados_coletados: {},
     dados_cadastro: {},
-  }];
+  };
+  // Estado mutavel — atualizado a cada chamada de RPC pra simular persistencia.
+  let currentRow = { ...baseRow };
+  const rows = [baseRow];
   const calls = [];
+
+  function simulateMergeRpc(rpcInput) {
+    const { p_field_name, p_patch, p_set_estado_agente, p_auto_transition_to_cadastro } = rpcInput;
+    const currentField = currentRow[p_field_name] || {};
+    const merged = { ...currentField, ...p_patch };
+    let newEstado = currentRow.estado_agente;
+    if (p_set_estado_agente !== null && p_set_estado_agente !== undefined) {
+      newEstado = p_set_estado_agente;
+    } else if (p_auto_transition_to_cadastro
+        && currentRow.estado_agente === 'coletando_tattoo'
+        && Object.prototype.hasOwnProperty.call(merged, 'descricao_tattoo')
+        && Object.prototype.hasOwnProperty.call(merged, 'tamanho_cm')
+        && Object.prototype.hasOwnProperty.call(merged, 'local_corpo')) {
+      newEstado = 'coletando_cadastro';
+    }
+    currentRow = { ...currentRow, [p_field_name]: merged, estado_agente: newEstado };
+    return [{ merged_field: merged, new_estado: newEstado }];
+  }
+
   globalThis.fetch = async (url, opts) => {
     calls.push({ url, method: opts?.method, body: opts?.body });
-    if (opts?.method === 'POST' && url.includes('on_conflict')) {
-      return new Response(JSON.stringify(rows), { status: 201 });
-    }
-    if (opts?.method === 'PATCH') {
-      return new Response(null, { status: 204 });
-    }
+    // tool_calls_log (observability) — sempre 201
     if (opts?.method === 'POST' && url.includes('tool_calls_log')) {
       return new Response('', { status: 201 });
     }
+    // RPC merge_conversa_jsonb (HOTFIX 2026-05-06)
+    if (opts?.method === 'POST' && url.includes('/rpc/merge_conversa_jsonb')) {
+      const rpcInput = JSON.parse(opts.body);
+      const result = simulateMergeRpc(rpcInput);
+      return new Response(JSON.stringify(result), { status: 200 });
+    }
+    // ensureConversa upsert (POST com on_conflict)
+    if (opts?.method === 'POST' && url.includes('on_conflict')) {
+      return new Response(JSON.stringify(rows), { status: 201 });
+    }
+    // SELECT fallback (ensureConversa quando upsert retorna [] por conflito)
     return new Response(JSON.stringify(rows), { status: 200 });
   };
   return calls;
@@ -159,10 +190,13 @@ test('dados_coletados: 3 OBR completos transiciona estado pra coletando_cadastro
     assert.equal(body.ok, true);
     assert.equal(body.proxima_fase, 'cadastro');
     assert.equal(body.estado_agente, 'coletando_cadastro');
-    const patchCall = calls.find(c => c.method === 'PATCH');
-    assert.ok(patchCall);
-    const patchBody = JSON.parse(patchCall.body);
-    assert.equal(patchBody.estado_agente, 'coletando_cadastro');
+    // HOTFIX 2026-05-06: tool usa RPC, nao PATCH inline.
+    const rpcCall = calls.find(c => c.url.includes('/rpc/merge_conversa_jsonb'));
+    assert.ok(rpcCall, 'RPC merge_conversa_jsonb foi chamada');
+    const rpcBody = JSON.parse(rpcCall.body);
+    assert.equal(rpcBody.p_field_name, 'dados_coletados');
+    assert.equal(rpcBody.p_auto_transition_to_cadastro, true);
+    assert.deepEqual(rpcBody.p_patch, { local_corpo: 'antebraço' });
   } finally {
     globalThis.fetch = origFetch;
   }
