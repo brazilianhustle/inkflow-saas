@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./cron-worker/scripts/deploy.sh)",
+      "Bash(cron-worker/scripts/deploy.sh)",
+      "Bash(bws secret list)",
+      "Bash(npx wrangler deploy)"
+    ]
+  }
+}
