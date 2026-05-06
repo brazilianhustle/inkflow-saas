@@ -1,7 +1,7 @@
 // Testes do handler enviar-orcamento-tatuador (refator pra contrato tenant_id+telefone).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { onRequest } from '../../functions/api/tools/enviar-orcamento-tatuador.js';
+import { onRequest, montarTextoOrcamento } from '../../functions/api/tools/enviar-orcamento-tatuador.js';
 
 const TENANT_ID = '00000000-0000-0000-0000-000000000001';
 const TELEFONE = '+5511999999999';
@@ -139,4 +139,23 @@ test('enviar-orcamento: idempotência via orcid existente', async () => {
   } finally {
     globalThis.fetch = origFetch;
   }
+});
+
+// ── Payload Telegram inclui altura_cm condicional ─────────────────────
+test('montarTextoOrcamento: inclui linha "altura cliente: 170cm" quando altura_cm preenchida', () => {
+  const conv = {
+    dados_coletados: { descricao_tattoo: 'rosa', tamanho_cm: 10, local_corpo: 'antebraço', altura_cm: 170 },
+    dados_cadastro: { nome: 'Maria Silva', data_nascimento: '1995-03-12' },
+  };
+  const texto = montarTextoOrcamento('orc_abc123', conv);
+  assert.match(texto, /altura cliente: 170cm/);
+});
+
+test('montarTextoOrcamento: omite linha de altura quando altura_cm vazia', () => {
+  const conv = {
+    dados_coletados: { descricao_tattoo: 'rosa', tamanho_cm: 10, local_corpo: 'antebraço' },
+    dados_cadastro: { nome: 'Maria Silva', data_nascimento: '1995-03-12' },
+  };
+  const texto = montarTextoOrcamento('orc_abc123', conv);
+  assert.doesNotMatch(texto, /altura cliente/);
 });
