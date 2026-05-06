@@ -278,3 +278,111 @@ test('dados_coletados: auth falha retorna 401', async () => {
     globalThis.fetch = origFetch;
   }
 });
+
+// ── altura_cm — formatos aceitos ───────────────────────────────────────
+test('dados_coletados: altura_cm aceita number 170 (cm direto)', async () => {
+  const origFetch = globalThis.fetch;
+  mockSuccessFlow();
+  try {
+    const ctx = buildContext({ tenant_id: TENANT_ID, telefone: TELEFONE, campo: 'altura_cm', valor: 170 });
+    const res = await onRequest(ctx);
+    const body = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(body.ok, true);
+    assert.equal(body.valor, 170);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test('dados_coletados: altura_cm aceita string "1.70" (m com ponto)', async () => {
+  const origFetch = globalThis.fetch;
+  mockSuccessFlow();
+  try {
+    const ctx = buildContext({ tenant_id: TENANT_ID, telefone: TELEFONE, campo: 'altura_cm', valor: '1.70' });
+    const res = await onRequest(ctx);
+    const body = await res.json();
+    assert.equal(body.ok, true);
+    assert.equal(body.valor, 170);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test('dados_coletados: altura_cm aceita string "1,70" (m com vírgula pt-BR)', async () => {
+  const origFetch = globalThis.fetch;
+  mockSuccessFlow();
+  try {
+    const ctx = buildContext({ tenant_id: TENANT_ID, telefone: TELEFONE, campo: 'altura_cm', valor: '1,70' });
+    const res = await onRequest(ctx);
+    const body = await res.json();
+    assert.equal(body.ok, true);
+    assert.equal(body.valor, 170);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test('dados_coletados: altura_cm aceita string "1m70" (informal pt-BR)', async () => {
+  const origFetch = globalThis.fetch;
+  mockSuccessFlow();
+  try {
+    const ctx = buildContext({ tenant_id: TENANT_ID, telefone: TELEFONE, campo: 'altura_cm', valor: '1m70' });
+    const res = await onRequest(ctx);
+    const body = await res.json();
+    assert.equal(body.ok, true);
+    assert.equal(body.valor, 170);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test('dados_coletados: altura_cm rejeita formato inválido ("altura média")', async () => {
+  const origFetch = globalThis.fetch;
+  mockSuccessFlow();
+  try {
+    const ctx = buildContext({ tenant_id: TENANT_ID, telefone: TELEFONE, campo: 'altura_cm', valor: 'altura média' });
+    const res = await onRequest(ctx);
+    const body = await res.json();
+    assert.equal(res.status, 400);
+    assert.equal(body.ok, false);
+    assert.match(body.error, /altura_cm formato/);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test('dados_coletados: altura_cm rejeita range fora 50-250 (350cm)', async () => {
+  const origFetch = globalThis.fetch;
+  mockSuccessFlow();
+  try {
+    const ctx = buildContext({ tenant_id: TENANT_ID, telefone: TELEFONE, campo: 'altura_cm', valor: 350 });
+    const res = await onRequest(ctx);
+    const body = await res.json();
+    assert.equal(res.status, 400);
+    assert.equal(body.ok, false);
+    assert.match(body.error, /range/);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test('dados_coletados: altura_cm NAO bloqueia auto_transition (3 OBR técnicos sem altura ainda transicionam)', async () => {
+  const origFetch = globalThis.fetch;
+  const initial = {
+    id: CONVERSA_ID, tenant_id: TENANT_ID, telefone: TELEFONE,
+    estado_agente: 'coletando_tattoo', estado: 'qualificando',
+    dados_coletados: { descricao_tattoo: 'rosa', tamanho_cm: 10 },
+    dados_cadastro: {},
+  };
+  mockSuccessFlow(initial);
+  try {
+    const ctx = buildContext({ tenant_id: TENANT_ID, telefone: TELEFONE, campo: 'local_corpo', valor: 'antebraço' });
+    const res = await onRequest(ctx);
+    const body = await res.json();
+    assert.equal(body.ok, true);
+    assert.equal(body.proxima_fase, 'cadastro');
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});

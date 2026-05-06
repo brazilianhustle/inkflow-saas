@@ -33,7 +33,7 @@
 import { withTool, supaFetch } from './_tool-helpers.js';
 import { ensureConversa } from '../../_lib/conversas-upsert.js';
 
-const CAMPOS_TATTOO   = ['descricao_tattoo', 'tamanho_cm', 'local_corpo', 'estilo', 'foto_local', 'refs_imagens'];
+const CAMPOS_TATTOO   = ['descricao_tattoo', 'tamanho_cm', 'local_corpo', 'estilo', 'foto_local', 'refs_imagens', 'altura_cm'];
 const CAMPOS_CADASTRO = ['nome', 'data_nascimento', 'email'];
 const OBR_TATTOO      = ['descricao_tattoo', 'tamanho_cm', 'local_corpo'];
 
@@ -93,6 +93,26 @@ function isoFromParts(yyyy, mm, dd) {
   if (Number.isNaN(dt.getTime())) return null;
   if (dt.getUTCFullYear() !== yNum || (dt.getUTCMonth() + 1) !== mNum || dt.getUTCDate() !== dNum) return null;
   return `${y}-${m}-${d}`;
+}
+
+// Aceita: 170, "170", "1.70", "1,70", "1.70m", "170cm", "1m70" (informal pt-BR).
+// Retorna cm inteiro (50-250 range válido) ou null.
+function normalizarAltura(input) {
+  if (input === null || input === undefined) return null;
+  if (typeof input === 'number' && Number.isFinite(input)) {
+    return input < 3 ? Math.round(input * 100) : Math.round(input);
+  }
+  const s = String(input).toLowerCase().trim()
+    .replace(/cm/g, '').replace(/\s/g, '')
+    .replace(',', '.');
+  const mMatch = s.match(/^(\d+)m(\d+)$/);
+  if (mMatch) {
+    return Number(mMatch[1]) * 100 + Number(mMatch[2].padEnd(2, '0').slice(0, 2));
+  }
+  const cleaned = s.replace(/m$/, '');
+  const n = Number(cleaned);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n < 3 ? Math.round(n * 100) : Math.round(n);
 }
 
 function calcularIdade(isoDate) {
@@ -236,6 +256,15 @@ async function handle({ env, input }) {
       return { status: 400, body: { ok: false, error: `tamanho_cm fora do range: ${valor}` } };
     }
     patch = { tamanho_cm: n };
+  } else if (campo === 'altura_cm') {
+    const cm = normalizarAltura(valor);
+    if (cm === null) {
+      return { status: 400, body: { ok: false, error: `altura_cm formato invalido: ${valor}` } };
+    }
+    if (cm < 50 || cm > 250) {
+      return { status: 400, body: { ok: false, error: `altura_cm fora do range esperado (50-250cm): ${cm}` } };
+    }
+    patch = { altura_cm: cm };
   } else {
     patch = { [campo]: valor };
   }
@@ -267,4 +296,4 @@ async function handle({ env, input }) {
 export const onRequest = withTool('dados_coletados', handle);
 
 // Exports pra teste
-export { normalizarData, calcularIdade, CAMPOS_TATTOO, CAMPOS_CADASTRO, OBR_TATTOO };
+export { normalizarData, calcularIdade, normalizarAltura, CAMPOS_TATTOO, CAMPOS_CADASTRO, OBR_TATTOO };
