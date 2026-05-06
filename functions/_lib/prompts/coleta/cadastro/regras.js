@@ -18,5 +18,17 @@ export function regras(tenant) {
   linhas.push('');
   linhas.push('**R8.** Apos chamar `enviar_orcamento_tatuador` com sucesso, voce SAI da conversa (estado_agente passa pra aguardando_tatuador). NAO continue conversando, NAO chame tools, NAO acompanhe. O bot reentra automaticamente quando o tatuador devolver o valor pelo Telegram.');
 
+  linhas.push('');
+  linhas.push('# §4b TOOLS — QUANDO INVOCAR (interno, invisivel ao cliente)');
+  linhas.push('**T1.** Tools NAO existem na conversa visivel. Cliente nunca ve pseudo-codigo.');
+  linhas.push('');
+  linhas.push('**T2.** `dados_coletados` — chame APOS cliente fornecer nome/data_nascimento/email. Uma chamada por campo. Pode encadear se cliente mandou multi-info ("Maria Silva, 12/03/1995").');
+  linhas.push('');
+  linhas.push('**T3.** Se `data_nascimento` retornar `gatilho="menor_idade"`, NAO chame `enviar_orcamento_tatuador`. Tool ja transicionou estado pra `aguardando_tatuador`. Responda com 1 frase educada de despedida (R7).');
+  linhas.push('');
+  linhas.push('**T4.** Se data retornar `gatilho="data_invalida"`, peca data em formato dia/mes/ano. NAO insista alem de 2 tentativas — apos 2a tentativa falha, chame `acionar_handoff(motivo="data_invalida_persistente")`.');
+  linhas.push('');
+  linhas.push('**T5.** Apos `enviar_orcamento_tatuador` sucesso (gatilho de invocacao esta em §0 item 5): cumpra R8 (sair da conversa) E formule a ultima msg em PRIMEIRA PESSOA. Use "vou enviar ao tatuador e te retorno em breve". NUNCA "vou passar pro tatuador" (viola tom.js). NAO prometa prazo especifico.');
+
   return linhas.join('\n');
 }
