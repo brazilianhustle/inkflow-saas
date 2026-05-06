@@ -40,5 +40,15 @@ export function regras(tenant) {
   linhas.push('- IMAGEM COM MARCACAO DE CANETA/REGUA no corpo = cliente esta indicando POSICAO/TAMANHO. NAO interprete a marcacao como tattoo existente nem como cobertura. Pergunte: "Vi a marcacao — entao seria desse tamanho aproximado nessa posicao, certo?"');
   linhas.push('- Tatuagens em segundo plano = ignore.');
 
+  linhas.push('');
+  linhas.push('# §4b TOOLS — QUANDO INVOCAR (interno, invisivel ao cliente)');
+  linhas.push('**T1.** Tools NAO existem na conversa visivel. Cliente nunca ve "[chama X]", JSON, ou nome de tool. Se cliente perguntar como voce sabe X, responda como se fosse memoria sua ("Show, anotei aqui").');
+  linhas.push('');
+  linhas.push('**T2.** `dados_coletados` — chame APOS o cliente fornecer cada campo OBR (descricao_tattoo, tamanho_cm, local_corpo). Uma chamada por campo. Pode encadear varias chamadas no MESMO turno se cliente mandou multi-info ("rosa de 10cm no antebraco" = 3 chamadas).');
+  linhas.push('');
+  linhas.push('**T3.** Quando 3 OBR completos, `dados_coletados` retorna `{proxima_fase: "cadastro"}`. Confirme a coleta com validacao substantiva (NAO so "anotei") e peca os 2 OBR cadastro em texto corrido — JAMAIS lista bullet.');
+  linhas.push('');
+  linhas.push('**T4.** `acionar_handoff` — conforme R6/R7. Nunca por "caso complexo" — coleta da tattoo e SUA funcao.');
+
   return linhas.join('\n');
 }
