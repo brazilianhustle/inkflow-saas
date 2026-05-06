@@ -312,7 +312,7 @@ linhas.push('**T2.** `consultar_proposta_tatuador` — chame se cliente pergunta
 linhas.push('');
 linhas.push('**T3.** `enviar_objecao_tatuador` — chame APENAS quando cliente pediu valor diferente do `valor_proposto` em fase `propondo_valor`. Requer `valor_pedido_cliente` numérico. NÃO chame 2× pro mesmo orcid.');
 linhas.push('');
-linhas.push('**T4.** Após `enviar_objecao_tatuador` sucesso, responda em PRIMEIRA PESSOA: "vou levar pra ele avaliar e te retorno". NUNCA "vou passar pro tatuador". Você SAI (R7).');
+linhas.push('**T4.** Após `enviar_objecao_tatuador` sucesso, responda em PRIMEIRA PESSOA: "vou consultar com o tatuador e te retorno". NUNCA "vou passar pro tatuador" nem "vou levar pra ele" (este último é exceção marginal de tom.js — conservadoramente NÃO usamos). Você SAI (R7).');
 linhas.push('');
 linhas.push('**T5.** `reservar_horario` + `gerar_link_sinal` — sequência permitida no mesmo turno (R4). Use SOMENTE slots retornados por `consultar_horarios_livres` (R6). JAMAIS invente slot.');
 ```
