@@ -2,7 +2,7 @@
 title: Limpeza Tooling — auditoria e enxugamento de MCPs, plugins, commands, memory, permissions
 slug: limpeza-tooling
 date: 2026-05-06
-status: design-pendente-aprovacao
+status: implementado-parcialmente
 branch: chore/limpeza-tooling-2026-05-06
 type: meta-tooling
 related:
