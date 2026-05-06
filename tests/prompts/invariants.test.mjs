@@ -100,3 +100,100 @@ test('invariante: Coleta-Proposta tem R3 proibindo contraproposta', () => {
   assert.match(out, /PROIBIDO[^\n]*contraproposta/i,
     'Coleta-Proposta deveria ter regra explicita proibindo "contraproposta"');
 });
+
+// ──────────────────────────────────────────────────────────────────────────
+// REFATOR PROMPTS COLETA V2 (2026-05-06): invariants pra garantir que o
+// anti-pattern "AGENTE: [chama X(...)]" foi extinto e que tom.js e respeitado
+// pelos few-shots. Usa dispatcher + fixtures canonicos (mesmo pattern dos
+// invariants ja existentes).
+// ──────────────────────────────────────────────────────────────────────────
+
+const COLETA_PROMPTS = [
+  { nome: 'coleta-tattoo',   tenant: TENANT_CANONICO, conversa: CONVERSA_COLETA_TATTOO },
+  { nome: 'coleta-cadastro', tenant: TENANT_CANONICO, conversa: CONVERSA_COLETA_CADASTRO },
+  { nome: 'coleta-proposta', tenant: TENANT_CANONICO, conversa: CONVERSA_COLETA_PROPOSTA },
+];
+
+const ANTI_PATTERNS_PSEUDO = [
+  /AGENTE:\s*\[chama\s+\w+/i,
+  /AGENTE:\s*\[tool\s+retorna/i,
+  /\[chama\s+dados_coletados/i,
+  /\[chama\s+enviar_orcamento/i,
+  /\[chama\s+enviar_objecao/i,
+  /\[chama\s+consultar_proposta/i,
+  /\[chama\s+acionar_handoff/i,
+];
+
+const FORBIDDEN_PHRASES_TOM = [
+  /vou passar pro tatuador/i,
+  /pra eu passar pro/i,
+];
+
+// Helper: extrai linhas iniciando por "AGENTE:" dentro de blocos ``` de few-shots.
+function extractAgentTurns(promptText) {
+  const lines = promptText.split('\n');
+  const turns = [];
+  let inBlock = false;
+  for (const line of lines) {
+    if (line.trim() === '```') { inBlock = !inBlock; continue; }
+    if (inBlock && /^AGENTE:/.test(line.trim())) {
+      turns.push(line.replace(/^AGENTE:\s*/, '').trim());
+    }
+  }
+  return turns;
+}
+
+test('invariante coleta v2: nenhum prompt contem pseudo-codigo de tool', () => {
+  for (const { nome, tenant, conversa } of COLETA_PROMPTS) {
+    const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
+    for (const pattern of ANTI_PATTERNS_PSEUDO) {
+      assert.doesNotMatch(out, pattern,
+        `[${nome}] anti-pattern de pseudo-codigo detectado (${pattern})`);
+    }
+  }
+});
+
+test('invariante coleta v2: nenhum turn AGENTE em few-shots usa frases proibidas tom.js', () => {
+  for (const { nome, tenant, conversa } of COLETA_PROMPTS) {
+    const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
+    const turns = extractAgentTurns(out);
+    for (const turn of turns) {
+      for (const pattern of FORBIDDEN_PHRASES_TOM) {
+        assert.doesNotMatch(turn, pattern,
+          `[${nome}] turn AGENTE com frase proibida: "${turn}"`);
+      }
+    }
+  }
+});
+
+test('invariante coleta v2: nenhum turn AGENTE em few-shots excede 200 chars (tom.js)', () => {
+  for (const { nome, tenant, conversa } of COLETA_PROMPTS) {
+    const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
+    const turns = extractAgentTurns(out);
+    for (const turn of turns) {
+      if (turn.startsWith('http')) continue; // URLs de link-pagamento OK
+      assert.ok(turn.length <= 200,
+        `[${nome}] turn AGENTE excede 200 chars (${turn.length}): "${turn.slice(0, 100)}..."`);
+    }
+  }
+});
+
+test('invariante coleta v2: nenhum turn AGENTE em few-shots tem >1 pergunta (heuristica 1 pergunta/turno)', () => {
+  for (const { nome, tenant, conversa } of COLETA_PROMPTS) {
+    const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
+    const turns = extractAgentTurns(out);
+    for (const turn of turns) {
+      const qCount = (turn.match(/\?/g) || []).length;
+      assert.ok(qCount <= 1,
+        `[${nome}] turn AGENTE com ${qCount} perguntas: "${turn}"`);
+    }
+  }
+});
+
+test('invariante coleta v2: todos prompts coleta contem secao §4b TOOLS — QUANDO INVOCAR', () => {
+  for (const { nome, tenant, conversa } of COLETA_PROMPTS) {
+    const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
+    assert.match(out, /# §4b TOOLS — QUANDO INVOCAR/,
+      `[${nome}] sem secao §4b TOOLS — QUANDO INVOCAR (regressao!)`);
+  }
+});
