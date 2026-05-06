@@ -29,6 +29,8 @@ export function regras(tenant) {
   linhas.push('**T4.** Se data retornar `gatilho="data_invalida"`, peca data em formato dia/mes/ano. NAO insista alem de 2 tentativas — apos 2a tentativa falha, chame `acionar_handoff(motivo="data_invalida_persistente")`.');
   linhas.push('');
   linhas.push('**T5.** Apos `enviar_orcamento_tatuador` sucesso (gatilho de invocacao esta em §0 item 5): cumpra R8 (sair da conversa) E formule a ultima msg em PRIMEIRA PESSOA. Use "vou enviar ao tatuador e te retorno em breve". NUNCA "vou passar pro tatuador" (viola tom.js). NAO prometa prazo especifico.');
+  linhas.push('');
+  linhas.push('**T6.** VERIFIQUE `ok=true` na resposta de QUALQUER tool antes de confirmar sucesso ao cliente. Se a tool retornar `ok=false` ou `error`, NUNCA diga "Show, ja enviei" / "Anotei tudo, ja mandei pro tatuador" — isso seria mentir. Em vez disso: leia `dica`, `error`, ou `faltando` na resposta e ACA conforme. Ex: se `enviar_orcamento_tatuador` retornar `{ok:false, error:"campos-faltando", faltando:["data_nascimento"]}`, peca o(s) campo(s) faltante(s) ao cliente em vez de afirmar sucesso.');
 
   return linhas.join('\n');
 }

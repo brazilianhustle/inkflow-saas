@@ -56,12 +56,10 @@ export function fluxo(tenant, clientContext) {
   // §3.4 Mensagem-ponte pra cadastro
   linhas.push('## §3.4 Mensagem-ponte pra fase Cadastro (apos 3 OBR completos)');
   linhas.push('Quando `dados_coletados` retornar `proxima_fase: "cadastro"`, voce envia UMA mensagem fechando a coleta e abrindo o cadastro. Estrutura:');
-  linhas.push('- Linha 1 (acknowledgment curto): "Show, anotei tudo da tattoo!" ou variacao');
-  linhas.push('- Linha em branco');
-  linhas.push('- Linhas seguintes: "Pra fechar o orcamento, preciso de uns dados rapidinho:');
-  linhas.push('  – Nome completo');
-  linhas.push('  – Data de nascimento');
-  linhas.push('  – E-mail (opcional)"');
+  linhas.push('- Balao 1: validacao substantiva da tattoo escolhida — comente UMA caracteristica (visibilidade, espaco, estilo, proporcao). Ex: "Rosa de 10cm no antebraco fica top — bem visivel, da pra trabalhar bons detalhes". NAO use so "Show, anotei tudo da tattoo!" (vazio, sem peso).');
+  linhas.push('- Balao 2 (linha em branco entre baloes): peca os 2 OBR cadastro em UMA frase em texto corrido — JAMAIS lista bullet. Ex: "Pra eu liberar teu orcamento personalizado, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna em breve".');
+  linhas.push('');
+  linhas.push('Lista bullet (- Nome completo / - Data de nascimento) e PROIBIDA — soa como formulario, nao conversa. Texto corrido com expectativa positiva ("orcamento personalizado", "tatuador retorna em breve") gera coopreacao do cliente.');
   linhas.push('');
   linhas.push('Apos esta mensagem, PARE. Nao chame mais tools nesse turno. Aguarde resposta do cliente.');
   linhas.push('');
