@@ -90,19 +90,26 @@ Provavelmente artefato de copy-paste durante duplicação dos 4 nodes em PR #27 
 
 ## Camada 1 — n8n Tool Descriptions
 
-### 1.1 Bug fix — URL `consultar_proposta_tatuador`
+### 1.1 Bug fix — URL `consultar_proposta_tatuador` ✅ APLICADO 2026-05-06
 
-**Estado atual no JSON exportado:**
+**Estado descoberto no JSON exportado:**
 ```
 URL: https://inkflowbrasil.cohttps://inkflowbrasil.com/api/tools/consultar-proposta-tatuadorm/api/tools/acionar-handoff
 ```
 
-**Estado correto:**
+**Estado correto (aplicado pelo user via UI n8n em 2026-05-06):**
 ```
 URL: https://inkflowbrasil.com/api/tools/consultar-proposta-tatuador
 ```
 
-**Como aplicar:** via UI manual n8n (editar tool node `consultar_proposta_tatuador`, campo URL) OU via MCP `update_workflow` + `publish_workflow` quando MCP n8n estiver disponível na sessão de implementação.
+**Verificação pós-publish (parte da implementação):**
+```bash
+# Smoke curl: deve retornar 404 (conversa não existe) ou 200 (existe), nunca 502/timeout
+curl -X POST 'https://inkflowbrasil.com/api/tools/consultar-proposta-tatuador' \
+  -H "Authorization: Bearer $(bws secret get <internal-secret-id> | jq -r .value)" \
+  -H 'Content-Type: application/json' \
+  -d '{"tenant_id":"<dagobert-id>","telefone":"<test-tel>"}'
+```
 
 ### 1.2 Template canônico (5 seções, conciso)
 
@@ -274,7 +281,7 @@ linhas.push('**T4.** `acionar_handoff` — conforme R6/R7. Nunca por "caso compl
 
 ### 2.3 §4b adicionado a `coleta/cadastro/regras.js`
 
-Append após R8 (linha 22):
+Append após R8 (linha 22). Nota: gatilho de invocação `enviar_orcamento_tatuador` (3 OBR tattoo + 2 OBR cadastro completos) já é coberto por **§0 item 5** em `_shared/checklist-critico.js` — §4b NÃO duplica, apenas complementa (gatilhos do `dados_coletados`, gatilhos de erro, formulação da última msg).
 
 ```javascript
 linhas.push('');
@@ -283,14 +290,14 @@ linhas.push('**T1.** Tools NÃO existem na conversa visível. Cliente nunca vê 
 linhas.push('');
 linhas.push('**T2.** `dados_coletados` — chame APÓS cliente fornecer nome/data_nascimento/email. Uma chamada por campo. Pode encadear se cliente mandou multi-info ("Maria Silva, 12/03/1995").');
 linhas.push('');
-linhas.push('**T3.** Se `data_nascimento` retornar `gatilho="menor_idade"`, NÃO chame `enviar_orcamento_tatuador`. Tool já transicionou estado pra `aguardando_tatuador`. Responda com 1 frase educada de despedida.');
+linhas.push('**T3.** Se `data_nascimento` retornar `gatilho="menor_idade"`, NÃO chame `enviar_orcamento_tatuador`. Tool já transicionou estado pra `aguardando_tatuador`. Responda com 1 frase educada de despedida (R7).');
 linhas.push('');
 linhas.push('**T4.** Se data retornar `gatilho="data_invalida"`, peça data em formato dia/mes/ano. NÃO insista além de 2 tentativas — após 2ª tentativa falha, chame `acionar_handoff(motivo="data_invalida_persistente")`.');
 linhas.push('');
-linhas.push('**T5.** `enviar_orcamento_tatuador` — chame APÓS 2 OBR cadastro completos (nome + data_nascimento) E 3 OBR tattoo já confirmados. Email é OPCIONAL — não bloqueie envio se faltar (R5).');
-linhas.push('');
-linhas.push('**T6.** Após `enviar_orcamento_tatuador` sucesso, responda em PRIMEIRA PESSOA: "vou enviar ao tatuador e te retorno em breve". NUNCA "vou passar pro tatuador" (R8 + tom.js). Você SAI (R8). NÃO continue conversando.');
+linhas.push('**T5.** Após `enviar_orcamento_tatuador` sucesso (gatilho de invocação está em §0 item 5): cumpra R8 (sair da conversa) E formule a última msg em PRIMEIRA PESSOA. Use "vou enviar ao tatuador e te retorno em breve". NUNCA "vou passar pro tatuador" (viola tom.js). NÃO prometa prazo específico.');
 ```
+
+**Mudança vs draft inicial:** T5 (gatilho de invocação `enviar_orcamento_tatuador`) removido — § 0 item 5 já cobre. T6 antigo virou T5, com cross-ref explícito a R8 e §0 item 5.
 
 ### 2.4 §4b adicionado a `coleta/proposta/regras.js`
 
@@ -661,12 +668,12 @@ AGENTE: Show! Pelo trabalho ficou em R$ 750. Bora marcar?
 CLIENTE: ta um pouco caro
 AGENTE: Quanto tu tava pensando?
 CLIENTE: uns 600
-AGENTE: Vou levar pra ele analisar — quem fecha o valor e o tatuador. Te dou um retorno em breve
+AGENTE: Vou consultar com o tatuador — quem fecha o valor e ele. Te dou um retorno em breve
 ```
 
 **Mudanças cravadas:**
 - 1 pseudo-código removido
-- "Vou levar pra ele" mantido (já está em 1ª pessoa, OK)
+- "Vou levar pra ele" → "Vou consultar com o tatuador" (alinhamento estrito com tom.js linha 40, evita uso da exceção marginal "valor já orçado". Consistente com Exemplo 3 abaixo).
 
 ### 3.14 Antes/Depois — Proposta Exemplo 3 (caminho B: desconto com valor)
 
@@ -705,30 +712,27 @@ Se OK, manter intactos. Se houver violação tom.js menor, corrigir.
 
 ## Camada 4 — Tests
 
-### 4.1 Tests novos (invariants)
+### 4.1 Tests novos — adicionados a `tests/prompts/invariants.test.mjs` existente
 
-#### `tests/prompts/no-pseudocode.test.mjs`
+**Decisão:** consolidar em `invariants.test.mjs` em vez de criar 2 novos arquivos. Pattern existente do projeto: 1 arquivo de invariants concentra checks de pattern (estrutura, tools de agendamento ausentes em fases erradas, contraproposta proibida). Os 4 novos blocos abaixo seguem o mesmo formato, usando dispatcher `generateSystemPrompt` + fixtures canônicos.
 
-Garante que prompt gerado de qualquer fase Coleta não contém pseudo-código de tool. Detecta regressão.
+Append no fim do arquivo existente:
 
 ```javascript
-import { describe, it } from 'node:test';
-import { strict as assert } from 'node:assert';
-import { generatePromptColetaTattoo } from '../../functions/_lib/prompts/coleta/tattoo/generate.js';
-import { generatePromptColetaCadastro } from '../../functions/_lib/prompts/coleta/cadastro/generate.js';
-import { generatePromptColetaProposta } from '../../functions/_lib/prompts/coleta/proposta/generate.js';
+// ──────────────────────────────────────────────────────────────────────────
+// REFATOR PROMPTS COLETA V2 (2026-05-06): invariants pra garantir que o
+// anti-pattern "AGENTE: [chama X(...)]" foi extinto e que tom.js é respeitado
+// pelos few-shots. Usa dispatcher + fixtures canônicos (mesmo pattern dos
+// invariants já existentes).
+// ──────────────────────────────────────────────────────────────────────────
 
-const MOCK_TENANT = {
-  id: 'mock-tenant',
-  nome_estudio: 'Hustle Ink',
-  nome_agente: 'Lina',
-  config_agente: { tom: 'casual', emoji_level: 'raro', usa_giria: true },
-  gatilhos_handoff: ['rosto', 'mão', 'pescoço'],
-};
-const MOCK_CONVERSA = { telefone: '5511999999999' };
-const MOCK_CTX = {};
+const COLETA_PROMPTS = [
+  { nome: 'coleta-tattoo',   tenant: TENANT_CANONICO, conversa: CONVERSA_COLETA_TATTOO },
+  { nome: 'coleta-cadastro', tenant: TENANT_CANONICO, conversa: CONVERSA_COLETA_CADASTRO },
+  { nome: 'coleta-proposta', tenant: TENANT_CANONICO, conversa: CONVERSA_COLETA_PROPOSTA },
+];
 
-const ANTI_PATTERNS = [
+const ANTI_PATTERNS_PSEUDO = [
   /AGENTE:\s*\[chama\s+\w+/i,
   /AGENTE:\s*\[tool\s+retorna/i,
   /\[chama\s+dados_coletados/i,
@@ -738,60 +742,13 @@ const ANTI_PATTERNS = [
   /\[chama\s+acionar_handoff/i,
 ];
 
-describe('prompts coleta — no pseudo-código de tool', () => {
-  const generators = [
-    ['tattoo', generatePromptColetaTattoo],
-    ['cadastro', generatePromptColetaCadastro],
-    ['proposta', generatePromptColetaProposta],
-  ];
-
-  for (const [fase, gen] of generators) {
-    it(`fase ${fase}: prompt gerado não contém AGENTE: [chama X] ou [tool retorna]`, () => {
-      const prompt = gen(MOCK_TENANT, MOCK_CONVERSA, MOCK_CTX);
-      for (const pattern of ANTI_PATTERNS) {
-        const match = prompt.match(pattern);
-        assert.equal(
-          match,
-          null,
-          `Fase ${fase}: anti-pattern detectado: "${match?.[0]}"`
-        );
-      }
-    });
-  }
-});
-```
-
-**Cobertura:** 3 testes (1 por fase) × 7 patterns = 21 assertivas.
-
-#### `tests/prompts/tom-invariants.test.mjs`
-
-Heurísticas pra garantir que mensagens AGENTE em few-shots respeitam tom.js.
-
-```javascript
-import { describe, it } from 'node:test';
-import { strict as assert } from 'node:assert';
-import { generatePromptColetaTattoo } from '../../functions/_lib/prompts/coleta/tattoo/generate.js';
-import { generatePromptColetaCadastro } from '../../functions/_lib/prompts/coleta/cadastro/generate.js';
-import { generatePromptColetaProposta } from '../../functions/_lib/prompts/coleta/proposta/generate.js';
-
-const MOCK_TENANT = {
-  id: 'mock-tenant',
-  nome_estudio: 'Hustle Ink',
-  nome_agente: 'Lina',
-  config_agente: { tom: 'casual', emoji_level: 'raro', usa_giria: true },
-  gatilhos_handoff: ['rosto', 'mão', 'pescoço'],
-};
-const MOCK_CONVERSA = { telefone: '5511999999999' };
-const MOCK_CTX = {};
-
-const FORBIDDEN_PHRASES = [
+const FORBIDDEN_PHRASES_TOM = [
   /vou passar pro tatuador/i,
-  /vou levar pra ele passar/i,
   /pra eu passar pro/i,
 ];
 
+// Helper: extrai linhas iniciando por "AGENTE:" dentro de blocos ``` de few-shots.
 function extractAgentTurns(promptText) {
-  // Linhas começando com "AGENTE:" dentro de blocos de código de few-shots
   const lines = promptText.split('\n');
   const turns = [];
   let inBlock = false;
@@ -804,54 +761,63 @@ function extractAgentTurns(promptText) {
   return turns;
 }
 
-describe('prompts coleta — tom invariants em few-shots', () => {
-  const generators = [
-    ['tattoo', generatePromptColetaTattoo],
-    ['cadastro', generatePromptColetaCadastro],
-    ['proposta', generatePromptColetaProposta],
-  ];
+test('invariante coleta v2: nenhum prompt contem pseudo-código de tool', () => {
+  for (const { nome, tenant, conversa } of COLETA_PROMPTS) {
+    const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
+    for (const pattern of ANTI_PATTERNS_PSEUDO) {
+      assert.doesNotMatch(out, pattern,
+        `[${nome}] anti-pattern de pseudo-código detectado (${pattern})`);
+    }
+  }
+});
 
-  for (const [fase, gen] of generators) {
-    it(`fase ${fase}: nenhuma mensagem AGENTE contém frases proibidas`, () => {
-      const prompt = gen(MOCK_TENANT, MOCK_CONVERSA, MOCK_CTX);
-      const turns = extractAgentTurns(prompt);
-      for (const turn of turns) {
-        for (const pattern of FORBIDDEN_PHRASES) {
-          assert.equal(
-            pattern.test(turn),
-            false,
-            `Fase ${fase}: frase proibida em turn AGENTE: "${turn}"`
-          );
-        }
+test('invariante coleta v2: nenhum turn AGENTE em few-shots usa frases proibidas tom.js', () => {
+  for (const { nome, tenant, conversa } of COLETA_PROMPTS) {
+    const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
+    const turns = extractAgentTurns(out);
+    for (const turn of turns) {
+      for (const pattern of FORBIDDEN_PHRASES_TOM) {
+        assert.doesNotMatch(turn, pattern,
+          `[${nome}] turn AGENTE com frase proibida: "${turn}"`);
       }
-    });
+    }
+  }
+});
 
-    it(`fase ${fase}: nenhuma mensagem AGENTE excede 200 chars (tom.js)`, () => {
-      const prompt = gen(MOCK_TENANT, MOCK_CONVERSA, MOCK_CTX);
-      const turns = extractAgentTurns(prompt);
-      for (const turn of turns) {
-        if (turn.startsWith('http')) continue; // URLs em link-pagamento OK
-        if (turn.length > 200) {
-          assert.fail(`Fase ${fase}: turn AGENTE excede 200 chars (${turn.length}): "${turn.slice(0, 100)}..."`);
-        }
-      }
-    });
+test('invariante coleta v2: nenhum turn AGENTE em few-shots excede 200 chars (tom.js)', () => {
+  for (const { nome, tenant, conversa } of COLETA_PROMPTS) {
+    const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
+    const turns = extractAgentTurns(out);
+    for (const turn of turns) {
+      if (turn.startsWith('http')) continue; // URLs de link-pagamento OK
+      assert.ok(turn.length <= 200,
+        `[${nome}] turn AGENTE excede 200 chars (${turn.length}): "${turn.slice(0, 100)}..."`);
+    }
+  }
+});
 
-    it(`fase ${fase}: nenhuma mensagem AGENTE tem mais de 1 ponto de interrogação (heurística 1 pergunta/turno)`, () => {
-      const prompt = gen(MOCK_TENANT, MOCK_CONVERSA, MOCK_CTX);
-      const turns = extractAgentTurns(prompt);
-      for (const turn of turns) {
-        const questionCount = (turn.match(/\?/g) || []).length;
-        if (questionCount > 1) {
-          assert.fail(`Fase ${fase}: turn AGENTE com ${questionCount} perguntas: "${turn}"`);
-        }
-      }
-    });
+test('invariante coleta v2: nenhum turn AGENTE em few-shots tem >1 pergunta (heurística 1 pergunta/turno)', () => {
+  for (const { nome, tenant, conversa } of COLETA_PROMPTS) {
+    const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
+    const turns = extractAgentTurns(out);
+    for (const turn of turns) {
+      const qCount = (turn.match(/\?/g) || []).length;
+      assert.ok(qCount <= 1,
+        `[${nome}] turn AGENTE com ${qCount} perguntas: "${turn}"`);
+    }
+  }
+});
+
+test('invariante coleta v2: todos prompts coleta contem secao §4b TOOLS — QUANDO INVOCAR', () => {
+  for (const { nome, tenant, conversa } of COLETA_PROMPTS) {
+    const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
+    assert.match(out, /# §4b TOOLS — QUANDO INVOCAR/,
+      `[${nome}] sem seção §4b TOOLS — QUANDO INVOCAR (regressão!)`);
   }
 });
 ```
 
-**Cobertura:** 9 testes (3 fases × 3 invariants).
+**Cobertura adicionada:** 5 testes × 3 fases ≈ 15 assertivas (variável conforme número de turns AGENTE em fixtures). Reaproveita imports existentes do topo do arquivo (`generateSystemPrompt`, `TENANT_CANONICO`, fixtures de conversa, `CLIENT_CONTEXT_CANONICO`).
 
 ### 4.2 Re-snapshot dos 3 snapshots existentes
 
@@ -939,15 +905,14 @@ DELETE FROM n8n_chat_histories WHERE session_id LIKE '<dagobert-id>_<leandro-tel
 
 ### Camada 2
 - ✅ `tattoo/regras.js` tem §4b com T1-T4
-- ✅ `cadastro/regras.js` tem §4b com T1-T6
+- ✅ `cadastro/regras.js` tem §4b com T1-T5 (T-anterior duplicava §0 item 5; consolidado)
 - ✅ `proposta/regras.js` tem §4b com T1-T5
-- ✅ Cada T cita tool específica + gatilho + comportamento pós-resposta
+- ✅ Cada T cita tool específica + gatilho + comportamento pós-resposta. Cross-refs explícitos a R-rules e §0 item 5 onde aplicável.
 
 ### Camada 3
-- ✅ Test `tests/prompts/no-pseudocode.test.mjs` passa (3 fases × 7 patterns = 21 assertivas)
-- ✅ Test `tests/prompts/tom-invariants.test.mjs` passa (3 fases × 3 invariants = 9 testes)
-- ✅ Snapshots `coleta-{tattoo,cadastro,proposta}.snap.txt` atualizados via commit dedicado revisável
-- ✅ 49 tests existentes ainda 100% verdes (backend + helpers)
+- ✅ 5 invariants novos adicionados a `tests/prompts/invariants.test.mjs` passam (no-pseudocode + 3 tom-checks + §4b presence)
+- ✅ Snapshots `tests/prompts/snapshots/coleta-{tattoo,cadastro,proposta}.txt` atualizados via `./scripts/update-prompt-snapshots.sh` em commit dedicado revisável
+- ✅ 49 tests existentes ainda 100% verdes (backend + helpers + outros invariants)
 
 ### Smoke E2E
 - ✅ Cenário A 100% PASS (`tool_calls_log` confirma 3 dados_coletados + 1 enviar_orcamento; bot usa "vou enviar" em 1ª pessoa; Telegram tatuador recebeu)
@@ -961,13 +926,15 @@ DELETE FROM n8n_chat_histories WHERE session_id LIKE '<dagobert-id>_<leandro-tel
 
 Ordem de commits (cada commit é isoladamente revisável + não-quebra-build):
 
-1. `fix(n8n): corrigir URL corrompida em consultar_proposta_tatuador`
-   - Editar `docs/workflows/MEU NOVO WORK - SAAS - 2026-05-06.json` (ou criar dir + arquivo)
-   - Aplicar via UI/MCP no workflow ativo
+1. `fix(n8n): documentar URL fix em consultar_proposta_tatuador (já aplicado em prod)`
+   - Aplicação real: já feita pelo user via UI n8n em 2026-05-06
+   - Salvar export atualizado em `docs/workflows/MEU NOVO WORK - SAAS - 2026-05-06.json` (criar dir + arquivo) pra rastreabilidade
+   - Smoke curl de validação pós-publish (ver §1.1)
 
 2. `feat(n8n): canonicalizar 4 tool descriptions Coleta v2`
-   - Reescrever 4 descriptions seguindo template
-   - Aplicar via UI/MCP
+   - Reescrever 4 descriptions seguindo template (§1.3)
+   - Aplicar via UI/MCP no workflow ativo
+   - Atualizar export local pós-publish
 
 3. `feat(prompts): adicionar §4b TOOLS QUANDO INVOCAR em tattoo/regras.js`
 4. `feat(prompts): adicionar §4b TOOLS QUANDO INVOCAR em cadastro/regras.js`
@@ -985,10 +952,9 @@ Ordem de commits (cada commit é isoladamente revisável + não-quebra-build):
    - Reescrever 6 exemplos em `proposta/few-shot.js`
    - Auditar `proposta/few-shot-tenant.js`
 
-9. `test(prompts): invariants no-pseudocode + tom-checks`
-   - Add `tests/prompts/no-pseudocode.test.mjs`
-   - Add `tests/prompts/tom-invariants.test.mjs`
-   - Roda bateria, confirma que TODOS as ~30 assertivas passam contra novo código
+9. `test(prompts): invariants no-pseudocode + tom-checks + §4b presence`
+   - Editar `tests/prompts/invariants.test.mjs` (adicionar 5 testes ao final, reaproveitando imports do topo)
+   - Roda bateria, confirma que TODAS as ~15 assertivas novas passam contra novo código
 
 10. `test(prompts): re-snapshot 3 snapshots Coleta v2`
     - Rodar `./scripts/update-prompt-snapshots.sh`
