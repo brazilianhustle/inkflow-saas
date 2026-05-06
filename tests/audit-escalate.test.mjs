@@ -63,6 +63,30 @@ test('returns 0 when no critical sem ack >2h', async () => {
   assert.equal(data.escalated_count, 0);
 });
 
+test('AbortError (transient timeout) returns 504 grácil — não vaza 500-default', async () => {
+  globalThis.fetch = async () => {
+    const err = new Error('The operation was aborted.');
+    err.name = 'AbortError';
+    throw err;
+  };
+  const res = await onRequest({ request: reqAuthed(), env: ENV });
+  assert.equal(res.status, 504);
+  const data = await res.json();
+  assert.equal(data.error, 'transient_timeout');
+  assert.equal(data.error_name, 'AbortError');
+});
+
+test('Unhandled exception returns 500 grácil com shape JSON debuggable', async () => {
+  globalThis.fetch = async () => {
+    throw new Error('unexpected supabase failure');
+  };
+  const res = await onRequest({ request: reqAuthed(), env: ENV });
+  assert.equal(res.status, 500);
+  const data = await res.json();
+  assert.equal(data.error, 'internal_error');
+  assert.match(data.message, /unexpected supabase failure/);
+});
+
 test('separates skipped (config missing) from error in response shape', async () => {
   let pushoverCalled = false;
   globalThis.fetch = async (url, opts) => {
