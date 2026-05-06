@@ -197,3 +197,47 @@ test('invariante coleta v2: todos prompts coleta contem secao §4b TOOLS — QUA
       `[${nome}] sem secao §4b TOOLS — QUANDO INVOCAR (regressao!)`);
   }
 });
+
+// ── Invariants do refator coleta foto_local + altura_cm + R9 ─────────
+test('§3.3 OBR_RECOMENDADO menciona apenas foto_local, altura_cm, estilo (sem refs_imagens ativo)', () => {
+  const prompt = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_TATTOO, CLIENT_CONTEXT_CANONICO);
+  // Extract section §3.3 (até §3.3b ou §3.4)
+  const m = prompt.match(/## §3\.3 OBR_RECOMENDADO[\s\S]*?(?=## §3\.3b|## §3\.4)/);
+  assert.ok(m, '§3.3 OBR_RECOMENDADO section nao encontrada');
+  const sec = m[0];
+  assert.match(sec, /foto_local/);
+  assert.match(sec, /altura_cm/);
+  assert.match(sec, /estilo/);
+  // refs_imagens NAO deve ser perguntado ativamente em §3.3
+  assert.doesNotMatch(sec, /Pergunta:[^"]*refs_imagens/);
+});
+
+test('§3.3c (fallback altura→tamanho) foi removida', () => {
+  const prompt = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_TATTOO, CLIENT_CONTEXT_CANONICO);
+  assert.doesNotMatch(prompt, /## §3\.3c/);
+});
+
+test('R9 (devolver contradições) explícita em regras tattoo', () => {
+  const prompt = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_TATTOO, CLIENT_CONTEXT_CANONICO);
+  assert.match(prompt, /\*\*R9\.\*\*/);
+  assert.match(prompt, /DEVOLVER CONTRADICOES/);
+  assert.match(prompt, /contradicao_nao_resolvida/);
+});
+
+test('§4b T2 menciona sequência foto_local → altura_cm → estilo', () => {
+  const prompt = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_TATTOO, CLIENT_CONTEXT_CANONICO);
+  // T2 deve mencionar T2.1, T2.2, T2.3 com a sequência
+  const m = prompt.match(/\*\*T2\.\*\*[\s\S]*?(?=\*\*T3\.\*\*)/);
+  assert.ok(m, 'T2 section nao encontrada');
+  const sec = m[0];
+  assert.match(sec, /T2\.1/);
+  assert.match(sec, /T2\.2/);
+  assert.match(sec, /T2\.3/);
+  assert.match(sec, /foto_local.*altura_cm.*estilo/s);
+});
+
+test('Soft re-ask + cliente_evasivo_infos_incompletas explícitos no prompt', () => {
+  const prompt = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_TATTOO, CLIENT_CONTEXT_CANONICO);
+  assert.match(prompt, /soft re-ask|reformul/i);
+  assert.match(prompt, /cliente_evasivo_infos_incompletas/);
+});
