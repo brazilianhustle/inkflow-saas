@@ -11,7 +11,6 @@ import assert from 'node:assert/strict';
 
 // ─── Constantes ──────────────────────────────────────────────────────────
 const VALID_UUID = '00000000-0000-0000-0000-000000000001';
-const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 
 // ─── Helpers locais ──────────────────────────────────────────────────────
 function mockEnv(overrides = {}) {
@@ -168,10 +167,11 @@ test('validate-onboarding-key — T7: link used + tenant não existe → 200 val
     // Confirma que findTenant tentou email + onboarding_key (2 fetches em tenants?)
     const tenantsCalls = matcher.calls.filter(c => c.url.includes('/rest/v1/tenants?'));
     assert.equal(tenantsCalls.length, 2, 'esperava 2 fetches em tenants? (email + onboarding_key)');
+    assert.equal(matcher.calls.length, 3, 'esperava 3 fetches total: 1 links + 2 tenants');
   } finally { restore(); }
 });
 
-// T8 ⭐ — link used:true + tenant existe → reativa link (PATCH onboarding_links)
+// T8 — link used:true + tenant existe → reativa link (PATCH onboarding_links)
 test('validate-onboarding-key — T8: link used + tenant existe → reativa link', async () => {
   const tenant = {
     id: VALID_UUID, ativo: true, welcome_shown: false,
@@ -181,7 +181,6 @@ test('validate-onboarding-key — T8: link used + tenant existe → reativa link
   };
   const matcher = fetchMatcher([
     ['/rest/v1/onboarding_links?', () => {
-      // primeiro fetch é GET, segundo é PATCH (mesma URL pattern)
       return jsonResponse([{
         id: 'L8', key: 'mykey1234', plano: 'estudio', email: 'a@b.com',
         used: true, expires_at: '2099-01-01T00:00:00Z',
@@ -203,6 +202,7 @@ test('validate-onboarding-key — T8: link used + tenant existe → reativa link
     const patchCall = matcher.calls.find(c =>
       c.method === 'PATCH' && c.url.includes('onboarding_links?id=eq.L8'));
     assert.ok(patchCall, 'esperava PATCH em onboarding_links?id=eq.L8 (resetLinkUsed)');
+    assert.match(patchCall.body, /"used":\s*false/, 'PATCH body deve setar used:false (resetLinkUsed)');
   } finally { restore(); }
 });
 
