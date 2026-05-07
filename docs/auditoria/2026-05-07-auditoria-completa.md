@@ -11,7 +11,90 @@ spec: docs/superpowers/specs/2026-05-07-auditoria-completa-saas-design.md
 
 > **Princípio:** READ-ONLY. Documentar achados objetivamente nas Fases 1 e 2. Opinião e roadmap só na Fase 3.
 >
-> **Status atual:** Fase 1 em andamento.
+> **Status atual:** Auditoria + Sprint 1 executados (2026-05-07).
+
+---
+
+## Sprint 1 — Execução (2026-05-07)
+
+Sprint 1 do plan `docs/superpowers/plans/2026-05-07-auditoria-sprint-1-quick-wins.md` executado em 5 ondas + sub-plans pras Ondas 2 e 4.
+
+### Findings fechados (15)
+
+| Finding | Onda | PR | Status |
+|---|---|---|---|
+| F2.8.2 — schema baseline em git | 0 | #37 | ✅ inventário narrativo (`supabase/baseline-schema.sql`) |
+| F1.4.6 — leaked password protection | 0 | #37 | ⏳ **PENDENTE dashboard Supabase manual** (toggle Auth → Policies) |
+| F1.7.3 — memory drift agents | 1 | #38 | ✅ `project_agents.md` reescrito (3 ativos + 6 legacy) |
+| F1.6.8 — archive smokes históricos | 1 | #38 | ✅ 5 audit_runs + 5 audit_events deletados |
+| F1.4.12 — RPC dead atualizar_timestamp_campanha | 1 | #38 | ✅ DROP FUNCTION |
+| F1.4.8 — duplicate index | 1 | #38 | ✅ DROP CONSTRAINT (era constraint, não índice) |
+| F1.4.10 — 4 unused indexes | 1 | #38 | ✅ DROP INDEX × 4 |
+| F1.4.5 — tattoo_bucket allows LIST | 1 | #38 | ✅ policy substituída (GET direto OK, LIST bloqueado) |
+| F1.3.8 — 4 workflows n8n backup | 1 | #38 | ✅ archived via mcp__n8n__archive_workflow |
+| F2.4.4 — tests em GHA | 2 | #39 | ✅ `tests.yml` rodando 391 cases em 11s |
+| F1.5.3 — preflight em CI | 2 | #39 | ✅ step adicionado em `deploy.yml` |
+| F1.3.1 — tool zumbi consultar_preco_retoque | 3 | #40 | ⏳ **PENDENTE dashboard n8n manual** (delete node + save) |
+| F2.5.1 — Sentry trigger configurado | 3 | #40 | 🔄 **RECLASSIFICADO falso positivo** — Sentry estava funcional, `triggerCount=0` é normal pra Error Triggers |
+| F1.4.2 — views SECURITY DEFINER | 4 | #41 | ✅ ALTER VIEW SET (security_invoker = on) |
+| F1.4.3 — RPCs anon-callable | 4 | #41 | ✅ REVOKE EXECUTE FROM PUBLIC (não só anon/auth — bug pego pós-apply) |
+| F1.5.5 — secrets.md desatualizado | 5 | #42 | ⏳ **PR aberto** (aguardando review) |
+| F1.5.6 — sem CSP | 5 | #42 | ⏳ **PR aberto** (aguardando browser smoke) |
+
+### Advisor delta confirmado
+
+| Advisor | Antes | Depois | Delta |
+|---|---|---|---|
+| Security ERROR (`security_definer_view`) | 2 | 0 | **-2** |
+| Security WARN (`*security_definer_function*`) | 4 | 0 | **-4** |
+| Security WARN (`public_bucket_allows_listing`) | 1 | 0 | **-1** |
+| Performance WARN (`duplicate_index`) | 1 | 0 | **-1** |
+| Performance INFO (`unused_index`) | 4 | 0 | **-4** |
+| **Total** | **12** | **0** | **-12** |
+
+### Achados secundários (gap real descoberto durante Sprint 1)
+
+Durante Onda 3 investigação do F2.5.1, descoberto que **3 workflows ativos n8n não têm `errorWorkflow` configurado**:
+- `0GkC6Ehh0H8sxRVE` InkFlow PR Babysitter
+- `EWrPa5xfupsAygz2` InkFlow Uptime
+- `1cyShNBUqgo6d2JY` InkFlow Smoke Test E2E
+
+Erros nesses 3 vão pro silêncio. Não estava no scope inicial. **Registrar pra Sprint 2** — quick fix dashboard (~30s × 3).
+
+### Pendências Sprint 1 (manuais — fora do alcance de SQL/MCP)
+
+| # | Item | Como fechar |
+|---|---|---|
+| 1 | F1.4.6 leaked password | Dashboard: https://supabase.com/dashboard/project/bfzuxxuscyplfoimvomh/auth/policies → toggle ON |
+| 2 | F1.3.1 tool zumbi remoção | Dashboard n8n: https://n8n.inkflowbrasil.com/workflow/PmCMHTaTi07XGgWh → delete node `consultar_preco_retoque` (position [-5744, 432]) → save |
+| 3 | Onda 5 PR (#42) merge | Browser smoke local — abrir cada HTML em DevTools, confirmar zero CSP errors, depois merge |
+| 4 | (gap secundário) errorWorkflow nos 3 utilitários | Dashboard n8n por workflow: Settings → Error Workflow → INKFLOW - Sentry Error Handler → Save |
+
+### Sprint 1 — métricas
+
+| Métrica | Valor |
+|---|---|
+| Tempo total executado | ~3h (vs estimativa 5h do plan) |
+| PRs criados | 6 (#37, #38, #39, #40, #41, #42) |
+| PRs mergeados | 5 (#37-#41) |
+| Migrations aplicadas em prod | 5 (Ondas 1 + 4) |
+| Workflows n8n archived | 4 |
+| Findings fechados | 15 (8 P0 + 5 P3 + 2 P2) |
+| Findings reclassificados | 1 (F2.5.1 era falso positivo) |
+| Findings pendentes user | 4 (3 manual + 1 PR aberto) |
+| Advisor lints fechados | 12 |
+
+### Lições aprendidas
+
+1. **REVOKE de função anon não funciona se PUBLIC tem grant.** Aprendido pós-apply em Onda 4 — `=X/postgres` no ACL = PUBLIC tem EXECUTE. Anon e authenticated herdam via PUBLIC role membership. Solução: `REVOKE EXECUTE ... FROM PUBLIC`.
+
+2. **DROP INDEX em UNIQUE constraint falha.** Tem que usar `ALTER TABLE DROP CONSTRAINT`. PostgreSQL cria índices implícitos pra UNIQUE constraints, e não dá pra dropar separado.
+
+3. **Audit `triggerCount` no n8n não é a métrica certa pra Error Triggers.** n8n só conta Schedule/Webhook/Form/Chat. Error Triggers nunca contam mesmo funcionando.
+
+4. **Subagent (supabase-dba) descobriu drift de 2 policies entre auditoria e estado atual** — 23 esperado vs 25 encontrado, explicado pela migration #34 aplicada após auditoria.
+
+5. **Edição de workflows n8n via MCP `update_workflow` requer reconstruir SDK code** — alto risco de drift pra workflows grandes (98 nodes). Pra delete simples, dashboard é mais seguro.
 
 ---
 
