@@ -23,8 +23,9 @@ export const TattooOutputSchema = z.object({
   resposta_cliente: z.string().min(1),
   dados_persistidos: z.object({
     estilo: z.string().optional(),
-    tamanho_cm: z.number().optional(),
-    altura_cm: z.number().optional(),
+    // tamanho_cm/altura_cm: paridade com validacao server-side (dados-coletados.js:235 rejeita <=0 ou >200).
+    tamanho_cm: z.number().positive().max(200).optional(),
+    altura_cm: z.number().positive().max(200).optional(),
     local_corpo: z.string().optional(),
     cor_preferencia: z.string().optional(),
     descricao_curta: z.string().optional(),
@@ -51,15 +52,25 @@ function buildToolDadosColetados({ env, tenant_id, telefone, baseUrl }) {
       valor: z.union([z.string(), z.number(), z.array(z.string())]),
     }),
     execute: async ({ campo, valor }) => {
-      const res = await fetch(`${baseUrl}/api/tools/dados-coletados`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Inkflow-Tool-Secret': env.INKFLOW_TOOL_SECRET,
-        },
-        body: JSON.stringify({ tenant_id, telefone, campo, valor }),
-      });
-      return await res.json();
+      let res;
+      try {
+        res = await fetch(`${baseUrl}/api/tools/dados-coletados`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Inkflow-Tool-Secret': env.INKFLOW_TOOL_SECRET,
+          },
+          body: JSON.stringify({ tenant_id, telefone, campo, valor }),
+        });
+      } catch (e) {
+        return { ok: false, error: `tool-network-error: ${e?.message || e}` };
+      }
+      if (!res.ok) return { ok: false, error: `tool-http-${res.status}` };
+      try {
+        return await res.json();
+      } catch {
+        return { ok: false, error: 'tool-bad-json' };
+      }
     },
   });
 }
@@ -73,15 +84,25 @@ function buildToolHandoffToCadastro({ env, tenant_id, telefone, baseUrl }) {
       campos_conflitantes: z.array(z.string()),
     }),
     execute: async ({ dados_completos, campos_conflitantes }) => {
-      const res = await fetch(`${baseUrl}/api/tools/handoff-to-cadastro`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Inkflow-Tool-Secret': env.INKFLOW_TOOL_SECRET,
-        },
-        body: JSON.stringify({ tenant_id, telefone, dados_completos, campos_conflitantes }),
-      });
-      return await res.json();
+      let res;
+      try {
+        res = await fetch(`${baseUrl}/api/tools/handoff-to-cadastro`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Inkflow-Tool-Secret': env.INKFLOW_TOOL_SECRET,
+          },
+          body: JSON.stringify({ tenant_id, telefone, dados_completos, campos_conflitantes }),
+        });
+      } catch (e) {
+        return { ok: false, error: `tool-network-error: ${e?.message || e}` };
+      }
+      if (!res.ok) return { ok: false, error: `tool-http-${res.status}` };
+      try {
+        return await res.json();
+      } catch {
+        return { ok: false, error: 'tool-bad-json' };
+      }
     },
   });
 }

@@ -105,3 +105,17 @@ test('TattooOutputSchema aceita pergunta com campos_faltando', () => {
   const parsed = TattooOutputSchema.safeParse(valid);
   assert.equal(parsed.success, true);
 });
+
+test('TattooOutputSchema rejeita tamanho_cm <=0 ou >200 (paridade com server)', () => {
+  const negativo = {
+    resposta_cliente: 'oi',
+    dados_persistidos: { tamanho_cm: -5 },
+    dados_completos: false,
+    campos_faltando: ['local_corpo'],
+    campos_conflitantes: [],
+    proxima_acao: 'pergunta',
+  };
+  const muito_grande = { ...negativo, dados_persistidos: { tamanho_cm: 250 } };
+  assert.equal(TattooOutputSchema.safeParse(negativo).success, false);
+  assert.equal(TattooOutputSchema.safeParse(muito_grande).success, false);
+});
