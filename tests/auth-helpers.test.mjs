@@ -173,3 +173,45 @@ test('verifyStudioToken — sig trocada (mesma length) retorna bad-signature', a
   const result = await verifyStudioToken(tampered, STUDIO_SECRET);
   assert.deepStrictEqual(result, { valid: false, reason: 'bad-signature' });
 });
+
+test('verifyStudioToken — sig length diferente retorna bad-signature (timing-safe)', async () => {
+  // edge case #1: INTENTIONAL — length mismatch retorna bad-signature antes do
+  // byte compare loop, protegendo contra timing attacks (NIST SP 800-107).
+  // Não consolidar com loop XOR — separação é a invariante de segurança.
+  const { verifyStudioToken } = await import('../functions/api/_auth-helpers.js');
+  const token = await makeToken(VALID_UUID);
+  const truncated = mutateSig(token, (sig) => sig.slice(0, -2)); // 62 chars
+  const result = await verifyStudioToken(truncated, STUDIO_SECRET);
+  assert.deepStrictEqual(result, { valid: false, reason: 'bad-signature' });
+});
+
+test('verifyStudioToken — exp não numérico retorna malformed-exp', async () => {
+  const { verifyStudioToken, b64url } = await import('../functions/api/_auth-helpers.js');
+  const token = await forgeToken({ tidB64: b64url(VALID_UUID), expStr: 'abc' });
+  const result = await verifyStudioToken(token, STUDIO_SECRET);
+  assert.deepStrictEqual(result, { valid: false, reason: 'malformed-exp' });
+});
+
+test('verifyStudioToken — exp passado retorna expired', async () => {
+  const { verifyStudioToken } = await import('../functions/api/_auth-helpers.js');
+  const token = await makeToken(VALID_UUID, -1); // expirou 1 dia atrás
+  const result = await verifyStudioToken(token, STUDIO_SECRET);
+  assert.equal(result.valid, false);
+  assert.equal(result.reason, 'expired');
+  assert.ok(typeof result.exp === 'number');
+});
+
+test('verifyStudioToken — tenantId payload malformado retorna malformed-tenant', async () => {
+  const { verifyStudioToken, b64url } = await import('../functions/api/_auth-helpers.js');
+  const token = await forgeToken({ tidB64: b64url('not-uuid'), expStr: '9999999999' });
+  const result = await verifyStudioToken(token, STUDIO_SECRET);
+  assert.deepStrictEqual(result, { valid: false, reason: 'malformed-tenant' });
+});
+
+test('verifyStudioToken — sliding refresh boundary (ttlDays 6.5) retorna shouldRefresh true', async () => {
+  const { verifyStudioToken } = await import('../functions/api/_auth-helpers.js');
+  const token = await makeToken(VALID_UUID, 6.5); // < 7 dias
+  const result = await verifyStudioToken(token, STUDIO_SECRET);
+  assert.equal(result.valid, true);
+  assert.equal(result.shouldRefresh, true);
+});
