@@ -167,13 +167,13 @@ function makeRequest(path, body, method = 'POST') {
 |---|---|---|---|
 | **T1** | input vazio (`{}` ou key < 8 chars) | sem fetch | status 400, `body.error` match |
 | **T2** | JSON inválido no body (string raw) | sem fetch | status 400 |
-| **T3** | `SUPABASE_SERVICE_KEY` ausente | sem fetch | status 503 |
+| **T3** | `SUPABASE_SERVICE_KEY` ausente | sem fetch (env override **`{SUPABASE_SERVICE_KEY: undefined}`** — endpoint linha 63 lê SÓ essa var, sem fallback ROLE) | status 503 |
 | **T4** | Supabase 500 (DB error) | `links?` → status 500 | status 500, `body.error` match |
 | **T5** | link não encontrado | `links?` → `[]` | 200, `{valid: false, error: /n.o encontrado/}` |
 | **T6** | link expirado | `links?` → `[{expires_at: '2020-01-01T00:00:00Z'}]` | 200, `{valid: false, error: /expirado/}` |
-| **T7** | link `used:true` + tenant não existe | `links?` → `[{used:true,...}]`, `tenants?` → `[]` (× 2) | 200, `{valid: false, error: /j. foi utilizado/}` |
+| **T7** | link `used:true` + tenant não existe | `links?` → `[{used:true,id:'L1',email:'a@b.com',plano:'estudio'}]`, `tenants?` → `[]` (× **2** — `findTenant` interno faz 1 fetch por email + 1 por onboarding_key); **3 fetches total** | 200, `{valid: false, error: /j. foi utilizado/}` |
 | **T8** ⭐ | link `used:true` + tenant existe (reativa) | `links?` → `[{used:true,id:'L1'}]`, `tenants?` → `[{...}]`, PATCH `links?` → 204 | 200, `valid:true`, **+ assertar `handler.calls.find(c => c.method==='PATCH' && c.url.includes('onboarding_links?id=eq.L1'))` truthy** |
-| **T9** | link válido + tenant novo (não criado) | `links?` → `[{used:false,...}]`, `tenants?` → `[]` × 2 | 200, `{valid:true, plano, link_id}` (sem `tenant`) |
+| **T9** | link válido + tenant novo (não criado) | `links?` → `[{used:false,email:'a@b.com',plano:'estudio',id:'L9'}]`, `tenants?` → `[]` (× **2** — 1 por email + 1 por onboarding_key dentro do `findTenant`); **3 fetches total** | 200, `{valid:true, plano, link_id}` (sem `tenant`) |
 | **T10** | link válido + tenant existe (smart-resume) | `links?` → `[{used:false,...}]`, `tenants?` → `[{...}]` | 200, `valid:true`, `tenant.{id, ativo, welcome_shown, evo_instance, ...}` |
 
 ### `tests/api/validate-studio-token.test.mjs` — 9 testes
@@ -182,10 +182,10 @@ function makeRequest(path, body, method = 'POST') {
 |---|---|---|---|
 | **T11** | token < 10 chars | sem fetch | 400 |
 | **T12** | JSON inválido | sem fetch | 400 |
-| **T13** | HMAC sig errada | token construído via `makeStudioToken(VALID_UUID, env)` + `mutateSig(token, sig => sig.slice(0,-1)+'x')` (preserva length) | 401, `body.tenant` undefined |
-| **T14** | HMAC expirado | token construído via `makeStudioToken(VALID_UUID, env, -1)` (ttlDays negativo) | 401 |
-| **T15** | UUID legacy (sem prefix `v1.`) + tenant não existe | token = `'12345678-1234-1234-1234-123456789012'` (UUID raw); `tenants?studio_token=eq` → `[]` | 401 |
-| **T16** | UUID legacy + tenant existe (legacy → HMAC promotion) | token = UUID raw; `tenants?studio_token=eq.<UUID>` → `[{id: VALID_UUID}]`; `tenants?id=eq.VALID_UUID` → `[{nome_estudio,plano,...}]` | 200, **`refreshed_token.startsWith('v1.')`**, **split=4 partes**, **`token_exp` no body** |
+| **T13** | HMAC sig errada (cai no path legacy fallback) | token construído via `makeStudioToken(VALID_UUID, env)` + `mutateSig(token, sig => sig.slice(0,-1)+'x')` (preserva length); `tenants?studio_token=eq` → `[]` (lib continua pro path 2 porque `bad-signature` ≠ `expired`, sem mock o fetchMatcher estoura `unmocked fetch`) | 401, **`body.tenant === undefined`** |
+| **T14** | HMAC expirado | token construído via `makeStudioToken(VALID_UUID, env, -1)` (ttlDays negativo); sem fetch (lib retorna null pelo guard de `expired`) | 401, **`body.tenant === undefined`** |
+| **T15** | UUID legacy (sem prefix `v1.`) + tenant não existe | token = `'12345678-1234-1234-1234-123456789012'` (UUID raw); `tenants?studio_token=eq` → `[]` | 401, **`body.tenant === undefined`** |
+| **T16** | UUID legacy + tenant existe (legacy → HMAC promotion) | token = UUID raw; `tenants?studio_token=eq.<UUID>` → `[{id: VALID_UUID}]`; `tenants?id=eq.<VALID_UUID>` → `[{nome_estudio,plano,...}]` | 200, **`refreshed_token.startsWith('v1.')`**, **split=4 partes**, **`token_exp === null`** (path legacy não popula `exp`, endpoint linha 136: `verified.exp \|\| null`) |
 | **T17** | HMAC válido + `shouldRefresh=false` (TTL 30d) | `tenants?id=eq` → `[{...}]` | 200, **`refreshed_token === null`** |
 | **T18** ⭐ | HMAC válido + `shouldRefresh=true` (TTL 6.5d) | `tenants?id=eq` → `[{...}]` | 200, **`refreshed_token` válido**, **split=4**, **exp(refreshed) > exp(original)** |
 | **T19** | HMAC válido + tenant não existe no DB | `tenants?id=eq` → `[]` | 404 |
@@ -201,11 +201,18 @@ function makeRequest(path, body, method = 'POST') {
 | **T20** | falta `tenant_id` ou `onboarding_key` | sem fetch | 400 |
 | **T21** | JSON inválido | sem fetch | 400 |
 | **T22** | `SB_KEY` ausente | sem fetch (env override `{SUPABASE_SERVICE_ROLE_KEY: undefined, SUPABASE_SERVICE_KEY: undefined}`) | 503 (cobre `||` via short-circuit; ramo `TOKEN_SECRET` por similaridade estrutural não precisa teste extra) |
-| **T23** | `verifyOnboardingKey` rejeita (key mismatch) | `tenants?` (lookup key) → `[{onboarding_key:'other'}]` | 403, `body.error` match `/Autenticação falhou/` |
-| **T24** | `verifyOnboardingKey` rejeita (tenant não existe) | `tenants?` → `[]` | 403 |
-| **T25** | tenant não existe no select de plano | step1 ok (`tenants?` lookup key match), step2 (`tenants?` lookup plano) → `[]` | 404 |
-| **T26** | plano inválido (`'free'`) | step1 ok, step2 → `[{plano:'free'}]` | 400, `body.error` match `/Plano não reconhecido/` |
-| **T27** ⭐ | happy path | step1 ok, step2 → `[{plano:'estudio',ativo:true}]` | 200, **`token.startsWith('v1.')`**, **`link === 'https://inkflowbrasil.com/studio.html?token='+token+'&welcome=true'`**, **`expires_at > Math.floor(Date.now()/1000)`** |
+| **T23** | `verifyOnboardingKey` rejeita (key mismatch) | `tenants?id=eq.<tid>&select=onboarding_key` → `[{onboarding_key:'other'}]` (early return na lib, sem 2º fetch) | 403, `body.error` match `/Autenticação falhou/` |
+| **T24** | `verifyOnboardingKey` rejeita (tenant não existe) | `tenants?id=eq.<tid>&select=onboarding_key` → `[]` | 403 |
+| **T25** | tenant não existe no select de plano | step1: `tenants?id=eq.<tid>&select=onboarding_key` → `[{onboarding_key:'mykey1234'}]` + `onboarding_links?key=eq` → `[{expires_at:'2099-01-01...'}]`; step2: `tenants?id=eq.<tid>&select=plano,ativo` → `[]` | 404 |
+| **T26** | plano inválido (`'free'`) | step1 ok (mesmo de T25), step2: `tenants?id=eq.<tid>&select=plano,ativo` → `[{plano:'free'}]` | 400, `body.error` match `/Plano não reconhecido/` |
+| **T27** ⭐ | happy path | step1 ok, step2: `tenants?id=eq.<tid>&select=plano,ativo` → `[{plano:'estudio',ativo:true}]` | 200, **`token.startsWith('v1.')`**, **`link === 'https://inkflowbrasil.com/studio.html?token='+token+'&welcome=true'`**, **`expires_at > Math.floor(Date.now()/1000)`** |
+
+**Importante:** o fetchMatcher pro `get-studio-token` precisa de **3 patterns distintos** (`get-studio-token` faz 2 chamadas em `tenants?id=eq.<tid>` com `select=` diferente):
+- `'tenants?id=eq.<tid>&select=onboarding_key'` (step1, dentro de `verifyOnboardingKey`)
+- `'onboarding_links?key=eq'` (step1 TTL check)
+- `'tenants?id=eq.<tid>&select=plano,ativo'` (step2, lookup plano no endpoint)
+
+Pattern por substring `tenants?id=eq` SOZINHO causa colisão (mesmo handler retornaria pra ambas as chamadas). Substring **deve incluir o `&select=`**.
 
 ### `tests/api/request-studio-link.test.mjs` — 7 testes
 
@@ -214,20 +221,45 @@ function makeRequest(path, body, method = 'POST') {
 | **T28** | sem email nem phone (ou ambos inválidos) | sem fetch | 400 |
 | **T29** | `SB_KEY` ausente | sem fetch (env override `{SUPABASE_SERVICE_ROLE_KEY: undefined, SUPABASE_SERVICE_KEY: undefined}`) | 503 (cobre `||` via short-circuit) |
 | **T30** ⭐ | tenant **não existe** | `tenants?` → `[]` | 200, **`{ok:true, channels_tried:[]}`** (security: não vaza) |
-| **T31** ⭐ | tenant existe + WA OK + email OK + **phone normaliza** | `tenants?telefone=eq.5511999999999` → `[{...}]`, Evo `/message/sendText/` → 200, ML → 200 | 200, `channels_tried:['whatsapp','email']`, **assertar `handler.calls.find(c => c.url.includes('telefone=eq.5511999999999'))`** (phone foi normalizado de `'11999999999'`) |
-| **T32** | tenant existe + WA OK + email FAIL | Evo → 200, ML → 500 | 200, `channels_tried:['whatsapp']` |
-| **T33** | tenant existe + WA FAIL + email OK | Evo → 500, ML → 200 | 200, `channels_tried:['email']` |
-| **T34** | tenant existe + ambos FAIL | Evo → 500, ML → 500 | 200, `channels_tried:[]` (não vaza erro upstream) |
+| **T31** ⭐ | tenant existe + WA OK + email OK + **phone normaliza** | `tenants?telefone=eq.5511999999999` → **`[{id:VALID_UUID, email:'a@b.com', telefone:'5511999999999', nome:'Ana', nome_estudio:'Ink', plano:'estudio'}]`** (telefone obrigatório no mock — `sendViaWhatsApp` lê `tenant.telefone`, NÃO o input phone), Evo `/message/sendText/` → 200, ML → 200 | 200, `channels_tried:['whatsapp','email']`, **assertar `handler.calls.find(c => c.url.includes('telefone=eq.5511999999999'))`** (phone foi normalizado de `'11999999999'` no input ANTES do lookup) |
+| **T32** | tenant existe + WA OK + email FAIL | Mesmo shape do tenant que T31; Evo → 200, ML → 500 | 200, `channels_tried:['whatsapp']` |
+| **T33** | tenant existe + WA FAIL + email OK | Mesmo shape; Evo → 500, ML → 200 | 200, `channels_tried:['email']` |
+| **T34** | tenant existe + ambos FAIL | Mesmo shape; Evo → 500, ML → 500 | 200, `channels_tried:[]` (não vaza erro upstream) |
 
-## Refinamentos vindos da revisão crítica
+**Shape mínimo obrigatório do tenant em T31-T34:**
+```js
+{
+  id: VALID_UUID,
+  email: 'a@b.com',          // pra sendViaEmail
+  telefone: '5511999999999', // pra sendViaWhatsApp.normalizePhoneBR()
+  nome: 'Ana',               // pra firstName em sendViaWhatsApp
+  nome_estudio: 'Ink',       // pra texto da mensagem WA
+  plano: 'estudio',          // pra planLabel em sendViaEmail
+}
+```
 
-5 furos identificados antes da escrita do spec. Resolvidos em testes existentes (não viraram testes novos):
+Sem `telefone` no mock, `sendViaWhatsApp` retorna `{sent:false, reason:'no-phone'}` antes do mock fetch ser chamado → T31-T33 viram falsos positivos.
+
+## Refinamentos vindos das revisões críticas
+
+### Round 1 — durante o brainstorm (5 furos pré-spec)
 
 1. **Premissa errada** "endpoints que usam a lib" → corrigida no Framing acima.
 2. **`mockEnv` incompleto** pro `request-studio-link.test.mjs` → 4 env vars extras adicionadas.
 3. **fetchMatcher ambíguo** no `validate-studio-token.test.mjs` → 2 patterns distintos cravados (T15, T16).
 4. **T8 só asserta response** → adicionada assertion explícita do PATCH disparado em `handler.calls[]`.
 5. **Asserts fracos** em T18 e T27 → ampliados pra prefix, formato split, exp comparado.
+
+### Round 2 — review pré-plan (6 furos pegos contra código real)
+
+1. 🔴 **Furo crítico T13** — token HMAC com sig errada **não é** `expired` → `verifyStudioTokenOrLegacy` cai no path 2 e chama fetch. Spec dizia "sem fetch" → estava errado, teste estouraria `unmocked fetch`. **Fix:** mock `tenants?studio_token=eq` → `[]` em T13.
+2. 🟡 **Patterns colidiam em `get-studio-token`** (T23-T27) — 2 fetches em `tenants?id=eq.<tid>` com `select=` diferente. Pattern genérico `tenants?id=eq` matcheia ambos. **Fix:** patterns incluem `&select=onboarding_key` vs `&select=plano,ativo`.
+3. 🟡 **T31-T34 sem shape mínimo do tenant** — `sendViaWhatsApp` lê `tenant.telefone` (não input phone). Sem `telefone` no mock, send falha em `'no-phone'` antes do mock fetch. **Fix:** shape mínimo cravado (`id, email, telefone, nome, nome_estudio, plano`).
+4. 🟡 **Fetch count ambíguo em T7/T9** — `findTenant` faz 2 fetches internos (email + onboarding_key). Spec dizia "× 2" sem clarificar. **Fix:** explicitado "3 fetches total" + shape do link expandido.
+5. 🟢 **T3 var não cravada** — endpoint usa SÓ `SUPABASE_SERVICE_KEY` (sem fallback ROLE). **Fix:** override explícito.
+6. 🟢 **T16 `token_exp`** — path legacy não popula `exp`, então `token_exp` no body é sempre `null`. **Fix:** assertion correta (`=== null`, não positiva).
+
+Após Round 2, **goal #2 (vazamento silencioso)** ficou explícito em T13/T14/T15 (`body.tenant === undefined`).
 
 ## Anti-goals (escopo PULADO deliberadamente)
 
