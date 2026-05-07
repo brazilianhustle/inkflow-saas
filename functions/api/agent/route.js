@@ -15,13 +15,34 @@ import { validateEnv } from './_lib/sdk-init.js';
 const HEADERS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
 };
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: HEADERS });
 }
 
+// Transforma item do historico no shape que @openai/agents espera.
+// Assistant items requerem content como array tipado + status. User items aceitam string.
+function normalizeHistoryItem(h) {
+  const role = h?.role || 'user';
+  const content = h?.content ?? '';
+  if (role === 'assistant') {
+    return {
+      role: 'assistant',
+      status: 'completed',
+      content: [{ type: 'output_text', text: String(content) }],
+    };
+  }
+  return { role: 'user', content: String(content) };
+}
+
 export async function onRequest({ request, env }) {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: HEADERS });
+  }
+
   if (request.method !== 'POST') {
     return json({ ok: false, error: 'method-not-allowed' }, 405);
   }
@@ -67,8 +88,9 @@ export async function onRequest({ request, env }) {
   const agent = builder({ env, tenant, conversa, clientContext });
 
   // Constroi messages do historico + mensagem atual.
+  // Historico: items com role=assistant precisam shape tipado (SDK valida via Zod).
   const messages = [
-    ...historico.map(h => ({ role: h.role || 'user', content: h.content || '' })),
+    ...historico.map(normalizeHistoryItem),
     { role: 'user', content: mensagem },
   ];
 
@@ -76,10 +98,20 @@ export async function onRequest({ request, env }) {
   try {
     result = await run(agent, messages);
   } catch (e) {
-    return json({ ok: false, error: 'agent-run-failed', detail: String(e?.message || e) }, 500);
+    // Detail intencionalmente generico — evita info-leak do SDK/OpenAI errors.
+    // Logs server-side carregam o detalhe completo.
+    console.error('[agent/route] run() failed:', e);
+    return json({ ok: false, error: 'agent-run-failed' }, 500);
   }
 
-  const out = result.finalOutput;
+  // finalOutput pode ser undefined (max turns, refusal, schema violation).
+  // Sem guard, acesso a out.resposta_cliente joga TypeError fora do try/catch.
+  const out = result?.finalOutput;
+  if (!out) {
+    console.error('[agent/route] no finalOutput', { result });
+    return json({ ok: false, error: 'no-final-output' }, 500);
+  }
+
   return json({
     ok: true,
     resposta_cliente: out.resposta_cliente,

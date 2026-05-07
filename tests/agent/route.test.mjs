@@ -26,6 +26,13 @@ test('route rejeita non-POST com 405', async () => {
   assert.equal(res.status, 405);
 });
 
+test('route OPTIONS preflight retorna 204 + CORS headers', async () => {
+  const res = await onRequest(buildContext({}, 'OPTIONS'));
+  assert.equal(res.status, 204);
+  assert.equal(res.headers.get('access-control-allow-methods'), 'POST, OPTIONS');
+  assert.equal(res.headers.get('access-control-allow-headers'), 'Content-Type');
+});
+
 test('route rejeita body sem tenant_id/telefone com 400', async () => {
   const res = await onRequest(buildContext({ mensagem: 'oi' }));
   assert.equal(res.status, 400);
