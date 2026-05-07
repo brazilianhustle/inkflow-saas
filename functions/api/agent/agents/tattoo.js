@@ -16,7 +16,10 @@ import { generatePromptColetaTattoo } from '../../../_lib/prompts/coleta/tattoo/
 const REFORCO_HANDOFF = `
 
 # §HANDOFF — INVARIANTE CRITICO
-JAMAIS chame \`handoff_to_cadastro\` quando \`dados_completos=false\` ou quando houver \`campos_conflitantes\` nao-vazio. O schema validara e rejeitara — voce voltara a perguntar. Resolva conflitos primeiro (R9: devolva contradicao ao cliente, NUNCA decida por ele).`;
+JAMAIS chame \`handoff_to_cadastro\` quando \`dados_completos=false\` ou quando houver \`campos_conflitantes\` nao-vazio. Resolva conflitos primeiro (R9: devolva contradicao ao cliente, NUNCA decida por ele).
+
+# §OUTPUT FINAL — OBRIGATORIO
+APOS chamar tools relevantes neste turn (ou se nao precisa de tool), voce DEVE produzir o output estruturado final no formato JSON definido. NAO continue chamando dados_coletados em loop — uma chamada por campo coletado e suficiente. Se ja chamou dados_coletados pra todos os campos detectados na mensagem do cliente, PARE e entregue o output final com resposta_cliente + proxima_acao + campos_faltando + dados_persistidos.`;
 
 // ── Schema do structured output ──────────────────────────────────────────
 // IMPORTANTE: schema e ZodObject puro (sem .refine()). SDK @openai/agents

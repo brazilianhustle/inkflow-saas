@@ -97,7 +97,8 @@ export async function onRequest({ request, env }) {
 
   let result;
   try {
-    result = await run(agent, messages);
+    // maxTurns 20: default 10 aperta cenarios multi-turn com tools.
+    result = await run(agent, messages, { maxTurns: 20 });
   } catch (e) {
     // Detail intencionalmente generico — evita info-leak do SDK/OpenAI errors.
     // Logs server-side carregam o detalhe completo.

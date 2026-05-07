@@ -103,7 +103,8 @@ for (const scenario of scenarios) {
       ...scenario.input.mensagens,
     ];
 
-    const result = await run(agent, messages);
+    // maxTurns 20 (default 10 aperta TC-02 com 3 turns + multi-tool calls).
+    const result = await run(agent, messages, { maxTurns: 20 });
     const out = result.finalOutput;
 
     // Validacao schema (TC-07 e implicito em todos)
