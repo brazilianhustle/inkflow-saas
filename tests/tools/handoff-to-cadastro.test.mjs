@@ -94,3 +94,32 @@ test('handoff_to_cadastro rejeita sem secret valido', async () => {
     globalThis.fetch = origFetch;
   }
 });
+
+test('handoff_to_cadastro rejeita sem tenant_id', async () => {
+  const origFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response('{}', { status: 201 });
+  try {
+    const ctx = buildContext({ tenant_id: '', telefone: TELEFONE, dados_completos: true, campos_conflitantes: [] });
+    const res = await onRequest(ctx);
+    assert.equal(res.status, 400);
+    const body = await res.json();
+    assert.match(body.error, /tenant_id|telefone/);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test('handoff_to_cadastro rejeita dados_completos como string (LLM serializou bool como str)', async () => {
+  const origFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response('{}', { status: 201 });
+  try {
+    // String "true" nao deve passar — strict equality === true e o gate.
+    const ctx = buildContext({ tenant_id: TENANT_ID, telefone: TELEFONE, dados_completos: 'true', campos_conflitantes: [] });
+    const res = await onRequest(ctx);
+    assert.equal(res.status, 400);
+    const body = await res.json();
+    assert.match(body.error, /dados_completos/);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});

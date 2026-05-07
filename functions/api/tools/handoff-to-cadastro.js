@@ -14,7 +14,8 @@ import { withTool } from './_tool-helpers.js';
 async function handle({ input }) {
   const tenant_id = String(input?.tenant_id || '').trim();
   const telefone = String(input?.telefone || '').trim();
-  const dados_completos = Boolean(input?.dados_completos);
+  // Strict equality: LLMs as vezes serializam boolean como string "false" — Boolean("false")===true seria silent-pass.
+  const dados_completos = input?.dados_completos === true;
   const campos_conflitantes = Array.isArray(input?.campos_conflitantes) ? input.campos_conflitantes : [];
 
   if (!tenant_id || !telefone) {
