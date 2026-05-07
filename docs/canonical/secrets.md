@@ -41,6 +41,14 @@ Todos os secrets referenciados em código (`functions/**` e `cron-worker/src/**`
 | `OPENAI_API_KEY` | Bitwarden + CF Pages env | sem expiry | leandro | crítica |
 | `CLOUDFLARE_API_TOKEN` | Bitwarden item `cloudflare-agent-token` + GitHub Secrets + `~/.zshrc`/Keychain (uso local) | 90d | leandro | crítica |
 | `CLOUDFLARE_ACCOUNT_ID` | Bitwarden + GitHub Secrets + `~/.zshrc` | sem expiry (não-secreto, mas tratado como confidencial) | leandro | baixa |
+| `KILL_SWITCH_SECRET` | bws (`INKFLOW_KILL_SWITCH_SECRET`) + CF Pages env (alias `KILL_SWITCH_SECRET` em código — naming drift, ver F1.5.4) | sem expiry | leandro | alta |
+| `SUPABASE_PAT` | bws (`SB_PAT` — naming drift) | 1y rolling (Supabase PAT) | leandro | alta |
+| `TELEGRAM_WEBHOOK_SECRET` | CF Pages env (provável alias de `INKFLOW_TELEGRAM_WEBHOOK_SECRET` — naming drift, ver F1.5.4) | sem expiry | leandro | alta |
+| `VPS_HEALTH_TOKEN` | CF Pages env + VPS env (Vultr) | sem expiry | leandro | alta |
+| `INKFLOW_TELEGRAM_BOT_TOKEN` | bws + CF Pages env (bot Modo Coleta v2 tatuador — separado do bot de alertas) | sem expiry | leandro | crítica |
+| `INKFLOW_TELEGRAM_WEBHOOK_SECRET` | bws + CF Pages env | sem expiry | leandro | alta |
+| `GH_PAT_VPS_MCP` | bws (PAT GitHub usado pelo MCP n8n + cron sync na VPS) | 1y rolling | leandro | alta |
+| `GITHUB_API_TOKEN` | bws + CF Pages env (usado pelo auditor deploy-health pra chamar GitHub API) | 1y rolling | leandro | alta |
 
 ### Não-secrets (configs públicas / IDs / flags)
 
@@ -57,6 +65,18 @@ Aparecem como `env.X` no código mas **não são secrets**. Listados aqui para e
 | `N8N_WEBHOOK_URL` | URL pública dos webhooks n8n | CF Pages env |
 | `SITE_URL` | URL canônica (`https://inkflowbrasil.com`) | CF Pages env |
 | `TELEGRAM_CHAT_ID` | chat ID numérico do canal de alertas | CF Pages env + Worker env |
+| `TELEGRAM_ADMIN_USER_ID` | user ID numérico do founder (autorização) | CF Pages env |
+| `N8N_REENTRADA_WEBHOOK_URL` | URL pública do webhook de reentrada do bot (Modo Coleta v2) | CF Pages env |
+| `REENTRADA_URL` | URL canônica de reentrada (alias semântico de `N8N_REENTRADA_WEBHOOK_URL`) | CF Pages env |
+| `VPS_HEALTH_URL` | URL pública do health endpoint da VPS Vultr | CF Pages env |
+| `CF_PAGES_PROJECT_NAME` / `CF_WORKER_SCRIPT_NAME` | self-references usadas pelo auditor `deploy-health` pra montar URLs do CF API | CF Pages env |
+| `CLOUDFLARE_API_TOKEN_EXPIRES_AT` | timestamp ISO de expiração do CF API token (auditor `key-expiry` Layer 3) | CF Pages env |
+| `GITHUB_REPO_FULL_NAME` | `brazilianhustle/inkflow-saas` — usado pelo auditor `deploy-health` pra GitHub API | CF Pages env |
+| `RLS_INTENTIONAL_NO_PUBLIC` | feature flag pro auditor `rls-drift` (skip tables intencionalmente sem policy) | CF Pages env |
+| `AUDIT_BILLING_FLOW_WEBHOOK_DELAY_HOURS` / `AUDIT_BILLING_FLOW_WEBHOOK_SILENT_HOURS` | thresholds do auditor `billing-flow` (atraso/silêncio MP webhook) | CF Pages env |
+| `AUDIT_DEPLOY_HEALTH_WINDOW_HOURS` / `AUDIT_DEPLOY_HEALTH_WRANGLER_DRIFT` | thresholds do auditor `deploy-health` | CF Pages env |
+| `AUDIT_KEY_EXPIRY_LAYER3` | flag/threshold pro auditor `key-expiry` Layer 3 | CF Pages env |
+| `AUDIT_VPS_LIMITS_EGRESS_MONTHLY_GB` | threshold do auditor `vps-limits` (egress mensal) | CF Pages env |
 
 ---
 
