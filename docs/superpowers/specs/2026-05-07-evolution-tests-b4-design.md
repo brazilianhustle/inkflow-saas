@@ -231,8 +231,9 @@ Não asserta duração — só que `instance/logout` foi chamado **antes** de `i
 - Asserts: status=200, `body.webhook_configured=true`
 - calls.length = 7 (gate passa, fluxo completo)
 
-#### EC6 — Gate pgto: free plan passa
-- Setup: Supabase gate retorna `[{status_pagamento: 'pending', plano: 'free', trial_ate: null}]`
+#### EC6 — Gate pgto: trial plan passa via `isFreeTrial`
+- **Spec correction (caught durante exec):** `isFreeTrial(plano)` em `functions/_lib/plans.js` só retorna true para `plano === 'trial'`. Não existe plano `'free'` em prod. Cravado como `'trial'`.
+- Setup: Supabase gate retorna `[{status_pagamento: 'pending', plano: 'trial', trial_ate: null}]`
 - Mock Evo flow happy path
 - Asserts: status=200
 - calls.length = 7
@@ -244,15 +245,16 @@ Não asserta duração — só que `instance/logout` foi chamado **antes** de `i
 - calls.length = 6 (gate + fetchInstances + webhook SET + webhook FIND + settings + PATCH; NÃO inclui POST create)
 
 #### EC8 — Apikey extraction: 5 paths parameterized
-- Setup: gate happy + `fetchInstances` retorna `[]` + `mockEvoCreate(opts)` com cada path
+- **Spec correction (caught durante exec):** prod tem 4 paths via `/instance/create` (linha 146 = `hash.apikey || hash || instance.apikey || apikey`) + 5 paths via `/instance/fetchInstances` (linha 101 = idem + `|| existing.token`). O path `token` SÓ funciona via idempotency, não via create. Cravado com flag `viaCreate: boolean`.
+- Setup: gate happy + `fetchInstances` retorna `[]` (4 paths via create) ou `[payload]` (1 path token via idempotency)
 - Sub-tests parameterized:
-  - `{hash: {apikey: 'KEY-A'}}` → `apikey='KEY-A'`
-  - `{hash: 'KEY-B'}` (string) → `apikey='KEY-B'`
-  - `{instance: {apikey: 'KEY-C'}}` → `apikey='KEY-C'`
-  - `{apikey: 'KEY-D'}` → `apikey='KEY-D'`
-  - `{token: 'KEY-E'}` → `apikey='KEY-E'`
+  - `{hash: {apikey: 'KEY-A'}}` → `apikey='KEY-A'` (viaCreate: true)
+  - `{hash: 'KEY-B'}` (string) → `apikey='KEY-B'` (viaCreate: true)
+  - `{instance: {apikey: 'KEY-C'}}` → `apikey='KEY-C'` (viaCreate: true)
+  - `{apikey: 'KEY-D'}` → `apikey='KEY-D'` (viaCreate: true)
+  - `{token: 'KEY-E'}` → `apikey='KEY-E'` (viaCreate: false — testado via fetchInstances idempotency)
 - Asserts (cada sub-test): status=200, body.apikey corresponde, PATCH Supabase chamado com `{evo_apikey: 'KEY-X'}`
-- calls.length = 7 cada sub-test
+- calls.length = 7 quando viaCreate: true, 6 quando viaCreate: false (skip POST create)
 
 #### EC9 — Webhook formato A (nested-short, instance-key) succeed na 1ª
 - Setup: gate happy + fetchInstances=[] + create OK
