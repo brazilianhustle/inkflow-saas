@@ -129,22 +129,26 @@ for k in sorted(envs.keys()): print(k)
 cfg_count=$(echo "$CONFIGURED" | wc -l | tr -d ' ')
 echo "   Found $cfg_count env vars configured in CF Pages (production)"
 
-# For each REQUIRED var, check if it's configured. Handle alternative pairs
-# (env.A || env.B): if A is missing but B configured, treat A as OK.
-# Strategy: scan source for `env.A || env.B` pattern; if A in REQUIRED + missing
-# but B in CONFIGURED, skip A.
+# For each REQUIRED var, check if it's configured. Handle hardcoded alternative pairs:
+# if PRIMARY is missing but FALLBACK is configured, treat PRIMARY as OK.
+# Pairs in format "PRIMARY:FALLBACK" (separated by spaces).
+ALTERNATIVES="SUPABASE_SERVICE_ROLE_KEY:SUPABASE_SERVICE_KEY EVOLUTION_GLOBAL_KEY:EVO_GLOBAL_KEY"
+
 MISSING=""
 for var in $REQUIRED; do
   if echo "$CONFIGURED" | grep -qxF "$var"; then continue; fi
-  # Check for alternative: `env.<var> || env.<other>` and other is configured
-  alternative=$(grep -rho "env\\.${var}[[:space:]]*||[[:space:]]*env\\.[A-Z_]\+" "$FUNCTIONS_DIR" 2>/dev/null \
-    | sed -E "s/.*\\|\\|[[:space:]]*env\\.//" \
-    | sort -u \
-    | head -1)
-  if [ -n "$alternative" ] && echo "$CONFIGURED" | grep -qxF "$alternative"; then
-    echo "   ℹ️  $var missing but alternative \$alternative is configured — skipping"
-    continue
-  fi
+  # Check hardcoded alternatives
+  alt_ok=""
+  for pair in $ALTERNATIVES; do
+    primary="${pair%%:*}"
+    fallback="${pair##*:}"
+    if [ "$var" = "$primary" ] && echo "$CONFIGURED" | grep -qxF "$fallback"; then
+      echo "   ℹ️  $var missing but alternative $fallback is configured — skipping"
+      alt_ok="yes"
+      break
+    fi
+  done
+  [ -n "$alt_ok" ] && continue
   MISSING="$MISSING $var"
 done
 
