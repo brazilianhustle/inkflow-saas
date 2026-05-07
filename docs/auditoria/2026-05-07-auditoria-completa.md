@@ -1800,7 +1800,7 @@ Isso é **6 lugares** que podem mutar `estado_agente`. Source of truth é o Supa
 
 | # | Finding | Severity |
 |---|---|---|
-| F2.4.1 | **Auth completamente sem teste**: validate-onboarding-key, validate-studio-token, get-studio-token, request-studio-link — bypass = leak de dados de outro tenant | **crítica** |
+| F2.4.1 | ✅ **RESOLVIDO** — B1 (#45, 25 unit tests pra `_auth-helpers.js`) + B2 (#46, 34 HTTP tests pros 4 endpoints). Total 59 testes cobrindo bypass/leak/enumeration/refresh/reset. Suite total: 450 testes. | ~~crítica~~ ✅ |
 | F2.4.2 | **Billing completamente sem teste**: mp-ipn, webhooks/mp-sinal, create-subscription — bug = cobranças erradas / canceladas erradas | **crítica** |
 | F2.4.3 | Evolution endpoints (evo-create-instance, qr, pairing-code, status) sem teste — onboarding pode falhar silencioso | alta |
 | F2.4.4 | Tests rodam **só pra prompts** no CI (`prompts-ci.yml`). Os outros 50+ testes **não rodam em GHA** — só local | **alta** (gap CI/CD) |
