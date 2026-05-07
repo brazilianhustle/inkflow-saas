@@ -1,0 +1,283 @@
+-- InkFlow Supabase baseline schema
+-- Generated: 2026-05-07
+-- Project: bfzuxxuscyplfoimvomh (sa-east-1)
+-- Postgres: 17.6.1.084
+-- Auditoria source: docs/auditoria/2026-05-07-auditoria-completa.md §1.4
+--
+-- This is a NARRATIVE inventory, not a 1:1 restorable dump.
+-- For restorable dump, install Supabase CLI and run:
+--   supabase db dump --schema public --linked > supabase/baseline-schema.sql
+--
+-- Items marked with [ONDA-1-DROP] will be modified/removed in Sprint 1 waves.
+-- Items marked with [SECURITY-DEFINER] warrant review per advisory F2.3.
+
+-- ============================================================
+-- TABLES (16)
+-- ============================================================
+-- public.agendamentos          (hasindexes=true, hastriggers=true)
+-- public.approvals             (hasindexes=true, hastriggers=false)
+-- public.audit_events          (hasindexes=true, hastriggers=true)
+-- public.audit_reports         (hasindexes=true, hastriggers=false)
+-- public.audit_runs            (hasindexes=true, hastriggers=false)
+-- public.chat_messages         (hasindexes=true, hastriggers=true)
+-- public.chats                 (hasindexes=true, hastriggers=true)
+-- public.conversas             (hasindexes=true, hastriggers=true)
+-- public.dados_cliente         (hasindexes=true, hastriggers=true)
+-- public.logs                  (hasindexes=true, hastriggers=true)
+-- public.n8n_chat_histories    (hasindexes=true, hastriggers=true)
+-- public.onboarding_links      (hasindexes=true, hastriggers=true)
+-- public.payment_logs          (hasindexes=true, hastriggers=true)
+-- public.signups_log           (hasindexes=true, hastriggers=true)
+-- public.tenants               (hasindexes=true, hastriggers=true)
+-- public.tool_calls_log        (hasindexes=true, hastriggers=false)
+
+-- ============================================================
+-- VIEWS (3)
+-- ============================================================
+-- public.audit_current_state   security=DEFINER  [SECURITY-DEFINER] [ONDA-4-FIX]  (advisor ERROR — F1.4.2)
+-- public.orcamentos            security=DEFINER  [SECURITY-DEFINER] [ONDA-4-FIX]  (advisor ERROR — F1.4.2)
+-- public.tenant_stats          security=INVOKER (OK)
+--
+-- Note: 2 of 3 views are SECURITY DEFINER (confirmed via Supabase advisor lints
+-- security_definer_view, level=ERROR). Will be migrated to SECURITY INVOKER in
+-- Sprint 1 Onda 4 (DB security migrations sub-plan).
+
+-- ============================================================
+-- FUNCTIONS / RPCs (9)
+-- ============================================================
+-- public.atualizar_timestamp_campanha()
+--   args: (none)
+--   security: INVOKER
+--   note: trigger helper — may be dead code if no trigger references it directly
+--
+-- public.buscar_historico_campanha(p_telefone character varying, p_limite integer DEFAULT 10)
+--   args: p_telefone varchar, p_limite int DEFAULT 10
+--   security: INVOKER
+--   note: campanha module — verify if still called by active n8n workflows
+--
+-- public.dashboard_resumo_periodo(p_tenant_id uuid, p_since timestamptz, p_until timestamptz)
+--   args: p_tenant_id uuid, p_since timestamptz, p_until timestamptz
+--   security: INVOKER
+--
+-- public.dashboard_sinal_recebido(p_tenant_id uuid, p_since timestamptz)
+--   args: p_tenant_id uuid, p_since timestamptz
+--   security: INVOKER
+--
+-- public.dashboard_taxa_conversao(p_tenant_id uuid, p_since timestamptz)
+--   args: p_tenant_id uuid, p_since timestamptz
+--   security: INVOKER
+--
+-- public.expire_trials()
+--   args: (none)
+--   security: DEFINER  [SECURITY-DEFINER]
+--   note: cron worker — legítimo precisar DEFINER para UPDATE em tenants sem auth context
+--
+-- public.merge_conversa_jsonb(p_conversa_id uuid, p_field_name text, p_patch jsonb,
+--                              p_set_estado_agente text DEFAULT NULL,
+--                              p_auto_transition_to_cadastro boolean DEFAULT false)
+--   args: p_conversa_id uuid, p_field_name text, p_patch jsonb,
+--         p_set_estado_agente text DEFAULT NULL,
+--         p_auto_transition_to_cadastro boolean DEFAULT false
+--   security: DEFINER  [SECURITY-DEFINER]
+--   note: core FSM RPC — DEFINER necessário para atomic JSONB merge cross-tenant sem leak
+--
+-- public.update_conversa_last_msg_at()
+--   args: (none)
+--   security: INVOKER
+--   note: trigger function (n8n_chat_histories AFTER INSERT)
+--
+-- public.update_updated_at()
+--   args: (none)
+--   security: INVOKER
+--   note: trigger function (chats/dados_cliente/tenants BEFORE UPDATE)
+
+-- ============================================================
+-- TRIGGERS (4)
+-- ============================================================
+-- chats.trg_chats_updated_at
+--   timing: BEFORE UPDATE
+--   fires:  EXECUTE FUNCTION update_updated_at()
+--
+-- dados_cliente.trg_dados_cliente_updated_at
+--   timing: BEFORE UPDATE
+--   fires:  EXECUTE FUNCTION update_updated_at()
+--
+-- n8n_chat_histories.trg_n8n_chat_histories_update_conversa
+--   timing: AFTER INSERT
+--   fires:  EXECUTE FUNCTION update_conversa_last_msg_at()
+--
+-- tenants.trg_tenants_updated_at
+--   timing: BEFORE UPDATE
+--   fires:  EXECUTE FUNCTION update_updated_at()
+--
+-- Note: agendamentos, audit_events, chat_messages, conversas, logs, onboarding_links,
+--       payment_logs, signups_log show hastriggers=true in pg_tables but returned 0 rows
+--       from information_schema.triggers. Likely internal/system triggers or triggers
+--       in other schemas. No application triggers beyond the 4 above were found in public.
+
+-- ============================================================
+-- RLS POLICIES (25 total across 13 tables)
+-- ============================================================
+-- Note: 3 tables have no RLS policies: agendamentos, conversas, tool_calls_log
+--       These tables lack RLS entirely — gap to address in Sprint 1+.
+--
+-- approvals           (1 policy)
+--   approvals_admin_full
+--
+-- audit_events        (1 policy)
+--   audit_events_admin_read
+--
+-- audit_reports       (1 policy)
+--   audit_reports_admin_read
+--
+-- audit_runs          (1 policy)
+--   audit_runs_admin_read
+--
+-- chat_messages       (2 policies)
+--   authenticated_read_own_chat_messages
+--   service_role_chat_messages
+--
+-- chats               (2 policies)
+--   authenticated_read_own_chats
+--   service_role_chats
+--
+-- dados_cliente       (2 policies)
+--   authenticated_read_own_dados_cliente
+--   service_role_dados_cliente
+--
+-- logs                (2 policies)
+--   authenticated_read_own_logs
+--   service_role_logs
+--
+-- n8n_chat_histories  (2 policies)
+--   anon_no_access_chat_histories
+--   service_role_chat_histories
+--
+-- onboarding_links    (1 policy)
+--   service_role_onboarding_links
+--
+-- payment_logs        (1 policy)
+--   service_role_full_access
+--
+-- signups_log         (2 policies)
+--   anon can insert signups_log
+--   service_role can read signups_log
+--
+-- tenants             (5 policies)
+--   anon_select_tenants
+--   authenticated_delete_tenant_admin
+--   authenticated_select_own_tenant
+--   authenticated_update_own_tenant
+--   service_role_tenants
+
+-- ============================================================
+-- INDEXES (59)
+-- ============================================================
+-- agendamentos.agendamentos_gcal_event_id_key          OK  (unique)
+-- agendamentos.agendamentos_pkey                       OK  (pk)
+-- agendamentos.idx_agendamentos_status                 OK
+-- agendamentos.idx_agendamentos_tenant_inicio          OK
+--
+-- approvals.approvals_expires_at_idx                   [ONDA-1-DROP] candidate to drop
+-- approvals.approvals_pkey                             OK  (pk)
+-- approvals.approvals_status_idx                       [ONDA-1-DROP] candidate to drop
+--
+-- audit_events.audit_events_auditor_recent             OK
+-- audit_events.audit_events_open_by_auditor            OK
+-- audit_events.audit_events_open_critical              OK
+-- audit_events.audit_events_pkey                       OK  (pk)
+--
+-- audit_reports.audit_reports_pkey                     OK  (pk)
+-- audit_reports.audit_reports_report_date_key          OK  (unique)
+--
+-- audit_runs.audit_runs_pkey                           OK  (pk)
+-- audit_runs.audit_runs_recent                         OK
+--
+-- chat_messages.chat_messages_pkey                     OK  (pk)
+-- chat_messages.idx_chat_messages_tenant_active        OK
+-- chat_messages.idx_chat_messages_tenant_id            OK
+-- chat_messages.idx_chat_messages_tenant_phone         OK
+--
+-- chats.chats_pkey                                     OK  (pk)
+-- chats.chats_tenant_id_phone_key                      OK  (unique)
+-- chats.idx_chats_tenant_id                            [ONDA-1-DROP] candidate to drop
+-- chats.idx_chats_tenant_phone                         OK
+-- chats.idx_chats_updated_at                           OK
+--
+-- conversas.conversas_orcid_unique                     OK  (unique)
+-- conversas.conversas_pkey                             OK  (pk)
+-- conversas.conversas_tenant_id_telefone_key           OK  (unique)
+-- conversas.idx_conversas_estado_agente                OK
+-- conversas.idx_conversas_expira                       OK
+-- conversas.idx_conversas_orcid                        [ONDA-1-DROP] candidate to drop
+-- conversas.idx_conversas_tenant_last_msg              OK
+-- conversas.idx_conversas_tenant_tel                   OK
+--
+-- dados_cliente.dados_cliente_pkey                     OK  (pk)
+-- dados_cliente.dados_cliente_tenant_id_telefone_key   [ONDA-1-DROP] candidate to drop
+-- dados_cliente.idx_dados_cliente_tenant_id            OK
+-- dados_cliente.idx_dados_cliente_tenant_telefone      OK
+-- dados_cliente.unique_tenant_telefone                 OK  (unique)
+--
+-- logs.idx_logs_created_at                             OK
+-- logs.idx_logs_tenant_id                              OK
+-- logs.idx_logs_tenant_telefone                        OK
+-- logs.logs_pkey                                       OK  (pk)
+--
+-- n8n_chat_histories.idx_chat_histories_session        OK
+-- n8n_chat_histories.n8n_chat_histories_pkey           OK  (pk)
+--
+-- onboarding_links.idx_onboarding_links_key            OK
+-- onboarding_links.onboarding_links_key_key            OK  (unique)
+-- onboarding_links.onboarding_links_pkey               OK  (pk)
+--
+-- payment_logs.idx_payment_logs_created_at             OK
+-- payment_logs.idx_payment_logs_event_type             OK
+-- payment_logs.idx_payment_logs_tenant_id              OK
+-- payment_logs.payment_logs_pkey                       OK  (pk)
+--
+-- signups_log.signups_log_pkey                         OK  (pk)
+--
+-- tenants.idx_tenants_ativo_resumo                     OK
+-- tenants.idx_tenants_studio_token                     OK
+-- tenants.idx_tenants_telegram_chat_id                 OK
+-- tenants.tenants_evo_instance_key                     OK  (unique)
+-- tenants.tenants_mp_subscription_id_idx               OK
+-- tenants.tenants_pkey                                 OK  (pk)
+--
+-- tool_calls_log.idx_tool_logs_tenant_date             OK
+-- tool_calls_log.idx_tool_logs_tool_date               OK
+-- tool_calls_log.tool_calls_log_pkey                   OK  (pk)
+--
+-- Summary: 59 total indexes, 5 candidates for Onda 1 drop:
+--   approvals_expires_at_idx, approvals_status_idx,
+--   idx_chats_tenant_id, idx_conversas_orcid,
+--   dados_cliente_tenant_id_telefone_key
+
+-- ============================================================
+-- LATEST 10 MIGRATIONS (last applied, desc)
+-- ============================================================
+-- 20260506204506  2026_05_06_fix_rls_drift_qualified_refs
+-- 20260506161127  2026-05-06-fix-rls-drift-search-path
+-- 20260506061556  2026_05_06_merge_conversa_jsonb_rpc
+-- 20260505054319  2026_05_05_pr2_dashboard_resumo_periodo
+-- 20260505053650  2026_05_05_pr2_dashboard_rpc
+-- 20260505052416  2026_05_05_pr2_dashboard
+-- 20260505050957  2026_05_05_create_orcamentos_view
+-- 20260504215537  2026_05_04_pagina_tatuador_conversas
+-- 20260504080422  pagina_tatuador_pr1_foundation
+-- 20260426161421  2026_04_26_create_approvals_table
+--
+-- Most recent: 20260506204506 (2026-05-06-fix-rls-drift-qualified-refs)
+-- This baseline was captured AFTER that migration and BEFORE Onda 1 of Sprint 1.
+
+-- ============================================================
+-- DELTA NOTES vs. §1.4 AUDIT COUNTS
+-- ============================================================
+-- §1.4 expected:  16 tables, 3 views, 9 functions, 4 triggers, 23 policies
+-- This snapshot:  16 tables, 3 views, 9 functions, 4 triggers, 25 policies
+--
+-- Policy delta +2: audit found 23; snapshot finds 25.
+-- Likely cause: 2 policies in audit_reports or audit_runs were added
+-- by migration 20260506204506 (rls-drift fix) applied AFTER audit report
+-- was generated. Not a regression — expected from hotfix #34.
