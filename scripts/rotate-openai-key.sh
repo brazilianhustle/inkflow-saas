@@ -1,9 +1,11 @@
 #!/bin/bash
 # Rotaciona OPENAI_API_KEY: keychain local + CF Pages prod.
 # Uso: bash scripts/rotate-openai-key.sh
+# Override projeto CF Pages: CF_PAGES_PROJECT=outro bash scripts/rotate-openai-key.sh
 # (apos rodar, abrir nova shell OU rodar o export que ele imprime no fim)
 
-set -e
+set -euo pipefail
+PROJECT="${CF_PAGES_PROJECT:-inkflow-saas}"
 
 echo ""
 echo "=== Rotacao OPENAI_API_KEY ==="
@@ -23,7 +25,7 @@ if [ ${#NEW_KEY} -lt 50 ]; then
 fi
 
 echo "Key recebida (${#NEW_KEY} chars). Validando contra OpenAI antes de salvar..."
-HTTP_CHECK=$(curl -s -o /dev/null -w "%{http_code}" https://api.openai.com/v1/models -H "Authorization: Bearer $NEW_KEY")
+HTTP_CHECK=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" https://api.openai.com/v1/models -H "Authorization: Bearer $NEW_KEY")
 if [ "$HTTP_CHECK" != "200" ]; then
   echo "ERRO: OpenAI retornou HTTP $HTTP_CHECK pra essa key. Aborta — nada foi alterado."
   exit 1
@@ -44,8 +46,8 @@ if [ "$KC_KEY" != "$NEW_KEY" ]; then
 fi
 echo "  OK."
 
-echo "[3/3] Atualizando CF Pages prod (inkflow-saas)..."
-printf '%s' "$NEW_KEY" | npx --yes wrangler pages secret put OPENAI_API_KEY --project-name=inkflow-saas
+echo "[3/3] Atualizando CF Pages prod ($PROJECT)..."
+printf '%s' "$NEW_KEY" | npx --yes wrangler pages secret put OPENAI_API_KEY --project-name="$PROJECT"
 echo ""
 
 echo "=== Done ==="
