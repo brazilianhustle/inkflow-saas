@@ -295,3 +295,50 @@ test('verifyOnboardingKey — key mismatch retorna mismatch', async () => {
     restore();
   }
 });
+
+test('verifyOnboardingKey — link expirado retorna expired com expires_at', async () => {
+  const { verifyOnboardingKey } = await import('../functions/api/_auth-helpers.js');
+  const expiredAt = '2020-01-01T00:00:00Z';
+  const restore = withMockFetch(fetchMatcher([
+    ['/rest/v1/tenants?', () => jsonResponse([{ onboarding_key: 'mykey1234' }])],
+    ['/rest/v1/onboarding_links?', () => jsonResponse([{ expires_at: expiredAt }])],
+  ]));
+  try {
+    const result = await verifyOnboardingKey({
+      tenantId: VALID_UUID,
+      onboardingKey: 'mykey1234',
+      supabaseUrl: SUPABASE_URL,
+      supabaseKey: SUPABASE_KEY,
+    });
+    assert.deepStrictEqual(result, {
+      ok: false,
+      reason: 'expired',
+      expires_at: expiredAt,
+    });
+  } finally {
+    restore();
+  }
+});
+
+test('verifyOnboardingKey — link ausente em onboarding_links retorna ok (fail-open)', async () => {
+  // edge case #3: INTENTIONAL fail-open quando link ausente em onboarding_links.
+  // Decisão histórica pra permitir retry após admin reset. Mudar pra fail-closed
+  // requer decisão explícita (auditoria 2026-05-07 documenta o comportamento).
+  // Não converter em fail-fast sem revisão de fluxo de onboarding.
+  const { verifyOnboardingKey } = await import('../functions/api/_auth-helpers.js');
+  const restore = withMockFetch(fetchMatcher([
+    ['/rest/v1/tenants?', () => jsonResponse([{ onboarding_key: 'mykey1234' }])],
+    ['/rest/v1/onboarding_links?', () => jsonResponse([])], // sem link
+  ]));
+  try {
+    const result = await verifyOnboardingKey({
+      tenantId: VALID_UUID,
+      onboardingKey: 'mykey1234',
+      supabaseUrl: SUPABASE_URL,
+      supabaseKey: SUPABASE_KEY,
+    });
+    assert.deepStrictEqual(result, { ok: true });
+  } finally {
+    restore();
+  }
+});
