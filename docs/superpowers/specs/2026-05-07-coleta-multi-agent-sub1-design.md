@@ -2,8 +2,14 @@
 name: Refator Coleta v2 → Multi-Agent — Sub-1 (TattooAgent PoC standalone)
 description: Sub-1 do refator multi-agent — PoC standalone do TattooAgent (fase tattoo) via OpenAI Agents SDK. Valida arquitetura nova ANTES de comprometer Sub-2/3.
 date: 2026-05-07
-status: ready-to-plan
+status: implemented-partial
 type: feature-refator
+outcome: docs/auditoria/2026-05-07-sub1-eval-results.md
+hypotheses_status:
+  H1_whitelist_hard: VALIDADA
+  H2_structured_elimina_inventar: PARCIAL
+  H3_handoff_condicional: PARCIAL
+  H4_sdk_cf_pages: VALIDADA
 tags: [coleta-v2, multi-agent, openai-agents-sdk, poc, sub-1]
 parent_decision: docs/auditoria/2026-05-07-auditoria-completa.md (n8n no hot path acumula 8 problemas — refator multi-agent reposicionado P0→P1 com escopo expandido)
 related:
@@ -240,3 +246,25 @@ Regra invariante: `proxima_acao='handoff'` ⟹ `dados_completos=true` ∧ `campo
 Sub-2 (3 agents restantes) e Sub-3 (cutover n8n) ficam pra próximas sessões dedicadas. Total refator inteiro estimado: ~18-22h em 4-5 sessões (Sub-1 + Sub-2 + Sub-3).
 
 **Status pós-aprovação:** spec congelado → próximo passo `/plan` com este spec como input.
+
+---
+
+## Outcome (preenchido pós-implementação 2026-05-07)
+
+Detalhes completos em `docs/auditoria/2026-05-07-sub1-eval-results.md`.
+
+**Status:** `implemented-partial` — arquitetura known-good, mas H2/H3 requerem tuning de prompt antes de Sub-2 comprometer 3 agents.
+
+**Validação das 4 hipóteses:**
+- **H1** (whitelist hard) ✅ VALIDADA — TC-08 PASS
+- **H4** (SDK + Zod em CF Pages) ✅ VALIDADA — TC-07 PASS + GATE 4 spike
+- **H2** (structured output elimina inventar) ⚠️ PARCIAL — schema OK, mas LLM real ignora R9 (TC-05 falhou)
+- **H3** (handoff condicional) ⚠️ PARCIAL — agent não dispara handoff de forma confiável (TC-09 falhou)
+
+**Bugs capturados pelo eval (que unit tests não pegavam):**
+1. `.refine()` retorna ZodEffects → SDK só aceita ZodObject como outputType. Fix: schema cru + validator pós-parse.
+2. OpenAI Responses API exige fields `.nullable().optional()` (vs apenas `.optional()`). Fix: aplicado em todos campos opcionais.
+
+**Custo total Sub-1:** ~$0.40 (3 eval runs durante diagnose) + $0.001 spike = ~$0.40.
+
+**Decisão:** PROCEED pra Sub-2 **com brainstorm prévio focado em H2/H3** (prompt tuning, não arquitetura).
