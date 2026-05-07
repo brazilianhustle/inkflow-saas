@@ -90,7 +90,7 @@ const TENANT_FOR_SEND = {
 test('request-studio-link — T28: input inválido → 400', async () => {
   const { onRequest } = await import('../../functions/api/request-studio-link.js');
   const cases = [{}, { email: '', phone: '' }, { email: 'no-at-sign', phone: 'abc' }];
-  // Patrol: input inválido aborta ANTES de qualquer fetch (validação síncrona).
+  // Sanity: input inválido aborta ANTES de qualquer fetch (validação síncrona).
   const matcher = fetchMatcher([]);
   const restore = withMockFetch(matcher);
   try {
