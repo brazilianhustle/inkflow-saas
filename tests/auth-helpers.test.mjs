@@ -91,3 +91,9 @@ async function makeToken(tenantId, ttlDays = 30) {
 
 // ─── Tests below ─────────────────────────────────────────────────────────
 // (próximas tasks adicionam testes aqui)
+
+// ─── b64url ───
+test('b64url — round-trip', async () => {
+  const { b64url, b64urlDecode } = await import('../functions/api/_auth-helpers.js');
+  assert.equal(b64urlDecode(b64url('hello world')), 'hello world');
+});
