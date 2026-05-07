@@ -61,14 +61,34 @@ Durante Onda 3 investigação do F2.5.1, descoberto que **3 workflows ativos n8n
 
 Erros nesses 3 vão pro silêncio. Não estava no scope inicial. **Registrar pra Sprint 2** — quick fix dashboard (~30s × 3).
 
-### Pendências Sprint 1 (manuais — fora do alcance de SQL/MCP)
+### Pendências Sprint 1 (resolvidas com decisões pragmáticas)
 
-| # | Item | Como fechar |
-|---|---|---|
-| 1 | F1.4.6 leaked password | Dashboard: https://supabase.com/dashboard/project/bfzuxxuscyplfoimvomh/auth/policies → toggle ON |
-| 2 | F1.3.1 tool zumbi remoção | Dashboard n8n: https://n8n.inkflowbrasil.com/workflow/PmCMHTaTi07XGgWh → delete node `consultar_preco_retoque` (position [-5744, 432]) → save |
-| 3 | Onda 5 PR (#42) merge | Browser smoke local — abrir cada HTML em DevTools, confirmar zero CSP errors, depois merge |
-| 4 | (gap secundário) errorWorkflow nos 3 utilitários | Dashboard n8n por workflow: Settings → Error Workflow → INKFLOW - Sentry Error Handler → Save |
+| # | Item | Decisão final | Razão |
+|---|---|---|---|
+| 1 | **F1.4.6** Leaked password protection | **WON'T FIX em free tier** | Reclassificado pós-investigation: setting "Prevent use of leaked passwords" requer Supabase **Pro plan ($25/mês)**. Não é toggle simples como descrito originalmente. Quando InkFlow migrar pra Pro (auditoria recomenda no 1º cliente pago), reativar. |
+| 2 | **F1.3.1** Tool zumbi `consultar_preco_retoque` | **SKIP** (deixar morrer com n8n) | Refator multi-agent (Sprint 4+) elimina n8n inteiro em ~6-10 semanas. Custo de fixar agora vs valor protegido (resposta degradada em raros pedidos de retoque) não compensa. |
+| 3 | Onda 5 PR (#42) merge | ✅ MERGED | Browser smoke automatizado via Playwright MCP detectou + corrigiu 5 violations (Sentry CDN + PostHog hosts faltantes em CSP). Sem ação manual user. |
+| 4 | (gap secundário) errorWorkflow nos 3 utilitários | **SKIP** | Mesma lógica do #2 — n8n vai sair. Investir em melhorar observability de workflows que vão morrer = wasted effort. |
+
+### Bonus Auth hardening (durante exploração de F1.4.6)
+
+Ao investigar F1.4.6 no dashboard, descobri 3 settings adicionais que melhoram a postura de auth do Supabase. Mudanças aplicadas via dashboard:
+
+| Setting | Antes | Depois | Razão |
+|---|---|---|---|
+| **Secure password change** | OFF | **ON** | Exige sessão recente (≤24h) pra trocar senha. Defesa contra JWT vazado / sessão sequestrada |
+| **Minimum password length** | **6** | **12** | NIST recomenda 12+. Default 6 é fraco contra brute-force moderno |
+| **Allow new users to sign up** | ON | **OFF** | InkFlow tem 1 user (founder); signup público desnecessário. Atacante não pode mais criar contas em massa via `/auth/v1/signup`. Adicionar admin novo via dashboard manual quando precisar. |
+
+Estas mudanças não aparecem como lints no advisor (não há lint pra "weak min password length") mas elevam baseline de segurança. **Estado final dos advisors = mesmo do pós-Onda 4** (5 lints), todos `won't fix` ou `low severity by design`:
+
+| Lint restante | Por que fica |
+|---|---|
+| `rls_enabled_no_policy` × 3 (agendamentos, conversas, tool_calls_log) | By design — só service_role acessa server-side; RLS sem policy = bloqueio total a anon/auth = correto |
+| `rls_policy_always_true` (signups_log INSERT anon) | P2 debt — Sprint 2+ refator pra rate-limit por IP |
+| `auth_leaked_password_protection` | Pro plan only — won't fix em free tier |
+
+### Sprint 1 — encerramento
 
 ### Sprint 1 — métricas
 
