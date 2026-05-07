@@ -73,6 +73,7 @@ function montarTextoOrcamento(orcid, conv) {
   linhas.push(`   • ${dat.tamanho_cm}cm`);
   linhas.push(`   • ${local}`);
   if (estilo) linhas.push(`   • estilo: ${estilo}`);
+  if (dat.altura_cm) linhas.push(`   • altura cliente: ${dat.altura_cm}cm`);
   linhas.push('');
   linhas.push(`📸 Fotos: ${fotos} do local, ${refs} referência${refs === 1 ? '' : 's'}`);
 

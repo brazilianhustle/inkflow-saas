@@ -37,5 +37,12 @@ export const CONTRACT_COLETA_TATTOO = {
     // Verificacao real ("tattoo nao invoca tool de cadastro ANTES dos 3 OBR")
     // fica em invariants.test.mjs e regras inline R4/R5/R6 do tattoo/regras.js.
   ],
-  max_tokens: 6000,
+  // Limite ajustado de 6000 → 7500 em 2026-05-06 (refator R9 + OBR_RECOMENDADO):
+  // o prompt expandiu intencionalmente com R9 (princípio devolver contradições),
+  // T7 (tracking), altura_cm como campo próprio, OBR_RECOMENDADO 3 single shots,
+  // soft re-ask explícito + estimativa visual, e few-shots passou de 5→10
+  // cenários cobrindo R9 contradições. Tudo cravado pelo Leandro pós-smoke
+  // E2E pós-PR #29. Contagem real ~6851 tokens (chars/4); limite 7500 dá
+  // ~650 tokens de margem pra futuras adições antes de virar problema.
+  max_tokens: 7500,
 };
