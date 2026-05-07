@@ -3,7 +3,7 @@
 // e nao roda em CI.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildTattooAgent, TattooOutputSchema } from '../../functions/api/agent/agents/tattoo.js';
+import { buildTattooAgent, TattooOutputSchema, validateTattooOutputInvariant } from '../../functions/api/agent/agents/tattoo.js';
 
 const FAKE_TENANT = {
   id: 'tenant-x',
@@ -67,7 +67,10 @@ test('TattooOutputSchema aceita output valido (handoff)', () => {
   assert.equal(parsed.success, true);
 });
 
-test('TattooOutputSchema rejeita handoff com dados_completos=false (invariante)', () => {
+// Invariante handoff agora vive em validateTattooOutputInvariant (pos-parse)
+// porque .refine() vira ZodEffects e SDK @openai/agents nao aceita como outputType.
+// Schema cru aceita o shape; route.js valida invariante depois.
+test('validateTattooOutputInvariant rejeita handoff com dados_completos=false', () => {
   const invalid = {
     resposta_cliente: 'opa',
     dados_persistidos: {},
@@ -76,11 +79,15 @@ test('TattooOutputSchema rejeita handoff com dados_completos=false (invariante)'
     campos_conflitantes: [],
     proxima_acao: 'handoff',
   };
-  const parsed = TattooOutputSchema.safeParse(invalid);
-  assert.equal(parsed.success, false);
+  // Schema cru aceita (sem refine):
+  assert.equal(TattooOutputSchema.safeParse(invalid).success, true);
+  // Mas validator pos-parse rejeita:
+  const r = validateTattooOutputInvariant(invalid);
+  assert.equal(r.valid, false);
+  assert.match(r.reason, /dados_completos=false/);
 });
 
-test('TattooOutputSchema rejeita handoff com campos_conflitantes nao-vazio', () => {
+test('validateTattooOutputInvariant rejeita handoff com campos_conflitantes nao-vazio', () => {
   const invalid = {
     resposta_cliente: 'opa',
     dados_persistidos: { estilo: 'fineline', tamanho_cm: 8, local_corpo: 'antebraco' },
@@ -89,8 +96,31 @@ test('TattooOutputSchema rejeita handoff com campos_conflitantes nao-vazio', () 
     campos_conflitantes: ['tamanho_cm'],
     proxima_acao: 'handoff',
   };
-  const parsed = TattooOutputSchema.safeParse(invalid);
-  assert.equal(parsed.success, false);
+  assert.equal(TattooOutputSchema.safeParse(invalid).success, true);
+  const r = validateTattooOutputInvariant(invalid);
+  assert.equal(r.valid, false);
+  assert.match(r.reason, /campos_conflitantes/);
+});
+
+test('validateTattooOutputInvariant aceita handoff valido + pergunta', () => {
+  const validHandoff = {
+    resposta_cliente: 'fechado',
+    dados_persistidos: { estilo: 'fineline' },
+    dados_completos: true,
+    campos_faltando: [],
+    campos_conflitantes: [],
+    proxima_acao: 'handoff',
+  };
+  const validPergunta = {
+    resposta_cliente: 'qual tamanho?',
+    dados_persistidos: {},
+    dados_completos: false,
+    campos_faltando: ['tamanho_cm'],
+    campos_conflitantes: ['estilo'],  // pergunta com conflitos OK (so handoff exige zerados)
+    proxima_acao: 'pergunta',
+  };
+  assert.equal(validateTattooOutputInvariant(validHandoff).valid, true);
+  assert.equal(validateTattooOutputInvariant(validPergunta).valid, true);
 });
 
 test('TattooOutputSchema aceita pergunta com campos_faltando', () => {

@@ -11,6 +11,7 @@
 import { run } from '@openai/agents';
 import { selectAgentBuilder, isStateImplemented } from './router.js';
 import { validateEnv } from './_lib/sdk-init.js';
+import { validateTattooOutputInvariant } from './agents/tattoo.js';
 
 const HEADERS = {
   'Content-Type': 'application/json',
@@ -110,6 +111,14 @@ export async function onRequest({ request, env }) {
   if (!out) {
     console.error('[agent/route] no finalOutput', { result });
     return json({ ok: false, error: 'no-final-output' }, 500);
+  }
+
+  // Invariante handoff (movida pra ca apos remover .refine() do schema —
+  // SDK so suporta ZodObject puro como outputType, .refine() vira ZodEffects).
+  const invariantCheck = validateTattooOutputInvariant(out);
+  if (!invariantCheck.valid) {
+    console.error('[agent/route] invariant violation:', invariantCheck.reason, out);
+    return json({ ok: false, error: 'invariant-violation', reason: invariantCheck.reason }, 500);
   }
 
   return json({
