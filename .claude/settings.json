@@ -4,7 +4,24 @@
       "Bash(./cron-worker/scripts/deploy.sh)",
       "Bash(cron-worker/scripts/deploy.sh)",
       "Bash(bws secret list)",
-      "Bash(npx wrangler deploy)"
+      "Bash(npx wrangler deploy)",
+      "Bash(gh run watch *)",
+      "mcp__n8n__get_execution",
+      "mcp__n8n__get_workflow_details",
+      "mcp__n8n__get_sdk_reference",
+      "mcp__n8n__validate_workflow",
+      "mcp__n8n__search_workflows",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_console_messages",
+      "mcp__plugin_supabase_supabase__get_advisors",
+      "mcp__plugin_supabase_supabase__list_migrations",
+      "mcp__plugin_supabase_supabase__list_projects",
+      "mcp__plugin_supabase_supabase__list_tables"
     ]
   }
 }
