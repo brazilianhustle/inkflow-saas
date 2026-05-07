@@ -10,6 +10,56 @@
 
 ---
 
+## 🚀 Kickoff — próxima sessão começa aqui
+
+**Pra rodar via subagent-driven-development numa sessão fresca:**
+
+1. **Setup do terminal:**
+
+```bash
+cd ~/Documents/inkflow-saas
+git fetch origin
+git checkout feat/auth-tests
+git pull origin feat/auth-tests
+git status  # esperado: working tree clean, branch up-to-date
+```
+
+2. **Confirmar pré-condições** (rodar e validar):
+
+```bash
+git branch --show-current                              # esperado: feat/auth-tests
+ls docs/superpowers/specs/2026-05-07-auth-tests-helpers-design.md   # spec existe
+ls docs/superpowers/plans/2026-05-07-auth-tests-helpers.md          # este plan existe
+git diff main -- functions/api/_auth-helpers.js        # esperado: vazio (lib intocada)
+node --version                                          # esperado: v20+
+```
+
+3. **Comando inicial pro Claude:**
+
+```
+Executa o plan docs/superpowers/plans/2026-05-07-auth-tests-helpers.md
+via subagent-driven-development. 10 tasks, 25 testes pra adicionar em
+tests/auth-helpers.test.mjs. Branch atual: feat/auth-tests.
+```
+
+4. **Claude vai:**
+   - Invocar `superpowers:subagent-driven-development` skill
+   - Extrair as 10 tasks deste plan + criar TodoWrite
+   - Dispatchar subagent fresh pra cada task (recomendo `general-purpose` — tem todas tools necessárias)
+   - Two-stage review entre tasks (spec compliance → code quality)
+   - Marcar completed após cada review aprovar
+   - No fim: dispatch final reviewer + invocar `superpowers:finishing-a-development-branch`
+
+5. **Notas importantes pra subagent:**
+   - **Cada task tem código completo + expected output** — subagent não precisa criar código novo, só copiar do plan e validar
+   - **Testes são pra código existente** — devem PASSAR na primeira run. Se falhar, NUNCA ajustar teste — investigar bug na lib (issue separado)
+   - **Comentários `INTENTIONAL` em T10 e T21 são obrigatórios** (DoD do plan)
+   - **Cada task = 1 commit** — subagent NÃO deve consolidar commits
+
+6. **Estimativa:** ~3-4h total de subagent work + review
+
+---
+
 ## Spec referência
 
 `docs/superpowers/specs/2026-05-07-auth-tests-helpers-design.md`
