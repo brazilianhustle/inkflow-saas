@@ -165,6 +165,7 @@ test('get-studio-token — T25: tenant não existe no select de plano → 404', 
     });
     const res = await onRequest({ request: req, env: mockEnv() });
     assert.equal(res.status, 404);
+    assert.equal(matcher.calls.length, 3, 'esperava 3 fetches (step1 onboarding_key + TTL + step2 plano)');
   } finally { restore(); }
 });
 
@@ -185,6 +186,7 @@ test('get-studio-token — T26: plano inválido → 400', async () => {
     assert.equal(res.status, 400);
     const json = await res.json();
     assert.match(json.error, /Plano não reconhecido/i);
+    assert.equal(matcher.calls.length, 3, 'esperava 3 fetches (step1 onboarding_key + TTL + step2 plano)');
   } finally { restore(); }
 });
 
@@ -213,5 +215,6 @@ test('get-studio-token — T27: happy path → 200', async () => {
     );
     const now = Math.floor(Date.now() / 1000);
     assert.ok(json.expires_at > now, `expires_at(${json.expires_at}) > now(${now})`);
+    assert.equal(matcher.calls.length, 3, 'esperava 3 fetches (step1 onboarding_key + TTL + step2 plano)');
   } finally { restore(); }
 });
