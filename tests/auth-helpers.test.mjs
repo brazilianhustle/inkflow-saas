@@ -97,3 +97,35 @@ test('b64url — round-trip', async () => {
   const { b64url, b64urlDecode } = await import('../functions/api/_auth-helpers.js');
   assert.equal(b64urlDecode(b64url('hello world')), 'hello world');
 });
+
+// ─── generateStudioToken ───
+
+test('generateStudioToken — happy path retorna formato v1.<3 parts>', async () => {
+  const { generateStudioToken } = await import('../functions/api/_auth-helpers.js');
+  const token = await generateStudioToken(VALID_UUID, STUDIO_SECRET);
+  const parts = token.split('.');
+  assert.equal(parts.length, 4, 'token deve ter 4 segmentos');
+  assert.equal(parts[0], 'v1', 'prefix deve ser v1');
+  assert.ok(parts[1].length > 0, 'tidB64 não vazio');
+  const exp = parseInt(parts[2], 10);
+  const now = Math.floor(Date.now() / 1000);
+  // 30 dias = 2592000 segundos. Tolerância 5s pra rounding.
+  assert.ok(Math.abs(exp - (now + 30 * 86400)) < 5, 'exp deve ser ~now + 30d');
+  assert.equal(parts[3].length, 64, 'sig deve ser 64 hex chars (HMAC-SHA256)');
+});
+
+test('generateStudioToken — tenantId não-UUID throws', async () => {
+  const { generateStudioToken } = await import('../functions/api/_auth-helpers.js');
+  await assert.rejects(
+    generateStudioToken('not-a-uuid', STUDIO_SECRET),
+    /tenant_id inválido/
+  );
+});
+
+test('generateStudioToken — secret missing throws', async () => {
+  const { generateStudioToken } = await import('../functions/api/_auth-helpers.js');
+  await assert.rejects(
+    generateStudioToken(VALID_UUID, ''),
+    /STUDIO_TOKEN_SECRET ausente/
+  );
+});
