@@ -215,3 +215,83 @@ test('verifyStudioToken — sliding refresh boundary (ttlDays 6.5) retorna shoul
   assert.equal(result.valid, true);
   assert.equal(result.shouldRefresh, true);
 });
+
+// ─── verifyOnboardingKey ───
+
+test('verifyOnboardingKey — happy path', async () => {
+  const { verifyOnboardingKey } = await import('../functions/api/_auth-helpers.js');
+  const restore = withMockFetch(fetchMatcher([
+    ['/rest/v1/tenants?', () => jsonResponse([{ onboarding_key: 'mykey1234' }])],
+    ['/rest/v1/onboarding_links?', () => jsonResponse([{ expires_at: '2030-01-01T00:00:00Z' }])],
+  ]));
+  try {
+    const result = await verifyOnboardingKey({
+      tenantId: VALID_UUID,
+      onboardingKey: 'mykey1234',
+      supabaseUrl: SUPABASE_URL,
+      supabaseKey: SUPABASE_KEY,
+    });
+    assert.deepStrictEqual(result, { ok: true });
+  } finally {
+    restore();
+  }
+});
+
+test('verifyOnboardingKey — tenantId não-UUID retorna invalid-tenant-id', async () => {
+  const { verifyOnboardingKey } = await import('../functions/api/_auth-helpers.js');
+  // Sem mock fetch — função falha antes de qualquer call
+  const result = await verifyOnboardingKey({
+    tenantId: 'not-a-uuid',
+    onboardingKey: 'mykey1234',
+    supabaseUrl: SUPABASE_URL,
+    supabaseKey: SUPABASE_KEY,
+  });
+  assert.deepStrictEqual(result, { ok: false, reason: 'invalid-tenant-id' });
+});
+
+test('verifyOnboardingKey — key < 8 chars retorna missing', async () => {
+  const { verifyOnboardingKey } = await import('../functions/api/_auth-helpers.js');
+  const result = await verifyOnboardingKey({
+    tenantId: VALID_UUID,
+    onboardingKey: 'short', // 5 chars
+    supabaseUrl: SUPABASE_URL,
+    supabaseKey: SUPABASE_KEY,
+  });
+  assert.deepStrictEqual(result, { ok: false, reason: 'missing' });
+});
+
+test('verifyOnboardingKey — tenant não existe retorna not-found', async () => {
+  const { verifyOnboardingKey } = await import('../functions/api/_auth-helpers.js');
+  const restore = withMockFetch(fetchMatcher([
+    ['/rest/v1/tenants?', () => jsonResponse([])], // DB retorna vazio
+  ]));
+  try {
+    const result = await verifyOnboardingKey({
+      tenantId: VALID_UUID,
+      onboardingKey: 'mykey1234',
+      supabaseUrl: SUPABASE_URL,
+      supabaseKey: SUPABASE_KEY,
+    });
+    assert.deepStrictEqual(result, { ok: false, reason: 'not-found' });
+  } finally {
+    restore();
+  }
+});
+
+test('verifyOnboardingKey — key mismatch retorna mismatch', async () => {
+  const { verifyOnboardingKey } = await import('../functions/api/_auth-helpers.js');
+  const restore = withMockFetch(fetchMatcher([
+    ['/rest/v1/tenants?', () => jsonResponse([{ onboarding_key: 'different' }])],
+  ]));
+  try {
+    const result = await verifyOnboardingKey({
+      tenantId: VALID_UUID,
+      onboardingKey: 'mykey1234',
+      supabaseUrl: SUPABASE_URL,
+      supabaseKey: SUPABASE_KEY,
+    });
+    assert.deepStrictEqual(result, { ok: false, reason: 'mismatch' });
+  } finally {
+    restore();
+  }
+});
