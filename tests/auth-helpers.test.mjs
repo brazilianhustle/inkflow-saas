@@ -342,3 +342,80 @@ test('verifyOnboardingKey — link ausente em onboarding_links retorna ok (fail-
     restore();
   }
 });
+
+// ─── verifyStudioTokenOrLegacy ───
+
+test('verifyStudioTokenOrLegacy — HMAC válido retorna source=hmac', async () => {
+  const { verifyStudioTokenOrLegacy } = await import('../functions/api/_auth-helpers.js');
+  const token = await makeToken(VALID_UUID);
+  // Sem mock fetch — HMAC válido não cai no DB lookup
+  const result = await verifyStudioTokenOrLegacy({
+    token,
+    secret: STUDIO_SECRET,
+    supabaseUrl: SUPABASE_URL,
+    supabaseKey: SUPABASE_KEY,
+  });
+  assert.equal(result.tenantId, VALID_UUID);
+  assert.equal(result.source, 'hmac');
+  assert.equal(result.shouldRefresh, false);
+  assert.ok(typeof result.exp === 'number');
+});
+
+test('verifyStudioTokenOrLegacy — HMAC expirado retorna null (não fallback pro legacy)', async () => {
+  const { verifyStudioTokenOrLegacy } = await import('../functions/api/_auth-helpers.js');
+  const expiredToken = await makeToken(VALID_UUID, -1);
+  // Mock que retornaria match — não deve ser chamado pq HMAC expirado curto-circuita
+  const restore = withMockFetch(fetchMatcher([
+    ['/rest/v1/tenants?', () => jsonResponse([{ id: VALID_UUID }])],
+  ]));
+  try {
+    const result = await verifyStudioTokenOrLegacy({
+      token: expiredToken,
+      secret: STUDIO_SECRET,
+      supabaseUrl: SUPABASE_URL,
+      supabaseKey: SUPABASE_KEY,
+    });
+    assert.equal(result, null);
+  } finally {
+    restore();
+  }
+});
+
+test('verifyStudioTokenOrLegacy — UUID legacy match retorna source=legacy-uuid', async () => {
+  const { verifyStudioTokenOrLegacy } = await import('../functions/api/_auth-helpers.js');
+  const legacyToken = '00000000-0000-0000-0000-000000000099'; // UUID raw, sem prefix v1.
+  const restore = withMockFetch(fetchMatcher([
+    ['/rest/v1/tenants?studio_token=eq.', () => jsonResponse([{ id: VALID_UUID }])],
+  ]));
+  try {
+    const result = await verifyStudioTokenOrLegacy({
+      token: legacyToken,
+      secret: STUDIO_SECRET,
+      supabaseUrl: SUPABASE_URL,
+      supabaseKey: SUPABASE_KEY,
+    });
+    assert.equal(result.tenantId, VALID_UUID);
+    assert.equal(result.source, 'legacy-uuid');
+  } finally {
+    restore();
+  }
+});
+
+test('verifyStudioTokenOrLegacy — nem HMAC nem UUID legacy retorna null', async () => {
+  const { verifyStudioTokenOrLegacy } = await import('../functions/api/_auth-helpers.js');
+  const garbageToken = 'random-string-not-hmac-not-uuid';
+  const restore = withMockFetch(fetchMatcher([
+    ['/rest/v1/tenants?studio_token=eq.', () => jsonResponse([])], // sem match
+  ]));
+  try {
+    const result = await verifyStudioTokenOrLegacy({
+      token: garbageToken,
+      secret: STUDIO_SECRET,
+      supabaseUrl: SUPABASE_URL,
+      supabaseKey: SUPABASE_KEY,
+    });
+    assert.equal(result, null);
+  } finally {
+    restore();
+  }
+});
