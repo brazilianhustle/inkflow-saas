@@ -129,3 +129,47 @@ test('generateStudioToken — secret missing throws', async () => {
     /STUDIO_TOKEN_SECRET ausente/
   );
 });
+
+// ─── verifyStudioToken ───
+
+test('verifyStudioToken — happy path (TTL 30, shouldRefresh false)', async () => {
+  const { verifyStudioToken } = await import('../functions/api/_auth-helpers.js');
+  const token = await makeToken(VALID_UUID); // default 30d
+  const result = await verifyStudioToken(token, STUDIO_SECRET);
+  assert.equal(result.valid, true);
+  assert.equal(result.tenantId, VALID_UUID);
+  assert.ok(typeof result.exp === 'number');
+  assert.equal(result.shouldRefresh, false, 'TTL 30d não está em janela de refresh');
+});
+
+test('verifyStudioToken — sem prefix v1. retorna null', async () => {
+  const { verifyStudioToken } = await import('../functions/api/_auth-helpers.js');
+  const result = await verifyStudioToken('foo.bar.baz', STUDIO_SECRET);
+  assert.equal(result, null);
+});
+
+test('verifyStudioToken — secret ausente retorna invalid', async () => {
+  const { verifyStudioToken } = await import('../functions/api/_auth-helpers.js');
+  const token = await makeToken(VALID_UUID);
+  const result = await verifyStudioToken(token, '');
+  assert.deepStrictEqual(result, { valid: false, reason: 'secret-missing' });
+});
+
+test('verifyStudioToken — malformado (3 parts) retorna invalid', async () => {
+  const { verifyStudioToken } = await import('../functions/api/_auth-helpers.js');
+  const result = await verifyStudioToken('v1.aaa.bbb', STUDIO_SECRET);
+  assert.deepStrictEqual(result, { valid: false, reason: 'malformed' });
+});
+
+test('verifyStudioToken — sig trocada (mesma length) retorna bad-signature', async () => {
+  const { verifyStudioToken } = await import('../functions/api/_auth-helpers.js');
+  const token = await makeToken(VALID_UUID);
+  // Troca último char preservando length
+  const tampered = mutateSig(token, (sig) => {
+    const last = sig.slice(-1);
+    const swap = last === 'a' ? 'b' : 'a';
+    return sig.slice(0, -1) + swap;
+  });
+  const result = await verifyStudioToken(tampered, STUDIO_SECRET);
+  assert.deepStrictEqual(result, { valid: false, reason: 'bad-signature' });
+});
