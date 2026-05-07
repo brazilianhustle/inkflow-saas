@@ -1,12 +1,19 @@
 #!/bin/bash
 # Preflight: scan functions/ for env.X references, compare with CF Pages project env_vars.
-# Blocks deploy if any referenced env var is missing in the CF project.
+# Blocks deploy if any REQUIRED referenced env var is missing in the CF project.
 #
 # Why: avoids "Configuração interna ausente" type bugs where code references env.FOO
 # but FOO was never set in the CF dashboard.
 #
-# Requires: CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID in env (from ~/.zshrc).
-# Get token at https://dash.cloudflare.com/profile/api-tokens (template: Cloudflare Pages:Edit).
+# What it IGNORES (false positives):
+#   - Vars with `|| fallback` on the same line (`env.X || 'default'`) — optional
+#   - Vars in single-line comments (`// ... env.X ...`)
+#   - Vars referenced only inside `functions/_lib/auditors/` — cron-worker runtime, not Pages
+#   - Bindings configured via wrangler.jsonc (AI, KV, R2, D1, DURABLE_OBJECT, ASSETS)
+#   - Pairs `env.A || env.B` where B is configured (A is the alternative)
+#   - Standard runtime globals (NODE_ENV, PATH, HOME, USER, PWD, LANG, TZ)
+#
+# Requires: CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID in env.
 
 set -euo pipefail
 
@@ -27,21 +34,80 @@ if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; th
   exit 0
 fi
 
-echo "🔍 Scanning $FUNCTIONS_DIR for env.X references..."
+echo "🔍 Scanning $FUNCTIONS_DIR for required env.X references..."
 
-# Collect referenced env vars from code (exclude vars used only as context.env reads with fallbacks
-# that don't go through the code path — we want anything that might be read).
-REFERENCED=$(grep -rEho "env\.[A-Z][A-Z0-9_]+" "$FUNCTIONS_DIR" \
-  | sed 's/^env\.//' \
-  | sort -u)
+# Per-file, per-line scan with smart filtering.
+# Outputs format: VAR_NAME\tFILE:LINE\tCONTEXT
+# REQUIRED = referenced without `||` fallback, not in comment, not auditor file, not binding.
+REQUIRED=$(python3 - <<PYEOF
+import os
+import re
+import sys
 
-if [ -z "$REFERENCED" ]; then
-  echo "ℹ️  No env.X references found — nothing to check"
+ROOT = "$FUNCTIONS_DIR"
+SKIP_DIRS = ("_lib/auditors",)
+BINDINGS = {"AI", "KV", "R2", "D1", "DURABLE_OBJECT", "ASSETS", "VECTORIZE"}
+GLOBALS = {"NODE_ENV", "PATH", "HOME", "USER", "PWD", "LANG", "TZ"}
+
+ENV_REF = re.compile(r"\benv\.([A-Z][A-Z0-9_]+)")
+COMMENT_LINE = re.compile(r"^\s*(//|\*|/\*)")
+
+# Map: VAR -> list of (file, line, context, has_fallback_on_line)
+referenced = {}
+
+def is_in_skip_dir(rel_path):
+    norm = rel_path.replace(os.sep, "/")
+    return any(d in norm for d in SKIP_DIRS)
+
+for dirpath, _, filenames in os.walk(ROOT):
+    rel = os.path.relpath(dirpath, ROOT)
+    if is_in_skip_dir(rel):
+        continue
+    for fname in filenames:
+        if not (fname.endswith(".js") or fname.endswith(".ts") or fname.endswith(".mjs")):
+            continue
+        full = os.path.join(dirpath, fname)
+        try:
+            with open(full, "r", encoding="utf-8", errors="ignore") as f:
+                lines = f.readlines()
+        except Exception:
+            continue
+        for ln_idx, line in enumerate(lines, start=1):
+            # Skip comment-only lines
+            if COMMENT_LINE.match(line):
+                continue
+            for m in ENV_REF.finditer(line):
+                var = m.group(1)
+                if var in BINDINGS or var in GLOBALS:
+                    continue
+                # Has fallback on same line? (`||` after the env reference)
+                tail = line[m.end():]
+                has_fallback = "||" in tail
+                referenced.setdefault(var, []).append({
+                    "file": os.path.relpath(full, ROOT),
+                    "line": ln_idx,
+                    "fallback": has_fallback,
+                })
+
+# A var is REQUIRED if at least one occurrence has NO fallback.
+required = {v for v, occs in referenced.items() if any(not o["fallback"] for o in occs)}
+optional = set(referenced.keys()) - required
+
+# Output: REQUIRED vars (one per line) + summary on stderr
+for v in sorted(required):
+    print(v)
+
+print(f"   ({len(required)} required, {len(optional)} optional/fallback-only)", file=sys.stderr)
+PYEOF
+)
+
+if [ -z "$REQUIRED" ]; then
+  echo "ℹ️  No required env.X references found — nothing to check"
   exit 0
 fi
 
-ref_count=$(echo "$REFERENCED" | wc -l | tr -d ' ')
-echo "   Found $ref_count unique env vars referenced in code"
+req_count=$(echo "$REQUIRED" | wc -l | tr -d ' ')
+echo "   Found $req_count unique REQUIRED env vars (after filtering fallbacks/comments/auditors/bindings)"
 
 echo "📡 Fetching CF Pages project env_vars via API..."
 API_URL="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${PROJECT_NAME}"
@@ -63,28 +129,35 @@ for k in sorted(envs.keys()): print(k)
 cfg_count=$(echo "$CONFIGURED" | wc -l | tr -d ' ')
 echo "   Found $cfg_count env vars configured in CF Pages (production)"
 
-# Ignore vars that are obviously not CF Pages env vars:
-# - Standard Node/JS globals (NODE_ENV, PATH, etc) — these aren't set via CF but inherited
-IGNORE_PATTERNS="^(NODE_ENV|PATH|HOME|USER|PWD|LANG|TZ)$"
-
+# For each REQUIRED var, check if it's configured. Handle alternative pairs
+# (env.A || env.B): if A is missing but B configured, treat A as OK.
+# Strategy: scan source for `env.A || env.B` pattern; if A in REQUIRED + missing
+# but B in CONFIGURED, skip A.
 MISSING=""
-for var in $REFERENCED; do
-  if echo "$var" | grep -qE "$IGNORE_PATTERNS"; then continue; fi
-  if ! echo "$CONFIGURED" | grep -qxF "$var"; then
-    MISSING="$MISSING $var"
+for var in $REQUIRED; do
+  if echo "$CONFIGURED" | grep -qxF "$var"; then continue; fi
+  # Check for alternative: `env.<var> || env.<other>` and other is configured
+  alternative=$(grep -rho "env\\.${var}[[:space:]]*||[[:space:]]*env\\.[A-Z_]\+" "$FUNCTIONS_DIR" 2>/dev/null \
+    | sed -E "s/.*\\|\\|[[:space:]]*env\\.//" \
+    | sort -u \
+    | head -1)
+  if [ -n "$alternative" ] && echo "$CONFIGURED" | grep -qxF "$alternative"; then
+    echo "   ℹ️  $var missing but alternative \$alternative is configured — skipping"
+    continue
   fi
+  MISSING="$MISSING $var"
 done
 
 if [ -n "$MISSING" ]; then
   echo ""
-  echo "❌ DEPLOY BLOCKED — env vars referenced in code but not set in CF Pages:"
+  echo "❌ DEPLOY BLOCKED — REQUIRED env vars referenced in code but not set in CF Pages:"
   for var in $MISSING; do
     echo "   - $var"
-    grep -rn "env\.$var\b" "$FUNCTIONS_DIR" | head -2 | sed 's/^/       /'
+    grep -rn "env\\.$var\\b" "$FUNCTIONS_DIR" | head -2 | sed 's/^/       /'
   done
   echo ""
   echo "Fix: https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/pages/view/${PROJECT_NAME}/settings/environment-variables"
   exit 2
 fi
 
-echo "✅ All $ref_count referenced env vars are configured in CF Pages"
+echo "✅ All $req_count required env vars are configured in CF Pages"
