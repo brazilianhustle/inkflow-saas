@@ -9,8 +9,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
+// ─── Constantes ──────────────────────────────────────────────────────────
 const VALID_UUID = '00000000-0000-0000-0000-000000000001';
 
+// ─── Helpers locais ──────────────────────────────────────────────────────
 function mockEnv(overrides = {}) {
   return {
     SUPABASE_SERVICE_ROLE_KEY: 'test-service-key',
@@ -64,6 +66,9 @@ function makeRequest(path, body, method = 'POST') {
   });
 }
 
+// Shape mirrors o tenant select do endpoint (validate-studio-token.js linhas 55-66).
+// Apenas tenant.id é load-bearing pros asserts; demais campos garantem parity da
+// resposta com prod shape (`tenant.X || null` lida com missing graciosamente).
 const TENANT_FULL = {
   id: VALID_UUID,
   nome_estudio: 'Ink', plano: 'estudio', email: 'a@b.com',
@@ -104,7 +109,12 @@ test('validate-studio-token — T12: JSON inválido → 400', async () => {
 test('validate-studio-token — T13: HMAC sig errada → 401', async () => {
   const env = mockEnv();
   const validToken = await makeStudioToken(VALID_UUID, env);
-  const mutated = mutateSig(validToken, sig => sig.slice(0, -1) + 'x'); // preserva length
+  const mutated = mutateSig(validToken, sig => {
+    const last = sig.slice(-1);
+    // Flip last hex char to ensure HMAC mismatch (never no-op)
+    const replacement = last === '0' ? '1' : '0';
+    return sig.slice(0, -1) + replacement;
+  });
   const matcher = fetchMatcher([
     // bad-signature ≠ expired → lib continua pro path 2 → fetch tenants?studio_token=eq
     ['tenants?studio_token=eq', () => jsonResponse([])],
