@@ -306,6 +306,51 @@ _TBD_
 
 ---
 
-## Fase 9 — Sintese + priorizacao
+## Fase 9 — Sintese + priorizacao (executada 2026-05-08)
 
-_TBD — escrita ao final, consolidando todas as fases anteriores_
+**Plan executado:** [docs/superpowers/plans/2026-05-08-coleta-tattoo-prompt-v2-rewrite.md](../plans/2026-05-08-coleta-tattoo-prompt-v2-rewrite.md)
+
+### Resultado
+
+- **Eval suite:** 10/10 PASS com `gpt-4o-mini` ([log](./2026-05-08-eval-v2-final.log)).
+- **CI suite:** 312/312 PASS ([log](./2026-05-08-npm-test-v2.log)).
+- **TC-03 destravado:** PASS em ~3s, 0 tool calls (era FAIL com loop 22 tool calls + maxTurns em c28f813).
+- **Tokens system prompt:** ~3860 → ~2660 (-31%). Acima do target 2200 do spec, mas reducao substancial.
+
+### Mudanca arquitetural inesperada (NAO estava no plan original)
+
+Plan original assumia manter as 2 tools (`dados_coletados` + `handoff_to_cadastro`) com fail-fast pra rejeitar valores invalidos. Iter 2 mostrou que o problema e mais profundo: **mini hallucinava valores reais (5cm, "antebraco") pra contornar o fail-fast** quando ficou sem alternativa.
+
+Investigacao revelou **dual-via de persistencia**:
+1. Tool `dados_coletados` (HTTP → DB direct durante a conversa)
+2. Structured output `dados_persistidos` (no `finalOutput`, retornado pelo `route.js`)
+
+`gpt-4o` escolhia naturalmente a via 2 (`toolCallCount=0`). `gpt-4o-mini` insistia na via 1, hallucinava, loopava. **Eliminada a redundancia** removendo as 2 tools do agent. Agent agora e **pure structured-output** — estado/dados saem via `dados_persistidos` + `proxima_acao` no output JSON. `route.js:128` ja le `proxima_acao` pra transicao de estado; `validateTattooOutputInvariant` ja faz a invariante que a tool `handoff_to_cadastro` (Sub-1 stub no-op) duplicava.
+
+Tambem foi corrigido **mismatch de naming**: prompt usava `descricao_tattoo`, schema usa `descricao_curta`. Mini deixava o campo vazio; gpt-4o aguentava mas mini nao.
+
+### Findings status
+
+- **F1 (tool sem fail-fast):** RESOLVIDO via fail-fast estendida em `dados-coletados.js` (ainda usado pelo CadastroAgent — defesa em depth).
+- **F2 (eval check vs schema):** RESOLVIDO (commit `ca28f3a`).
+- **F3-F5/F9/F10:** validados — alguns alimentam Sub-3.
+- **NEW finding (architectural):** dual-via de persistencia. RESOLVIDO removendo tools do TattooAgent.
+
+### Status das fases originais do audit
+
+- **Fase 3 (matriz decisao):** ENTREGUE (tabela 12 linhas em `decisao.js`).
+- **Fase 4 (tools+schema):** ENTREGUE (tools removidas, fail-fast em `dados-coletados.js` cobre CadastroAgent).
+- **Fase 5 (orquestracao):** parcialmente — `maxTurns 20→10` ainda nao avaliado, mas com 0 tools mini termina em 1-2 turns naturalmente.
+- **Fase 6 (few-shots):** ENTREGUE (8 exemplos em `exemplos.js`, ajustados pra tom.js compliance).
+- **Fase 7 (eval coverage):** 5 TCs novos (linhas 5/7/9/10/11 da tabela §4) propostos como stretch — opcional, vira v2.1.
+- **Fase 8 (production samples):** opcional, follow-up.
+- **Fase 9:** este bloco.
+
+### Decisao Sub-3
+
+**GO total** (10/10 eval + 312/312 CI) → cutover n8n destrava integral.
+
+Considerar como follow-up Sub-3:
+1. Aplicar mesma estrategia (pure structured-output, sem tools) aos outros agents (Cadastro/Proposta) — eles ainda usam tools com mesma classe de bug latente.
+2. Reducao adicional de tokens (hoje ~2660, target 2200) — encurtar `decisao.js` R3 ou mover trigger list pra `tenant.gatilhos_handoff` config.
+3. Snapshot regenerado — review nas mudancas de prompt antes de merge.
