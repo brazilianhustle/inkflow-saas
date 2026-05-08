@@ -14,10 +14,11 @@ import {
 // 4 prompts ativos: 3 fases Coleta + Exato. Cada um gerado com sua conversa
 // adequada (Coleta usa estado_agente; Exato usa conversa simples sem estado).
 //
-// IMPORTANTE: coleta-tattoo foi reescrito v2 (2026-05-08) com estrutura
-// diferente — nao tem §0 CHECKLIST, §5 CONTEXTO, §4 REGRAS INVIOLAVEIS, nem
-// §4b TOOLS. Tem §1 IDENTIDADE, §2 CONTEXTO, §3 OBJETIVO, §4 DECISAO. Os
-// invariants v1 que checam ancoras antigas excluem coleta-tattoo abaixo.
+// IMPORTANTE: coleta-tattoo (Sub-2, 2026-05-08) e coleta-cadastro (Sub-3.1,
+// 2026-05-08) foram reescritos v2 com estrutura diferente — nao tem §0
+// CHECKLIST, §5 CONTEXTO, §4 REGRAS INVIOLAVEIS, nem §4b TOOLS. Tem §1
+// IDENTIDADE, §2 CONTEXTO, §3 OBJETIVO, §4 DECISAO E REGRAS. Os invariants
+// v1 que checam ancoras antigas excluem ambos abaixo.
 const PROMPTS = [
   { nome: 'coleta-tattoo',    tenant: TENANT_CANONICO,       conversa: CONVERSA_COLETA_TATTOO },
   { nome: 'coleta-cadastro',  tenant: TENANT_CANONICO,       conversa: CONVERSA_COLETA_CADASTRO },
@@ -25,7 +26,7 @@ const PROMPTS = [
   { nome: 'exato',            tenant: TENANT_CANONICO_EXATO, conversa: CONVERSA_CANONICA },
 ];
 
-const PROMPTS_V1 = PROMPTS.filter(p => p.nome !== 'coleta-tattoo');
+const PROMPTS_V1 = PROMPTS.filter(p => p.nome !== 'coleta-tattoo' && p.nome !== 'coleta-cadastro');
 
 test('invariante: todos prompts contem IDENTIDADE', () => {
   for (const { nome, tenant, conversa } of PROMPTS) {
@@ -34,21 +35,21 @@ test('invariante: todos prompts contem IDENTIDADE', () => {
   }
 });
 
-test('invariante v1: prompts v1 contem CHECKLIST CRITICO (tattoo v2 isento)', () => {
+test('invariante v1: prompts v1 contem CHECKLIST CRITICO (tattoo+cadastro v2 isentos)', () => {
   for (const { nome, tenant, conversa } of PROMPTS_V1) {
     const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
     assert.match(out, /# §0 CHECKLIST/, `[${nome}] sem CHECKLIST`);
   }
 });
 
-test('invariante v1: prompts v1 contem CONTEXTO §5 (tattoo v2 usa §2)', () => {
+test('invariante v1: prompts v1 contem CONTEXTO §5 (tattoo+cadastro v2 usam §2)', () => {
   for (const { nome, tenant, conversa } of PROMPTS_V1) {
     const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
     assert.match(out, /# §5 CONTEXTO/, `[${nome}] sem CONTEXTO`);
   }
 });
 
-test('invariante v1: prompts v1 contem REGRAS INVIOLAVEIS (tattoo v2 usa §4 DECISAO)', () => {
+test('invariante v1: prompts v1 contem REGRAS INVIOLAVEIS (tattoo+cadastro v2 usam §4 DECISAO)', () => {
   for (const { nome, tenant, conversa } of PROMPTS_V1) {
     const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
     assert.match(out, /# §4 REGRAS INVIOLAVEIS/, `[${nome}] sem REGRAS`);
@@ -59,6 +60,12 @@ test('invariante v2: coleta-tattoo contem §4 DECISAO E REGRAS', () => {
   const out = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_TATTOO, CLIENT_CONTEXT_CANONICO);
   assert.match(out, /# §4 DECISAO E REGRAS/, 'coleta-tattoo v2 sem secao DECISAO');
   assert.match(out, /# §3 OBJETIVO/, 'coleta-tattoo v2 sem secao OBJETIVO');
+});
+
+test('invariante v2: coleta-cadastro contem §4 DECISAO E REGRAS', () => {
+  const out = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_CADASTRO, CLIENT_CONTEXT_CANONICO);
+  assert.match(out, /# §4 DECISAO E REGRAS/, 'coleta-cadastro v2 sem secao DECISAO');
+  assert.match(out, /# §3 OBJETIVO/, 'coleta-cadastro v2 sem secao OBJETIVO');
 });
 
 test('invariante: nenhum prompt vaza meta-instrucao', () => {
@@ -127,8 +134,8 @@ const COLETA_PROMPTS = [
   { nome: 'coleta-proposta', tenant: TENANT_CANONICO, conversa: CONVERSA_COLETA_PROPOSTA },
 ];
 
-// Tattoo v2 nao tem mais §4b TOOLS (pure structured-output, sem tools).
-const COLETA_PROMPTS_V1 = COLETA_PROMPTS.filter(p => p.nome !== 'coleta-tattoo');
+// Tattoo v2 e Cadastro v2 nao tem mais §4b TOOLS (pure structured-output, sem tools).
+const COLETA_PROMPTS_V1 = COLETA_PROMPTS.filter(p => p.nome !== 'coleta-tattoo' && p.nome !== 'coleta-cadastro');
 
 const ANTI_PATTERNS_PSEUDO = [
   /AGENTE:\s*\[chama\s+\w+/i,
@@ -206,7 +213,7 @@ test('invariante coleta v2: nenhum turn AGENTE em few-shots tem >1 pergunta (heu
   }
 });
 
-test('invariante coleta v1: prompts v1 contem secao §4b TOOLS — QUANDO INVOCAR (tattoo v2 isento)', () => {
+test('invariante coleta v1: prompts v1 contem secao §4b TOOLS — QUANDO INVOCAR (tattoo+cadastro v2 isentos)', () => {
   for (const { nome, tenant, conversa } of COLETA_PROMPTS_V1) {
     const out = generateSystemPrompt(tenant, conversa, CLIENT_CONTEXT_CANONICO);
     assert.match(out, /# §4b TOOLS — QUANDO INVOCAR/,

@@ -40,18 +40,18 @@ test('route rejeita body sem tenant_id/telefone com 400', async () => {
   assert.match(body.error, /tenant_id|telefone/);
 });
 
-test('route retorna 501 pra estado_atual nao-implementado (Sub-2)', async () => {
+test('route retorna 501 pra estado_atual nao-implementado (Sub-3)', async () => {
   const res = await onRequest(buildContext({
     tenant_id: 't1',
     telefone: '+5511999999999',
     mensagem: 'oi',
-    estado_atual: 'cadastro',
+    estado_atual: 'proposta',
     dados_acumulados: {},
     historico: [],
   }));
   assert.equal(res.status, 501);
   const body = await res.json();
-  assert.match(body.error, /Sub-2|nao implementado|cadastro/);
+  assert.match(body.error, /nao implementado|proposta/);
 });
 
 test('route retorna 503 quando OPENAI_API_KEY ausente', async () => {
