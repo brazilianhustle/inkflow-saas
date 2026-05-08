@@ -1,9 +1,11 @@
-# Página do Tatuador — Refatoração estrutural (Modo Coleta principal)
+# Página do Tatuador — Refatoração estrutural (Modo Coleta principal)  ⚠️ EXECUTADO
 
 **Data:** 2026-05-03
 **Autor:** Leandro Marques (com Claude)
-**Status:** Spec finalizado — pronto pra `/plan` e execução
-**Depende de:** [`2026-05-02-modo-coleta-v2-principal.md`](./2026-05-02-modo-coleta-v2-principal.md) (Coleta v2 backend) — esta spec é a UI sobre essa fundação
+**Status:** ⚠️ EXECUTADO — sub-PRs #21 a #26 mergeados em prod (03/05 → 05/05). UI Studio refatorada **vive em prod e segue válida** mesmo após pivot do backend (refator multi-agent removeu n8n mas não tocou na UI Studio).
+**Depende de:** ~~`2026-05-02-modo-coleta-v2-principal.md`~~ (deletado de `docs/superpowers/`, segue em `archive/InkFlow — Modo Coleta v2 principal (2026-05-02).md` na memory). Esta UI Studio segue conectada ao backend, agora migrando pra multi-agent via PR #52.
+
+> **Nota (2026-05-08):** spec foi inteiramente executada. Mantida pra contexto histórico do refator UI. **Não re-executar.**
 
 ---
 

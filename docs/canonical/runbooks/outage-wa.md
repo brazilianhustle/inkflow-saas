@@ -1,10 +1,12 @@
 ---
-last_reviewed: 2026-04-26
+last_reviewed: 2026-05-08
 owner: leandro
 status: stable
 related: [README.md, ../stack.md, ../flows.md]
 ---
 # Runbook — Outage WhatsApp (Evolution API)
+
+> **⚠️ Refator em curso (2026-05-08):** Ações F + H deste runbook tratam de webhook config Evolution → **n8n**. Após PR #52 (refator Coleta v2 multi-agent) mergear, o webhook alvo vai ser o router CF Workers (`functions/api/agent/route.js`), não n8n. Este runbook precisará update — atualizar `webhook.url` esperado de `http://inkflow-n8n-1:5678/webhook/inkflow` pra URL pública do CF Pages endpoint correspondente. Por ora (n8n ainda em prod), seguir o runbook como está.
 
 > **Auditor `vps-limits` pode ter alertado antes:** se VPS estava saturado (RAM/disk/load), Auditor #3 dispara alert Telegram cada 6h via Routine Anthropic. Conferir histórico de alerts antes de iniciar este runbook — se há alert recente, ler `audit_events` pra contexto. Cross-ref `docs/canonical/auditores.md#vps-limits`.
 

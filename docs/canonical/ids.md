@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-05-03
+last_reviewed: 2026-05-08
 owner: leandro
 status: stable
 related: [stack.md, secrets.md]
@@ -44,11 +44,13 @@ Esquema vive em `supabase/migrations/` (versionado desde 2026-04-26) + aplicado 
 | `audit_runs` | execuções dos auditores Sub-projeto 3 (key-expiry, deploy-health, etc) | `functions/api/audit/*` |
 | `approvals` | tabela de aprovações pendentes (Telegram bot down runbook) | `functions/api/approvals/decide.js`, `functions/api/approvals/list.js` |
 
-## Workflows n8n
+## Workflows n8n  ⚠️ DEPRECATING
+
+> **Status (2026-05-08):** workflow principal em rota de remoção via PR #52 (refator Coleta v2 multi-agent → OpenAI Agents SDK em CF Workers). Auditoria 2026-05-07 cravou a decisão. Não otimizar nodes do workflow principal. Quando refator mergear, todos os workflows abaixo (incluindo desativados) serão arquivados via `archive_workflow` MCP.
 
 | Nome | ID | Status | MCP path |
 |---|---|---|---|
-| MEU NOVO WORK - SAAS | `PmCMHTaTi07XGgWh` | ATIVO | `n8n://workflows/PmCMHTaTi07XGgWh` |
+| MEU NOVO WORK - SAAS | `PmCMHTaTi07XGgWh` | ATIVO ⚠️ DEPRECATING | `n8n://workflows/PmCMHTaTi07XGgWh` |
 | Expira Trial | `KEO1tJRKpYTxi15E` | DESATIVADO (migrado pra cron-worker em 21/04) | `n8n://workflows/KEO1tJRKpYTxi15E` |
 | Cleanup Tenants | `JuWleItL6kb0x1NO` | DESATIVADO | `n8n://workflows/JuWleItL6kb0x1NO` |
 | Reset Agendamentos | `V2zccb03P9ZUEH3o` | DESATIVADO | `n8n://workflows/V2zccb03P9ZUEH3o` |
@@ -131,7 +133,9 @@ Todos os endpoints aceitam `OPTIONS` (CORS preflight) e `POST` no método princi
 | `/api/cron/followup` | POST | Bearer `CRON_SECRET` | dispara follow-up pós-agendamento |
 | `/api/cron/cuidados-pos` | POST | Bearer `CRON_SECRET` | envia mensagem de cuidados pós-tatuagem |
 
-### Tools (chamadas pelo workflow n8n principal)
+### Tools (chamadas pelo workflow n8n principal) ⚠️ caller DEPRECATING
+
+> **Status (2026-05-08):** os endpoints `/api/tools/*` listados abaixo **continuam ativos**, mas o **caller** (n8n workflow) está em rota de substituição via PR #52. Após o refator multi-agent, os mesmos endpoints serão chamados direto pelos 4 agents (TattooAgent/CadastroAgent/PropostaAgent/PortfolioAgent) em CF Workers — endpoints podem permanecer estáveis OU virar imports diretos no router (decisão Sub-2/Sub-3). **Não deprecate os endpoints; só o caller atual (n8n).**
 
 Todas validam `X-Inkflow-Tool-Secret` contra `INKFLOW_TOOL_SECRET` (ver `functions/api/tools/_tool-helpers.js`).
 

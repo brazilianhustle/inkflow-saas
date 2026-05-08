@@ -1,12 +1,22 @@
-# n8n workflow update — kill-switch branch
+# n8n workflow update — kill-switch branch  ⚠️ ABANDONADO
 
 **Data:** 2026-05-04
 **Workflow:** `MEU NOVO WORK - SAAS` (id: `PmCMHTaTi07XGgWh`)
 **PR:** #TBD (PR 3 — Agente + kill-switch backend)
 
-## Status
+## ⚠️ Status: ABANDONADO (2026-05-08)
 
-**⏸ NÃO APLICADO AINDA.** Documentado pra aplicação manual ou via MCP em sessão dedicada.
+**NÃO APLICAR ESTE PLANO.** Documento mantido apenas como referência histórica.
+
+**Razão:** auditoria 2026-05-07 cravou remoção do n8n via refator Coleta v2 multi-agent (PR #52). Adicionar nodes ao n8n workflow agora seria trabalho jogado fora — todo o orquestrador vai sair em 6-10 semanas.
+
+**O que fazer com kill-switch:** se o conceito de pausar conversa quando tatuador escreve `/eu assumo` for reincorporado, deve ser implementado **dentro do router CF Workers** do refator multi-agent (`functions/api/agent/route.js`), não em n8n. O endpoint `/api/kill-switch-detect` provavelmente ainda existe em CF Pages mas nunca foi consumido em prod.
+
+**Quando deletar este arquivo:** após PR #52 (refator multi-agent) ser mergeado e n8n removido. Junto, o dir `docs/canonical/n8n/` inteiro move pra `archive/`.
+
+---
+
+## Conteúdo histórico (ignorar pra trabalho atual)
 
 **Bloqueado por:** Leandro precisa setar `KILL_SWITCH_SECRET` em CF Pages env vars (production + preview) antes de testar.
 

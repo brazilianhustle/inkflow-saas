@@ -1,4 +1,6 @@
-# Wire Tools Coleta v2 — Implementation Plan
+# Wire Tools Coleta v2 — Implementation Plan  ⚠️ HISTÓRICO
+
+> **Status (2026-05-08):** plan EXECUTADO via PR #27 (mergeado 2026-05-05, squash `0be0ec7`). Trabalho da arquitetura n8n-mono-agent **pré-pivot multi-agent (2026-05-07)**. Mantido pra contexto histórico — não re-executar.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

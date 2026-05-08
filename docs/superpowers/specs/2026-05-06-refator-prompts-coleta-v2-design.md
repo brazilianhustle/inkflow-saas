@@ -2,14 +2,23 @@
 title: Refator Prompts Coleta v2 — 3 camadas (n8n descriptions + regras.js + few-shots format A + tom B)
 slug: refator-prompts-coleta-v2
 date: 2026-05-06
-status: design-pendente-aprovacao
+status: ⚠️ CONSUMIDO — implementado via PRs #28 + #29 (mergeados 2026-05-06) — arquitetura pré-pivot multi-agent
 branch: feat/refator-prompts-coleta-v2
 related:
   - 2026-05-02-modo-coleta-v2-principal.md
   - 2026-05-05-wire-tools-coleta-v2-bot-design.md
+last_updated: 2026-05-08
 ---
 
-# Refator Prompts Coleta v2 — 3 camadas
+# Refator Prompts Coleta v2 — 3 camadas  ⚠️ HISTÓRICO
+
+> **Status (2026-05-08):** este spec foi **mergeado em prod** via PR #28 (refator 3 camadas) + PR #29 (hotfix race condition `merge_conversa_jsonb`) em 2026-05-06. Smoke E2E pós-hotfix 100% PASS — bot invocou tools de verdade, Telegram chegou, race CORRIGIDA.
+>
+> **Mas:** dia seguinte (2026-05-07), Leandro pivotou estruturalmente após questionar "SaaS profissionais usam n8n no hot path?" → auditoria completa cravou remoção do n8n + multi-agent via OpenAI Agents SDK (PR #52 OPEN). O refator descrito aqui (prompts + few-shots format A + tom B + regras.js) **virou base do PR #33** que provou empiricamente que tool-calling com gates não escala — disparando o pivot multi-agent.
+>
+> **Princípios cravados aqui SOBREVIVEM no refator multi-agent:** R9 (devolver contradições, nunca decidir pelo cliente), formato A das few-shots (sem pseudo-código), tom B (vendedor + coletor). Esses são FUNDAÇÃO dos agent prompts no PR #52.
+>
+> **Mantido como referência histórica.**
 
 ## Contexto
 

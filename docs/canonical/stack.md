@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-05-03
+last_reviewed: 2026-05-08
 owner: leandro
 status: stable
 related: [flows.md, ids.md, runbooks/deploy.md]
@@ -7,6 +7,8 @@ related: [flows.md, ids.md, runbooks/deploy.md]
 # Mapa Canônico — Stack Técnica
 
 Inventário dos 8 serviços que compõem o InkFlow. Para detalhes técnicos vivos (bindings, env vars, schema), seguir os links na seção `Config técnica` de cada serviço — este Mapa é a verdade narrativa, os arquivos linkados são a verdade técnica.
+
+> **⚠️ Deprecation em curso (2026-05-08):** o serviço **n8n** (seção própria abaixo) está em rota de remoção via PR [#52](https://github.com/brazilianhustle/inkflow-saas/pull/52) — refator Coleta v2 → multi-agent handoff via OpenAI Agents SDK em Cloudflare Workers. Auditoria 2026-05-07 cravou a decisão. **Não otimizar n8n.** Quando refator estiver mergeado, esta seção + `docs/canonical/n8n/` movem pra archive.
 
 ## Cloudflare Pages
 
@@ -73,7 +75,7 @@ Leandro.
 
 ### Pontos de integração
 - ← CF Pages (server-side via `SUPABASE_SERVICE_KEY` / `SUPABASE_SERVICE_ROLE_KEY`)
-- ← n8n workflow (via auth token configurado nos credentials do n8n)
+- ← n8n workflow (DEPRECATING — sai no refator multi-agent)
 - ← Worker `inkflow-cron` indireto (via endpoints CF Pages)
 
 ### Config técnica
@@ -153,10 +155,14 @@ Leandro.
 ### Health check
 `curl -s -H "Authorization: Bearer $MAILERLITE_API_KEY" https://connect.mailerlite.com/api/groups | jq '.data | length'` (esperado `>= 3`).
 
-## n8n
+## n8n  ⚠️ DEPRECATING
 
-### Propósito
+> **Status (2026-05-08):** alvo de remoção via PR #52 (refator Coleta v2 multi-agent → OpenAI Agents SDK em CF Workers). Decisão cravada na auditoria 2026-05-07 (`docs/auditoria/2026-05-07-auditoria-completa.md` §12 Sprint 4+). Bugs em n8n não são P0. **Subagents (deploy-engineer, vps-ops, supabase-dba) que consomem este Mapa: não sugerir otimizações em n8n. Próximas mudanças no hot path são em `functions/api/agent/*` (CF Workers).**
+
+### Propósito (legado, vai ser substituído)
 Orquestração do workflow do bot WhatsApp. Workflow principal "MEU NOVO WORK - SAAS" (id `PmCMHTaTi07XGgWh`) recebe webhook do Evolution, chama Claude/OpenAI, dispara guardrails (PRE/POST) em CF Pages, registra em Supabase e envia resposta via Evolution.
+
+**Após o refator multi-agent:** Evolution webhook → CF Pages Functions `/api/agent/route.js` → 1 dos 4 agents especializados (TattooAgent / CadastroAgent / PropostaAgent / PortfolioAgent) → resposta. n8n sai inteiro do hot path.
 
 ### URL principal
 App: `https://n8n.inkflowbrasil.com`. MCP: `https://n8n.inkflowbrasil.com/mcp-server/http` (já conectado em `claude mcp list`).

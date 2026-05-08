@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-25
+last_reviewed: 2026-05-08
 owner: leandro
 status: stable
 related: [stack.md, ids.md, runbooks/mp-webhook-down.md, runbooks/outage-wa.md, runbooks/rollback.md]
@@ -7,6 +7,8 @@ related: [stack.md, ids.md, runbooks/mp-webhook-down.md, runbooks/outage-wa.md, 
 # Mapa Canônico — Fluxos críticos
 
 Fluxos ponta-a-ponta do InkFlow. Cada fluxo tem um diagrama Mermaid + narrativa numerada + pontos de falha conhecidos. Os endpoints exatos vivem em `ids.md` (seção *Endpoints internos*).
+
+> **⚠️ Deprecation em curso (2026-05-08):** os fluxos abaixo que envolvem **n8n** estão em rota de substituição via PR [#52](https://github.com/brazilianhustle/inkflow-saas/pull/52) — refator Coleta v2 multi-agent (OpenAI Agents SDK em CF Workers). Auditoria 2026-05-07 cravou a decisão. Fluxos novos (router CF Workers + 4 agents especializados) vão substituir os blocos n8n quando refator estiver mergeado.
 
 ## Signup → trial
 
@@ -183,7 +185,9 @@ sequenceDiagram
 
 ---
 
-## Webhook Evolution → n8n → bot
+## Webhook Evolution → n8n → bot  ⚠️ DEPRECATING
+
+> **Fluxo alvo após refator:** Cliente → Evolution webhook → CF Pages `/api/agent/route.js` (router por `estado_agente`) → 1 dos 4 agents especializados (TattooAgent/CadastroAgent/PropostaAgent/PortfolioAgent via OpenAI Agents SDK) → resposta volta via Evolution. n8n sai do hot path. Não otimizar o fluxo legado.
 
 Cliente final manda mensagem WA pro tenant. Evolution recebe → webhook configurado dispara workflow n8n principal → guardrails + Claude/OpenAI + tools → resposta volta via Evolution.
 

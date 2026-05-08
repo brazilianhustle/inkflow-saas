@@ -2,18 +2,21 @@
 
 > Atualizado conforme `docs/canonical/methodology/release-protocol.md` §7.3. Cada release de Worker / CF Pages / Supabase migration / n8n workflow ganha uma seção aqui com o formato definido no protocolo.
 
-## 2026-05-03 — Modo Coleta v2: Modo principal + Telegram tatuador (em execução)
+## 2026-05-03 — Modo Coleta v2: Modo principal + Telegram tatuador  ⚠️ MERGEADO + DEPOIS PIVOTADO
 
-**Status:** Branch `feat/modo-coleta-v2-principal` em desenvolvimento (Fases 0-6 + 8 done; Fases 7, 9, 10 pendentes). Não mergeado ainda.
+**Status atualizado (2026-05-08):** trabalho **MERGEADO em prod** via PRs #17 (refactor), #19 (v2 principal), #20 (reentrada bot via CF Pages) em 2026-05-03. Modo Coleta v2 ficou em prod por ~4 dias.
 
-**Decisão estratégica de produto** (sessão de conselho LLM 2026-05-02):
+**MAS depois pivotado:** auditoria 2026-05-07 cravou que **mono-agent dentro do n8n não escala** (PR #33 smoke E2E provou). Decisão: migrar pra **multi-agent via OpenAI Agents SDK em CF Workers** + remover n8n do hot path. PR #52 OPEN, Sub-1 IMPLEMENTED-PARTIAL. Spec+plan original (`2026-05-02-modo-coleta-v2-principal.md`) **deletados** de `docs/superpowers/`, mantidos apenas em `archive/` pra contexto histórico.
+
+**Princípios cravados aqui foram absorvidos pelo refator multi-agent:** R9 (devolver contradições), foto OBR_RECOMENDADO, anti-pattern dos few-shots com pseudo-código de tools, FSM `estado_agente` com 9 estados (cada agent passa a usar 1 subset).
+
+**Decisão estratégica de produto original** (sessão de conselho LLM 2026-05-02):
 - Coleta vira modo PRINCIPAL/default do SaaS
 - Faixa removido completamente (sem tenants pagantes — sem migração)
 - Exato vira beta secundário
 - Telegram do tatuador é o canal de comunicação tatuador↔IA (canal paralelo, cliente nunca vê tatuador no chat)
 
-**Spec:** `docs/superpowers/specs/2026-05-02-modo-coleta-v2-principal.md` (supersede `2026-04-22-modo-coleta-design.md`).
-**Plano:** `docs/superpowers/plans/2026-05-02-modo-coleta-v2-principal.md` (10 fases, ~30 tasks).
+**Spec original (deletado, em archive):** `archive/InkFlow — Modo Coleta v2 principal (2026-05-02).md`.
 
 **Mudanças até o momento:**
 

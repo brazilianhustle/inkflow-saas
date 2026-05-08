@@ -2,13 +2,16 @@
 name: Auditoria completa do SaaS InkFlow
 description: Spec de discovery read-only do estado atual (stack, repo, workflow n8n, Supabase, observability) com plano de mitigação priorizado
 date: 2026-05-07
-status: ready-to-execute
+status: ⚠️ EXECUTADO em 2026-05-07 — relatório em `docs/auditoria/2026-05-07-auditoria-completa.md` (2270 linhas, 109 findings). Sprint 1 mergeado (PRs #36-#44). Sprint 2 mergeado (PRs #45/#46/#50/#51). Refator multi-agent disparado pela auditoria está em curso (PR #52 OPEN).
 type: discovery-audit
 tags: [audit, discovery, refactor, hot-path]
 originSessionId: 2026-05-07-nova-feature-multi-agent-pivot
+last_updated: 2026-05-08
 ---
 
-# Auditoria completa do SaaS InkFlow — Design
+# Auditoria completa do SaaS InkFlow — Design  ⚠️ EXECUTADO
+
+> **Status (2026-05-08):** spec EXECUTADO — auditoria completa rodada em 2026-05-07. Output: `docs/auditoria/2026-05-07-auditoria-completa.md` (2270 linhas, 109 findings, roadmap P0-P3 priorizado). Trabalho derivado: Sprint 1 mergeado (PRs #36-#44, 12 advisor lints fechados), Sprint 2 mergeado (auth/billing/Evolution tests #45/#46/#50/#51), refator multi-agent em curso (PR #52). Mantido pra contexto histórico.
 
 ## Contexto
 

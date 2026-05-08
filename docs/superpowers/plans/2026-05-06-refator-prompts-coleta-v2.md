@@ -1,4 +1,6 @@
-# Refator Prompts Coleta v2 Implementation Plan
+# Refator Prompts Coleta v2 Implementation Plan  ⚠️ HISTÓRICO
+
+> **Status (2026-05-08):** plan EXECUTADO via PRs #28 (refator 3 camadas) + #29 (hotfix race condition `merge_conversa_jsonb`) em 2026-05-06. Trabalho da arquitetura n8n-mono-agent **pré-pivot multi-agent (2026-05-07)**. Princípios cravados (R9, formato A, tom B) **sobreviveram no refator multi-agent** como FUNDAÇÃO dos agent prompts. Mantido pra contexto histórico — não re-executar.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

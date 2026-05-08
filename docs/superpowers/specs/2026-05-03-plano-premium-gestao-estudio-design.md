@@ -1,16 +1,19 @@
 ---
 title: Plano Premium "Gestão de Estúdio" — Design
 date: 2026-05-03
-status: design
+status: design — pendente review do Leandro (cobre tier comercial novo, não bloqueado pelo refator multi-agent)
 supersedes: null
 related:
   - docs/canonical/stack.md
   - docs/canonical/flows.md
-  - docs/superpowers/specs/2026-05-02-modo-coleta-v2-principal.md
+  - archive/InkFlow — Modo Coleta v2 principal (2026-05-02).md  # spec original deletada do docs/superpowers/, segue só em archive memory
   - docs/superpowers/specs/2026-05-03-pagina-tatuador-refactor-design.md
+last_updated: 2026-05-08
 ---
 
 # Plano Premium "Gestão de Estúdio" — Design
+
+> **Nota (2026-05-08):** este spec descreve **tier comercial novo** (InkFlow Pro / Pro+Ads) — independente do refator multi-agent em curso. Mantém-se pendente review do Leandro. Quando entrar em execução, integra com a arquitetura nova (post-PR #52: multi-agent OpenAI Agents SDK, n8n removido).
 
 ## 1. Resumo executivo
 

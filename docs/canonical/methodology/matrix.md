@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-04-26
+last_reviewed: 2026-05-08
 owner: leandro
 status: stable
 related: [index.md, incident-response.md, release-protocol.md, ../secrets.md, ../runbooks/README.md]
@@ -7,6 +7,8 @@ related: [index.md, incident-response.md, release-protocol.md, ../secrets.md, ..
 <!-- index.md, incident-response.md, release-protocol.md são criados em Tasks 2-4 deste plano (docs/superpowers/plans/2026-04-25-metodologia-fabrica.md). Forward-references intencionais. -->
 
 # Matrix — Principal vs. Subagent
+
+> **⚠️ Nota de deprecation (2026-05-08):** §5.2 e §5.3 citam **n8n** como domínio (linha "VPS / n8n", caso #9a/9b "Ajustar workflow n8n"). Após PR #52 (refator Coleta v2 multi-agent) mergear, n8n sai do hot path — o domínio "n8n" deixa de existir como linha separada. Workflows do agent ficam em `functions/api/agent/*` (CF Workers), passando a se enquadrar em **Deploy** (`deploy-engineer`). Esta matriz será atualizada quando refator mergear.
 
 Doctrine de delegação: quando trabalho fica na sessão principal vs. quando vira tarefa pra subagent dedicado. Lida por **Claude principal** (decidindo "delegar isso?") e por cada **subagent** (validando "tá no meu escopo?"). Ordem de aplicação das heurísticas: **Safety > Scope > Domain**.
 

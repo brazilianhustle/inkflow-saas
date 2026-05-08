@@ -1,4 +1,8 @@
-# Página do Tatuador — Refactor — Plano-mestre (orquestração)
+# Página do Tatuador — Refactor — Plano-mestre (orquestração)  ⚠️ EXECUTADO
+
+> **Status (2026-05-08):** plano-mestre **EXECUTADO** via sub-PRs #21 a #26 mergeados em prod (03/05 → 05/05). UI Studio refatorada (8 painéis) vive em prod. Mantido pra contexto histórico.
+>
+> **Nota sobre dependência:** o plano-mestre saía de `feat/modo-coleta-v2-principal` (Modo Coleta v2 mono-agent). Esse backend foi pivotado em 2026-05-07 pelo refator multi-agent (PR #52). UI Studio segue válida — só o backend que toca o bot mudou.
 
 > **For agentic workers:** Este é o **plano-mestre** que coordena 9 sub-PRs independentes. Cada PR tem (ou terá) seu próprio plano detalhado em `docs/superpowers/plans/2026-05-03-pagina-tatuador-PR<N>-<nome>.md`. Sub-plans são escritos sob demanda — quando for executar PR N, invoque `superpowers:writing-plans` apontando pro escopo desta linha + a spec mestre. Cada sub-plan deve usar `superpowers:subagent-driven-development` (recomendado) ou `superpowers:executing-plans` pra implementação task-a-task.
 

@@ -2,14 +2,21 @@
 title: Wire das 4 tools Modo Coleta v2 ao Agent n8n + self-heal de conversa
 slug: wire-tools-coleta-v2-bot
 date: 2026-05-05
-status: design-aprovado
+status: ⚠️ CONSUMIDO — implementado via PR #27 (mergeado 2026-05-05) — arquitetura pré-pivot multi-agent
 branch: feat/wire-tools-coleta-v2
 related:
   - 2026-04-22-modo-coleta-design.md
   - 2026-05-02-modo-coleta-v2-principal.md
+last_updated: 2026-05-08
 ---
 
-# Wire das 4 tools Modo Coleta v2 ao Agent n8n + self-heal de conversa
+# Wire das 4 tools Modo Coleta v2 ao Agent n8n + self-heal de conversa  ⚠️ HISTÓRICO
+
+> **Status (2026-05-08):** este spec descreve trabalho **mergeado em prod via PR #27** (`0be0ec7`) em 2026-05-05. As 4 tools Coleta v2 foram wired ao Agent n8n + helper `ensureConversa` deployado.
+>
+> **Mas:** após smoke E2E real revelar bugs estruturais (LLM imita pseudo-código dos few-shots), a arquitetura n8n-mono-agent foi **pivotada** em 2026-05-07 (auditoria) pra multi-agent via OpenAI Agents SDK em CF Workers (PR #52 OPEN). O wire descrito aqui é da arquitetura LEGADA — funcional em prod hoje, mas será substituído pelo router CF Workers que chama os endpoints diretamente sem passar pelo n8n.
+>
+> **Mantido como referência histórica.** Princípios técnicos (self-heal via UPSERT idempotente, contrato `(tenant_id, telefone)`) podem ser absorvidos pelo refator multi-agent.
 
 ## Contexto
 
