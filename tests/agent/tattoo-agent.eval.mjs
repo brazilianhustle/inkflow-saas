@@ -37,22 +37,10 @@ const FAKE_TENANT = {
 };
 
 // Builder pro eval — usa tools NO-OP em vez dos HTTP proxies.
+// Tool unica: handoff_to_cadastro. Persistencia via dados_persistidos no
+// structured output (mirror prod — agents/tattoo.js).
 function buildAgentForEval({ tenant, conversa, clientContext, toolCallLog }) {
-  // R8 (em decisao.js) absorveu o que vivia em REFORCO_HANDOFF.
   const instructions = generatePromptColetaTattoo(tenant, conversa, clientContext || {});
-
-  const dadosColetadosNoOp = tool({
-    name: 'dados_coletados',
-    description: 'Persiste 1 campo coletado da tattoo.',
-    parameters: z.object({
-      campo: z.enum(['descricao_tattoo', 'tamanho_cm', 'local_corpo', 'estilo', 'foto_local', 'refs_imagens']),
-      valor: z.union([z.string(), z.number(), z.array(z.string())]),
-    }),
-    execute: async ({ campo, valor }) => {
-      toolCallLog.push({ name: 'dados_coletados', args: { campo, valor } });
-      return { ok: true, campo, valor };
-    },
-  });
 
   const handoffNoOp = tool({
     name: 'handoff_to_cadastro',
@@ -71,7 +59,7 @@ function buildAgentForEval({ tenant, conversa, clientContext, toolCallLog }) {
     name: 'tattoo-agent-eval',
     model: 'gpt-4o-mini',
     instructions,
-    tools: [dadosColetadosNoOp, handoffNoOp],
+    tools: [handoffNoOp],
     outputType: TattooOutputSchema,
   });
 }
