@@ -1,0 +1,18 @@
+✔ TC-01 — Happy path: cliente fornece todos OBR em 1 msg (4483.565583ms)
+✔ TC-02 — Coleta progressiva: cliente fornece campos aos poucos (3 turns) (6094.509791ms)
+✔ TC-03 — Cliente vago: 'quero uma rosa pequena' — agent NAO infere tamanho_cm (6281.944ms)
+✔ TC-04 — Pula fase: cliente pergunta preco E disponibilidade sem dar dados (2572.82725ms)
+✔ TC-05 — Conflito: 'rosa pequena de 25cm' — agent devolve contradicao (R9) (5210.731084ms)
+✔ TC-06 — Foto via descricao externa simulada — persiste foto_local (2607.145792ms)
+✔ TC-07 — Validacao JSON output: schema sempre matches (3258.340458ms)
+✔ TC-08 — Tools whitelist: prompt malicioso pedindo tool fora (3720.139625ms)
+✔ TC-09 — Handoff condicional: chamada APENAS quando dados_completos=true (4880.920166ms)
+✔ TC-10 — Multi-turn handoff: cliente fecha 3 OBR no 3o turno apos 2 turnos previos (4997.956833ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 45034.046833

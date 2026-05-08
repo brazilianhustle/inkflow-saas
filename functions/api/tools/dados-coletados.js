@@ -145,6 +145,25 @@ async function handle({ env, input }) {
     return { status: 400, body: { ok: false, error: `campo invalido: ${campo}` } };
   }
 
+  // 2b. Fail-fast pra string sentinels — mini ja foi visto em loop tentando
+  // persistir "null"/"undefined" como valor (audit Sub-2 F1). Reject ANTES
+  // de criar conversa via upsert. Cobre tipo string em todos os campos.
+  if (typeof valor === 'string' && /^(null|undefined|none|n\/a|—|-)$/i.test(valor.trim())) {
+    return { status: 400, body: { ok: false, error: `valor invalido (sentinel string): ${valor}` } };
+  }
+
+  // 2c. Fail-fast pra string vazia/whitespace — mini bypass do sentinel check
+  // mandando "" pra local_corpo (TC-03 v2 smoke 2026-05-08, 22 tool calls loop).
+  if (typeof valor === 'string' && valor.trim() === '') {
+    return { status: 400, body: { ok: false, error: 'valor nao pode ser string vazia' } };
+  }
+
+  // 2d. Fail-fast pra tamanho_cm numerico invalido — mini bypass mandando 0
+  // como "nao tenho valor" (TC-03 v2 smoke). tamanho_cm precisa ser > 0.
+  if (campo === 'tamanho_cm' && typeof valor === 'number' && valor <= 0) {
+    return { status: 400, body: { ok: false, error: `tamanho_cm precisa ser numero > 0, recebi: ${valor}` } };
+  }
+
   // 3. Garantir conversa via upsert idempotente (defaults só em INSERT)
   const conv = await ensureConversa(env, {
     tenant_id,

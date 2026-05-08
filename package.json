@@ -1,0 +1,14 @@
+{
+  "name": "inkflow-saas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/**/*.test.mjs",
+    "eval:tattoo": "node --test tests/agent/tattoo-agent.eval.mjs"
+  },
+  "dependencies": {
+    "@openai/agents": "^0.1.0",
+    "zod": "^3.23.0"
+  }
+}

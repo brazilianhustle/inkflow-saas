@@ -3,6 +3,7 @@ pixel-agents-standalone/
 
 .wrangler/
 .claude/worktrees/
+.claude/active-branch
 .worktrees/
 .playwright-mcp/
 
