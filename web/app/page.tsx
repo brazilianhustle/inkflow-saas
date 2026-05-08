@@ -3,6 +3,7 @@ import Hero from "@/components/landing/Hero";
 import Stats from "@/components/landing/Stats";
 import Features from "@/components/landing/Features";
 import HowItWorks from "@/components/landing/HowItWorks";
+import Demo from "@/components/landing/Demo";
 
 export default function Home() {
   return (
@@ -12,6 +13,7 @@ export default function Home() {
       <Stats />
       <Features />
       <HowItWorks />
+      <Demo />
     </main>
   );
 }
