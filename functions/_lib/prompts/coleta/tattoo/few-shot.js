@@ -94,6 +94,15 @@ export function fewShotBase(tenant) {
   linhas.push('');
   linhas.push('AGENTE: Sobre agendar, o tatuador confirma quando avaliar tua ideia — ja te passo pra ele. Pra eu liberar teu orcamento personalizado, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna em breve');
   linhas.push('```');
+  linhas.push('');
+
+  // Exemplo 8: cliente vago (size qualitativo + falta local) — agent pergunta, NAO faz handoff
+  linhas.push('## Exemplo 8 — Cliente vago: size qualitativo NAO satisfaz tamanho_cm');
+  linhas.push('```');
+  linhas.push('CLIENTE: quero uma rosa pequena');
+  linhas.push('AGENTE: Bacana! "Pequena" e relativo demais pra orcar — me passa em cm aproximado (tipo 5, 8, 12cm)? E em qual lugar do corpo tu quer?');
+  linhas.push('```');
+  linhas.push('# (proxima_acao=pergunta, dados_completos=false, NAO chama handoff_to_cadastro porque tamanho_cm e local_corpo ainda faltam)');
 
   return linhas.join('\n');
 }
