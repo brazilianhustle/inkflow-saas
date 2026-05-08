@@ -41,7 +41,6 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/images/favicon.svg",
-    apple: "/images/apple-touch-icon.png",
   },
 };
 
@@ -125,6 +124,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap"
           rel="stylesheet"
         />
+        {/* eslint-disable-next-line @next/next/no-page-custom-font -- TODO(T14): migrar p/ next/font/google */}
         <link
           href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"

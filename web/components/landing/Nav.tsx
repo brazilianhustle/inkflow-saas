@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { copy } from "@/lib/copy";
 import { startCheckout } from "@/lib/checkout";
@@ -27,14 +28,14 @@ export default function Nav() {
       >
         <div className="h-full max-w-[var(--container)] mx-auto flex items-center justify-between gap-8">
           {/* Logo + nome */}
-          <a href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <span className="grid place-items-center w-[34px] h-[34px] rounded-lg bg-[var(--color-accent)] font-display font-bold text-[18px] text-white">
               I
             </span>
             <span className="font-display font-bold text-[19px] tracking-[-0.5px] text-text-primary">
               InkFlow
             </span>
-          </a>
+          </Link>
 
           {/* Links centrais (desktop) */}
           <ul className="hidden lg:flex items-center gap-7">

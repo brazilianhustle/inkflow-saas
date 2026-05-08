@@ -1,5 +1,4 @@
-"use client";
-
+import Link from "next/link";
 import { copy } from "@/lib/copy";
 
 export default function Footer() {
@@ -13,14 +12,14 @@ export default function Footer() {
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-12 lg:gap-16 pb-12 border-b border-[var(--color-border)]">
           {/* Brand */}
           <div className="max-w-[280px]">
-            <a href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3">
               <span className="grid place-items-center w-[34px] h-[34px] rounded-lg bg-[var(--color-accent)] font-display font-bold text-[18px] text-white">
                 I
               </span>
               <span className="font-display font-bold text-[19px] tracking-[-0.5px] text-text-primary">
                 InkFlow
               </span>
-            </a>
+            </Link>
             <p
               className="font-mono font-normal text-[12px] text-text-muted mt-4"
               style={{ lineHeight: 1.6 }}

@@ -76,13 +76,13 @@ export default function Hero() {
               onClick={() => startCheckout("individual")}
               className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-display font-semibold text-[14px] px-[30px] py-[14px] rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-button)]"
             >
-              {copy.hero.ctaPrimary} →
+              {copy.hero.ctaPrimary} <span aria-hidden="true">→</span>
             </button>
             <a
               href="#demo"
               className="bg-transparent text-text-primary font-display font-medium text-[14px] px-[28px] py-[14px] rounded-lg border border-white/10 hover:border-[var(--accent-border)] hover:text-[var(--color-accent)] hover:bg-[var(--accent-soft)] transition-all duration-300"
             >
-              ▶ {copy.hero.ctaGhost}
+              <span aria-hidden="true">▶</span> {copy.hero.ctaGhost}
             </a>
           </motion.div>
         </div>

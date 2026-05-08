@@ -12,8 +12,8 @@ export default function CtaFinal() {
       style={{
         paddingLeft: "var(--side-pad)",
         paddingRight: "var(--side-pad)",
-        paddingTop: "clamp(120px, 16vw, 200px)",
-        paddingBottom: "clamp(120px, 16vw, 200px)",
+        paddingTop: "var(--section-gap)",
+        paddingBottom: "var(--section-gap)",
       }}
     >
       {/* Glow radial decorativo */}
@@ -51,7 +51,7 @@ export default function CtaFinal() {
           onClick={() => startCheckout("individual")}
           className="mt-10 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-display font-semibold text-[14px] px-[30px] py-[14px] rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-button)]"
         >
-          {copy.ctaFinal.cta} →
+          {copy.ctaFinal.cta} <span aria-hidden="true">→</span>
         </button>
       </motion.div>
     </section>
