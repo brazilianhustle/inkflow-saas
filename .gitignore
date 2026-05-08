@@ -12,3 +12,12 @@ node_modules/
 docs/superpowers/.DS_Store
 **/.DS_Store
 .superpowers/
+
+# Next.js (web/)
+web/node_modules/
+web/.next/
+web/out/
+web/.vercel/
+web/coverage/
+web/.env*.local
+web/*.tsbuildinfo
