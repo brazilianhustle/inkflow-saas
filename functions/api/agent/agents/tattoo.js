@@ -1,11 +1,13 @@
 // TattooAgent — fase tattoo do fluxo Coleta v2.
 // Importa prompt LITERAL de functions/_lib/prompts/coleta/tattoo/ (sem
-// modificacao). Tools whitelist: dados_coletados (existente) +
-// handoff_to_cadastro (nova em Sub-1).
+// modificacao). Tools whitelist: handoff_to_cadastro (so).
 //
 // Decisoes cravadas (ver spec):
 // - Modelo: gpt-4o-mini (paridade com baseline n8n)
-// - Tools restritas: 2 tools whitelist, outras 12 ficam pros agents Cadastro/Proposta/Portfolio em Sub-2
+// - Tool unica: handoff_to_cadastro. Persistencia via structured output
+//   (dados_persistidos no finalOutput) — caller decide o que salvar.
+//   Removida a tool dados_coletados (TC-03 v2 smoke 2026-05-08: dual-via
+//   causava hallucination em mini. Detalhes em audit Fase 9).
 // - Structured output via Zod com invariante handoff
 // - Prompt portado SEM modificacao do PR #28 (R9, T7, altura_cm, foto_local)
 
@@ -64,38 +66,6 @@ export function validateTattooOutputInvariant(out) {
 // ── Tools (HTTP proxies) ──────────────────────────────────────────────────
 // As tools no SDK chamam o endpoint HTTP existente. Sub-1 usa fetch direto
 // pra functions internas. INKFLOW_TOOL_SECRET no env autentica.
-function buildToolDadosColetados({ env, tenant_id, telefone, baseUrl }) {
-  return tool({
-    name: 'dados_coletados',
-    description: 'Persiste 1 campo coletado da tattoo. Chame uma vez por campo (descricao_tattoo, tamanho_cm, local_corpo, estilo, foto_local, refs_imagens).',
-    parameters: z.object({
-      campo: z.enum(['descricao_tattoo', 'tamanho_cm', 'local_corpo', 'estilo', 'foto_local', 'refs_imagens']),
-      valor: z.union([z.string(), z.number(), z.array(z.string())]),
-    }),
-    execute: async ({ campo, valor }) => {
-      let res;
-      try {
-        res = await fetch(`${baseUrl}/api/tools/dados-coletados`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Inkflow-Tool-Secret': env.INKFLOW_TOOL_SECRET,
-          },
-          body: JSON.stringify({ tenant_id, telefone, campo, valor }),
-        });
-      } catch (e) {
-        return { ok: false, error: `tool-network-error: ${e?.message || e}` };
-      }
-      if (!res.ok) return { ok: false, error: `tool-http-${res.status}` };
-      try {
-        return await res.json();
-      } catch {
-        return { ok: false, error: 'tool-bad-json' };
-      }
-    },
-  });
-}
-
 function buildToolHandoffToCadastro({ env, tenant_id, telefone, baseUrl }) {
   return tool({
     name: 'handoff_to_cadastro',
@@ -138,7 +108,6 @@ export function buildTattooAgent({ env, tenant, conversa, clientContext, baseUrl
   const telefone = conversa.telefone || conversa.cliente_telefone || '';
 
   const tools = [
-    buildToolDadosColetados({ env, tenant_id, telefone, baseUrl }),
     buildToolHandoffToCadastro({ env, tenant_id, telefone, baseUrl }),
   ];
 
