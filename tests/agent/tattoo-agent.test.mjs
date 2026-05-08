@@ -22,15 +22,15 @@ const FAKE_CONVERSA = {
   dados_cadastro: {},
 };
 
-test('buildTattooAgent retorna Agent com 2 tools whitelist', () => {
+test('buildTattooAgent retorna Agent pure structured-output (sem tools)', () => {
   const agent = buildTattooAgent({
     env: { OPENAI_API_KEY: 'sk-test', INKFLOW_TOOL_SECRET: 'tool-sec' },
     tenant: FAKE_TENANT,
     conversa: FAKE_CONVERSA,
     clientContext: {},
   });
-  const toolNames = agent.tools.map(t => t.name).sort();
-  assert.deepEqual(toolNames, ['dados_coletados', 'handoff_to_cadastro']);
+  // v2: tools removidas (audit Fase 9). Estado/dados via structured output.
+  assert.deepEqual(agent.tools, []);
 });
 
 test('buildTattooAgent usa modelo gpt-4o-mini', () => {
@@ -43,14 +43,15 @@ test('buildTattooAgent usa modelo gpt-4o-mini', () => {
   assert.equal(agent.model, 'gpt-4o-mini');
 });
 
-test('buildTattooAgent prompt inclui reforco handoff invariante', () => {
+test('buildTattooAgent prompt inclui invariante handoff (R7)', () => {
   const agent = buildTattooAgent({
     env: { OPENAI_API_KEY: 'sk-test', INKFLOW_TOOL_SECRET: 'tool-sec' },
     tenant: FAKE_TENANT,
     conversa: FAKE_CONVERSA,
     clientContext: {},
   });
-  assert.match(agent.instructions, /handoff_to_cadastro/);
+  // v2: handoff sai via proxima_acao no output (sem tool). R7 declara invariante.
+  assert.match(agent.instructions, /proxima_acao='handoff'/);
   assert.match(agent.instructions, /dados_completos/);
 });
 

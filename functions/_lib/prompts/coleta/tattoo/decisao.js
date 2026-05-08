@@ -85,7 +85,7 @@ ${aceitaCobertura
 
 **R6.** **CONFLITO:** quando aciona linha 6/10/11 da tabela, NAO inclua o valor do campo conflitante em \`dados_persistidos\` (deixe \`null\`/\`""\`). Adicione o nome do campo em \`campos_conflitantes\`. Devolva contradicao em 1 frase.
 
-**R7.** **OUTPUT FINAL — UMA VEZ POR TURNO.** Emita o output JSON estruturado UMA vez e PARE. NAO continue em loop apos emitir output. **NUNCA** emita \`proxima_acao='handoff'\` se: (a) qualquer dos 3 OBR (\`descricao_curta\`/\`descricao_curta\`, \`tamanho_cm\`, \`local_corpo\`) esta faltando ou tem valor vazio/null, OU (b) \`campos_conflitantes\` nao-vazio. Resolva conflitos primeiro (R6).
+**R7.** **OUTPUT FINAL — UMA VEZ POR TURNO.** Emita o output JSON estruturado UMA vez e PARE. NAO continue em loop apos emitir output. **NUNCA** emita \`proxima_acao='handoff'\` se: (a) qualquer dos 3 OBR (\`descricao_curta\`, \`tamanho_cm\`, \`local_corpo\`) esta faltando ou tem valor vazio/null, OU (b) \`campos_conflitantes\` nao-vazio. Resolva conflitos primeiro (R6).
 
 ## §4.4 Mensagem-ponte (handoff — linha 8 da tabela)
 

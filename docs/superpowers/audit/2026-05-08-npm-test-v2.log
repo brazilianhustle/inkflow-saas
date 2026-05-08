@@ -1,0 +1,457 @@
+
+> inkflow-saas@1.0.0 test
+> node --test tests/**/*.test.mjs
+
+✔ markConversaFechada — motivo sinal_pago: grava estado_agente=fechado + dados_coletados merged (31.349959ms)
+✔ markConversaFechada — motivo hold_expirado: grava motivo correto (0.255166ms)
+✔ markConversaFechada — idempotente: 2ª chamada na mesma conversa retorna ja_estava_fechada=true (0.181167ms)
+✔ markConversaFechada — motivo inválido lança Error com lista de válidos (0.272708ms)
+✔ markConversaFechada — race window: GET retorna aguardando_sinal, PATCH retorna [] → ja_estava_fechada=true (0.198542ms)
+✔ markConversaFechada — conversa inexistente lança Error informativo (0.135125ms)
+✔ ensureConversa: INSERT primeira vez retorna criado=true com row populada (21.521292ms)
+✔ ensureConversa: conflito retorna criado=false + row existente intacta (0.712083ms)
+✔ ensureConversa: tenant_id ausente retorna ok=false (0.044458ms)
+✔ ensureConversa: telefone ausente retorna ok=false (0.038583ms)
+✔ ensureConversa: Supabase 500 no INSERT retorna insert-falhou (0.09975ms)
+✔ ensureConversa: SELECT pós-conflito 500 retorna select-pos-conflito-falhou (0.140125ms)
+✔ ensureConversa: SELECT pós-conflito vazio retorna row-nao-encontrada (0.1445ms)
+✔ todayStartBrt — 12:00 UTC (09:00 BRT) retorna mesmo dia 03:00 UTC (1.660542ms)
+✔ todayStartBrt — 02:00 UTC (23:00 BRT do dia anterior) retorna ontem 03:00 UTC (0.101041ms)
+✔ weekStartBrt — quarta 12:00 UTC retorna segunda 03:00 UTC (0.097375ms)
+✔ weekStartBrt — segunda 04:00 UTC (01:00 BRT segunda) retorna segunda 03:00 UTC (mesma semana) (0.110875ms)
+✔ daysAgoBrt(30) — retorna 30d antes do today_start_brt (0.122875ms)
+✔ weekStartBrt — segunda 15:00 UTC (12:00 BRT segunda) retorna mesma segunda 03:00 UTC (0.087416ms)
+mp-sinal-handler: erro buscando payment 404
+mp-sinal-handler: payment pay-1 status=pending agendamento=00000000-0000-0000-0000-000000000aaa
+mp-sinal-handler: payment pay-1 status=rejected agendamento=00000000-0000-0000-0000-000000000aaa
+mp-sinal-handler: erro promovendo agendamento {"error":"internal"}
+mp-sinal-handler: agendamento 00000000-0000-0000-0000-000000000aaa confirmado via payment pay-1
+mp-sinal-handler: agendamento 00000000-0000-0000-0000-000000000aaa confirmado via payment pay-1
+✔ mp-sinal-handler — L1: MP_ACCESS_TOKEN missing → mp-not-configured (1.547958ms)
+✔ mp-sinal-handler — L2: paymentId=null → no-payment-id (0.101584ms)
+✔ mp-sinal-handler — L2: paymentId=undefined → no-payment-id (0.055334ms)
+✔ mp-sinal-handler — L2: paymentId="" → no-payment-id (0.051625ms)
+✔ mp-sinal-handler — L3: MP API 404 → payment-fetch-failed (33.542708ms)
+✔ mp-sinal-handler — L4: external_reference="tenant-abc" → not-a-sinal (1.030375ms)
+✔ mp-sinal-handler — L4: external_reference=null → not-a-sinal (0.30325ms)
+✔ mp-sinal-handler — L4: external_reference="sinal:" → not-a-sinal (0.254542ms)
+✔ mp-sinal-handler — L5: status=pending → not-approved (0.373042ms)
+✔ mp-sinal-handler — L5: status=rejected → not-approved (0.278625ms)
+✔ mp-sinal-handler — L6: PATCH agendamento 5xx → update-failed (1.592292ms)
+✔ mp-sinal-handler — L7: PATCH retorna [] → already-processed (idempotência) (0.312292ms)
+✔ mp-sinal-handler — L8: HAPPY PATH com cliente_telefone → 5 calls em ordem (0.660708ms)
+✔ mp-sinal-handler — L9: HAPPY PATH sem cliente_telefone → 2 calls (0.145666ms)
+✔ mp-sinal-handler — L10: isSinalCandidateEvent({"type":"payment"}) → true (0.055167ms)
+✔ mp-sinal-handler — L10: isSinalCandidateEvent({"type":"PAYMENT"}) → true (0.03175ms)
+✔ mp-sinal-handler — L10: isSinalCandidateEvent({"type":"Payment"}) → true (0.021167ms)
+✔ mp-sinal-handler — L11: isSinalCandidateEvent({"type":"subscription_payment"}) → true (contains 'payment') (0.060583ms)
+✔ mp-sinal-handler — L11: isSinalCandidateEvent({"type":"payment.created"}) → true (contains 'payment') (0.023ms)
+✔ mp-sinal-handler — L12: isSinalCandidateEvent({topic:"payment", type:undefined}) → true (0.039209ms)
+✔ mp-sinal-handler — L13: isSinalCandidateEvent({"type":"preapproval"}) → false (0.027666ms)
+✔ mp-sinal-handler — L13: isSinalCandidateEvent({"type":null,"topic":null}) → false (0.020125ms)
+✔ mp-sinal-handler — L13: isSinalCandidateEvent({}) → false (0.019667ms)
+✔ mp-sinal-handler — L13: isSinalCandidateEvent({"type":"","topic":""}) → false (0.018959ms)
+✔ buildPrompt — inclui contagens da semana atual e anterior (1.135417ms)
+✔ buildPrompt — semana ruim (zero) gera tom positivo (0.169792ms)
+✔ callLlm — chama OpenAI com modelo gpt-4o-mini e retorna texto (0.401459ms)
+✔ callLlm — OpenAI 500 lança Error com detail (0.383333ms)
+✔ callLlm — texto >600 chars trunca (0.179542ms)
+✔ route rejeita non-POST com 405 (19.144875ms)
+✔ route OPTIONS preflight retorna 204 + CORS headers (0.460208ms)
+✔ route rejeita body sem tenant_id/telefone com 400 (0.658417ms)
+✔ route retorna 501 pra estado_atual nao-implementado (Sub-2) (0.235791ms)
+✔ route retorna 503 quando OPENAI_API_KEY ausente (0.162125ms)
+✔ selectAgentBuilder retorna builder pra estado=tattoo (0.50225ms)
+✔ selectAgentBuilder retorna null pra estados nao-implementados (Sub-2/3) (0.039958ms)
+✔ isStateImplemented true pra tattoo, false pros outros (0.042416ms)
+✔ getApiKey retorna OPENAI_API_KEY do env (0.516625ms)
+✔ getApiKey lanca erro quando OPENAI_API_KEY ausente (0.176584ms)
+✔ validateEnv retorna ok=true quando todas as vars presentes (0.056958ms)
+✔ validateEnv retorna ok=false + missing[] quando faltam vars (0.556125ms)
+✔ buildTattooAgent retorna Agent pure structured-output (sem tools) (1.344375ms)
+✔ buildTattooAgent usa modelo gpt-4o-mini (0.085042ms)
+✔ buildTattooAgent prompt inclui invariante handoff (R7) (0.090625ms)
+✔ TattooOutputSchema aceita output valido (handoff) (0.515167ms)
+✔ validateTattooOutputInvariant rejeita handoff com dados_completos=false (0.103833ms)
+✔ validateTattooOutputInvariant rejeita handoff com campos_conflitantes nao-vazio (0.084834ms)
+✔ validateTattooOutputInvariant aceita handoff valido + pergunta (0.038667ms)
+✔ TattooOutputSchema aceita pergunta com campos_faltando (0.056834ms)
+✔ TattooOutputSchema rejeita tamanho_cm <=0 ou >200 (paridade com server) (0.22525ms)
+✔ pickConversasToResume — conversa pausada há 7h com config 6h → retoma (2.157833ms)
+✔ pickConversasToResume — conversa pausada há 3h com config 6h → ignora (0.179542ms)
+✔ pickConversasToResume — config null (nunca retomar) → ignora mesmo se pausada há semana (0.111ms)
+✔ pickConversasToResume — config ausente (default 6h) → retoma se pausada há > 6h (0.121708ms)
+✔ pickConversasToResume — conversa não pausada → ignora (0.133542ms)
+✔ applyTransition — pause de estado coletando_tattoo → pausada_tatuador, salva anterior=coletando_tattoo (1.441083ms)
+✔ applyTransition — pause de estado já pausada_tatuador → noop (idempotente) (0.081833ms)
+✔ applyTransition — resume com estado_agente_anterior preservado → restore preciso (0.062708ms)
+✔ applyTransition — resume sem anterior → fallback ativo (0.055ms)
+✔ applyTransition — resume mas estado não estava pausado → noop (0.064917ms)
+✔ getGrupoFilter("hoje") — 2 listas: agente (coleta) + workflow (agenda) + filtro hoje BRT (2.005791ms)
+✔ getGrupoFilter("aguardando") — só estados_agente, estados vazio (0.105458ms)
+✔ getGrupoFilter("negociacao") — propondo + lead_frio + pausada_tatuador (single col) (0.062833ms)
+✔ getGrupoFilter("historico") — só fechado em estados_agente (0.093917ms)
+✔ getGrupoFilter("invalid") — retorna null (caller decide 400) (0.056709ms)
+✔ getGrupoFilter("hoje") — last_msg_at_gte é 00:00 BRT em UTC (T03:00:00Z) (0.053875ms)
+✔ getGrupoFilter — caso aguardando: estados vazio + estados_agente cheio (forma assimétrica) (0.051375ms)
+✔ GRUPOS_VALIDOS — exporta lista dos 4 grupos (0.050791ms)
+✔ list — falta studio_token → 400 (28.193833ms)
+✔ list — studio_token inválido → 401 (366.525125ms)
+✔ list — grupo inválido → 400 com lista de válidos (2.422ms)
+✔ list — happy path: stub Supabase, retorna conversas + previews (grupo=hoje cross-column) (0.938125ms)
+✔ list — tenant_id sempre derivado do token (não aceita query param) (0.628542ms)
+✔ list — limit clamping: valores fora do range (0, -1, "abc", >100) → default 30 ou cap 100 (1.292583ms)
+✔ list — before_ts inválido → 400 (0.278167ms)
+list: preview fetch falhou c1 simulated network error
+✔ list — preview falha em uma conversa não derruba o batch (silent failure protection) (0.59425ms)
+✔ list — grupo=hoje constrói URL com or=(estado_agente.in,estado.in) + last_msg_at=gte (0.362708ms)
+✔ list — grupo=negociacao constrói URL com estado_agente=in.(...) direto (sem or=) (0.32525ms)
+✔ list — grupo=hoje + before_ts → URL contém or=(...) + last_msg_at=lt.<ts> (0.306ms)
+✔ thread — falta conversa_id → 400 (36.687875ms)
+✔ thread — conversa de outro tenant → 404 (tenant guard) (2.042917ms)
+✔ thread — happy path: retorna mensagens com role mapeado e session_id server-side (1.765792ms)
+✔ thread — before_ts cursor → adiciona created_at=lt (1.602625ms)
+✔ thread — limit clamped pra 200 max (0.878167ms)
+✔ thread — before_ts inválido (não-ISO) → 400 (0.878834ms)
+MP card error: {"message":"invalid_token","cause":[{"description":"Token inválido"}]}
+✔ create-subscription — C1: JSON body inválido → 400 (35.139167ms)
+✔ create-subscription — C2: tenant_id missing → 400 (0.303583ms)
+✔ create-subscription — C2: plano missing → 400 (0.212083ms)
+✔ create-subscription — C3: plano=unknown → 400 (0.222583ms)
+✔ create-subscription — C4: trial bloqueado por flag → 503 (0.287167ms)
+✔ create-subscription — C5: trial HAPPY PATH (2.110334ms)
+✔ create-subscription — C6: plano=free (legado) → 200 trial:true zero downstream (0.20275ms)
+✔ create-subscription — C7: email undefined (plano pago) → 400 (0.13675ms)
+✔ create-subscription — C7: email sem @ (plano pago) → 400 (0.134042ms)
+✔ create-subscription — C8: existing authorized subscription → 409 (0.229042ms)
+✔ create-subscription — C9: MP_ACCESS_TOKEN missing → 503 (0.130125ms)
+✔ create-subscription — C10: card_token HAPPY PATH (0.360583ms)
+✔ create-subscription — C11: card_token MP retorna 400 → passthrough + subscription_error log (0.609791ms)
+✔ create-subscription — C12: redirect HAPPY PATH (sem card_token) (0.248458ms)
+cron-resumo-semanal: tenant=tenant-1 falhou: openai-error 500: openai error
+✔ cron — sem Authorization Bearer retorna 401 (29.680125ms)
+✔ cron — Bearer errado retorna 401 (0.343334ms)
+✔ cron — método != POST retorna 405 (0.228334ms)
+✔ cron — happy path: 2 tenants ativos, gera 2 resumos (2.21375ms)
+✔ cron — 1 tenant falha LLM, outros continuam (try/catch isolado) (0.843417ms)
+✔ cron — 0 tenants ativos retorna { processados: 0 } (0.609042ms)
+✔ atividade-recente — sem studio_token retorna 401 (36.771084ms)
+✔ atividade-recente — happy path retorna 3 atividades (4.758ms)
+✔ atividade-recente — query usa LIMIT 3 + ORDER BY last_msg_at DESC + tenant guard (0.976583ms)
+✔ atividade-recente — 0 conversas retorna array vazio (2.292375ms)
+✔ kpis — sem studio_token retorna 401 (27.922459ms)
+✔ kpis — studio_token inválido retorna 401 (0.812792ms)
+✔ kpis — happy path retorna 5 KPIs com valores corretos (9.3505ms)
+✔ kpis — taxa_conversao com total=0 retorna 0 (sem divisão por zero) (1.370708ms)
+kpis: erro ao calcular KPIs: supabase-count 500: internal error
+✔ kpis — Supabase 500 em KPI retorna 500 (1.791542ms)
+✔ kpis — tenant_id de query param é IGNORADO, todas queries usam tenant do token (1.457542ms)
+✔ regenerate — método != POST retorna 405 (25.368334ms)
+✔ regenerate — sem studio_token retorna 401 (0.659167ms)
+✔ regenerate — rate limit: ultima_geracao_manual há 2h → 429 (6.772084ms)
+✔ regenerate — happy path: gera resumo + atualiza tenants (5.553334ms)
+regenerate-resumo: LLM falhou: openai-error 500: Internal Server Error
+✔ regenerate — OpenAI error retorna 502 (2.537208ms)
+evo-create-instance: env vars ausentes { EVO_BASE_URL: false, N8N_WEBHOOK: true, GLOBAL_KEY: true }
+evo-create-instance: env vars ausentes { EVO_BASE_URL: true, N8N_WEBHOOK: true, GLOBAL_KEY: false }
+evo-create-instance: env vars ausentes { EVO_BASE_URL: true, N8N_WEBHOOK: false, GLOBAL_KEY: true }
+evo-create-instance: bloqueado — tenant=00000000-0000-0000-0000-000000000001 status=refused plano=individual trial_ate=null
+evo-create-instance: bloqueado — tenant=00000000-0000-0000-0000-000000000001 status=pending plano=individual trial_ate=null
+evo-create-instance: bloqueado — tenant=00000000-0000-0000-0000-000000000001 status=cancelled plano=individual trial_ate=null
+[webhook] SET instance-key/A:nested-short status=200 resp={"ok":true}
+[webhook] FIND instance-key/A:nested-short status=200 raw={"enabled":true,"base64":true,"events":["MESSAGES_UPSERT"]}
+[webhook] OK com formato A:nested-short usando instance-key
+[settings] status=200 body={"rejectCall":false,"groupsIgnore":true,"alwaysOnline":false,"readMessages":false,"readStatus":false resp={"ok":true}
+[webhook] SET instance-key/A:nested-short status=200 resp={"ok":true}
+[webhook] FIND instance-key/A:nested-short status=200 raw={"enabled":true,"base64":true,"events":["MESSAGES_UPSERT"]}
+[webhook] OK com formato A:nested-short usando instance-key
+[settings] status=200 body={"rejectCall":false,"groupsIgnore":true,"alwaysOnline":false,"readMessages":false,"readStatus":false resp={"ok":true}
+[webhook] SET instance-key/A:nested-short status=200 resp={"ok":true}
+[webhook] FIND instance-key/A:nested-short status=200 raw={"enabled":true,"base64":true,"events":["MESSAGES_UPSERT"]}
+[webhook] OK com formato A:nested-short usando instance-key
+[settings] status=200 body={"rejectCall":false,"groupsIgnore":true,"alwaysOnline":false,"readMessages":false,"readStatus":false resp={"ok":true}
+[webhook] SET instance-key/A:nested-short status=200 resp={"ok":true}
+[webhook] FIND instance-key/A:nested-short status=200 raw={"enabled":true,"base64":true,"events":["MESSAGES_UPSERT"]}
+[webhook] OK com formato A:nested-short usando instance-key
+[settings] status=200 body={"rejectCall":false,"groupsIgnore":true,"alwaysOnline":false,"readMessages":false,"readStatus":false resp={"ok":true}
+[webhook] SET instance-key/A:nested-short status=200 resp={"ok":true}
+[webhook] FIND instance-key/A:nested-short status=200 raw={"enabled":true,"base64":true,"events":["MESSAGES_UPSERT"]}
+[webhook] OK com formato A:nested-short usando instance-key
+[settings] status=200 body={"rejectCall":false,"groupsIgnore":true,"alwaysOnline":false,"readMessages":false,"readStatus":false resp={"ok":true}
+[webhook] SET instance-key/A:nested-short status=200 resp={"ok":true}
+[webhook] FIND instance-key/A:nested-short status=200 raw={"enabled":true,"base64":true,"events":["MESSAGES_UPSERT"]}
+[webhook] OK com formato A:nested-short usando instance-key
+[settings] status=200 body={"rejectCall":false,"groupsIgnore":true,"alwaysOnline":false,"readMessages":false,"readStatus":false resp={"ok":true}
+[webhook] SET instance-key/A:nested-short status=200 resp={"ok":true}
+[webhook] FIND instance-key/A:nested-short status=200 raw={"enabled":true,"base64":true,"events":["MESSAGES_UPSERT"]}
+[webhook] OK com formato A:nested-short usando instance-key
+[settings] status=200 body={"rejectCall":false,"groupsIgnore":true,"alwaysOnline":false,"readMessages":false,"readStatus":false resp={"ok":true}
+[webhook] SET instance-key/A:nested-short status=200 resp={"ok":true}
+[webhook] FIND instance-key/A:nested-short status=200 raw={"enabled":true,"base64":true,"events":["MESSAGES_UPSERT"]}
+[webhook] OK com formato A:nested-short usando instance-key
+[settings] status=200 body={"rejectCall":false,"groupsIgnore":true,"alwaysOnline":false,"readMessages":false,"readStatus":false resp={"ok":true}
+[webhook] SET instance-key/A:nested-short status=200 resp={"ok":true}
+[webhook] FIND instance-key/A:nested-short status=200 raw={"enabled":true,"base64":true,"events":["MESSAGES_UPSERT"]}
+[webhook] OK com formato A:nested-short usando instance-key
+[settings] status=200 body={"rejectCall":false,"groupsIgnore":true,"alwaysOnline":false,"readMessages":false,"readStatus":false resp={"ok":true}
+[webhook] SET instance-key/A:nested-short status=500 resp={}
+[webhook] SET instance-key/B:flat-long status=200 resp={}
+[webhook] FIND instance-key/B:flat-long status=200 raw={"enabled":true,"webhookBase64":true,"events":["MESSAGES_UPSERT"]}
+[webhook] OK com formato B:flat-long usando instance-key
+[settings] status=200 body={"rejectCall":false,"groupsIgnore":true,"alwaysOnline":false,"readMessages":false,"readStatus":false resp={"ok":true}
+[webhook] SET instance-key/A:nested-short status=200 resp={"ok":true}
+[webhook] FIND instance-key/A:nested-short status=200 raw={"enabled":false}
+[webhook] formato A:nested-short aplicado mas incorreto: enabled=false
+[webhook] SET instance-key/B:flat-long status=200 resp={"ok":true}
+[webhook] FIND instance-key/B:flat-long status=200 raw={"enabled":false}
+[webhook] formato B:flat-long aplicado mas incorreto: enabled=false
+[webhook] SET instance-key/C:nested-long status=200 resp={"ok":true}
+[webhook] FIND instance-key/C:nested-long status=200 raw={"enabled":false}
+[webhook] formato C:nested-long aplicado mas incorreto: enabled=false
+[webhook] todos formatos falharam com apikey da instancia. Retry com GLOBAL_KEY...
+[webhook] SET global-key/A:nested-short status=200 resp={"ok":true}
+[webhook] FIND global-key/A:nested-short status=200 raw={"enabled":false}
+[webhook] formato A:nested-short aplicado mas incorreto: enabled=false
+[webhook] SET global-key/B:flat-long status=200 resp={"ok":true}
+[webhook] FIND global-key/B:flat-long status=200 raw={"enabled":false}
+[webhook] formato B:flat-long aplicado mas incorreto: enabled=false
+[webhook] SET global-key/C:nested-long status=200 resp={"ok":true}
+[webhook] FIND global-key/C:nested-long status=200 raw={"enabled":false}
+[webhook] formato C:nested-long aplicado mas incorreto: enabled=false
+[webhook] FALHA TOTAL: nenhum formato configurou webhook corretamente para inst_abc123
+[settings] status=200 body={"rejectCall":false,"groupsIgnore":true,"alwaysOnline":false,"readMessages":false,"readStatus":false resp={"ok":true}
+[webhook] SET instance-key/A:nested-short status=200 resp={"ok":true}
+[webhook] FIND instance-key/A:nested-short status=200 raw={"enabled":true,"base64":true,"events":["MESSAGES_UPSERT"]}
+[webhook] OK com formato A:nested-short usando instance-key
+[settings] status=200 body={"rejectCall":false,"groupsIgnore":true,"alwaysOnline":false,"readMessages":false,"readStatus":false resp={"ok":true}
+evo-create-instance: erro de rede ao criar instancia: Error: network failure
+    at /instance/create (file:///Users/brazilianhustler/Documents/inkflow-saas/tests/api/evo-create-instance.test.mjs:476:39)
+    at handler (file:///Users/brazilianhustler/Documents/inkflow-saas/tests/api/evo-create-instance.test.mjs:52:49)
+    at onRequest (file:///Users/brazilianhustler/Documents/inkflow-saas/functions/api/evo-create-instance.js:115:25)
+    at async file:///Users/brazilianhustler/Documents/inkflow-saas/tests/api/evo-create-instance.test.mjs:481:17
+    at async withMockFetch (file:///Users/brazilianhustler/Documents/inkflow-saas/tests/api/evo-create-instance.test.mjs:34:16)
+    at async TestContext.<anonymous> (file:///Users/brazilianhustler/Documents/inkflow-saas/tests/api/evo-create-instance.test.mjs:478:3)
+    at async Test.run (node:internal/test_runner/test:1208:7)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+✔ evo-create-instance — EC1: body sem campos obrigatórios → 400 (27.185209ms)
+✔ evo-create-instance — EC2: instanceName regex inválido → 400 (0.65725ms)
+✔ evo-create-instance — EC3: env vars ausentes → 503 (1.975417ms)
+✔ evo-create-instance — EC4: gate pgto bloqueia status refused/pending/cancelled (1.3035ms)
+✔ evo-create-instance — EC5: trial_ate futuro passa gate (1.616583ms)
+✔ evo-create-instance — EC6: plano trial passa gate via isFreeTrial (0.394291ms)
+✔ evo-create-instance — EC7: instance já existe → already_existed=true, skip create (0.283209ms)
+✔ evo-create-instance — EC8: apikey extraction 5 paths (1.226417ms)
+✔ evo-create-instance — EC9: webhook formato A (nested-short) instance-key succeed (0.871542ms)
+✔ evo-create-instance — EC10: webhook A falha + B succeed (0.701333ms)
+✔ evo-create-instance — EC11: todos 6 webhook attempts falham → 502 + apikey ainda salva (2.2655ms)
+✔ evo-create-instance — EC12: side-effect ordering cronológico (7 calls em ordem) (1.104041ms)
+✔ evo-create-instance — EC13: /instance/create network error → 502 (1.483917ms)
+evo-pairing-code: connectionState = open
+evo-pairing-code: connectionState = connecting
+evo-pairing-code: instancia em connecting — fazendo logout para resetar
+evo-pairing-code: evo response keys = pairingCode
+evo-pairing-code: connectionState = close
+evo-pairing-code: evo response keys = pairingCode
+evo-pairing-code: connectionState = close
+evo-pairing-code: evo response keys = pairingCode
+evo-pairing-code: connectionState = close
+evo-pairing-code: evo response keys = 
+evo-pairing-code: pairingCode nao retornado. Response: {}
+✔ evo-pairing-code — EP1: body inválido → 400 (28.603208ms)
+✔ evo-pairing-code — EP2: tenant não encontrado → 404 (0.319583ms)
+✔ evo-pairing-code — EP3: apikey ausente/pending → 425 (0.480917ms)
+✔ evo-pairing-code — EP4: connectionState=open → 409 (1.961542ms)
+✔ evo-pairing-code — EP5: connectionState=connecting → logout + connect (sleep stubbed) (1.605584ms)
+✔ evo-pairing-code — EP6: connectionState=close → pairingCode (3 sub-cases) (1.902583ms)
+evo-qr: Evolution API error 500
+✔ evo-qr — EQ1: body inválido → 400 (28.994708ms)
+✔ evo-qr — EQ2: tenant não encontrado → 404 (0.350333ms)
+✔ evo-qr — EQ3: apikey ausente/pending → 425 (0.453834ms)
+✔ evo-qr — EQ4: happy path 3 paths base64 (0.686959ms)
+✔ evo-qr — EQ5: Evo connect non-OK → 502 (1.795ms)
+✔ evo-status — ES1: body inválido → 400 (31.1435ms)
+✔ evo-status — ES2: tenant não encontrado → 404 (0.781666ms)
+✔ evo-status — ES3: apikey ausente/pending → 425 (0.863833ms)
+✔ evo-status — ES4: state extraction inst.instance.state → open (0.420334ms)
+✔ evo-status — ES5: state extraction inst.state → connecting (0.269291ms)
+✔ evo-status — ES6: state extraction inst.connectionStatus → close (0.19825ms)
+✔ evo-status — ES7: instance not found → state=unknown (0.179042ms)
+get-studio-token: auth rejeitada tenant_id=00000000-0000-0000-0000-000000000001 reason=mismatch
+get-studio-token: auth rejeitada tenant_id=00000000-0000-0000-0000-000000000001 reason=not-found
+✔ get-studio-token — T20: missing fields → 400 (32.553167ms)
+✔ get-studio-token — T21: JSON inválido → 400 (0.47ms)
+✔ get-studio-token — T22: SB_KEY ausente → 503 (1.225959ms)
+✔ get-studio-token — T23: key mismatch → 403 (0.968583ms)
+✔ get-studio-token — T24: tenant não existe → 403 (0.306ms)
+✔ get-studio-token — T25: tenant não existe no select de plano → 404 (1.166083ms)
+✔ get-studio-token — T26: plano inválido → 400 (0.238708ms)
+✔ get-studio-token — T27: happy path → 200 (4.719209ms)
+✔ kill-switch — fromMe=false sempre noop (mensagem do cliente nunca dispara) (1.922667ms)
+✔ kill-switch — fromMe=true + frase_assumir match (case-insensitive) → pause (0.193791ms)
+✔ kill-switch — fromMe=true + frase customizada do tenant → pause (0.144959ms)
+✔ kill-switch — fromMe=true + frase_devolver match em estado pausado → resume (0.138542ms)
+✔ kill-switch — fromMe=true sem match em frase nenhuma → noop (msg manual normal) (0.087291ms)
+✔ kill-switch — frase_assumir em estado já pausado → noop (idempotente) (0.066167ms)
+✔ kill-switch — frase_devolver em estado ativo → noop (0.058791ms)
+✔ kill-switch — mensagem=null com from_me=true → noop (não crashes) (0.056042ms)
+✔ kill-switch — from_me=string("true") → noop (truthy mas não literal true) (0.063625ms)
+✔ kill-switch — estado=aguardando_tatuador (não-pausado) + frase_assumir → pause (binário isPaused generaliza) (0.099ms)
+mp-ipn: MP_WEBHOOK_SECRET nao configurado — assinatura nao verificada. Configure a env var para seguranca.
+IPN: tenant 00000000-0000-0000-0000-000000000001 -> paused (ativo=false)
+✔ mp-ipn — I1: MP_WEBHOOK_SECRET missing → fail-open + ipn_warning_no_secret log (36.921584ms)
+IPN: tenant 00000000-0000-0000-0000-000000000001 -> paused (ativo=false)
+✔ mp-ipn — I2: HMAC valid → 200 (no rejection) (1.609959ms)
+mp-ipn: assinatura HMAC invalida — rejeitando request
+✔ mp-ipn — I3: HMAC invalid → 401 + ipn_hmac_rejected log (1.070875ms)
+✔ mp-ipn — I4: type/id ausente → received:true (zero downstream calls) (2.1655ms)
+mp-ipn: sinal dispatch { ok: true, ignored: 'not-a-sinal', external_reference: 'tenant-abc' }
+✔ mp-ipn — I5: type=payment → delega processMpSinal (3.021667ms)
+IPN: tenant 00000000-0000-0000-0000-000000000001 -> authorized (ativo=true)
+✔ mp-ipn — I6a: preapproval authorized + snapshot completo → PATCH preço grandfathered + 7 calls (3.293166ms)
+IPN: tenant 00000000-0000-0000-0000-000000000001 -> authorized (ativo=true)
+✔ mp-ipn — I6b: preapproval authorized + snapshot vazio → PATCH sem preço, email payer_email (1.409833ms)
+IPN: tenant 00000000-0000-0000-0000-000000000001 -> authorized (ativo=true)
+✔ mp-ipn — I7: side-effects ordering em authorized (GET<PATCH<DELETE_ML<POST_ML<Telegram<log) (1.251833ms)
+IPN: tenant 00000000-0000-0000-0000-000000000001 -> cancelled (ativo=false)
+✔ mp-ipn — I8: status=cancelled → ativo:false, status_pagamento:cancelled, no ML/Telegram (1.268959ms)
+IPN: tenant 00000000-0000-0000-0000-000000000001 -> paused (ativo=false)
+✔ mp-ipn — I8: status=paused → ativo:false, status_pagamento:paused, no ML/Telegram (1.14525ms)
+IPN: tenant 00000000-0000-0000-0000-000000000001 -> pending (ativo=false)
+✔ mp-ipn — I8: status=pending → ativo:false, status_pagamento:pendente, no ML/Telegram (0.966916ms)
+✔ mp-ipn — I9: type=invoice → received:true skipped:invoice (zero downstream) (0.709667ms)
+✔ mp-ipn — I10: MP_ACCESS_TOKEN missing → 503 (0.881375ms)
+✔ mp-ipn — I10: SUPABASE_SERVICE_KEY missing → 503 (0.598208ms)
+✔ mp-ipn — I11: MP API GET preapproval 500 → 500 + ipn_error log (0.818ms)
+[request-studio-link] no tenant found for email=*** phone=-
+✔ request-studio-link — T28: input inválido → 400 (25.353208ms)
+✔ request-studio-link — T29: SB_KEY ausente → 503 (0.509ms)
+✔ request-studio-link — T30: tenant não existe → 200 sem vazar (2.024125ms)
+[request-studio-link] tenant=00000000-0000-0000-0000-000000000001 wa={"sent":true,"status":200}
+[request-studio-link] tenant=00000000-0000-0000-0000-000000000001 email={"sent":true,"status":200}
+✔ request-studio-link — T31: WA + email OK, phone normaliza (3.761125ms)
+[request-studio-link] tenant=00000000-0000-0000-0000-000000000001 wa={"sent":true,"status":200}
+[request-studio-link] tenant=00000000-0000-0000-0000-000000000001 email={"sent":false,"status":500}
+✔ request-studio-link — T32: WA OK, email FAIL → channels_tried=[whatsapp] (0.586042ms)
+[request-studio-link] tenant=00000000-0000-0000-0000-000000000001 wa={"sent":false,"status":500}
+[request-studio-link] tenant=00000000-0000-0000-0000-000000000001 email={"sent":true,"status":200}
+✔ request-studio-link — T33: WA FAIL, email OK → channels_tried=[email] (0.902875ms)
+[request-studio-link] tenant=00000000-0000-0000-0000-000000000001 wa={"sent":false,"status":500}
+[request-studio-link] tenant=00000000-0000-0000-0000-000000000001 email={"sent":false,"status":500}
+✔ request-studio-link — T34: ambos FAIL → 200 channels_tried=[] (1.035666ms)
+validate-onboarding-key: Supabase error boom
+validate-onboarding-key: link reativado para retry, tenant: 00000000-0000-0000-0000-000000000001
+validate-onboarding-key: key válida, plano: estudio tenant: 00000000-0000-0000-0000-000000000001
+validate-onboarding-key: key válida, plano: estudio tenant: novo
+validate-onboarding-key: key válida, plano: estudio tenant: 00000000-0000-0000-0000-000000000001
+✔ validate-onboarding-key — T1: input vazio ou key < 8 chars → 400 (32.589875ms)
+✔ validate-onboarding-key — T2: JSON inválido no body → 400 (0.592958ms)
+✔ validate-onboarding-key — T3: SUPABASE_SERVICE_KEY ausente → 503 (0.399125ms)
+✔ validate-onboarding-key — T4: Supabase 500 → 500 (0.805458ms)
+✔ validate-onboarding-key — T5: link não encontrado → 200 valid:false (0.230958ms)
+✔ validate-onboarding-key — T6: link expirado → 200 valid:false (0.963ms)
+✔ validate-onboarding-key — T7: link used + tenant não existe → 200 valid:false (0.801875ms)
+✔ validate-onboarding-key — T8: link used + tenant existe → reativa link (1.107375ms)
+✔ validate-onboarding-key — T9: link válido + tenant novo → 200 sem tenant (0.301875ms)
+✔ validate-onboarding-key — T10: link válido + tenant existe (smart-resume) (0.77975ms)
+✔ validate-studio-token — T11: token < 10 chars → 400 (28.832ms)
+✔ validate-studio-token — T12: JSON inválido → 400 (0.551083ms)
+✔ validate-studio-token — T13: HMAC sig errada → 401 (5.769459ms)
+✔ validate-studio-token — T14: HMAC expirado → 401 (1.484792ms)
+✔ validate-studio-token — T15: UUID legacy + tenant não existe → 401 (0.702375ms)
+validate-studio-token: token renovado para tenant=00000000-0000-0000-0000-000000000001 (source=legacy-uuid)
+✔ validate-studio-token — T16: UUID legacy → HMAC promotion (1.464583ms)
+✔ validate-studio-token — T17: HMAC válido sem refresh → 200 (1.257667ms)
+validate-studio-token: token renovado para tenant=00000000-0000-0000-0000-000000000001 (source=hmac)
+✔ validate-studio-token — T18: HMAC válido com sliding refresh (1.653166ms)
+✔ validate-studio-token — T19: HMAC válido + tenant não existe → 404 (1.091167ms)
+✔ contaminacao Coleta-Tattoo: tenant sujo nao quebra geracao (0.789792ms)
+✔ contaminacao Coleta-Cadastro: tenant sujo nao quebra geracao (0.345584ms)
+✔ contaminacao Coleta-Proposta: tenant sujo nao quebra geracao (0.2015ms)
+✔ contaminacao Exato: tenant sujo nao quebra geracao (0.237791ms)
+✔ contract Coleta-Tattoo: must_contain + must_not_contain + max_tokens (0.9135ms)
+✔ contract Coleta-Cadastro: must_contain + must_not_contain + max_tokens (0.36175ms)
+✔ contract Coleta-Proposta: must_contain + must_not_contain + max_tokens (0.20125ms)
+✔ contract Exato: must_contain + must_not_contain + max_tokens (0.248125ms)
+✔ invariante: todos prompts contem IDENTIDADE (1.383625ms)
+✔ invariante v1: prompts v1 contem CHECKLIST CRITICO (tattoo v2 isento) (0.155834ms)
+✔ invariante v1: prompts v1 contem CONTEXTO §5 (tattoo v2 usa §2) (0.708ms)
+✔ invariante v1: prompts v1 contem REGRAS INVIOLAVEIS (tattoo v2 usa §4 DECISAO) (0.241667ms)
+✔ invariante v2: coleta-tattoo contem §4 DECISAO E REGRAS (0.111333ms)
+✔ invariante: nenhum prompt vaza meta-instrucao (0.391417ms)
+✔ invariante: separator "---" presente entre blocos (0.193167ms)
+✔ invariante: estados de espera retornam null (bot nao responde) (0.114083ms)
+✔ invariante: Coleta-Tattoo nao usa tools de agendamento (0.15525ms)
+✔ invariante: Coleta-Cadastro nao usa tools de agendamento (0.212084ms)
+✔ invariante: Coleta-Proposta tem R3 proibindo contraproposta (0.177041ms)
+✔ invariante coleta v2: nenhum prompt contem pseudo-codigo de tool (0.552084ms)
+✔ invariante coleta v2: nenhum turn AGENTE em few-shots usa frases proibidas tom.js (0.524ms)
+✔ invariante coleta v2: nenhum turn AGENTE em few-shots excede 200 chars (tom.js) (0.418709ms)
+✔ invariante coleta v2: nenhum turn AGENTE em few-shots tem >1 pergunta (heuristica 1 pergunta/turno) (0.363958ms)
+✔ invariante coleta v1: prompts v1 contem secao §4b TOOLS — QUANDO INVOCAR (tattoo v2 isento) (0.175167ms)
+✔ snapshot coleta-tattoo: output bate com baseline (0.863875ms)
+✔ snapshot coleta-cadastro: output bate com baseline (0.334ms)
+✔ snapshot coleta-proposta: output bate com baseline (0.255833ms)
+✔ snapshot exato: output bate com baseline (0.239ms)
+✔ consultar-proposta: retorna estado completo da conversa (28.81625ms)
+✔ consultar-proposta: tenant_id ou telefone ausentes retornam 400 (0.895166ms)
+✔ consultar-proposta: conversa não existe retorna 404 (0.69975ms)
+✔ normalizarData: ISO direto passa (1.671708ms)
+✔ normalizarData: DD/MM/YYYY converte (0.269542ms)
+✔ normalizarData: DD-MM-YYYY converte (0.120667ms)
+✔ normalizarData: "DD de MES de YYYY" pt-BR converte (0.339417ms)
+✔ normalizarData: aceita abreviacoes de mes (0.093125ms)
+✔ normalizarData: case insensitive (0.077084ms)
+✔ normalizarData: rejeita formato so com ano (0.074667ms)
+✔ normalizarData: rejeita ano fora de range (0.06875ms)
+✔ normalizarData: rejeita mes invalido (0.07625ms)
+✔ normalizarData: rejeita dia invalido (31/02) (0.598083ms)
+✔ normalizarData: rejeita string vazia/null/undefined (0.095875ms)
+✔ normalizarData: rejeita formato lixo (0.062917ms)
+✔ calcularIdade: pessoa maior de idade (0.12625ms)
+✔ calcularIdade: pessoa menor de idade (0.231375ms)
+✔ calcularIdade: aniversario hoje (0.078875ms)
+✔ calcularIdade: data invalida retorna null (0.049375ms)
+✔ dados_coletados: conversa nova com campo tattoo cria row + persiste campo (26.802666ms)
+✔ dados_coletados: tenant_id ausente retorna 400 (0.27825ms)
+✔ dados_coletados: telefone ausente retorna 400 (0.253333ms)
+✔ dados_coletados: campo inválido retorna 400 sem chamar upsert (0.309334ms)
+✔ dados_coletados: 3 OBR completos transiciona estado pra coletando_cadastro (0.859958ms)
+✔ dados_coletados: data_nascimento idade<18 retorna gatilho menor_idade (1.251584ms)
+✔ dados_coletados: data_nascimento formato inválido retorna gatilho data_invalida (0.671417ms)
+✔ dados_coletados: ensureConversa falha → tool retorna 500 (0.415959ms)
+✔ dados_coletados: auth falha retorna 401 (0.338375ms)
+✔ enviar-objecao: happy path envia Telegram e estado vira aguardando_decisao (22.804209ms)
+✔ enviar-objecao: tenant_id ou telefone ausentes retornam 400 (0.529417ms)
+✔ enviar-objecao: conversa não existe retorna 404 (0.304792ms)
+✔ enviar-objecao: sem valor_proposto retorna 400 (0.267792ms)
+✔ enviar-objecao: valor_pedido_cliente inválido retorna 400 (0.344208ms)
+✔ enviar-orcamento: happy path envia Telegram e retorna 200 com orcid (24.36025ms)
+✔ enviar-orcamento: tenant_id ausente retorna 400 (0.293875ms)
+✔ enviar-orcamento: telefone ausente retorna 400 (0.276125ms)
+✔ enviar-orcamento: conversa não existe retorna 404 (0.305875ms)
+✔ enviar-orcamento: idempotência via orcid existente (0.293875ms)
+✔ handoff_to_cadastro retorna 200 + payload esperado quando dados_completos=true (24.595209ms)
+✔ handoff_to_cadastro rejeita quando dados_completos=false (0.332834ms)
+✔ handoff_to_cadastro rejeita quando campos_conflitantes nao-vazio (0.263708ms)
+✔ handoff_to_cadastro rejeita sem secret valido (0.168084ms)
+✔ handoff_to_cadastro rejeita sem tenant_id (0.582ms)
+✔ handoff_to_cadastro rejeita dados_completos como string (LLM serializou bool como str) (0.602417ms)
+✔ fmtBRL: valor inteiro fica sem decimais (0.95375ms)
+✔ fmtBRL: valor com decimais usa virgula (0.13475ms)
+✔ fmtBRL: null/undefined retorna "?" (0.085ms)
+✔ fmtBRL: string numerica converte (0.074042ms)
+✔ fmtBRL: string nao numerica retorna como veio (0.08325ms)
+✔ montarMensagem: evento "fechar" (0.083541ms)
+✔ montarMensagem: evento "aceitar_desconto" (0.103375ms)
+✔ montarMensagem: evento "manter_valor" usa valor_proposto (0.072834ms)
+✔ montarMensagem: evento "recusar" (0.101291ms)
+✔ montarMensagem: evento desconhecido retorna null (0.090042ms)
+✔ montarMensagem: valores com decimais sao formatados (0.047708ms)
+ℹ tests 312
+ℹ suites 0
+ℹ pass 312
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 584.033542
