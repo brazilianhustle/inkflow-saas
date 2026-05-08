@@ -17,7 +17,7 @@
       "expected": {
         "proxima_acao": "handoff",
         "dados_completos": true,
-        "tools_chamadas": ["dados_coletados", "handoff_to_cadastro"],
+        "dados_persistidos_inclui": ["descricao_curta", "tamanho_cm", "local_corpo"],
         "campos_faltando_inclui": []
       }
     },
@@ -40,7 +40,7 @@
       "expected": {
         "proxima_acao": "handoff",
         "dados_completos": true,
-        "tools_chamadas": ["dados_coletados", "handoff_to_cadastro"]
+        "dados_persistidos_inclui": ["descricao_curta", "tamanho_cm", "local_corpo"]
       }
     },
     {
@@ -120,7 +120,7 @@
         "historico": []
       },
       "expected": {
-        "tools_chamadas": ["dados_coletados"]
+        "dados_persistidos_inclui": ["descricao_curta"]
       }
     },
     {
@@ -176,7 +176,7 @@
       "expected": {
         "proxima_acao": "handoff",
         "dados_completos": true,
-        "tools_chamadas": ["dados_coletados", "handoff_to_cadastro"]
+        "dados_persistidos_inclui": ["descricao_curta", "tamanho_cm", "local_corpo"]
       }
     },
     {
@@ -199,7 +199,7 @@
       "expected": {
         "proxima_acao": "handoff",
         "dados_completos": true,
-        "tools_chamadas": ["dados_coletados", "handoff_to_cadastro"]
+        "dados_persistidos_inclui": ["descricao_curta", "tamanho_cm", "local_corpo"]
       }
     }
   ]

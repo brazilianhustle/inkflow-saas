@@ -146,5 +146,17 @@ for (const scenario of scenarios) {
           `${scenario.id}: esperava dados_persistidos NAO inclui '${c}' (com valor) — got=${JSON.stringify(out.dados_persistidos)}`);
       }
     }
+
+    if (Array.isArray(scenario.expected.dados_persistidos_inclui)) {
+      // Apos remocao da tool dados_coletados, persistencia e via structured
+      // output. Esse assertion substituiu a antiga tools_chamadas:["dados_coletados"].
+      for (const c of scenario.expected.dados_persistidos_inclui) {
+        const v = (out.dados_persistidos || {})[c];
+        const filled = v !== null && v !== undefined && v !== ''
+          && (Array.isArray(v) ? v.length > 0 : true);
+        assert.ok(filled,
+          `${scenario.id}: esperava dados_persistidos.${c} preenchido — got=${JSON.stringify(v)}`);
+      }
+    }
   });
 }
