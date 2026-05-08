@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { copy } from "@/lib/copy";
 import { startCheckout } from "@/lib/checkout";
 import { easingDefault } from "@/lib/animations";
+import HeroLines from "./HeroLines";
 
 export default function Hero() {
   return (
@@ -11,7 +12,18 @@ export default function Hero() {
       className="relative min-h-screen flex flex-col justify-center overflow-hidden"
       style={{ paddingLeft: "var(--side-pad)", paddingRight: "var(--side-pad)" }}
     >
-      {/* Linhas onduladas serão inseridas pela Task 5 (HeroLines) — z-0 */}
+      {/* SVG linhas onduladas — z-0 */}
+      <div className="absolute inset-0 z-0">
+        <HeroLines />
+      </div>
+
+      {/* Gradient radial overlay — escurece bordas pra linhas "saírem do nada" */}
+      <div
+        className="absolute inset-0 z-[1] pointer-events-none"
+        style={{
+          background: "radial-gradient(circle at center, transparent 40%, var(--color-bg) 100%)",
+        }}
+      />
 
       {/* Conteúdo textual — z-10 */}
       <div className="relative z-10 max-w-[var(--container)] w-full mx-auto">
