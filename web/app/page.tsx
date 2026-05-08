@@ -6,6 +6,7 @@ import HowItWorks from "@/components/landing/HowItWorks";
 import Demo from "@/components/landing/Demo";
 import Pricing from "@/components/landing/Pricing";
 import Faq from "@/components/landing/Faq";
+import CtaFinal from "@/components/landing/CtaFinal";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
       <Demo />
       <Pricing />
       <Faq />
+      <CtaFinal />
     </main>
   );
 }
