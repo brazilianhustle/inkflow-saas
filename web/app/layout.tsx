@@ -111,6 +111,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR">
       <head>
+        {/*
+          Fonts via <link> CDN (não next/font). Decisão pra T2: replicar fluxo legacy.
+          TODO(T14): migrar JetBrains Mono pra next/font/google e General Sans pra
+          next/font/local (baixar .woff2 do Fontshare, hospedar em web/public/fonts/).
+          Ganhos: zero CLS, self-host (privacy), bundle automation. Necessário antes
+          de Lighthouse audit pra atingir Perf ≥85 e BP ≥95.
+        */}
         <link rel="preconnect" href="https://api.fontshare.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -129,6 +136,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {children}
+        {/*
+          BFCache reload — diverge da legacy (que só resetava class state em pageshow).
+          Aqui usamos full reload pra simplicidade: estado React + animações Framer Motion
+          ficariam stale ao voltar via back/forward cache, e tracking individual seria
+          frágil. Trade-off: perde scroll position pós-checkout. Aceitável p/ landing
+          estática. TODO(T14): se Lighthouse reclamar de bfcache disable, reconsiderar.
+        */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
