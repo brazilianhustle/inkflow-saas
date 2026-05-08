@@ -1,0 +1,66 @@
+
+=== gpt-4o-mini ===
+{
+  "model": "gpt-4o-mini",
+  "pass": false,
+  "latencyMs": 4271,
+  "failures": [
+    "dados_persistidos inclui tamanho_cm (proibido) — got {\"estilo\":\"\",\"tamanho_cm\":null,\"altura_cm\":null,\"local_corpo\":\"\",\"cor_preferencia\":\"\",\"descricao_curta\":\"\",\"foto_local\":\"\"}"
+  ],
+  "toolCallCount": 0,
+  "tools": [],
+  "output": {
+    "resposta_cliente": "Bacana! \"Pequena\" é relativo demais pra orçar — me passa em cm aproximado (tipo 5, 8, 12cm)? E em qual lugar do corpo tu quer?",
+    "dados_persistidos": {
+      "estilo": "",
+      "tamanho_cm": null,
+      "altura_cm": null,
+      "local_corpo": "",
+      "cor_preferencia": "",
+      "descricao_curta": "",
+      "foto_local": ""
+    },
+    "dados_completos": false,
+    "campos_faltando": [
+      "tamanho_cm",
+      "local_corpo"
+    ],
+    "campos_conflitantes": [],
+    "proxima_acao": "pergunta"
+  }
+}
+
+=== gpt-4o ===
+{
+  "model": "gpt-4o",
+  "pass": false,
+  "latencyMs": 2896,
+  "failures": [
+    "dados_persistidos inclui tamanho_cm (proibido) — got {\"estilo\":\"\",\"tamanho_cm\":null,\"altura_cm\":null,\"local_corpo\":\"\",\"cor_preferencia\":\"\",\"descricao_curta\":\"rosa\",\"foto_local\":\"\"}"
+  ],
+  "toolCallCount": 0,
+  "tools": [],
+  "output": {
+    "resposta_cliente": "Bacana! \"Pequena\" e relativo demais pra orcar — me passa em cm aproximado (tipo 5, 8, 12cm)? E em qual lugar do corpo tu quer?",
+    "dados_persistidos": {
+      "estilo": "",
+      "tamanho_cm": null,
+      "altura_cm": null,
+      "local_corpo": "",
+      "cor_preferencia": "",
+      "descricao_curta": "rosa",
+      "foto_local": ""
+    },
+    "dados_completos": false,
+    "campos_faltando": [
+      "tamanho_cm",
+      "local_corpo"
+    ],
+    "campos_conflitantes": [],
+    "proxima_acao": "pergunta"
+  }
+}
+
+=== SUMARIO ===
+gpt-4o-mini: FAIL (4271ms, 0 tool calls)
+gpt-4o: FAIL (2896ms, 0 tool calls)

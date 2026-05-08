@@ -1,20 +1,18 @@
-// Eval suite TattooAgent — 9 cenarios contra gpt-4o-mini real.
+// Eval suite TattooAgent — 10 cenarios contra gpt-4o-mini real.
 // NAO roda em CI (filename *.eval.mjs fora do glob *.test.mjs).
 //
 // Run: OPENAI_API_KEY=sk-... node --test tests/agent/tattoo-agent.eval.mjs
 //
 // Custo estimado: ~$0.020 por suite completa.
 //
-// Tools whitelist sao SUBSTITUIDAS por wrappers no-op que registram args
-// (sem tocar Supabase). LLM call e REAL contra OpenAI.
+// Pure structured-output agent (sem tools) — eval LLM call e REAL contra OpenAI.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { Agent, run, tool } from '@openai/agents';
-import { z } from 'zod';
+import { Agent, run } from '@openai/agents';
 import { TattooOutputSchema } from '../../functions/api/agent/agents/tattoo.js';
 import { generatePromptColetaTattoo } from '../../functions/_lib/prompts/coleta/tattoo/generate.js';
 
@@ -36,37 +34,21 @@ const FAKE_TENANT = {
   fewshots: [],
 };
 
-// Builder pro eval — usa tools NO-OP em vez dos HTTP proxies.
-// Tool unica: handoff_to_cadastro. Persistencia via dados_persistidos no
-// structured output (mirror prod — agents/tattoo.js).
-function buildAgentForEval({ tenant, conversa, clientContext, toolCallLog }) {
+// Builder pro eval — pure structured-output (sem tools), mirror prod.
+function buildAgentForEval({ tenant, conversa, clientContext }) {
   const instructions = generatePromptColetaTattoo(tenant, conversa, clientContext || {});
-
-  const handoffNoOp = tool({
-    name: 'handoff_to_cadastro',
-    description: 'Sinaliza fim da fase tattoo.',
-    parameters: z.object({
-      dados_completos: z.boolean(),
-      campos_conflitantes: z.array(z.string()),
-    }),
-    execute: async ({ dados_completos, campos_conflitantes }) => {
-      toolCallLog.push({ name: 'handoff_to_cadastro', args: { dados_completos, campos_conflitantes } });
-      return { ok: true, handoff: true, proximo_estado: 'cadastro' };
-    },
-  });
 
   return new Agent({
     name: 'tattoo-agent-eval',
     model: 'gpt-4o-mini',
     instructions,
-    tools: [handoffNoOp],
+    tools: [],
     outputType: TattooOutputSchema,
   });
 }
 
 for (const scenario of scenarios) {
   test(`${scenario.id} — ${scenario.descricao}`, async () => {
-    const toolCallLog = [];
     const conversa = {
       id: `conv-${scenario.id}`,
       telefone: scenario.input.telefone,
@@ -78,7 +60,6 @@ for (const scenario of scenarios) {
       tenant: FAKE_TENANT,
       conversa,
       clientContext: {},
-      toolCallLog,
     });
 
     const messages = [
@@ -108,21 +89,9 @@ for (const scenario of scenarios) {
         `${scenario.id}: dados_completos esperado=${scenario.expected.dados_completos} got=${out.dados_completos}`);
     }
 
-    const calledNames = toolCallLog.map(tc => tc.name);
-
-    if (Array.isArray(scenario.expected.tools_chamadas)) {
-      for (const expected of scenario.expected.tools_chamadas) {
-        assert.ok(calledNames.includes(expected),
-          `${scenario.id}: esperava tool '${expected}' chamada — calls=${JSON.stringify(calledNames)}`);
-      }
-    }
-
-    if (Array.isArray(scenario.expected.tools_NUNCA_chamadas)) {
-      for (const forbidden of scenario.expected.tools_NUNCA_chamadas) {
-        assert.ok(!calledNames.includes(forbidden),
-          `${scenario.id}: tool proibida '${forbidden}' foi chamada — calls=${JSON.stringify(calledNames)}`);
-      }
-    }
+    // tools_chamadas / tools_NUNCA_chamadas: agent e pure structured-output
+    // (sem tools), entao essas assertions ja viraram dead code. Mantemos pra
+    // backward-compat caso scenarios futuros voltem a usar tools.
 
     if (Array.isArray(scenario.expected.campos_faltando_inclui)) {
       for (const c of scenario.expected.campos_faltando_inclui) {

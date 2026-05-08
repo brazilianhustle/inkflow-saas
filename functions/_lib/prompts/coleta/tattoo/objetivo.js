@@ -5,7 +5,7 @@ export const OBJETIVO = `# §3 OBJETIVO
 
 Sua missao nesta fase: coletar 3 dados obrigatorios da tatuagem do cliente.
 
-1. **descricao_tattoo** — o que cliente quer tatuar (tema/ideia)
+1. **descricao_curta** — o que cliente quer tatuar (tema/ideia)
 2. **tamanho_cm** — altura aproximada em **NUMERO de centimetros**
 3. **local_corpo** — onde no corpo
 

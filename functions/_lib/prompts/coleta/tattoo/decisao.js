@@ -4,9 +4,9 @@
 // exemplo no §7 EXEMPLOS. R1-R7 sao regras de conteudo. R7 (output final UMA
 // vez por turno) absorveu o invariante que vivia em REFORCO_HANDOFF.
 //
-// Persistencia: VIA dados_persistidos no output structured — NAO via tool.
-// Tool unica: handoff_to_cadastro. Vide agents/tattoo.js (TC-03 v2 smoke
-// 2026-05-08: dados_coletados tool causava hallucination no mini).
+// Pure structured-output: SEM tools. Estado sai via proxima_acao + dados via
+// dados_persistidos no output JSON. Tools dados_coletados e handoff_to_cadastro
+// removidas (audit Fase 9, 2026-05-08 — eram dual-via, mini hallucinava/loopava).
 export function decisaoTattoo(tenant) {
   const aceitaCobertura = tenant.config_agente?.aceita_cobertura !== false;
 
@@ -26,7 +26,7 @@ Trigger = condicao que termina a fase com erro (ver §4.2).
 | 5 | parcial | nao | sim | erro | [] | erro educado |
 | 6 | parcial | sim | nao | pergunta | [] | NAO inclui valor conflitante em dados_persistidos, devolve contradicao |
 | 7 | parcial | sim | sim | erro | [] | erro educado prioriza trigger |
-| 8 | completo | nao | nao | handoff | [handoff_to_cadastro] | mensagem-ponte (validacao + pedido cadastro texto corrido) |
+| 8 | completo | nao | nao | handoff | [] | mensagem-ponte (validacao + pedido cadastro texto corrido), output proxima_acao=handoff |
 | 9 | completo | nao | sim | erro | [] | erro educado prioriza trigger sobre completude |
 | 10 | completo | sim | nao | pergunta | [] | resolve conflito antes de handoff |
 | 11 | completo | sim | sim | erro | [] | erro educado prioriza trigger |
@@ -36,11 +36,11 @@ Trigger = condicao que termina a fase com erro (ver §4.2).
 
 ## §4.2 Como interpretar cada eixo
 
-**Persistencia:** voce NAO chama tool pra persistir dados — preenche o campo \`dados_persistidos\` no output JSON estruturado. O caller decide o que salvar. **Tool unica disponivel:** \`handoff_to_cadastro\` (chame APENAS quando linha 8 da tabela dispara).
+**Persistencia:** voce NAO chama tool pra persistir dados — preenche o campo \`dados_persistidos\` no output JSON estruturado. O caller decide o que salvar. **Sem tools:** estado de handoff sai via \`proxima_acao='handoff'\` no output (caller transiciona estado).
 
-**OBR (Obrigatorios):** os 3 campos que voce DEVE coletar — \`descricao_tattoo\`, \`tamanho_cm\`, \`local_corpo\`. "Vazio" = 0 deles. "Parcial" = 1 ou 2. "Completo" = 3.
+**OBR (Obrigatorios):** os 3 campos que voce DEVE coletar — \`descricao_curta\`, \`tamanho_cm\`, \`local_corpo\`. "Vazio" = 0 deles. "Parcial" = 1 ou 2. "Completo" = 3.
 
-- \`descricao_tattoo\`: tema/ideia. Texto livre. Ex: "rosa fineline", "leao realismo".
+- \`descricao_curta\`: tema/ideia. Texto livre. Ex: "rosa fineline", "leao realismo".
 - \`tamanho_cm\`: NUMERO em centimetros. Ex: 5, 10, 15. **"Pequena", "media", "grande" NAO satisfazem** — campo permanece em "vazio" (deixe \`tamanho_cm: null\`) ate cliente dar numero.
 - \`local_corpo\`: parte do corpo. Texto livre. Ex: "antebraco direito", "biceps".
 
@@ -67,7 +67,7 @@ Trigger = condicao que termina a fase com erro (ver §4.2).
 **R3.** Em \`dados_persistidos\`, persiste APENAS valores REAIS que o cliente forneceu. NUNCA invente valores pra preencher campos faltando. Defaults pra "nao tenho":
 - \`tamanho_cm: null\` (cliente nao deu numero — "pequena" NAO satisfaz)
 - \`local_corpo: ""\` (cliente nao mencionou local)
-- \`descricao_tattoo: ""\` (cliente nao deu tema)
+- \`descricao_curta: ""\` (cliente nao deu tema)
 - \`estilo: ""\`, \`foto_local: ""\`, \`refs_imagens: []\`
 
 Se faltar valor real, adicione o campo em \`campos_faltando\` e emita \`proxima_acao=pergunta\`. **NUNCA escolha "5cm" ou "antebraco" pelo cliente** — pergunte.
@@ -85,7 +85,7 @@ ${aceitaCobertura
 
 **R6.** **CONFLITO:** quando aciona linha 6/10/11 da tabela, NAO inclua o valor do campo conflitante em \`dados_persistidos\` (deixe \`null\`/\`""\`). Adicione o nome do campo em \`campos_conflitantes\`. Devolva contradicao em 1 frase.
 
-**R7.** **OUTPUT FINAL — UMA VEZ POR TURNO.** Emita o output JSON estruturado UMA vez e PARE. NAO continue em loop apos emitir output. **NUNCA** chame \`handoff_to_cadastro\` se: (a) qualquer dos 3 OBR (\`descricao_tattoo\`, \`tamanho_cm\`, \`local_corpo\`) esta faltando ou tem valor vazio/null, OU (b) \`campos_conflitantes\` nao-vazio. Resolva conflitos primeiro (R6).
+**R7.** **OUTPUT FINAL — UMA VEZ POR TURNO.** Emita o output JSON estruturado UMA vez e PARE. NAO continue em loop apos emitir output. **NUNCA** emita \`proxima_acao='handoff'\` se: (a) qualquer dos 3 OBR (\`descricao_curta\`/\`descricao_curta\`, \`tamanho_cm\`, \`local_corpo\`) esta faltando ou tem valor vazio/null, OU (b) \`campos_conflitantes\` nao-vazio. Resolva conflitos primeiro (R6).
 
 ## §4.4 Mensagem-ponte (handoff — linha 8 da tabela)
 

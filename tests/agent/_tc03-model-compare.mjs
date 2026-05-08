@@ -7,8 +7,7 @@
 // NAO commitar — artefato de audit, descartavel.
 // Custo estimado: ~$0.05 (mini ~$0.002 + 4o ~$0.05).
 
-import { Agent, run, tool } from '@openai/agents';
-import { z } from 'zod';
+import { Agent, run } from '@openai/agents';
 import { TattooOutputSchema } from '../../functions/api/agent/agents/tattoo.js';
 import { generatePromptColetaTattoo } from '../../functions/_lib/prompts/coleta/tattoo/generate.js';
 
@@ -43,35 +42,20 @@ const TC03 = {
   },
 };
 
-// Tool unica: handoff_to_cadastro. Persistencia via dados_persistidos no
-// structured output (mirror prod — agents/tattoo.js).
-function buildAgentForModel({ tenant, conversa, model, toolCallLog }) {
+// Pure structured-output agent (sem tools), mirror prod.
+function buildAgentForModel({ tenant, conversa, model }) {
   const instructions = generatePromptColetaTattoo(tenant, conversa, {});
-
-  const handoffNoOp = tool({
-    name: 'handoff_to_cadastro',
-    description: 'Sinaliza fim da fase tattoo.',
-    parameters: z.object({
-      dados_completos: z.boolean(),
-      campos_conflitantes: z.array(z.string()),
-    }),
-    execute: async ({ dados_completos, campos_conflitantes }) => {
-      toolCallLog.push({ name: 'handoff_to_cadastro', args: { dados_completos, campos_conflitantes } });
-      return { ok: true, handoff: true, proximo_estado: 'cadastro' };
-    },
-  });
 
   return new Agent({
     name: `tattoo-agent-tc03-${model}`,
     model,
     instructions,
-    tools: [handoffNoOp],
+    tools: [],
     outputType: TattooOutputSchema,
   });
 }
 
 async function runOne(model) {
-  const toolCallLog = [];
   const conversa = {
     id: `conv-tc03-${model}`,
     telefone: TC03.input.telefone,
@@ -79,7 +63,7 @@ async function runOne(model) {
     dados_coletados: {},
     dados_cadastro: {},
   };
-  const agent = buildAgentForModel({ tenant: FAKE_TENANT, conversa, model, toolCallLog });
+  const agent = buildAgentForModel({ tenant: FAKE_TENANT, conversa, model });
   const messages = [...TC03.input.historico, ...TC03.input.mensagens];
 
   const t0 = Date.now();
@@ -116,12 +100,8 @@ async function runOne(model) {
         failures.push(`dados_persistidos inclui ${c} com valor (proibido) — got ${JSON.stringify(out.dados_persistidos)}`);
       }
     }
-    const calledNames = toolCallLog.map((t) => t.name);
-    for (const forbidden of exp.tools_NUNCA_chamadas) {
-      if (calledNames.includes(forbidden)) {
-        failures.push(`tool proibida ${forbidden} foi chamada — calls=${JSON.stringify(calledNames)}`);
-      }
-    }
+    // tools_NUNCA_chamadas: agent e pure structured-output (sem tools),
+    // entao essa assertion ja viraria sempre vacuously true. Skip.
   }
 
   return {
@@ -130,7 +110,6 @@ async function runOne(model) {
     pass: failures.length === 0 && !error,
     failures,
     error,
-    toolCallLog,
     finalOutput,
   };
 }
@@ -148,14 +127,12 @@ async function runOne(model) {
       latencyMs: r.latencyMs,
       failures: r.failures,
       error: r.error,
-      toolCallCount: r.toolCallLog.length,
-      tools: r.toolCallLog.map((t) => ({ name: t.name, args: t.args })),
       output: r.finalOutput,
     }, null, 2));
   }
 
   console.log('\n=== SUMARIO ===');
   for (const r of results) {
-    console.log(`${r.model}: ${r.pass ? 'PASS' : 'FAIL'} (${r.latencyMs}ms, ${r.toolCallLog.length} tool calls${r.error ? `, error=${r.error}` : ''})`);
+    console.log(`${r.model}: ${r.pass ? 'PASS' : 'FAIL'} (${r.latencyMs}ms${r.error ? `, error=${r.error}` : ''})`);
   }
 })();

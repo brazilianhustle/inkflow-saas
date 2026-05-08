@@ -1,0 +1,128 @@
+
+=== gpt-4o-mini ===
+{
+  "model": "gpt-4o-mini",
+  "pass": false,
+  "latencyMs": 15273,
+  "failures": [
+    "proxima_acao esperado=pergunta got=handoff",
+    "dados_completos esperado=false got=true",
+    "campos_faltando NAO inclui tamanho_cm (got [])",
+    "dados_persistidos inclui tamanho_cm com valor (proibido) — got {\"estilo\":\"\",\"tamanho_cm\":5,\"altura_cm\":null,\"local_corpo\":\"antebraco\",\"cor_preferencia\":\"\",\"descricao_curta\":\"\",\"foto_local\":\"\"}"
+  ],
+  "toolCallCount": 9,
+  "tools": [
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "descricao_tattoo",
+        "valor": "rosa"
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "tamanho_cm",
+        "valor": "null"
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": "null"
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "tamanho_cm",
+        "valor": "null"
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": "null"
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "tamanho_cm",
+        "valor": 0
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "tamanho_cm",
+        "valor": 5
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": "null"
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": "antebraco"
+      }
+    }
+  ],
+  "output": {
+    "resposta_cliente": "Rosa de 5cm no antebraco fica delicada e bem visivel\n\nPra eu liberar teu orcamento personalizado, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna em breve",
+    "dados_persistidos": {
+      "estilo": "",
+      "tamanho_cm": 5,
+      "altura_cm": null,
+      "local_corpo": "antebraco",
+      "cor_preferencia": "",
+      "descricao_curta": "",
+      "foto_local": ""
+    },
+    "dados_completos": true,
+    "campos_faltando": [],
+    "campos_conflitantes": [],
+    "proxima_acao": "handoff"
+  }
+}
+
+=== gpt-4o ===
+{
+  "model": "gpt-4o",
+  "pass": true,
+  "latencyMs": 3461,
+  "failures": [],
+  "toolCallCount": 0,
+  "tools": [],
+  "output": {
+    "resposta_cliente": "Bacana! \"Pequena\" é relativo demais pra orçar — me passa em cm aproximado (tipo 5, 8, 12cm)? E em qual lugar do corpo tu quer?",
+    "dados_persistidos": {
+      "estilo": "",
+      "tamanho_cm": null,
+      "altura_cm": null,
+      "local_corpo": "",
+      "cor_preferencia": "",
+      "descricao_curta": "rosa",
+      "foto_local": ""
+    },
+    "dados_completos": false,
+    "campos_faltando": [
+      "tamanho_cm",
+      "local_corpo"
+    ],
+    "campos_conflitantes": [],
+    "proxima_acao": "pergunta"
+  }
+}
+
+=== SUMARIO ===
+gpt-4o-mini: FAIL (15273ms, 9 tool calls)
+gpt-4o: PASS (3461ms, 0 tool calls)

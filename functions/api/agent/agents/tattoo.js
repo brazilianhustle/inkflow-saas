@@ -1,17 +1,18 @@
 // TattooAgent — fase tattoo do fluxo Coleta v2.
 // Importa prompt LITERAL de functions/_lib/prompts/coleta/tattoo/ (sem
-// modificacao). Tools whitelist: handoff_to_cadastro (so).
+// modificacao). Pure structured-output agent — sem tools.
 //
 // Decisoes cravadas (ver spec):
 // - Modelo: gpt-4o-mini (paridade com baseline n8n)
-// - Tool unica: handoff_to_cadastro. Persistencia via structured output
-//   (dados_persistidos no finalOutput) — caller decide o que salvar.
-//   Removida a tool dados_coletados (TC-03 v2 smoke 2026-05-08: dual-via
-//   causava hallucination em mini. Detalhes em audit Fase 9).
-// - Structured output via Zod com invariante handoff
+// - Sem tools: estado e dados via dados_persistidos + proxima_acao no
+//   structured output. Caller (route.js) le proxima_acao pra transicao
+//   de estado (linha 128). Tools dados_coletados e handoff_to_cadastro
+//   removidas (eram dual-via, causavam hallucination/loop em mini —
+//   audit Fase 9, 2026-05-08).
+// - Structured output via Zod com invariante handoff (validateTattooOutputInvariant)
 // - Prompt portado SEM modificacao do PR #28 (R9, T7, altura_cm, foto_local)
 
-import { Agent, tool } from '@openai/agents';
+import { Agent } from '@openai/agents';
 import { z } from 'zod';
 import { generatePromptColetaTattoo } from '../../../_lib/prompts/coleta/tattoo/generate.js';
 
@@ -63,59 +64,19 @@ export function validateTattooOutputInvariant(out) {
   return { valid: true };
 }
 
-// ── Tools (HTTP proxies) ──────────────────────────────────────────────────
-// As tools no SDK chamam o endpoint HTTP existente. Sub-1 usa fetch direto
-// pra functions internas. INKFLOW_TOOL_SECRET no env autentica.
-function buildToolHandoffToCadastro({ env, tenant_id, telefone, baseUrl }) {
-  return tool({
-    name: 'handoff_to_cadastro',
-    description: 'Sinaliza fim da fase tattoo e transicao pra fase cadastro. Chame APENAS quando dados_completos=true E campos_conflitantes=[].',
-    parameters: z.object({
-      dados_completos: z.boolean(),
-      campos_conflitantes: z.array(z.string()),
-    }),
-    execute: async ({ dados_completos, campos_conflitantes }) => {
-      let res;
-      try {
-        res = await fetch(`${baseUrl}/api/tools/handoff-to-cadastro`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Inkflow-Tool-Secret': env.INKFLOW_TOOL_SECRET,
-          },
-          body: JSON.stringify({ tenant_id, telefone, dados_completos, campos_conflitantes }),
-        });
-      } catch (e) {
-        return { ok: false, error: `tool-network-error: ${e?.message || e}` };
-      }
-      if (!res.ok) return { ok: false, error: `tool-http-${res.status}` };
-      try {
-        return await res.json();
-      } catch {
-        return { ok: false, error: 'tool-bad-json' };
-      }
-    },
-  });
-}
-
 // ── Builder ──────────────────────────────────────────────────────────────
+// Pure structured-output agent (sem tools). Estado de handoff sai via
+// proxima_acao='handoff' no output. route.js le e transiciona estado.
+// Validacao de invariante (dados_completos+campos_conflitantes) feita
+// em validateTattooOutputInvariant pos-finalOutput.
 export function buildTattooAgent({ env, tenant, conversa, clientContext, baseUrl = 'http://localhost:8788' }) {
-  // §4.3 R8 (em prompts/coleta/tattoo/decisao.js) absorveu a invariante
-  // de handoff antes hard-coded no builder. Builder agora usa o prompt sem extras.
   const instructions = generatePromptColetaTattoo(tenant, conversa, clientContext || {});
-
-  const tenant_id = tenant.id;
-  const telefone = conversa.telefone || conversa.cliente_telefone || '';
-
-  const tools = [
-    buildToolHandoffToCadastro({ env, tenant_id, telefone, baseUrl }),
-  ];
 
   return new Agent({
     name: 'tattoo-agent',
     model: 'gpt-4o-mini',
     instructions,
-    tools,
+    tools: [],
     outputType: TattooOutputSchema,
   });
 }

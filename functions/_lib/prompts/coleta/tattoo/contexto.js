@@ -32,10 +32,10 @@ export function contextoTattoo(tenant, conversa, clientContext) {
   }
   linhas.push('');
 
-  // Dados ja coletados — usar mesmas chaves dos OBR (descricao_tattoo, tamanho_cm, local_corpo)
+  // Dados ja coletados — usar mesmas chaves dos OBR (descricao_curta, tamanho_cm, local_corpo)
   // pra match 1:1 com a tabela §4 e schema TattooOutputSchema.
   const dadosLinhas = [];
-  if (dados.descricao_tattoo) dadosLinhas.push(`- descricao_tattoo: ${dados.descricao_tattoo}`);
+  if (dados.descricao_curta) dadosLinhas.push(`- descricao_curta: ${dados.descricao_curta}`);
   if (dados.tamanho_cm) dadosLinhas.push(`- tamanho_cm: ${dados.tamanho_cm}cm`);
   if (dados.local_corpo) dadosLinhas.push(`- local_corpo: ${dados.local_corpo}`);
   if (dados.estilo) dadosLinhas.push(`- estilo: ${dados.estilo}`);

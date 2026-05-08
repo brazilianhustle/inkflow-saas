@@ -1,0 +1,201 @@
+
+=== gpt-4o-mini ===
+{
+  "model": "gpt-4o-mini",
+  "pass": false,
+  "latencyMs": 52058,
+  "failures": [
+    "run-error: Max turns (20) exceeded"
+  ],
+  "error": "Max turns (20) exceeded",
+  "toolCallCount": 22,
+  "tools": [
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "descricao_tattoo",
+        "valor": "rosa"
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "tamanho_cm",
+        "valor": 0
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "tamanho_cm",
+        "valor": 0
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "tamanho_cm",
+        "valor": 0
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "tamanho_cm",
+        "valor": 0
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "tamanho_cm",
+        "valor": 0
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "tamanho_cm",
+        "valor": 0
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    },
+    {
+      "name": "dados_coletados",
+      "args": {
+        "campo": "local_corpo",
+        "valor": ""
+      }
+    }
+  ]
+}
+
+=== gpt-4o ===
+{
+  "model": "gpt-4o",
+  "pass": true,
+  "latencyMs": 2505,
+  "failures": [],
+  "toolCallCount": 0,
+  "tools": [],
+  "output": {
+    "resposta_cliente": "Bacana! \"Pequena\" é relativo demais pra orçar — me passa em cm aproximado (tipo 5, 8, 12cm)? E em qual lugar do corpo tu quer?",
+    "dados_persistidos": {
+      "estilo": "",
+      "tamanho_cm": null,
+      "altura_cm": null,
+      "local_corpo": "",
+      "cor_preferencia": "",
+      "descricao_curta": "rosa",
+      "foto_local": ""
+    },
+    "dados_completos": false,
+    "campos_faltando": [
+      "tamanho_cm",
+      "local_corpo"
+    ],
+    "campos_conflitantes": [],
+    "proxima_acao": "pergunta"
+  }
+}
+
+=== SUMARIO ===
+gpt-4o-mini: FAIL (52058ms, 22 tool calls, error=Max turns (20) exceeded)
+gpt-4o: PASS (2505ms, 0 tool calls)
