@@ -13,14 +13,6 @@ import { Agent, tool } from '@openai/agents';
 import { z } from 'zod';
 import { generatePromptColetaTattoo } from '../../../_lib/prompts/coleta/tattoo/generate.js';
 
-export const REFORCO_HANDOFF = `
-
-# §HANDOFF — INVARIANTE
-NUNCA chame \`handoff_to_cadastro\` se: (a) qualquer dos 3 OBR (descricao_tattoo, tamanho_cm, local_corpo) esta faltando, OU (b) \`campos_conflitantes\` nao-vazio. Resolva conflitos primeiro (R9).
-
-# §OUTPUT FINAL — UMA VEZ POR TURNO
-Apos chamar tools necessarias, emita o output JSON estruturado UMA vez e PARE. NAO chame \`dados_coletados\` mais de uma vez pro mesmo campo no mesmo turno. NAO continue em loop apos emitir output.`;
-
 // ── Schema do structured output ──────────────────────────────────────────
 // IMPORTANTE: schema e ZodObject puro (sem .refine()). SDK @openai/agents
 // detecta outputType via typeName==='ZodObject' (typeGuards.mjs:14) — qualquer
@@ -138,8 +130,9 @@ function buildToolHandoffToCadastro({ env, tenant_id, telefone, baseUrl }) {
 
 // ── Builder ──────────────────────────────────────────────────────────────
 export function buildTattooAgent({ env, tenant, conversa, clientContext, baseUrl = 'http://localhost:8788' }) {
-  const promptBase = generatePromptColetaTattoo(tenant, conversa, clientContext || {});
-  const instructions = promptBase + REFORCO_HANDOFF;
+  // §4.3 R8 (em prompts/coleta/tattoo/decisao.js) absorveu a invariante
+  // de handoff antes hard-coded no builder. Builder agora usa o prompt sem extras.
+  const instructions = generatePromptColetaTattoo(tenant, conversa, clientContext || {});
 
   const tenant_id = tenant.id;
   const telefone = conversa.telefone || conversa.cliente_telefone || '';
