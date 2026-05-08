@@ -145,6 +145,13 @@ async function handle({ env, input }) {
     return { status: 400, body: { ok: false, error: `campo invalido: ${campo}` } };
   }
 
+  // 2b. Fail-fast pra string sentinels — mini ja foi visto em loop tentando
+  // persistir "null"/"undefined" como valor (audit Sub-2 F1). Reject ANTES
+  // de criar conversa via upsert. Cobre tipo string em todos os campos.
+  if (typeof valor === 'string' && /^(null|undefined|none|n\/a|—|-)$/i.test(valor.trim())) {
+    return { status: 400, body: { ok: false, error: `valor invalido (sentinel string): ${valor}` } };
+  }
+
   // 3. Garantir conversa via upsert idempotente (defaults só em INSERT)
   const conv = await ensureConversa(env, {
     tenant_id,
