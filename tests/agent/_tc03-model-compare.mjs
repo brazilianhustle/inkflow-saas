@@ -121,8 +121,10 @@ async function runOne(model) {
       }
     }
     for (const c of exp.dados_persistidos_NAO_inclui) {
-      if (c in (out.dados_persistidos || {})) {
-        failures.push(`dados_persistidos inclui ${c} (proibido) — got ${JSON.stringify(out.dados_persistidos)}`);
+      // F2 fix: schema (.nullable().optional()) sempre emite a chave com null —
+      // checar valor != null em vez de presenca da chave.
+      if ((out.dados_persistidos || {})[c] != null) {
+        failures.push(`dados_persistidos inclui ${c} com valor (proibido) — got ${JSON.stringify(out.dados_persistidos)}`);
       }
     }
     const calledNames = toolCallLog.map((t) => t.name);

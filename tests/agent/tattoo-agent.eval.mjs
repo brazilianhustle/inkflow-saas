@@ -152,8 +152,10 @@ for (const scenario of scenarios) {
 
     if (Array.isArray(scenario.expected.dados_persistidos_NAO_inclui)) {
       for (const c of scenario.expected.dados_persistidos_NAO_inclui) {
-        assert.ok(!(c in out.dados_persistidos),
-          `${scenario.id}: esperava dados_persistidos NAO inclui '${c}' — got=${JSON.stringify(out.dados_persistidos)}`);
+        // F2 fix: schema (.nullable().optional()) sempre emite a chave com null.
+        // Checar valor != null em vez de presenca da chave.
+        assert.ok((out.dados_persistidos || {})[c] == null,
+          `${scenario.id}: esperava dados_persistidos NAO inclui '${c}' (com valor) — got=${JSON.stringify(out.dados_persistidos)}`);
       }
     }
   });
