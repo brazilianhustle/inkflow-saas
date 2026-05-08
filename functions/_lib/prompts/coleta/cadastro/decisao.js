@@ -38,7 +38,7 @@ Trigger = condicao persistente (≥2x) que termina fase com erro.
 - \`nome\`: texto livre. Aceita 1 palavra/apelido. NAO insista em "completo" — pode incomodar.
 - \`data_nascimento\`: formato ISO \`YYYY-MM-DD\`. Voce normaliza ANTES de persistir.
   - Aceitos: "12/03/1995", "12-03-1995", "12 de marco de 1995", "1995-03-12"
-  - Rejeitados (NAO persiste): "ontem", "tenho 25 anos", "1995" sozinho", "marco"
+  - Rejeitados (NAO persiste): "ontem", "tenho 25 anos", "1995" sozinho, "marco"
 - "Vazio" = 0 campos. "Parcial" = 1. "Completo" = 2.
 
 **Conflito:** quando cliente forneceu valores contraditorios pro mesmo campo em mensagens adjacentes.
