@@ -178,6 +178,29 @@
         "dados_completos": true,
         "tools_chamadas": ["dados_coletados", "handoff_to_cadastro"]
       }
+    },
+    {
+      "id": "TC-10",
+      "descricao": "Multi-turn handoff: cliente fecha 3 OBR no 3o turno apos 2 turnos previos",
+      "hipoteses": ["H3"],
+      "input": {
+        "tenant_id": "00000000-0000-0000-0000-000000000001",
+        "telefone": "+5511900000010",
+        "mensagens": [
+          { "role": "user", "content": "fineline rosa 7cm pulso direito, podes ja agendar" }
+        ],
+        "estado_atual": "tattoo",
+        "dados_acumulados": {},
+        "historico": [
+          { "role": "user", "content": "oi quero fazer uma tattoo" },
+          { "role": "assistant", "content": [{ "type": "output_text", "text": "Oii, tudo bem? Aqui e atendente do Estudio Eval\n\nMe conta o que esta pensando em fazer?" }] }
+        ]
+      },
+      "expected": {
+        "proxima_acao": "handoff",
+        "dados_completos": true,
+        "tools_chamadas": ["dados_coletados", "handoff_to_cadastro"]
+      }
     }
   ]
 }
