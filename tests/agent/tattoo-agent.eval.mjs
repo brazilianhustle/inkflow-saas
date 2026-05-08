@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { Agent, run, tool } from '@openai/agents';
 import { z } from 'zod';
-import { TattooOutputSchema } from '../../functions/api/agent/agents/tattoo.js';
+import { TattooOutputSchema, REFORCO_HANDOFF } from '../../functions/api/agent/agents/tattoo.js';
 import { generatePromptColetaTattoo } from '../../functions/_lib/prompts/coleta/tattoo/generate.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -35,11 +35,6 @@ const FAKE_TENANT = {
   faqs: [],
   fewshots: [],
 };
-
-const REFORCO_HANDOFF = `
-
-# §HANDOFF — INVARIANTE CRITICO
-JAMAIS chame \`handoff_to_cadastro\` quando \`dados_completos=false\` ou quando houver \`campos_conflitantes\` nao-vazio. O schema validara e rejeitara — voce voltara a perguntar. Resolva conflitos primeiro (R9: devolva contradicao ao cliente, NUNCA decida por ele).`;
 
 // Builder pro eval — usa tools NO-OP em vez dos HTTP proxies.
 function buildAgentForEval({ tenant, conversa, clientContext, toolCallLog }) {

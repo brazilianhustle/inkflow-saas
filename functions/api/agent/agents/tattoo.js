@@ -13,7 +13,7 @@ import { Agent, tool } from '@openai/agents';
 import { z } from 'zod';
 import { generatePromptColetaTattoo } from '../../../_lib/prompts/coleta/tattoo/generate.js';
 
-const REFORCO_HANDOFF = `
+export const REFORCO_HANDOFF = `
 
 # §HANDOFF — INVARIANTE CRITICO
 JAMAIS chame \`handoff_to_cadastro\` quando \`dados_completos=false\` ou quando houver \`campos_conflitantes\` nao-vazio. Resolva conflitos primeiro (R9: devolva contradicao ao cliente, NUNCA decida por ele).
