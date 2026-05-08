@@ -2,7 +2,7 @@
 
 **Data:** 2026-05-07
 **Branch:** `feat/coleta-multi-agent-handoff`
-**Status:** `ready-to-plan`
+**Status:** `done`
 **Predecessor:** [2026-05-07-coleta-multi-agent-sub1-design.md](./2026-05-07-coleta-multi-agent-sub1-design.md)
 **Eval baseline:** [2026-05-07-sub1-eval-results.md](../../auditoria/2026-05-07-sub1-eval-results.md) — 2/9 PASS
 
@@ -176,27 +176,29 @@ Antes de fechar, rodar TC-09 com **histórico simulado** (2 turnos prévios) em 
 | `validateTattooOutputInvariant` rejeita output novo válido | Baixa | Função permanece intocada; apenas `proxima_acao='erro'` é caminho novo, e a invariante atual cobre só `'handoff'` |
 | Mudança em §3.5 (gatilhos) faz agent emitir `'erro'` quando deveria `'pergunta'` | Média | Cenários TC-04/TC-08 capturam regressão; Exemplo 6/7 ensina disciplina de quando emitir erro |
 
-## Outcome (preencher pós-implementação)
+## Outcome
 
-**Status:** _TBD_
+**Status:** done
 
 **Resultado por cenário:**
-- TC-01: _TBD_
-- TC-02: _TBD_
-- TC-03: _TBD_
-- TC-04: _TBD_
-- TC-05: _TBD_
-- TC-06: _TBD_
-- TC-07: _TBD_
-- TC-08: _TBD_
-- TC-09: _TBD_
+- TC-01: PASS
+- TC-02: PASS
+- TC-03: FAIL (gap residual — cliente vago, agent dispara handoff sem tamanho_cm)
+- TC-04: PASS
+- TC-05: PASS
+- TC-06: PASS
+- TC-07: PASS
+- TC-08: PASS
+- TC-09: PASS
+- TC-10 (multi-turn, novo): PASS
 
-**Total:** _TBD_/9
+**Originais TC-01..TC-09:** 8/9
+**TC-10 (multi-turn):** PASS
+**Custo total:** ~$0.10–0.15
+**Iterações:** 1 (gate atingido na primeira run, sem iter 2-5)
+**Sub-2 unblocked?** SIM
 
-**Custo total:** _TBD_
-
-**Iterações:** _TBD_
-
-**Sub-2 unblocked?** _TBD_
-
-**Lições:** _TBD_
+**Lições:**
+- H2 (R9 — devolver contradição ao cliente): convergiu na primeira iteração; conflito 25cm vs "pequena" detectado e devolvido em 1 frase como esperado.
+- H3 (handoff_to_cadastro disciplina + emit-and-stop): convergiu pra TC-09 (one-shot) E TC-10 (multi-turn 2 turnos prévios), eliminando os max-turns de TC-01/02/04/06 do baseline.
+- Trade-off observado: o H3 reforçado tornou o agent mais agressivo em fechar handoff. TC-03 (rosa pequena) regrediu de "campos errados" pra "handoff indevido com tamanho_cm faltando" — o gate de R6/R6b/R7/T4 reforçando "só chame handoff_to_cadastro com 3 OBR completos" ainda perdeu pra hipótese implícita de que descricao+local sem tamanho seria suficiente. Solução para Sub-3+ se ressurgir como dor: explicitar em §3.2 que `campos_faltando=['tamanho_cm']` impede handoff, OU adicionar exemplo few-shot do caso vago.

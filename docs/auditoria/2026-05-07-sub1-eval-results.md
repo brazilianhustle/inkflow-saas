@@ -110,3 +110,35 @@ without `.nullable()` which is not supported by the API.
 - Eval suite (3 runs durante diagnose): ~$0.40
 - Total Sub-1 OpenAI spend: ~$0.40 + $0.001 spike = **~$0.40**
 - Dentro do orçamento estimado no spec ($0.50-1/sessão dev)
+
+---
+
+## Apêndice — Run pós Sub-2 (prompt tuning H2/H3)
+
+**Data:** 2026-05-07
+**Spec:** `docs/superpowers/specs/2026-05-07-coleta-multi-agent-prompt-tuning-h2-h3-design.md`
+**Iterações:** 1 (gate atingido na primeira run)
+
+| TC | Sub-1 baseline | Sub-2 final |
+|----|----------------|-------------|
+| TC-01 | FAIL (max-turns) | PASS |
+| TC-02 | FAIL (max-turns) | PASS |
+| TC-03 | FAIL (campos errados) | FAIL (handoff indevido com tamanho_cm faltando) |
+| TC-04 | FAIL (max-turns) | PASS |
+| TC-05 | FAIL (handoff indevido) | PASS |
+| TC-06 | FAIL (max-turns) | PASS |
+| TC-07 | PASS | PASS |
+| TC-08 | PASS | PASS |
+| TC-09 | FAIL (handoff não disparou) | PASS |
+| TC-10 (novo, multi-turn) | — | PASS |
+
+**Originais (TC-01..TC-09):** 2/9 → 8/9
+**TC-10 (multi-turn):** PASS
+**Custo cumulativo Sub-2:** ~$0.10–0.15
+**Gate principal (≥7/9 + TC-05/07/08/09 PASS):** ATINGIDO
+**Gate adicional (TC-10 PASS):** ATINGIDO
+**Sub-2 unblock Sub-3 (cutover n8n):** SIM
+
+**Note técnico:** TC-10 `historico` exige `assistant` content no formato `[{type:'output_text', text:'...'}]` (Responses API), não string plana. Detectado em runtime; corrigido na fixture antes do commit final.
+
+**TC-03 (gap residual):** Cliente diz "quero uma rosa pequena" sem tamanho — agent dispara handoff em vez de pedir tamanho. Causa provável: H3 (handoff disciplina) reforçada o suficiente para o agent considerar `proxima_acao='handoff'` como saída prioritária quando descricao+local presentes, ignorando que `tamanho_cm` ainda falta. Não bloqueia obrigatórios (TC-05/07/08/09 todos PASS, TC-10 PASS), gate atingido. Documentado como conhecido pra Sub-3 considerar futuras iterações.
