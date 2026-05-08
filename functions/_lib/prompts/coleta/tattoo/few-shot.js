@@ -76,6 +76,24 @@ export function fewShotBase(tenant) {
   linhas.push('CLIENTE: 10cm');
   linhas.push('AGENTE: Pra eu liberar teu orcamento, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna em breve');
   linhas.push('```');
+  linhas.push('');
+
+  // Exemplo 6: conflito de dados (R9)
+  linhas.push('## Exemplo 6 — Conflito de dados (R9)');
+  linhas.push('```');
+  linhas.push('CLIENTE: queria uma rosa pequena de 25cm no antebraco');
+  linhas.push('AGENTE: Tu disse pequena mas 25cm ja e tatuagem bem grande — me confirma se e 25cm mesmo ou tu quer algo bem menor (uns 5-8cm)?');
+  linhas.push('```');
+  linhas.push('');
+
+  // Exemplo 7: cliente da tudo de uma vez (one-shot ate handoff)
+  linhas.push('## Exemplo 7 — Cliente da tudo de uma vez (one-shot ate handoff)');
+  linhas.push('```');
+  linhas.push('CLIENTE: fineline rosa 7cm pulso direito, podes ja agendar');
+  linhas.push('AGENTE: Rosa fineline de 7cm no pulso fica delicada e bem visivel — combinacao top');
+  linhas.push('');
+  linhas.push('AGENTE: Sobre agendar, o tatuador confirma quando avaliar tua ideia — ja te passo pra ele. Pra eu liberar teu orcamento personalizado, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna em breve');
+  linhas.push('```');
 
   return linhas.join('\n');
 }
