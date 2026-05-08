@@ -23,7 +23,7 @@ export const copy = {
   },
   hero: {
     preheadline: "ASSISTENTE IA PARA TATUADORES",
-    headline: ["Seu estúdio", "não para nem", "quando você dorme."],
+    headline: ["InkFlow", "seu estúdio", "na palma da mão"],
     sub: "A assistente virtual que atende, orça e agenda seus clientes pelo WhatsApp 24 horas por dia — sem você precisar responder uma mensagem.",
     ctaPrimary: "Começar agora",
     ctaGhost: "Ver demo",
