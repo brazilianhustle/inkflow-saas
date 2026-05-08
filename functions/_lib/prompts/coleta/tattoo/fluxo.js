@@ -28,6 +28,7 @@ export function fluxo(tenant, clientContext) {
   linhas.push('3. **local_corpo** — onde no corpo (antebraco, biceps, costela, perna, etc)');
   linhas.push('');
   linhas.push('Persistencia: pra cada info coletada, chame `dados_coletados(conversa_id, campo, valor)`.');
+  linhas.push('IMPORTANTE: `tamanho_cm` exige NUMERO em cm (ex: 5, 10, 15). Termos qualitativos como "pequena", "media", "grande" NAO satisfazem — sempre pergunte o tamanho em cm. Sem numero em cm, `tamanho_cm` permanece em `campos_faltando` e voce NAO chama `handoff_to_cadastro`.');
   linhas.push('Quando os 3 OBR estiverem completos, a tool sinaliza transicao automatica pra fase Cadastro — voce ENTAO envia a mensagem-ponte (§3.4).');
   linhas.push('');
 
