@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { Agent, run, tool } from '@openai/agents';
 import { z } from 'zod';
-import { TattooOutputSchema, REFORCO_HANDOFF } from '../../functions/api/agent/agents/tattoo.js';
+import { TattooOutputSchema } from '../../functions/api/agent/agents/tattoo.js';
 import { generatePromptColetaTattoo } from '../../functions/_lib/prompts/coleta/tattoo/generate.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -38,8 +38,8 @@ const FAKE_TENANT = {
 
 // Builder pro eval — usa tools NO-OP em vez dos HTTP proxies.
 function buildAgentForEval({ tenant, conversa, clientContext, toolCallLog }) {
-  const promptBase = generatePromptColetaTattoo(tenant, conversa, clientContext || {});
-  const instructions = promptBase + REFORCO_HANDOFF;
+  // R8 (em decisao.js) absorveu o que vivia em REFORCO_HANDOFF.
+  const instructions = generatePromptColetaTattoo(tenant, conversa, clientContext || {});
 
   const dadosColetadosNoOp = tool({
     name: 'dados_coletados',
