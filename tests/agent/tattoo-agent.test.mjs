@@ -154,3 +154,62 @@ test('TattooOutputSchema rejeita tamanho_cm <=0 ou >200 (paridade com server)', 
   assert.equal(TattooOutputSchema.safeParse(negativo).success, false);
   assert.equal(TattooOutputSchema.safeParse(muito_grande).success, false);
 });
+
+// — Sub-3.3: invariant enviar_portfolio —————————————————————————————
+test('Tattoo invariant: enviar_portfolio com portfolio_disponivel=true -> valid', () => {
+  const out = {
+    resposta_cliente: 'show, te mando',
+    dados_persistidos: {},
+    dados_completos: false,
+    campos_faltando: [],
+    campos_conflitantes: [],
+    proxima_acao: 'enviar_portfolio',
+    payload_portfolio: { estilo: 'fineline', max: null, motivo: null },
+  };
+  const r = validateTattooOutputInvariant(out, { portfolio_disponivel: true });
+  assert.equal(r.valid, true);
+});
+
+test('Tattoo invariant: enviar_portfolio com portfolio_disponivel=false -> invalid', () => {
+  const out = {
+    resposta_cliente: 'te mando',
+    dados_persistidos: {},
+    dados_completos: false,
+    campos_faltando: [],
+    campos_conflitantes: [],
+    proxima_acao: 'enviar_portfolio',
+    payload_portfolio: { estilo: null, max: null, motivo: null },
+  };
+  const r = validateTattooOutputInvariant(out, { portfolio_disponivel: false });
+  assert.equal(r.valid, false);
+  assert.match(r.reason, /portfolio_disponivel=false/);
+});
+
+test('Tattoo invariant: enviar_portfolio sem payload_portfolio -> invalid', () => {
+  const out = {
+    resposta_cliente: 'te mando',
+    dados_persistidos: {},
+    dados_completos: false,
+    campos_faltando: [],
+    campos_conflitantes: [],
+    proxima_acao: 'enviar_portfolio',
+    payload_portfolio: null,
+  };
+  const r = validateTattooOutputInvariant(out, { portfolio_disponivel: true });
+  assert.equal(r.valid, false);
+  assert.match(r.reason, /payload_portfolio/);
+});
+
+test('Tattoo invariant: pergunta com payload_portfolio null -> valid (passthrough)', () => {
+  const out = {
+    resposta_cliente: 'qual tamanho?',
+    dados_persistidos: { descricao_curta: 'rosa' },
+    dados_completos: false,
+    campos_faltando: ['tamanho_cm', 'local_corpo'],
+    campos_conflitantes: [],
+    proxima_acao: 'pergunta',
+    payload_portfolio: null,
+  };
+  const r = validateTattooOutputInvariant(out, { portfolio_disponivel: false });
+  assert.equal(r.valid, true);
+});
