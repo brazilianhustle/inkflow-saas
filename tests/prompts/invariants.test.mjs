@@ -14,11 +14,12 @@ import {
 // 4 prompts ativos: 3 fases Coleta + Exato. Cada um gerado com sua conversa
 // adequada (Coleta usa estado_agente; Exato usa conversa simples sem estado).
 //
-// IMPORTANTE: coleta-tattoo (Sub-2, 2026-05-08) e coleta-cadastro (Sub-3.1,
-// 2026-05-08) foram reescritos v2 com estrutura diferente — nao tem §0
-// CHECKLIST, §5 CONTEXTO, §4 REGRAS INVIOLAVEIS, nem §4b TOOLS. Tem §1
-// IDENTIDADE, §2 CONTEXTO, §3 OBJETIVO, §4 DECISAO E REGRAS. Os invariants
-// v1 que checam ancoras antigas excluem ambos abaixo.
+// IMPORTANTE: coleta-tattoo (Sub-2, 2026-05-08), coleta-cadastro (Sub-3.1,
+// 2026-05-08) e coleta-proposta (Sub-3.2, 2026-05-09) foram reescritos v2
+// com estrutura diferente — nao tem §0 CHECKLIST, §5 CONTEXTO, §4 REGRAS
+// INVIOLAVEIS, nem §4b TOOLS. Tem §1 IDENTIDADE, §2 CONTEXTO, §3 OBJETIVO,
+// §4 DECISAO E REGRAS. Os invariants v1 que checam ancoras antigas excluem
+// os tres abaixo.
 const PROMPTS = [
   { nome: 'coleta-tattoo',    tenant: TENANT_CANONICO,       conversa: CONVERSA_COLETA_TATTOO },
   { nome: 'coleta-cadastro',  tenant: TENANT_CANONICO,       conversa: CONVERSA_COLETA_CADASTRO },
@@ -26,7 +27,7 @@ const PROMPTS = [
   { nome: 'exato',            tenant: TENANT_CANONICO_EXATO, conversa: CONVERSA_CANONICA },
 ];
 
-const PROMPTS_V1 = PROMPTS.filter(p => p.nome !== 'coleta-tattoo' && p.nome !== 'coleta-cadastro');
+const PROMPTS_V1 = PROMPTS.filter(p => p.nome !== 'coleta-tattoo' && p.nome !== 'coleta-cadastro' && p.nome !== 'coleta-proposta');
 
 test('invariante: todos prompts contem IDENTIDADE', () => {
   for (const { nome, tenant, conversa } of PROMPTS) {
@@ -66,6 +67,12 @@ test('invariante v2: coleta-cadastro contem §4 DECISAO E REGRAS', () => {
   const out = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_CADASTRO, CLIENT_CONTEXT_CANONICO);
   assert.match(out, /# §4 DECISAO E REGRAS/, 'coleta-cadastro v2 sem secao DECISAO');
   assert.match(out, /# §3 OBJETIVO/, 'coleta-cadastro v2 sem secao OBJETIVO');
+});
+
+test('invariante v2: coleta-proposta contem §4 TABELA DE DECISAO + REGRAS', () => {
+  const out = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_PROPOSTA, CLIENT_CONTEXT_CANONICO);
+  assert.match(out, /# §4 TABELA DE DECISAO/, 'coleta-proposta v2 sem secao DECISAO');
+  assert.match(out, /# §2 OBJETIVO/, 'coleta-proposta v2 sem secao OBJETIVO');
 });
 
 test('invariante: nenhum prompt vaza meta-instrucao', () => {
@@ -134,8 +141,8 @@ const COLETA_PROMPTS = [
   { nome: 'coleta-proposta', tenant: TENANT_CANONICO, conversa: CONVERSA_COLETA_PROPOSTA },
 ];
 
-// Tattoo v2 e Cadastro v2 nao tem mais §4b TOOLS (pure structured-output, sem tools).
-const COLETA_PROMPTS_V1 = COLETA_PROMPTS.filter(p => p.nome !== 'coleta-tattoo' && p.nome !== 'coleta-cadastro');
+// Tattoo v2, Cadastro v2 e Proposta v2 nao tem mais §4b TOOLS (pure structured-output, sem tools).
+const COLETA_PROMPTS_V1 = COLETA_PROMPTS.filter(p => p.nome !== 'coleta-tattoo' && p.nome !== 'coleta-cadastro' && p.nome !== 'coleta-proposta');
 
 const ANTI_PATTERNS_PSEUDO = [
   /AGENTE:\s*\[chama\s+\w+/i,
