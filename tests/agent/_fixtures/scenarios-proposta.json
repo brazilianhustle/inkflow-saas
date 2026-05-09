@@ -1,0 +1,187 @@
+[
+  {
+    "id": "TC-P01",
+    "descricao": "propondo_valor — aceita, slots disponiveis → oferecendo_horario",
+    "estado_atual": "propondo_valor",
+    "valor_proposto": 750,
+    "decisao_desconto": null,
+    "horarios_livres": [
+      { "inicio": "2026-05-12T17:00:00Z", "fim": "2026-05-12T20:00:00Z", "legenda": "ter 12/05 14h-17h" },
+      { "inicio": "2026-05-14T13:00:00Z", "fim": "2026-05-14T16:00:00Z", "legenda": "qui 14/05 10h-13h" }
+    ],
+    "historico": [
+      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+    ],
+    "mensagem": "fechou, vamos marcar",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "oferecendo_horario" },
+      { "type": "resposta_cliente_contains_slots", "value": ["ter", "qui"] }
+    ]
+  },
+  {
+    "id": "TC-P02",
+    "descricao": "propondo_valor — acha caro sem dar valor → pergunta",
+    "estado_atual": "propondo_valor",
+    "valor_proposto": 750,
+    "decisao_desconto": null,
+    "horarios_livres": [],
+    "historico": [
+      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+    ],
+    "mensagem": "ta um pouco caro",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "pergunta" },
+      { "type": "resposta_cliente_matches", "value": "\\?" }
+    ]
+  },
+  {
+    "id": "TC-P03",
+    "descricao": "propondo_valor — pede valor especifico → pediu_desconto com valor_pedido_cliente",
+    "estado_atual": "propondo_valor",
+    "valor_proposto": 750,
+    "decisao_desconto": null,
+    "horarios_livres": [],
+    "historico": [
+      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+    ],
+    "mensagem": "consegue por 600?",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "pediu_desconto" },
+      { "type": "payload_includes", "value": { "valor_pedido_cliente": 600 } }
+    ]
+  },
+  {
+    "id": "TC-P04",
+    "descricao": "propondo_valor — adia decisao → adiou",
+    "estado_atual": "propondo_valor",
+    "valor_proposto": 750,
+    "decisao_desconto": null,
+    "horarios_livres": [],
+    "historico": [
+      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+    ],
+    "mensagem": "vou pensar e te volto",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "adiou" }
+    ]
+  },
+  {
+    "id": "TC-P05",
+    "descricao": "propondo_valor — reentrada apos desconto aceito, cliente aceita → oferecendo_horario",
+    "estado_atual": "propondo_valor",
+    "valor_proposto": 600,
+    "decisao_desconto": "aceito",
+    "horarios_livres": [
+      { "inicio": "2026-05-12T17:00:00Z", "fim": "2026-05-12T20:00:00Z", "legenda": "ter 12/05 14h-17h" },
+      { "inicio": "2026-05-14T13:00:00Z", "fim": "2026-05-14T16:00:00Z", "legenda": "qui 14/05 10h-13h" }
+    ],
+    "historico": [
+      { "role": "assistant", "content": "Show! Ele topou em R$ 600. Bora marcar?" }
+    ],
+    "mensagem": "vamos",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "oferecendo_horario" }
+    ]
+  },
+  {
+    "id": "TC-P06",
+    "descricao": "propondo_valor — reentrada apos desconto recusado, cliente adia → adiou",
+    "estado_atual": "propondo_valor",
+    "valor_proposto": 750,
+    "decisao_desconto": "recusado",
+    "horarios_livres": [],
+    "historico": [
+      { "role": "assistant", "content": "Ele preferiu manter R$ 750. Ta fechado pra ti? Bora marcar?" }
+    ],
+    "mensagem": "humm, vou pensar",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "adiou" }
+    ]
+  },
+  {
+    "id": "TC-P07",
+    "descricao": "escolhendo_horario — cliente escolhe slot disponivel (qui) → reservar_horario com ISO correto",
+    "estado_atual": "escolhendo_horario",
+    "valor_proposto": 750,
+    "decisao_desconto": null,
+    "horarios_livres": [
+      { "inicio": "2026-05-12T17:00:00Z", "fim": "2026-05-12T20:00:00Z", "legenda": "ter 12/05 14h-17h" },
+      { "inicio": "2026-05-14T13:00:00Z", "fim": "2026-05-14T16:00:00Z", "legenda": "qui 14/05 10h-13h" }
+    ],
+    "historico": [
+      { "role": "assistant", "content": "Tenho ter 12/05 das 14h as 17h ou qui 14/05 das 10h as 13h. Qual prefere?" }
+    ],
+    "mensagem": "qui",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "reservar_horario" },
+      { "type": "payload_includes", "value": { "slot_inicio": "2026-05-14T13:00:00Z", "slot_fim": "2026-05-14T16:00:00Z" } }
+    ]
+  },
+  {
+    "id": "TC-P08",
+    "descricao": "escolhendo_horario — cliente pede horario fora da lista → pergunta",
+    "estado_atual": "escolhendo_horario",
+    "valor_proposto": 750,
+    "decisao_desconto": null,
+    "horarios_livres": [
+      { "inicio": "2026-05-12T17:00:00Z", "fim": "2026-05-12T20:00:00Z", "legenda": "ter 12/05 14h-17h" }
+    ],
+    "historico": [
+      { "role": "assistant", "content": "Tenho ter 12/05 das 14h as 17h. Qual prefere?" }
+    ],
+    "mensagem": "amanha 9h?",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "pergunta" },
+      { "type": "resposta_cliente_contains_slots", "value": ["ter"] }
+    ]
+  },
+  {
+    "id": "TC-P09",
+    "descricao": "aguardando_sinal — link expirado → reservar_horario com mesmo slot",
+    "estado_atual": "aguardando_sinal",
+    "valor_proposto": 750,
+    "decisao_desconto": null,
+    "proposta_status": "aguardando_pgto",
+    "horarios_livres": [
+      { "inicio": "2026-05-14T13:00:00Z", "fim": "2026-05-14T16:00:00Z", "legenda": "qui 14/05 10h-13h" }
+    ],
+    "historico": [
+      { "role": "assistant", "content": "Bora! Pra agendar... R$ 225,00. https://mp/abc..." }
+    ],
+    "mensagem": "o link venceu",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "reservar_horario" }
+    ]
+  },
+  {
+    "id": "TC-P10",
+    "descricao": "aguardando_sinal — cliente quer mudar dia → reagendamento",
+    "estado_atual": "aguardando_sinal",
+    "valor_proposto": 750,
+    "decisao_desconto": null,
+    "proposta_status": "aguardando_pgto",
+    "horarios_livres": [],
+    "historico": [
+      { "role": "assistant", "content": "Bora! Pra agendar... R$ 225,00. https://mp/abc..." }
+    ],
+    "mensagem": "preciso mudar pra outro dia",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "reagendamento" }
+    ]
+  },
+  {
+    "id": "TC-P11",
+    "descricao": "qualquer estado — cliente agressivo → cliente_agressivo",
+    "estado_atual": "propondo_valor",
+    "valor_proposto": 750,
+    "decisao_desconto": null,
+    "horarios_livres": [],
+    "historico": [
+      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+    ],
+    "mensagem": "vai se f*der, ta caro pra caramba",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "cliente_agressivo" }
+    ]
+  }
+]

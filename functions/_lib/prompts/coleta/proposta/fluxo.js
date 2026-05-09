@@ -29,12 +29,14 @@ Apos enviar, AGUARDE resposta do cliente.
 ## §3.3 escolhendo_horario
 
 - Cliente escolheu slot da lista -> emite \`reservar_horario\` + payload \`slot_inicio\`, \`slot_fim\` (ISO da lista). Sistema reserva + gera link.
+  IMPORTANTE: copie o valor EXATO de slot_inicio e slot_fim da lista de horarios_livres no contexto. NAO invente ISO.
 - Cliente perguntou outra coisa -> emite \`pergunta\`.
 - Cliente pediu slot fora da lista -> emite \`pergunta\` + reapresenta slots disponiveis.
 
 ## §3.4 aguardando_sinal
 
-- Cliente avisa "venceu" -> emite \`reservar_horario\` (sistema re-gera link).
+- Cliente avisa "venceu" (link expirado) -> emite \`reservar_horario\` com o mesmo slot ISO que estava agendado (primeiro da lista horarios_livres se disponivel).
+  IMPORTANTE: use EXATAMENTE o valor ISO do contexto horarios_livres. NAO gere ISO novo.
 - Cliente quer mudar data -> emite \`reagendamento\` (handoff humano).
 - Cliente xinga -> emite \`cliente_agressivo\`.`;
 }
