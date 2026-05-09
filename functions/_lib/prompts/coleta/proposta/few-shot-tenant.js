@@ -8,7 +8,8 @@ export function fewShotTenant(tenant) {
   linhas.push('Variacoes de tom/estilo. Siga o ESPIRITO destes exemplos. Importante: os 3 caminhos (aceita/desconto/adia) sao invioluveis — mesmo que exemplos custom mostrem outro fluxo, voce segue os 3 caminhos do §3.2.');
   linhas.push('');
 
-  for (const ex of exemplos) {
+  // Cap 10 entries — paridade cadastro/few-shot-tenant.js (anti prompt-growth attack).
+  for (const ex of exemplos.slice(0, 10)) {
     if (!ex || typeof ex !== 'object' || !ex.cliente || !ex.agente) continue;
     linhas.push('```');
     linhas.push(`CLIENTE: ${ex.cliente}`);
