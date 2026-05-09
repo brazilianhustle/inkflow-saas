@@ -22,24 +22,41 @@ Esse spec e o Sub-3.2 do refator multi-agent: aplicar template Sub-2/Sub-3.1
 (pure structured-output, zero tools no agent) ao PropostaAgent, MAS com uma
 diferenca arquitetural critica versus os predecessores: PropostaAgent v1
 tinha 6 tools de side-effect REAL (reservar_horario, gerar_link_sinal,
-enviar_objecao_tatuador, acionar_handoff, consultar_horarios_livres,
+enviar_objecao_tatuador, acionar_handoff, consultar-horarios,
 consultar_proposta_tatuador) — diferente das tools dual-via redundantes
 do Tattoo/Cadastro v1. Logo, o agent v2 e pure structured-output mas
 route.js cresce pra orquestrar side-effects via switch por proxima_acao.
 
-Escopo cravado pelo brainstorm:
-- PropostaAgent v2 com schema enum proxima_acao + payloads opcionais
-- route.js com pre-fetch eager (horarios_livres / proposta_status) +
+Escopo cravado pelo brainstorm + auto-review:
+
+- PropostaAgent v2: tools=[], schema Zod com enum proxima_acao + payloads
+  opcionais (slot_inicio, slot_fim, valor_pedido_cliente)
+- route.js com pre-fetch eager (consultar-horarios em propondo_valor/
+  escolhendo_horario; consultar-proposta-tatuador em aguardando_sinal) +
   orchestrator switch por proxima_acao (chama tools existentes em
-  functions/api/tools/* mantidas intactas)
-- 5 helpers novos isolados: calcular-sinal, format-link-sinal-msg,
-  lookup-horario, call-tool, prefetch-proposta
+  functions/api/tools/* via call-tool wrapper INTACTAS)
+- 5 helpers novos isolados em functions/api/agent/_lib/:
+  calcular-sinal, format-link-sinal-msg, lookup-horario, call-tool,
+  prefetch-proposta
+- call-tool envia header X-Inkflow-Tool-Secret (todas as 6 tools requerem)
+- Closure pattern pro validator: buildPropostaAgent retorna
+  { agent, validator } onde validator vem pre-vinculado com
+  clientContext + estado_atual via closure. Mantem compat Sub-3.1
+  (route.js continua chamando validator(out) com 1 arg). Decisao de
+  refactor cross-agent (tattoo/cadastro tambem retornar { agent,
+  validator }) fica pro plan.
 - Estados pausados (aguardando_decisao_desconto/lead_frio/fechado) ficam
   em 501 not-implemented (Sub-4 cuida do noop quando cutover do n8n
   acontecer)
+- Tool shapes VERIFICADOS no spec (ler §"Tools existentes" — todas usam
+  telefone como identificador, nao conversa_id). NAO inferir API.
 - Modelo gpt-4o-mini (paridade Sub-2/3.1)
 - Bug-fix botao Telegram "Fechar valor"->"Informar valor" FORA (P1
   separado pos-Sub-3.2)
+- Reentry agent (turno 1 sem msg cliente) FORA — Sub-4 cuida
+
+Riscos R1-R7 documentados em §"Riscos e assumptions" — validar durante
+plan, nao re-decidir.
 
 Saida esperada: docs/superpowers/plans/2026-05-08-sub3-2-proposta-prompt-v2.md
 com tasks granulares (Edit/Write precisos, eval gate como acceptance,
@@ -64,7 +81,7 @@ Esta spec faz o **PropostaAgent v2** seguindo o template Sub-2/Sub-3.1 com adapt
 - **Tabela de decisao explicita** (12 linhas, eixos Estado × Sinal-cliente × proxima_acao × Payload obrigatorio)
 - **Helpers isolados em `functions/api/agent/_lib/`**: 5 novos com unit tests TDD (4-5 each)
 - **Eval suite 11 cenarios** (TC-P01..TC-P11) cobrindo §3.1-§3.6 do fluxo legacy 1:1
-- **Router generalizado** (paridade Sub-3.1): `NEXT_STATE.proposta` aninhado por `(estado_atual, proxima_acao) -> estado_novo`
+- **Router shallow por sub-estado** (paridade Sub-3.1 estrutura): `NEXT_STATE` tem entries diretas pra cada sub-estado (`propondo_valor`, `escolhendo_horario`, `aguardando_sinal`) → `(proxima_acao -> estado_novo)`. `BUILDERS` mapa todos os 3 sub-estados pro mesmo `buildPropostaAgent`.
 - **Estados pausados** (`aguardando_decisao_desconto`, `lead_frio`, `fechado`) ficam em **501 not-implemented** — Sub-4 (cutover n8n) implementa noop quando hot-path migrar pra CF Workers
 
 PortfolioAgent rewrite e **out-of-scope** desta sessao — vira Sub-3.3 com mesmo template (mais simples, read-only de imagens).
@@ -77,7 +94,7 @@ Decisoes ja cravadas — `/plan` NAO re-debate:
 
 1. **Pure structured-output no agent** (template Sub-2/3.1). Tools=[].
 2. **route.js orquestra side-effects** via switch por `proxima_acao`. Tools existentes em `functions/api/tools/*` ficam intactas — route.js chama elas via `_lib/call-tool.js` (wrapper fetch interno).
-3. **Pre-fetch eager** (nao lazy/re-roll): route.js carrega contexto necessario por estado ANTES de rodar agent. UX natural (1 round-trip), custo aceitavel (consultar_horarios_livres e SELECT barato).
+3. **Pre-fetch eager** (nao lazy/re-roll): route.js carrega contexto necessario por estado ANTES de rodar agent. UX natural (1 round-trip), custo aceitavel (`consultar-horarios` e SELECT barato).
 4. **LLM decide intent + conteudo conversacional. Codigo executa side-effects + formata mensagens regulamentadas.** §3.4 (link MP) e template fixo em codigo (`format-link-sinal-msg.js`) — zero margem pra LLM quebrar formato (R5 legacy: WhatsApp nao renderiza markdown).
 5. **1 PropostaAgent cobre os 3 estados ativos** (`propondo_valor`, `escolhendo_horario`, `aguardando_sinal`). Estados pausados (`aguardando_decisao_desconto`, `lead_frio`, `fechado`) ficam em 501.
 6. **Modelo `gpt-4o-mini`** (paridade Sub-2/3.1). Custo confirmado em 2 agents anteriores. Pure structured-output reduz risco de mini se confundir. Eval valida na pratica.
@@ -156,15 +173,23 @@ functions/api/agent/
 
 ### Tools existentes (`functions/api/tools/`) — INTOCADAS
 
-```
-functions/api/tools/
-├── consultar-horarios.js          # ja existe; route.js chama via call-tool
-├── consultar-proposta-tatuador.js # ja existe; route.js chama via call-tool
-├── reservar-horario.js            # ja existe; route.js chama via call-tool
-├── gerar-link-sinal.js            # ja existe; route.js chama via call-tool
-├── enviar-objecao-tatuador.js     # ja existe; route.js chama via call-tool
-└── acionar-handoff.js             # ja existe; route.js chama via call-tool
-```
+Todas as 6 tools requerem header `X-Inkflow-Tool-Secret` (validado contra `env.INKFLOW_TOOL_SECRET` via `_tool-helpers.js`). `call-tool.js` envia esse header em toda requisicao.
+
+**API contracts verificados** (lidos dos files reais — `/plan` NAO infere shape):
+
+| Tool | URL POST | Body | Identificador conversa |
+|---|---|---|---|
+| `consultar-horarios` | `/api/tools/consultar-horarios` | `{tenant_id, data_preferida?, duracao_h?}` | — (lista geral) |
+| `consultar-proposta-tatuador` | `/api/tools/consultar-proposta-tatuador` | `{tenant_id, telefone}` | `telefone` |
+| `reservar-horario` | `/api/tools/reservar-horario` | `{tenant_id, telefone, nome, inicio, fim, descricao?}` | `telefone` |
+| `gerar-link-sinal` | `/api/tools/gerar-link-sinal` | `{tenant_id, agendamento_id, valor_sinal}` | `agendamento_id` |
+| `enviar-objecao-tatuador` | `/api/tools/enviar-objecao-tatuador` | `{tenant_id, telefone, valor_pedido_cliente}` | `telefone` |
+| `acionar-handoff` | `/api/tools/acionar-handoff` | `{tenant_id, telefone, motivo}` | `telefone` |
+
+**Decisoes de identificador:**
+- Tools usam `telefone` (nao `conversa_id`) — paridade com webhook Evolution que entrega telefone como identificador estavel.
+- `tenant_id` SEMPRE no body (tools nao derivam de auth — `INKFLOW_TOOL_SECRET` e auth de tool, nao de tenant).
+- `nome` em `reservar-horario` vem do body request `route.js` (cadastro ja persistiu — disponivel via `conversa.dados_cadastro.nome`).
 
 NAO mexer em nenhuma tool. Sub-4 cutover decide se rewrite ou keep. Sub-3.2 so muda quem chama (era agent SDK via tools no prompt; agora route.js via fetch interno).
 
@@ -216,15 +241,19 @@ tests/agent/route.test.mjs                     # adicionar testes proposta (orch
 │                                                                  │
 │    3. PRE-FETCH (eager) — prefetch-proposta.js                  │
 │       Injeta em clientContext baseado em estado_atual:          │
-│       - propondo_valor   → consultar_horarios_livres            │
+│       - propondo_valor   → consultar-horarios (slots livres)    │
 │         → ctx.horarios_livres = [{inicio, fim, legenda}, ...]   │
 │       - escolhendo_horario → idem (slots ja foram pre-fetched   │
 │         no turn anterior, refetch garante freshness)            │
 │       - aguardando_sinal → consultar_proposta_tatuador          │
 │         → ctx.proposta_status = { status, ... }                 │
 │                                                                  │
-│    4. selectAgentBuilder('proposta')                             │
-│       → buildPropostaAgent({ env, tenant, conversa, ctx })      │
+│    4. selectAgentBuilder(estado_atual)                           │
+│       (BUILDERS keys: 'propondo_valor', 'escolhendo_horario',   │
+│        'aguardando_sinal' → todas mapeiam pra buildPropostaAgent)│
+│       → buildPropostaAgent({ env, tenant, conversa,              │
+│                              clientContext, estado_atual })      │
+│       (estado_atual passado via closure pro validator usar)     │
 │                                                                  │
 │    5. agent.run(messages, { tools: [], maxTurns: 10 })          │
 │       Saida: out.{ resposta_cliente, proxima_acao,              │
@@ -245,7 +274,7 @@ tests/agent/route.test.mjs                     # adicionar testes proposta (orch
 │       - 'cliente_agressivo'  → callTool acionar-handoff         │
 │                                                                  │
 │    8. estado_novo = getNextState(estado_atual, out)              │
-│       NEXT_STATE.proposta aninhado por (estado, proxima_acao)   │
+│       NEXT_STATE shallow lookup por sub-estado (paridade Sub-3.1)│
 │                                                                  │
 │    9. Return JSON 200:                                           │
 │       { ok, resposta_cliente, estado_novo, proxima_acao,         │
@@ -324,6 +353,37 @@ const ALLOWED_BY_STATE = {
 };
 ```
 
+### Closure pattern pro validator (compat Sub-3.1)
+
+Sub-3.1 chama `validator(out)` com **1 arg** em `route.js:125`. Sub-3.2 precisa de `out + ctx + estado_atual` (3 args) — `proxima_acao` permitido depende do `estado_atual`, e `lookupHorario` depende de `ctx.horarios_livres`.
+
+**Solucao: builder devolve `{ agent, validator }` com validator ja "pre-vinculado" via closure.** Mantem compat Sub-3.1 (route.js continua chamando `validator(out)` com 1 arg) e expande pro caso Proposta sem tocar tattoo/cadastro.
+
+```js
+// functions/api/agent/agents/proposta.js
+export function buildPropostaAgent({ env, tenant, conversa, clientContext, estado_atual }) {
+  const agent = new Agent({ /* ... config padrao ... */ });
+
+  // Validator pre-vinculado com ctx + estado_atual — chamado como validator(out) no route.js
+  const validator = (out) => validatePropostaOutputInvariant(out, clientContext, estado_atual);
+
+  return { agent, validator };
+}
+```
+
+**route.js mudanca minima**: hoje pega `validator` via `selectAgentValidator(estado_atual)`. Pra Proposta, validator ja vem do builder (`agent.validator` ou no return). Refactor sugerido: `buildAgent` retorna `{ agent, validator }` em **todos** os builders (tattoo/cadastro adaptados pra paridade), e `selectAgentValidator` some — route.js pega validator do builder direto.
+
+**Refactor opcional Sub-2/3.1** (nao bloqueia Sub-3.2): adaptar `buildTattooAgent` e `buildCadastroAgent` pra retornarem `{ agent, validator }` com validator que so passa adiante (`(out) => validateTattooOutputInvariant(out)`). Mantem comportamento, padroniza interface. Pode entrar como follow-up PR pos-Sub-3.2 ou junto.
+
+**Implementacao minima Sub-3.2** (sem mexer em Sub-2/3.1):
+- `buildPropostaAgent` retorna `{ agent, validator }` (closure-bound)
+- Em `router.js`, mantem `selectAgentValidator(estado_atual)` retornando funcao 1-arg, mas pra sub-estados de Proposta retorna `null` (validator vem do builder)
+- Em `route.js`, depois de `builder()`: `const { agent, validator: builderValidator } = builder({...})`. Se `builderValidator` existe, usa; senao fallback pro `selectAgentValidator(estado_atual)` (paridade Sub-3.1)
+
+Decisao final do refactor (escopo restrito vs cross-agent) fica pro `/plan`.
+
+---
+
 ### Silently force pergunta — 2 lugares distintos
 
 Pattern Sub-3.1. Existem 2 momentos no fluxo route.js onde podemos transformar erro em re-ask:
@@ -364,16 +424,19 @@ import { formatLinkSinalMessage } from './_lib/format-link-sinal-msg.js';
 // PRE-FETCH eager (NOVO, depois de isStateImplemented + antes de buildAgent)
 let clientContext = body?.clientContext || {};
 if (estado_atual === 'propondo_valor' || estado_atual === 'escolhendo_horario' || estado_atual === 'aguardando_sinal') {
-  const prefetched = await prefetchPropostaContext({ env, tenant, conversa, estado_atual });
+  const prefetched = await prefetchPropostaContext({ env, tenant, conversa, telefone, estado_atual });
   clientContext = { ...clientContext, ...prefetched };
 }
 
 // ... (run agent, validator, silently force pergunta, etc — pattern Sub-3.1) ...
+// IMPORTANTE: validator continua sendo chamado como validator(working) (1 arg, paridade Sub-3.1).
+// validator pra Proposta precisa acessar clientContext + estado_atual — solucao via CLOSURE
+// no buildPropostaAgent que retorna { agent, validate } — ver §"Closure pattern" abaixo.
 
 // ORCHESTRATOR (NOVO, antes do return final)
 const sideEffects = [];
 const enforced = await executeOrchestration(working, {
-  env, tenant, conversa, clientContext, sideEffects,
+  env, tenant, conversa, telefone, clientContext, sideEffects,
 });
 
 return json({
@@ -386,7 +449,7 @@ return json({
 }, 200);
 
 
-async function executeOrchestration(out, { env, tenant, conversa, clientContext, sideEffects }) {
+async function executeOrchestration(out, { env, tenant, conversa, telefone, clientContext, sideEffects }) {
   switch (out.proxima_acao) {
     case 'pergunta':
     case 'oferecendo_horario':
@@ -394,21 +457,27 @@ async function executeOrchestration(out, { env, tenant, conversa, clientContext,
       return out;  // noop side-effect
 
     case 'reservar_horario': {
-      // 1. Reservar
+      // 1. Reservar — tool real assina {tenant_id, telefone, nome, inicio, fim, descricao?}
+      const nome = conversa?.dados_cadastro?.nome || conversa?.nome || telefone;  // fallback p/ telefone se nome nao persistido
       const ag = await callTool(env, 'reservar-horario', {
-        tenant_id: tenant.id, conversa_id: conversa.id,
-        inicio: out.slot_inicio, fim: out.slot_fim,
+        tenant_id: tenant.id,
+        telefone,
+        nome,
+        inicio: out.slot_inicio,
+        fim: out.slot_fim,
       });
       sideEffects.push({ tool: 'reservar-horario', ok: ag.ok, agendamento_id: ag.agendamento_id });
       if (!ag.ok) {
         return forcePergunta(out, 'Esse horario acabou de sair — pode escolher outro?');
       }
 
-      // 2. Calcula sinal e gera link MP
+      // 2. Calcula sinal e gera link MP — tool real assina {tenant_id, agendamento_id, valor_sinal}
       const sinal_pct = tenant.config_precificacao?.sinal_percentual ?? 30;
       const valor_sinal = calcularValorSinal(conversa.valor_proposto, sinal_pct);
       const lk = await callTool(env, 'gerar-link-sinal', {
-        agendamento_id: ag.agendamento_id, valor_sinal,
+        tenant_id: tenant.id,
+        agendamento_id: ag.agendamento_id,
+        valor_sinal,
       });
       sideEffects.push({ tool: 'gerar-link-sinal', ok: lk.ok });
       if (!lk.ok) {
@@ -426,8 +495,10 @@ async function executeOrchestration(out, { env, tenant, conversa, clientContext,
     }
 
     case 'pediu_desconto': {
+      // tool real assina {tenant_id, telefone, valor_pedido_cliente}
       const r = await callTool(env, 'enviar-objecao-tatuador', {
-        conversa_id: conversa.id,
+        tenant_id: tenant.id,
+        telefone,
         valor_pedido_cliente: out.valor_pedido_cliente,
       });
       sideEffects.push({ tool: 'enviar-objecao-tatuador', ok: r.ok });
@@ -437,8 +508,11 @@ async function executeOrchestration(out, { env, tenant, conversa, clientContext,
 
     case 'reagendamento':
     case 'cliente_agressivo': {
+      // tool real assina {tenant_id, telefone, motivo}
       const r = await callTool(env, 'acionar-handoff', {
-        conversa_id: conversa.id, motivo: out.proxima_acao,
+        tenant_id: tenant.id,
+        telefone,
+        motivo: out.proxima_acao,
       });
       sideEffects.push({ tool: 'acionar-handoff', ok: r.ok, motivo: out.proxima_acao });
       return out;
@@ -457,22 +531,25 @@ function forcePergunta(out, msg) {
 // functions/api/agent/_lib/prefetch-proposta.js
 import { callTool } from './call-tool.js';
 
-export async function prefetchPropostaContext({ env, tenant, conversa, estado_atual }) {
+export async function prefetchPropostaContext({ env, tenant, conversa, telefone, estado_atual }) {
   const ctx = {
     valor_proposto: conversa?.valor_proposto ?? null,
     decisao_desconto: conversa?.dados_coletados?.decisao_desconto ?? null,
   };
 
   if (estado_atual === 'propondo_valor' || estado_atual === 'escolhendo_horario') {
-    const r = await callTool(env, 'consultar-horarios-livres', {
-      tenant_id: tenant.id, data_preferida: null,
+    // Tool real e 'consultar-horarios' (NAO 'consultar-horarios-livres')
+    const r = await callTool(env, 'consultar-horarios', {
+      tenant_id: tenant.id,
+      data_preferida: null,
     });
     ctx.horarios_livres = r.ok ? r.slots : [];
   }
 
   if (estado_atual === 'aguardando_sinal') {
     const r = await callTool(env, 'consultar-proposta-tatuador', {
-      conversa_id: conversa.id,
+      tenant_id: tenant.id,
+      telefone,  // tool usa telefone (nao conversa_id) — paridade webhook Evolution
     });
     ctx.proposta_status = r.ok ? r.status : null;
   }
@@ -487,15 +564,26 @@ export async function prefetchPropostaContext({ env, tenant, conversa, estado_at
 // functions/api/agent/_lib/call-tool.js
 // Wrapper fetch pras tools internas em functions/api/tools/*.js
 // Side-effects ficam isoladas aqui (testavel via mock fetch).
+//
+// Auth: header X-Inkflow-Tool-Secret e OBRIGATORIO em TODAS as tools
+// (validado em _tool-helpers.js contra env.INKFLOW_TOOL_SECRET).
 
 export async function callTool(env, tool_name, body) {
+  if (!env.INKFLOW_TOOL_SECRET) {
+    console.error(`[call-tool] env.INKFLOW_TOOL_SECRET ausente — ${tool_name} vai 401`);
+    return { ok: false, status: 0, error: 'env-tool-secret-missing' };
+  }
+
   // BASE_URL configuravel via env (dev = http://localhost:8788, prod = https://inkflowbrasil.com)
   // Sub-3.2 PoC: usa env.AGENT_INTERNAL_BASE_URL (default localhost) — Sub-4 cutover define producao
   const base = env.AGENT_INTERNAL_BASE_URL || 'http://localhost:8788';
   try {
     const r = await fetch(`${base}/api/tools/${tool_name}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Inkflow-Tool-Secret': env.INKFLOW_TOOL_SECRET,
+      },
       body: JSON.stringify(body),
     });
     const data = await r.json().catch(() => ({}));
@@ -740,7 +828,7 @@ CORE do prompt. Tabela 12 linhas + R1-R9 + closing.
 >
 > **R8.** Mudanca de data de agendamento ja confirmado (pos-pgto pendente): emite `reagendamento`. Voce nao reagenda nesta fase.
 >
-> **R9.** TODA resposta cabe em ≤200 chars. Maximo 1 pergunta por turno.
+> **R9.** TODA resposta SUA cabe em ≤200 chars. Maximo 1 pergunta por turno. (NOTA tecnica: o sistema PODE concatenar template fixo apos sua resposta no caso `reservar_horario` — esse template nao conta no seu cap de 200. Schema valida ≤500 no campo `resposta_cliente` direto do agent; resposta final pos-orchestrator pode ultrapassar 500 quando inclui link MP — comportamento esperado.)
 
 #### §4.3 Closing message
 
@@ -941,12 +1029,14 @@ export const SPEC = {
   must_not_contain: [
     // legacy headers
     'REGRAS INVIOLAVEIS', '§4b TOOLS',
-    // tool names (agent v2 nao chama tools)
-    'consultar_horarios_livres', 'enviar_objecao_tatuador',
-    'gerar_link_sinal', 'reservar_horario(', 'acionar_handoff(',
+    // tool names legacy (agent v2 nao chama tools — sao referencia textual no prompt)
+    'consultar_horarios_livres',  // nome legacy n8n (snake_case)
+    'consultar-horarios-livres',  // typo defensivo
+    'enviar_objecao_tatuador', 'gerar_link_sinal',
+    'reservar_horario(', 'acionar_handoff(',
     'consultar_proposta_tatuador',
     // markdown link patterns
-    '](http',  // basic markdown link detection
+    '](http',  // basic markdown link detection (link MP eh URL crua, nao markdown)
     // pseudo-codigo legacy
     '[chama tool',
   ],
@@ -995,9 +1085,47 @@ Sub-3.2 ainda nao toca prod (n8n esta no hot-path ate Sub-4). Risco real e zero 
 
 ---
 
+## Riscos e assumptions (validar no `/plan`)
+
+Documentado pra `/plan` decidir/validar — nao bloqueia escrita do plano:
+
+### R1 — Tools internas requerem `INKFLOW_TOOL_SECRET` em ambiente CF Workers
+
+`call-tool.js` envia header `X-Inkflow-Tool-Secret`. **Assumption**: secret ja esta configurado em prod (n8n usa hoje pra chamar as mesmas tools). Em smoke local via `wrangler pages dev`, precisa estar em `.dev.vars` — `/plan` valida.
+
+### R2 — Smoke local com `gerar-link-sinal` chama MercadoPago real
+
+MP nao tem sandbox-mode trivial via env flag. Smoke vai chamar API real e gerar Preference real. **Mitigacao**: usar tenant de teste com MP token sandbox. **Alternativa**: mock fetch no orchestrator level via `env.MOCK_MP=1` flag (so smoke mode). `/plan` decide.
+
+### R3 — Reentry agent (turno 1 sem mensagem cliente) — out-of-scope
+
+Estados `propondo_valor` (decisao=aceito/recusado) e `aguardando_decisao_desconto -> propondo_valor` requerem que o BOT abra a conversa sem msg do cliente (apresentar "Show! Ele topou em R$ 600. Bora marcar?"). Hoje o n8n/cron dispara isso — **nao e responsabilidade do PropostaAgent v2**. Sub-3.2 cobre apenas turnos COM mensagem do cliente. Sub-4 cutover define quem dispara o turn-zero (CF Worker scheduled? webhook do enviar-objecao callback?).
+
+**Eval impacto**: TC-P05 e TC-P06 testam o turn-2 (cliente responde apos abertura simulada no historico) — turn-1 (abertura) nao e testado.
+
+### R4 — `valor_pedido_cliente > valor_proposto` = hard-fail 500
+
+Validator rejeita. Decisao: cliente raramente "oferece mais"; se acontecer, e bug do agent (parsing errado de "consegue por 750?" quando proposto era 750 = nao e desconto). Nao vale silently-force porque comportamento ambiguo do mini.
+
+**Edge real**: cliente diz "topo 800!" entusiasmado depois de ter pedido desconto — agent emitiria `pediu_desconto valor=800 > proposto=750`. Hard-fail 500 → log → investigar offline. Nao e UX comum.
+
+### R5 — `nome` em `reservar-horario` pode nao estar disponivel
+
+Tool `reservar-horario` exige `nome`. Spec usa `conversa?.dados_cadastro?.nome || telefone` como fallback. **Assumption**: cadastro Sub-3.1 ja persistiu `nome` no momento que chega em Proposta. **Validacao**: `/plan` adiciona task pra confirmar shape `dados_cadastro.nome` em `conversas` table (Sub-4 cuida da persistencia real; Sub-3.2 stub).
+
+### R6 — `tenant.config_precificacao.sinal_percentual` pode nao existir
+
+Default fallback `?? 30` (30% sinal — convencao mercado). **Assumption**: `tenant` row tem campo. **Validacao**: schema Supabase ja tem `config_precificacao jsonb` com `sinal_percentual` propriedade (verificado em onboarding flow Sub-projeto 4 historico). `/plan` confirma via Read em migration.
+
+### R7 — `consultar-horarios` retorna shape `{slots: [{inicio, fim, legenda}]}`
+
+Spec assume. **Validacao critica**: `/plan` Read `functions/api/tools/consultar-horarios.js` no detalhe pra confirmar response shape antes de usar `r.slots`. Se shape difere, pre-fetch precisa ajuste.
+
+---
+
 ## Open questions
 
-Nenhuma cravada. Decisoes do brainstorm cobrem o escopo. Se em `/plan` aparecer ambiguidade nova (ex: como tratar `valor_pedido_cliente > valor_proposto` no fluxo real), documenta como gap no plan e me chama pra cravar.
+Nenhuma cravada que bloqueie `/plan`. Riscos R1-R7 sao validacoes esperadas durante planning, nao decisoes de design. Se aparecer ambiguidade NOVA (ex: shape de response que diverge significativamente), documenta como gap no plan e me chama pra cravar.
 
 ---
 
