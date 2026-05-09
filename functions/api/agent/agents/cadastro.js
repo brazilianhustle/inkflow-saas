@@ -63,8 +63,13 @@ export function validateCadastroOutputInvariant(out, clientContext = {}) {
   // Validacao pos-output do formato ISO de data_nascimento.
   // Se mini emitir formato errado (ex: "12/03/1995"), route.js silently
   // force pergunta — fluxo continua sem 500.
+  //
+  // Sub-3.3: skip se proxima_acao='enviar_portfolio' (intent transversal,
+  // data_nascimento irrelevante; modelo as vezes emite "null" string aqui
+  // e nao queremos que isso engatilhe silent-force-pergunta no route.js
+  // sobrescrevendo resposta_cliente do envio de portfolio).
   const dn = out.dados_persistidos?.data_nascimento;
-  if (dn && !/^\d{4}-\d{2}-\d{2}$/.test(dn)) {
+  if (out.proxima_acao !== 'enviar_portfolio' && dn && !/^\d{4}-\d{2}-\d{2}$/.test(dn)) {
     return { valid: false, reason: `data_nascimento nao-ISO: ${dn}` };
   }
 
