@@ -17,8 +17,8 @@ const BUILDERS = {
 };
 
 const NEXT_STATE = {
-  tattoo:   { handoff: 'cadastro',            erro: 'tattoo' },
-  cadastro: { handoff: 'aguardando_tatuador', erro: 'aguardando_tatuador' },
+  tattoo:   { handoff: 'cadastro',            erro: 'tattoo',              enviar_portfolio: 'tattoo' },
+  cadastro: { handoff: 'aguardando_tatuador', erro: 'aguardando_tatuador', enviar_portfolio: 'cadastro' },
   propondo_valor: {
     pergunta:           'propondo_valor',
     oferecendo_horario: 'escolhendo_horario',
@@ -26,18 +26,21 @@ const NEXT_STATE = {
     adiou:              'lead_frio',
     reagendamento:      'aguardando_tatuador',
     cliente_agressivo:  'aguardando_tatuador',
+    enviar_portfolio:   'propondo_valor',
   },
   escolhendo_horario: {
     pergunta:          'escolhendo_horario',
     reservar_horario:  'aguardando_sinal',
     reagendamento:     'aguardando_tatuador',
     cliente_agressivo: 'aguardando_tatuador',
+    enviar_portfolio:  'escolhendo_horario',
   },
   aguardando_sinal: {
     pergunta:          'aguardando_sinal',
     reservar_horario:  'aguardando_sinal',
     reagendamento:     'aguardando_tatuador',
     cliente_agressivo: 'aguardando_tatuador',
+    enviar_portfolio:  'aguardando_sinal',
   },
 };
 
