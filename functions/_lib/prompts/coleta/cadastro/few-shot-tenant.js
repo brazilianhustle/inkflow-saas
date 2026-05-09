@@ -8,7 +8,8 @@ export function fewShotTenant(tenant) {
   linhas.push('Variacoes de tom/estilo. Siga o ESPIRITO destes exemplos mas mantenha as regras invioluveis (especialmente: email opcional, idade<18 = handoff).');
   linhas.push('');
 
-  for (const ex of exemplos) {
+  // Cap 10 entries — paridade faq.js (anti prompt-growth attack).
+  for (const ex of exemplos.slice(0, 10)) {
     if (!ex || typeof ex !== 'object' || !ex.cliente || !ex.agente) continue;
     linhas.push('```');
     linhas.push(`CLIENTE: ${ex.cliente}`);

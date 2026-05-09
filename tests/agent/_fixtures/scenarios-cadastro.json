@@ -1,0 +1,177 @@
+{
+  "scenarios": [
+    {
+      "id": "TC-C01",
+      "descricao": "Linha 1: entrada da fase, sem dados",
+      "input": {
+        "tenant_id": "00000000-0000-0000-0000-000000000001",
+        "telefone": "+5511900000101",
+        "estado_atual": "cadastro",
+        "dados_acumulados": {},
+        "dados_cadastro": {},
+        "historico": [],
+        "mensagens": [{ "role": "user", "content": "ok" }]
+      },
+      "expected": {
+        "proxima_acao": "pergunta",
+        "dados_completos": false,
+        "campos_faltando_inclui": ["nome", "data_nascimento"],
+        "dados_persistidos_NAO_inclui": ["nome", "data_nascimento", "email"]
+      }
+    },
+    {
+      "id": "TC-C02",
+      "descricao": "Linha 2: cliente mandou so nome",
+      "input": {
+        "tenant_id": "00000000-0000-0000-0000-000000000001",
+        "telefone": "+5511900000102",
+        "estado_atual": "cadastro",
+        "dados_acumulados": {},
+        "dados_cadastro": {},
+        "historico": [],
+        "mensagens": [{ "role": "user", "content": "Maria Silva" }]
+      },
+      "expected": {
+        "proxima_acao": "pergunta",
+        "dados_completos": false,
+        "dados_persistidos_inclui": ["nome"],
+        "campos_faltando_inclui": ["data_nascimento"]
+      }
+    },
+    {
+      "id": "TC-C03",
+      "descricao": "Linha 3: completo OBR (data normalizada), sem email",
+      "input": {
+        "tenant_id": "00000000-0000-0000-0000-000000000001",
+        "telefone": "+5511900000103",
+        "estado_atual": "cadastro",
+        "dados_acumulados": {},
+        "dados_cadastro": { "nome": "Maria Silva" },
+        "historico": [
+          { "role": "user", "content": "Maria Silva" },
+          { "role": "assistant", "content": "Beleza Maria. E a data de nascimento?" }
+        ],
+        "mensagens": [{ "role": "user", "content": "12/03/1995" }]
+      },
+      "expected": {
+        "proxima_acao": "pergunta",
+        "dados_completos": false,
+        "dados_persistidos_inclui": ["data_nascimento"],
+        "data_nascimento_iso_match": true
+      }
+    },
+    {
+      "id": "TC-C04",
+      "descricao": "Linha 4: email recusado, handoff",
+      "input": {
+        "tenant_id": "00000000-0000-0000-0000-000000000001",
+        "telefone": "+5511900000104",
+        "estado_atual": "cadastro",
+        "dados_acumulados": {},
+        "dados_cadastro": { "nome": "Maria", "data_nascimento": "1995-03-12" },
+        "historico": [
+          { "role": "assistant", "content": "Anotado. E o e-mail?" }
+        ],
+        "mensagens": [{ "role": "user", "content": "nao tenho email" }]
+      },
+      "expected": {
+        "proxima_acao": "handoff",
+        "dados_completos": true,
+        "email_recusado": true
+      }
+    },
+    {
+      "id": "TC-C05",
+      "descricao": "Linha 5: tudo de uma vez",
+      "input": {
+        "tenant_id": "00000000-0000-0000-0000-000000000001",
+        "telefone": "+5511900000105",
+        "estado_atual": "cadastro",
+        "dados_acumulados": {},
+        "dados_cadastro": {},
+        "historico": [],
+        "mensagens": [{ "role": "user", "content": "Maria Silva, 12/03/1995, maria@email.com" }]
+      },
+      "expected": {
+        "proxima_acao": "handoff",
+        "dados_completos": true,
+        "dados_persistidos_inclui": ["nome", "data_nascimento", "email"],
+        "data_nascimento_iso_match": true
+      }
+    },
+    {
+      "id": "TC-C06",
+      "descricao": "Linha 7: recusa persistente -> erro",
+      "input": {
+        "tenant_id": "00000000-0000-0000-0000-000000000001",
+        "telefone": "+5511900000106",
+        "estado_atual": "cadastro",
+        "dados_acumulados": {},
+        "dados_cadastro": {},
+        "historico": [
+          { "role": "user", "content": "nao quero passar dados" },
+          { "role": "assistant", "content": "Preciso so do nome e data de nascimento pra liberar o orcamento" }
+        ],
+        "mensagens": [{ "role": "user", "content": "nao informo meus dados" }]
+      },
+      "expected": {
+        "proxima_acao": "erro"
+      }
+    },
+    {
+      "id": "TC-C07",
+      "descricao": "Linha 8: data invalida persistente -> erro",
+      "input": {
+        "tenant_id": "00000000-0000-0000-0000-000000000001",
+        "telefone": "+5511900000107",
+        "estado_atual": "cadastro",
+        "dados_acumulados": {},
+        "dados_cadastro": { "nome": "Maria" },
+        "historico": [
+          { "role": "user", "content": "foi semana passada" },
+          { "role": "assistant", "content": "Pode mandar tipo 12/03/1995?" }
+        ],
+        "mensagens": [{ "role": "user", "content": "ontem" }]
+      },
+      "expected": {
+        "proxima_acao": "erro"
+      }
+    },
+    {
+      "id": "TC-C08",
+      "descricao": "Linha 6: conflito de nome",
+      "input": {
+        "tenant_id": "00000000-0000-0000-0000-000000000001",
+        "telefone": "+5511900000108",
+        "estado_atual": "cadastro",
+        "dados_acumulados": {},
+        "dados_cadastro": { "nome": "Maria Silva" },
+        "historico": [
+          { "role": "user", "content": "Maria Silva" },
+          { "role": "assistant", "content": "E a data de nascimento?" }
+        ],
+        "mensagens": [{ "role": "user", "content": "na verdade e Maria Costa" }]
+      },
+      "expected": {
+        "proxima_acao": "pergunta",
+        "campos_conflitantes_inclui": ["nome"]
+      }
+    },
+    {
+      "id": "TC-C09",
+      "descricao": "Linha 9: off_topic — responde brevemente, retoma",
+      "input": {
+        "tenant_id": "00000000-0000-0000-0000-000000000001",
+        "telefone": "+5511900000109",
+        "estado_atual": "cadastro",
+        "dados_acumulados": {},
+        "dados_cadastro": {},
+        "historico": [],
+        "mensagens": [{ "role": "user", "content": "preciso de receita pra anestesia?" }]
+      },
+      "expected": {
+        "proxima_acao": "pergunta"
+      }
+    }
+  ]
+}

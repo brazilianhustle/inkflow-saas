@@ -3,15 +3,16 @@
 // Body: { tenant_id, telefone, mensagem, estado_atual, dados_acumulados, historico, tenant?, conversa?, clientContext? }
 // Response 200: { ok, resposta_cliente, estado_novo, dados_persistidos, proxima_acao, agent_usado }
 // Response 400: body invalido
-// Response 501: estado_atual nao implementado (cadastro/proposta/portfolio = Sub-2)
+// Response 501: estado_atual nao implementado (proposta/portfolio = Sub-3.2/Sub-3.3)
 // Response 503: OPENAI_API_KEY ausente no env
 // Response 500: erro interno (run() falhou)
 //
 // Sub-1: estado conversacional vem no payload (in-memory). Sub-3 puxa de Supabase.
 import { run } from '@openai/agents';
-import { selectAgentBuilder, isStateImplemented } from './router.js';
+import { setDefaultOpenAIKey } from '@openai/agents-openai';
+import { selectAgentBuilder, selectAgentValidator, isStateImplemented, getNextState } from './router.js';
 import { validateEnv } from './_lib/sdk-init.js';
-import { validateTattooOutputInvariant } from './agents/tattoo.js';
+import { enforceMenorIdade } from './_lib/enforce-menor-idade.js';
 
 const HEADERS = {
   'Content-Type': 'application/json',
@@ -52,6 +53,10 @@ export async function onRequest({ request, env }) {
   if (!envCheck.ok) {
     return json({ ok: false, error: 'env-incomplete', missing: envCheck.missing }, 503);
   }
+
+  // Cloudflare Workers nao tem process.env — SDK precisa receber a key explicita.
+  // setDefaultOpenAIKey e idempotente; chama-se a cada request pra cobrir multi-tenant futuro.
+  setDefaultOpenAIKey(env.OPENAI_API_KEY);
 
   let body;
   try {
@@ -114,23 +119,45 @@ export async function onRequest({ request, env }) {
     return json({ ok: false, error: 'no-final-output' }, 500);
   }
 
-  // Invariante handoff (movida pra ca apos remover .refine() do schema —
-  // SDK so suporta ZodObject puro como outputType, .refine() vira ZodEffects).
-  const invariantCheck = validateTattooOutputInvariant(out);
+  // Dispatcher por estado: cadastro tem invariante diferente do tattoo.
+  const validator = selectAgentValidator(estado_atual);
+  let working = out;
+  const invariantCheck = validator(working);
+
   if (!invariantCheck.valid) {
-    console.error('[agent/route] invariant violation:', invariantCheck.reason, out);
-    return json({ ok: false, error: 'invariant-violation', reason: invariantCheck.reason }, 500);
+    // Caso especial: data_nascimento nao-ISO (cadastro) — silently force pergunta
+    // em vez de 500. Pattern Sub-2: invariante so tem hard-fail pra contratos
+    // de handoff (dados_completos, campos_conflitantes). Formato de data e UX,
+    // nao contrato — agent reformula no proximo turno.
+    if (estado_atual === 'cadastro' && invariantCheck.reason?.startsWith('data_nascimento nao-ISO')) {
+      console.warn('[agent/route] silently force pergunta (data_nascimento nao-ISO):', invariantCheck.reason);
+      working = {
+        ...working,
+        dados_persistidos: { ...(working.dados_persistidos || {}), data_nascimento: null },
+        dados_completos: false,
+        campos_faltando: Array.from(new Set([...(working.campos_faltando || []), 'data_nascimento'])),
+        proxima_acao: 'pergunta',
+        resposta_cliente: 'Nao consegui ler a data — pode mandar tipo 12/03/1995?',
+      };
+    } else {
+      console.error('[agent/route] invariant violation:', invariantCheck.reason, out);
+      return json({ ok: false, error: 'invariant-violation', reason: invariantCheck.reason }, 500);
+    }
   }
+
+  // Aplica enforceMenorIdade APOS invariante. So afeta cadastro (helper
+  // checa data_nascimento; outros estados nao tem o campo, retorna out unchanged).
+  const enforced = estado_atual === 'cadastro' ? enforceMenorIdade(working) : working;
 
   return json({
     ok: true,
-    resposta_cliente: out.resposta_cliente,
-    estado_novo: out.proxima_acao === 'handoff' ? 'cadastro' : estado_atual,
-    dados_persistidos: out.dados_persistidos,
-    dados_completos: out.dados_completos,
-    campos_faltando: out.campos_faltando,
-    campos_conflitantes: out.campos_conflitantes,
-    proxima_acao: out.proxima_acao,
-    agent_usado: 'tattoo',
+    resposta_cliente: enforced.resposta_cliente,
+    estado_novo: getNextState(estado_atual, enforced),
+    dados_persistidos: enforced.dados_persistidos,
+    dados_completos: enforced.dados_completos,
+    campos_faltando: enforced.campos_faltando,
+    campos_conflitantes: enforced.campos_conflitantes,
+    proxima_acao: enforced.proxima_acao,
+    agent_usado: estado_atual,
   }, 200);
 }
