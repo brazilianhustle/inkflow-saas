@@ -16,6 +16,7 @@ export function contextoTattoo(tenant, conversa, clientContext) {
   linhas.push('## Estudio');
   linhas.push(`- Gatilhos handoff: ${gatilhos.map(g => `"${g}"`).join(', ')}`);
   linhas.push(`- ${aceitaCobertura ? 'ACEITA' : 'NAO ACEITA'} cobertura (cover-up)`);
+  linhas.push(`- portfolio: ${ctx.portfolio_disponivel ? 'disponivel' : 'nao cadastrado'}`);
   linhas.push('');
 
   // Cliente
