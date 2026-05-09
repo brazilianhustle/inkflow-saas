@@ -2,6 +2,8 @@
 pixel-agents-standalone/
 
 .wrangler/
+.dev.vars
+.dev.vars.*
 .claude/worktrees/
 .claude/active-branch
 .worktrees/

@@ -9,6 +9,7 @@
 //
 // Sub-1: estado conversacional vem no payload (in-memory). Sub-3 puxa de Supabase.
 import { run } from '@openai/agents';
+import { setDefaultOpenAIKey } from '@openai/agents-openai';
 import { selectAgentBuilder, selectAgentValidator, isStateImplemented, getNextState } from './router.js';
 import { validateEnv } from './_lib/sdk-init.js';
 import { enforceMenorIdade } from './_lib/enforce-menor-idade.js';
@@ -52,6 +53,10 @@ export async function onRequest({ request, env }) {
   if (!envCheck.ok) {
     return json({ ok: false, error: 'env-incomplete', missing: envCheck.missing }, 503);
   }
+
+  // Cloudflare Workers nao tem process.env — SDK precisa receber a key explicita.
+  // setDefaultOpenAIKey e idempotente; chama-se a cada request pra cobrir multi-tenant futuro.
+  setDefaultOpenAIKey(env.OPENAI_API_KEY);
 
   let body;
   try {
