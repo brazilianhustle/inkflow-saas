@@ -82,11 +82,13 @@ export function validateCadastroOutputInvariant(out) {
 export function buildCadastroAgent({ env, tenant, conversa, clientContext, baseUrl = 'http://localhost:8788' }) {
   const instructions = generatePromptColetaCadastro(tenant, conversa, clientContext || {});
 
-  return new Agent({
+  const agent = new Agent({
     name: 'cadastro-agent',
     model: 'gpt-4o-mini',
     instructions,
     tools: [],
     outputType: CadastroOutputSchema,
   });
+  const validator = (out) => validateCadastroOutputInvariant(out);
+  return { agent, validator };
 }

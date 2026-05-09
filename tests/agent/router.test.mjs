@@ -1,30 +1,43 @@
-// Unit tests pro router.js (Sub-3.1 generaliza getNextState + selectAgentValidator).
+// Unit tests pro router.js (Sub-3.2 cross-agent pattern: builder retorna {agent, validator}).
+// selectAgentValidator removido — validator vem do builder via closure.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   selectAgentBuilder,
-  selectAgentValidator,
   isStateImplemented,
   getNextState,
 } from '../../functions/api/agent/router.js';
 
-test('selectAgentBuilder — tattoo + cadastro resolvidos, outros null', () => {
+test('selectAgentBuilder — tattoo + cadastro + proposta substates resolvidos, outros null', () => {
   assert.equal(typeof selectAgentBuilder('tattoo'), 'function');
   assert.equal(typeof selectAgentBuilder('cadastro'), 'function');
+  assert.equal(typeof selectAgentBuilder('propondo_valor'), 'function');
+  assert.equal(typeof selectAgentBuilder('escolhendo_horario'), 'function');
+  assert.equal(typeof selectAgentBuilder('aguardando_sinal'), 'function');
   assert.equal(selectAgentBuilder('proposta'), null);
   assert.equal(selectAgentBuilder('portfolio'), null);
 });
 
-test('selectAgentValidator — tattoo + cadastro resolvidos', () => {
-  assert.equal(typeof selectAgentValidator('tattoo'), 'function');
-  assert.equal(typeof selectAgentValidator('cadastro'), 'function');
-  assert.equal(selectAgentValidator('proposta'), null);
+test('selectAgentBuilder — builder retorna {agent, validator} (closure pattern)', () => {
+  const mockEnv = { OPENAI_API_KEY: 'sk-test' };
+  const mockTenant = { id: 't1', nome_estudio: 'Test', config_agente: {}, config_precificacao: {}, gatilhos_handoff: [], faqs: [], fewshots: [] };
+  const mockConversa = { id: 'c1', telefone: '+5511999999999', estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const builder = selectAgentBuilder('tattoo');
+  const result = builder({ env: mockEnv, tenant: mockTenant, conversa: mockConversa, clientContext: {} });
+  assert.ok(result && typeof result === 'object', 'builder deve retornar objeto');
+  assert.ok('agent' in result, 'resultado deve ter agent');
+  assert.ok('validator' in result, 'resultado deve ter validator');
+  assert.equal(typeof result.validator, 'function');
 });
 
-test('isStateImplemented — tattoo + cadastro=true, outros=false', () => {
+test('isStateImplemented — tattoo + cadastro + proposta substates=true, outros=false', () => {
   assert.equal(isStateImplemented('tattoo'), true);
   assert.equal(isStateImplemented('cadastro'), true);
+  assert.equal(isStateImplemented('propondo_valor'), true);
+  assert.equal(isStateImplemented('escolhendo_horario'), true);
+  assert.equal(isStateImplemented('aguardando_sinal'), true);
   assert.equal(isStateImplemented('proposta'), false);
+  assert.equal(isStateImplemented('portfolio'), false);
 });
 
 test('getNextState — tattoo+handoff -> cadastro', () => {

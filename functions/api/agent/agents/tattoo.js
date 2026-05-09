@@ -72,11 +72,13 @@ export function validateTattooOutputInvariant(out) {
 export function buildTattooAgent({ env, tenant, conversa, clientContext, baseUrl = 'http://localhost:8788' }) {
   const instructions = generatePromptColetaTattoo(tenant, conversa, clientContext || {});
 
-  return new Agent({
+  const agent = new Agent({
     name: 'tattoo-agent',
     model: 'gpt-4o-mini',
     instructions,
     tools: [],
     outputType: TattooOutputSchema,
   });
+  const validator = (out) => validateTattooOutputInvariant(out);
+  return { agent, validator };
 }

@@ -1,41 +1,48 @@
 // functions/api/agent/router.js
-// Router — dispatch por estado_atual pra escolha de Agent builder/validator
+// Router — dispatch por estado_atual pra escolha de Agent builder
 // e calculo do proximo estado.
 //
-// Sub-1: tattoo. Sub-3.1: + cadastro. Sub-3.2/3.3: proposta + portfolio.
-//
-// NEXT_STATE encapsula transicao (estado_atual, proxima_acao) -> estado_novo:
-// - tattoo+handoff   -> cadastro             (continua coleta)
-// - tattoo+erro      -> tattoo (stay)        (cliente em estado bloqueado; Sub-4 cutover decide)
-// - cadastro+handoff -> aguardando_tatuador  (handoff legitimo)
-// - cadastro+erro    -> aguardando_tatuador  (3 triggers: recusa_persistente, data_invalida, menor_idade — todos saem)
-// - * + pergunta     -> stay
-import { buildTattooAgent, validateTattooOutputInvariant } from './agents/tattoo.js';
-import { buildCadastroAgent, validateCadastroOutputInvariant } from './agents/cadastro.js';
+// Sub-3.2: cross-agent pattern. Builder retorna { agent, validator }.
+// VALIDATORS/selectAgentValidator REMOVIDOS — validator vem do builder.
+import { buildTattooAgent } from './agents/tattoo.js';
+import { buildCadastroAgent } from './agents/cadastro.js';
+import { buildPropostaAgent } from './agents/proposta.js';
+
+const PROPOSTA_SUBSTATES = ['propondo_valor', 'escolhendo_horario', 'aguardando_sinal'];
 
 const BUILDERS = {
   tattoo: buildTattooAgent,
   cadastro: buildCadastroAgent,
-  // Sub-3.2: proposta
-  // Sub-3.3: portfolio
-};
-
-const VALIDATORS = {
-  tattoo: validateTattooOutputInvariant,
-  cadastro: validateCadastroOutputInvariant,
+  ...Object.fromEntries(PROPOSTA_SUBSTATES.map(s => [s, buildPropostaAgent])),
 };
 
 const NEXT_STATE = {
   tattoo:   { handoff: 'cadastro',            erro: 'tattoo' },
   cadastro: { handoff: 'aguardando_tatuador', erro: 'aguardando_tatuador' },
+  propondo_valor: {
+    pergunta:           'propondo_valor',
+    oferecendo_horario: 'escolhendo_horario',
+    pediu_desconto:     'aguardando_decisao_desconto',
+    adiou:              'lead_frio',
+    reagendamento:      'aguardando_tatuador',
+    cliente_agressivo:  'aguardando_tatuador',
+  },
+  escolhendo_horario: {
+    pergunta:          'escolhendo_horario',
+    reservar_horario:  'aguardando_sinal',
+    reagendamento:     'aguardando_tatuador',
+    cliente_agressivo: 'aguardando_tatuador',
+  },
+  aguardando_sinal: {
+    pergunta:          'aguardando_sinal',
+    reservar_horario:  'aguardando_sinal',
+    reagendamento:     'aguardando_tatuador',
+    cliente_agressivo: 'aguardando_tatuador',
+  },
 };
 
 export function selectAgentBuilder(estado_atual) {
   return BUILDERS[estado_atual] || null;
-}
-
-export function selectAgentValidator(estado_atual) {
-  return VALIDATORS[estado_atual] || null;
 }
 
 export function isStateImplemented(estado_atual) {
