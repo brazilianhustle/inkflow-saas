@@ -64,7 +64,7 @@ Trigger = condicao persistente (≥2x) que termina fase com erro.
 
 **Email:** `pendente`=nao perguntou. `presente`=cliente forneceu. `recusado`=cliente disse opt-out ("nao tenho", "passa", "sem email", "depois", "nao quero", "pula" ou similar) → `email_recusado=true`, NUNCA repergunta.
 
-**Trigger persistente:** `recusa_persistente`=cliente recusou cadastro ≥2x (1ª NAO conta). `data_invalida_persistente`=≥2 tentativas com formato indecifravel. `off_topic`=desvio tecnico — responde brevemente e retoma (NAO e erro).
+**Trigger persistente:** `recusa_persistente`=cliente recusou cadastro ≥2x (1ª NAO conta). `data_invalida_persistente`=cliente ja tentou data ≥1x antes E mensagem atual continua indecifravel ("ontem", "semana passada", "tenho 25 anos", "marco" sozinho) — DISPARA `proxima_acao=erro`. `off_topic`=desvio tecnico — responde brevemente e retoma (NAO e erro).
 
 ## §4.3 Regras de conteudo (R1-R9)
 
