@@ -13,6 +13,10 @@ import { setDefaultOpenAIKey } from '@openai/agents-openai';
 import { selectAgentBuilder, isStateImplemented, getNextState } from './router.js';
 import { validateEnv } from './_lib/sdk-init.js';
 import { enforceMenorIdade } from './_lib/enforce-menor-idade.js';
+import { prefetchPropostaContext } from './_lib/prefetch-proposta.js';
+import { callTool } from './_lib/call-tool.js';
+import { calcularValorSinal } from './_lib/calcular-sinal.js';
+import { formatLinkSinalMessage } from './_lib/format-link-sinal-msg.js';
 
 const HEADERS = {
   'Content-Type': 'application/json',
@@ -89,7 +93,18 @@ export async function onRequest({ request, env }) {
   // Sub-3 substitui por fetch real.
   const tenant = body?.tenant || { id: tenant_id, nome_estudio: 'Stub', config_agente: {}, gatilhos_handoff: [], faqs: [], fewshots: [] };
   const conversa = body?.conversa || { id: 'stub', telefone, estado_agente: estado_atual, dados_coletados: dados_acumulados, dados_cadastro: {} };
-  const clientContext = body?.clientContext || {};
+
+  // Set definido tambem mais abaixo no orchestrator — declarado em escopo
+  // mais alto pra reuso. Subsumir o `const clientContext = body?.clientContext || {};`
+  // existente.
+  const PROPOSTA_SUBSTATES = new Set(['propondo_valor', 'escolhendo_horario', 'aguardando_sinal']);
+  let clientContext = body?.clientContext || {};
+  if (PROPOSTA_SUBSTATES.has(estado_atual)) {
+    const prefetched = await prefetchPropostaContext({
+      env, tenant, conversa, telefone, estado_atual,
+    });
+    clientContext = { ...clientContext, ...prefetched };
+  }
 
   const { agent, validator } = builder({ env, tenant, conversa, clientContext, estado_atual });
 
@@ -124,11 +139,9 @@ export async function onRequest({ request, env }) {
   const invariantCheck = validator(working);
 
   if (!invariantCheck.valid) {
-    // Caso especial: data_nascimento nao-ISO (cadastro) — silently force pergunta
-    // em vez de 500. Pattern Sub-2: invariante so tem hard-fail pra contratos
-    // de handoff (dados_completos, campos_conflitantes). Formato de data e UX,
-    // nao contrato — agent reformula no proximo turno.
     if (estado_atual === 'cadastro' && invariantCheck.reason?.startsWith('data_nascimento nao-ISO')) {
+      // Caso especial Sub-3.1: data_nascimento mal-formatada — silently force
+      // pergunta. Agente reformula no proximo turno.
       console.warn('[agent/route] silently force pergunta (data_nascimento nao-ISO):', invariantCheck.reason);
       working = {
         ...working,
@@ -138,7 +151,20 @@ export async function onRequest({ request, env }) {
         proxima_acao: 'pergunta',
         resposta_cliente: 'Nao consegui ler a data — pode mandar tipo 12/03/1995?',
       };
+    } else if (PROPOSTA_SUBSTATES.has(estado_atual) && /(nao-ISO|fora da lista)/.test(invariantCheck.reason || '')) {
+      // Caso especial Sub-3.2: slot mal-formatado ou inexistente — silently
+      // force pergunta com lista atualizada de slots.
+      console.warn('[agent/route] silently force pergunta (slot invalido):', invariantCheck.reason);
+      const slots = clientContext.horarios_livres || [];
+      const legendas = slots.map(s => s.legenda).join(', ') || '(nenhum slot disponivel)';
+      const msg = invariantCheck.reason.startsWith('slot fora')
+        ? `Esse horario nao esta na lista — escolhe um destes? ${legendas}`
+        : `Nao consegui ler o horario — pode escolher um da lista? ${legendas}`;
+      working = { ...working, proxima_acao: 'pergunta', resposta_cliente: msg };
     } else {
+      // Hard-fail: violacao de contrato (proxima_acao nao permitida no estado,
+      // payload obrigatorio missing, valor_pedido > valor_proposto, etc).
+      // Bug do agent — nao UX issue.
       console.error('[agent/route] invariant violation:', invariantCheck.reason, out);
       return json({ ok: false, error: 'invariant-violation', reason: invariantCheck.reason }, 500);
     }
@@ -148,15 +174,97 @@ export async function onRequest({ request, env }) {
   // checa data_nascimento; outros estados nao tem o campo, retorna out unchanged).
   const enforced = estado_atual === 'cadastro' ? enforceMenorIdade(working) : working;
 
+  // Sub-3.2: orquestrator side-effects pra Proposta
+  const sideEffects = [];
+  let finalOut = enforced;
+  if (PROPOSTA_SUBSTATES.has(estado_atual)) {
+    finalOut = await executeOrchestration(enforced, {
+      env, tenant, conversa, telefone, sideEffects,
+    });
+  }
+
   return json({
     ok: true,
-    resposta_cliente: enforced.resposta_cliente,
-    estado_novo: getNextState(estado_atual, enforced),
-    dados_persistidos: enforced.dados_persistidos,
-    dados_completos: enforced.dados_completos,
-    campos_faltando: enforced.campos_faltando,
-    campos_conflitantes: enforced.campos_conflitantes,
-    proxima_acao: enforced.proxima_acao,
+    resposta_cliente: finalOut.resposta_cliente,
+    estado_novo: getNextState(estado_atual, finalOut),
+    dados_persistidos: finalOut.dados_persistidos,
+    dados_completos: finalOut.dados_completos,
+    campos_faltando: finalOut.campos_faltando,
+    campos_conflitantes: finalOut.campos_conflitantes,
+    proxima_acao: finalOut.proxima_acao,
     agent_usado: estado_atual,
+    side_effects: PROPOSTA_SUBSTATES.has(estado_atual) ? sideEffects : undefined,
   }, 200);
+}
+
+export function forcePergunta(out, msg) {
+  return { ...out, proxima_acao: 'pergunta', resposta_cliente: msg };
+}
+
+export async function executeOrchestration(out, { env, tenant, conversa, telefone, sideEffects }) {
+  switch (out.proxima_acao) {
+    case 'pergunta':
+    case 'oferecendo_horario':
+    case 'adiou':
+      return out;
+
+    case 'reservar_horario': {
+      const nome = conversa?.dados_cadastro?.nome || conversa?.nome || telefone;
+      const ag = await callTool(env, 'reservar-horario', {
+        tenant_id: tenant.id,
+        telefone, nome,
+        inicio: out.slot_inicio,
+        fim: out.slot_fim,
+      });
+      sideEffects.push({ tool: 'reservar-horario', ok: ag.ok, agendamento_id: ag.agendamento_id });
+      if (!ag.ok) {
+        return forcePergunta(out, 'Esse horario acabou de sair — pode escolher outro?');
+      }
+      // Fallback chain dupla — config_precificacao.sinal_percentual (jsonb)
+      // OR tenant.sinal_percentual (legacy column) OR 30 default.
+      const sinal_pct = tenant?.config_precificacao?.sinal_percentual ?? tenant?.sinal_percentual ?? 30;
+      const valor_sinal = calcularValorSinal(conversa.valor_proposto, sinal_pct);
+      const lk = await callTool(env, 'gerar-link-sinal', {
+        tenant_id: tenant.id,
+        agendamento_id: ag.agendamento_id,
+        valor_sinal,
+      });
+      sideEffects.push({ tool: 'gerar-link-sinal', ok: lk.ok });
+      if (!lk.ok) {
+        return forcePergunta(out, 'Tive um problema gerando o link — me da um minuto?');
+      }
+      const resposta_cliente = formatLinkSinalMessage({
+        agent_text: out.resposta_cliente,
+        sinal_pct, valor_sinal,
+        link_pagamento: lk.link_pagamento,
+        hold_horas: lk.hold_horas ?? 24,
+      });
+      return { ...out, resposta_cliente };
+    }
+
+    case 'pediu_desconto': {
+      const r = await callTool(env, 'enviar-objecao-tatuador', {
+        tenant_id: tenant.id,
+        telefone,
+        valor_pedido_cliente: out.valor_pedido_cliente,
+      });
+      sideEffects.push({ tool: 'enviar-objecao-tatuador', ok: r.ok });
+      if (!r.ok) return forcePergunta(out, 'Anota ai — vou consultar e ja volto.');
+      return out;
+    }
+
+    case 'reagendamento':
+    case 'cliente_agressivo': {
+      const r = await callTool(env, 'acionar-handoff', {
+        tenant_id: tenant.id,
+        telefone,
+        motivo: out.proxima_acao,
+      });
+      sideEffects.push({ tool: 'acionar-handoff', ok: r.ok, motivo: out.proxima_acao });
+      return out;
+    }
+
+    default:
+      return out;
+  }
 }
