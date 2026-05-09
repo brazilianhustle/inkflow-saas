@@ -51,5 +51,5 @@ export const CONTRACT_COLETA_PROPOSTA = {
     // Markdown link (WhatsApp nao renderiza — link MP fica URL crua)
     '](http',
   ],
-  max_tokens: 2400,
+  max_tokens: 2500,
 };
