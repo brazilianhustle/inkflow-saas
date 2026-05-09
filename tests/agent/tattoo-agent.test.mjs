@@ -22,19 +22,23 @@ const FAKE_CONVERSA = {
   dados_cadastro: {},
 };
 
-test('buildTattooAgent retorna Agent pure structured-output (sem tools)', () => {
-  const agent = buildTattooAgent({
+test('buildTattooAgent retorna { agent, validator } (closure pattern Sub-3.2)', () => {
+  const result = buildTattooAgent({
     env: { OPENAI_API_KEY: 'sk-test', INKFLOW_TOOL_SECRET: 'tool-sec' },
     tenant: FAKE_TENANT,
     conversa: FAKE_CONVERSA,
     clientContext: {},
   });
+  assert.ok(result && typeof result === 'object', 'deve retornar objeto');
+  assert.ok('agent' in result, 'deve ter agent');
+  assert.ok('validator' in result, 'deve ter validator');
+  assert.equal(typeof result.validator, 'function');
   // v2: tools removidas (audit Fase 9). Estado/dados via structured output.
-  assert.deepEqual(agent.tools, []);
+  assert.deepEqual(result.agent.tools, []);
 });
 
 test('buildTattooAgent usa modelo gpt-4o-mini', () => {
-  const agent = buildTattooAgent({
+  const { agent } = buildTattooAgent({
     env: { OPENAI_API_KEY: 'sk-test', INKFLOW_TOOL_SECRET: 'tool-sec' },
     tenant: FAKE_TENANT,
     conversa: FAKE_CONVERSA,
@@ -44,7 +48,7 @@ test('buildTattooAgent usa modelo gpt-4o-mini', () => {
 });
 
 test('buildTattooAgent prompt inclui invariante handoff (R7)', () => {
-  const agent = buildTattooAgent({
+  const { agent } = buildTattooAgent({
     env: { OPENAI_API_KEY: 'sk-test', INKFLOW_TOOL_SECRET: 'tool-sec' },
     tenant: FAKE_TENANT,
     conversa: FAKE_CONVERSA,

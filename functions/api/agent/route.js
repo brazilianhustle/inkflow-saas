@@ -10,7 +10,7 @@
 // Sub-1: estado conversacional vem no payload (in-memory). Sub-3 puxa de Supabase.
 import { run } from '@openai/agents';
 import { setDefaultOpenAIKey } from '@openai/agents-openai';
-import { selectAgentBuilder, selectAgentValidator, isStateImplemented, getNextState } from './router.js';
+import { selectAgentBuilder, isStateImplemented, getNextState } from './router.js';
 import { validateEnv } from './_lib/sdk-init.js';
 import { enforceMenorIdade } from './_lib/enforce-menor-idade.js';
 
@@ -91,7 +91,7 @@ export async function onRequest({ request, env }) {
   const conversa = body?.conversa || { id: 'stub', telefone, estado_agente: estado_atual, dados_coletados: dados_acumulados, dados_cadastro: {} };
   const clientContext = body?.clientContext || {};
 
-  const agent = builder({ env, tenant, conversa, clientContext });
+  const { agent, validator } = builder({ env, tenant, conversa, clientContext, estado_atual });
 
   // Constroi messages do historico + mensagem atual.
   // Historico: items com role=assistant precisam shape tipado (SDK valida via Zod).
@@ -119,8 +119,7 @@ export async function onRequest({ request, env }) {
     return json({ ok: false, error: 'no-final-output' }, 500);
   }
 
-  // Dispatcher por estado: cadastro tem invariante diferente do tattoo.
-  const validator = selectAgentValidator(estado_atual);
+  // Validator vem do builder (closure pattern Sub-3.2).
   let working = out;
   const invariantCheck = validator(working);
 
