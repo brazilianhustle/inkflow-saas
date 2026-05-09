@@ -1,0 +1,139 @@
+[
+  {
+    "id": "TC-PORT-01",
+    "descricao": "tattoo: cliente pede trabalhos vazio + portfolio_disponivel=true -> enviar_portfolio sem estilo",
+    "estado_atual": "tattoo",
+    "agent": "tattoo",
+    "portfolio_disponivel": true,
+    "dados_acumulados": {},
+    "historico": [],
+    "mensagem": "tem como mandar uns trabalhos seus?",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "enviar_portfolio" },
+      { "type": "payload_portfolio_estilo_null", "value": true }
+    ]
+  },
+  {
+    "id": "TC-PORT-02",
+    "descricao": "tattoo: cliente menciona estilo -> enviar_portfolio com estilo='fineline'",
+    "estado_atual": "tattoo",
+    "agent": "tattoo",
+    "portfolio_disponivel": true,
+    "dados_acumulados": { "descricao_curta": "rosa" },
+    "historico": [],
+    "mensagem": "queria ver fineline",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "enviar_portfolio" },
+      { "type": "payload_portfolio_estilo_equals", "value": "fineline" }
+    ]
+  },
+  {
+    "id": "TC-PORT-03",
+    "descricao": "tattoo: cliente pede fotos + portfolio_disponivel=false -> pergunta",
+    "estado_atual": "tattoo",
+    "agent": "tattoo",
+    "portfolio_disponivel": false,
+    "dados_acumulados": {},
+    "historico": [],
+    "mensagem": "manda fotos pra eu ver",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "pergunta" },
+      { "type": "resposta_cliente_matches", "value": "(portfolio|cadastrado|montando)" }
+    ]
+  },
+  {
+    "id": "TC-PORT-04",
+    "descricao": "cadastro: cliente pede trabalhos antes de cadastrar -> enviar_portfolio",
+    "estado_atual": "cadastro",
+    "agent": "cadastro",
+    "portfolio_disponivel": true,
+    "dados_acumulados": { "descricao_curta": "rosa", "tamanho_cm": 8, "local_corpo": "antebraco" },
+    "historico": [
+      { "role": "assistant", "content": "Pra liberar teu orcamento, me passa nome completo e data de nascimento." }
+    ],
+    "mensagem": "antes me mostra trabalhos",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "enviar_portfolio" }
+    ]
+  },
+  {
+    "id": "TC-PORT-05",
+    "descricao": "cadastro: cliente pergunta de instagram -> enviar_portfolio",
+    "estado_atual": "cadastro",
+    "agent": "cadastro",
+    "portfolio_disponivel": true,
+    "dados_acumulados": { "descricao_curta": "rosa", "tamanho_cm": 8, "local_corpo": "antebraco" },
+    "historico": [
+      { "role": "assistant", "content": "Pra liberar teu orcamento, me passa nome completo e data de nascimento." }
+    ],
+    "mensagem": "tem instagram?",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "enviar_portfolio" }
+    ]
+  },
+  {
+    "id": "TC-PORT-06",
+    "descricao": "cadastro: cliente pede fotos + portfolio_disponivel=false -> pergunta",
+    "estado_atual": "cadastro",
+    "agent": "cadastro",
+    "portfolio_disponivel": false,
+    "dados_acumulados": {},
+    "historico": [],
+    "mensagem": "manda fotos",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "pergunta" },
+      { "type": "resposta_cliente_matches", "value": "(portfolio|cadastrado|montando)" }
+    ]
+  },
+  {
+    "id": "TC-PORT-07",
+    "descricao": "proposta propondo_valor: cliente pede mais um trabalho -> enviar_portfolio",
+    "estado_atual": "propondo_valor",
+    "agent": "proposta",
+    "portfolio_disponivel": true,
+    "valor_proposto": 750,
+    "horarios_livres": [],
+    "historico": [
+      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+    ],
+    "mensagem": "antes me mostra mais um trabalho",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "enviar_portfolio" }
+    ]
+  },
+  {
+    "id": "TC-PORT-08",
+    "descricao": "proposta escolhendo_horario: cliente pede ver mais blackwork antes -> enviar_portfolio com estilo",
+    "estado_atual": "escolhendo_horario",
+    "agent": "proposta",
+    "portfolio_disponivel": true,
+    "valor_proposto": 750,
+    "horarios_livres": [
+      { "inicio": "2026-05-12T17:00:00Z", "fim": "2026-05-12T20:00:00Z", "legenda": "ter 12/05 14h-17h" }
+    ],
+    "historico": [
+      { "role": "assistant", "content": "Tenho ter 12/05 14h-17h. Bora?" }
+    ],
+    "mensagem": "queria ver mais blackwork antes",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "enviar_portfolio" },
+      { "type": "payload_portfolio_estilo_equals", "value": "blackwork" }
+    ]
+  },
+  {
+    "id": "TC-PORT-09",
+    "descricao": "proposta aguardando_sinal: cliente pede mais um exemplo -> enviar_portfolio",
+    "estado_atual": "aguardando_sinal",
+    "agent": "proposta",
+    "portfolio_disponivel": true,
+    "valor_proposto": 750,
+    "proposta_status": "aguardando_pgto",
+    "historico": [
+      { "role": "assistant", "content": "Te mandei o link do sinal. Confirma quando puder!" }
+    ],
+    "mensagem": "manda mais um exemplo",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "enviar_portfolio" }
+    ]
+  }
+]
