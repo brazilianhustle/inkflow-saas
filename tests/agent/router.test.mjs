@@ -68,3 +68,24 @@ test('getNextState — out null/undefined -> stay', () => {
   assert.equal(getNextState('tattoo', null), 'tattoo');
   assert.equal(getNextState('cadastro', undefined), 'cadastro');
 });
+
+// — Sub-3.3: enviar_portfolio nao muda estado —————————————————————————
+test('getNextState: tattoo + enviar_portfolio -> tattoo', () => {
+  assert.equal(getNextState('tattoo', { proxima_acao: 'enviar_portfolio' }), 'tattoo');
+});
+
+test('getNextState: cadastro + enviar_portfolio -> cadastro', () => {
+  assert.equal(getNextState('cadastro', { proxima_acao: 'enviar_portfolio' }), 'cadastro');
+});
+
+test('getNextState: propondo_valor + enviar_portfolio -> propondo_valor', () => {
+  assert.equal(getNextState('propondo_valor', { proxima_acao: 'enviar_portfolio' }), 'propondo_valor');
+});
+
+test('getNextState: escolhendo_horario + enviar_portfolio -> escolhendo_horario', () => {
+  assert.equal(getNextState('escolhendo_horario', { proxima_acao: 'enviar_portfolio' }), 'escolhendo_horario');
+});
+
+test('getNextState: aguardando_sinal + enviar_portfolio -> aguardando_sinal', () => {
+  assert.equal(getNextState('aguardando_sinal', { proxima_acao: 'enviar_portfolio' }), 'aguardando_sinal');
+});

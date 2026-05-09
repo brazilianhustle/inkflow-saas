@@ -14,6 +14,7 @@ import { selectAgentBuilder, isStateImplemented, getNextState } from './router.j
 import { validateEnv } from './_lib/sdk-init.js';
 import { enforceMenorIdade } from './_lib/enforce-menor-idade.js';
 import { prefetchPropostaContext } from './_lib/prefetch-proposta.js';
+import { prefetchPortfolio } from './_lib/prefetch-portfolio.js';
 import { callTool } from './_lib/call-tool.js';
 import { calcularValorSinal } from './_lib/calcular-sinal.js';
 import { formatLinkSinalMessage } from './_lib/format-link-sinal-msg.js';
@@ -99,6 +100,9 @@ export async function onRequest({ request, env }) {
   // existente.
   const PROPOSTA_SUBSTATES = new Set(['propondo_valor', 'escolhendo_horario', 'aguardando_sinal']);
   let clientContext = body?.clientContext || {};
+  // Sub-3.3: pre-fetch portfolio_disponivel para QUALQUER agent (transversal)
+  const portfolioCtx = await prefetchPortfolio(env, tenant);
+  clientContext = { ...clientContext, ...portfolioCtx };
   if (PROPOSTA_SUBSTATES.has(estado_atual)) {
     const prefetched = await prefetchPropostaContext({
       env, tenant, conversa, telefone, estado_atual,
@@ -183,6 +187,9 @@ export async function onRequest({ request, env }) {
     });
   }
 
+  // Sub-3.3: branch transversal portfolio (qualquer agent pode emitir)
+  const { urls_portfolio } = await executePortfolioIntent(finalOut, { env, tenant });
+
   return json({
     ok: true,
     resposta_cliente: finalOut.resposta_cliente,
@@ -194,6 +201,7 @@ export async function onRequest({ request, env }) {
     proxima_acao: finalOut.proxima_acao,
     agent_usado: estado_atual,
     side_effects: PROPOSTA_SUBSTATES.has(estado_atual) ? sideEffects : undefined,
+    urls_portfolio,
   }, 200);
 }
 
@@ -267,4 +275,29 @@ export async function executeOrchestration(out, { env, tenant, conversa, telefon
     default:
       return out;
   }
+}
+
+// Sub-3.3: branch transversal enviar_portfolio.
+// Roda independente do estado_atual — qualquer agent (tattoo/cadastro/proposta)
+// pode emitir essa intent. Tool enviar-portfolio retorna URLs; route.js
+// devolve em urls_portfolio na response. Estado nao muda.
+//
+// Args: (out, { env, tenant })
+// Return: { urls_portfolio: string[] }
+export async function executePortfolioIntent(out, { env, tenant }) {
+  if (out?.proxima_acao !== 'enviar_portfolio') {
+    return { urls_portfolio: [] };
+  }
+  const payload = out.payload_portfolio || {};
+  const r = await callTool(env, 'enviar-portfolio', {
+    tenant_id: tenant.id,
+    estilo: payload.estilo ?? null,
+    max: payload.max ?? 5,
+  });
+  // call-tool retorna { ok, status, ...data } — body da tool spread direto.
+  // Tool retorna { ok: true, urls: [...] } ou { ok: false, error }.
+  if (!r.ok || !Array.isArray(r.urls)) {
+    return { urls_portfolio: [] };
+  }
+  return { urls_portfolio: r.urls };
 }

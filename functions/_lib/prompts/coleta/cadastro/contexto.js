@@ -20,6 +20,7 @@ export function contextoCadastro(tenant, conversa, clientContext) {
   } else {
     linhas.push('- Cliente acabou de receber mensagem-ponte do Tattoo. NAO se reapresente.');
   }
+  linhas.push(`- portfolio: ${ctx.portfolio_disponivel ? 'disponivel' : 'nao cadastrado'}`);
   linhas.push('');
 
   // Resumo da fase Tattoo (referencia da resposta-ponte)

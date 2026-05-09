@@ -26,11 +26,12 @@ test('PropostaOutputSchema: rejeita proxima_acao desconhecida', () => {
   assert.throws(() => PropostaOutputSchema.parse({ resposta_cliente: 'a', proxima_acao: 'foo' }));
 });
 
-test('PROXIMA_ACAO_VALUES: tem 7 entries inclusive reservar_horario, pediu_desconto, cliente_agressivo', () => {
-  assert.equal(PROXIMA_ACAO_VALUES.length, 7);
+test('PROXIMA_ACAO_VALUES: tem 8 entries inclusive reservar_horario, pediu_desconto, cliente_agressivo, enviar_portfolio', () => {
+  assert.equal(PROXIMA_ACAO_VALUES.length, 8);
   assert.ok(PROXIMA_ACAO_VALUES.includes('reservar_horario'));
   assert.ok(PROXIMA_ACAO_VALUES.includes('pediu_desconto'));
   assert.ok(PROXIMA_ACAO_VALUES.includes('cliente_agressivo'));
+  assert.ok(PROXIMA_ACAO_VALUES.includes('enviar_portfolio'));
 });
 
 // ── Validator tests ──────────────────────────────────────────────────────
@@ -122,4 +123,55 @@ test('validator: cliente_agressivo + reagendamento permitidos em todos os 3 esta
       assert.equal(r.valid, true, `falhou em ${estado}/${acao}: ${r.reason || ''}`);
     }
   }
+});
+
+// — Sub-3.3: invariant enviar_portfolio —————————————————————————————
+test('Proposta invariant: enviar_portfolio em propondo_valor com portfolio=true -> valid', () => {
+  const out = {
+    resposta_cliente: 'te mando',
+    proxima_acao: 'enviar_portfolio',
+    slot_inicio: null,
+    slot_fim: null,
+    valor_pedido_cliente: null,
+    payload_portfolio: { estilo: 'blackwork', max: null, motivo: null },
+  };
+  const r = validatePropostaOutputInvariant(out, { portfolio_disponivel: true, valor_proposto: 750 }, 'propondo_valor');
+  assert.equal(r.valid, true);
+});
+
+test('Proposta invariant: enviar_portfolio em escolhendo_horario com portfolio=true -> valid', () => {
+  const out = {
+    resposta_cliente: 'te mando',
+    proxima_acao: 'enviar_portfolio',
+    slot_inicio: null,
+    slot_fim: null,
+    valor_pedido_cliente: null,
+    payload_portfolio: { estilo: null, max: null, motivo: null },
+  };
+  const r = validatePropostaOutputInvariant(out, { portfolio_disponivel: true, horarios_livres: [] }, 'escolhendo_horario');
+  assert.equal(r.valid, true);
+});
+
+test('Proposta invariant: enviar_portfolio com portfolio=false -> invalid', () => {
+  const out = {
+    resposta_cliente: 'te mando',
+    proxima_acao: 'enviar_portfolio',
+    slot_inicio: null, slot_fim: null, valor_pedido_cliente: null,
+    payload_portfolio: { estilo: null, max: null, motivo: null },
+  };
+  const r = validatePropostaOutputInvariant(out, { portfolio_disponivel: false }, 'aguardando_sinal');
+  assert.equal(r.valid, false);
+  assert.match(r.reason, /portfolio_disponivel=false/);
+});
+
+test('Proposta invariant: enviar_portfolio sem payload_portfolio -> invalid', () => {
+  const out = {
+    resposta_cliente: 'te mando',
+    proxima_acao: 'enviar_portfolio',
+    slot_inicio: null, slot_fim: null, valor_pedido_cliente: null,
+    payload_portfolio: null,
+  };
+  const r = validatePropostaOutputInvariant(out, { portfolio_disponivel: true }, 'propondo_valor');
+  assert.equal(r.valid, false);
+  assert.match(r.reason, /payload_portfolio/);
 });

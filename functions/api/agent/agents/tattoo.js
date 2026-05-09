@@ -44,12 +44,23 @@ export const TattooOutputSchema = z.object({
   dados_completos: z.boolean(),
   campos_faltando: z.array(z.string()),
   campos_conflitantes: z.array(z.string()),
-  proxima_acao: z.enum(['pergunta', 'handoff', 'erro']),
+  proxima_acao: z.enum(['pergunta', 'handoff', 'enviar_portfolio', 'erro']),
+  // Sub-3.3: payload do envio de portfolio. Null em todas as ações exceto
+  // 'enviar_portfolio'. Validado pos-parse via validateTattooOutputInvariant.
+  payload_portfolio: z.object({
+    estilo: z.string().nullable().default(null),
+    max: z.number().int().min(1).max(10).nullable().default(null),
+    motivo: z.string().nullable().default(null),
+  }).nullable().default(null),
 });
 
 // Valida invariante handoff pos-parse. Retorna { valid: true } ou
 // { valid: false, reason: string } pra route.js converter em HTTP 500.
-export function validateTattooOutputInvariant(out) {
+//
+// Sub-3.3: aceita 2o arg clientContext pra validar invariante
+// 'enviar_portfolio' (requer portfolio_disponivel=true E payload_portfolio
+// nao-null). Default {} mantem retrocompatibilidade com chamadas 1-arg.
+export function validateTattooOutputInvariant(out, clientContext = {}) {
   if (!out || typeof out !== 'object') {
     return { valid: false, reason: 'output ausente ou nao-objeto' };
   }
@@ -61,6 +72,14 @@ export function validateTattooOutputInvariant(out) {
       return { valid: false, reason: `handoff com campos_conflitantes nao-vazio: ${out.campos_conflitantes.join(',')}` };
     }
   }
+  if (out.proxima_acao === 'enviar_portfolio') {
+    if (!clientContext?.portfolio_disponivel) {
+      return { valid: false, reason: 'enviar_portfolio com portfolio_disponivel=false' };
+    }
+    if (!out.payload_portfolio) {
+      return { valid: false, reason: 'enviar_portfolio sem payload_portfolio' };
+    }
+  }
   return { valid: true };
 }
 
@@ -70,7 +89,8 @@ export function validateTattooOutputInvariant(out) {
 // Validacao de invariante (dados_completos+campos_conflitantes) feita
 // em validateTattooOutputInvariant pos-finalOutput.
 export function buildTattooAgent({ env, tenant, conversa, clientContext, baseUrl = 'http://localhost:8788' }) {
-  const instructions = generatePromptColetaTattoo(tenant, conversa, clientContext || {});
+  const ctx = clientContext || {};
+  const instructions = generatePromptColetaTattoo(tenant, conversa, ctx);
 
   const agent = new Agent({
     name: 'tattoo-agent',
@@ -79,6 +99,8 @@ export function buildTattooAgent({ env, tenant, conversa, clientContext, baseUrl
     tools: [],
     outputType: TattooOutputSchema,
   });
-  const validator = (out) => validateTattooOutputInvariant(out);
+  // Closure-bound validator (paridade Sub-3.2): route.js chama validator(out)
+  // com 1 arg, closure carrega clientContext pra invariant enviar_portfolio.
+  const validator = (out) => validateTattooOutputInvariant(out, ctx);
   return { agent, validator };
 }

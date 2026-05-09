@@ -22,6 +22,7 @@ export const PROXIMA_ACAO_VALUES = [
   'adiou',
   'reagendamento',
   'cliente_agressivo',
+  'enviar_portfolio',
 ];
 
 export const PropostaOutputSchema = z.object({
@@ -30,12 +31,19 @@ export const PropostaOutputSchema = z.object({
   slot_inicio: z.string().nullable().default(null),
   slot_fim: z.string().nullable().default(null),
   valor_pedido_cliente: z.number().nullable().default(null),
+  // Sub-3.3: payload do envio de portfolio. Null em todas as ações exceto
+  // 'enviar_portfolio'. Validado pos-parse via validatePropostaOutputInvariant.
+  payload_portfolio: z.object({
+    estilo: z.string().nullable().default(null),
+    max: z.number().int().min(1).max(10).nullable().default(null),
+    motivo: z.string().nullable().default(null),
+  }).nullable().default(null),
 });
 
 const ALLOWED_BY_STATE = {
-  propondo_valor:     ['pergunta', 'oferecendo_horario', 'pediu_desconto', 'adiou', 'reagendamento', 'cliente_agressivo'],
-  escolhendo_horario: ['pergunta', 'reservar_horario', 'reagendamento', 'cliente_agressivo'],
-  aguardando_sinal:   ['pergunta', 'reservar_horario', 'reagendamento', 'cliente_agressivo'],
+  propondo_valor:     ['pergunta', 'oferecendo_horario', 'pediu_desconto', 'adiou', 'reagendamento', 'cliente_agressivo', 'enviar_portfolio'],
+  escolhendo_horario: ['pergunta', 'reservar_horario', 'reagendamento', 'cliente_agressivo', 'enviar_portfolio'],
+  aguardando_sinal:   ['pergunta', 'reservar_horario', 'reagendamento', 'cliente_agressivo', 'enviar_portfolio'],
 };
 
 export function validatePropostaOutputInvariant(out, ctx, estado_atual) {
@@ -63,6 +71,14 @@ export function validatePropostaOutputInvariant(out, ctx, estado_atual) {
     }
     if (typeof ctx?.valor_proposto === 'number' && out.valor_pedido_cliente > ctx.valor_proposto) {
       return { valid: false, reason: `valor_pedido_cliente=${out.valor_pedido_cliente} > valor_proposto=${ctx.valor_proposto}` };
+    }
+  }
+  if (out.proxima_acao === 'enviar_portfolio') {
+    if (!ctx?.portfolio_disponivel) {
+      return { valid: false, reason: 'enviar_portfolio com portfolio_disponivel=false' };
+    }
+    if (!out.payload_portfolio) {
+      return { valid: false, reason: 'enviar_portfolio sem payload_portfolio' };
     }
   }
   return { valid: true };
