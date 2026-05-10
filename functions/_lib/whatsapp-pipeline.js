@@ -109,10 +109,11 @@ export async function processMessage(env, msg, depsOverride = {}) {
       return;
     }
 
-    // Etapa 3: MONTA historico (últimos 40, exclui msgRowId atual)
+    // Etapa 3: MONTA historico (últimos 40, exclui msgRowId atual + status=failed)
+    // Failed rows poluem contexto — agente confunde input ruidoso com conversa real.
     const histRes = await deps.supaFetch(
       `/rest/v1/n8n_chat_histories?session_id=eq.${encodeURIComponent(session_id)}` +
-      `&order=created_at.asc&limit=40&select=id,message`,
+      `&status=neq.failed&order=created_at.asc&limit=40&select=id,message`,
     );
     const histRows = await histRes.json();
     const historico = histRows
