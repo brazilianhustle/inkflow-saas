@@ -194,6 +194,8 @@ export async function processMessage(env, msg, depsOverride = {}) {
       method: 'PATCH',
       body: JSON.stringify({ status: 'failed' }),
     }).catch(() => {});
-    await deps.sendTelegramAdmin(`🚨 pipeline failed: ${e.message}`);
+    await deps.sendTelegramAdmin(
+      `🚨 pipeline failed (msg ${evoMessageId}): ${e.message}\n${preview(e.stack, 500)}`,
+    );
   }
 }
