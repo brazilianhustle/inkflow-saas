@@ -31,13 +31,17 @@ export async function onRequest(context) {
     return json({ ok: true, skipped: parsed.skip });
   }
   const inbound = parsed.inbound;
+  if (inbound.mediaTruncated) {
+    console.warn('[inbound] media-truncated:', inbound.evoMessageId, inbound.mediaMimetype);
+  }
 
   // Lookup tenant via evo_instance.
   // NOTA: coluna correta e fewshots_por_modo (NAO fewshots — Task 1 finding).
+  // portfolio_urls necessario pra prefetchPortfolio (qualquer agent ler portfolio_disponivel).
   let tenant;
   try {
     const r = await supaFetch(env, `/rest/v1/tenants?evo_instance=eq.${encodeURIComponent(inbound.tenantEvoInstance)}` +
-      `&select=id,nome_estudio,evo_instance,evo_apikey,tatuador_telegram_chat_id,config_agente,config_precificacao,sinal_percentual,gatilhos_handoff,faqs,fewshots_por_modo&limit=1`);
+      `&select=id,nome_estudio,evo_instance,evo_apikey,tatuador_telegram_chat_id,config_agente,config_precificacao,sinal_percentual,gatilhos_handoff,faqs,fewshots_por_modo,portfolio_urls&limit=1`);
     const arr = await r.json();
     tenant = arr?.[0];
   } catch (e) {
