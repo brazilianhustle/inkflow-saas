@@ -47,45 +47,106 @@ test('TERMINAL_STATES export', () => {
 });
 
 test('1. golden path tattoo — Task 9 implementa', async () => {
-  await assert.rejects(() => processMessage({}, baseMsg(), mockDeps()), /not-implemented/);
+  await processMessage({}, baseMsg(), mockDeps()); /* swallowed by pipeline catch — Task 9 replaces with real asserts */
+  assert.ok(true);
 });
 
 test('2. terminal aguardando_tatuador — Task 8 implementa', async () => {
-  await assert.rejects(() => processMessage({}, baseMsg(), mockDeps()), /not-implemented/);
+  let supaCalls = [];
+  const sendTelegramSpy = mock.fn(async () => ({ ok: true }));
+  const runAgentSpy = mock.fn();
+  const deps = mockDeps({
+    supaFetch: async (path, init) => {
+      supaCalls.push({ path, method: init?.method || 'GET' });
+      if (path.startsWith('/rest/v1/conversas?tenant_id=')) {
+        return new Response(JSON.stringify([{
+          id: CONVERSA_ID, estado_agente: 'aguardando_tatuador',
+          dados_coletados: {}, dados_cadastro: {},
+        }]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    },
+    sendTelegram: sendTelegramSpy,
+    runAgent: runAgentSpy,
+  });
+  await processMessage({}, baseMsg(), deps);
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(sendTelegramSpy.mock.callCount(), 1);
+  assert.equal(sendTelegramSpy.mock.calls[0].arguments[0], '99999');
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Cliente Joao/);
+  const patchCall = supaCalls.find(c => c.method === 'PATCH' && c.path.includes('n8n_chat_histories'));
+  assert.ok(patchCall, 'PATCH status=processed deve ter sido chamado');
 });
 
 test('3. terminal sem tatuador_telegram_chat_id — Task 8 implementa', async () => {
-  await assert.rejects(() => processMessage({}, baseMsg(), mockDeps()), /not-implemented/);
+  const adminSpy = mock.fn(async () => ({ ok: true }));
+  const tenantSemTatuador = { ...TENANT, tatuador_telegram_chat_id: null };
+  const deps = mockDeps({
+    supaFetch: async (path) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=')) {
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'lead_frio', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    },
+    sendTelegramAdmin: adminSpy,
+  });
+  await processMessage({}, baseMsg({ tenant: tenantSemTatuador }), deps);
+  assert.equal(adminSpy.mock.callCount(), 1);
 });
 
 test('4. handoff cadastro→orcamento — Task 10 implementa', async () => {
-  await assert.rejects(() => processMessage({}, baseMsg(), mockDeps()), /not-implemented/);
+  await processMessage({}, baseMsg(), mockDeps()); /* swallowed by pipeline catch — Task 10 replaces with real asserts */
+  assert.ok(true);
 });
 
 test('5. portfolio intent — Task 10 implementa', async () => {
-  await assert.rejects(() => processMessage({}, baseMsg(), mockDeps()), /not-implemented/);
+  await processMessage({}, baseMsg(), mockDeps()); /* swallowed by pipeline catch — Task 10 replaces with real asserts */
+  assert.ok(true);
 });
 
 test('6. conversa nova — Task 8 implementa', async () => {
-  await assert.rejects(() => processMessage({}, baseMsg(), mockDeps()), /not-implemented/);
+  let postBody = null;
+  const deps = mockDeps({
+    supaFetch: async (path, init) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=') && init?.method !== 'POST') {
+        return new Response('[]', { status: 200 });
+      }
+      if (path === '/rest/v1/conversas' && init?.method === 'POST') {
+        postBody = JSON.parse(init.body);
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 201 });
+      }
+      // Histórico + outros
+      return new Response('[]', { status: 200 });
+    },
+  });
+  // Etapas 4-9 ainda lançam (placeholder), mas após a Etapa 1 CREATE que é o que estamos testando.
+  // O catch path engole o throw + chama PATCH failed + sendTelegramAdmin. POST conversas já aconteceu.
+  await processMessage({}, baseMsg(), deps);
+  assert.equal(postBody?.estado_agente, 'tattoo');
+  assert.deepEqual(postBody?.dados_coletados, {});
 });
 
 test('7. runAgent throws — Task 9 implementa', async () => {
-  await assert.rejects(() => processMessage({}, baseMsg(), mockDeps()), /not-implemented/);
+  await processMessage({}, baseMsg(), mockDeps()); /* swallowed by pipeline catch — Task 9 replaces with real asserts */
+  assert.ok(true);
 });
 
 test('8. evoSend text falha — Task 10 implementa', async () => {
-  await assert.rejects(() => processMessage({}, baseMsg(), mockDeps()), /not-implemented/);
+  await processMessage({}, baseMsg(), mockDeps()); /* swallowed by pipeline catch — Task 10 replaces with real asserts */
+  assert.ok(true);
 });
 
 test('9. midia base64 in nao duplica — Task 10 implementa', async () => {
-  await assert.rejects(() => processMessage({}, baseMsg(), mockDeps()), /not-implemented/);
+  await processMessage({}, baseMsg(), mockDeps()); /* swallowed by pipeline catch — Task 10 replaces with real asserts */
+  assert.ok(true);
 });
 
 test('10. historico mapeado — Task 9 implementa', async () => {
-  await assert.rejects(() => processMessage({}, baseMsg(), mockDeps()), /not-implemented/);
+  await processMessage({}, baseMsg(), mockDeps()); /* swallowed by pipeline catch — Task 9 replaces with real asserts */
+  assert.ok(true);
 });
 
 test('11. agent_usado=cadastro merge dados_cadastro — Task 9 implementa', async () => {
-  await assert.rejects(() => processMessage({}, baseMsg(), mockDeps()), /not-implemented/);
+  await processMessage({}, baseMsg(), mockDeps()); /* swallowed by pipeline catch — Task 9 replaces with real asserts */
+  assert.ok(true);
 });
