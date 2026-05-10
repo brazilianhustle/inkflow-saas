@@ -16,6 +16,26 @@ export const TERMINAL_STATES = new Set([
   'aguardando_decisao_desconto',
 ]);
 
+// DB usa nomes legacy (coletando_tattoo/cadastro) por causa do CHECK constraint
+// herdado do n8n. Agent SDK usa nomes curtos (tattoo/cadastro). Mapeamos nas
+// fronteiras: ler do DB -> dbToAgent, escrever no DB -> agentToDb.
+const STATE_DB_TO_AGENT = {
+  coletando_tattoo: 'tattoo',
+  coletando_cadastro: 'cadastro',
+  ativo: 'tattoo', // default novo -> coleta_tattoo
+};
+const STATE_AGENT_TO_DB = {
+  tattoo: 'coletando_tattoo',
+  cadastro: 'coletando_cadastro',
+};
+
+function dbToAgent(state) {
+  return STATE_DB_TO_AGENT[state] || state;
+}
+function agentToDb(state) {
+  return STATE_AGENT_TO_DB[state] || state;
+}
+
 export function defaultDeps(env) {
   return {
     supaFetch: (path, init) => supaFetch(env, path, init),
@@ -56,12 +76,18 @@ export async function processMessage(env, msg, depsOverride = {}) {
         method: 'POST',
         headers: { Prefer: 'return=representation' },
         body: JSON.stringify({
-          tenant_id: tenantId, telefone, estado_agente: 'tattoo',
+          tenant_id: tenantId, telefone, estado_agente: 'coletando_tattoo',
           dados_coletados: {}, dados_cadastro: {}, last_msg_at: deps.now(),
         }),
       });
-      const arr = await ins.json();
-      conversa = arr[0];
+      const insStatus = ins.status;
+      const insText = await ins.text().catch(() => '');
+      let arr = [];
+      try { arr = JSON.parse(insText); } catch {}
+      conversa = Array.isArray(arr) ? arr[0] : null;
+      if (!conversa) {
+        throw new Error(`conversa-create-failed (status=${insStatus}): ${insText.slice(0, 200)}`);
+      }
     }
 
     // Etapa 2: EARLY-RETURN estado terminal
@@ -99,15 +125,16 @@ export async function processMessage(env, msg, depsOverride = {}) {
         };
       });
 
-    // Etapa 4: runAgent
+    // Etapa 4: runAgent — mapeia DB state -> agent state pra invocar.
+    const estadoAgente = dbToAgent(conversa.estado_agente);
     let agentOut;
     try {
       agentOut = await deps.runAgent({
         tenant_id: tenantId, telefone, mensagem: texto,
-        estado_atual: conversa.estado_agente,
+        estado_atual: estadoAgente,
         dados_acumulados: conversa.dados_coletados || {},
         historico,
-        tenant, conversa,
+        tenant, conversa: { ...conversa, estado_agente: estadoAgente },
         clientContext: {},
       });
     } catch (e) {
@@ -131,7 +158,7 @@ export async function processMessage(env, msg, depsOverride = {}) {
     await deps.supaFetch(`/rest/v1/conversas?id=eq.${conversa.id}`, {
       method: 'PATCH',
       body: JSON.stringify({
-        estado_agente: agentOut.estado_novo,
+        estado_agente: agentToDb(agentOut.estado_novo),
         dados_coletados: novoDadosColetados,
         dados_cadastro: novoDadosCadastro,
         updated_at: deps.now(),
@@ -168,7 +195,7 @@ export async function processMessage(env, msg, depsOverride = {}) {
     }
 
     // Etapa 8: side-effect handoff cadastro → enviar-orcamento-tatuador
-    if (conversa.estado_agente === 'cadastro' && agentOut.proxima_acao === 'handoff') {
+    if (estadoAgente === 'cadastro' && agentOut.proxima_acao === 'handoff') {
       if (!tenant.tatuador_telegram_chat_id) {
         await deps.sendTelegramAdmin(`handoff sem tatuador_telegram_chat_id em ${tenant.id}`);
       } else {

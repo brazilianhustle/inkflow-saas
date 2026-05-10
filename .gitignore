@@ -4,6 +4,10 @@ pixel-agents-standalone/
 .wrangler/
 .dev.vars
 .dev.vars.*
+.env
+.env.*
+!.env.example
+!.env.*.example
 .claude/worktrees/
 .claude/active-branch
 .worktrees/

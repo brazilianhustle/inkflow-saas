@@ -57,7 +57,7 @@ test('1. golden path tattoo — Task 9 implementa', async () => {
   const deps = mockDeps({
     supaFetch: async (path, init) => {
       if (path.startsWith('/rest/v1/conversas?tenant_id=') && !init?.method) {
-        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'tattoo', dados_coletados: { x: 1 }, dados_cadastro: {} }]), { status: 200 });
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: { x: 1 }, dados_cadastro: {} }]), { status: 200 });
       }
       if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && init?.method === 'PATCH') {
         conversaPatch = JSON.parse(init.body);
@@ -73,7 +73,7 @@ test('1. golden path tattoo — Task 9 implementa', async () => {
   });
   await processMessage({}, baseMsg(), deps);
   assert.equal(runAgentSpy.mock.callCount(), 1);
-  assert.equal(conversaPatch.estado_agente, 'tattoo');
+  assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
   assert.deepEqual(conversaPatch.dados_coletados, { x: 1, ideia: 'rosa' });
   assert.equal(n8nInserts.length, 1);
   assert.equal(n8nInserts[0].message.type, 'ai');
@@ -150,7 +150,7 @@ test('5. portfolio intent — Task 10 implementa', async () => {
   const deps = mockDeps({
     supaFetch: async (path) => {
       if (path.startsWith('/rest/v1/conversas?tenant_id=')) {
-        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
       }
       return new Response('[]', { status: 200 });
     },
@@ -178,7 +178,7 @@ test('6. conversa nova — Task 8 implementa', async () => {
       }
       if (path === '/rest/v1/conversas' && init?.method === 'POST') {
         postBody = JSON.parse(init.body);
-        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 201 });
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 201 });
       }
       // Histórico + outros
       return new Response('[]', { status: 200 });
@@ -187,7 +187,7 @@ test('6. conversa nova — Task 8 implementa', async () => {
   // Etapas 4-9 ainda lançam (placeholder), mas após a Etapa 1 CREATE que é o que estamos testando.
   // O catch path engole o throw + chama PATCH failed + sendTelegramAdmin. POST conversas já aconteceu.
   await processMessage({}, baseMsg(), deps);
-  assert.equal(postBody?.estado_agente, 'tattoo');
+  assert.equal(postBody?.estado_agente, 'coletando_tattoo');
   assert.deepEqual(postBody?.dados_coletados, {});
 });
 
@@ -198,7 +198,7 @@ test('7. runAgent throws — Task 9 implementa', async () => {
   const deps = mockDeps({
     supaFetch: async (path, init) => {
       if (path.startsWith('/rest/v1/conversas?tenant_id=') && !init?.method) {
-        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
       }
       if (init?.method === 'PATCH') lastPatch = JSON.parse(init.body);
       return new Response('[]', { status: 200 });
@@ -219,7 +219,7 @@ test('8. evoSend(text) ok:false — Task 10 implementa', async () => {
   const deps = mockDeps({
     supaFetch: async (path, init) => {
       if (path.startsWith('/rest/v1/conversas?tenant_id=')) {
-        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
       }
       if (init?.method === 'PATCH') lastPatch = JSON.parse(init.body);
       return new Response('[]', { status: 200 });
@@ -239,7 +239,7 @@ test('9. midia base64 in nao duplica — Task 10 implementa', async () => {
   const deps = mockDeps({
     supaFetch: async (path, init) => {
       if (path.startsWith('/rest/v1/conversas?tenant_id=')) {
-        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
       }
       if (path === '/rest/v1/n8n_chat_histories' && init?.method === 'POST') {
         n8nInsertCount++;
@@ -260,7 +260,7 @@ test('10. historico mapeado — Task 9 implementa', async () => {
   const deps = mockDeps({
     supaFetch: async (path, init) => {
       if (path.startsWith('/rest/v1/conversas?tenant_id=') && !init?.method) {
-        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
       }
       if (path.startsWith('/rest/v1/n8n_chat_histories?session_id=')) {
         return new Response(JSON.stringify([
