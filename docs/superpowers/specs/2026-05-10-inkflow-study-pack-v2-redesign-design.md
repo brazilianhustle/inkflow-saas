@@ -29,49 +29,130 @@ Substituir o pack v1 por um **pack v2 redesenhado em 2 camadas (Referência + Na
 - **Não** inclui valores de secrets (apenas nomes de env vars).
 - **Não** inclui camada business/produto (CAC, LTV, etc) — escopo aprovado é só técnico.
 
-## Estrutura proposta — 9 arquivos em 2 camadas
+## Princípio editorial: progressão iniciante → avançado
+
+O founder é **não-dev** e quer dominar termos partindo do absoluto zero. Os dicionários gerais (arquivos 01 e 02) são organizados em **níveis crescentes de complexidade**: 01 cobre Nível 0–6 (absoluto zero ao básico operacional), 02 retoma como "intermediário ao avançado" e organiza por domínio (web, JS, DB, security, AI, infra, dev workflow). Dentro de cada domínio do 02, ordem do mais simples ao mais complexo. **Nunca usa um termo antes de defini-lo num lugar anterior.** O dicionário InkFlow (03) é organizado por serviço — não usa progressão por nível porque pressupõe que o leitor consultou 01/02 antes.
+
+## Estrutura proposta — 10 arquivos em 2 camadas
 
 ```
 ~/Desktop/InkFlow-Study-Pack/   (pack v2 — substitui v1)
 
-00-LEIA-PRIMEIRO.md             [guia de uso v2]
+00-LEIA-PRIMEIRO.md             [guia de uso v2 + ordem de leitura recomendada]
 
 # Camada 1 — REFERÊNCIA (consulta cirúrgica no chat NotebookLM)
-01-dicionario-foundationals.md  [conceitos de programação que aparecem no InkFlow]
-02-dicionario-inkflow.md        [termos específicos do projeto]
-03-inventario-completo.md       [endpoints, tabelas, env vars, crons, scripts, auditores]
+01-fundamentos-programacao.md   [absoluto zero: variável, função, arquivo, terminal, git, web básico]
+02-dicionario-tecnico.md        [intermediário ao avançado: web, JS/TS, DB, security, AI, infra, dev workflow]
+03-dicionario-inkflow.md        [termos específicos do projeto]
+04-inventario-completo.md       [endpoints, tabelas, env vars, crons, scripts, auditores]
 
 # Camada 2 — NARRATIVA (Audio Overview + Mind Map + leitura)
-04-arquitetura-e-ecosystem.md   [mapa do todo + 8 serviços + integrações + fluxo de dados]
-05-fluxos-criticos.md           [8 fluxos com mermaid — signup, trial→pago, IPN, bot, crons]
-06-multi-agent-deep-dive.md     [refator atual: agents, prompts, validators, handoff, custos]
+05-arquitetura-e-ecosystem.md   [mapa do todo + 8 serviços + integrações + fluxo de dados]
+06-fluxos-criticos.md           [8 fluxos com mermaid — signup, trial→pago, IPN, bot, crons]
+07-multi-agent-deep-dive.md     [refator atual: agents, prompts, validators, handoff, custos]
 
 # Apoio
-07-decisoes-arquiteturais.md    [por que cada escolha — herda de docs/canonical/decisions/]
-08-perguntas-iniciais.md        [lista de perguntas pra colar no chat do NotebookLM]
+08-decisoes-arquiteturais.md    [por que cada escolha — herda de docs/canonical/decisions/]
+09-perguntas-iniciais.md        [lista de perguntas pra colar no chat do NotebookLM]
 ```
 
 ### Detalhamento por arquivo
 
-#### `00-LEIA-PRIMEIRO.md` (~3KB)
+#### `00-LEIA-PRIMEIRO.md` (~3-4KB)
 - Como usar o pack (NotebookLM + ChatGPT Pro em paralelo)
-- Mapa dos 9 arquivos com "quando usar cada um"
-- Workflow recomendado (Audio Overview → Mind Map → chat)
+- Mapa dos 10 arquivos com "quando usar cada um"
+- **Ordem de leitura recomendada** pra não-dev: começa por 01 (fundamentos zero) → 05 (arquitetura) → ouve Audio Overview → consulta 02/03/04 sob demanda
 - Como atualizar o pack (comando pro Claude na próxima sessão)
 
-#### `01-dicionario-foundationals.md` (~25-35KB)
-Termos de programação organizados por domínio. Cada termo: **definição geral** + **onde aparece no InkFlow** (com link mental pro arquivo do código).
+#### `01-fundamentos-programacao.md` (~30-40KB) ⭐ NOVO
+**Absoluto zero ao básico operacional.** Pra quem nunca programou. Cada termo: **definição em linguagem natural** + **analogia concreta** + **onde tu vai ver isso no InkFlow** (sem ainda explicar profundamente — só "isso aparece quando..."). Organizado em 6 níveis de complexidade crescente.
+
+**Nível 0 — O que é programação**
+- Código, linguagem de programação, arquivo de código (`.js`, `.ts`, `.html`)
+- Programa, software, aplicação, app
+- Compilado vs interpretado
+- Hardware vs software, sistema operacional, kernel, processo, memória, CPU
+- O que significa "rodar" um programa
+
+**Nível 1 — Conceitos básicos de qualquer linguagem**
+- Variável (string, número/integer/float, booleano, null, undefined)
+- Tipos primitivos vs estruturas
+- Array / lista (coleção ordenada)
+- Object / dicionário / hash / map (chave→valor)
+- Operadores (matemáticos `+ - * /`, comparação `== === < >`, lógicos `&& || !`)
+- Condicional (`if / else`, ternário)
+- Loop (`for`, `while`, `forEach`, `map`)
+- Função (parâmetro, argumento, retorno, escopo)
+- Comentário
+- Erro / exception / try/catch
+- `console.log` (jeito básico de "ver" o que o código tá fazendo)
+
+**Nível 2 — Estrutura e organização de código**
+- Módulo, arquivo, pasta
+- `import` / `export`
+- Biblioteca / library / package / dependência
+- Package manager (`npm`, `yarn`, `pnpm`)
+- `package.json`, `package-lock.json`, `node_modules`
+- Versão (semver: `major.minor.patch`, `^`, `~`)
+- Configuração (`tsconfig.json`, `wrangler.toml`, etc — só o conceito de arquivo de config)
+
+**Nível 3 — Como rodar e desenvolver código**
+- Terminal / shell / linha de comando
+- Comandos básicos: `cd`, `ls`, `mkdir`, `cat`, `cp`, `mv`, `rm`
+- Editor de código / IDE (VSCode, Cursor)
+- Run / executar
+- Build / compilar / transpilar / bundler (conceito básico)
+- Servidor local / dev server / hot reload
+- `localhost`, porta (3000, 8080, etc)
+- Stdout, stderr, exit code
+
+**Nível 4 — Versionamento e colaboração (Git/GitHub)**
+- Git: o que é versionamento de código
+- Repositório local vs remoto (GitHub)
+- `commit`, `branch`, `merge`, `rebase`, `push`, `pull`, `clone`, `fetch`
+- Conflito de merge
+- Diff
+- Histórico, hash de commit (`5e82324`)
+- PR (Pull Request) / MR (Merge Request)
+- `.gitignore`
+- Working directory, staging, HEAD
+
+**Nível 5 — Web básico (cliente vs servidor)**
+- HTML (estrutura), CSS (estilo), JavaScript (comportamento) — o que cada um faz
+- Frontend vs backend
+- Cliente (browser) vs servidor
+- Request / response
+- URL: protocolo (`http`, `https`), domínio, path, query string, fragmento
+- Verbos HTTP: `GET`, `POST`, `PATCH`, `DELETE` (apenas conceito básico)
+- Status code: 200/4xx/5xx (apenas categoria)
+- Header básico, body básico
+- API (o que significa)
+- DNS / hosting / domínio
+- HTTPS / certificado (conceito básico)
+
+**Nível 6 — Arquivos típicos de um projeto**
+- Estrutura típica de um repo (`/src`, `/docs`, `/scripts`, `/tests`, `/`)
+- `README.md`
+- `.env`, `.env.example`, variável de ambiente (conceito)
+- `Dockerfile` (apenas conceito — não tem no InkFlow mas o leitor vai encontrar)
+- `wrangler.toml` (apenas conceito de config Cloudflare — detalhe técnico vai pro arquivo 02)
+
+**Cada nível termina com um quadro:**
+> "Onde tu encontra isso no InkFlow:" — exemplos concretos do projeto, sem profundidade. Convite a procurar no arquivo 02/03/04 quando quiser detalhe.
+
+#### `02-dicionario-tecnico.md` (~25-35KB)
+**Intermediário ao avançado.** Pressupõe que o leitor já leu o 01. Termos de programação organizados por domínio. Cada termo: **definição precisa** + **onde aparece no InkFlow** (com link mental pro arquivo do código). Dentro de cada domínio, ordem do mais simples ao mais complexo.
 
 Domínios cobertos:
-- **Web fundamentals** — HTTP, REST, methods, status codes, headers, body, cookie, session, CORS, preflight, MIME, JSON
-- **JavaScript / TypeScript** — runtime, V8, event loop, sync/async, Promise, async/await, callback, closure, scope, hoisting, ESM vs CJS, module, import/export, generics, types vs interfaces, tree-shaking, bundler
-- **Database / Postgres** — relational, schema, table, row, column, primary key, foreign key, index, query plan, transaction, ACID, isolation level, JSON vs JSONB, RLS, migration, seed, pooler, connection pool
-- **Security** — authentication vs authorization, OAuth, OIDC, JWT, HMAC, bearer token, CSRF, XSS, SQL injection, secret management, key rotation, principle of least privilege, fail-open vs fail-closed
-- **AI / LLM** — token, embedding, context window, temperature, top_p, system vs user prompt, few-shot, chain-of-thought, RAG, structured output, tool calling, hallucination, agent, handoff, validator
-- **Infra / Cloud** — serverless, edge, origin, CDN, latency, throughput, cold start, runtime, region, DNS, TLS/SSL, certificate, webhook vs polling, idempotency, retry, exponential backoff
-- **Dev workflow** — git, branch, PR, merge, rebase, conflict, CI/CD, smoke test, regression test, unit/integration/e2e, mock, stub, fixture, blue-green, canary, rollback, observability (logs/metrics/traces), SLI/SLO/SLA
+- **Web avançado** — HTTP detalhado (headers críticos, status codes específicos, cache-control, content-type), REST vs RPC vs GraphQL, WebSocket, SSE, cookie vs localStorage vs sessionStorage, CORS profundo, preflight (OPTIONS), MIME types, JSON detalhado, form-encoded
+- **JavaScript / TypeScript profundo** — runtime, V8, event loop, microtask queue, sync/async, Promise (then/catch/finally), async/await, callback hell, closure, scope (function/block/global), hoisting, `this`, prototype, ESM vs CJS, dynamic import, generics, types vs interfaces, type narrowing, type guards, tree-shaking, bundler (webpack/vite/esbuild/rollup), source maps
+- **Database / Postgres** — relacional vs NoSQL, schema, table, row, column, tipos Postgres (`text`, `int`, `uuid`, `timestamp`, `jsonb`), primary key, foreign key, índices (B-tree, GIN, partial), query plan (EXPLAIN), transaction, ACID, níveis de isolamento, JSON vs JSONB, RLS, policies, migration, seed, pooler, connection pool, deadlock
+- **Segurança** — authentication vs authorization, OAuth 2.0 (fluxos), OIDC, JWT (header/payload/signature, claims), HMAC SHA-256, bearer token, CSRF, XSS, SQL injection, secret management, key rotation, principle of least privilege, fail-open vs fail-closed, rate limiting, WAF
+- **AI / LLM** — token, embedding, context window, temperature, top_p, top_k, system vs user vs assistant message, few-shot vs zero-shot, chain-of-thought, RAG (retrieval augmented generation), structured output / JSON mode, tool calling / function calling, hallucination, agent, multi-agent, handoff, validator, schema validation (Zod), prompt engineering, prompt injection
+- **Infra / Cloud** — serverless, edge, origin, CDN, PoP, latência (p50/p95/p99), throughput, cold start, warm start, runtime (V8 isolate vs Node), region, DNS (A/CNAME/TXT/MX), TLS/SSL, certificado, webhook vs polling, idempotência, retry, exponential backoff, circuit breaker
+- **Dev workflow** — git avançado (interactive rebase, cherry-pick, stash, reflog), branching strategies (gitflow, trunk-based), PR review, conflito de merge profundo, CI/CD pipeline, GitHub Actions, smoke vs regression vs e2e, mock vs stub vs fixture, snapshot test, blue-green, canary, feature flag, rollback, observability (logs/metrics/traces), structured logging, distributed tracing, SLI/SLO/SLA, error budget, on-call, runbook, postmortem
 
-#### `02-dicionario-inkflow.md` (~15-20KB)
+#### `03-dicionario-inkflow.md` (~15-20KB)
 Termos específicos do projeto. Reaproveita `06-glossario.md` v1 mas expande, organiza melhor, e cruza com o inventário.
 
 Seções:
@@ -85,7 +166,7 @@ Seções:
 - Multi-agent InkFlow (4 agents, structured output, handoff em código, validators, silently force pergunta)
 - DevOps InkFlow (preflight, smoke tests, rotação secrets, auditores)
 
-#### `03-inventario-completo.md` (~30-40KB)
+#### `04-inventario-completo.md` (~30-40KB)
 Listagem **exaustiva**. Cada item: nome, propósito, localização, deps.
 
 Seções:
@@ -97,7 +178,7 @@ Seções:
 - **Scripts** — `/scripts/*` com propósito de cada um.
 - **Migrations** — lista (sem conteúdo) das migrations Supabase desde 2026-04-26.
 
-#### `04-arquitetura-e-ecosystem.md` (~15-20KB)
+#### `05-arquitetura-e-ecosystem.md` (~15-20KB)
 Reaproveita `01-arquitetura-overview.md` v1 e expande com:
 - ASCII map "8 serviços + setas de integração" (alto nível)
 - Para cada serviço: propósito, URL prod, pontos de integração entrada/saída, config técnica
@@ -105,7 +186,7 @@ Reaproveita `01-arquitetura-overview.md` v1 e expande com:
 - Auth: 3 mecanismos (admin JWT, onboarding_key, studio_token HMAC)
 - Estado atual do refator multi-agent (status sub-1, sub-2, sub-3.1/2/3, sub-4)
 
-#### `05-fluxos-criticos.md` (~25-30KB)
+#### `06-fluxos-criticos.md` (~25-30KB)
 Reaproveita `02-fluxos-criticos.md` v1. Mantém os 8 fluxos com Mermaid:
 1. Signup → trial
 2. Trial → pago (subscription MP)
@@ -118,7 +199,7 @@ Reaproveita `02-fluxos-criticos.md` v1. Mantém os 8 fluxos com Mermaid:
 
 Adiciona seções "como debugar quando falha" pra cada fluxo (links pros runbooks).
 
-#### `06-multi-agent-deep-dive.md` (~20-25KB)
+#### `07-multi-agent-deep-dive.md` (~20-25KB)
 Foco no refator P1 atual.
 
 Seções:
@@ -131,7 +212,7 @@ Seções:
 - Custos (comparação n8n vs multi-agent)
 - Status atual do refator (PRs abertos, sub-3.3 e sub-4 pendentes)
 
-#### `07-decisoes-arquiteturais.md` (~10-15KB)
+#### `08-decisoes-arquiteturais.md` (~10-15KB)
 Por que cada escolha. Herda de `docs/canonical/decisions/` mas expande pro leitor não-dev.
 
 Seções:
@@ -146,7 +227,7 @@ Seções:
 - Por que VPS Vultr pra Evolution (vs CF Workers)
 - Por que Telegram pra Modo Coleta (vs notificação WA / push)
 
-#### `08-perguntas-iniciais.md` (~6KB)
+#### `09-perguntas-iniciais.md` (~6-8KB)
 Reaproveita `05-perguntas-iniciais.md` v1 e expande pra 30-40 perguntas, organizadas por:
 - Pra começar (visão geral)
 - Pra entender pagamentos
@@ -163,16 +244,17 @@ Reaproveita `05-perguntas-iniciais.md` v1 e expande pra 30-40 perguntas, organiz
 2. **Subagent B** — lê `functions/api/*.js` + `cron-worker/*` + `functions/_lib/*`, extrai inventário de endpoints, env vars, libs compartilhadas. Reporta lista exaustiva.
 3. **Subagent C** — lê `docs/superpowers/specs/2026-05-*` (specs do refator) + `docs/canonical/n8n/`, extrai estado do multi-agent, agents, prompts, validators. Reporta resumo.
 
-### Fase 2 — Redação paralela (até 4 subagents general-purpose em paralelo)
+### Fase 2 — Redação paralela (até 5 subagents general-purpose em paralelo)
 Cada subagent recebe sumário relevante da fase 1 + escreve seu arquivo. Subagents independentes (sem state compartilhado):
 
-- **Subagent W1** — escreve `01-dicionario-foundationals.md` (input: lista de termos identificados nos sumários A/B/C)
-- **Subagent W2** — escreve `02-dicionario-inkflow.md` + `03-inventario-completo.md` (input: sumários A + B)
-- **Subagent W3** — escreve `04-arquitetura-e-ecosystem.md` + `05-fluxos-criticos.md` (input: sumários A + B, herda v1 com upgrade)
-- **Subagent W4** — escreve `06-multi-agent-deep-dive.md` + `07-decisoes-arquiteturais.md` (input: sumário C + decisions canonical)
+- **Subagent W1** — escreve `01-fundamentos-programacao.md` (input: lista de termos foundational identificados; calibrado pra "absoluto zero, linguagem natural, analogias concretas, anchor InkFlow leve")
+- **Subagent W2** — escreve `02-dicionario-tecnico.md` (input: sumários A/B/C; calibrado pra "intermediário ao avançado, pressupõe leitura do 01, organização por domínio")
+- **Subagent W3** — escreve `03-dicionario-inkflow.md` + `04-inventario-completo.md` (input: sumários A + B)
+- **Subagent W4** — escreve `05-arquitetura-e-ecosystem.md` + `06-fluxos-criticos.md` (input: sumários A + B, herda v1 com upgrade)
+- **Subagent W5** — escreve `07-multi-agent-deep-dive.md` + `08-decisoes-arquiteturais.md` (input: sumário C + decisions canonical)
 
 ### Fase 3 — Costura e revisão (sessão principal)
-- Sessão principal escreve `00-LEIA-PRIMEIRO.md` + `08-perguntas-iniciais.md` (precisa ver os outros arquivos primeiro)
+- Sessão principal escreve `00-LEIA-PRIMEIRO.md` + `09-perguntas-iniciais.md` (precisa ver os outros arquivos primeiro)
 - Sessão principal faz **review cruzado**: verifica que termos citados em N existem em 01/02, que arquitetura em 04 bate com inventário em 03, etc.
 - Apaga pack v1, move v2 pra `~/Desktop/InkFlow-Study-Pack/`
 - Atualiza Painel + Mapa Geral no vault Obsidian (per memory rule)
@@ -192,7 +274,7 @@ Cada subagent recebe sumário relevante da fase 1 + escreve seu arquivo. Subagen
 - 0 contradições entre arquivos (review cruzado obrigatório)
 - 0 referências a arquivos que não existem
 - Snapshot date no `00-LEIA-PRIMEIRO.md`
-- Total estimado 150-200KB (vs 127KB do v1) — mais denso, mais cobertura
+- Total estimado 180-240KB (vs 127KB do v1) — mais denso, mais cobertura, com camada zero pra não-dev
 
 ## Riscos e mitigações
 
@@ -202,11 +284,13 @@ Cada subagent recebe sumário relevante da fase 1 + escreve seu arquivo. Subagen
 | Dicionário foundationals fica raso ou genérico (parece copy de stackoverflow) | Cada termo precisa do anchor "onde aparece no InkFlow" — força contextualização |
 | Inventário fica desatualizado em 1 semana | Snapshot date explícito; comando de regen documentado em `00-LEIA-PRIMEIRO` |
 | User perde Audio Overview já gerado do v1 | Aviso explícito antes de apagar v1; user gera novo Audio Overview do v2 |
-| Pack fica grande demais pro NotebookLM (limite 50 sources, 500MB cada) | 9 arquivos × ~20KB médio = ~180KB total — bem dentro do limite |
+| Pack fica grande demais pro NotebookLM (limite 50 sources, 500MB cada) | 10 arquivos × ~22KB médio = ~220KB total — bem dentro do limite |
+| Arquivo `01-fundamentos-programacao` fica simplista demais ou condescendente | Diretriz editorial: "linguagem natural, sem jargão, analogias concretas, sem assumir conhecimento prévio, mas sem subestimar inteligência". Subagent W1 calibrado especificamente pra esse tom. |
+| Arquivo `02-dicionario-tecnico` repete coisas do `01` | Regra: 02 só inclui termos **mais profundos** que 01. Onde houver overlap (ex: "função" no 01 e "closure" no 02), 02 começa com "Pressupõe que tu já leu sobre função no arquivo 01". |
 
 ## Critérios de "feito"
 
-- [ ] 9 arquivos `.md` existem em `~/Desktop/InkFlow-Study-Pack/`
+- [ ] 10 arquivos `.md` existem em `~/Desktop/InkFlow-Study-Pack/`
 - [ ] Pack v1 antigo movido pra backup ou removido (após confirmação do user)
 - [ ] Review cruzado feito (sem contradições, sem refs quebradas)
 - [ ] Painel e Mapa Geral atualizados no vault
