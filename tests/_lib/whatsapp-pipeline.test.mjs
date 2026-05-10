@@ -124,13 +124,49 @@ test('3. terminal sem tatuador_telegram_chat_id — Task 8 implementa', async ()
 });
 
 test('4. handoff cadastro→orcamento — Task 10 implementa', async () => {
-  await processMessage({}, baseMsg(), mockDeps()); /* swallowed by pipeline catch — Task 10 replaces with real asserts */
-  assert.ok(true);
+  const callToolSpy = mock.fn(async () => ({ ok: true }));
+  const deps = mockDeps({
+    supaFetch: async (path) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=')) {
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'cadastro', dados_coletados: {}, dados_cadastro: { nome: 'J' } }]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    },
+    runAgent: async () => ({
+      ok: true, resposta_cliente: 'tudo certo, falo com ela',
+      estado_novo: 'aguardando_tatuador', dados_persistidos: { email: 'a@b.com' },
+      proxima_acao: 'handoff', agent_usado: 'cadastro',
+    }),
+    callTool: callToolSpy,
+  });
+  await processMessage({}, baseMsg(), deps);
+  assert.equal(callToolSpy.mock.callCount(), 1);
+  assert.equal(callToolSpy.mock.calls[0].arguments[0], 'enviar-orcamento-tatuador');
+  assert.equal(callToolSpy.mock.calls[0].arguments[1].tenant_id, TENANT.id);
 });
 
 test('5. portfolio intent — Task 10 implementa', async () => {
-  await processMessage({}, baseMsg(), mockDeps()); /* swallowed by pipeline catch — Task 10 replaces with real asserts */
-  assert.ok(true);
+  const evoSpy = mock.fn(async () => ({ ok: true }));
+  const deps = mockDeps({
+    supaFetch: async (path) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=')) {
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    },
+    runAgent: async () => ({
+      ok: true, resposta_cliente: 'olha esses estilos:',
+      estado_novo: 'tattoo', dados_persistidos: {},
+      proxima_acao: 'enviar_portfolio', agent_usado: 'tattoo',
+      urls_portfolio: ['https://x/1.jpg', 'https://x/2.jpg', 'https://x/3.jpg'],
+    }),
+    evoSend: evoSpy,
+  });
+  await processMessage({}, baseMsg(), deps);
+  assert.equal(evoSpy.mock.callCount(), 4); // 1 text + 3 media
+  assert.equal(evoSpy.mock.calls[0].arguments[1].type, 'text');
+  assert.equal(evoSpy.mock.calls[1].arguments[1].type, 'media');
+  assert.equal(evoSpy.mock.calls[1].arguments[1].url, 'https://x/1.jpg');
 });
 
 test('6. conversa nova — Task 8 implementa', async () => {
@@ -177,14 +213,46 @@ test('7. runAgent throws — Task 9 implementa', async () => {
   assert.equal(lastPatch.status, 'failed');
 });
 
-test('8. evoSend text falha — Task 10 implementa', async () => {
-  await processMessage({}, baseMsg(), mockDeps()); /* swallowed by pipeline catch — Task 10 replaces with real asserts */
-  assert.ok(true);
+test('8. evoSend(text) ok:false — Task 10 implementa', async () => {
+  const adminSpy = mock.fn(async () => ({ ok: true }));
+  let lastPatch = null;
+  const deps = mockDeps({
+    supaFetch: async (path, init) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=')) {
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+      }
+      if (init?.method === 'PATCH') lastPatch = JSON.parse(init.body);
+      return new Response('[]', { status: 200 });
+    },
+    runAgent: async () => ({ ok: true, resposta_cliente: 'r', estado_novo: 'tattoo', dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo' }),
+    evoSend: async () => ({ ok: false, error: 'connection-refused' }),
+    sendTelegramAdmin: adminSpy,
+  });
+  await processMessage({}, baseMsg(), deps);
+  assert.equal(adminSpy.mock.callCount(), 1);
+  assert.match(adminSpy.mock.calls[0].arguments[0], /sendText falhou/);
+  assert.equal(lastPatch.status, 'failed');
 });
 
 test('9. midia base64 in nao duplica — Task 10 implementa', async () => {
-  await processMessage({}, baseMsg(), mockDeps()); /* swallowed by pipeline catch — Task 10 replaces with real asserts */
-  assert.ok(true);
+  let n8nInsertCount = 0;
+  const deps = mockDeps({
+    supaFetch: async (path, init) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=')) {
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+      }
+      if (path === '/rest/v1/n8n_chat_histories' && init?.method === 'POST') {
+        n8nInsertCount++;
+        const body = JSON.parse(init.body);
+        assert.equal(body.message.type, 'ai', 'pipeline so insere msg ai/out');
+        return new Response('[]', { status: 201 });
+      }
+      return new Response('[]', { status: 200 });
+    },
+    runAgent: async () => ({ ok: true, resposta_cliente: 'r', estado_novo: 'tattoo', dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo' }),
+  });
+  await processMessage({}, baseMsg({ mediaBase64: 'data', mediaMimetype: 'image/jpeg' }), deps);
+  assert.equal(n8nInsertCount, 1);
 });
 
 test('10. historico mapeado — Task 9 implementa', async () => {

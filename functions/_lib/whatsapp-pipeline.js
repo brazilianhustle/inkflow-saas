@@ -149,14 +149,44 @@ export async function processMessage(env, msg, depsOverride = {}) {
       }),
     });
 
-    // Marca msg IN como processada. Task 10 movera pra DEPOIS das etapas 7-8
-    // se houver Evolution falha — mas pra etapas 4-6 sozinhas, ja podemos marcar.
+    // Etapa 7: Evolution outbound (text + media URLs)
+    const sendRes = await deps.evoSend(tenant, {
+      type: 'text', to: telefone, text: agentOut.resposta_cliente,
+    });
+    if (!sendRes.ok) {
+      // Throw — catch path patcha status=failed e notifica admin com a mensagem.
+      throw new Error(`evo sendText falhou: ${sendRes.error || 'unknown'} (tenant=${tenant.id})`);
+    }
+    if (Array.isArray(agentOut.urls_portfolio) && agentOut.urls_portfolio.length > 0) {
+      for (const url of agentOut.urls_portfolio) {
+        const m = await deps.evoSend(tenant, { type: 'media', to: telefone, url });
+        if (!m.ok) {
+          await deps.sendTelegramAdmin(`evo sendMedia falhou: ${url} (${m.error || 'unknown'})`);
+          // Não throw — texto principal foi entregue
+        }
+      }
+    }
+
+    // Etapa 8: side-effect handoff cadastro → enviar-orcamento-tatuador
+    if (conversa.estado_agente === 'cadastro' && agentOut.proxima_acao === 'handoff') {
+      if (!tenant.tatuador_telegram_chat_id) {
+        await deps.sendTelegramAdmin(`handoff sem tatuador_telegram_chat_id em ${tenant.id}`);
+      } else {
+        const r = await deps.callTool('enviar-orcamento-tatuador', {
+          tenant_id: tenant.id, telefone,
+        });
+        if (!r.ok) {
+          await deps.sendTelegramAdmin(`enviar-orcamento-tatuador falhou: ${r.error || 'unknown'}`);
+        }
+      }
+    }
+
+    // Marca msg IN como processada (DEPOIS das etapas 7-8 — se Evolution falhar,
+    // o catch path patcha status=failed em vez disso).
     await deps.supaFetch(`/rest/v1/n8n_chat_histories?id=eq.${msgRowId}`, {
       method: 'PATCH',
       body: JSON.stringify({ status: 'processed' }),
     });
-
-    // (Etapas 7-8 — Evolution outbound + handoff Telegram — implementadas em Task 10)
 
   } catch (e) {
     console.error('[pipeline] failed:', { evoMessageId, telefone, error: e.message, stack: e.stack });
