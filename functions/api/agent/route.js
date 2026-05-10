@@ -8,6 +8,8 @@
 // Response 500: erro interno (run() falhou)
 //
 // Sub-1: estado conversacional vem no payload (in-memory). Sub-3 puxa de Supabase.
+// Sub-4.1: logica do agent extraida pra runAgent({...}) — onRequest vira wrapper HTTP fino.
+// Pipeline WhatsApp (whatsapp-pipeline.js) chama runAgent direto sem HTTP.
 import { run } from '@openai/agents';
 import { setDefaultOpenAIKey } from '@openai/agents-openai';
 import { selectAgentBuilder, isStateImplemented, getNextState } from './router.js';
@@ -26,6 +28,10 @@ const HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+// Substates do Proposta agent (Sub-3.2) — definidos no module-level pra
+// reuso em runAgent + (futuro) outros call-sites.
+const PROPOSTA_SUBSTATES = new Set(['propondo_valor', 'escolhendo_horario', 'aguardando_sinal']);
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: HEADERS });
 }
@@ -43,6 +49,154 @@ function normalizeHistoryItem(h) {
     };
   }
   return { role: 'user', content: String(content) };
+}
+
+// runAgent — funcao pura-ish exportavel que executa o agent loop + invariants
+// + side-effects, sem dependencias HTTP. Chamada por:
+//   - onRequest (HTTP wrapper, retro-compat)
+//   - whatsapp-pipeline.js (Sub-4.1, sem HTTP)
+//
+// Args:
+//   env, tenant_id, telefone, mensagem, estado_atual, dados_acumulados, historico,
+//   tenant (resolvido), conversa (resolvido), clientContext (bare; runAgent merge prefetch)
+//
+// Return success: { ok: true, resposta_cliente, estado_novo, dados_persistidos,
+//   dados_completos, campos_faltando, campos_conflitantes, proxima_acao, agent_usado,
+//   side_effects?, urls_portfolio }
+// Return failure: { ok: false, error, status, reason? }
+//   - estado nao implementado: status 501
+//   - run() throw: error 'agent-run-failed', status 500
+//   - sem finalOutput: error 'no-final-output', status 500
+//   - invariant violation hard-fail: error 'invariant-violation', reason, status 500
+export async function runAgent({
+  env,
+  tenant_id,
+  telefone,
+  mensagem,
+  estado_atual,
+  dados_acumulados,
+  historico,
+  tenant,
+  conversa,
+  clientContext,
+}) {
+  if (!isStateImplemented(estado_atual)) {
+    return {
+      ok: false,
+      error: `estado_atual='${estado_atual}' nao implementado no Sub-1 (sera Sub-2)`,
+      status: 501,
+    };
+  }
+
+  const builder = selectAgentBuilder(estado_atual);
+
+  // Set definido tambem mais abaixo no orchestrator — declarado em escopo
+  // mais alto pra reuso. Subsumir o `const clientContext = body?.clientContext || {};`
+  // existente.
+  let mergedClientContext = clientContext || {};
+  // Sub-3.3: pre-fetch portfolio_disponivel para QUALQUER agent (transversal)
+  const portfolioCtx = await prefetchPortfolio(env, tenant);
+  mergedClientContext = { ...mergedClientContext, ...portfolioCtx };
+  if (PROPOSTA_SUBSTATES.has(estado_atual)) {
+    const prefetched = await prefetchPropostaContext({
+      env, tenant, conversa, telefone, estado_atual,
+    });
+    mergedClientContext = { ...mergedClientContext, ...prefetched };
+  }
+
+  const { agent, validator } = builder({ env, tenant, conversa, clientContext: mergedClientContext, estado_atual });
+
+  // Constroi messages do historico + mensagem atual.
+  // Historico: items com role=assistant precisam shape tipado (SDK valida via Zod).
+  const messages = [
+    ...historico.map(normalizeHistoryItem),
+    { role: 'user', content: mensagem },
+  ];
+
+  let result;
+  try {
+    // maxTurns 20: default 10 aperta cenarios multi-turn com tools.
+    result = await run(agent, messages, { maxTurns: 20 });
+  } catch (e) {
+    // Detail intencionalmente generico — evita info-leak do SDK/OpenAI errors.
+    // Logs server-side carregam o detalhe completo.
+    console.error('[agent/route] run() failed:', e);
+    return { ok: false, error: 'agent-run-failed', status: 500 };
+  }
+
+  // finalOutput pode ser undefined (max turns, refusal, schema violation).
+  // Sem guard, acesso a out.resposta_cliente joga TypeError fora do try/catch.
+  const out = result?.finalOutput;
+  if (!out) {
+    console.error('[agent/route] no finalOutput', { result });
+    return { ok: false, error: 'no-final-output', status: 500 };
+  }
+
+  // Validator vem do builder (closure pattern Sub-3.2).
+  let working = out;
+  const invariantCheck = validator(working);
+
+  if (!invariantCheck.valid) {
+    if (estado_atual === 'cadastro' && invariantCheck.reason?.startsWith('data_nascimento nao-ISO')) {
+      // Caso especial Sub-3.1: data_nascimento mal-formatada — silently force
+      // pergunta. Agente reformula no proximo turno.
+      console.warn('[agent/route] silently force pergunta (data_nascimento nao-ISO):', invariantCheck.reason);
+      working = {
+        ...working,
+        dados_persistidos: { ...(working.dados_persistidos || {}), data_nascimento: null },
+        dados_completos: false,
+        campos_faltando: Array.from(new Set([...(working.campos_faltando || []), 'data_nascimento'])),
+        proxima_acao: 'pergunta',
+        resposta_cliente: 'Nao consegui ler a data — pode mandar tipo 12/03/1995?',
+      };
+    } else if (PROPOSTA_SUBSTATES.has(estado_atual) && /(nao-ISO|fora da lista)/.test(invariantCheck.reason || '')) {
+      // Caso especial Sub-3.2: slot mal-formatado ou inexistente — silently
+      // force pergunta com lista atualizada de slots.
+      console.warn('[agent/route] silently force pergunta (slot invalido):', invariantCheck.reason);
+      const slots = mergedClientContext.horarios_livres || [];
+      const legendas = slots.map(s => s.legenda).join(', ') || '(nenhum slot disponivel)';
+      const msg = invariantCheck.reason.startsWith('slot fora')
+        ? `Esse horario nao esta na lista — escolhe um destes? ${legendas}`
+        : `Nao consegui ler o horario — pode escolher um da lista? ${legendas}`;
+      working = { ...working, proxima_acao: 'pergunta', resposta_cliente: msg };
+    } else {
+      // Hard-fail: violacao de contrato (proxima_acao nao permitida no estado,
+      // payload obrigatorio missing, valor_pedido > valor_proposto, etc).
+      // Bug do agent — nao UX issue.
+      console.error('[agent/route] invariant violation:', invariantCheck.reason, out);
+      return { ok: false, error: 'invariant-violation', reason: invariantCheck.reason, status: 500 };
+    }
+  }
+
+  // Aplica enforceMenorIdade APOS invariante. So afeta cadastro (helper
+  // checa data_nascimento; outros estados nao tem o campo, retorna out unchanged).
+  const enforced = estado_atual === 'cadastro' ? enforceMenorIdade(working) : working;
+
+  // Sub-3.2: orquestrator side-effects pra Proposta
+  const sideEffects = [];
+  let finalOut = enforced;
+  if (PROPOSTA_SUBSTATES.has(estado_atual)) {
+    finalOut = await executeOrchestration(enforced, {
+      env, tenant, conversa, telefone, sideEffects,
+    });
+  }
+
+  // Sub-3.3: branch transversal portfolio (qualquer agent pode emitir)
+  const { urls_portfolio } = await executePortfolioIntent(finalOut, { env, tenant });
+
+  return {
+    ok: true,
+    resposta_cliente: finalOut.resposta_cliente,
+    estado_novo: getNextState(estado_atual, finalOut),
+    dados_persistidos: finalOut.dados_persistidos,
+    dados_completos: finalOut.dados_completos,
+    campos_faltando: finalOut.campos_faltando,
+    campos_conflitantes: finalOut.campos_conflitantes,
+    proxima_acao: finalOut.proxima_acao,
+    agent_usado: estado_atual,
+    side_effects: PROPOSTA_SUBSTATES.has(estado_atual) ? sideEffects : undefined,
+    urls_portfolio,
+  };
 }
 
 export async function onRequest({ request, env }) {
@@ -81,128 +235,31 @@ export async function onRequest({ request, env }) {
     return json({ ok: false, error: 'tenant_id e telefone obrigatorios' }, 400);
   }
 
-  if (!isStateImplemented(estado_atual)) {
-    return json({
-      ok: false,
-      error: `estado_atual='${estado_atual}' nao implementado no Sub-1 (sera Sub-2)`,
-    }, 501);
-  }
-
-  const builder = selectAgentBuilder(estado_atual);
-
   // Stub tenant/conversa — Sub-1 recebe mock no payload em vez de puxar Supabase.
   // Sub-3 substitui por fetch real.
   const tenant = body?.tenant || { id: tenant_id, nome_estudio: 'Stub', config_agente: {}, gatilhos_handoff: [], faqs: [], fewshots: [] };
   const conversa = body?.conversa || { id: 'stub', telefone, estado_agente: estado_atual, dados_coletados: dados_acumulados, dados_cadastro: {} };
 
-  // Set definido tambem mais abaixo no orchestrator — declarado em escopo
-  // mais alto pra reuso. Subsumir o `const clientContext = body?.clientContext || {};`
-  // existente.
-  const PROPOSTA_SUBSTATES = new Set(['propondo_valor', 'escolhendo_horario', 'aguardando_sinal']);
-  let clientContext = body?.clientContext || {};
-  // Sub-3.3: pre-fetch portfolio_disponivel para QUALQUER agent (transversal)
-  const portfolioCtx = await prefetchPortfolio(env, tenant);
-  clientContext = { ...clientContext, ...portfolioCtx };
-  if (PROPOSTA_SUBSTATES.has(estado_atual)) {
-    const prefetched = await prefetchPropostaContext({
-      env, tenant, conversa, telefone, estado_atual,
-    });
-    clientContext = { ...clientContext, ...prefetched };
+  const r = await runAgent({
+    env,
+    tenant_id,
+    telefone,
+    mensagem,
+    estado_atual,
+    dados_acumulados,
+    historico,
+    tenant,
+    conversa,
+    clientContext: body?.clientContext || {},
+  });
+
+  if (r.ok) {
+    return json(r, 200);
   }
-
-  const { agent, validator } = builder({ env, tenant, conversa, clientContext, estado_atual });
-
-  // Constroi messages do historico + mensagem atual.
-  // Historico: items com role=assistant precisam shape tipado (SDK valida via Zod).
-  const messages = [
-    ...historico.map(normalizeHistoryItem),
-    { role: 'user', content: mensagem },
-  ];
-
-  let result;
-  try {
-    // maxTurns 20: default 10 aperta cenarios multi-turn com tools.
-    result = await run(agent, messages, { maxTurns: 20 });
-  } catch (e) {
-    // Detail intencionalmente generico — evita info-leak do SDK/OpenAI errors.
-    // Logs server-side carregam o detalhe completo.
-    console.error('[agent/route] run() failed:', e);
-    return json({ ok: false, error: 'agent-run-failed' }, 500);
-  }
-
-  // finalOutput pode ser undefined (max turns, refusal, schema violation).
-  // Sem guard, acesso a out.resposta_cliente joga TypeError fora do try/catch.
-  const out = result?.finalOutput;
-  if (!out) {
-    console.error('[agent/route] no finalOutput', { result });
-    return json({ ok: false, error: 'no-final-output' }, 500);
-  }
-
-  // Validator vem do builder (closure pattern Sub-3.2).
-  let working = out;
-  const invariantCheck = validator(working);
-
-  if (!invariantCheck.valid) {
-    if (estado_atual === 'cadastro' && invariantCheck.reason?.startsWith('data_nascimento nao-ISO')) {
-      // Caso especial Sub-3.1: data_nascimento mal-formatada — silently force
-      // pergunta. Agente reformula no proximo turno.
-      console.warn('[agent/route] silently force pergunta (data_nascimento nao-ISO):', invariantCheck.reason);
-      working = {
-        ...working,
-        dados_persistidos: { ...(working.dados_persistidos || {}), data_nascimento: null },
-        dados_completos: false,
-        campos_faltando: Array.from(new Set([...(working.campos_faltando || []), 'data_nascimento'])),
-        proxima_acao: 'pergunta',
-        resposta_cliente: 'Nao consegui ler a data — pode mandar tipo 12/03/1995?',
-      };
-    } else if (PROPOSTA_SUBSTATES.has(estado_atual) && /(nao-ISO|fora da lista)/.test(invariantCheck.reason || '')) {
-      // Caso especial Sub-3.2: slot mal-formatado ou inexistente — silently
-      // force pergunta com lista atualizada de slots.
-      console.warn('[agent/route] silently force pergunta (slot invalido):', invariantCheck.reason);
-      const slots = clientContext.horarios_livres || [];
-      const legendas = slots.map(s => s.legenda).join(', ') || '(nenhum slot disponivel)';
-      const msg = invariantCheck.reason.startsWith('slot fora')
-        ? `Esse horario nao esta na lista — escolhe um destes? ${legendas}`
-        : `Nao consegui ler o horario — pode escolher um da lista? ${legendas}`;
-      working = { ...working, proxima_acao: 'pergunta', resposta_cliente: msg };
-    } else {
-      // Hard-fail: violacao de contrato (proxima_acao nao permitida no estado,
-      // payload obrigatorio missing, valor_pedido > valor_proposto, etc).
-      // Bug do agent — nao UX issue.
-      console.error('[agent/route] invariant violation:', invariantCheck.reason, out);
-      return json({ ok: false, error: 'invariant-violation', reason: invariantCheck.reason }, 500);
-    }
-  }
-
-  // Aplica enforceMenorIdade APOS invariante. So afeta cadastro (helper
-  // checa data_nascimento; outros estados nao tem o campo, retorna out unchanged).
-  const enforced = estado_atual === 'cadastro' ? enforceMenorIdade(working) : working;
-
-  // Sub-3.2: orquestrator side-effects pra Proposta
-  const sideEffects = [];
-  let finalOut = enforced;
-  if (PROPOSTA_SUBSTATES.has(estado_atual)) {
-    finalOut = await executeOrchestration(enforced, {
-      env, tenant, conversa, telefone, sideEffects,
-    });
-  }
-
-  // Sub-3.3: branch transversal portfolio (qualquer agent pode emitir)
-  const { urls_portfolio } = await executePortfolioIntent(finalOut, { env, tenant });
-
-  return json({
-    ok: true,
-    resposta_cliente: finalOut.resposta_cliente,
-    estado_novo: getNextState(estado_atual, finalOut),
-    dados_persistidos: finalOut.dados_persistidos,
-    dados_completos: finalOut.dados_completos,
-    campos_faltando: finalOut.campos_faltando,
-    campos_conflitantes: finalOut.campos_conflitantes,
-    proxima_acao: finalOut.proxima_acao,
-    agent_usado: estado_atual,
-    side_effects: PROPOSTA_SUBSTATES.has(estado_atual) ? sideEffects : undefined,
-    urls_portfolio,
-  }, 200);
+  // Strip `status` do body — campo e meta pro wrapper, nao parte do response
+  // public. Preserva shape { ok: false, error, reason? } que onRequest sempre devolveu.
+  const { status, ...errorBody } = r;
+  return json(errorBody, status || 500);
 }
 
 export function forcePergunta(out, msg) {
