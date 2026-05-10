@@ -22,3 +22,25 @@ export async function sendTelegramAlert(env, text) {
     return { ok: false, error: e.message };
   }
 }
+
+// Envia mensagem pra um chat_id arbitrario (e.g., tatuador). Mesma resiliencia:
+// timeout 3s, fail-open. Caller passa chatId — nao usa env.TELEGRAM_CHAT_ID.
+export async function sendTelegramTo(env, chatId, text) {
+  const token = env.TELEGRAM_BOT_TOKEN;
+  if (!token || !chatId) {
+    console.warn('telegram: token ou chatId ausente, pulando send');
+    return { ok: false, skipped: true };
+  }
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' }),
+      signal: AbortSignal.timeout(3000),
+    });
+    return { ok: res.ok };
+  } catch (e) {
+    console.error('telegram: send-to failed:', e.message);
+    return { ok: false, error: e.message };
+  }
+}
