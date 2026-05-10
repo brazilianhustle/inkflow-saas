@@ -3,6 +3,7 @@
 // Carrega conversa, chama runAgent, persiste estado, despacha outbound.
 //
 // Deps injetadas via depsOverride pra integration tests sem fetch real.
+import { setDefaultOpenAIKey } from '@openai/agents-openai';
 import { supaFetch } from '../api/tools/_tool-helpers.js';
 import { evoSend } from './evolution-send.js';
 import { sendTelegramTo, sendTelegramAlert } from './telegram.js';
@@ -21,7 +22,12 @@ export function defaultDeps(env) {
     evoSend: (tenant, payload) => evoSend(env, tenant, payload),
     sendTelegram: (chatId, text) => sendTelegramTo(env, chatId, text),
     sendTelegramAdmin: (text) => sendTelegramAlert(env, text),
-    runAgent: (args) => runAgent({ env, ...args }),
+    runAgent: (args) => {
+      // Idempotente — mesmo padrao de onRequest (route.js). Necessario porque
+      // pipeline chama runAgent direto, sem passar pelo HTTP wrapper.
+      if (env?.OPENAI_API_KEY) setDefaultOpenAIKey(env.OPENAI_API_KEY);
+      return runAgent({ env, ...args });
+    },
     callTool: (toolName, body) => callTool(env, toolName, body),
     now: () => new Date().toISOString(),
   };
@@ -93,8 +99,64 @@ export async function processMessage(env, msg, depsOverride = {}) {
         };
       });
 
-    // (Etapas 4-9 implementadas em Tasks 9-11)
-    throw new Error('etapas-4-9-nao-implementadas');
+    // Etapa 4: runAgent
+    let agentOut;
+    try {
+      agentOut = await deps.runAgent({
+        tenant_id: tenantId, telefone, mensagem: texto,
+        estado_atual: conversa.estado_agente,
+        dados_acumulados: conversa.dados_coletados || {},
+        historico,
+        tenant, conversa,
+        clientContext: {},
+      });
+    } catch (e) {
+      throw new Error(`runAgent threw: ${e.message}`);
+    }
+    if (!agentOut?.ok) {
+      throw new Error(`runAgent returned ok:false: ${agentOut?.error || 'unknown'}`);
+    }
+
+    // Etapa 5: UPDATE conversa
+    // Cadastro merge em dados_cadastro (preserva dados_coletados).
+    // Tattoo/proposta/etc merge em dados_coletados (preserva dados_cadastro).
+    const isCadastro = agentOut.agent_usado === 'cadastro';
+    const novoDadosColetados = isCadastro
+      ? (conversa.dados_coletados || {})
+      : { ...(conversa.dados_coletados || {}), ...(agentOut.dados_persistidos || {}) };
+    const novoDadosCadastro = isCadastro
+      ? { ...(conversa.dados_cadastro || {}), ...(agentOut.dados_persistidos || {}) }
+      : (conversa.dados_cadastro || {});
+
+    await deps.supaFetch(`/rest/v1/conversas?id=eq.${conversa.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        estado_agente: agentOut.estado_novo,
+        dados_coletados: novoDadosColetados,
+        dados_cadastro: novoDadosCadastro,
+        updated_at: deps.now(),
+      }),
+    });
+
+    // Etapa 6: INSERT n8n_chat_histories OUT (type='ai')
+    await deps.supaFetch('/rest/v1/n8n_chat_histories', {
+      method: 'POST',
+      body: JSON.stringify({
+        session_id,
+        message: { type: 'ai', content: agentOut.resposta_cliente },
+        status: 'processed',
+        created_at: deps.now(),
+      }),
+    });
+
+    // Marca msg IN como processada. Task 10 movera pra DEPOIS das etapas 7-8
+    // se houver Evolution falha — mas pra etapas 4-6 sozinhas, ja podemos marcar.
+    await deps.supaFetch(`/rest/v1/n8n_chat_histories?id=eq.${msgRowId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'processed' }),
+    });
+
+    // (Etapas 7-8 — Evolution outbound + handoff Telegram — implementadas em Task 10)
 
   } catch (e) {
     console.error('[pipeline] failed:', { evoMessageId, telefone, error: e.message, stack: e.stack });
