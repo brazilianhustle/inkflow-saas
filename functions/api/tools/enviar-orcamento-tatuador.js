@@ -54,7 +54,7 @@ function montarTextoOrcamento(orcid, conv) {
   const dat = conv.dados_coletados || {};
   const idade = calcularIdadeAnos(cad.data_nascimento);
   const nome = escapeMarkdown(cad.nome || '?');
-  const desc = escapeMarkdown(dat.descricao_tattoo || '?');
+  const desc = escapeMarkdown(dat.descricao_tattoo || dat.descricao_curta || '?');
   const local = escapeMarkdown(dat.local_corpo || '?');
   const estilo = dat.estilo ? escapeMarkdown(dat.estilo) : null;
   const fotos = dat.foto_local ? 1 : 0;
@@ -147,7 +147,7 @@ async function handle({ env, input }) {
   const dat = conv.dados_coletados || {};
   const cad = conv.dados_cadastro || {};
   const faltando = [];
-  if (!dat.descricao_tattoo) faltando.push('descricao_tattoo');
+  if (!dat.descricao_tattoo && !dat.descricao_curta) faltando.push('descricao_tattoo');
   if (!dat.tamanho_cm) faltando.push('tamanho_cm');
   if (!dat.local_corpo) faltando.push('local_corpo');
   if (!cad.nome) faltando.push('nome');
