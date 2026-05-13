@@ -80,6 +80,21 @@ export function validateTattooOutputInvariant(out, clientContext = {}) {
       return { valid: false, reason: 'enviar_portfolio sem payload_portfolio' };
     }
   }
+  // Sub-4.1 Bug #2: pergunta com campos faltando DEVE incluir '?' na resposta.
+  // Camada 2 (safety net) — bug observado em smoke 09/05 nao reproduz mais
+  // (10/10 runs eval pos refator history whitelist 19d9c17), validator
+  // protege contra escapes futuros do modelo. Excecao: pergunta com
+  // campos_faltando=[] (conflito puro, linhas 6/10/11) aceita resposta
+  // declarativa sem '?'.
+  if (out.proxima_acao === 'pergunta') {
+    const faltando = Array.isArray(out.campos_faltando) ? out.campos_faltando : [];
+    if (faltando.length > 0 && typeof out.resposta_cliente === 'string' && !out.resposta_cliente.includes('?')) {
+      return {
+        valid: false,
+        reason: `pergunta com campos_faltando=[${faltando.join(',')}] mas resposta sem '?' — fragment="${out.resposta_cliente.slice(0, 80)}"`,
+      };
+    }
+  }
   return { valid: true };
 }
 

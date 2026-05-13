@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { sendTelegramAlert } from '../functions/_lib/telegram.js';
+import { sendTelegramAlert, sendTelegramTo } from '../functions/_lib/telegram.js';
 
 test('sendTelegramAlert posts to Bot API with correct payload', async () => {
   let captured = null;
@@ -31,4 +31,51 @@ test('sendTelegramAlert fails open on fetch error', async () => {
   const res = await sendTelegramAlert(env, 'hi');
   assert.equal(res.ok, false);
   assert.equal(res.error, 'network');
+});
+
+test('sendTelegramTo: chatId ausente → ok:false skipped:true', async () => {
+  const r = await sendTelegramTo({ INKFLOW_TELEGRAM_BOT_TOKEN: 'x' }, null, 'msg');
+  assert.equal(r.ok, false);
+  assert.equal(r.skipped, true);
+});
+
+test('sendTelegramTo: token ausente → ok:false skipped:true', async () => {
+  const r = await sendTelegramTo({}, '123', 'msg');
+  assert.equal(r.ok, false);
+  assert.equal(r.skipped, true);
+});
+
+test('sendTelegramTo: usa INKFLOW_TELEGRAM_BOT_TOKEN (bot tatuador), nao TELEGRAM_BOT_TOKEN (bot ops)', async () => {
+  const orig = globalThis.fetch;
+  let captured = null;
+  globalThis.fetch = async (url, opts) => {
+    captured = { url, body: JSON.parse(opts.body) };
+    return new Response('{}', { status: 200 });
+  };
+  try {
+    // Bot ops token presente mas INKFLOW ausente → skip (nao deve usar bot errado)
+    const r = await sendTelegramTo({ TELEGRAM_BOT_TOKEN: 'ops-token' }, '12345', 'oi');
+    assert.equal(r.ok, false);
+    assert.equal(r.skipped, true);
+    assert.equal(captured, null, 'nao deve ter feito fetch');
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
+test('sendTelegramTo: payload posta com chat_id correto', async () => {
+  const orig = globalThis.fetch;
+  let captured = null;
+  globalThis.fetch = async (url, opts) => {
+    captured = { url, body: JSON.parse(opts.body) };
+    return new Response('{}', { status: 200 });
+  };
+  try {
+    await sendTelegramTo({ INKFLOW_TELEGRAM_BOT_TOKEN: 'tok' }, '12345', 'oi');
+    assert.match(captured.url, /\/bottok\/sendMessage$/);
+    assert.equal(captured.body.chat_id, '12345');
+    assert.equal(captured.body.text, 'oi');
+  } finally {
+    globalThis.fetch = orig;
+  }
 });
