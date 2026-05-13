@@ -23,12 +23,13 @@ export async function sendTelegramAlert(env, text) {
   }
 }
 
-// Envia mensagem pra um chat_id arbitrario (e.g., tatuador). Mesma resiliencia:
+// Envia mensagem pra um chat_id arbitrario (e.g., tatuador) via bot tatuador-facing
+// (INKFLOW_TELEGRAM_BOT_TOKEN — separado do bot ops/admin). Mesma resiliencia:
 // timeout 3s, fail-open. Caller passa chatId — nao usa env.TELEGRAM_CHAT_ID.
 export async function sendTelegramTo(env, chatId, text) {
-  const token = env.TELEGRAM_BOT_TOKEN;
+  const token = env.INKFLOW_TELEGRAM_BOT_TOKEN;
   if (!token || !chatId) {
-    console.warn('telegram: token ou chatId ausente, pulando send');
+    console.warn('telegram: INKFLOW_TELEGRAM_BOT_TOKEN ou chatId ausente, pulando send');
     return { ok: false, skipped: true };
   }
   try {

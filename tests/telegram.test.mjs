@@ -34,7 +34,7 @@ test('sendTelegramAlert fails open on fetch error', async () => {
 });
 
 test('sendTelegramTo: chatId ausente → ok:false skipped:true', async () => {
-  const r = await sendTelegramTo({ TELEGRAM_BOT_TOKEN: 'x' }, null, 'msg');
+  const r = await sendTelegramTo({ INKFLOW_TELEGRAM_BOT_TOKEN: 'x' }, null, 'msg');
   assert.equal(r.ok, false);
   assert.equal(r.skipped, true);
 });
@@ -45,6 +45,24 @@ test('sendTelegramTo: token ausente → ok:false skipped:true', async () => {
   assert.equal(r.skipped, true);
 });
 
+test('sendTelegramTo: usa INKFLOW_TELEGRAM_BOT_TOKEN (bot tatuador), nao TELEGRAM_BOT_TOKEN (bot ops)', async () => {
+  const orig = globalThis.fetch;
+  let captured = null;
+  globalThis.fetch = async (url, opts) => {
+    captured = { url, body: JSON.parse(opts.body) };
+    return new Response('{}', { status: 200 });
+  };
+  try {
+    // Bot ops token presente mas INKFLOW ausente → skip (nao deve usar bot errado)
+    const r = await sendTelegramTo({ TELEGRAM_BOT_TOKEN: 'ops-token' }, '12345', 'oi');
+    assert.equal(r.ok, false);
+    assert.equal(r.skipped, true);
+    assert.equal(captured, null, 'nao deve ter feito fetch');
+  } finally {
+    globalThis.fetch = orig;
+  }
+});
+
 test('sendTelegramTo: payload posta com chat_id correto', async () => {
   const orig = globalThis.fetch;
   let captured = null;
@@ -53,7 +71,7 @@ test('sendTelegramTo: payload posta com chat_id correto', async () => {
     return new Response('{}', { status: 200 });
   };
   try {
-    await sendTelegramTo({ TELEGRAM_BOT_TOKEN: 'tok' }, '12345', 'oi');
+    await sendTelegramTo({ INKFLOW_TELEGRAM_BOT_TOKEN: 'tok' }, '12345', 'oi');
     assert.match(captured.url, /\/bottok\/sendMessage$/);
     assert.equal(captured.body.chat_id, '12345');
     assert.equal(captured.body.text, 'oi');
