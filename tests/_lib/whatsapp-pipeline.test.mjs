@@ -1,6 +1,6 @@
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import { processMessage, TERMINAL_STATES } from '../../functions/_lib/whatsapp-pipeline.js';
+import { processMessage, TERMINAL_STATES, TYPING_DELAY_MS } from '../../functions/_lib/whatsapp-pipeline.js';
 
 const TENANT = {
   id: '00000000-0000-0000-0000-000000000001',
@@ -35,6 +35,7 @@ function mockDeps(overrides = {}) {
                             dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo' }),
     callTool: async () => ({ ok: true }),
     now: () => '2026-05-09T12:00:00.000Z',
+    sleep: async () => {},
     ...overrides,
   };
 }
@@ -281,6 +282,43 @@ test('10. historico mapeado — Task 9 implementa', async () => {
     { role: 'user', content: 'msg1' },
     { role: 'assistant', content: 'resp1' },
   ]);
+});
+
+test('12. typing delay aplicado antes do evoSend (UX: bot nao parece robo)', async () => {
+  const order = [];
+  const sleepSpy = mock.fn(async (ms) => { order.push({ event: 'sleep', ms }); });
+  const evoSpy = mock.fn(async () => { order.push({ event: 'evoSend' }); return { ok: true }; });
+  const deps = mockDeps({
+    supaFetch: async (path) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=')) {
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    },
+    runAgent: async () => ({ ok: true, resposta_cliente: 'oi', estado_novo: 'tattoo', dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo' }),
+    sleep: sleepSpy,
+    evoSend: evoSpy,
+  });
+  await processMessage({}, baseMsg(), deps);
+  assert.equal(sleepSpy.mock.callCount(), 1, 'sleep chamado 1x');
+  assert.equal(sleepSpy.mock.calls[0].arguments[0], TYPING_DELAY_MS, `sleep com TYPING_DELAY_MS (${TYPING_DELAY_MS})`);
+  assert.equal(order[0]?.event, 'sleep', 'sleep ANTES do evoSend');
+  assert.equal(order[1]?.event, 'evoSend', 'evoSend DEPOIS do sleep');
+});
+
+test('13. typing delay NAO aplicado em estado terminal (caminho early-return)', async () => {
+  const sleepSpy = mock.fn(async () => {});
+  const deps = mockDeps({
+    supaFetch: async (path) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=')) {
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'aguardando_tatuador', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    },
+    sleep: sleepSpy,
+  });
+  await processMessage({}, baseMsg(), deps);
+  assert.equal(sleepSpy.mock.callCount(), 0, 'terminal early-return pula typing delay');
 });
 
 test('11. agent_usado=cadastro merge dados_cadastro — Task 9 implementa', async () => {

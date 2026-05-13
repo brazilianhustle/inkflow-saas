@@ -16,6 +16,10 @@ export const TERMINAL_STATES = new Set([
   'aguardando_decisao_desconto',
 ]);
 
+// UX: bot respondendo instantaneo soa robotico. n8n legacy tinha pause 1-2s.
+// Aplicado antes do evoSend(text) na Etapa 7 — apenas no happy path.
+export const TYPING_DELAY_MS = 1500;
+
 // DB usa nomes legacy (coletando_tattoo/cadastro) por causa do CHECK constraint
 // herdado do n8n. Agent SDK usa nomes curtos (tattoo/cadastro). Mapeamos nas
 // fronteiras: ler do DB -> dbToAgent, escrever no DB -> agentToDb.
@@ -50,6 +54,7 @@ export function defaultDeps(env) {
     },
     callTool: (toolName, body) => callTool(env, toolName, body),
     now: () => new Date().toISOString(),
+    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   };
 }
 
@@ -176,6 +181,9 @@ export async function processMessage(env, msg, depsOverride = {}) {
         created_at: deps.now(),
       }),
     });
+
+    // Etapa 6.5: typing delay (UX — bot nao deve parecer robo instantaneo)
+    await deps.sleep(TYPING_DELAY_MS);
 
     // Etapa 7: Evolution outbound (text + media URLs)
     const sendRes = await deps.evoSend(tenant, {
