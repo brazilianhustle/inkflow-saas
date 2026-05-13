@@ -114,11 +114,16 @@ export async function processMessage(env, msg, depsOverride = {}) {
       return;
     }
 
-    // Etapa 3: MONTA historico (últimos 40, exclui msgRowId atual + status=failed)
-    // Failed rows poluem contexto — agente confunde input ruidoso com conversa real.
+    // Etapa 3: MONTA historico (últimos 40, exclui msgRowId atual + status!=processed)
+    // Whitelist em vez de blacklist: só msgs CONFIRMADAS processed entram no contexto.
+    // - 'received' órfãs (pipeline crashou pre-PATCH, CF restart mid-flight, .catch()
+    //   engolido no PATCH final) ficavam vazando com blacklist neq.failed antiga.
+    // - 'failed' continua excluído.
+    // - Race quando cliente manda 2 msgs rapidas: msg N+1 pode nao ver msg N ainda
+    //   em received — aceitavel (proxima invoke ja vai ver msg N processed).
     const histRes = await deps.supaFetch(
       `/rest/v1/n8n_chat_histories?session_id=eq.${encodeURIComponent(session_id)}` +
-      `&status=neq.failed&order=created_at.asc&limit=40&select=id,message`,
+      `&status=eq.processed&order=created_at.asc&limit=40&select=id,message`,
     );
     const histRows = await histRes.json();
     const historico = histRows

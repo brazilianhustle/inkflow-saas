@@ -306,6 +306,26 @@ test('12. typing delay aplicado antes do evoSend (UX: bot nao parece robo)', asy
   assert.equal(order[1]?.event, 'evoSend', 'evoSend DEPOIS do sleep');
 });
 
+test('14. historico query usa whitelist status=eq.processed (anti history poisoning)', async () => {
+  let histQuery = null;
+  const deps = mockDeps({
+    supaFetch: async (path, init) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=') && !init?.method) {
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+      }
+      if (path.startsWith('/rest/v1/n8n_chat_histories?session_id=')) {
+        histQuery = path;
+        return new Response('[]', { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    },
+    runAgent: async () => ({ ok: true, resposta_cliente: 'r', estado_novo: 'tattoo', dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo' }),
+  });
+  await processMessage({}, baseMsg(), deps);
+  assert.match(histQuery, /status=eq\.processed/, 'whitelist (only processed)');
+  assert.doesNotMatch(histQuery, /status=neq\.failed/, 'nao usa mais blacklist');
+});
+
 test('13. typing delay NAO aplicado em estado terminal (caminho early-return)', async () => {
   const sleepSpy = mock.fn(async () => {});
   const deps = mockDeps({
