@@ -127,5 +127,12 @@ for (const scenario of scenarios) {
           `${scenario.id}: esperava dados_persistidos.${c} preenchido — got=${JSON.stringify(v)}`);
       }
     }
+
+    if (scenario.expected.resposta_contains_question === true) {
+      assert.ok(
+        typeof out.resposta_cliente === 'string' && out.resposta_cliente.includes('?'),
+        `${scenario.id}: esperava resposta com '?' — got="${out.resposta_cliente}"`
+      );
+    }
   });
 }

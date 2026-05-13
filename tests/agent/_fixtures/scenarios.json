@@ -62,7 +62,8 @@
         "dados_completos": false,
         "campos_faltando_inclui": ["tamanho_cm"],
         "dados_persistidos_NAO_inclui": ["tamanho_cm"],
-        "tools_NUNCA_chamadas": ["handoff_to_cadastro"]
+        "tools_NUNCA_chamadas": ["handoff_to_cadastro"],
+        "resposta_contains_question": true
       }
     },
     {
@@ -82,7 +83,8 @@
       "expected": {
         "proxima_acao": "pergunta",
         "dados_completos": false,
-        "tools_NUNCA_chamadas": ["handoff_to_cadastro", "calcular_orcamento", "consultar_horarios"]
+        "tools_NUNCA_chamadas": ["handoff_to_cadastro", "calcular_orcamento", "consultar_horarios"],
+        "resposta_contains_question": true
       }
     },
     {
@@ -200,6 +202,28 @@
         "proxima_acao": "handoff",
         "dados_completos": true,
         "dados_persistidos_inclui": ["descricao_curta", "tamanho_cm", "local_corpo"]
+      }
+    },
+    {
+      "id": "TC-11",
+      "descricao": "2/3 OBR faltando local_corpo — agent DEVE perguntar (bug #2 smoke 09/05)",
+      "hipoteses": ["bug2-continuidade"],
+      "input": {
+        "tenant_id": "00000000-0000-0000-0000-000000000001",
+        "telefone": "+5511900000011",
+        "mensagens": [
+          { "role": "user", "content": "quero tatuar um leão de 20cm" }
+        ],
+        "estado_atual": "tattoo",
+        "dados_acumulados": {},
+        "historico": []
+      },
+      "expected": {
+        "proxima_acao": "pergunta",
+        "dados_completos": false,
+        "campos_faltando_inclui": ["local_corpo"],
+        "dados_persistidos_inclui": ["descricao_curta", "tamanho_cm"],
+        "resposta_contains_question": true
       }
     }
   ]
