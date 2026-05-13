@@ -213,3 +213,77 @@ test('Tattoo invariant: pergunta com payload_portfolio null -> valid (passthroug
   const r = validateTattooOutputInvariant(out, { portfolio_disponivel: false });
   assert.equal(r.valid, true);
 });
+
+// — Sub-4.1 Bug #2: invariant continuidade pergunta —————————————————————
+// Camada 2 (safety net): se modelo emite proxima_acao='pergunta' com
+// campos_faltando nao-vazio mas resposta_cliente sem '?', valida invalido.
+// Defesa preventiva — bug observado em smoke 09/05 nao reproduz determinist.
+// em eval (10/10 runs, hipotese: refator 19d9c17 history whitelist resolveu),
+// mas validator pega escapes futuros.
+test('validator rejeita pergunta com campos_faltando mas sem ? na resposta_cliente', () => {
+  const invalid = {
+    resposta_cliente: 'Leão de 20cm fica imponente!',
+    dados_persistidos: { descricao_curta: 'leão', tamanho_cm: 20 },
+    dados_completos: false,
+    campos_faltando: ['local_corpo'],
+    campos_conflitantes: [],
+    proxima_acao: 'pergunta',
+    payload_portfolio: null,
+  };
+  // Schema cru aceita (sem refine):
+  assert.equal(TattooOutputSchema.safeParse(invalid).success, true);
+  // Mas validator pos-parse rejeita:
+  const r = validateTattooOutputInvariant(invalid);
+  assert.equal(r.valid, false);
+  assert.match(r.reason, /pergunta com campos_faltando.*resposta sem/);
+});
+
+test('validator aceita pergunta com campos_faltando + ? na resposta_cliente', () => {
+  const valid = {
+    resposta_cliente: 'Leão de 20cm fica imponente! Onde tu quer fazer?',
+    dados_persistidos: { descricao_curta: 'leão', tamanho_cm: 20 },
+    dados_completos: false,
+    campos_faltando: ['local_corpo'],
+    campos_conflitantes: [],
+    proxima_acao: 'pergunta',
+    payload_portfolio: null,
+  };
+  assert.equal(validateTattooOutputInvariant(valid).valid, true);
+});
+
+test('validator aceita pergunta com campos_faltando=[] e resposta sem ? (conflito/clarificação)', () => {
+  const valid = {
+    resposta_cliente: 'Tu disse pequena mas 25cm já é bem grande, me confirma.',
+    dados_persistidos: { descricao_curta: 'rosa', local_corpo: 'antebraco' },
+    dados_completos: false,
+    campos_faltando: [],
+    campos_conflitantes: ['tamanho_cm'],
+    proxima_acao: 'pergunta',
+    payload_portfolio: null,
+  };
+  assert.equal(validateTattooOutputInvariant(valid).valid, true);
+});
+
+test('validator: regression — extensão pergunta NÃO quebra invariants handoff/enviar_portfolio', () => {
+  const validHandoff = {
+    resposta_cliente: 'Fechado, já anotei tudo',
+    dados_persistidos: { descricao_curta: 'rosa', tamanho_cm: 8, local_corpo: 'antebraco' },
+    dados_completos: true,
+    campos_faltando: [],
+    campos_conflitantes: [],
+    proxima_acao: 'handoff',
+    payload_portfolio: null,
+  };
+  assert.equal(validateTattooOutputInvariant(validHandoff).valid, true);
+
+  const validPortfolio = {
+    resposta_cliente: 'Show, te mando alguns trabalhos!',
+    dados_persistidos: {},
+    dados_completos: false,
+    campos_faltando: [],
+    campos_conflitantes: [],
+    proxima_acao: 'enviar_portfolio',
+    payload_portfolio: { estilo: 'fineline', max: null, motivo: null },
+  };
+  assert.equal(validateTattooOutputInvariant(validPortfolio, { portfolio_disponivel: true }).valid, true);
+});
