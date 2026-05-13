@@ -29,3 +29,4 @@ web/coverage/
 web/.env*.local
 web/*.tsbuildinfo
 supabase/.temp/
+.smoke-evidence/
