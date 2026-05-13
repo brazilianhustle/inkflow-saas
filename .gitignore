@@ -28,3 +28,4 @@ web/.vercel/
 web/coverage/
 web/.env*.local
 web/*.tsbuildinfo
+supabase/.temp/
