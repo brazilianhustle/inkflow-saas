@@ -8,6 +8,10 @@
 // Pure structured-output: SEM tools. Estado sai via proxima_acao + dados via
 // dados_persistidos no output JSON. Validacao idade fica em route.js
 // (helper enforceMenorIdade) — agent NAO calcula idade.
+//
+// Manifesto canônico do tatuador-bot: docs/manifesto-tatuador-bot.md
+// 6 princípios cravados em 2026-05-13 (sessão training Pilar 1).
+// Refator que viole princípio = revisão obrigatória.
 export function decisaoCadastro(tenant) {
   return `# §4 DECISAO E REGRAS
 
