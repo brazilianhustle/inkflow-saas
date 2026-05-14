@@ -32,7 +32,7 @@ const CONVERSA_COMPLETA = {
   tenant_id: TENANT_ID,
   estado_agente: 'coletando_cadastro',
   orcid: null,
-  dados_coletados: { descricao_tattoo: 'rosa', tamanho_cm: 10, local_corpo: 'antebraço' },
+  dados_coletados: { descricao_tattoo: 'rosa', tamanho_cm: 10, local_corpo: 'antebraço', altura_cm: 165, estilo: 'realismo' },
   dados_cadastro: { nome: 'Maria Silva', data_nascimento: '1995-03-12', idade_anos: 31 },
   tenants: { id: TENANT_ID, nome_estudio: 'Hustle Ink', tatuador_telegram_chat_id: TG_CHAT_ID, tatuador_telegram_username: 'leo' },
 };
@@ -136,6 +136,77 @@ test('enviar-orcamento: idempotência via orcid existente', async () => {
     assert.equal(body.orcid, 'orc_abc123');
     assert.equal(body.idempotente, true);
     assert.equal(telegramCalls, 0, 'Telegram NÃO deve ser chamado em idempotência');
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+// ── Refator 4 OBR (altura_cm + estilo) ──────────────────────────────────────
+
+test('aceita payload com 4 OBR (altura_cm + estilo) — tamanho_cm null OK', async () => {
+  const origFetch = globalThis.fetch;
+  // Conversa com novos 4 OBR: descricao_curta + local_corpo + altura_cm + estilo; tamanho_cm null
+  const convNova4OBR = {
+    ...CONVERSA_COMPLETA,
+    dados_coletados: {
+      descricao_curta: 'leão fineline',
+      local_corpo: 'antebraço',
+      altura_cm: 170,
+      estilo: 'fineline',
+      tamanho_cm: null,
+    },
+  };
+  globalThis.fetch = async (url, opts) => {
+    if (url.includes('/rest/v1/conversas?tenant_id=eq')) {
+      return new Response(JSON.stringify([convNova4OBR]), { status: 200 });
+    }
+    if (url.includes('telegram.org/bot') && url.includes('sendMessage')) {
+      return new Response(JSON.stringify({ ok: true, result: { message_id: 99 } }), { status: 200 });
+    }
+    if (opts?.method === 'PATCH') return new Response(null, { status: 204 });
+    if (url.includes('tool_calls_log')) return new Response('', { status: 201 });
+    return new Response(JSON.stringify([]), { status: 200 });
+  };
+  try {
+    const ctx = buildContext({ tenant_id: TENANT_ID, telefone: TELEFONE });
+    const res = await onRequest(ctx);
+    const body = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(body.ok, true);
+    assert.match(body.orcid, /^orc_/);
+    assert.equal(body.estado_agente, 'aguardando_tatuador');
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test('rejeita payload sem altura_cm — campos-faltando inclui altura_cm', async () => {
+  const origFetch = globalThis.fetch;
+  // Conversa com estilo + local + descricao mas sem altura_cm (null)
+  const convSemAltura = {
+    ...CONVERSA_COMPLETA,
+    dados_coletados: {
+      descricao_curta: 'leão',
+      local_corpo: 'antebraço',
+      altura_cm: null,
+      estilo: 'fineline',
+      tamanho_cm: 15,
+    },
+  };
+  globalThis.fetch = async (url, opts) => {
+    if (url.includes('/rest/v1/conversas?tenant_id=eq')) {
+      return new Response(JSON.stringify([convSemAltura]), { status: 200 });
+    }
+    if (url.includes('tool_calls_log')) return new Response('', { status: 201 });
+    return new Response(JSON.stringify([]), { status: 200 });
+  };
+  try {
+    const ctx = buildContext({ tenant_id: TENANT_ID, telefone: TELEFONE });
+    const res = await onRequest(ctx);
+    const body = await res.json();
+    assert.equal(res.status, 400);
+    assert.equal(body.error, 'campos-faltando');
+    assert.ok(body.faltando?.includes('altura_cm'), `esperava altura_cm em faltando, recebeu: ${JSON.stringify(body.faltando)}`);
   } finally {
     globalThis.fetch = origFetch;
   }

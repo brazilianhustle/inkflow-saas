@@ -70,9 +70,10 @@ function montarTextoOrcamento(orcid, conv) {
   linhas.push('');
   linhas.push('🎨 *Tattoo*');
   linhas.push(`   • ${desc}`);
-  linhas.push(`   • ${dat.tamanho_cm}cm`);
+  linhas.push(`   • altura: ${dat.altura_cm}cm`);
+  if (dat.tamanho_cm) linhas.push(`   • tamanho aproximado: ${dat.tamanho_cm}cm`);
   linhas.push(`   • ${local}`);
-  if (estilo) linhas.push(`   • estilo: ${estilo}`);
+  linhas.push(`   • estilo: ${estilo}`);
   linhas.push('');
   linhas.push(`📸 Fotos: ${fotos} do local, ${refs} referência${refs === 1 ? '' : 's'}`);
 
@@ -148,8 +149,10 @@ async function handle({ env, input }) {
   const cad = conv.dados_cadastro || {};
   const faltando = [];
   if (!dat.descricao_tattoo && !dat.descricao_curta) faltando.push('descricao_tattoo');
-  if (!dat.tamanho_cm) faltando.push('tamanho_cm');
   if (!dat.local_corpo) faltando.push('local_corpo');
+  if (dat.altura_cm == null) faltando.push('altura_cm');
+  if (!dat.estilo) faltando.push('estilo');
+  // tamanho_cm não-bloqueante (refator manifesto 2026-05-13 — opcional)
   if (!cad.nome) faltando.push('nome');
   if (!cad.data_nascimento) faltando.push('data_nascimento');
   if (faltando.length > 0) {
