@@ -211,3 +211,34 @@ test('rejeita payload sem altura_cm — campos-faltando inclui altura_cm', async
     globalThis.fetch = origFetch;
   }
 });
+
+test('rejeita payload sem estilo — campos-faltando inclui estilo', async () => {
+  const origFetch = globalThis.fetch;
+  // Conversa com altura + local + descricao mas sem estilo (OBR novo)
+  const convSemEstilo = {
+    ...CONVERSA_COMPLETA,
+    dados_coletados: {
+      descricao_curta: 'leão',
+      local_corpo: 'antebraço',
+      altura_cm: 165,
+      tamanho_cm: 15,
+    },
+  };
+  globalThis.fetch = async (url) => {
+    if (url.includes('/rest/v1/conversas?tenant_id=eq')) {
+      return new Response(JSON.stringify([convSemEstilo]), { status: 200 });
+    }
+    if (url.includes('tool_calls_log')) return new Response('', { status: 201 });
+    return new Response(JSON.stringify([]), { status: 200 });
+  };
+  try {
+    const ctx = buildContext({ tenant_id: TENANT_ID, telefone: TELEFONE });
+    const res = await onRequest(ctx);
+    const body = await res.json();
+    assert.equal(res.status, 400);
+    assert.equal(body.error, 'campos-faltando');
+    assert.ok(body.faltando?.includes('estilo'), `esperava estilo em faltando, recebeu: ${JSON.stringify(body.faltando)}`);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
