@@ -50,17 +50,18 @@ export function fewShotBase(tenant) {
   linhas.push('```');
   linhas.push('');
 
-  // Exemplo 4: cliente nao sabe tamanho — bot NAO sugere valor (Manifesto P1)
-  linhas.push('## Exemplo 4 — Cliente nao sabe tamanho');
+  // Exemplo 4: cliente nao sabe tamanho, fallback altura
+  linhas.push('## Exemplo 4 — Cliente nao sabe tamanho, fallback por altura');
+  linhas.push('```');
+  linhas.push('CLIENTE: quero um leao no peitoral');
+  linhas.push('AGENTE: Massa! Tem ideia do tamanho?');
+  linhas.push('CLIENTE: nao faço ideia, voce que sabe');
+  linhas.push('AGENTE: Tranquilo. Manda tua altura (tipo 1.70m) que com a foto do peitoral consigo calcular a proporcao certinha');
+  linhas.push('CLIENTE: 1.78m');
+  linhas.push('AGENTE: Pelo peitoral em proporcao com 1.78m, leao em torno de 18cm fica bem encaixado');
   linhas.push('');
-  linhas.push('CLIENTE: queria um leao no peitoral mas nao tenho ideia do tamanho');
-  linhas.push('AGENTE: Massa! Leao no peitoral fica imponente, da pra trabalhar bons detalhes');
-  linhas.push('');
-  linhas.push('AGENTE: Pra eu seguir, qual estilo tu prefere? (realismo, blackwork, fineline, tradicional, etc) E qual a tua altura?');
-  linhas.push('CLIENTE: realismo, tenho 1.78m');
-  linhas.push('AGENTE: Show, realismo pra um leao fica top, pega bem o detalhe. Anotei: leao realismo no peitoral, altura 178cm.');
-  linhas.push('');
-  linhas.push('# (proxima_acao=handoff implicitamente proximo turno apos pedir foto local — nao sugere tamanho)');
+  linhas.push('AGENTE: Pra eu liberar teu orcamento, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna em breve');
+  linhas.push('```');
   linhas.push('');
 
   // Exemplo 5: imagem com marcaçao de caneta indicando posicao/tamanho
@@ -77,15 +78,12 @@ export function fewShotBase(tenant) {
   linhas.push('```');
   linhas.push('');
 
-  // Exemplo 6: conflito — bot pede foto referência (Manifesto P1)
-  linhas.push('## Exemplo 6 — Conflito (cliente diz pequena + 25cm)');
-  linhas.push('');
+  // Exemplo 6: conflito de dados (R9)
+  linhas.push('## Exemplo 6 — Conflito de dados (R9)');
+  linhas.push('```');
   linhas.push('CLIENTE: queria uma rosa pequena de 25cm no antebraco');
-  linhas.push('AGENTE: Tu tem alguma foto referencia desse desenho que tu quer? Ajuda muito o tatuador entender a ideia');
-  linhas.push('CLIENTE: nao tenho foto');
-  linhas.push('AGENTE: Sem problema! E qual estilo tu prefere — fineline, blackwork, traditional, realismo?');
-  linhas.push('');
-  linhas.push('# (campos_conflitantes=["tamanho_cm"], proxima_acao=pergunta — NAO confronta, NAO sugere range)');
+  linhas.push('AGENTE: Tu disse pequena mas 25cm ja e tatuagem bem grande — me confirma se e 25cm mesmo ou tu quer algo bem menor (uns 5-8cm)?');
+  linhas.push('```');
   linhas.push('');
 
   // Exemplo 7: cliente da tudo de uma vez (one-shot ate handoff)
@@ -105,30 +103,6 @@ export function fewShotBase(tenant) {
   linhas.push('AGENTE: Bacana! "Pequena" e relativo demais pra orcar — me passa em cm aproximado (tipo 5, 8, 12cm)? E em qual lugar do corpo tu quer?');
   linhas.push('```');
   linhas.push('# (proxima_acao=pergunta, dados_completos=false, NAO chama handoff_to_cadastro porque tamanho_cm e local_corpo ainda faltam)');
-
-  // Exemplo 9 NOVO (refator 2026-05-13): modo consultor (cliente indeciso)
-  linhas.push('## Exemplo 9 — Modo CONSULTOR (cliente "nao sei o que tatuar")');
-  linhas.push('');
-  linhas.push('CLIENTE: queria fazer uma tattoo mas nao sei o que ainda');
-  linhas.push('AGENTE: Boa! Vou te ajudar a chegar la. Tem alguma ideia de qual parte do corpo tu quer? E em termos de estilo, tu prefere algo bem delicado tipo fineline, mais sombreado tipo realismo, mais grafico tipo blackwork, ou tradicional?');
-  linhas.push('CLIENTE: queria no antebraco, gosto de fineline');
-  linhas.push('AGENTE: Show! Fineline no antebraco fica delicado e bem visivel. Aproveita pra dar uma olhada no Pinterest ou Instagram com "fineline antebraco" pra ti achar referencias do que curtes. Pode me mandar quando encontrar');
-  linhas.push('');
-  linhas.push('# (modo consultor — local_corpo + estilo coletados, sugere Pinterest, aguarda referencia)');
-  linhas.push('');
-
-  // Exemplo 10 NOVO (refator 2026-05-13): foto pedida 1x antes de handoff, cliente nao tem
-  linhas.push('## Exemplo 10 — Foto pedida antes de handoff (cliente "nao tenho")');
-  linhas.push('');
-  linhas.push('# Contexto: 4 OBR completos (descricao_curta=leao fineline, local_corpo=antebraco, altura_cm=170, estilo=fineline)');
-  linhas.push('AGENTE: Fechou, e consegue mandar tambem a foto do local? E importante pro tatuador ter nocao do espaco e conseguir passar o valor certinho');
-  linhas.push('CLIENTE: nao tenho foto agora');
-  linhas.push('AGENTE: Leao fineline no antebraco fica delicado e bem visivel');
-  linhas.push('');
-  linhas.push('AGENTE: Pra eu liberar teu orcamento personalizado, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna em breve');
-  linhas.push('');
-  linhas.push('# (proxima_acao=handoff — foto_local=null aceita, handoff segue)');
-  linhas.push('');
 
   return linhas.join('\n');
 }
