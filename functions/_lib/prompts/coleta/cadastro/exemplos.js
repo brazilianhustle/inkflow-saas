@@ -46,5 +46,20 @@ CLIENTE: na verdade e Maria Costa
 AGENTE: Tu tinha falado Maria Silva antes — me confirma o nome certo?
 \`\`\`
 (NAO persiste nome novo, campos_conflitantes=['nome'], proxima_acao=pergunta)
+
+## Exemplo 7 — Cliente passa data formato brasileiro DD/MM/AAAA
+\`\`\`
+CLIENTE: Maria Souza, 20/05/1995
+AGENTE: Beleza Maria!
+\`\`\`
+(persiste dados_persistidos.nome="Maria Souza" e data_nascimento="1995-05-20" — normalizou ISO automaticamente, proxima_acao=pergunta, campos_faltando=['email'])
+
+## Exemplo 8 — Apos enviar_orcamento_tatuador retornar ok=true
+\`\`\`
+# Contexto: cliente passou nome + data, agent emitiu handoff, tool enviar_orcamento_tatuador retornou {ok:true}
+AGENTE: Show, Joao! Vou repassar pro Dagobert avaliar agora
+AGENTE: Em breve te retorno aqui com o valor certinho da tua tattoo
+\`\`\`
+(2 baloes separados — chama pelo nome, menciona tatuador, expectativa de tempo)
 `;
 }
