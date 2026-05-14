@@ -1,0 +1,216 @@
+{
+  "scenarios": [
+    {
+      "id": "MAN-1-fineline-15cm",
+      "principio": "P1",
+      "context_dados": {},
+      "messages": [
+        {"role": "user", "content": "Quero tatuar um leão fineline de 15cm no antebraço"}
+      ],
+      "expect": {
+        "proxima_acao_in": ["pergunta", "handoff"],
+        "resposta_must_not_match": ["reduzir", "menor", "menores", "pequeno demais", "[0-9]+\\s*-\\s*[0-9]+\\s*cm"]
+      }
+    },
+    {
+      "id": "MAN-2-conflito-pede-foto",
+      "principio": "P1",
+      "context_dados": {},
+      "messages": [
+        {"role": "user", "content": "Queria uma rosa pequena de 25cm no antebraço"}
+      ],
+      "expect": {
+        "proxima_acao": "pergunta",
+        "campos_conflitantes_inclui": ["tamanho_cm"],
+        "resposta_must_match": ["foto", "referência|referencia|imagem"]
+      }
+    },
+    {
+      "id": "MAN-3-conflito-sem-foto-segue",
+      "principio": "P1",
+      "context_dados": {},
+      "messages": [
+        {"role": "user", "content": "Queria uma rosa pequena de 25cm no antebraço"},
+        {"role": "assistant", "content": "Tu tem alguma foto referência?"},
+        {"role": "user", "content": "Não tenho foto"}
+      ],
+      "expect": {
+        "proxima_acao": "pergunta",
+        "resposta_must_not_match": ["confirma se é 25cm", "5-8cm"]
+      }
+    },
+    {
+      "id": "MAN-4-4-OBR-handoff",
+      "principio": "P2",
+      "context_dados": {"descricao_curta": "leão", "local_corpo": "antebraço", "estilo": "fineline"},
+      "messages": [
+        {"role": "assistant", "content": "Qual sua altura?"},
+        {"role": "user", "content": "1.78m"}
+      ],
+      "expect": {
+        "proxima_acao_in": ["pergunta", "handoff"],
+        "dados_persistidos.altura_cm_in": [178, 1.78, 178.0]
+      }
+    },
+    {
+      "id": "MAN-5-falta-altura-pergunta",
+      "principio": "P2",
+      "context_dados": {"descricao_curta": "leão", "local_corpo": "antebraço", "estilo": "fineline"},
+      "messages": [
+        {"role": "user", "content": "Leão fineline no antebraço"}
+      ],
+      "expect": {
+        "proxima_acao": "pergunta",
+        "campos_faltando_inclui": ["altura_cm"]
+      }
+    },
+    {
+      "id": "MAN-6-foto-pedida-1x",
+      "principio": "P3",
+      "context_dados": {"descricao_curta": "leão", "local_corpo": "antebraço", "estilo": "fineline", "altura_cm": 178},
+      "messages": [
+        {"role": "user", "content": "1.78m"}
+      ],
+      "expect": {
+        "proxima_acao": "pergunta",
+        "resposta_must_match": ["foto", "espaço|espaco"]
+      }
+    },
+    {
+      "id": "MAN-7-foto-2x-negada-handoff",
+      "principio": "P3",
+      "context_dados": {"descricao_curta": "leão", "local_corpo": "antebraço", "estilo": "fineline", "altura_cm": 178},
+      "messages": [
+        {"role": "assistant", "content": "Consegue mandar foto do local?"},
+        {"role": "user", "content": "Não tenho"}
+      ],
+      "expect": {
+        "proxima_acao": "handoff",
+        "dados_persistidos.foto_local_in": [null, ""]
+      }
+    },
+    {
+      "id": "MAN-9-validacao-substantiva",
+      "principio": "P5",
+      "context_dados": {},
+      "messages": [
+        {"role": "user", "content": "Leão realismo"}
+      ],
+      "expect": {
+        "resposta_must_match": ["realismo|imponente|massa|top|detalhe"],
+        "resposta_must_not_match": ["^Anotei tudo", "^Show!?$", "^Beleza\\.$"]
+      }
+    },
+    {
+      "id": "MAN-10-modo-consultor",
+      "principio": "P6",
+      "context_dados": {},
+      "messages": [
+        {"role": "user", "content": "Queria fazer uma tatuagem mas não sei o que ainda"}
+      ],
+      "expect": {
+        "proxima_acao": "pergunta",
+        "resposta_must_match": ["estilo|fineline|realismo|blackwork|local|parte|corpo|Pinterest"]
+      }
+    },
+    {
+      "id": "MAN-11-consultor-volta-coletor",
+      "principio": "P6",
+      "context_dados": {"local_corpo": "antebraço", "estilo": "fineline"},
+      "messages": [
+        {"role": "assistant", "content": "Olha no Pinterest"},
+        {"role": "user", "content": "Achei: queria essa rosa estilo geométrico"}
+      ],
+      "expect": {
+        "proxima_acao": "pergunta",
+        "campos_faltando_inclui_subset_of": ["altura_cm", "estilo", "descricao_curta"]
+      }
+    },
+    {
+      "id": "MAN-12-multi-balao-handoff",
+      "principio": "multi-msg",
+      "context_dados": {"descricao_curta": "leão fineline", "local_corpo": "antebraço", "altura_cm": 178, "estilo": "fineline"},
+      "messages": [
+        {"role": "assistant", "content": "Foto do local?"},
+        {"role": "user", "content": "Sem foto"}
+      ],
+      "expect": {
+        "proxima_acao": "handoff",
+        "resposta_contains_double_newline": true
+      }
+    },
+    {
+      "id": "OBS3-resposta-com-nome-tatuador",
+      "principio": "OBS-3",
+      "agent": "cadastro",
+      "context_dados": {"nome": "João", "data_nascimento": "1990-03-15"},
+      "tenant_extra": {"tatuador_nome": "Dagobert"},
+      "messages": [
+        {"role": "system_tool", "content": "{\"ok\":true,\"orcid\":\"orc_test\"}"}
+      ],
+      "expect": {
+        "resposta_must_match": ["João|Joao", "Dagobert|tatuador", "em breve|logo|retorno"]
+      }
+    },
+    {
+      "id": "OBS7-1-data-BR-slash",
+      "principio": "OBS-7",
+      "agent": "cadastro",
+      "context_dados": {"nome": "Maria Souza"},
+      "messages": [
+        {"role": "user", "content": "20/05/1995"}
+      ],
+      "expect": {
+        "dados_persistidos.data_nascimento": "1995-05-20"
+      }
+    },
+    {
+      "id": "OBS7-2-data-BR-dash",
+      "principio": "OBS-7",
+      "agent": "cadastro",
+      "context_dados": {"nome": "João"},
+      "messages": [
+        {"role": "user", "content": "15-03-1990"}
+      ],
+      "expect": {
+        "dados_persistidos.data_nascimento": "1990-03-15"
+      }
+    },
+    {
+      "id": "OBS7-3-data-ja-ISO",
+      "principio": "OBS-7",
+      "agent": "cadastro",
+      "context_dados": {"nome": "Pedro"},
+      "messages": [
+        {"role": "user", "content": "1992-08-22"}
+      ],
+      "expect": {
+        "dados_persistidos.data_nascimento": "1992-08-22"
+      }
+    },
+    {
+      "id": "REGR-1-rosa-rapida-handoff",
+      "principio": "regression",
+      "context_dados": {},
+      "messages": [
+        {"role": "user", "content": "Fineline rosa 7cm no pulso direito, 1.65m de altura"}
+      ],
+      "expect": {
+        "proxima_acao_in": ["pergunta", "handoff"]
+      }
+    },
+    {
+      "id": "REGR-2-conflito-foto-segue",
+      "principio": "regression",
+      "context_dados": {},
+      "messages": [
+        {"role": "user", "content": "Rosa pequena de 25cm antebraço"},
+        {"role": "assistant", "content": "Tem foto referência?"},
+        {"role": "user", "content": "Não"}
+      ],
+      "expect": {
+        "proxima_acao": "pergunta"
+      }
+    }
+  ]
+}

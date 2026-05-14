@@ -187,16 +187,28 @@ export async function processMessage(env, msg, depsOverride = {}) {
       }),
     });
 
-    // Etapa 6.5: typing delay (UX — bot nao deve parecer robo instantaneo)
-    await deps.sleep(TYPING_DELAY_MS);
-
     // Etapa 7: Evolution outbound (text + media URLs)
-    const sendRes = await deps.evoSend(tenant, {
-      type: 'text', to: telefone, text: agentOut.resposta_cliente,
-    });
-    if (!sendRes.ok) {
-      // Throw — catch path patcha status=failed e notifica admin com a mensagem.
-      throw new Error(`evo sendText falhou: ${sendRes.error || 'unknown'} (tenant=${tenant.id})`);
+    // Multi-message split por \n\n (refator manifesto 2026-05-13).
+    // Balões curtos sequenciais são mais naturais no WhatsApp do que textão único.
+    const baloes = agentOut.resposta_cliente
+      .split(/\n\s*\n/)
+      .map(b => b.trim())
+      .filter(Boolean);
+
+    if (baloes.length === 0) {
+      throw new Error(`resposta_cliente vazia após split (tenant=${tenant.id})`);
+    }
+
+    for (let i = 0; i < baloes.length; i++) {
+      // Typing delay antes de cada balão (UX — bot nao deve parecer robo instantaneo).
+      await deps.sleep(TYPING_DELAY_MS);
+      const sendRes = await deps.evoSend(tenant, {
+        type: 'text', to: telefone, text: baloes[i],
+      });
+      if (!sendRes.ok) {
+        // Throw — catch path patcha status=failed e notifica admin com a mensagem.
+        throw new Error(`evo sendText falhou balão ${i + 1}/${baloes.length}: ${sendRes.error || 'unknown'} (tenant=${tenant.id})`);
+      }
     }
     if (Array.isArray(agentOut.urls_portfolio) && agentOut.urls_portfolio.length > 0) {
       for (const url of agentOut.urls_portfolio) {

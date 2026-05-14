@@ -300,7 +300,7 @@ test('12. typing delay aplicado antes do evoSend (UX: bot nao parece robo)', asy
     evoSend: evoSpy,
   });
   await processMessage({}, baseMsg(), deps);
-  assert.equal(sleepSpy.mock.callCount(), 1, 'sleep chamado 1x');
+  assert.equal(sleepSpy.mock.callCount(), 1, 'sleep chamado 1x (resposta sem \\n\\n → 1 balão)');
   assert.equal(sleepSpy.mock.calls[0].arguments[0], TYPING_DELAY_MS, `sleep com TYPING_DELAY_MS (${TYPING_DELAY_MS})`);
   assert.equal(order[0]?.event, 'sleep', 'sleep ANTES do evoSend');
   assert.equal(order[1]?.event, 'evoSend', 'evoSend DEPOIS do sleep');
@@ -361,4 +361,105 @@ test('11. agent_usado=cadastro merge dados_cadastro — Task 9 implementa', asyn
   await processMessage({}, baseMsg(), deps);
   assert.deepEqual(conversaPatch.dados_cadastro, { nome: 'Joao', email: 'a@b.com' });
   assert.deepEqual(conversaPatch.dados_coletados, { ideia: 'rosa' });
+});
+
+test('15. multi-message: resposta com \\n\\n envia 2 balões com typing delay antes de cada', async () => {
+  let evoCalls = [];
+  let sleepCalls = 0;
+  const deps = mockDeps({
+    supaFetch: async (path, init) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=') && !init?.method) {
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_cadastro', dados_coletados: { descricao_curta: 'leão', altura_cm: 170, estilo: 'fineline', local_corpo: 'antebraço' }, dados_cadastro: {} }]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    },
+    runAgent: async () => ({
+      ok: true,
+      resposta_cliente: 'Massa, fineline fica top!\n\nPra liberar teu orçamento, me passa nome completo e data de nascimento.',
+      estado_novo: 'cadastro',
+      dados_persistidos: { descricao_curta: 'leão', altura_cm: 170, estilo: 'fineline', local_corpo: 'antebraço' },
+      proxima_acao: 'handoff',
+      agent_usado: 'tattoo',
+    }),
+    evoSend: async (_tenant, payload) => { evoCalls.push(payload); return { ok: true }; },
+    sleep: async () => { sleepCalls += 1; },
+  });
+  await processMessage({}, baseMsg(), deps);
+  assert.equal(evoCalls.length, 2, 'deve enviar 2 mensagens separadas');
+  assert.equal(evoCalls[0].text, 'Massa, fineline fica top!');
+  assert.equal(evoCalls[1].text, 'Pra liberar teu orçamento, me passa nome completo e data de nascimento.');
+  assert.equal(sleepCalls, 2, 'deve chamar sleep exatamente 2x (1 por balão)');
+});
+
+test('16. multi-message: resposta sem \\n\\n envia 1 mensagem (comportamento atual preservado)', async () => {
+  let evoCalls = [];
+  const deps = mockDeps({
+    supaFetch: async (path, init) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=') && !init?.method) {
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    },
+    runAgent: async () => ({
+      ok: true,
+      resposta_cliente: 'Massa, fineline fica top!',
+      estado_novo: 'tattoo',
+      dados_persistidos: {},
+      proxima_acao: 'pergunta',
+      agent_usado: 'tattoo',
+    }),
+    evoSend: async (_tenant, payload) => { evoCalls.push(payload); return { ok: true }; },
+  });
+  await processMessage({}, baseMsg(), deps);
+  assert.equal(evoCalls.length, 1);
+  assert.equal(evoCalls[0].text, 'Massa, fineline fica top!');
+});
+
+test('17. multi-message: \\n\\n\\n\\n (3+ newlines) trata como 1 separador (filter Boolean)', async () => {
+  let evoCalls = [];
+  const deps = mockDeps({
+    supaFetch: async (path, init) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=') && !init?.method) {
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    },
+    runAgent: async () => ({
+      ok: true,
+      resposta_cliente: 'Primeira frase.\n\n\n\nSegunda frase.',
+      estado_novo: 'tattoo',
+      dados_persistidos: {},
+      proxima_acao: 'pergunta',
+      agent_usado: 'tattoo',
+    }),
+    evoSend: async (_tenant, payload) => { evoCalls.push(payload); return { ok: true }; },
+  });
+  await processMessage({}, baseMsg(), deps);
+  assert.equal(evoCalls.length, 2, 'deve enviar 2 balões (newlines extras tratadas como 1 separador)');
+});
+
+test('18. multi-message: resposta_cliente só whitespace → guard throw → status=failed', async () => {
+  let lastPatch = null;
+  let evoCalls = 0;
+  const deps = mockDeps({
+    supaFetch: async (path, init) => {
+      if (path.startsWith('/rest/v1/conversas?tenant_id=') && !init?.method) {
+        return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
+      }
+      if (init?.method === 'PATCH') lastPatch = JSON.parse(init.body);
+      return new Response('[]', { status: 200 });
+    },
+    runAgent: async () => ({
+      ok: true,
+      resposta_cliente: '   \n\n   ',
+      estado_novo: 'tattoo',
+      dados_persistidos: {},
+      proxima_acao: 'pergunta',
+      agent_usado: 'tattoo',
+    }),
+    evoSend: async () => { evoCalls += 1; return { ok: true }; },
+  });
+  await processMessage({}, baseMsg(), deps);
+  assert.equal(evoCalls, 0, 'resposta vazia após split não envia nenhum balão');
+  assert.equal(lastPatch?.status, 'failed', 'guard throw é capturado → status=failed');
 });

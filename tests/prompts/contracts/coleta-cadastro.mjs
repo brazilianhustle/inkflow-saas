@@ -4,7 +4,8 @@
 // - menciona os 2 OBR + 1 OPC com naming alinhado ao schema (nome, data_nascimento, email);
 // - usa estado via structured output (dados_persistidos, proxima_acao);
 // - seta email_recusado quando cliente opt-out;
-// - NAO menciona tools removidas (dados_coletados, enviar_orcamento_tatuador);
+// - menciona enviar_orcamento_tatuador no §4.6 (OBS-3: comunicar proximo passo pos-handoff);
+// - NAO menciona tools removidas (dados_coletados);
 // - NAO menciona tools fantasma legacy (acionar_handoff, calcular_orcamento, etc);
 // - NAO menciona tools de agendamento de outras fases.
 export const CONTRACT_COLETA_CADASTRO = {
@@ -19,15 +20,15 @@ export const CONTRACT_COLETA_CADASTRO = {
     'dados_persistidos',
     'proxima_acao',
     'email_recusado',
+    'enviar_orcamento_tatuador',
   ],
   must_not_contain: [
     // Ancoras v1 removidas no rewrite v2.
     'CHECKLIST',
     'REGRAS INVIOLAVEIS',
     'FLUXO',
-    // Tools removidas (pure structured-output).
+    // Tools removidas (pure structured-output — exceto enviar_orcamento_tatuador que aparece em §4.6).
     'dados_coletados',
-    'enviar_orcamento_tatuador',
     // Tools fantasma legacy (nunca existiram como tool real).
     'acionar_handoff',
     'calcular_orcamento',

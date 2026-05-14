@@ -9,7 +9,7 @@
 //
 // Pre-condicoes (validadas):
 // - tenant tem tatuador_telegram_chat_id setado (senao 400)
-// - conversa tem 3 OBR de tattoo (descricao, tamanho, local) populados
+// - conversa tem 4 OBR de tattoo (descricao, local, altura_cm, estilo) populados
 // - conversa tem 2 OBR de cadastro (nome, data_nascimento) populados
 //
 // Resposta sucesso:
@@ -56,7 +56,7 @@ function montarTextoOrcamento(orcid, conv) {
   const nome = escapeMarkdown(cad.nome || '?');
   const desc = escapeMarkdown(dat.descricao_tattoo || dat.descricao_curta || '?');
   const local = escapeMarkdown(dat.local_corpo || '?');
-  const estilo = dat.estilo ? escapeMarkdown(dat.estilo) : null;
+  const estilo = escapeMarkdown(dat.estilo);
   const fotos = dat.foto_local ? 1 : 0;
   const refs = Array.isArray(dat.refs_imagens) ? dat.refs_imagens.length : 0;
 
@@ -70,7 +70,8 @@ function montarTextoOrcamento(orcid, conv) {
   linhas.push('');
   linhas.push('🎨 *Tattoo*');
   linhas.push(`   • ${desc}`);
-  linhas.push(`   • ${dat.tamanho_cm}cm`);
+  linhas.push(`   • altura: ${dat.altura_cm}cm`);
+  if (dat.tamanho_cm) linhas.push(`   • tamanho aproximado: ${dat.tamanho_cm}cm`);
   linhas.push(`   • ${local}`);
   if (estilo) linhas.push(`   • estilo: ${estilo}`);
   linhas.push('');
@@ -143,13 +144,15 @@ async function handle({ env, input }) {
     };
   }
 
-  // Valida pre-condicoes (3 OBR tattoo + 2 OBR cadastro)
+  // Valida pre-condicoes (4 OBR tattoo + 2 OBR cadastro)
   const dat = conv.dados_coletados || {};
   const cad = conv.dados_cadastro || {};
   const faltando = [];
   if (!dat.descricao_tattoo && !dat.descricao_curta) faltando.push('descricao_tattoo');
-  if (!dat.tamanho_cm) faltando.push('tamanho_cm');
   if (!dat.local_corpo) faltando.push('local_corpo');
+  if (dat.altura_cm == null) faltando.push('altura_cm');
+  if (!dat.estilo) faltando.push('estilo');
+  // tamanho_cm não-bloqueante (refator manifesto 2026-05-13 — opcional)
   if (!cad.nome) faltando.push('nome');
   if (!cad.data_nascimento) faltando.push('data_nascimento');
   if (faltando.length > 0) {

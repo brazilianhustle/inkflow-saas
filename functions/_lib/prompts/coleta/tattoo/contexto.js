@@ -33,14 +33,21 @@ export function contextoTattoo(tenant, conversa, clientContext) {
   }
   linhas.push('');
 
-  // Dados ja coletados — usar mesmas chaves dos OBR (descricao_curta, tamanho_cm, local_corpo)
-  // pra match 1:1 com a tabela §4 e schema TattooOutputSchema.
+  // Dados ja coletados — refator manifesto 2026-05-13 — 4 OBR + status foto
   const dadosLinhas = [];
   if (dados.descricao_curta) dadosLinhas.push(`- descricao_curta: ${dados.descricao_curta}`);
-  if (dados.tamanho_cm) dadosLinhas.push(`- tamanho_cm: ${dados.tamanho_cm}cm`);
-  if (dados.local_corpo) dadosLinhas.push(`- local_corpo: ${dados.local_corpo}`);
-  if (dados.estilo) dadosLinhas.push(`- estilo: ${dados.estilo}`);
-  if (dados.foto_local) dadosLinhas.push(`- foto_local: ${dados.foto_local}`);
+  if (dados.local_corpo)    dadosLinhas.push(`- local_corpo: ${dados.local_corpo}`);
+  if (dados.altura_cm != null) dadosLinhas.push(`- altura_cm (cliente): ${dados.altura_cm}cm`);
+  if (dados.estilo)         dadosLinhas.push(`- estilo: ${dados.estilo}`);
+  if (dados.tamanho_cm)     dadosLinhas.push(`- tamanho_cm (opcional): ${dados.tamanho_cm}cm`);
+  if (dados.foto_local)     dadosLinhas.push(`- foto_local: presente`);
+
+  // Status foto pedida ate 2x (refator manifesto P3)
+  const tentativasFoto = conversa?.estado_extra?.tentativas_foto_local || 0;
+  if (tentativasFoto > 0 && !dados.foto_local) {
+    dadosLinhas.push(`- foto_local: pedida ${tentativasFoto}x sem resposta`);
+  }
+
   if (Array.isArray(dados.refs_imagens) && dados.refs_imagens.length) {
     dadosLinhas.push(`- refs_imagens: ${dados.refs_imagens.length} foto(s) recebida(s)`);
   }

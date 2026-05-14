@@ -1,4 +1,6 @@
 // ── §4 REGRAS INVIOLAVEIS — modo Coleta v2, fase CADASTRO ──────────────────
+//
+// Manifesto canônico do tatuador-bot: docs/manifesto-tatuador-bot.md
 export function regras(tenant) {
   const linhas = ['# §4 REGRAS INVIOLAVEIS'];
 

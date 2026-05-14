@@ -1,4 +1,6 @@
 // ── §4 REGRAS INVIOLAVEIS — modo Coleta v2, fase TATTOO ────────────────────
+//
+// Manifesto canônico do tatuador-bot: docs/manifesto-tatuador-bot.md
 // Defesa em profundidade contra vazamento de valor monetario, contaminacao
 // via FAQ/few-shots custom do tenant, e desvios do escopo da fase.
 import { GATILHOS_DEFAULT, quoteList } from '../../_shared/helpers.js';
