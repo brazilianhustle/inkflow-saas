@@ -200,7 +200,7 @@ export async function processMessage(env, msg, depsOverride = {}) {
     }
 
     for (let i = 0; i < baloes.length; i++) {
-      // Etapa 6.5 (agora por balão): typing delay antes de cada bolha (UX — bot nao deve parecer robo instantaneo)
+      // Typing delay antes de cada balão (UX — bot nao deve parecer robo instantaneo).
       await deps.sleep(TYPING_DELAY_MS);
       const sendRes = await deps.evoSend(tenant, {
         type: 'text', to: telefone, text: baloes[i],
