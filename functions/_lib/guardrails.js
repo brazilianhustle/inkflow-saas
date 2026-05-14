@@ -1,8 +1,8 @@
 // ── InkFlow — Guardrails compartilhados ──────────────────────────────────────
 // Lógica de segurança/invariantes usada por:
 //   - /api/tools/simular-conversa (testador + evals)
-//   - /api/tools/guardrails/pre   (chamado pelo n8n antes do agente)
-//   - /api/tools/guardrails/post  (chamado pelo n8n depois do agente)
+//   - /api/tools/guardrails/pre   (usado pelo pipeline code-first antes do agente)
+//   - /api/tools/guardrails/post  (usado pelo pipeline code-first depois do agente)
 //
 // Padrão: prompt cuida do TOM, código cuida dos INVARIANTES.
 
@@ -216,8 +216,8 @@ export function buildSafePriceReply(toolResult) {
 
 // Pré-LLM: chama ANTES de montar o prompt + enviar pro agente.
 // Retorna { bypass, reply?, guardrail?, nudge? }
-//   bypass=true → n8n deve pular o agente e mandar `reply` direto pro cliente
-//   bypass=false → n8n segue normal; se `nudge` vier preenchido, adicionar no
+//   bypass=true → o caller deve pular o agente e mandar `reply` direto pro cliente
+//   bypass=false → o caller segue normal; se `nudge` vier preenchido, adicionar no
 //                  systemMessage do agente (ex: ALERTA GUARDRAIL: ...)
 export function runPreGuardrails({ messages, userMsg }) {
   const lastUserMsg = userMsg ?? [...(messages || [])].reverse().find(m => m.role === 'user')?.content;

@@ -3,7 +3,7 @@
 // Headers: X-Inkflow-Tool-Secret
 // Body: { tenant_id, telefone, motivo }
 // Marca conversa como handoff e notifica o tatuador via WhatsApp central.
-// O workflow n8n deve checar conversas.estado antes de responder — se estiver
+// O pipeline code-first checa conversas.estado antes de responder — se estiver
 // em 'handoff' ou 'confirmado', não aciona o agente.
 
 import { withTool, supaFetch } from './_tool-helpers.js';
