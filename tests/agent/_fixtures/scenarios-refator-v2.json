@@ -123,7 +123,7 @@
       ],
       "expect": {
         "proxima_acao": "pergunta",
-        "campos_faltando_inclui_subset_of": ["altura_cm", "estilo", "descricao_curta", "local_corpo"]
+        "campos_faltando_inclui_subset_of": ["altura_cm", "estilo", "descricao_curta"]
       }
     },
     {
