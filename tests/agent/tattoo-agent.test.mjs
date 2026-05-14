@@ -56,7 +56,11 @@ test('buildTattooAgent prompt inclui invariante handoff (R7)', () => {
   });
   // v2: handoff sai via proxima_acao no output (sem tool). R7 declara invariante.
   assert.match(agent.instructions, /proxima_acao='handoff'/);
-  assert.match(agent.instructions, /dados_completos/);
+  // Refator 4 OBR (2026-05-13): dados_completos removido do prompt — R7 agora
+  // declara invariante pelos 4 OBR explicitamente (descricao_curta, local_corpo,
+  // altura_cm, estilo). Verifica que o conjunto 4 OBR está declarado no R7.
+  assert.match(agent.instructions, /altura_cm/);
+  assert.match(agent.instructions, /estilo/);
 });
 
 test('TattooOutputSchema aceita output valido (handoff)', () => {
