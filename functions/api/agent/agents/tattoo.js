@@ -33,9 +33,10 @@ export const TattooOutputSchema = z.object({
   // `.optional()` sozinho falha com "uses .optional() without .nullable()".
   dados_persistidos: z.object({
     estilo: z.string().nullable().optional(),
-    // tamanho_cm/altura_cm: paridade com validacao server-side (dados-coletados.js:235 rejeita <=0 ou >200).
+    // tamanho_cm: paridade com validacao server-side (dados-coletados.js:235 rejeita <=0 ou >200).
+    // altura_cm: max(250) = altura corporal humana max razoavel (refator 2026-05-13).
     tamanho_cm: z.number().positive().max(200).nullable().optional(),
-    altura_cm: z.number().positive().max(200).nullable().optional(),
+    altura_cm: z.number().positive().max(250).nullable().optional(),
     local_corpo: z.string().nullable().optional(),
     cor_preferencia: z.string().nullable().optional(),
     descricao_curta: z.string().nullable().optional(),
@@ -64,9 +65,20 @@ export function validateTattooOutputInvariant(out, clientContext = {}) {
   if (!out || typeof out !== 'object') {
     return { valid: false, reason: 'output ausente ou nao-objeto' };
   }
+  // Bloco handoff — 4 OBR completos (refator 2026-05-13 + manifesto tatuador-bot)
   if (out.proxima_acao === 'handoff') {
-    if (out.dados_completos !== true) {
-      return { valid: false, reason: 'handoff com dados_completos=false' };
+    const dat = out.dados_persistidos || {};
+    const obrFaltando = [];
+    if (!dat.descricao_curta?.trim()) obrFaltando.push('descricao_curta');
+    if (!dat.local_corpo?.trim())     obrFaltando.push('local_corpo');
+    if (!dat.estilo?.trim())          obrFaltando.push('estilo');
+    if (dat.altura_cm == null)        obrFaltando.push('altura_cm');
+    if (obrFaltando.length > 0) {
+      return {
+        valid: false,
+        reason: 'handoff-sem-OBR-completos',
+        details: `handoff bloqueado: OBR faltando=${obrFaltando.join(',')}`,
+      };
     }
     if (Array.isArray(out.campos_conflitantes) && out.campos_conflitantes.length > 0) {
       return { valid: false, reason: `handoff com campos_conflitantes nao-vazio: ${out.campos_conflitantes.join(',')}` };

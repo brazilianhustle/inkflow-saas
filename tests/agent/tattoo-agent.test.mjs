@@ -75,7 +75,9 @@ test('TattooOutputSchema aceita output valido (handoff)', () => {
 // Invariante handoff agora vive em validateTattooOutputInvariant (pos-parse)
 // porque .refine() vira ZodEffects e SDK @openai/agents nao aceita como outputType.
 // Schema cru aceita o shape; route.js valida invariante depois.
-test('validateTattooOutputInvariant rejeita handoff com dados_completos=false', () => {
+test('validateTattooOutputInvariant rejeita handoff com OBR faltando (dados_persistidos vazio)', () => {
+  // refator 4 OBR: dados_completos=false sozinho não é mais bloqueante — a invariante
+  // agora exige os 4 OBR no dados_persistidos. Dados_persistidos vazio rejeita por OBR.
   const invalid = {
     resposta_cliente: 'opa',
     dados_persistidos: {},
@@ -86,16 +88,22 @@ test('validateTattooOutputInvariant rejeita handoff com dados_completos=false', 
   };
   // Schema cru aceita (sem refine):
   assert.equal(TattooOutputSchema.safeParse(invalid).success, true);
-  // Mas validator pos-parse rejeita:
+  // Mas validator pos-parse rejeita por OBR faltando:
   const r = validateTattooOutputInvariant(invalid);
   assert.equal(r.valid, false);
-  assert.match(r.reason, /dados_completos=false/);
+  assert.match(r.reason, /handoff-sem-OBR-completos/);
 });
 
 test('validateTattooOutputInvariant rejeita handoff com campos_conflitantes nao-vazio', () => {
   const invalid = {
     resposta_cliente: 'opa',
-    dados_persistidos: { estilo: 'fineline', tamanho_cm: 8, local_corpo: 'antebraco' },
+    dados_persistidos: {
+      descricao_curta: 'leão',  // refator 4 OBR — adicionado pra validar handoff
+      estilo: 'fineline',
+      tamanho_cm: 8,
+      local_corpo: 'antebraco',
+      altura_cm: 170,  // refator 4 OBR — adicionado pra validar handoff
+    },
     dados_completos: true,
     campos_faltando: [],
     campos_conflitantes: ['tamanho_cm'],
@@ -110,7 +118,12 @@ test('validateTattooOutputInvariant rejeita handoff com campos_conflitantes nao-
 test('validateTattooOutputInvariant aceita handoff valido + pergunta', () => {
   const validHandoff = {
     resposta_cliente: 'fechado',
-    dados_persistidos: { estilo: 'fineline' },
+    dados_persistidos: {
+      descricao_curta: 'leão fineline',  // refator 4 OBR — adicionado pra validar handoff
+      estilo: 'fineline',
+      local_corpo: 'antebraco',  // refator 4 OBR — adicionado pra validar handoff
+      altura_cm: 170,  // refator 4 OBR — adicionado pra validar handoff
+    },
     dados_completos: true,
     campos_faltando: [],
     campos_conflitantes: [],
@@ -267,7 +280,13 @@ test('validator aceita pergunta com campos_faltando=[] e resposta sem ? (conflit
 test('validator: regression — extensão pergunta NÃO quebra invariants handoff/enviar_portfolio', () => {
   const validHandoff = {
     resposta_cliente: 'Fechado, já anotei tudo',
-    dados_persistidos: { descricao_curta: 'rosa', tamanho_cm: 8, local_corpo: 'antebraco' },
+    dados_persistidos: {
+      descricao_curta: 'rosa',
+      tamanho_cm: 8,
+      local_corpo: 'antebraco',
+      altura_cm: 170,  // refator 4 OBR — adicionado pra validar handoff
+      estilo: 'realismo',  // refator 4 OBR — adicionado pra validar handoff
+    },
     dados_completos: true,
     campos_faltando: [],
     campos_conflitantes: [],
@@ -286,4 +305,77 @@ test('validator: regression — extensão pergunta NÃO quebra invariants handof
     payload_portfolio: { estilo: 'fineline', max: null, motivo: null },
   };
   assert.equal(validateTattooOutputInvariant(validPortfolio, { portfolio_disponivel: true }).valid, true);
+});
+
+// === Testes do refator 2026-05-13 — 4 OBR + manifesto ===
+
+test('invariante rejeita handoff sem altura_cm', () => {
+  const result = validateTattooOutputInvariant({
+    proxima_acao: 'handoff',
+    dados_persistidos: {
+      descricao_curta: 'leão fineline',
+      local_corpo: 'antebraço',
+      estilo: 'fineline',
+      altura_cm: null,
+      tamanho_cm: 15,
+    },
+    resposta_cliente: 'Pra liberar teu orçamento, me passa nome e data de nascimento.',
+    campos_faltando: [],
+    campos_conflitantes: [],
+  });
+  assert.equal(result.valid, false);
+  assert.match(result.reason || '', /handoff-sem-OBR-completos/);
+  assert.match(result.details || '', /altura_cm/);
+});
+
+test('invariante rejeita handoff sem estilo (string vazia)', () => {
+  const result = validateTattooOutputInvariant({
+    proxima_acao: 'handoff',
+    dados_persistidos: {
+      descricao_curta: 'leão',
+      local_corpo: 'antebraço',
+      estilo: '',
+      altura_cm: 170,
+      tamanho_cm: null,
+    },
+    resposta_cliente: 'Pra liberar...',
+    campos_faltando: [],
+    campos_conflitantes: [],
+  });
+  assert.equal(result.valid, false);
+  assert.match(result.details || '', /estilo/);
+});
+
+test('invariante aceita handoff com 4 OBR completos (tamanho_cm opcional null)', () => {
+  const result = validateTattooOutputInvariant({
+    proxima_acao: 'handoff',
+    dados_persistidos: {
+      descricao_curta: 'leão fineline',
+      local_corpo: 'antebraço',
+      estilo: 'fineline',
+      altura_cm: 170,
+      tamanho_cm: null,  // opcional
+    },
+    resposta_cliente: 'Leão fineline no antebraço fica top.\n\nPra liberar...',
+    campos_faltando: [],
+    campos_conflitantes: [],
+  });
+  assert.equal(result.valid, true);
+});
+
+test('invariante aceita handoff com 4 OBR + tamanho_cm preenchido (cliente mencionou cm)', () => {
+  const result = validateTattooOutputInvariant({
+    proxima_acao: 'handoff',
+    dados_persistidos: {
+      descricao_curta: 'rosa fineline',
+      local_corpo: 'pulso direito',
+      estilo: 'fineline',
+      altura_cm: 165,
+      tamanho_cm: 7,
+    },
+    resposta_cliente: 'Rosa fineline no pulso fica delicada.\n\nPra liberar...',
+    campos_faltando: [],
+    campos_conflitantes: [],
+  });
+  assert.equal(result.valid, true);
 });
