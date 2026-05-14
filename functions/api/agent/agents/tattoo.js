@@ -77,7 +77,7 @@ export function validateTattooOutputInvariant(out, clientContext = {}) {
       return {
         valid: false,
         reason: 'handoff-sem-OBR-completos',
-        details: `handoff bloqueado: OBR faltando=${obrFaltando.join(',')}`,
+        details: `handoff bloqueado: OBR faltando=${obrFaltando.join(', ')}`,
       };
     }
     if (Array.isArray(out.campos_conflitantes) && out.campos_conflitantes.length > 0) {

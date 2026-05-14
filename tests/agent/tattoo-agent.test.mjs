@@ -343,6 +343,7 @@ test('invariante rejeita handoff sem estilo (string vazia)', () => {
     campos_conflitantes: [],
   });
   assert.equal(result.valid, false);
+  assert.match(result.reason || '', /handoff-sem-OBR-completos/);
   assert.match(result.details || '', /estilo/);
 });
 
