@@ -3,7 +3,7 @@
 // Body: { instanceName: string, tenant_id: string }
 // [FIX] Bug #4: CORS headers + OPTIONS handler
 // [FIX] Bug #8: Salva evo_apikey no tenant via Supabase (server-side)
-// [FIX] Bug #2A: Configura webhook n8n (server-side, removido do frontend)
+// Configura o webhook da Evolution apontando pro pipeline code-first (/api/whatsapp/inbound)
 
 import { isFreeTrial } from '../_lib/plans.js';
 
@@ -28,12 +28,16 @@ export async function onRequest(context) {
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
   const EVO_BASE_URL    = env.EVO_BASE_URL;
-  const N8N_WEBHOOK     = env.N8N_WEBHOOK_URL;
   const GLOBAL_KEY      = env.EVO_GLOBAL_KEY;
-  const WEBHOOK_SECRET  = env.N8N_WEBHOOK_SECRET;
+  const AGENT_BASE_URL  = env.AGENT_INTERNAL_BASE_URL;
+  const WEBHOOK_SECRET  = env.WEBHOOK_SECRET;
+  // Webhook da Evolution aponta pro pipeline code-first desta aplicacao.
+  const WEBHOOK_URL = AGENT_BASE_URL ? `${AGENT_BASE_URL}/api/whatsapp/inbound` : null;
 
-  if (!GLOBAL_KEY || !EVO_BASE_URL || !N8N_WEBHOOK) {
-    console.error('evo-create-instance: env vars ausentes', { EVO_BASE_URL: !!EVO_BASE_URL, N8N_WEBHOOK: !!N8N_WEBHOOK, GLOBAL_KEY: !!GLOBAL_KEY });
+  // Trava D2: nao cria instancia Evolution sem webhook valido (mesma intencao
+  // protetora de antes — o alvo mudou de N8N_WEBHOOK_URL pra AGENT_INTERNAL_BASE_URL).
+  if (!GLOBAL_KEY || !EVO_BASE_URL || !AGENT_BASE_URL || !WEBHOOK_SECRET) {
+    console.error('evo-create-instance: env vars ausentes', { EVO_BASE_URL: !!EVO_BASE_URL, AGENT_INTERNAL_BASE_URL: !!AGENT_BASE_URL, WEBHOOK_SECRET: !!WEBHOOK_SECRET, GLOBAL_KEY: !!GLOBAL_KEY });
     return json({ error: 'Configuração interna ausente' }, 503);
   }
 
@@ -150,7 +154,7 @@ export async function onRequest(context) {
     return json({ error: 'apikey nao encontrada na resposta' }, 500);
   }
 
-  // ── [FIX webhook] Configurar webhook n8n com multi-format fallback ─────────
+  // ── [FIX webhook] Configurar webhook da Evolution com multi-format fallback ─
   // Evolution API v2 tem variacoes de payload entre versoes:
   //   Formato A (v2 nested com nomes curtos): { webhook: { enabled, url, byEvents, base64, events, headers } }
   //   Formato B (flat com nomes longos):      { enabled, url, webhookByEvents, webhookBase64, events, headers }
@@ -159,19 +163,19 @@ export async function onRequest(context) {
   // Estrategia: tenta cada formato em ordem com apikey da instancia. Se verify falhar, repete com GLOBAL_KEY.
   // Se todos falharem, RETORNA ERRO (nao mais silencioso) para o onboarding avisar o usuario.
 
-  const secretHdr = WEBHOOK_SECRET ? { 'x-webhook-secret': WEBHOOK_SECRET } : {};
+  const secretHdr = { 'x-webhook-secret': WEBHOOK_SECRET };
   const WEBHOOK_FORMATS = [
     {
       label: 'A:nested-short',
-      body: { webhook: { enabled: true, url: N8N_WEBHOOK, byEvents: false, base64: true, events: ['MESSAGES_UPSERT'], ...(WEBHOOK_SECRET ? { headers: secretHdr } : {}) } }
+      body: { webhook: { enabled: true, url: WEBHOOK_URL, byEvents: false, base64: true, events: ['MESSAGES_UPSERT'], headers: secretHdr } }
     },
     {
       label: 'B:flat-long',
-      body: { enabled: true, url: N8N_WEBHOOK, webhookByEvents: false, webhookBase64: true, events: ['MESSAGES_UPSERT'], ...(WEBHOOK_SECRET ? { headers: secretHdr } : {}) }
+      body: { enabled: true, url: WEBHOOK_URL, webhookByEvents: false, webhookBase64: true, events: ['MESSAGES_UPSERT'], headers: secretHdr }
     },
     {
       label: 'C:nested-long',
-      body: { webhook: { enabled: true, url: N8N_WEBHOOK, webhookByEvents: false, webhookBase64: true, events: ['MESSAGES_UPSERT'], ...(WEBHOOK_SECRET ? { headers: secretHdr } : {}) } }
+      body: { webhook: { enabled: true, url: WEBHOOK_URL, webhookByEvents: false, webhookBase64: true, events: ['MESSAGES_UPSERT'], headers: secretHdr } }
     },
   ];
 

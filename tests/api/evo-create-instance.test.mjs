@@ -1,6 +1,9 @@
 // ── InkFlow — HTTP tests pra functions/api/evo-create-instance.js ───────
 // Spec: docs/superpowers/specs/2026-05-07-evolution-tests-b4-design.md
 // Auditoria: F2.4.3 (Evolution endpoints sem teste)
+// Atualizado no cutover total do n8n (2026-05-14): webhook agora deriva de
+// AGENT_INTERNAL_BASE_URL + WEBHOOK_SECRET. Spec do cutover: C1, C7, D2 em
+// docs/superpowers/specs/2026-05-14-cutover-total-n8n-design.md
 //
 // IMPORTANTE: tests cobrem código existente em prod desde 2026-04 (Sprint 1).
 // Se um teste falhar, investigar se é bug no endpoint OU no teste — NUNCA
@@ -13,15 +16,16 @@ import assert from 'node:assert/strict';
 const VALID_TENANT_UUID = '00000000-0000-0000-0000-000000000001';
 const VALID_INSTANCE = 'inst_abc123';
 const EVO_BASE = 'https://evo.test.local';
-const N8N_WEBHOOK = 'https://n8n.test.local/webhook/abc';
+const AGENT_BASE = 'https://inkflow-saas.pages.dev';
+const WEBHOOK_URL = AGENT_BASE + '/api/whatsapp/inbound';
 
 // ─── Helpers byte-identical com Tasks 2, 3, 4 ───────────────────────────
 function mockEnv(overrides = {}) {
   return {
     EVO_BASE_URL: EVO_BASE,
     EVO_GLOBAL_KEY: 'test-global-key',
-    N8N_WEBHOOK_URL: N8N_WEBHOOK,
-    N8N_WEBHOOK_SECRET: 'test-webhook-secret',
+    AGENT_INTERNAL_BASE_URL: AGENT_BASE,
+    WEBHOOK_SECRET: 'test-webhook-secret',
     SUPABASE_SERVICE_KEY: 'test-service-key',
     SUPABASE_SERVICE_ROLE_KEY: 'test-service-key',
     ...overrides,
@@ -105,7 +109,8 @@ test('evo-create-instance — EC3: env vars ausentes → 503', async () => {
   const missingCases = [
     { EVO_BASE_URL: undefined },
     { EVO_GLOBAL_KEY: undefined },
-    { N8N_WEBHOOK_URL: undefined },
+    { AGENT_INTERNAL_BASE_URL: undefined },
+    { WEBHOOK_SECRET: undefined },
   ];
   for (const overrides of missingCases) {
     const env = mockEnv(overrides);
@@ -329,7 +334,7 @@ test('evo-create-instance — EC9: webhook formato A (nested-short) instance-key
     // Asserto body do SET request: formato A nested-short
     assert.ok(lastSetBody.webhook, 'A format wraps in {webhook: {...}}');
     assert.equal(lastSetBody.webhook.enabled, true);
-    assert.equal(lastSetBody.webhook.url, N8N_WEBHOOK);
+    assert.equal(lastSetBody.webhook.url, WEBHOOK_URL);
     assert.equal(lastSetBody.webhook.byEvents, false);
     assert.equal(lastSetBody.webhook.base64, true);
     assert.deepEqual(lastSetBody.webhook.events, ['MESSAGES_UPSERT']);
