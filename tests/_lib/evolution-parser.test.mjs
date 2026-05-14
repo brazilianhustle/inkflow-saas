@@ -114,3 +114,31 @@ test('parser: media base64 > 800KB → trunca + warning marker', () => {
   assert.equal(r.inbound.mediaTruncated, true);
   assert.ok(r.inbound.mediaBase64.length <= 800_000);
 });
+
+test('parser: @lid com remoteJidAlt → extrai telefone de remoteJidAlt', () => {
+  const body = { ...baseUpsert, data: { ...baseUpsert.data, key: {
+    id: 'LID1', fromMe: false,
+    remoteJid: '199283746500123@lid',
+    remoteJidAlt: '5511988887777@s.whatsapp.net',
+    addressingMode: 'lid',
+  }}};
+  const r = parseEvolutionPayload(body);
+  assert.equal(r.ok, true);
+  assert.equal(r.inbound.telefone, '5511988887777');
+});
+
+test('parser: @lid sem remoteJidAlt → skip no-telefone', () => {
+  const body = { ...baseUpsert, data: { ...baseUpsert.data, key: {
+    id: 'LID2', fromMe: false,
+    remoteJid: '199283746500123@lid',
+    addressingMode: 'lid',
+  }}};
+  assert.deepEqual(parseEvolutionPayload(body), { skip: 'no-telefone' });
+});
+
+test('parser: addressingMode ausente → comportamento atual intacto', () => {
+  // remoteJid normal, sem addressingMode nem remoteJidAlt → usa remoteJid
+  const r = parseEvolutionPayload(baseUpsert);
+  assert.equal(r.ok, true);
+  assert.equal(r.inbound.telefone, '5511999998888');
+});
