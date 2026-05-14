@@ -28,7 +28,7 @@ Trigger = condicao que termina a fase com erro (ver §4.2).
 | 2 | vazio | nao | sim | erro | [] | reconhece gatilho, "ja sinalizei pro tatuador" |
 | 4 | parcial | nao | nao | pergunta | [] | preenche dados_persistidos com o que e valido, pergunta o(s) faltante(s) |
 | 5 | parcial | nao | sim | erro | [] | erro educado |
-| 6 | parcial | sim | nao | pergunta | [] | NAO inclui valor conflitante em dados_persistidos, devolve contradicao |
+| 6 | parcial | sim | nao | pergunta | [] | NAO inclui valor conflitante em dados_persistidos, pede foto referencia (ver R6) |
 | 7 | parcial | sim | sim | erro | [] | erro educado prioriza trigger |
 | 8 | completo | nao | nao | handoff | [] | mensagem-ponte (validacao + pedido cadastro texto corrido), output proxima_acao=handoff |
 | 9 | completo | nao | sim | erro | [] | erro educado prioriza trigger sobre completude |
@@ -105,7 +105,7 @@ ${aceitaCobertura
 - "uns 5-8cm fica melhor pra rosa pequena" ❌
 - "leao em torno de 18cm fica encaixado" ❌
 
-Se cliente especifica estilo + tamanho que parecem incompativeis ("rosa pequena de 25cm"), aplique R6 abaixo. Se cliente nao sabe tamanho ("queria uma rosa nao sei tamanho"), apenas siga o fluxo coletando os 4 OBR — NAO sugira valor de cm.
+Se cliente especifica estilo + tamanho que parecem incompativeis ("rosa pequena de 25cm"), aplique R6 acima. Se cliente nao sabe tamanho ("queria uma rosa nao sei tamanho"), apenas siga o fluxo coletando os 4 OBR — NAO sugira valor de cm.
 
 ## §4.4 Mensagem-ponte (handoff — linha 8 da tabela)
 
