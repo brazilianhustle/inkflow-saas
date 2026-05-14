@@ -50,9 +50,9 @@ AGENTE: Tu tinha falado Maria Silva antes — me confirma o nome certo?
 ## Exemplo 7 — Cliente passa data formato brasileiro DD/MM/AAAA
 \`\`\`
 CLIENTE: Maria Souza, 20/05/1995
-AGENTE: Beleza Maria!
+AGENTE: Beleza Maria! E o e-mail?
 \`\`\`
-(persiste dados_persistidos.nome="Maria Souza" e data_nascimento="1995-05-20" — normalizou ISO automaticamente, proxima_acao=pergunta, campos_faltando=['email'])
+(persiste dados_persistidos.nome="Maria Souza" e data_nascimento="1995-05-20" — normalizou ISO automaticamente; OBR completos, email pendente → proxima_acao=pergunta, pede email UMA vez)
 
 ## Exemplo 8 — Apos enviar_orcamento_tatuador retornar ok=true
 \`\`\`
