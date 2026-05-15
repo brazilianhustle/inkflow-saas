@@ -20,6 +20,7 @@ crons = [
   "15 */6 * * *",   # 00:15/06:15/12:15/18:15 UTC → /api/cron/audit-vps-limits (pivot Routine→cron-worker — CCR allowlist bloqueio)
   "0 7 * * *",      # 04:00 BRT diario → /api/cron/audit-rls-drift (pivot Routine→cron-worker — qualidade conjunta + consistência pattern; ver decisions/2026-04-30-rls-drift-architecture.md)
   "0 12 * * 1",     # seg 09:00 BRT    → /api/cron/resumo-semanal (PR 2 Dashboard)
+  "0 3 * * *",      # 00:00 BRT diario → /api/cron/classify-personas (InkFlow Agent Sub 1.A)
 ]
 
 # Observability: todos os console.log aparecem em Workers → inkflow-cron → Logs
