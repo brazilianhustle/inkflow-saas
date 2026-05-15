@@ -1,8 +1,12 @@
 // ── InkFlow — Guardrails compartilhados ──────────────────────────────────────
-// Lógica de segurança/invariantes usada por:
-//   - /api/tools/simular-conversa (testador + evals)
-//   - /api/tools/guardrails/pre   (usado pelo pipeline code-first antes do agente)
-//   - /api/tools/guardrails/post  (usado pelo pipeline code-first depois do agente)
+// Lógica de segurança/invariantes (runPreGuardrails / runPostGuardrails).
+// Consumida hoje apenas por /api/tools/simular-conversa (testador + evals).
+//
+// NOTA: o pipeline code-first de produção (whatsapp-pipeline.js → runAgent)
+// ainda NÃO chama estes guardrails — gap registrado como P1 no backlog
+// ("Religar guardrails pre/post no pipeline code-first"). Os endpoints HTTP
+// /api/tools/guardrails/{pre,post} foram removidos no cutover total do n8n
+// (eram órfãos — só o workflow n8n os chamava).
 //
 // Padrão: prompt cuida do TOM, código cuida dos INVARIANTES.
 
