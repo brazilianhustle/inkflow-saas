@@ -1,0 +1,170 @@
+#!/usr/bin/env node
+// run.mjs — harness do programa InkFlow Agent (Pilar 4).
+//
+// Diferenças vs evals/run.mjs legado:
+// - Judge model = Anthropic Claude Haiku 4.5 (não OpenAI)
+// - Rubric 9 dimensoes (5 naturalidade + 3 manifesto + 1 state)
+// - Suporta categorias: regression / directed / red-team
+//
+// Uso:
+//   node --env-file=evals/.env evals/inkflow-agent/_harness/run.mjs --category=regression
+//   node --env-file=evals/.env evals/inkflow-agent/_harness/run.mjs --category=directed --agent=tattoo --persona=per-001
+//
+// ENV obrigatórios (em evals/.env):
+//   BASE_URL, TENANT_ID, ADMIN_BEARER ou EVAL_SECRET, OPENAI_API_KEY (model under test)
+//   ANTHROPIC_API_KEY (judge)
+//
+// Opcionais:
+//   JUDGE_MODEL (default claude-haiku-4-5-20251001)
+
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { scoreNaturalidade, scoreManifesto, scoreState, computePass } from './rubric.mjs';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, '..');
+
+const BASE_URL = process.env.BASE_URL || 'https://inkflowbrasil.com';
+const EVAL_SECRET = process.env.EVAL_SECRET;
+const BEARER = process.env.ADMIN_BEARER;
+const TENANT_ID = process.env.TENANT_ID;
+const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+const JUDGE_MODEL = process.env.JUDGE_MODEL || 'claude-haiku-4-5-20251001';
+
+function parseArgs(argv) {
+  const args = {};
+  for (const a of argv) {
+    const m = a.match(/^--(\w+)=(.+)$/);
+    if (m) args[m[1]] = m[2];
+  }
+  return args;
+}
+
+function loadJudgePrompt(name) {
+  return readFileSync(path.join(__dirname, 'judge-prompts', `${name}.txt`), 'utf-8');
+}
+
+async function callAnthropicJudge(systemPrompt, userPrompt) {
+  if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY missing');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': ANTHROPIC_KEY,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: JUDGE_MODEL,
+      max_tokens: 1024,
+      temperature: 0,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`anthropic ${res.status}: ${txt.slice(0, 200)}`);
+  }
+  const data = await res.json();
+  const raw = data.content?.[0]?.text || '{}';
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  return jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+}
+
+async function playConv(conv) {
+  const history = [];
+  for (let i = 0; i < (conv.turns_cliente || []).length; i++) {
+    history.push({ role: 'user', content: conv.turns_cliente[i] });
+    const headers = { 'Content-Type': 'application/json' };
+    if (EVAL_SECRET) headers['X-Eval-Secret'] = EVAL_SECRET;
+    else headers['Authorization'] = `Bearer ${BEARER}`;
+    const res = await fetch(`${BASE_URL}/api/tools/simular-conversa`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ tenant_id: TENANT_ID, messages: history }),
+    });
+    if (!res.ok) return { transcript: history, error: `http ${res.status}` };
+    const data = await res.json();
+    if (!data.ok) return { transcript: history, error: data.error };
+    history.push({ role: 'assistant', content: data.reply || '' });
+  }
+  return { transcript: history };
+}
+
+function buildTranscriptTxt(transcript) {
+  return transcript.map((m, i) => `[msg ${i} — ${m.role}]\n${m.content}`).join('\n\n');
+}
+
+async function judgeConv(conv, transcript, estado_atual) {
+  const transcriptTxt = buildTranscriptTxt(transcript);
+
+  const [natOut, manOut, stateOut] = await Promise.all([
+    callAnthropicJudge(loadJudgePrompt('naturalidade-v2'), `Contexto: ${conv.titulo}\n\nTranscript:\n\n${transcriptTxt}\n\nAvalie.`),
+    callAnthropicJudge(loadJudgePrompt('manifesto-adherence'), `Contexto: ${conv.titulo}\n\nTranscript:\n\n${transcriptTxt}\n\nAvalie cada principio aplicavel.`),
+    callAnthropicJudge(loadJudgePrompt('state-transition'), `estado_atual: ${estado_atual}\n\nTranscript:\n\n${transcriptTxt}\n\nUltima proxima_acao no output: ${conv.expected?.proxima_acao_esperada || 'desconhecida'}.\n\nAvalie consistencia.`),
+  ]);
+
+  return {
+    naturalidade: scoreNaturalidade(natOut),
+    manifesto: scoreManifesto(manOut),
+    state: scoreState(stateOut),
+  };
+}
+
+function loadEvalsForCategory(category, args) {
+  if (category === 'regression') {
+    return [];
+  }
+  if (category === 'directed') {
+    const dir = path.join(ROOT, 'directed', args.agent || '', args.persona || '');
+    try {
+      return readdirSync(dir)
+        .filter(f => f.endsWith('.json'))
+        .map(f => JSON.parse(readFileSync(path.join(dir, f), 'utf-8')));
+    } catch { return []; }
+  }
+  if (category === 'red-team') {
+    return [];
+  }
+  return [];
+}
+
+async function main() {
+  const args = parseArgs(process.argv.slice(2));
+  const category = args.category || 'directed';
+
+  console.log(`\n🧪 InkFlow Agent harness — category=${category} agent=${args.agent || '-'} persona=${args.persona || '-'}`);
+  console.log(`   Judge model: ${JUDGE_MODEL} (Anthropic)`);
+  console.log(`   Base URL: ${BASE_URL}\n`);
+
+  const convs = loadEvalsForCategory(category, args);
+  if (!convs.length) {
+    console.log('Nenhum eval encontrado pra esta categoria/filtro. (Phase 0: directed evals ainda nao criados.)');
+    process.exit(0);
+  }
+
+  const results = [];
+  for (const conv of convs) {
+    process.stdout.write(`→ ${conv.id} ... `);
+    const played = await playConv(conv);
+    if (played.error) {
+      console.log(`❌ ${played.error}`);
+      results.push({ id: conv.id, status: 'error', error: played.error });
+      continue;
+    }
+    const scores = await judgeConv(conv, played.transcript, conv.estado_atual || 'coletando_tattoo');
+    const pass = computePass({ ...scores, funcionalidade: 1.0 }, conv.thresholds);
+    console.log(pass.pass ? `✅ nat ${scores.naturalidade.media} · man ${scores.manifesto.m1_manifesto_adherence?.toFixed(2)}` : `❌ falhou em: ${pass.fails.join(', ')}`);
+    results.push({ id: conv.id, status: pass.pass ? 'pass' : 'fail', scores, pass });
+  }
+
+  const passed = results.filter(r => r.status === 'pass').length;
+  const failed = results.filter(r => r.status === 'fail').length;
+  console.log(`\n${passed}/${results.length} pass · ${failed} fail`);
+
+  await fs.writeFile(path.join(ROOT, 'report.json'), JSON.stringify({ ranAt: new Date().toISOString(), category, args, results }, null, 2));
+  process.exit(failed > 0 ? 1 : 0);
+}
+
+main().catch(e => { console.error('FATAL', e); process.exit(2); });

@@ -9,7 +9,8 @@
     "eval:cadastro": "node --test tests/agent/cadastro-agent.eval.mjs",
     "eval:proposta": "node --test tests/agent/proposta-agent.eval.mjs",
     "eval:portfolio": "node --test tests/agent/portfolio-intent.eval.mjs",
-    "inkflow-agent:lint": "node scripts/inkflow-agent/failure-catalog-lint.mjs"
+    "inkflow-agent:lint": "node scripts/inkflow-agent/failure-catalog-lint.mjs",
+    "inkflow-agent:eval": "node evals/inkflow-agent/_harness/run.mjs"
   },
   "dependencies": {
     "@openai/agents": "^0.1.0",
