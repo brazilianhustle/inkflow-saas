@@ -20,6 +20,7 @@ import { prefetchPortfolio } from './_lib/prefetch-portfolio.js';
 import { callTool } from './_lib/call-tool.js';
 import { calcularValorSinal } from './_lib/calcular-sinal.js';
 import { formatLinkSinalMessage } from './_lib/format-link-sinal-msg.js';
+import { logAgentTurn } from '../../_lib/telemetry/agent-turn-logger.js';
 
 const HEADERS = {
   'Content-Type': 'application/json',
@@ -68,8 +69,17 @@ function normalizeHistoryItem(h) {
 //   - run() throw: error 'agent-run-failed', status 500
 //   - sem finalOutput: error 'no-final-output', status 500
 //   - invariant violation hard-fail: error 'invariant-violation', reason, status 500
+// Mapeia estado_atual -> agent_name canonico pra telemetria (Pilar 3).
+function inferAgentName(estado) {
+  if (estado === 'tattoo') return 'tattoo';
+  if (estado === 'cadastro') return 'cadastro';
+  if (PROPOSTA_SUBSTATES.has(estado)) return 'proposta';
+  return estado;
+}
+
 export async function runAgent({
   env,
+  ctx,
   tenant_id,
   telefone,
   mensagem,
@@ -88,6 +98,7 @@ export async function runAgent({
     };
   }
 
+  const t0 = Date.now();
   const builder = selectAgentBuilder(estado_atual);
 
   // Set definido tambem mais abaixo no orchestrator — declarado em escopo
@@ -184,6 +195,30 @@ export async function runAgent({
   // Sub-3.3: branch transversal portfolio (qualquer agent pode emitir)
   const { urls_portfolio } = await executePortfolioIntent(finalOut, { env, tenant });
 
+  // Pilar 3 InkFlow Agent — telemetria fire-and-forget
+  try {
+    logAgentTurn(ctx, env, {
+      conversa_id: conversa?.id || 'stub',
+      tenant_id,
+      turn_index: (historico?.length || 0) + 1,
+      agent_name: inferAgentName(estado_atual),
+      agent_version: env.AGENT_VERSION || '2026-05-15',
+      estado_agente: estado_atual,
+      model: env.OPENAI_MODEL_AGENT || 'gpt-4o-mini',
+      client_input_text: mensagem,
+      client_input_type: 'text',
+      prompt_full: null,
+      context_metadata: { dados_acumulados, history_turns_n: historico?.length || 0 },
+      llm_output_parsed: finalOut,
+      invariant_passed: invariantCheck.valid,
+      invariant_failure_reason: invariantCheck.valid ? null : invariantCheck.reason,
+      tool_calls: sideEffects?.length ? sideEffects : null,
+      latency_total_ms: Date.now() - t0,
+    });
+  } catch (e) {
+    console.warn('[telemetry] buildPayload failed:', e?.message);
+  }
+
   return {
     ok: true,
     resposta_cliente: finalOut.resposta_cliente,
@@ -199,7 +234,7 @@ export async function runAgent({
   };
 }
 
-export async function onRequest({ request, env }) {
+export async function onRequest({ request, env, waitUntil }) {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: HEADERS });
   }
@@ -242,6 +277,7 @@ export async function onRequest({ request, env }) {
 
   const r = await runAgent({
     env,
+    ctx: typeof waitUntil === 'function' ? { waitUntil } : undefined,
     tenant_id,
     telefone,
     mensagem,
