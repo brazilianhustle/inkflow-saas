@@ -10,7 +10,8 @@
     "eval:proposta": "node --test tests/agent/proposta-agent.eval.mjs",
     "eval:portfolio": "node --test tests/agent/portfolio-intent.eval.mjs",
     "inkflow-agent:lint": "node scripts/inkflow-agent/failure-catalog-lint.mjs",
-    "inkflow-agent:eval": "node evals/inkflow-agent/_harness/run.mjs"
+    "inkflow-agent:eval": "node evals/inkflow-agent/_harness/run.mjs",
+    "inkflow-agent:weekly": "node scripts/inkflow-agent/generate-weekly-report.mjs"
   },
   "dependencies": {
     "@openai/agents": "^0.1.0",
