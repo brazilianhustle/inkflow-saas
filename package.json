@@ -8,7 +8,8 @@
     "eval:tattoo": "node --test tests/agent/tattoo-agent.eval.mjs",
     "eval:cadastro": "node --test tests/agent/cadastro-agent.eval.mjs",
     "eval:proposta": "node --test tests/agent/proposta-agent.eval.mjs",
-    "eval:portfolio": "node --test tests/agent/portfolio-intent.eval.mjs"
+    "eval:portfolio": "node --test tests/agent/portfolio-intent.eval.mjs",
+    "inkflow-agent:lint": "node scripts/inkflow-agent/failure-catalog-lint.mjs"
   },
   "dependencies": {
     "@openai/agents": "^0.1.0",
