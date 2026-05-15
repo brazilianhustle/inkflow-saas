@@ -199,10 +199,17 @@ function buildTranscriptTxt(transcript) {
 async function judgeConv(conv, transcript, estado_atual) {
   const transcriptTxt = buildTranscriptTxt(transcript);
 
+  // Bug Dim C fix: extrai proxima_acao REAL do ultimo turn assistant
+  // (em vez de passar conv.expected.proxima_acao_esperada que e rotulo do
+  // JSON eval, nao output do bot).
+  const lastAssistant = [...transcript].reverse().find(m => m.role === 'assistant');
+  const lastProximaAcao = lastAssistant?.proxima_acao || 'desconhecida';
+  const lastEstadoNovo = lastAssistant?.estado_novo || estado_atual;
+
   const [natOut, manOut, stateOut] = await Promise.all([
     callAnthropicJudge(loadJudgePrompt('naturalidade-v2'), `Contexto: ${conv.titulo}\n\nTranscript:\n\n${transcriptTxt}\n\nAvalie.`),
     callAnthropicJudge(loadJudgePrompt('manifesto-adherence'), `Contexto: ${conv.titulo}\n\nTranscript:\n\n${transcriptTxt}\n\nAvalie cada principio aplicavel.`),
-    callAnthropicJudge(loadJudgePrompt('state-transition'), `estado_atual: ${estado_atual}\n\nTranscript:\n\n${transcriptTxt}\n\nUltima proxima_acao no output: ${conv.expected?.proxima_acao_esperada || 'desconhecida'}.\n\nAvalie consistencia.`),
+    callAnthropicJudge(loadJudgePrompt('state-transition'), `estado_atual: ${estado_atual} (estado inicial declarado no eval)\nestado_apos_ultimo_turn: ${lastEstadoNovo}\n\nTranscript:\n\n${transcriptTxt}\n\nUltima proxima_acao no output (REAL retornada pelo bot): ${lastProximaAcao}\n\nAvalie consistencia.`),
   ]);
 
   return {
