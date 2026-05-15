@@ -24,6 +24,14 @@ Baseline TattooAgent rodado em 2026-05-15 (pós Sub 1.A merge) retornou 3/3 FAIL
 
 **Dim C — Esperado mascarado como real:** `run.mjs:105` passa `conv.expected?.proxima_acao_esperada` ao judge state-transition com rótulo "Ultima proxima_acao no output". Isso é o **esperado pelo eval JSON**, não o **retornado pelo bot**. Judge nunca vê output real.
 
+**Dim D — Judge prompt vocabulário desalinhado do schema:** `_harness/judge-prompts/state-transition.txt:19` lista `enviar_orcamento_tatuador` como valor canonical, mas o schema real dos agents emite literal `'handoff'`:
+- `tattoo.js:48` → `z.enum(['pergunta', 'handoff', 'enviar_portfolio', 'erro'])`
+- `cadastro.js:41` → mesmo conjunto.
+- `proposta.js:17-26` → vocabulário próprio mais granular (`oferecendo_horario`, `reservar_horario`, `pediu_desconto`, etc).
+- `router.js:20` → state transition map usa chave `'handoff'`.
+
+O judge tinha vocabulário de design proposto mas nunca refletiu o schema implementado. Os JSONs dos evals (`"proxima_acao_esperada": "handoff"`) estavam **corretos** — quem está desalinhado é o judge prompt.
+
 **Comprovação:** `report.json:42-43` mostra judge respondendo coerentemente ao input recebido (`"emitiu handoff prematuro; deveria continuar com pergunta"`). Judge fez seu trabalho corretamente — bot real provavelmente emitiu `pergunta`, mas harness ocultou.
 
 ### Implicação ampliada
@@ -52,8 +60,9 @@ FM-0001 (modo consultor não acionado) cravado pelo audit é gap arquitetural in
 - Substituir `[FOTO: ...]` por sinal estruturado.
 - Refactor para usar `agent_turn_logs` como fonte do judge.
 - Tocar no Studio UI (`/api/tools/simular-conversa` continua existindo para o Studio).
-- Mexer em judges (state-transition prompt já correto — receberá input certo).
+- Renomear `'handoff'` → `'enviar_orcamento_tatuador'` no schema dos agents (refactor maior em tattoo.js/cadastro.js/router.js/prompts/testes — fora do escopo).
 - Mexer em `_harness/rubric.mjs` (scoring inalterado).
+- Adicionar auth em `/api/agent/route` (público hoje, PoC entrypoint — risco real mas fora do escopo).
 
 ## Arquitetura e data flow
 
@@ -111,16 +120,17 @@ FM-0001 (modo consultor não acionado) cravado pelo audit é gap arquitetural in
 
 ## Components
 
-**4 arquivos editados, 1 adicionado, 0 deletados.**
+**3 arquivos editados, 1 atualizado (env), 1 documentado (env.example). 3 JSONs intactos.**
 
 | Arquivo | Mudança | Linhas |
 |---------|---------|--------|
 | `evals/inkflow-agent/_harness/run.mjs` | Refactor `playConv()` (endpoint + payload + propagação estado/dados); refactor `judgeConv()` (passa proxima_acao real ao state-transition); novo `fetchTenant()` helper inline. | ~60 |
+| `evals/inkflow-agent/_harness/judge-prompts/state-transition.txt` | Atualizar lista de "Valores válidos de proxima_acao" pra refletir schema real: trocar `enviar_orcamento_tatuador` → `handoff` (literal emitido por tattoo + cadastro); manter valores granulares do PropostaAgent (oferecendo_horario, reservar_horario, pediu_desconto, adiou, reagendamento, cliente_agressivo, enviar_portfolio); manter `erro` e `pergunta`. Adicionar nota: "tattoo + cadastro emitem `handoff` literal; route.js + router.js mapeiam pro próximo estado". | ~12 |
 | `evals/.env` | Adicionar `SUPABASE_SERVICE_KEY=<...>` (puxar do Bitwarden Secrets Manager). | +1 |
 | `evals/.env.example` | Documentar `SUPABASE_SERVICE_KEY` placeholder + comment ("pra eval harness fetch tenant"). | +2 |
-| `evals/inkflow-agent/directed/tattoo/per-001/01-happy-path.json` | `"proxima_acao_esperada": "handoff"` → `"enviar_orcamento_tatuador"`. | 1 |
-| `evals/inkflow-agent/directed/tattoo/per-009/01-muda-decisao.json` | Idem. | 1 |
-| `evals/inkflow-agent/directed/tattoo/per-010/01-conflito.json` | Idem. | 1 |
+| `evals/inkflow-agent/directed/tattoo/per-001/01-happy-path.json` | **NÃO MEXER** — `"proxima_acao_esperada": "handoff"` está correto, é o valor canonical do schema. | 0 |
+| `evals/inkflow-agent/directed/tattoo/per-009/01-muda-decisao.json` | **NÃO MEXER** — idem. | 0 |
+| `evals/inkflow-agent/directed/tattoo/per-010/01-conflito.json` | **NÃO MEXER** — idem. | 0 |
 
 **fetchTenant() — implementação proposta:**
 
@@ -149,14 +159,17 @@ async function fetchTenant(tenantId) {
 **Não mexer:**
 - `functions/api/agent/route.js` (já tem tudo).
 - `functions/api/tools/simular-conversa.js` (segue existindo pro Studio UI).
-- `evals/inkflow-agent/_harness/judge-prompts/state-transition.txt` (prompt já correto).
+- `functions/api/agent/agents/{tattoo,cadastro,proposta}.js` (schemas canonical inalterados).
+- `functions/api/agent/router.js` (state transition map inalterado).
 - `evals/inkflow-agent/_harness/rubric.mjs` (scoring inalterado).
+- `evals/inkflow-agent/_harness/judge-prompts/naturalidade-v2.txt` + `manifesto-adherence.txt` (irrelevantes ao bug).
+- `evals/inkflow-agent/directed/tattoo/per-*/01-*.json` (vocabulário já correto).
 
 ## Edge cases & error handling
 
 | Cenário | Tratamento |
 |---------|-----------|
-| `/api/agent/route` retorna 501 (estado_novo propagado virou estado não-implementado tipo `aguardando_tatuador`/`lead_frio`/`fechado`) | **Terminal success.** Marca `terminal_handoff: true` no transcript, sai do loop limpo, eval continua pra judging. Esperado nos evals atuais quando bot emite `enviar_orcamento_tatuador`. |
+| `/api/agent/route` retorna 501 (estado_novo propagado virou estado não-implementado tipo `aguardando_tatuador`/`lead_frio`/`fechado`) | **Terminal success.** Marca `terminal_handoff: true` no transcript, sai do loop limpo, eval continua pra judging. Esperado nos evals atuais quando bot emite `proxima_acao='handoff'` em `coletando_tattoo` → `router.js` mapeia pra `cadastro` (implementado, segue fluxo) ou pra estado terminal não-implementado. |
 | `/api/agent/route` retorna 500 invariant-violation | Capturar `reason`, anexar ao result como `invariant_violation: {reason}`, **abortar eval com `status: 'error'`**. Não tenta julgar — é hard-fail de contrato (bug do agent). |
 | HTTP timeout / network error | Sem retry. Reporta `status: 'error', error: 'network'`. |
 | Tenant fetch fail (Supabase 500 ou tenant ID errado) | **Hard-fail no início** antes do loop. Mensagem clara: `"fetchTenant falhou: tenant {id} não encontrado / SUPABASE_SERVICE_KEY inválida"`. Evita rodar evals contra stub silenciosamente. |
@@ -174,7 +187,7 @@ async function fetchTenant(tenantId) {
    - Endpoint correto chamado.
    - estado_atual/dados_acumulados propagam.
    - proxima_acao real aparece no transcript.
-3. **Inspeção manual da response do último turn** — confirmar `proxima_acao` é `enviar_orcamento_tatuador` ou `pergunta` (não `'handoff'` literal nem undefined).
+3. **Inspeção manual da response do último turn** — confirmar `proxima_acao` é `'handoff'` (canonical schema do TattooAgent) ou `'pergunta'` (não undefined nem valor fora do enum).
 
 ### Validação final (re-baseline)
 
@@ -209,15 +222,17 @@ npm run inkflow-agent:baseline
 | Custo OpenAI subir vs simular-conversa | Médio — pipeline real chama agent SDK que pode ter múltiplos turns internos vs Chat Completions single-shot | Custo aceitável pra ferramenta de medição confiável. Estimativa: ~$0.05-0.10 por baseline run de 3 evals. Aceita YAGNI no caching agora |
 | SUPABASE_SERVICE_KEY commitada por engano no `evals/.env` | Médio (.env tá no .gitignore mas o .example não) | `.example` só tem placeholder + comment, nunca valor real. Lint pre-commit se quiser, fora do escopo |
 | Re-baseline post-fix vira 2-3 PASS sem brainstorm Sub 1.B precisar | Alta na real — algumas falhas eram do harness | É o sucesso desejado. Brainstorm Sub 1.B atacaria só os gaps reais (FM-0001) e não fake-signals |
+| Endpoint `/api/agent/route` público (sem auth) — anyone burnar OpenAI budget | Médio — é PoC, mas hoje vive em prod | **Fora do escopo desse fix.** Backlog: adicionar `X-Eval-Secret` ou auth admin antes de virar dependência crítica de produção. Anotar como entry P1 no backlog ativo |
+| Schema vocabulário evolui (algum agent muda `'handoff'` → outro nome) | Baixa | Judge prompt vira lint-target. Considerar geração automática de `state-transition.txt` a partir dos enum Zod no futuro — fora do escopo desse fix |
 
 ## Roteiro de execução (high-level — vira plan)
 
 1. Adicionar `SUPABASE_SERVICE_KEY` ao `evals/.env` (puxar do Bitwarden).
 2. Atualizar `evals/.env.example`.
-3. Implementar `fetchTenant()` em `run.mjs`.
-4. Refactor `playConv()` em `run.mjs`.
-5. Refactor `judgeConv()` em `run.mjs` (só state-transition input change).
-6. Normalizar vocabulário nos 3 JSONs.
+3. Atualizar `_harness/judge-prompts/state-transition.txt` (vocabulário canonical).
+4. Implementar `fetchTenant()` em `run.mjs`.
+5. Refactor `playConv()` em `run.mjs`.
+6. Refactor `judgeConv()` em `run.mjs` (só state-transition input change).
 7. Smoke 1 eval (per-001) — manual inspect.
 8. Backup `report.json` → `report-pre-fix-2026-05-15.json`.
 9. Re-baseline 3/3 com harness corrigido.
