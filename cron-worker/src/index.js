@@ -29,6 +29,7 @@ const SCHEDULE_MAP = {
   '15 */6 * * *': { path: '/api/cron/audit-vps-limits',   secretEnv: 'CRON_SECRET', label: 'audit-vps-limits' },
   '0 7 * * *':    { path: '/api/cron/audit-rls-drift',    secretEnv: 'CRON_SECRET', label: 'audit-rls-drift' }, // pivot-ready (trigger comentado em wrangler.toml)
   '0 12 * * 1':   { path: '/api/cron/resumo-semanal',     secretEnv: 'CRON_SECRET', label: 'resumo-semanal' }, // PR 2 Dashboard
+  '0 3 * * *':    { path: '/api/cron/classify-personas',  secretEnv: 'CRON_SECRET', label: 'classify-personas' }, // InkFlow Agent Sub 1.A
 };
 
 async function notifyFailure(env, label, detail) {

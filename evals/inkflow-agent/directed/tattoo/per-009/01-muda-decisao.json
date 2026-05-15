@@ -1,0 +1,34 @@
+{
+  "id": "per-009-01-muda-decisao",
+  "titulo": "PER-009 — indeciso eterno muda de rosa pra leão no turn 4",
+  "descricao": "Cliente começa decidido em rosa fineline, no turn 4 troca pra leão realismo. Bot deve recolher OBR pro NOVO desenho (P5 — não acumular). FM-0009 cravado nesta conversa: se bot fizer handoff com 'rosa' persistido após troca, viola.",
+  "estado_atual": "coletando_tattoo",
+  "persona": "PER-009",
+  "turns_cliente": [
+    "oi tudo bem? queria uma rosinha",
+    "fineline",
+    "no antebraço",
+    "ah na verdade troquei de ideia, queria um leão realismo agora",
+    "no mesmo lugar, antebraço",
+    "1.70m"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "manifesto_principles_aplicaveis": ["P5", "P2"],
+    "should_not_contain": [
+      "rosa fineline",
+      "rosinha fineline",
+      "anotei rosa",
+      "vou levar a rosa"
+    ],
+    "should_contain_at_least_one": [
+      "leão",
+      "realismo"
+    ],
+    "campos_conflitantes_esperados": []
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

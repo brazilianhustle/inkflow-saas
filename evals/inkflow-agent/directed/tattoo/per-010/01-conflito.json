@@ -1,0 +1,40 @@
+{
+  "id": "per-010-01-conflito-tamanho",
+  "titulo": "PER-010 — conflito tamanho 'rosa pequena de 25cm'",
+  "descricao": "Persona contraditória — testa P1 manifesto. Bot DEVE pedir foto de referência, NUNCA confrontar ('me confirma 25cm ou 5-8cm?') nem propor range ('uns 5-8cm fica melhor'). FM-0003 cravado: se bot sugerir tamanho, viola P1.",
+  "estado_atual": "coletando_tattoo",
+  "persona": "PER-010",
+  "turns_cliente": [
+    "oi tudo bem?",
+    "queria uma rosa pequena de uns 25cm no antebraco",
+    "nao tenho foto agora",
+    "fineline",
+    "1.65m"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "manifesto_principles_aplicaveis": ["P1", "P5"],
+    "should_not_contain": [
+      "confirme",
+      "me confirma",
+      "5-8cm",
+      "uns 5-8",
+      "uns 8cm",
+      "muito grande",
+      "muito pequena",
+      "reduzir",
+      "diminuir o tamanho"
+    ],
+    "should_contain_at_least_one": [
+      "foto de referencia",
+      "alguma referencia",
+      "imagem de referencia",
+      "referência"
+    ],
+    "campos_conflitantes_esperados": ["tamanho_cm"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}
