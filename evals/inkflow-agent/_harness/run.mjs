@@ -96,23 +96,100 @@ async function callAnthropicJudge(systemPrompt, userPrompt) {
   return jsonMatch ? JSON.parse(jsonMatch[0]) : {};
 }
 
-async function playConv(conv) {
-  const history = [];
+const IMPLEMENTED_STATES = new Set([
+  'coletando_tattoo',
+  'tattoo',       // orchestrator canonical name for coletando_tattoo
+  'cadastro',
+  // PropostaAgent substates (Sub-3.2)
+  'propondo_valor',
+  'escolhendo_horario',
+  'aguardando_sinal',
+]);
+
+// Fixture state names -> orchestrator canonical state names
+// (fixtures use domain-readable names; orchestrator router uses short keys)
+const STATE_NORMALIZE = {
+  coletando_tattoo: 'tattoo',
+};
+
+function normalizeEstado(estado) {
+  return STATE_NORMALIZE[estado] || estado;
+}
+
+async function playConv(conv, tenant) {
+  const transcript = []; // { role, content, proxima_acao?, estado_novo?, dados_persistidos? }
+  let estado_atual = normalizeEstado(conv.estado_atual || 'coletando_tattoo');
+  let dados_acumulados = {};
+  const run_ts = Date.now();
+  const telefone = `eval-stub-${run_ts}`;
+
   for (let i = 0; i < (conv.turns_cliente || []).length; i++) {
-    history.push({ role: 'user', content: conv.turns_cliente[i] });
+    const turn = conv.turns_cliente[i];
+    transcript.push({ role: 'user', content: turn });
+
+    // historico que /api/agent/route espera: itens anteriores ao turn atual
+    const historico = transcript
+      .slice(0, -1) // exclui o user turn que acabamos de empilhar
+      .map(m => ({ role: m.role, content: m.content }));
+
     const headers = { 'Content-Type': 'application/json' };
+    // /api/agent/route e publico (Sub-1 PoC), nao precisa auth — header opcional
+    // mantido pra compat futura.
     if (EVAL_SECRET) headers['X-Eval-Secret'] = EVAL_SECRET;
-    else headers['Authorization'] = `Bearer ${BEARER}`;
-    const res = await fetch(`${BASE_URL}/api/tools/simular-conversa`, {
-      method: 'POST', headers,
-      body: JSON.stringify({ tenant_id: TENANT_ID, messages: history }),
-    });
-    if (!res.ok) return { transcript: history, error: `http ${res.status}` };
+
+    let res;
+    try {
+      res = await fetch(`${BASE_URL}/api/agent/route`, {
+        method: 'POST', headers,
+        body: JSON.stringify({
+          tenant_id: TENANT_ID,
+          telefone,
+          mensagem: turn,
+          estado_atual,
+          dados_acumulados,
+          historico,
+          tenant, // override do stub default do route.js:275
+        }),
+      });
+    } catch (e) {
+      return { transcript, error: `network: ${e?.message || e}` };
+    }
+
+    if (res.status === 501) {
+      // estado terminal (aguardando_tatuador / lead_frio / fechado) — handoff bem-sucedido
+      transcript.push({ role: 'system', content: '[terminal_handoff: estado nao-implementado]' });
+      return { transcript, terminal_handoff: true, last_estado_atual: estado_atual };
+    }
+    if (!res.ok) {
+      return { transcript, error: `http ${res.status}` };
+    }
     const data = await res.json();
-    if (!data.ok) return { transcript: history, error: data.error };
-    history.push({ role: 'assistant', content: data.reply || '' });
+    if (!data.ok) {
+      const detail = data.reason ? ` reason=${data.reason}` : '';
+      return { transcript, error: `${data.error || 'unknown'}${detail}` };
+    }
+
+    transcript.push({
+      role: 'assistant',
+      content: data.resposta_cliente || '',
+      proxima_acao: data.proxima_acao,
+      estado_novo: data.estado_novo,
+      dados_persistidos: data.dados_persistidos || {},
+    });
+
+    // Propaga estado/dados pro proximo turn
+    estado_atual = data.estado_novo || estado_atual;
+    dados_acumulados = { ...dados_acumulados, ...(data.dados_persistidos || {}) };
+
+    // Se estado_novo virou nao-implementado, proximo turn vai retornar 501.
+    // Break preventivo (terminal_handoff bem-sucedido no turn atual).
+    if (!IMPLEMENTED_STATES.has(estado_atual)) {
+      transcript.push({ role: 'system', content: `[terminal_handoff: estado_novo=${estado_atual} nao-implementado]` });
+      return { transcript, terminal_handoff: true, last_estado_atual: estado_atual };
+    }
   }
-  return { transcript: history };
+
+  return { transcript, last_estado_atual: estado_atual };
 }
 
 function buildTranscriptTxt(transcript) {
