@@ -6,6 +6,8 @@
 // Lookback: 7 dias. Batch: 10 paralelas, sleep 1s entre batches.
 // Idempotente: SELECT WHERE persona_inferred IS NULL.
 
+const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+
 import { classifyConversation } from '../../_lib/inkflow-agent/persona-classifier.js';
 
 const LOOKBACK_DAYS = 7;
@@ -19,10 +21,10 @@ function unauthorized() {
   });
 }
 
-async function selectPendingConversas(env) {
+async function selectPendingConversas(env, sbKey) {
   const sinceIso = new Date(Date.now() - LOOKBACK_DAYS * 86400_000).toISOString();
-  const url = new URL(`${env.SUPABASE_URL}/rest/v1/agent_turn_logs`);
-  url.searchParams.set('select', 'conversa_id,tenant_id,turn_index,role:agent_name,client_input_text,llm_output_parsed,created_at');
+  const url = new URL(`${SUPABASE_URL}/rest/v1/agent_turn_logs`);
+  url.searchParams.set('select', 'conversa_id,tenant_id,turn_index,client_input_text,llm_output_parsed,created_at');
   url.searchParams.set('persona_inferred', 'is.null');
   url.searchParams.set('agent_name', `eq.${AGENT_NAME_SCOPE}`);
   url.searchParams.set('created_at', `gte.${sinceIso}`);
@@ -31,8 +33,8 @@ async function selectPendingConversas(env) {
 
   const res = await fetch(url, {
     headers: {
-      'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
-      'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+      'apikey': sbKey,
+      'Authorization': `Bearer ${sbKey}`,
     },
   });
   if (!res.ok) throw new Error(`supabase select ${res.status}: ${await res.text()}`);
@@ -61,16 +63,16 @@ function groupByConversa(rows) {
   return byConv;
 }
 
-async function updatePersona(env, conversa_id, persona_id) {
-  const url = new URL(`${env.SUPABASE_URL}/rest/v1/agent_turn_logs`);
+async function updatePersona(env, sbKey, conversa_id, persona_id) {
+  const url = new URL(`${SUPABASE_URL}/rest/v1/agent_turn_logs`);
   url.searchParams.set('conversa_id', `eq.${conversa_id}`);
   url.searchParams.set('persona_inferred', 'is.null');
   const res = await fetch(url, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
-      'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+      'apikey': sbKey,
+      'Authorization': `Bearer ${sbKey}`,
       'Prefer': 'return=minimal',
     },
     body: JSON.stringify({ persona_inferred: persona_id }),
@@ -78,7 +80,7 @@ async function updatePersona(env, conversa_id, persona_id) {
   if (!res.ok) throw new Error(`supabase patch ${res.status}: ${await res.text()}`);
 }
 
-async function processBatch(env, batch, dryRun, stats) {
+async function processBatch(env, sbKey, batch, dryRun, stats) {
   await Promise.all(batch.map(async ([conversa_id, { turns }]) => {
     const result = await classifyConversation({ transcript: turns, env });
     if (!result) {
@@ -87,12 +89,12 @@ async function processBatch(env, batch, dryRun, stats) {
     }
     stats.classified++;
     if (dryRun) {
-      console.log(`[dry-run] conv=${conversa_id} → ${result.persona_id} (conf=${result.confianca.toFixed(2)}) razao=${result.razao}`);
+      console.log(`[dry-run] conv=${conversa_id} -> ${result.persona_id} (conf=${result.confianca.toFixed(2)}) razao=${result.razao}`);
       return;
     }
     try {
-      await updatePersona(env, conversa_id, result.persona_id);
-      console.log(`[ok] conv=${conversa_id} → ${result.persona_id} conf=${result.confianca.toFixed(2)}`);
+      await updatePersona(env, sbKey, conversa_id, result.persona_id);
+      console.log(`[ok] conv=${conversa_id} -> ${result.persona_id} conf=${result.confianca.toFixed(2)}`);
     } catch (err) {
       console.warn(`[update-fail] conv=${conversa_id}:`, err.message);
       stats.update_errors++;
@@ -103,21 +105,27 @@ async function processBatch(env, batch, dryRun, stats) {
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 export async function onRequestPost({ request, env }) {
-  const auth = request.headers.get('Authorization') || '';
-  const expected = `Bearer ${env.CRON_SECRET}`;
-  if (auth !== expected) return unauthorized();
+  const token = (request.headers.get('Authorization') || '').replace('Bearer ', '').trim();
+  if (!env.CRON_SECRET || token !== env.CRON_SECRET) return unauthorized();
+
+  const sbKey = env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!sbKey) {
+    return new Response(JSON.stringify({ ok: false, error: 'config_missing' }), {
+      status: 503, headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
   const url = new URL(request.url);
   const dryRun = url.searchParams.get('dry_run') === 'true';
 
   const t0 = Date.now();
-  const stats = { rows_read: 0, conversas_total: 0, classified: 0, skipped_low_conf_or_error: 0, update_errors: 0 };
+  const stats = { rows_read: 0, conversas_total: 0, conversas_processed: 0, classified: 0, skipped_low_conf_or_error: 0, update_errors: 0, truncated_by_time_budget: false };
 
   let rows;
-  try { rows = await selectPendingConversas(env); }
+  try { rows = await selectPendingConversas(env, sbKey); }
   catch (err) {
     console.error('[classify-personas] select failed:', err.message);
-    return new Response(JSON.stringify({ ok: false, error: err.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ ok: false, error: 'select_failed' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
   stats.rows_read = rows.length;
 
@@ -125,9 +133,17 @@ export async function onRequestPost({ request, env }) {
   stats.conversas_total = byConv.size;
 
   const entries = [...byConv.entries()];
+  const WALL_CLOCK_BUDGET_MS = 25000;
+
   for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+    if (Date.now() - t0 > WALL_CLOCK_BUDGET_MS) {
+      stats.truncated_by_time_budget = true;
+      console.warn(`[classify-personas] wall-clock budget hit at conv ${i}/${entries.length}`);
+      break;
+    }
     const batch = entries.slice(i, i + BATCH_SIZE);
-    await processBatch(env, batch, dryRun, stats);
+    await processBatch(env, sbKey, batch, dryRun, stats);
+    stats.conversas_processed += batch.length;
     if (i + BATCH_SIZE < entries.length) await sleep(INTER_BATCH_SLEEP_MS);
   }
 
