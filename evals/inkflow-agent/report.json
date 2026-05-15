@@ -1,0 +1,16 @@
+{
+  "ranAt": "2026-05-15T23:09:44.085Z",
+  "category": "directed",
+  "args": {
+    "category": "directed",
+    "agent": "tattoo",
+    "persona": "per-010"
+  },
+  "results": [
+    {
+      "id": "per-010-01-conflito-tamanho",
+      "status": "error",
+      "error": "http 500"
+    }
+  ]
+}
