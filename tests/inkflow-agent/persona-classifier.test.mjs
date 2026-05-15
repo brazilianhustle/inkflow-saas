@@ -96,3 +96,31 @@ test('classifyConversation tolera Anthropic 5xx (retorna null)', async () => {
   });
   assert.equal(result, null);
 });
+
+test('classifyConversation tolera content array vazio (Anthropic 200 mas sem texto)', async () => {
+  const fetchImpl = async () => ({ ok: true, status: 200, text: async () => '', json: async () => ({ content: [] }) });
+  const result = await classifyConversation({
+    transcript: SAMPLE_TRANSCRIPT,
+    env: { ANTHROPIC_API_KEY: 'sk-test' },
+    fetchImpl,
+  });
+  assert.equal(result, null);
+});
+
+test('classifyConversation tolera fetch throw (rede caiu)', async () => {
+  const fetchImpl = async () => { throw new Error('ECONNREFUSED'); };
+  const result = await classifyConversation({
+    transcript: SAMPLE_TRANSCRIPT,
+    env: { ANTHROPIC_API_KEY: 'sk-test' },
+    fetchImpl,
+  });
+  assert.equal(result, null);
+});
+
+test('classifyConversation rejeita confianca > 1 ou NaN/Infinity', async () => {
+  const fetchHigh = mockAnthropic({ persona_id: 'PER-001', confianca: 1.5, razao: 'x' });
+  assert.equal(await classifyConversation({ transcript: SAMPLE_TRANSCRIPT, env: { ANTHROPIC_API_KEY: 'sk' }, fetchImpl: fetchHigh }), null);
+
+  const fetchNaN = mockAnthropic({ persona_id: 'PER-001', confianca: 'high', razao: 'x' });
+  assert.equal(await classifyConversation({ transcript: SAMPLE_TRANSCRIPT, env: { ANTHROPIC_API_KEY: 'sk' }, fetchImpl: fetchNaN }), null);
+});

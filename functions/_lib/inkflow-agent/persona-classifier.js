@@ -40,13 +40,12 @@ Regras:
 
 function parseClassifierJSON(rawText) {
   if (!rawText) return null;
-  const match = rawText.match(/\{[\s\S]*\}/);
-  if (!match) return null;
-  try {
-    return JSON.parse(match[0]);
-  } catch {
-    return null;
-  }
+  const stripped = rawText.replace(/```(?:json)?\s*/g, '').replace(/```\s*$/g, '').trim();
+  try { return JSON.parse(stripped); } catch {}
+  const lastOpen = stripped.lastIndexOf('{');
+  const lastClose = stripped.lastIndexOf('}');
+  if (lastOpen === -1 || lastClose <= lastOpen) return null;
+  try { return JSON.parse(stripped.slice(lastOpen, lastClose + 1)); } catch { return null; }
 }
 
 export async function classifyConversation({ transcript, env, fetchImpl = fetch }) {
@@ -94,7 +93,7 @@ export async function classifyConversation({ transcript, env, fetchImpl = fetch 
 
   const { persona_id, confianca, razao } = parsed;
   if (!VALID_PERSONA_IDS.has(persona_id)) return null;
-  if (typeof confianca !== 'number' || confianca < CONFIDENCE_THRESHOLD) return null;
+  if (typeof confianca !== 'number' || !Number.isFinite(confianca) || confianca < CONFIDENCE_THRESHOLD || confianca > 1) return null;
 
   return { persona_id, confianca, razao: razao || '' };
 }
