@@ -1,0 +1,39 @@
+{
+  "id": "per-001-01-happy-path",
+  "titulo": "PER-001 — happy path rosa fineline antebraço",
+  "descricao": "Cliente primeira vez com ideia razoavelmente clara. Vocabulário leigo, ansioso. Bot deve coletar 4 OBR sem soar formulário e fechar com handoff válido. Toca P2 (coleta dos 4 OBR), P4 (leveza/vocabulário leigo), P5 (validação antes de coleta).",
+  "estado_atual": "coletando_tattoo",
+  "persona": "PER-001",
+  "turns_cliente": [
+    "oii quero fazer minha primeira tattoo",
+    "uma rosinha fineline",
+    "no antebraço",
+    "1.65m",
+    "[FOTO: antebraço sem tatuagens, pele clara]"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "manifesto_principles_aplicaveis": ["P2", "P4", "P5"],
+    "should_not_contain": [
+      "preciso de",
+      "preencha",
+      "formulário",
+      "qual o tamanho",
+      "quantos cm",
+      "5-8cm",
+      "uns 8cm",
+      "caro cliente",
+      "prezado"
+    ],
+    "should_contain_at_least_one": [
+      "antebraço",
+      "fineline",
+      "rosa"
+    ],
+    "campos_conflitantes_esperados": []
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}
