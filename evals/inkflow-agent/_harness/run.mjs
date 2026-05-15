@@ -33,6 +33,9 @@ const TENANT_ID = process.env.TENANT_ID;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const JUDGE_MODEL = process.env.JUDGE_MODEL || 'claude-haiku-4-5-20251001';
 
+const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
 function parseArgs(argv) {
   const args = {};
   for (const a of argv) {
@@ -40,6 +43,26 @@ function parseArgs(argv) {
     if (m) args[m[1]] = m[2];
   }
   return args;
+}
+
+async function fetchTenant(tenantId) {
+  if (!SUPABASE_KEY) {
+    throw new Error('SUPABASE_SERVICE_KEY missing em evals/.env — adicione a variavel pra harness puxar config real do tenant.');
+  }
+  const fields = 'id,nome_agente,nome_estudio,plano,faq_texto,config_precificacao,' +
+                 'config_agente,horario_funcionamento,duracao_sessao_padrao_h,' +
+                 'sinal_percentual,gatilhos_handoff,portfolio_urls,modo_atendimento';
+  const url = `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenantId)}&select=${fields}`;
+  const r = await fetch(url, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+  });
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(`fetchTenant http ${r.status}: ${txt.slice(0, 200)}`);
+  }
+  const arr = await r.json();
+  if (!arr.length) throw new Error(`fetchTenant: tenant ${tenantId} nao encontrado`);
+  return arr[0];
 }
 
 function loadJudgePrompt(name) {
@@ -144,10 +167,21 @@ async function main() {
     process.exit(0);
   }
 
+  // Sub 1.A fix harness: fetch tenant real do Supabase pra passar config no payload
+  // do /api/agent/route (que aceita body.tenant override do stub default).
+  let tenantResolved;
+  try {
+    tenantResolved = await fetchTenant(TENANT_ID);
+    console.log(`   Tenant: ${tenantResolved.nome_estudio || tenantResolved.id} (plano=${tenantResolved.plano})\n`);
+  } catch (e) {
+    console.error(`FATAL fetchTenant: ${e.message}`);
+    process.exit(2);
+  }
+
   const results = [];
   for (const conv of convs) {
     process.stdout.write(`→ ${conv.id} ... `);
-    const played = await playConv(conv);
+    const played = await playConv(conv, tenantResolved);
     if (played.error) {
       console.log(`❌ ${played.error}`);
       results.push({ id: conv.id, status: 'error', error: played.error });
