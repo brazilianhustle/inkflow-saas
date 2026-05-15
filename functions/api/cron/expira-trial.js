@@ -1,5 +1,5 @@
 // ── InkFlow — Cron: expira trials de 7 dias ──────────────────────────────────
-// Roda diariamente via trigger externo (UptimeRobot / n8n schedule).
+// Roda diariamente via trigger externo (Cloudflare Worker cron / UptimeRobot).
 // Auth: Authorization: Bearer <CRON_SECRET>
 //
 // Logica:

@@ -15,9 +15,9 @@
 // 3. message text que e reply de "Qual valor pra <orcid>" → captura valor,
 //    estado=propondo_valor, dispara reentrada bot.
 //
-// Reentrada do bot: chama webhook n8n configurado em env.N8N_REENTRADA_WEBHOOK_URL
-// com payload { conversa_id, orcid, evento }. n8n carrega prompt atualizado
-// via /api/tools/prompt e responde no chat do cliente via Evolution.
+// Reentrada do bot: chama o endpoint code-first /api/telegram/reentrada via
+// disparaReentrada(), que monta o prompt atualizado e responde no chat do
+// cliente via Evolution. (Antes era um workflow n8n — migrado no Sub-4.x.)
 //
 // Idempotencia: webhooks podem ser entregues 2x. Usamos update_id como chave —
 // se ja processamos um update, ignoramos. (Implementacao MVP: best-effort,

@@ -20,7 +20,7 @@
 //   - EVO_GLOBAL_KEY (API key global da Evolution API)
 //
 // Pode ser chamado por:
-//   - Cron job externo (ex: n8n scheduled workflow, UptimeRobot, etc.)
+//   - Cron job externo (Cloudflare Worker cron / UptimeRobot, etc.)
 //   - Manualmente pelo admin
 //
 // Bug 3 fix: evita acúmulo de tenants órfãos criados antes do pagamento.

@@ -6,7 +6,7 @@
 //   propondo_valor, aguardando_decisao_desconto, escolhendo_horario,
 //   aguardando_sinal, lead_frio, fechado.
 //
-// Estados em que o bot NÃO responde (retorna null pro n8n curto-circuitar):
+// Estados em que o bot NÃO responde (retorna null pro caller curto-circuitar):
 //   aguardando_tatuador, lead_frio, fechado.
 import { generatePromptColetaTattoo } from './coleta/tattoo/generate.js';
 import { generatePromptColetaCadastro } from './coleta/cadastro/generate.js';
@@ -32,7 +32,7 @@ export function generateSystemPrompt(tenant, conversa, clientContext) {
   const estado = conversa?.estado_agente || 'coletando_tattoo';
 
   if (ESTADOS_BOT_NAO_RESPONDE.has(estado)) {
-    // Sinaliza pro n8n não chamar LLM. Ack/no-op.
+    // Sinaliza pro caller não chamar LLM. Ack/no-op.
     return null;
   }
 

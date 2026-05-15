@@ -3,8 +3,8 @@
 // Headers: X-Inkflow-Tool-Secret
 // Body: { tenant_id, estilo?, max? }
 // Retorna ate 5 URLs do portfolio_urls do tenant (filtrado por estilo se fornecido).
-// A tool so retorna os links — o envio efetivo da midia cabe ao workflow n8n
-// via evo api (assim evitamos duplicar logica de envio de imagem).
+// A tool so retorna os links — o envio efetivo da midia cabe ao caller
+// (pipeline code-first) via evo api (assim evitamos duplicar logica de envio).
 
 import { withTool, supaFetch } from './_tool-helpers.js';
 

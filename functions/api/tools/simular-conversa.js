@@ -169,7 +169,7 @@ export async function onRequest(context) {
     }
   }
 
-  // Guardrails pré-LLM (shared module — mesma lógica exposta via /api/tools/guardrails/pre)
+  // Guardrails pré-LLM (shared module functions/_lib/guardrails.js)
   const preResult = runPreGuardrails({ messages });
   if (preResult.bypass) {
     return toolJson({

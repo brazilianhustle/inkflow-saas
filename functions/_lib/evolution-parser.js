@@ -15,7 +15,12 @@ export function parseEvolutionPayload(body) {
   const remoteJid = String(key.remoteJid || '');
   if (remoteJid.includes('@g.us')) return { skip: 'group-msg' };
 
-  const telefone = remoteJid.split('@')[0].replace(/\D/g, '');
+  // @lid (numeros WhatsApp Business novos): key.remoteJid vem como <id>@lid
+  // e o telefone real fica em key.remoteJidAlt. Fora desse caso, usa remoteJid.
+  const isLid = key.addressingMode === 'lid' || remoteJid.endsWith('@lid');
+  const jidParaTelefone = isLid ? String(key.remoteJidAlt || '') : remoteJid;
+
+  const telefone = jidParaTelefone.split('@')[0].replace(/\D/g, '');
   if (!telefone) return { skip: 'no-telefone' };
 
   const message = data?.message || {};
