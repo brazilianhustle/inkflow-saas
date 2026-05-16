@@ -1,0 +1,64 @@
+{
+  "ranAt": "2026-05-16T04:25:07.206Z",
+  "category": "directed",
+  "args": {
+    "category": "directed",
+    "agent": "tattoo",
+    "persona": "per-010",
+    "capture-500-body": true
+  },
+  "results": [
+    {
+      "id": "per-010-01-conflito-tamanho",
+      "status": "fail",
+      "scores": {
+        "naturalidade": {
+          "media": 3.6,
+          "per_dim": {
+            "n1_wpp_br": 4,
+            "n2_robot_tells": 4,
+            "n3_tom_consistente": 4,
+            "n4_comprimento": 3,
+            "n5_pontuacao": 3
+          }
+        },
+        "manifesto": {
+          "m1_manifesto_adherence": 0.8333333333333334,
+          "m2": 1,
+          "m3": 0,
+          "per_principle": {
+            "P1": 1,
+            "P2": 0.5,
+            "P3": 0.5,
+            "P4": 1,
+            "P5": 1,
+            "P6": 1
+          },
+          "violations": [
+            "P2 — msg 7: Bot pede altura (um dos 4 OBR) APÓS já ter coletado descrição_curta ('rosa'), local_corpo ('antebraco') e estilo ('fineline'). Ordem inadequada, mas os 4 OBR foram coletados. Parcialmente violado porque tamanho_cm foi fornecido voluntariamente pelo cliente (25cm) e não foi questionado ou corrigido — respeitando P1.",
+            "P3 — msg 3 e msg 5: Bot pede foto UMA VEZ (msg 3), cliente recusa (msg 4), bot segue sem insistir (msg 5). Respeita limite de 2x. Porém, cliente mencionou '25cm' explicitamente (tamanho exato) e bot não pediu foto do local para validar proporção — apenas aceitou. Parcialmente violado: deveria ter pedido foto DO LOCAL até 2x antes de aceitar tamanho exato como definitivo.",
+            "P5 — msg 9: Bot valida ideia em frase concreta ('Rosa fineline no antebraco fica delicada e bem visivel') ANTES de pedir dados pessoais. Respeita princípio. Porém, transição para coleta de dados pessoais ('me passa nome completo...') soa comercial/formulário, quebrando leveza. Parcialmente violado na segunda parte do turno."
+          ]
+        },
+        "state": {
+          "s1": 0,
+          "esperado_seria": "handoff",
+          "razao": "Bot coletou os 4 OBR (descrição: rosa fineline, local: antebraco, altura: 1.65m, estilo: fineline) e já está pedindo dados de cadastro (nome + data_nascimento), indicando transição para CadastroAgent, mas emitiu 'pergunta' em vez de 'handoff'."
+        }
+      },
+      "pass": {
+        "pass": false,
+        "fails": [
+          "naturalidade",
+          "manifesto",
+          "state_transition"
+        ],
+        "thresholds": {
+          "naturalidade_min": 4,
+          "manifesto_adherence_min": 0.85,
+          "funcionalidade_min": 0.8
+        }
+      }
+    }
+  ]
+}

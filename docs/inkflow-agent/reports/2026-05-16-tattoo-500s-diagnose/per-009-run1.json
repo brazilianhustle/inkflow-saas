@@ -1,0 +1,21 @@
+{
+  "ranAt": "2026-05-16T04:22:53.568Z",
+  "category": "directed",
+  "args": {
+    "category": "directed",
+    "agent": "tattoo",
+    "persona": "per-009",
+    "capture-500-body": true
+  },
+  "results": [
+    {
+      "id": "per-009-01-muda-decisao",
+      "status": "error",
+      "error": "http 500",
+      "response_status": 500,
+      "response_body_raw": "{\"ok\":false,\"error\":\"invariant-violation\",\"reason\":\"pergunta com campos_faltando=[altura_cm] mas resposta sem '?' — fragment=\\\"Top! Rosa fineline no antebraço.\\\"\"}",
+      "turn_index": 2,
+      "turn_content": "no antebraço"
+    }
+  ]
+}

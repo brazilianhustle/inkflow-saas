@@ -1,0 +1,62 @@
+{
+  "ranAt": "2026-05-16T04:22:41.812Z",
+  "category": "directed",
+  "args": {
+    "category": "directed",
+    "agent": "tattoo",
+    "persona": "per-001",
+    "capture-500-body": true
+  },
+  "results": [
+    {
+      "id": "per-001-01-happy-path",
+      "status": "fail",
+      "scores": {
+        "naturalidade": {
+          "media": 3.4,
+          "per_dim": {
+            "n1_wpp_br": 4,
+            "n2_robot_tells": 4,
+            "n3_tom_consistente": 3,
+            "n4_comprimento": 3,
+            "n5_pontuacao": 3
+          }
+        },
+        "manifesto": {
+          "m1_manifesto_adherence": 0.8333333333333334,
+          "m2": 1,
+          "m3": 1,
+          "per_principle": {
+            "P1": 1,
+            "P2": 0.5,
+            "P3": 0.5,
+            "P4": 1,
+            "P5": 1,
+            "P6": 1
+          },
+          "violations": [
+            "P2 — msg 7: Bot não coletou 'estilo' como obrigatório antes de pedir foto. Perguntou 'qual estilo você prefere?' mas não aguardou resposta clara antes de avançar para foto.",
+            "P3 — msg 9: Bot pede foto do local APÓS cliente já ter mandado foto (msg 8). Redunda e confunde; deveria ter validado a foto recebida ou pedido esclarecimento sobre enquadramento, não repetir pedido."
+          ]
+        },
+        "state": {
+          "s1": 1,
+          "esperado_seria": "pergunta",
+          "razao": "Bot ainda está em coletando_tattoo (faltam estilo + confirmação de detalhes), emitiu 'pergunta' para coletar estilo — transição consistente com o estado e conteúdo da conversa."
+        }
+      },
+      "pass": {
+        "pass": false,
+        "fails": [
+          "naturalidade",
+          "manifesto"
+        ],
+        "thresholds": {
+          "naturalidade_min": 4,
+          "manifesto_adherence_min": 0.85,
+          "funcionalidade_min": 0.8
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "ranAt": "2026-05-16T04:23:54.713Z",
+  "category": "directed",
+  "args": {
+    "category": "directed",
+    "agent": "tattoo",
+    "persona": "per-009",
+    "capture-500-body": true
+  },
+  "results": [
+    {
+      "id": "per-009-01-muda-decisao",
+      "status": "fail",
+      "scores": {
+        "naturalidade": {
+          "media": 3.8,
+          "per_dim": {
+            "n1_wpp_br": 4,
+            "n2_robot_tells": 4,
+            "n3_tom_consistente": 4,
+            "n4_comprimento": 3,
+            "n5_pontuacao": 4
+          }
+        },
+        "manifesto": {
+          "m1_manifesto_adherence": 0.6666666666666666,
+          "m2": 0,
+          "m3": 1,
+          "per_principle": {
+            "P1": 1,
+            "P2": 0.5,
+            "P3": 1,
+            "P4": 1,
+            "P5": 0.5,
+            "P6": 0
+          },
+          "violations": [
+            "msg 6-7: Cliente muda de ideia (rosa → leão), indicando indecisão. Bot trata como COLETOR (modo decidido) em vez de reconhecer CONSULTOR. VIOLA P6.",
+            "msg 5, 7, 9: Bot pede tamanho_cm como obrigatório antes de coletar estilo (leão realismo é estilo, não foi coletado explicitamente). Sequência quebrada: deveria coletar 4 OBR (descrição, local, altura, estilo) antes de pedir foto. VIOLA P2 parcialmente.",
+            "msg 1, 3, 5, 7, 9: Bot usa linguagem formulário ('Anotei', 'Show') sem validação substantiva. Não comenta nenhuma característica concreta da ideia (ex: 'leão realismo fica épico no antebraço, muito impacto'). Apenas eco genérico. VIOLA P5 parcialmente."
+          ]
+        },
+        "state": {
+          "s1": 0,
+          "esperado_seria": "aguardando_foto",
+          "razao": "Bot coletou os 4 OBR (descrição: leão realismo, local: antebraço, altura: 170cm, estilo: realismo) e pediu foto; deveria transicionar para estado 'aguardando_foto', não permanecer em 'pergunta' dentro de 'coletando_tattoo'."
+        }
+      },
+      "pass": {
+        "pass": false,
+        "fails": [
+          "naturalidade",
+          "manifesto",
+          "state_transition"
+        ],
+        "thresholds": {
+          "naturalidade_min": 4,
+          "manifesto_adherence_min": 0.85,
+          "funcionalidade_min": 0.8
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "ranAt": "2026-05-16T04:23:19.084Z",
+  "category": "directed",
+  "args": {
+    "category": "directed",
+    "agent": "tattoo",
+    "persona": "per-009",
+    "capture-500-body": true
+  },
+  "results": [
+    {
+      "id": "per-009-01-muda-decisao",
+      "status": "fail",
+      "scores": {
+        "naturalidade": {
+          "media": 3.6,
+          "per_dim": {
+            "n1_wpp_br": 4,
+            "n2_robot_tells": 3,
+            "n3_tom_consistente": 4,
+            "n4_comprimento": 3,
+            "n5_pontuacao": 4
+          }
+        },
+        "manifesto": {
+          "m1_manifesto_adherence": 0.5833333333333334,
+          "m2": 0,
+          "m3": 1,
+          "per_principle": {
+            "P1": 1,
+            "P2": 0.5,
+            "P3": 1,
+            "P4": 1,
+            "P5": 0,
+            "P6": 0
+          },
+          "violations": [
+            "msg 5, 7, 9: Bot repete 'Anotei' + pergunta tamanho sem validar substantivamente a mudança de ideia (rosa → leão). Viola P5 (sem validação em 1 frase antes de coletar).",
+            "msg 6-9: Cliente é indeciso (muda rosa por leão no turn 4). Bot trata como COLETOR (segue coleta mecânica) em vez de CONSULTOR. Viola P6 (não reconhece indecisão).",
+            "msg 5, 7, 9: Pergunta 'Qual é a sua altura?' 3 vezes sem contexto. Soa formulário robotizado, não conversa simpática. Viola P5 (linguagem comercial/formulário)."
+          ]
+        },
+        "state": {
+          "s1": 1,
+          "esperado_seria": "pergunta",
+          "razao": "Bot ainda em coletando_tattoo com 3 dos 4 OBR preenchidos (descrição: leão realismo, local: antebraço, altura: 170cm); falta foto do local. A proxima_acao 'pergunta' é consistente pois o bot está pedindo a foto (msg 11), que é o 4º OBR necessário antes do handoff."
+        }
+      },
+      "pass": {
+        "pass": false,
+        "fails": [
+          "naturalidade",
+          "manifesto"
+        ],
+        "thresholds": {
+          "naturalidade_min": 4,
+          "manifesto_adherence_min": 0.85,
+          "funcionalidade_min": 0.8
+        }
+      }
+    }
+  ]
+}
