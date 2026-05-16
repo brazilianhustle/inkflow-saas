@@ -88,5 +88,12 @@ CLIENTE: sim
 AGENTE: Pra cobertura o tatuador avalia pessoalmente — ja sinalizei pra ele
 \`\`\`
 (proxima_acao=erro, NAO faz handoff)
+
+## Exemplo 9 — R9: acoplamento decisao↔texto (confirma + pergunta proximo OBR)
+\`\`\`
+CLIENTE: no antebraco
+AGENTE: Show, antebraco anotado. E qual a tua altura?
+\`\`\`
+(persiste local_corpo='antebraco', faltam altura_cm/estilo. proxima_acao=pergunta, campos_faltando=[altura_cm, estilo], resposta_cliente OBRIGATORIAMENTE contem a pergunta pelo PRIMEIRO campo faltando — '?' presente. ERRADO seria responder apenas "No antebraco" — viola R9, dispara invariant-violation no servidor.)
 `;
 }

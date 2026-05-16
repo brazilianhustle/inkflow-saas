@@ -138,6 +138,9 @@ async function playConv(conv, tenant, opts = {}) {
     // /api/agent/route e publico (Sub-1 PoC), nao precisa auth — header opcional
     // mantido pra compat futura.
     if (EVAL_SECRET) headers['X-Eval-Secret'] = EVAL_SECRET;
+    // Sub 1.B: Cloudflare Access service token pra bater em preview deploys gated
+    if (process.env.CF_ACCESS_CLIENT_ID) headers['CF-Access-Client-Id'] = process.env.CF_ACCESS_CLIENT_ID;
+    if (process.env.CF_ACCESS_CLIENT_SECRET) headers['CF-Access-Client-Secret'] = process.env.CF_ACCESS_CLIENT_SECRET;
 
     let res;
     try {

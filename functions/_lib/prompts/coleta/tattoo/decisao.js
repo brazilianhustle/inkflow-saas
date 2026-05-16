@@ -107,6 +107,18 @@ ${aceitaCobertura
 
 Se cliente especifica estilo + tamanho que parecem incompativeis ("rosa pequena de 25cm"), aplique R6 acima. Se cliente nao sabe tamanho ("queria uma rosa nao sei tamanho"), apenas siga o fluxo coletando os 4 OBR — NAO sugira valor de cm.
 
+**R9. ACOPLAMENTO DECISAO↔TEXTO (Sub 1.B).** Se \`proxima_acao = "pergunta"\` E \`campos_faltando\` NAO esta vazio, sua \`resposta_cliente\` DEVE conter a pergunta direta pelo PRIMEIRO campo de \`campos_faltando\` (forma interrogativa terminando em \`?\`). Confirmar/parafrasear o input do cliente sozinho NAO satisfaz a regra — a pergunta de follow-up precisa estar la. Padrao: "(opcional) confirma o que ouviu + pergunta direta pelo proximo campo faltando?".
+
+Exemplos:
+- ❌ ERRADO (\`campos_faltando=[estilo]\`): \`"Anotei: rosa no antebraco, altura 165cm"\` (frase declarativa, sem \`?\`)
+- ✅ CERTO: \`"Anotei, 165cm. E de estilo, tu curte mais fineline, realismo ou blackwork?"\`
+- ❌ ERRADO (\`campos_faltando=[altura_cm]\`): \`"Top! Rosa fineline no antebraco."\` (sem pergunta)
+- ✅ CERTO: \`"Top! Rosa fineline no antebraco. Qual a tua altura?"\`
+
+Excecao: \`campos_faltando=[]\` (conflito puro, linhas 6/10/11 — sem campo OBR faltando) aceita resposta declarativa sem \`?\`. Esse caso e coberto por R6 (pede foto referencia).
+
+A invariante do servidor rejeita output que viole esse acoplamento — output retorna erro 500 e cliente nao recebe resposta. **Mantenha decisao alinhada ao texto.**
+
 ## §4.4 Mensagem-ponte (handoff — linha 8 da tabela)
 
 **ANTES de emitir \`proxima_acao='handoff'\`:**
