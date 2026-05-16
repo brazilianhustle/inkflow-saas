@@ -39,8 +39,10 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 function parseArgs(argv) {
   const args = {};
   for (const a of argv) {
-    const m = a.match(/^--(\w+)=(.+)$/);
-    if (m) args[m[1]] = m[2];
+    const m = a.match(/^--(\w[\w-]*)=(.+)$/);
+    if (m) { args[m[1]] = m[2]; continue; }
+    const f = a.match(/^--(\w[\w-]*)$/);
+    if (f) { args[f[1]] = true; }
   }
   return args;
 }
@@ -116,7 +118,7 @@ function normalizeEstado(estado) {
   return STATE_NORMALIZE[estado] || estado;
 }
 
-async function playConv(conv, tenant) {
+async function playConv(conv, tenant, opts = {}) {
   const transcript = []; // { role, content, proxima_acao?, estado_novo?, dados_persistidos? }
   let estado_atual = normalizeEstado(conv.estado_atual || 'coletando_tattoo');
   let dados_acumulados = {};
@@ -161,7 +163,20 @@ async function playConv(conv, tenant) {
       return { transcript, terminal_handoff: true, last_estado_atual: estado_atual };
     }
     if (!res.ok) {
-      return { transcript, error: `http ${res.status}` };
+      let bodyRaw = null;
+      if (opts.capture500Body && res.status >= 500) {
+        try { bodyRaw = await res.text(); } catch { bodyRaw = '[read-error]'; }
+      }
+      return {
+        transcript,
+        error: `http ${res.status}`,
+        ...(bodyRaw !== null && {
+          response_status: res.status,
+          response_body_raw: bodyRaw,
+          turn_index: i,
+          turn_content: turn,
+        }),
+      };
     }
     const data = await res.json();
     if (!data.ok) {
@@ -265,10 +280,17 @@ async function main() {
   const results = [];
   for (const conv of convs) {
     process.stdout.write(`→ ${conv.id} ... `);
-    const played = await playConv(conv, tenantResolved);
+    const played = await playConv(conv, tenantResolved, { capture500Body: !!args['capture-500-body'] });
     if (played.error) {
       console.log(`❌ ${played.error}`);
-      results.push({ id: conv.id, status: 'error', error: played.error });
+      const entry = { id: conv.id, status: 'error', error: played.error };
+      if (played.response_body_raw) {
+        entry.response_status = played.response_status;
+        entry.response_body_raw = played.response_body_raw;
+        entry.turn_index = played.turn_index;
+        entry.turn_content = played.turn_content;
+      }
+      results.push(entry);
       continue;
     }
     const scores = await judgeConv(conv, played.transcript, conv.estado_atual || 'coletando_tattoo');
