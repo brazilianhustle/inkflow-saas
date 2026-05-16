@@ -33,6 +33,9 @@ const TENANT_ID = process.env.TENANT_ID;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const JUDGE_MODEL = process.env.JUDGE_MODEL || 'claude-haiku-4-5-20251001';
 
+const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
 function parseArgs(argv) {
   const args = {};
   for (const a of argv) {
@@ -40,6 +43,26 @@ function parseArgs(argv) {
     if (m) args[m[1]] = m[2];
   }
   return args;
+}
+
+async function fetchTenant(tenantId) {
+  if (!SUPABASE_KEY) {
+    throw new Error('SUPABASE_SERVICE_KEY missing em evals/.env — adicione a variavel pra harness puxar config real do tenant.');
+  }
+  const fields = 'id,nome_agente,nome_estudio,plano,faq_texto,config_precificacao,' +
+                 'config_agente,horario_funcionamento,duracao_sessao_padrao_h,' +
+                 'sinal_percentual,gatilhos_handoff,portfolio_urls,modo_atendimento';
+  const url = `${SUPABASE_URL}/rest/v1/tenants?id=eq.${encodeURIComponent(tenantId)}&select=${fields}`;
+  const r = await fetch(url, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+  });
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(`fetchTenant http ${r.status}: ${txt.slice(0, 200)}`);
+  }
+  const arr = await r.json();
+  if (!arr.length) throw new Error(`fetchTenant: tenant ${tenantId} nao encontrado`);
+  return arr[0];
 }
 
 function loadJudgePrompt(name) {
@@ -73,23 +96,100 @@ async function callAnthropicJudge(systemPrompt, userPrompt) {
   return jsonMatch ? JSON.parse(jsonMatch[0]) : {};
 }
 
-async function playConv(conv) {
-  const history = [];
+const IMPLEMENTED_STATES = new Set([
+  'coletando_tattoo',
+  'tattoo',       // orchestrator canonical name for coletando_tattoo
+  'cadastro',
+  // PropostaAgent substates (Sub-3.2)
+  'propondo_valor',
+  'escolhendo_horario',
+  'aguardando_sinal',
+]);
+
+// Fixture state names -> orchestrator canonical state names
+// (fixtures use domain-readable names; orchestrator router uses short keys)
+const STATE_NORMALIZE = {
+  coletando_tattoo: 'tattoo',
+};
+
+function normalizeEstado(estado) {
+  return STATE_NORMALIZE[estado] || estado;
+}
+
+async function playConv(conv, tenant) {
+  const transcript = []; // { role, content, proxima_acao?, estado_novo?, dados_persistidos? }
+  let estado_atual = normalizeEstado(conv.estado_atual || 'coletando_tattoo');
+  let dados_acumulados = {};
+  const run_ts = Date.now();
+  const telefone = `eval-stub-${run_ts}`;
+
   for (let i = 0; i < (conv.turns_cliente || []).length; i++) {
-    history.push({ role: 'user', content: conv.turns_cliente[i] });
+    const turn = conv.turns_cliente[i];
+    transcript.push({ role: 'user', content: turn });
+
+    // historico que /api/agent/route espera: itens anteriores ao turn atual
+    const historico = transcript
+      .slice(0, -1) // exclui o user turn que acabamos de empilhar
+      .map(m => ({ role: m.role, content: m.content }));
+
     const headers = { 'Content-Type': 'application/json' };
+    // /api/agent/route e publico (Sub-1 PoC), nao precisa auth — header opcional
+    // mantido pra compat futura.
     if (EVAL_SECRET) headers['X-Eval-Secret'] = EVAL_SECRET;
-    else headers['Authorization'] = `Bearer ${BEARER}`;
-    const res = await fetch(`${BASE_URL}/api/tools/simular-conversa`, {
-      method: 'POST', headers,
-      body: JSON.stringify({ tenant_id: TENANT_ID, messages: history }),
-    });
-    if (!res.ok) return { transcript: history, error: `http ${res.status}` };
+
+    let res;
+    try {
+      res = await fetch(`${BASE_URL}/api/agent/route`, {
+        method: 'POST', headers,
+        body: JSON.stringify({
+          tenant_id: TENANT_ID,
+          telefone,
+          mensagem: turn,
+          estado_atual,
+          dados_acumulados,
+          historico,
+          tenant, // override do stub default do route.js:275
+        }),
+      });
+    } catch (e) {
+      return { transcript, error: `network: ${e?.message || e}` };
+    }
+
+    if (res.status === 501) {
+      // estado terminal (aguardando_tatuador / lead_frio / fechado) — handoff bem-sucedido
+      transcript.push({ role: 'system', content: '[terminal_handoff: estado nao-implementado]' });
+      return { transcript, terminal_handoff: true, last_estado_atual: estado_atual };
+    }
+    if (!res.ok) {
+      return { transcript, error: `http ${res.status}` };
+    }
     const data = await res.json();
-    if (!data.ok) return { transcript: history, error: data.error };
-    history.push({ role: 'assistant', content: data.reply || '' });
+    if (!data.ok) {
+      const detail = data.reason ? ` reason=${data.reason}` : '';
+      return { transcript, error: `${data.error || 'unknown'}${detail}` };
+    }
+
+    transcript.push({
+      role: 'assistant',
+      content: data.resposta_cliente || '',
+      proxima_acao: data.proxima_acao,
+      estado_novo: data.estado_novo,
+      dados_persistidos: data.dados_persistidos || {},
+    });
+
+    // Propaga estado/dados pro proximo turn
+    estado_atual = data.estado_novo || estado_atual;
+    dados_acumulados = { ...dados_acumulados, ...(data.dados_persistidos || {}) };
+
+    // Se estado_novo virou nao-implementado, proximo turn vai retornar 501.
+    // Break preventivo (terminal_handoff bem-sucedido no turn atual).
+    if (!IMPLEMENTED_STATES.has(estado_atual)) {
+      transcript.push({ role: 'system', content: `[terminal_handoff: estado_novo=${estado_atual} nao-implementado]` });
+      return { transcript, terminal_handoff: true, last_estado_atual: estado_atual };
+    }
   }
-  return { transcript: history };
+
+  return { transcript, last_estado_atual: estado_atual };
 }
 
 function buildTranscriptTxt(transcript) {
@@ -99,10 +199,17 @@ function buildTranscriptTxt(transcript) {
 async function judgeConv(conv, transcript, estado_atual) {
   const transcriptTxt = buildTranscriptTxt(transcript);
 
+  // Bug Dim C fix: extrai proxima_acao REAL do ultimo turn assistant
+  // (em vez de passar conv.expected.proxima_acao_esperada que e rotulo do
+  // JSON eval, nao output do bot).
+  const lastAssistant = [...transcript].reverse().find(m => m.role === 'assistant');
+  const lastProximaAcao = lastAssistant?.proxima_acao || 'desconhecida';
+  const lastEstadoNovo = lastAssistant?.estado_novo || estado_atual;
+
   const [natOut, manOut, stateOut] = await Promise.all([
     callAnthropicJudge(loadJudgePrompt('naturalidade-v2'), `Contexto: ${conv.titulo}\n\nTranscript:\n\n${transcriptTxt}\n\nAvalie.`),
     callAnthropicJudge(loadJudgePrompt('manifesto-adherence'), `Contexto: ${conv.titulo}\n\nTranscript:\n\n${transcriptTxt}\n\nAvalie cada principio aplicavel.`),
-    callAnthropicJudge(loadJudgePrompt('state-transition'), `estado_atual: ${estado_atual}\n\nTranscript:\n\n${transcriptTxt}\n\nUltima proxima_acao no output: ${conv.expected?.proxima_acao_esperada || 'desconhecida'}.\n\nAvalie consistencia.`),
+    callAnthropicJudge(loadJudgePrompt('state-transition'), `estado_atual: ${estado_atual} (estado inicial declarado no eval)\nestado_apos_ultimo_turn: ${lastEstadoNovo}\n\nTranscript:\n\n${transcriptTxt}\n\nUltima proxima_acao no output (REAL retornada pelo bot): ${lastProximaAcao}\n\nAvalie consistencia.`),
   ]);
 
   return {
@@ -144,10 +251,21 @@ async function main() {
     process.exit(0);
   }
 
+  // Sub 1.A fix harness: fetch tenant real do Supabase pra passar config no payload
+  // do /api/agent/route (que aceita body.tenant override do stub default).
+  let tenantResolved;
+  try {
+    tenantResolved = await fetchTenant(TENANT_ID);
+    console.log(`   Tenant: ${tenantResolved.nome_estudio || tenantResolved.id} (plano=${tenantResolved.plano})\n`);
+  } catch (e) {
+    console.error(`FATAL fetchTenant: ${e.message}`);
+    process.exit(2);
+  }
+
   const results = [];
   for (const conv of convs) {
     process.stdout.write(`→ ${conv.id} ... `);
-    const played = await playConv(conv);
+    const played = await playConv(conv, tenantResolved);
     if (played.error) {
       console.log(`❌ ${played.error}`);
       results.push({ id: conv.id, status: 'error', error: played.error });

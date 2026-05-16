@@ -1,0 +1,60 @@
+{
+  "ranAt": "2026-05-15T20:52:12.311Z",
+  "category": "directed",
+  "args": {
+    "category": "directed",
+    "agent": "tattoo",
+    "persona": "per-010"
+  },
+  "results": [
+    {
+      "id": "per-010-01-conflito-tamanho",
+      "status": "fail",
+      "scores": {
+        "naturalidade": {
+          "media": 2.6,
+          "per_dim": {
+            "n1_wpp_br": 3,
+            "n2_robot_tells": 3,
+            "n3_tom_consistente": 2,
+            "n4_comprimento": 3,
+            "n5_pontuacao": 2
+          }
+        },
+        "manifesto": {
+          "m1_manifesto_adherence": 0.9,
+          "m2": 1,
+          "m3": 1,
+          "per_principle": {
+            "P1": 1,
+            "P2": 1,
+            "P3": 0.5,
+            "P4": 1,
+            "P5": 1,
+            "P6": null
+          },
+          "violations": [
+            "msg 9 — P3 parcialmente violado: bot pede foto com justificativa ('É importante pro tatuador ter noção do espaço'), mas deveria ter oferecido apenas 1ª solicitação de foto neste turno. Embora não tenha insistido 3+ vezes, a fraseologia 'É importante' soa como pressão suave em vez de leveza. Aplicável: cliente já disse 'não tenho foto agora' (msg 4), então bot deveria pedir foto com máxima leveza ou seguir sem — aqui segue, mas reforça importância."
+          ]
+        },
+        "state": {
+          "s1": 0,
+          "esperado_seria": "pergunta",
+          "razao": "Bot ainda está em coletando_tattoo com OBR incompleto (falta foto do local) e emitiu handoff prematuro; deveria continuar com pergunta para coletar a foto antes de escalar."
+        }
+      },
+      "pass": {
+        "pass": false,
+        "fails": [
+          "naturalidade",
+          "state_transition"
+        ],
+        "thresholds": {
+          "naturalidade_min": 4,
+          "manifesto_adherence_min": 0.85,
+          "funcionalidade_min": 0.8
+        }
+      }
+    }
+  ]
+}

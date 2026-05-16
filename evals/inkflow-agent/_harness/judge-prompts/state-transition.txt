@@ -13,22 +13,30 @@ Estados possíveis (PropostaAgent):
 - `escolhendo_horario`: cliente aceitou, está escolhendo slot
 - `aguardando_sinal`: agendamento ok, espera link de sinal ser pago
 
-Valores válidos de `proxima_acao`:
-- `pergunta`: bot pergunta info ao cliente
-- `enviar_orcamento_tatuador`: handoff de Coleta pra tatuador
-- `enviar_portfolio`: bot envia URLs de portfolio (intent transversal)
-- `reservar_horario`: bot tem slot escolhido, reserva
-- `pediu_desconto`: cliente pediu desconto, escala pro tatuador
-- `oferecendo_horario`: bot mostra slots disponíveis
-- `cliente_agressivo`: handoff manual por tom hostil
-- `reagendamento`: cliente pede mudar agendamento
-- `erro`: caso de erro educado (trigger handoff sem coleta)
-- `adiou`: cliente quer pensar — sai sem fechar
+Valores válidos de `proxima_acao` (canonical Zod enum dos agents):
 
-Tarefa: dada a transcrição da conversa + estado_atual + output do agent (resposta_cliente + proxima_acao), julgue se a proxima_acao é consistente.
+TattooAgent + CadastroAgent emitem:
+- `pergunta`: bot pergunta info ao cliente
+- `handoff`: handoff pro próximo agent no fluxo
+  (TattooAgent: handoff → estado='cadastro', via router.js)
+  (CadastroAgent: handoff → estado='aguardando_tatuador', via router.js)
+- `enviar_portfolio`: bot envia URLs de portfolio (intent transversal)
+- `erro`: caso de erro educado (trigger handoff sem coleta)
+
+PropostaAgent emite:
+- `pergunta`: bot pergunta info ao cliente
+- `oferecendo_horario`: bot mostra slots disponíveis
+- `reservar_horario`: bot tem slot escolhido, reserva via tool
+- `pediu_desconto`: cliente pediu desconto, escala pro tatuador via tool
+- `adiou`: cliente quer pensar — sai sem fechar
+- `reagendamento`: cliente pede mudar agendamento
+- `cliente_agressivo`: handoff manual por tom hostil
+- `enviar_portfolio`: bot envia URLs de portfolio (intent transversal)
+
+Tarefa: dada a transcrição da conversa + estado_atual + output do agent (resposta_cliente + proxima_acao REAL retornada pelo bot no último turn), julgue se a proxima_acao é consistente.
 
 - 1 = transição faz sentido pro estado + conteúdo
-- 0 = transição errada (ex: bot ainda em `coletando_tattoo` com OBR vazio mas emitiu `enviar_orcamento_tatuador`)
+- 0 = transição errada (ex: bot ainda em `coletando_tattoo` com OBR vazio mas emitiu `handoff`)
 
 Retorne SOMENTE JSON:
 {"s1_state_transition_ok": <0|1>, "esperado_seria": "<proxima_acao que seria certa, se 0>", "razao": "<1 frase>"}
