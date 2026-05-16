@@ -1,0 +1,63 @@
+{
+  "ranAt": "2026-05-16T02:51:28.540Z",
+  "fixture_id": "per-010-01-conflito-tamanho",
+  "endpoint": "/api/tools/simular-conversa (legacy pre-fix)",
+  "tenant_id": "db686ef2-ca42-43e4-a831-808984d8d6c6",
+  "transcript": [
+    {
+      "turn": 1,
+      "role": "user",
+      "content": "oi tudo bem?"
+    },
+    {
+      "turn": 1,
+      "role": "assistant",
+      "content": "Oii, tudo certo! Aqui é o Assistente do InkFlow Sub4 Test. Me conta o que você está pensando em fazer? 🎉🎉",
+      "tool_call": null
+    },
+    {
+      "turn": 2,
+      "role": "user",
+      "content": "queria uma rosa pequena de uns 25cm no antebraco"
+    },
+    {
+      "turn": 2,
+      "role": "assistant",
+      "content": "Tu tem alguma foto de referência desse desenho? Ajuda muito o tatuador a entender a ideia.",
+      "tool_call": null
+    },
+    {
+      "turn": 3,
+      "role": "user",
+      "content": "nao tenho foto agora"
+    },
+    {
+      "turn": 3,
+      "role": "assistant",
+      "content": "Sem problema! E de estilo, tu prefere fineline, realismo, blackwork ou tradicional?",
+      "tool_call": null
+    },
+    {
+      "turn": 4,
+      "role": "user",
+      "content": "fineline"
+    },
+    {
+      "turn": 4,
+      "role": "assistant",
+      "content": "Massa! E qual a sua altura?",
+      "tool_call": null
+    },
+    {
+      "turn": 5,
+      "role": "user",
+      "content": "1.65m"
+    },
+    {
+      "turn": 5,
+      "role": "assistant",
+      "content": "Anotei: rosa fineline no antebraco, altura 165cm. \n\nConsegue mandar também uma foto do local? É importante pro tatuador ter noção do espaço e conseguir passar o valor certinho.",
+      "tool_call": null
+    }
+  ]
+}

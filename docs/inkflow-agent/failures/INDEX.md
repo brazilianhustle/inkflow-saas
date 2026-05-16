@@ -1,6 +1,6 @@
 # Failure Catalog — INDEX
 
-> Catálogo de failures observados (ou hipotetizados via manifesto). 12 entries iniciais.
+> Catálogo de failures observados (ou hipotetizados via manifesto). 13 entries.
 > Taxonomia: [_taxonomy.md](_taxonomy.md). Template: [_template.md](_template.md).
 
 | ID | Slug | Status | Tipo | Camadas | Agents | Personas | Manifesto |
@@ -17,12 +17,13 @@
 | [FM-0010](FM-0010-cadastro-menor-sem-handoff.md) | cadastro-menor-sem-handoff | fixed | policy_violation | schema_invariant | CadastroAgent | PER-011 | — |
 | [FM-0011](FM-0011-bot-frio-em-momento-emocional.md) | bot-frio-em-momento-emocional | open | drift_persona | prompt | TattooAgent, CadastroAgent, PropostaAgent | PER-012 | P5 |
 | [FM-0012](FM-0012-bot-aceita-estilo-indisponivel.md) | bot-aceita-estilo-indisponivel | open | policy_violation | prompt, data | TattooAgent, PortfolioAgent | PER-014 | — |
+| [FM-0013](FM-0013-bot-quebra-registro-whatsapp-em-coleta.md) | bot-quebra-registro-whatsapp-em-coleta | open | drift_persona | prompt | TattooAgent | PER-010, PER-001 | P5 |
 
 ## Distribuição por status
 
 | Status | Count |
 |---|---|
-| open | 9 |
+| open | 10 |
 | mitigated | 2 |
 | fixed | 1 |
 | archived | 0 |
@@ -34,14 +35,14 @@
 | policy_violation | 7 |
 | state_error | 2 |
 | data_error | 1 |
-| drift_persona | 1 |
+| drift_persona | 2 |
 | (outros) | 0 |
 
 ## Distribuição por agent
 
 | Agent | Failures |
 |---|---|
-| TattooAgent | 9 |
+| TattooAgent | 10 |
 | CadastroAgent | 5 |
 | PropostaAgent | 3 |
 | PortfolioAgent | 1 |
