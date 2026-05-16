@@ -1,0 +1,62 @@
+{
+  "ranAt": "2026-05-16T04:24:21.550Z",
+  "category": "directed",
+  "args": {
+    "category": "directed",
+    "agent": "tattoo",
+    "persona": "per-010",
+    "capture-500-body": true
+  },
+  "results": [
+    {
+      "id": "per-010-01-conflito-tamanho",
+      "status": "fail",
+      "scores": {
+        "naturalidade": {
+          "media": 4,
+          "per_dim": {
+            "n1_wpp_br": 4,
+            "n2_robot_tells": 5,
+            "n3_tom_consistente": 4,
+            "n4_comprimento": 3,
+            "n5_pontuacao": 4
+          }
+        },
+        "manifesto": {
+          "m1_manifesto_adherence": 0.5833333333333334,
+          "m2": 1,
+          "m3": 1,
+          "per_principle": {
+            "P1": 0,
+            "P2": 0.5,
+            "P3": 0.5,
+            "P4": 1,
+            "P5": 0.5,
+            "P6": 1
+          },
+          "violations": [
+            "msg 2 → msg 9: Cliente disse 'rosa pequena de 25cm' e bot NUNCA confrontou ou validou essa contradição interna (25cm não é 'pequeno'). P1 exige que bot NUNCA sugira/corrija tamanho, mas também não deve ignorar conflito óbvio — deveria pedir foto para o tatuador decidir na prática, não aceitar silenciosamente uma medida que contradiz o adjetivo.",
+            "msg 2 → msg 5: Bot pulou coleta de altura_cm antes de pedir estilo. Ordem ideal: descrição → local → altura → estilo. Coletou estilo (msg 5) antes de altura (msg 7). P2 não especifica ordem obrigatória, mas sequência quebrada sugere falta de estrutura.",
+            "msg 4 → msg 9: Bot pediu foto 2x (msg 3 e msg 9). Tecnicamente dentro do limite P3 (até 2x), mas msg 9 justifica com 'passar o valor certinho' — linguagem comercial que soa como pressão, não educação sobre espaço. Viola levemente P5 (tom comercial)."
+          ]
+        },
+        "state": {
+          "s1": 1,
+          "esperado_seria": "pergunta",
+          "razao": "Bot ainda está em coletando_tattoo coletando OBR (faltam foto do local e confirmação de descrição), portanto pergunta é a ação correta."
+        }
+      },
+      "pass": {
+        "pass": false,
+        "fails": [
+          "manifesto"
+        ],
+        "thresholds": {
+          "naturalidade_min": 4,
+          "manifesto_adherence_min": 0.85,
+          "funcionalidade_min": 0.8
+        }
+      }
+    }
+  ]
+}

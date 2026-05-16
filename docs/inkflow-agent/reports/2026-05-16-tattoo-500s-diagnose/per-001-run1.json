@@ -1,0 +1,21 @@
+{
+  "ranAt": "2026-05-16T04:21:55.225Z",
+  "category": "directed",
+  "args": {
+    "category": "directed",
+    "agent": "tattoo",
+    "persona": "per-001",
+    "capture-500-body": true
+  },
+  "results": [
+    {
+      "id": "per-001-01-happy-path",
+      "status": "error",
+      "error": "http 500",
+      "response_status": 500,
+      "response_body_raw": "{\"ok\":false,\"error\":\"invariant-violation\",\"reason\":\"pergunta com campos_faltando=[altura_cm] mas resposta sem '?' — fragment=\\\"No antebraço\\\"\"}",
+      "turn_index": 2,
+      "turn_content": "no antebraço"
+    }
+  ]
+}

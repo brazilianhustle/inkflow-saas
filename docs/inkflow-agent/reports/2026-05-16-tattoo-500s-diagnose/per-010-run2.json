@@ -1,0 +1,65 @@
+{
+  "ranAt": "2026-05-16T04:24:47.461Z",
+  "category": "directed",
+  "args": {
+    "category": "directed",
+    "agent": "tattoo",
+    "persona": "per-010",
+    "capture-500-body": true
+  },
+  "results": [
+    {
+      "id": "per-010-01-conflito-tamanho",
+      "status": "fail",
+      "scores": {
+        "naturalidade": {
+          "media": 3.6,
+          "per_dim": {
+            "n1_wpp_br": 4,
+            "n2_robot_tells": 4,
+            "n3_tom_consistente": 4,
+            "n4_comprimento": 3,
+            "n5_pontuacao": 3
+          }
+        },
+        "manifesto": {
+          "m1_manifesto_adherence": 0.6666666666666666,
+          "m2": 1,
+          "m3": 0,
+          "per_principle": {
+            "P1": 0,
+            "P2": 0.5,
+            "P3": 1,
+            "P4": 1,
+            "P5": 0.5,
+            "P6": 1
+          },
+          "violations": [
+            "P1 VIOLADO [msg 9]: Bot não confronta explicitamente, mas a coleta de altura (msg 7) seguida de validação 'fica delicada e bem visível' implica que o bot está internalizando a contradição (rosa 'pequena' de 25cm é grande para antebraço em pessoa 1.65m) sem deixar claro que tamanho é decisão do tatuador no dia. Bot deveria ter ignorado a métrica exata e pedido foto do local.",
+            "P2 VIOLADO PARCIALMENTE [msg 7]: Bot pediu altura (4º OBR correto), mas não coletou tamanho_cm explicitamente como opcional — cliente ofereceu '25cm' espontaneamente (msg 2), bot aceitou sem questionar. Faltou clareza: altura foi coletada, mas não há confirmação dos 4 OBR obrigatórios em checklist (descrição_curta ✓, local_corpo ✓, altura_cm ✓, estilo ✓). Tecnicamente P2 foi atendido, mas com margem de melhoria na estrutura.",
+            "P3 RESPEITADO: Bot pediu foto 1x (msg 3), cliente recusou (msg 4), bot aceitou sem insistir (msg 5 segue direto). Aderência total.",
+            "P5 PARCIALMENTE VIOLADO [msg 9]: Bot valida a ideia ('Rosa fineline no antebraço fica delicada e bem visível') — isso é substantivo e positivo. PORÉM, a transição para 'Pra eu liberar teu orçamento personalizado, me passa nome completo...' soa comercial/formulário e quebra a conversa simpática. Linguagem 'liberar orçamento' é agressiva e não combina com tom leve do manifesto."
+          ]
+        },
+        "state": {
+          "s1": 0,
+          "esperado_seria": "handoff",
+          "razao": "Bot coletou os 4 OBR (descrição: rosa fineline, local: antebraco, altura: 25cm, estilo: fineline) e altura do cliente (1.65m); deveria emitir `handoff` para CadastroAgent, não `pergunta`."
+        }
+      },
+      "pass": {
+        "pass": false,
+        "fails": [
+          "naturalidade",
+          "manifesto",
+          "state_transition"
+        ],
+        "thresholds": {
+          "naturalidade_min": 4,
+          "manifesto_adherence_min": 0.85,
+          "funcionalidade_min": 0.8
+        }
+      }
+    }
+  ]
+}

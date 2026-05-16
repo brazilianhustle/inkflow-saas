@@ -1,0 +1,21 @@
+{
+  "ranAt": "2026-05-16T04:22:15.860Z",
+  "category": "directed",
+  "args": {
+    "category": "directed",
+    "agent": "tattoo",
+    "persona": "per-001",
+    "capture-500-body": true
+  },
+  "results": [
+    {
+      "id": "per-001-01-happy-path",
+      "status": "error",
+      "error": "http 500",
+      "response_status": 500,
+      "response_body_raw": "{\"ok\":false,\"error\":\"invariant-violation\",\"reason\":\"pergunta com campos_faltando=[estilo] mas resposta sem '?' — fragment=\\\"Anotei: rosinha fineline no antebraço, altura 165cm\\\"\"}",
+      "turn_index": 3,
+      "turn_content": "1.65m"
+    }
+  ]
+}
