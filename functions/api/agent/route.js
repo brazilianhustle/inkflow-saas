@@ -12,7 +12,9 @@
 // Pipeline WhatsApp (whatsapp-pipeline.js) chama runAgent direto sem HTTP.
 import { run } from '@openai/agents';
 import { setDefaultOpenAIKey } from '@openai/agents-openai';
-import { selectAgentBuilder, isStateImplemented, getNextState } from './router.js';
+import { selectAgentBuilder, isStateImplemented, getNextState, validateTransition } from './router.js';
+import { runTattooAgent } from './agents/tattoo.js';
+import { buildFallbackOutput } from '../../_lib/agent-runtime/fallbacks.js';
 import { validateEnv } from './_lib/sdk-init.js';
 import { enforceMenorIdade } from './_lib/enforce-menor-idade.js';
 import { prefetchPropostaContext } from './_lib/prefetch-proposta.js';
@@ -89,6 +91,7 @@ export async function runAgent({
   tenant,
   conversa,
   clientContext,
+  openaiClient, // Caminho C Fase 1: DI pra testes do path tattoo (default undefined)
 }) {
   if (!isStateImplemented(estado_atual)) {
     return {
@@ -99,7 +102,6 @@ export async function runAgent({
   }
 
   const t0 = Date.now();
-  const builder = selectAgentBuilder(estado_atual);
 
   // Set definido tambem mais abaixo no orchestrator — declarado em escopo
   // mais alto pra reuso. Subsumir o `const clientContext = body?.clientContext || {};`
@@ -115,67 +117,106 @@ export async function runAgent({
     mergedClientContext = { ...mergedClientContext, ...prefetched };
   }
 
-  const { agent, validator } = builder({ env, tenant, conversa, clientContext: mergedClientContext, estado_atual });
+  let working;
+  let invariantCheck = { valid: true };
 
-  // Constroi messages do historico + mensagem atual.
-  // Historico: items com role=assistant precisam shape tipado (SDK valida via Zod).
-  const messages = [
-    ...historico.map(normalizeHistoryItem),
-    { role: 'user', content: mensagem },
-  ];
+  if (estado_atual === 'tattoo') {
+    // ─── Caminho C Fase 1: path novo, schema strict ────────────────────
+    // runTattooAgent + Responses API + discriminated union strict. Sem
+    // validator pos-parse — schema garante invariantes do handoff.
+    let out;
+    try {
+      out = await runTattooAgent({
+        env, tenant, conversa, clientContext: mergedClientContext,
+        mensagem, historico,
+        openaiClient,
+      });
+    } catch (e) {
+      // Todos os retries falharam (network down, 401, context_length, etc).
+      // UX: cliente nao recebe HTTP 500 — recebe mensagem amigavel.
+      // Telemetria: erro detalhado logado pra ops investigar.
+      console.error('[agent/route] runTattooAgent exhausted retries:', {
+        message: e?.message, status: e?.status, code: e?.code,
+      });
+      out = buildFallbackOutput('tattoo');
+    }
+    // Valida payload do handoff contra contrato cross-agent (so quando
+    // proxima_acao=handoff). validateTransition retorna payload extraido
+    // ou throw ZodError se shape invalido.
+    if (out.proxima_acao === 'handoff') {
+      try {
+        validateTransition('tattoo', out);
+      } catch (e) {
+        console.error('[agent/route] handoff contract violation:', e?.message);
+        return { ok: false, error: 'invariant-violation', reason: e?.message, status: 500 };
+      }
+    }
+    working = out;
+  } else {
+    // ─── Path antigo: cadastro, proposta (intocado ate Fase 2) ────────
+    const builder = selectAgentBuilder(estado_atual);
+    const { agent, validator } = builder({ env, tenant, conversa, clientContext: mergedClientContext, estado_atual });
 
-  let result;
-  try {
-    // maxTurns 20: default 10 aperta cenarios multi-turn com tools.
-    result = await run(agent, messages, { maxTurns: 20 });
-  } catch (e) {
-    // Detail intencionalmente generico — evita info-leak do SDK/OpenAI errors.
-    // Logs server-side carregam o detalhe completo.
-    console.error('[agent/route] run() failed:', e);
-    return { ok: false, error: 'agent-run-failed', status: 500 };
-  }
+    // Constroi messages do historico + mensagem atual.
+    // Historico: items com role=assistant precisam shape tipado (SDK valida via Zod).
+    const messages = [
+      ...historico.map(normalizeHistoryItem),
+      { role: 'user', content: mensagem },
+    ];
 
-  // finalOutput pode ser undefined (max turns, refusal, schema violation).
-  // Sem guard, acesso a out.resposta_cliente joga TypeError fora do try/catch.
-  const out = result?.finalOutput;
-  if (!out) {
-    console.error('[agent/route] no finalOutput', { result });
-    return { ok: false, error: 'no-final-output', status: 500 };
-  }
+    let result;
+    try {
+      // maxTurns 20: default 10 aperta cenarios multi-turn com tools.
+      result = await run(agent, messages, { maxTurns: 20 });
+    } catch (e) {
+      // Detail intencionalmente generico — evita info-leak do SDK/OpenAI errors.
+      // Logs server-side carregam o detalhe completo.
+      console.error('[agent/route] run() failed:', e);
+      return { ok: false, error: 'agent-run-failed', status: 500 };
+    }
 
-  // Validator vem do builder (closure pattern Sub-3.2).
-  let working = out;
-  const invariantCheck = validator(working);
+    // finalOutput pode ser undefined (max turns, refusal, schema violation).
+    // Sem guard, acesso a out.resposta_cliente joga TypeError fora do try/catch.
+    const out = result?.finalOutput;
+    if (!out) {
+      console.error('[agent/route] no finalOutput', { result });
+      return { ok: false, error: 'no-final-output', status: 500 };
+    }
 
-  if (!invariantCheck.valid) {
-    if (estado_atual === 'cadastro' && invariantCheck.reason?.startsWith('data_nascimento nao-ISO')) {
-      // Caso especial Sub-3.1: data_nascimento mal-formatada — silently force
-      // pergunta. Agente reformula no proximo turno.
-      console.warn('[agent/route] silently force pergunta (data_nascimento nao-ISO):', invariantCheck.reason);
-      working = {
-        ...working,
-        dados_persistidos: { ...(working.dados_persistidos || {}), data_nascimento: null },
-        dados_completos: false,
-        campos_faltando: Array.from(new Set([...(working.campos_faltando || []), 'data_nascimento'])),
-        proxima_acao: 'pergunta',
-        resposta_cliente: 'Nao consegui ler a data — pode mandar tipo 12/03/1995?',
-      };
-    } else if (PROPOSTA_SUBSTATES.has(estado_atual) && /(nao-ISO|fora da lista)/.test(invariantCheck.reason || '')) {
-      // Caso especial Sub-3.2: slot mal-formatado ou inexistente — silently
-      // force pergunta com lista atualizada de slots.
-      console.warn('[agent/route] silently force pergunta (slot invalido):', invariantCheck.reason);
-      const slots = mergedClientContext.horarios_livres || [];
-      const legendas = slots.map(s => s.legenda).join(', ') || '(nenhum slot disponivel)';
-      const msg = invariantCheck.reason.startsWith('slot fora')
-        ? `Esse horario nao esta na lista — escolhe um destes? ${legendas}`
-        : `Nao consegui ler o horario — pode escolher um da lista? ${legendas}`;
-      working = { ...working, proxima_acao: 'pergunta', resposta_cliente: msg };
-    } else {
-      // Hard-fail: violacao de contrato (proxima_acao nao permitida no estado,
-      // payload obrigatorio missing, valor_pedido > valor_proposto, etc).
-      // Bug do agent — nao UX issue.
-      console.error('[agent/route] invariant violation:', invariantCheck.reason, out);
-      return { ok: false, error: 'invariant-violation', reason: invariantCheck.reason, status: 500 };
+    // Validator vem do builder (closure pattern Sub-3.2).
+    working = out;
+    invariantCheck = validator(working);
+
+    if (!invariantCheck.valid) {
+      if (estado_atual === 'cadastro' && invariantCheck.reason?.startsWith('data_nascimento nao-ISO')) {
+        // Caso especial Sub-3.1: data_nascimento mal-formatada — silently force
+        // pergunta. Agente reformula no proximo turno.
+        console.warn('[agent/route] silently force pergunta (data_nascimento nao-ISO):', invariantCheck.reason);
+        working = {
+          ...working,
+          dados_persistidos: { ...(working.dados_persistidos || {}), data_nascimento: null },
+          dados_completos: false,
+          campos_faltando: Array.from(new Set([...(working.campos_faltando || []), 'data_nascimento'])),
+          proxima_acao: 'pergunta',
+          resposta_cliente: 'Nao consegui ler a data — pode mandar tipo 12/03/1995?',
+        };
+      } else if (PROPOSTA_SUBSTATES.has(estado_atual) && /(nao-ISO|fora da lista)/.test(invariantCheck.reason || '')) {
+        // Caso especial Sub-3.2: slot mal-formatado ou inexistente — silently
+        // force pergunta com lista atualizada de slots.
+        console.warn('[agent/route] silently force pergunta (slot invalido):', invariantCheck.reason);
+        const slots = mergedClientContext.horarios_livres || [];
+        const legendas = slots.map(s => s.legenda).join(', ') || '(nenhum slot disponivel)';
+        const msg = invariantCheck.reason.startsWith('slot fora')
+          ? `Esse horario nao esta na lista — escolhe um destes? ${legendas}`
+          : `Nao consegui ler o horario — pode escolher um da lista? ${legendas}`;
+        working = { ...working, proxima_acao: 'pergunta', resposta_cliente: msg };
+      } else {
+        // Hard-fail: violacao de contrato (proxima_acao nao permitida no estado,
+        // payload obrigatorio missing, valor_pedido > valor_proposto, etc).
+        // Bug do agent — nao UX issue.
+        console.error('[agent/route] invariant violation:', invariantCheck.reason, working);
+        return { ok: false, error: 'invariant-violation', reason: invariantCheck.reason, status: 500 };
+      }
     }
   }
 
