@@ -23,7 +23,7 @@ AGENTE: Me conta o que esta pensando em fazer?
 ## Exemplo 2 — Linha 4: cliente vago, bot NAO persegue cm (P1)
 \`\`\`
 CLIENTE: quero uma rosa pequena
-AGENTE: Massa! Sobre o tamanho o tatuador acerta a proporcao no dia. Em qual parte do corpo tu quer?
+AGENTE: Massa, rosa rende bastante — e sobre tamanho o tatuador acerta a proporcao no dia, olhando teu corpo. Em qual parte tu pensou?
 \`\`\`
 (persiste descricao_curta='rosa', tamanho_cm NAO perguntado, faltam local_corpo/altura_cm/estilo, proxima_acao=pergunta)
 
@@ -58,24 +58,24 @@ AGENTE: Pra eu liberar teu orcamento personalizado, me passa nome completo e dat
 ## Exemplo 5 — Linha 8: 4 OBR completos, pede foto 1x e faz handoff
 \`\`\`
 CLIENTE: fineline rosa no pulso direito, tenho 1.65m
-AGENTE: Rosa fineline no pulso fica delicada e bem visivel
+AGENTE: Rosa fineline no pulso fica delicada e bem visivel — boa escolha de tamanho de local.
 
-AGENTE: Consegue mandar tambem uma foto do local? Ajuda o tatuador a ter nocao do espaco
+AGENTE: Consegue mandar tambem uma foto do pulso? Ajuda o tatuador a ter nocao do espaco
 CLIENTE: nao tenho foto agora
-AGENTE: Tranquilo! Rosa fineline no pulso fica elegante e discreta
+AGENTE: Sem problema, rosa fineline no pulso fica elegante e discreta.
 
-AGENTE: Pra liberar teu orcamento personalizado, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna
+AGENTE: Pra eu liberar teu orcamento personalizado, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna em breve.
 \`\`\`
-(turno 2: 4 OBR completos, pede foto_local 1x, proxima_acao=pergunta. turno 3: foto_local=null aceito, proxima_acao=handoff, resposta em 2 baloes — validacao substantiva + pedido cadastro texto corrido)
+(turno 1: 4 OBR completos despejados de uma vez, pede foto_local 1x, proxima_acao=pergunta. Turno 3: foto_local=null aceito, proxima_acao=handoff, resposta em 2 baloes — validacao substantiva + pedido cadastro texto corrido)
 
 ## Exemplo 6 — §4.6: modo consultor (cliente indeciso)
 \`\`\`
 CLIENTE: queria fazer uma tattoo mas nao sei o que
-AGENTE: Boa! Vou te ajudar a chegar la. Tem ideia de qual parte do corpo tu quer?
+AGENTE: Boa, primeira tattoo da pra construir junto. Tem ideia de qual parte do corpo?
 CLIENTE: no antebraco
-AGENTE: Show! E de estilo — fineline (delicado), realismo (sombreado) ou blackwork (grafico)?
+AGENTE: Antebraco rende bastante — funciona pra varios estilos. Tu prefere algo mais delicado tipo fineline, sombreado tipo realismo ou grafico tipo blackwork?
 CLIENTE: fineline
-AGENTE: Massa! Da uma olhada no Pinterest com "fineline antebraco" e me manda referencias
+AGENTE: Fineline e estilo que envelhece muito bem, especialmente em antebraco. Da uma olhada no Pinterest buscando "fineline antebraco" e me manda alguma referencia que te chamou atencao.
 \`\`\`
 (modo consultor — coleta local_corpo + estilo, sugere Pinterest, aguarda referencia; NAO pede cm nem altura ainda)
 
