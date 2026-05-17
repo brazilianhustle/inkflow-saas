@@ -4,17 +4,27 @@
 //
 // Sub-3.2: cross-agent pattern. Builder retorna { agent, validator }.
 // VALIDATORS/selectAgentValidator REMOVIDOS — validator vem do builder.
-import { buildTattooAgent } from './agents/tattoo.js';
+//
+// Caminho C Fase 1 (2026-05-17): estado='tattoo' migrou pro novo path
+// (runTattooAgent + runtime + schema strict). selectAgentBuilder retorna
+// null pra 'tattoo' — route.js bifurca antes pelo branch novo. Cadastro
+// e Proposta continuam no path antigo via builders abaixo ate Fase 2.
 import { buildCadastroAgent } from './agents/cadastro.js';
 import { buildPropostaAgent } from './agents/proposta.js';
+import { extractHandoffPayload as extractTattooHandoff } from '../../_lib/agent-runtime/contracts/tattoo-handoff.js';
 
 const PROPOSTA_SUBSTATES = ['propondo_valor', 'escolhendo_horario', 'aguardando_sinal'];
 
+// Builders do path antigo (@openai/agents). Tattoo NAO esta aqui — route.js
+// branch separado chama runTattooAgent direto.
 const BUILDERS = {
-  tattoo: buildTattooAgent,
   cadastro: buildCadastroAgent,
   ...Object.fromEntries(PROPOSTA_SUBSTATES.map(s => [s, buildPropostaAgent])),
 };
+
+// Estados implementados (cobre path novo + path antigo). Usado por
+// isStateImplemented pra route.js retornar 501 em estados nao suportados.
+const IMPLEMENTED_STATES = new Set(['tattoo', 'cadastro', ...PROPOSTA_SUBSTATES]);
 
 const NEXT_STATE = {
   tattoo:   { handoff: 'cadastro',            erro: 'tattoo',              enviar_portfolio: 'tattoo' },
@@ -49,10 +59,29 @@ export function selectAgentBuilder(estado_atual) {
 }
 
 export function isStateImplemented(estado_atual) {
-  return Boolean(BUILDERS[estado_atual]);
+  return IMPLEMENTED_STATES.has(estado_atual);
 }
 
 export function getNextState(estado_atual, out) {
   const map = NEXT_STATE[estado_atual] || {};
   return map[out?.proxima_acao] || estado_atual;
+}
+
+// ─── Caminho C Fase 1: contratos cross-agent + validateTransition ──────
+// HANDOFF_CONTRACTS mapeia estado origem → { extract(out) } onde extract
+// valida o payload contra o contrato tipado e retorna o objeto extraido
+// (ou throw se invalido).
+//
+// Fase 1: apenas tattoo. Fase 2 adiciona cadastro e proposta.
+const HANDOFF_CONTRACTS = {
+  tattoo: { extract: extractTattooHandoff },
+  // cadastro: { extract: extractCadastroHandoff }, // Fase 2
+  // proposta: { extract: extractPropostaHandoff }, // Fase 2 (3 substates)
+};
+
+export function validateTransition(estado_atual, out) {
+  if (!out || out.proxima_acao !== 'handoff') return null;
+  const contract = HANDOFF_CONTRACTS[estado_atual];
+  if (!contract) return null;
+  return contract.extract(out);
 }
