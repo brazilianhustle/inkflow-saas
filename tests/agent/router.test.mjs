@@ -8,8 +8,10 @@ import {
   getNextState,
 } from '../../functions/api/agent/router.js';
 
-test('selectAgentBuilder — tattoo + cadastro + proposta substates resolvidos, outros null', () => {
-  assert.equal(typeof selectAgentBuilder('tattoo'), 'function');
+test('selectAgentBuilder — cadastro + proposta substates resolvidos, tattoo null (path novo), outros null', () => {
+  // Caminho C Fase 1: tattoo migrou pro path novo (runTattooAgent direto).
+  // route.js bifurca antes de chamar selectAgentBuilder pra estado='tattoo'.
+  assert.equal(selectAgentBuilder('tattoo'), null);
   assert.equal(typeof selectAgentBuilder('cadastro'), 'function');
   assert.equal(typeof selectAgentBuilder('propondo_valor'), 'function');
   assert.equal(typeof selectAgentBuilder('escolhendo_horario'), 'function');
@@ -18,11 +20,11 @@ test('selectAgentBuilder — tattoo + cadastro + proposta substates resolvidos, 
   assert.equal(selectAgentBuilder('portfolio'), null);
 });
 
-test('selectAgentBuilder — builder retorna {agent, validator} (closure pattern)', () => {
+test('selectAgentBuilder — cadastro builder retorna {agent, validator} (closure pattern)', () => {
   const mockEnv = { OPENAI_API_KEY: 'sk-test' };
   const mockTenant = { id: 't1', nome_estudio: 'Test', config_agente: {}, config_precificacao: {}, gatilhos_handoff: [], faqs: [], fewshots: [] };
-  const mockConversa = { id: 'c1', telefone: '+5511999999999', estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} };
-  const builder = selectAgentBuilder('tattoo');
+  const mockConversa = { id: 'c1', telefone: '+5511999999999', estado_agente: 'cadastro', dados_coletados: {}, dados_cadastro: {} };
+  const builder = selectAgentBuilder('cadastro');
   const result = builder({ env: mockEnv, tenant: mockTenant, conversa: mockConversa, clientContext: {} });
   assert.ok(result && typeof result === 'object', 'builder deve retornar objeto');
   assert.ok('agent' in result, 'resultado deve ter agent');
