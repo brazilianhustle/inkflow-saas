@@ -119,9 +119,12 @@ export function buildTattooAgent({ env, tenant, conversa, clientContext, baseUrl
   const ctx = clientContext || {};
   const instructions = generatePromptColetaTattoo(tenant, conversa, ctx);
 
+  // Sub 1.C: gpt-4o pra zerar 500s sob R9 (validator-rejection ~33% no mini).
+  // Outros agents (cadastro/proposta/portfolio) continuam gpt-4o-mini.
+  // Decisao de custo permanente pendente (ver backlog).
   const agent = new Agent({
     name: 'tattoo-agent',
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     instructions,
     tools: [],
     outputType: TattooOutputSchema,
