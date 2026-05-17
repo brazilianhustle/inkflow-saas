@@ -37,14 +37,14 @@ test('buildTattooAgent retorna { agent, validator } (closure pattern Sub-3.2)', 
   assert.deepEqual(result.agent.tools, []);
 });
 
-test('buildTattooAgent usa modelo gpt-4o (Sub 1.C reliability fix)', () => {
+test('buildTattooAgent usa modelo gpt-4o-mini', () => {
   const { agent } = buildTattooAgent({
     env: { OPENAI_API_KEY: 'sk-test', INKFLOW_TOOL_SECRET: 'tool-sec' },
     tenant: FAKE_TENANT,
     conversa: FAKE_CONVERSA,
     clientContext: {},
   });
-  assert.equal(agent.model, 'gpt-4o');
+  assert.equal(agent.model, 'gpt-4o-mini');
 });
 
 test('buildTattooAgent prompt inclui invariante handoff (R7)', () => {
