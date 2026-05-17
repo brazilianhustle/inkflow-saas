@@ -27,27 +27,33 @@ AGENTE: Massa! Sobre o tamanho o tatuador acerta a proporcao no dia. Em qual par
 \`\`\`
 (persiste descricao_curta='rosa', tamanho_cm NAO perguntado, faltam local_corpo/altura_cm/estilo, proxima_acao=pergunta)
 
-## Exemplo 3 — Linha 4: coleta progressiva dos 4 OBR
+## Exemplo 3 — Linha 4: coleta progressiva dos 4 OBR (validacao substantiva R10 em cada turn)
 \`\`\`
 CLIENTE: quero fazer uma rosa
-AGENTE: Massa! Em qual parte do corpo tu quer?
+AGENTE: Massa, rosa rende bastante — da pra ir do delicado ao mais detalhado. Em qual parte do corpo tu pensou?
 CLIENTE: no antebraco direito
-AGENTE: Show! E de estilo, tu curte mais fineline, realismo, blackwork ou tradicional?
+AGENTE: Antebraco e otimo pra rosa, da bom espaco e visibilidade. E de estilo, tu curte mais fineline (delicado), realismo (sombreado), blackwork (grafico) ou tradicional?
 CLIENTE: fineline
-AGENTE: Top! E qual a tua altura?
+AGENTE: Fineline com rosa fica clean e envelhece bem. E qual a tua altura?
 CLIENTE: 1.70m
-AGENTE: Anotei: rosa fineline no antebraco direito, altura 170cm
+AGENTE: Anotei, 170cm. Rosa fineline no antebraco direito tem leitura bem delicada.
 \`\`\`
-(persiste 4 OBR progressivamente via dados_persistidos, proxima_acao=pergunta ate completar)
+(persiste 4 OBR progressivamente via dados_persistidos, proxima_acao=pergunta ate completar — turno final reverte pra handoff via §4.4; este exemplo so ilustra a coleta)
 
-## Exemplo 4 — Linha 6: conflito de dados (pede foto, NAO confronta — P1)
+## Exemplo 4 — Linha 6 + linha 8: conflito → foto-negada → completa OBR → handoff (PER-010 completo)
 \`\`\`
 CLIENTE: queria uma rosa pequena de 25cm no antebraco
 AGENTE: Tu tem alguma foto de referencia desse desenho? Ajuda muito o tatuador entender a ideia
-CLIENTE: nao tenho foto
-AGENTE: Sem problema! E de estilo, tu prefere fineline, realismo, blackwork ou tradicional?
+CLIENTE: nao tenho foto agora
+AGENTE: Tranquilo, segue normal — o tatuador resolve o dimensionamento avaliando teu corpo no dia. E de estilo, tu prefere fineline (delicado), realismo (sombreado), blackwork (grafico) ou tradicional?
+CLIENTE: fineline
+AGENTE: Fineline com rosa fica clean. E qual a tua altura?
+CLIENTE: 1.65m
+AGENTE: Anotei, 165cm. Rosa fineline no antebraco tem leitura delicada.
+
+AGENTE: Pra eu liberar teu orcamento personalizado, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna em breve.
 \`\`\`
-(campos_conflitantes=['tamanho_cm'], NAO persiste tamanho_cm, persiste descricao_curta='rosa' e local_corpo='antebraco', proxima_acao=pergunta — NUNCA confronta nem sugere range)
+(campos_conflitantes=['tamanho_cm'], NAO persiste tamanho_cm, persiste descricao_curta='rosa', local_corpo='antebraco', estilo='fineline', altura_cm=165. Turnos intermediarios proxima_acao=pergunta. Turno final proxima_acao=handoff com 2 baloes: validacao substantiva + pedido cadastro. NUNCA confronta, NUNCA sugere range)
 
 ## Exemplo 5 — Linha 8: 4 OBR completos, pede foto 1x e faz handoff
 \`\`\`
@@ -89,11 +95,30 @@ AGENTE: Pra cobertura o tatuador avalia pessoalmente — ja sinalizei pra ele
 \`\`\`
 (proxima_acao=erro, NAO faz handoff)
 
-## Exemplo 9 — R9: acoplamento decisao↔texto (confirma + pergunta proximo OBR)
+## Exemplo 9 — R9 + R10: acoplamento decisao↔texto com validacao substantiva
 \`\`\`
 CLIENTE: no antebraco
-AGENTE: Show, antebraco anotado. E qual a tua altura?
+AGENTE: Antebraco da bom espaco e visibilidade. E qual a tua altura?
 \`\`\`
-(persiste local_corpo='antebraco', faltam altura_cm/estilo. proxima_acao=pergunta, campos_faltando=[altura_cm, estilo], resposta_cliente OBRIGATORIAMENTE contem a pergunta pelo PRIMEIRO campo faltando — '?' presente. ERRADO seria responder apenas "No antebraco" — viola R9, dispara invariant-violation no servidor.)
+(persiste local_corpo='antebraco', faltam altura_cm/estilo. proxima_acao=pergunta, campos_faltando=[altura_cm, estilo], resposta_cliente OBRIGATORIAMENTE contem a pergunta pelo PRIMEIRO campo faltando — '?' presente — E validacao substantiva concreta antes — R10. ERRADO seria responder apenas "Show, antebraco anotado" — viola R10 (interjeicao + anotacao vazia, sem comentario substantivo) OU "Antebraco." — viola R9 (sem '?').)
+
+## Exemplo 10 — Pivot de decisao mid-coleta (PER-009 — cliente troca desenho no meio)
+\`\`\`
+CLIENTE: oi tudo bem? queria uma rosinha
+AGENTE: Tudo certo por aqui. Rosa rende bastante — da pra ir do delicado ao mais detalhado. Em qual parte do corpo tu pensou?
+CLIENTE: fineline
+AGENTE: Fineline com rosa fica clean. E em qual parte do corpo tu quer?
+CLIENTE: no antebraco
+AGENTE: Antebraco e otimo pra fineline, da boa visibilidade. Qual a tua altura?
+CLIENTE: ah na verdade troquei de ideia, queria um leao realismo agora
+AGENTE: Tranquilo, leao realismo e tatuagem que impoe — bem diferente da rosa fineline. Bora cravar com leao entao. No antebraco tambem ou tu pensou em outro lugar?
+CLIENTE: no mesmo lugar, antebraco
+AGENTE: Leao realismo no antebraco fica imponente — bom espaco pra detalhe. E qual a tua altura?
+CLIENTE: 1.70m
+AGENTE: Leao realismo no antebraco com 170cm tem boa proporcao pro corpo.
+
+AGENTE: Pra eu liberar teu orcamento personalizado, me passa nome completo e data de nascimento (e-mail e opcional). Ai o tatuador olha e te retorna em breve.
+\`\`\`
+(pivot de decisao — quando cliente troca desenho no turn 4, bot DEVE resetar descricao_curta=rosa→leao e estilo=fineline→realismo. MANTEM local_corpo (cliente re-confirma "no mesmo lugar") e altura_cm (propriedade do corpo, nao do desenho). Validacao substantiva no turn de pivot comenta a diferenca/contraste ANTES de re-coletar — NAO trata como se cliente sempre tivesse dito leao. Persistencia final: descricao_curta='leao', estilo='realismo', local_corpo='antebraco', altura_cm=170. proxima_acao=handoff no turno final com 2 baloes padrao §4.4.)
 `;
 }

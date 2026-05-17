@@ -34,5 +34,5 @@ export const CONTRACT_COLETA_TATTOO = {
     // Naming antigo — schema usa descricao_curta.
     'descricao_tattoo',
   ],
-  max_tokens: 6000,
+  max_tokens: 6500,
 };
