@@ -116,3 +116,65 @@ test('runtime.run: output_parsed null lanca erro', async () => {
     /output_parsed|parsed/i,
   );
 });
+
+test('runtime.run: EVAL_MODE=true seta temperature=0 no payload', async () => {
+  const prev = process.env.EVAL_MODE;
+  process.env.EVAL_MODE = 'true';
+  try {
+    const fake = makeFakeClient({ parsed: { proxima_acao: 'pergunta', resposta_cliente: 'x' } });
+    await runtime.run({
+      openaiClient: fake,
+      model: 'gpt-4o-mini',
+      instructions: 'i',
+      input: [{ role: 'user', content: 'oi' }],
+      outputSchema: SimpleSchema,
+      schemaName: 'simple',
+      retryConfig: { maxRetries: 0, baseMs: 1 },
+    });
+    assert.equal(fake._lastParams().temperature, 0);
+  } finally {
+    if (prev === undefined) delete process.env.EVAL_MODE;
+    else process.env.EVAL_MODE = prev;
+  }
+});
+
+test('runtime.run: sem EVAL_MODE, temperature ausente do payload (default OpenAI)', async () => {
+  const prev = process.env.EVAL_MODE;
+  delete process.env.EVAL_MODE;
+  try {
+    const fake = makeFakeClient({ parsed: { proxima_acao: 'pergunta', resposta_cliente: 'x' } });
+    await runtime.run({
+      openaiClient: fake,
+      model: 'gpt-4o-mini',
+      instructions: 'i',
+      input: [{ role: 'user', content: 'oi' }],
+      outputSchema: SimpleSchema,
+      schemaName: 'simple',
+      retryConfig: { maxRetries: 0, baseMs: 1 },
+    });
+    assert.equal(fake._lastParams().temperature, undefined);
+  } finally {
+    if (prev !== undefined) process.env.EVAL_MODE = prev;
+  }
+});
+
+test('runtime.run: EVAL_MODE=false (string) NÃO seta temperature (gate só aceita "true" exato)', async () => {
+  const prev = process.env.EVAL_MODE;
+  process.env.EVAL_MODE = 'false';
+  try {
+    const fake = makeFakeClient({ parsed: { proxima_acao: 'pergunta', resposta_cliente: 'x' } });
+    await runtime.run({
+      openaiClient: fake,
+      model: 'gpt-4o-mini',
+      instructions: 'i',
+      input: [{ role: 'user', content: 'oi' }],
+      outputSchema: SimpleSchema,
+      schemaName: 'simple',
+      retryConfig: { maxRetries: 0, baseMs: 1 },
+    });
+    assert.equal(fake._lastParams().temperature, undefined);
+  } finally {
+    if (prev === undefined) delete process.env.EVAL_MODE;
+    else process.env.EVAL_MODE = prev;
+  }
+});
