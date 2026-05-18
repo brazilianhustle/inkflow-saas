@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/**/*.test.mjs",
+    "test": "node --test 'tests/**/*.test.mjs'",
     "eval:tattoo": "node --test tests/agent/tattoo-agent.eval.mjs",
     "eval:cadastro": "node --test tests/agent/cadastro-agent.eval.mjs",
     "eval:proposta": "node --test tests/agent/proposta-agent.eval.mjs",
