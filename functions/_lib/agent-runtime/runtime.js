@@ -41,6 +41,7 @@ export const runtime = {
         instructions,
         input,
         text: { format },
+        ...(process.env.EVAL_MODE === 'true' ? { temperature: 0 } : {}),
       }),
       retryConfig,
     );
