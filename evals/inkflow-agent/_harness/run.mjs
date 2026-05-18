@@ -163,7 +163,7 @@ async function playConv(conv, tenant, opts = {}) {
     if (res.status === 501) {
       // estado terminal (aguardando_tatuador / lead_frio / fechado) — handoff bem-sucedido
       transcript.push({ role: 'system', content: '[terminal_handoff: estado nao-implementado]' });
-      return { transcript, terminal_handoff: true, last_estado_atual: estado_atual };
+      return { transcript, terminal_handoff: true, last_estado_atual: estado_atual, dados_acumulados };
     }
     if (!res.ok) {
       let bodyRaw = null;
@@ -203,11 +203,11 @@ async function playConv(conv, tenant, opts = {}) {
     // Break preventivo (terminal_handoff bem-sucedido no turn atual).
     if (!IMPLEMENTED_STATES.has(estado_atual)) {
       transcript.push({ role: 'system', content: `[terminal_handoff: estado_novo=${estado_atual} nao-implementado]` });
-      return { transcript, terminal_handoff: true, last_estado_atual: estado_atual };
+      return { transcript, terminal_handoff: true, last_estado_atual: estado_atual, dados_acumulados };
     }
   }
 
-  return { transcript, last_estado_atual: estado_atual };
+  return { transcript, last_estado_atual: estado_atual, dados_acumulados };
 }
 
 function buildTranscriptTxt(transcript) {
@@ -299,7 +299,14 @@ async function main() {
     const scores = await judgeConv(conv, played.transcript, conv.estado_atual || 'coletando_tattoo');
     const pass = computePass({ ...scores, funcionalidade: 1.0 }, conv.thresholds);
     console.log(pass.pass ? `✅ nat ${scores.naturalidade.media} · man ${scores.manifesto.m1_manifesto_adherence?.toFixed(2)}` : `❌ falhou em: ${pass.fails.join(', ')}`);
-    results.push({ id: conv.id, status: pass.pass ? 'pass' : 'fail', scores, pass });
+    results.push({
+      id: conv.id,
+      status: pass.pass ? 'pass' : 'fail',
+      scores,
+      pass,
+      transcript: played.transcript,
+      final_dados_persistidos: played.dados_acumulados || {},
+    });
   }
 
   const passed = results.filter(r => r.status === 'pass').length;
