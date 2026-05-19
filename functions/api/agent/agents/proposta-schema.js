@@ -101,3 +101,43 @@ export const PropostaEscolhendoHorarioSchema = z.discriminatedUnion('proxima_aca
   EH_EnviarPortfolio,
   EH_Erro,
 ]);
+
+// ─── AGUARDANDO_SINAL ──────────────────────────────────────────────────
+const AS_Pergunta          = sentinelBranch('pergunta');
+const AS_Reagendamento     = sentinelBranch('reagendamento');
+const AS_ClienteAgressivo  = sentinelBranch('cliente_agressivo');
+const AS_Erro              = sentinelBranch('erro');
+
+const AS_ReservarHorario = z.object({
+  proxima_acao: z.literal('reservar_horario'),
+  resposta_cliente: z.string().min(1),
+  slot_inicio: z.string().regex(ISO_RE),
+  slot_fim: z.string().regex(ISO_RE),
+  valor_pedido_cliente: z.null(),
+  payload_portfolio: z.null(),
+});
+
+const AS_EnviarPortfolio = z.object({
+  proxima_acao: z.literal('enviar_portfolio'),
+  resposta_cliente: z.string().min(1),
+  slot_inicio: z.null(),
+  slot_fim: z.null(),
+  valor_pedido_cliente: z.null(),
+  payload_portfolio: PayloadPortfolio,
+});
+
+export const PropostaAguardandoSinalSchema = z.discriminatedUnion('proxima_acao', [
+  AS_Pergunta,
+  AS_ReservarHorario,
+  AS_Reagendamento,
+  AS_ClienteAgressivo,
+  AS_EnviarPortfolio,
+  AS_Erro,
+]);
+
+// — Map p/ despacho em runPropostaAgent —
+export const SCHEMA_BY_STATE = {
+  propondo_valor: PropostaPropondoValorSchema,
+  escolhendo_horario: PropostaEscolhendoHorarioSchema,
+  aguardando_sinal: PropostaAguardandoSinalSchema,
+};

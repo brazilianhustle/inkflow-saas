@@ -211,3 +211,65 @@ test('escolhendo_horario: erro aceita', () => {
   });
   assert.equal(r.success, true);
 });
+
+// ─── AGUARDANDO_SINAL ──────────────────────────────────────────────────────
+import { PropostaAguardandoSinalSchema } from '../../functions/api/agent/agents/proposta-schema.js';
+
+const baseSentinelAS = {
+  resposta_cliente: 'oi',
+  slot_inicio: null,
+  slot_fim: null,
+  valor_pedido_cliente: null,
+  payload_portfolio: null,
+};
+
+test('aguardando_sinal: pergunta aceita', () => {
+  const r = PropostaAguardandoSinalSchema.safeParse({ proxima_acao: 'pergunta', ...baseSentinelAS });
+  assert.equal(r.success, true);
+});
+
+test('aguardando_sinal: reservar_horario com slots ISO aceita (TC-P09)', () => {
+  const r = PropostaAguardandoSinalSchema.safeParse({
+    proxima_acao: 'reservar_horario',
+    ...baseSentinelAS,
+    resposta_cliente: 'reservado',
+    slot_inicio: '2026-05-12T17:00:00Z',
+    slot_fim: '2026-05-12T20:00:00Z',
+  });
+  assert.equal(r.success, true);
+});
+
+test('aguardando_sinal: reservar_horario com slot non-ISO REJEITADO', () => {
+  const r = PropostaAguardandoSinalSchema.safeParse({
+    proxima_acao: 'reservar_horario',
+    ...baseSentinelAS,
+    resposta_cliente: 'x',
+    slot_inicio: '12/05 14h',
+    slot_fim: '12/05 17h',
+  });
+  assert.equal(r.success, false);
+});
+
+test('aguardando_sinal: enviar_portfolio aceita', () => {
+  const r = PropostaAguardandoSinalSchema.safeParse({
+    proxima_acao: 'enviar_portfolio', ...baseSentinelAS,
+    resposta_cliente: 'te mando',
+    payload_portfolio: { estilo: null, max: 5, motivo: 'pediu' },
+  });
+  assert.equal(r.success, true);
+});
+
+test('aguardando_sinal: pediu_desconto REJEITADO (action fora do substate)', () => {
+  const r = PropostaAguardandoSinalSchema.safeParse({
+    proxima_acao: 'pediu_desconto', ...baseSentinelAS,
+    resposta_cliente: 'x', valor_pedido_cliente: 500,
+  });
+  assert.equal(r.success, false);
+});
+
+test('aguardando_sinal: erro aceita', () => {
+  const r = PropostaAguardandoSinalSchema.safeParse({
+    proxima_acao: 'erro', ...baseSentinelAS, resposta_cliente: 'tive um problema',
+  });
+  assert.equal(r.success, true);
+});
