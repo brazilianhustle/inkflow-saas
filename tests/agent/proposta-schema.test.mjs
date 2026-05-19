@@ -121,3 +121,93 @@ test('propondo_valor: reservar_horario REJEITADO (action fora do substate)', () 
   });
   assert.equal(r.success, false);
 });
+
+// ─── ESCOLHENDO_HORARIO ────────────────────────────────────────────────────
+import { PropostaEscolhendoHorarioSchema } from '../../functions/api/agent/agents/proposta-schema.js';
+
+const baseSentinelEH = {
+  resposta_cliente: 'oi',
+  slot_inicio: null,
+  slot_fim: null,
+  valor_pedido_cliente: null,
+  payload_portfolio: null,
+};
+
+test('escolhendo_horario: pergunta aceita', () => {
+  const r = PropostaEscolhendoHorarioSchema.safeParse({ proxima_acao: 'pergunta', ...baseSentinelEH });
+  assert.equal(r.success, true);
+});
+
+test('escolhendo_horario: reservar_horario com slots ISO aceita', () => {
+  const r = PropostaEscolhendoHorarioSchema.safeParse({
+    proxima_acao: 'reservar_horario',
+    ...baseSentinelEH,
+    resposta_cliente: 'reservado',
+    slot_inicio: '2026-05-12T17:00:00Z',
+    slot_fim: '2026-05-12T20:00:00Z',
+  });
+  assert.equal(r.success, true);
+});
+
+test('escolhendo_horario: reservar_horario com slot non-ISO REJEITADO', () => {
+  const r = PropostaEscolhendoHorarioSchema.safeParse({
+    proxima_acao: 'reservar_horario',
+    ...baseSentinelEH,
+    resposta_cliente: 'x',
+    slot_inicio: 'amanha 14h',
+    slot_fim: 'amanha 17h',
+  });
+  assert.equal(r.success, false);
+});
+
+test('escolhendo_horario: reservar_horario com slot_inicio null REJEITADO', () => {
+  const r = PropostaEscolhendoHorarioSchema.safeParse({
+    proxima_acao: 'reservar_horario',
+    ...baseSentinelEH,
+    resposta_cliente: 'x',
+    slot_inicio: null,
+    slot_fim: '2026-05-12T20:00:00Z',
+  });
+  assert.equal(r.success, false);
+});
+
+test('escolhendo_horario: enviar_portfolio com payload aceita', () => {
+  const r = PropostaEscolhendoHorarioSchema.safeParse({
+    proxima_acao: 'enviar_portfolio',
+    ...baseSentinelEH,
+    resposta_cliente: 'te mando',
+    payload_portfolio: { estilo: 'fineline', max: 3, motivo: 'pediu' },
+  });
+  assert.equal(r.success, true);
+});
+
+test('escolhendo_horario: reagendamento/cliente_agressivo aceitos', () => {
+  for (const acao of ['reagendamento', 'cliente_agressivo']) {
+    const r = PropostaEscolhendoHorarioSchema.safeParse({
+      proxima_acao: acao, ...baseSentinelEH, resposta_cliente: 'ok',
+    });
+    assert.equal(r.success, true);
+  }
+});
+
+test('escolhendo_horario: oferecendo_horario REJEITADO (action fora do substate)', () => {
+  const r = PropostaEscolhendoHorarioSchema.safeParse({
+    proxima_acao: 'oferecendo_horario', ...baseSentinelEH, resposta_cliente: 'x',
+  });
+  assert.equal(r.success, false);
+});
+
+test('escolhendo_horario: pediu_desconto REJEITADO (action fora do substate)', () => {
+  const r = PropostaEscolhendoHorarioSchema.safeParse({
+    proxima_acao: 'pediu_desconto', ...baseSentinelEH,
+    resposta_cliente: 'x', valor_pedido_cliente: 500,
+  });
+  assert.equal(r.success, false);
+});
+
+test('escolhendo_horario: erro aceita', () => {
+  const r = PropostaEscolhendoHorarioSchema.safeParse({
+    proxima_acao: 'erro', ...baseSentinelEH, resposta_cliente: 'tive um problema',
+  });
+  assert.equal(r.success, true);
+});

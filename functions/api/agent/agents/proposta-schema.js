@@ -68,3 +68,36 @@ export const PropostaPropondoValorSchema = z.discriminatedUnion('proxima_acao', 
   PV_EnviarPortfolio,
   PV_Erro,
 ]);
+
+// ─── ESCOLHENDO_HORARIO ────────────────────────────────────────────────
+const EH_Pergunta          = sentinelBranch('pergunta');
+const EH_Reagendamento     = sentinelBranch('reagendamento');
+const EH_ClienteAgressivo  = sentinelBranch('cliente_agressivo');
+const EH_Erro              = sentinelBranch('erro');
+
+const EH_ReservarHorario = z.object({
+  proxima_acao: z.literal('reservar_horario'),
+  resposta_cliente: z.string().min(1),
+  slot_inicio: z.string().regex(ISO_RE),
+  slot_fim: z.string().regex(ISO_RE),
+  valor_pedido_cliente: z.null(),
+  payload_portfolio: z.null(),
+});
+
+const EH_EnviarPortfolio = z.object({
+  proxima_acao: z.literal('enviar_portfolio'),
+  resposta_cliente: z.string().min(1),
+  slot_inicio: z.null(),
+  slot_fim: z.null(),
+  valor_pedido_cliente: z.null(),
+  payload_portfolio: PayloadPortfolio,
+});
+
+export const PropostaEscolhendoHorarioSchema = z.discriminatedUnion('proxima_acao', [
+  EH_Pergunta,
+  EH_ReservarHorario,
+  EH_Reagendamento,
+  EH_ClienteAgressivo,
+  EH_EnviarPortfolio,
+  EH_Erro,
+]);
