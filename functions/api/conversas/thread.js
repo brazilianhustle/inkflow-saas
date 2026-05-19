@@ -97,12 +97,12 @@ export async function onRequest(context) {
   ];
   if (before_ts) params.push(`created_at=lt.${encodeURIComponent(before_ts)}`);
 
-  const mR = await fetch(`${SUPABASE_URL}/rest/v1/n8n_chat_histories?${params.join('&')}`, {
+  const mR = await fetch(`${SUPABASE_URL}/rest/v1/conversa_mensagens?${params.join('&')}`, {
     headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` },
   });
   if (!mR.ok) {
     const errText = await mR.text().catch(() => '');
-    console.error('thread: GET n8n_chat_histories falhou', mR.status, errText);
+    console.error('thread: GET conversa_mensagens falhou', mR.status, errText);
     return json({ error: 'Erro ao consultar mensagens' }, 500);
   }
   const rows = await mR.json();

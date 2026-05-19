@@ -57,7 +57,7 @@ export async function onRequest(context) {
   const session_id = `${tenant.id}_${inbound.telefone}`;
   let insertedRow = null;
   try {
-    const ins = await supaFetch(env, '/rest/v1/n8n_chat_histories', {
+    const ins = await supaFetch(env, '/rest/v1/conversa_mensagens', {
       method: 'POST',
       headers: { Prefer: 'return=representation, resolution=ignore-duplicates' },
       body: JSON.stringify({
