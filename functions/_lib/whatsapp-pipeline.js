@@ -8,6 +8,8 @@ import { evoSend } from './evolution-send.js';
 import { sendTelegramTo, sendTelegramAlert } from './telegram.js';
 import { runAgent } from '../api/agent/route.js';
 import { callTool } from '../api/agent/_lib/call-tool.js';
+import { classificarFoto } from './foto-classifier.js';
+import { enviarMidia } from './telegram-media.js';
 
 export const TERMINAL_STATES = new Set([
   'aguardando_tatuador',
@@ -47,6 +49,7 @@ export function defaultDeps(env) {
     sendTelegramAdmin: (text) => sendTelegramAlert(env, text),
     runAgent: (args) => runAgent({ env, ...args }),
     callTool: (toolName, body) => callTool(env, toolName, body),
+    enviarMidia,
     now: () => new Date().toISOString(),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   };
@@ -96,6 +99,27 @@ export async function processMessage(env, msg, depsOverride = {}) {
           tenant.tatuador_telegram_chat_id,
           `📩 Cliente ${pushName ?? telefone} (${tenant.nome_estudio}) mandou msg:\n${preview(texto, 200)}`,
         );
+        // Re-encaminha foto avulsa pos-handoff (se presente) + cleanup base64 so apos upload OK.
+        if (mediaBase64 && mediaMimetype?.startsWith('image/')) {
+          try {
+            const nome = conversa.dados_cadastro?.nome || pushName || telefone;
+            await deps.enviarMidia(
+              env,
+              tenant.tatuador_telegram_chat_id,
+              mediaBase64,
+              mediaMimetype,
+              `📸 ${nome} mandou +1 foto`,
+            );
+            await deps.supaFetch(`/rest/v1/rpc/zerar_media_base64`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ p_msg_id: msgRowId }),
+            });
+          } catch (e) {
+            console.warn(`[pipeline] pos-handoff foto falhou: ${e.message}`);
+            // nao-fatal: base64 fica intacto (cleanup so roda apos upload OK)
+          }
+        }
       } else {
         await deps.sendTelegramAdmin(
           `tenant ${tenant.id} sem tatuador_telegram_chat_id em estado terminal (${conversa.estado_agente})`,
@@ -169,6 +193,44 @@ export async function processMessage(env, msg, depsOverride = {}) {
         updated_at: deps.now(),
       }),
     });
+
+    // Etapa 4.5: classificar foto e PATCH msg_id em dados_coletados
+    // (additive PATCH; campos foto_local_msg_id / refs_imagens_msg_ids)
+    if (mediaBase64 && mediaMimetype?.startsWith('image/')) {
+      try {
+        // Para a classificacao, usar o estado PRE-merge da foto_local: se o agent
+        // setou foto_local nesse mesmo turno, L1 ainda deve poder disparar (a foto
+        // que chegou ESTE turno e a candidata a foto_local). Por isso lemos
+        // conversa.dados_coletados (pre-merge), nao novoDadosColetados.
+        const dadosPreMerge = conversa.dados_coletados || {};
+        const dadosParaPatch = isCadastro ? dadosPreMerge : novoDadosColetados;
+        const tentativas = dadosPreMerge.tentativas_foto_local
+          || conversa.estado_extra?.tentativas_foto_local || 0;
+        const fotoLocalAtual = dadosPreMerge.foto_local;
+        const tipo = classificarFoto({
+          tentativas_foto_local: tentativas,
+          foto_local_atual: fotoLocalAtual,
+          texto_turno: texto,
+        });
+
+        let patchBody;
+        if (tipo === 'local') {
+          patchBody = { dados_coletados: { ...dadosParaPatch, foto_local_msg_id: msgRowId } };
+        } else {
+          const idsAtuais = Array.isArray(dadosParaPatch.refs_imagens_msg_ids)
+            ? dadosParaPatch.refs_imagens_msg_ids : [];
+          patchBody = { dados_coletados: { ...dadosParaPatch, refs_imagens_msg_ids: [...idsAtuais, msgRowId] } };
+        }
+        await deps.supaFetch(`/rest/v1/conversas?id=eq.${conversa.id}`, {
+          method: 'PATCH',
+          headers: { Prefer: 'return=minimal' },
+          body: JSON.stringify(patchBody),
+        });
+      } catch (e) {
+        console.warn(`[pipeline] etapa-4.5 classificador falhou: ${e.message}`);
+        // nao-fatal: pipeline segue, foto fica orfa (sem msg_id correlacionado)
+      }
+    }
 
     // Etapa 6: INSERT conversa_mensagens OUT (type='ai')
     await deps.supaFetch('/rest/v1/conversa_mensagens', {
