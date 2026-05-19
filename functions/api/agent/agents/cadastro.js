@@ -1,33 +1,44 @@
 // functions/api/agent/agents/cadastro.js
-// CadastroAgent — fase cadastro do fluxo Coleta v2 (Sub-3.1).
-// Importa prompt LITERAL de functions/_lib/prompts/coleta/cadastro/ via
-// generatePromptColetaCadastro. Pure structured-output agent — sem tools.
+// CadastroAgent — Caminho C Fase 2A. Funcao pura sem classe Agent.
+// Espelha runTattooAgent da Fase 1 (Caminho C).
 //
-// Decisoes cravadas (ver spec 2026-05-08-sub3-cadastro-prompt-v2-design.md):
-// - Modelo: gpt-4o-mini (paridade Sub-2)
-// - Sem tools: estado e dados via dados_persistidos + proxima_acao no
-//   structured output. Tools dados_coletados, enviar_orcamento_tatuador,
-//   acionar_handoff removidas (eram dual-via, audit Fase 9 2026-05-08).
-// - Validacao idade pos-output em route.js (helper enforceMenorIdade) —
-//   agent NAO calcula idade (pattern Sub-2: agent decide intent + estrutura).
-// - Schema ZodObject puro (sem .refine()/.transform() — viram ZodEffects
-//   e Responses API rejeita 400). Bug confirmado em Sub-2.
-
+// Antes (pre-fase2a): builder pattern com @openai/agents SDK + validator
+// pos-parse pra invariantes (handoff exige nome+data+email-or-recusado,
+// formato ISO em data_nascimento). Mesmo padrao do TattooAgent pre-fase1
+// que falsificou em 33% dos turnos criticos.
+//
+// Agora: openai SDK puro + Responses API + schema strict discriminated
+// union (constrained decoding token-level). Handoff sem invariantes e
+// estruturalmente impossivel. Validador residual unico
+// (validateCadastroHandoffEmail) vive em route.js pra invariante
+// cross-field 'handoff com email=null exige email_recusado=true' que vai
+// ser ligada na Task 8.
+//
+// LEGADO TRANSITORIO ATE TASK 8 (route.js migration):
+// - buildCadastroAgent + LegacyCadastroOutputSchema continuam exportados
+//   pq route.js linha 158 ainda chama builder({...}) pra estado='cadastro'.
+//   Task 8 vai bifurcar route.js (espelhando o que Fase 1 fez pra tattoo)
+//   e remover esses dois exports. NAO modifique buildCadastroAgent aqui —
+//   spec do plan diz Task 7 nao toca route.js.
+// - validateCadastroOutputInvariant idem: route.js consome via closure
+//   retornada pelo builder. Removido na Task 8.
 import { Agent } from '@openai/agents';
 import { z } from 'zod';
+import { runtime } from '../../../_lib/agent-runtime/runtime.js';
 import { generatePromptColetaCadastro } from '../../../_lib/prompts/coleta/cadastro/generate.js';
+import { CadastroOutputSchema as _StrictSchema } from './cadastro-schema.js';
 
-// ── Schema do structured output ──────────────────────────────────────────
-// Diff vs TattooOutputSchema:
-// - 3 campos em dados_persistidos (nome/data_nascimento/email) vs 7 do Tattoo
-// - email_recusado: boolean — flag nova (sempre setada). Sinaliza opt-out.
-// - dados_completos=true exige nome E data_nascimento populados E
-//   (email populado OU email_recusado=true).
-//
-// SEM regex em data_nascimento: schema fica ZodObject puro. Formato ISO
-// validado pos-output em validateCadastroOutputInvariant. Se mini emitir
-// formato errado, route.js silently force proxima_acao='pergunta'.
-export const CadastroOutputSchema = z.object({
+// Re-export do schema strict novo (discriminated union 4 branches). Este
+// e o schema PRIMARIO pos-Fase 2A — usado por runCadastroAgent abaixo.
+// Tests/evals novos devem importar este (ou diretamente cadastro-schema.js).
+export const CadastroOutputSchema = _StrictSchema;
+
+// ── LEGACY: schema permissivo do path antigo (@openai/agents SDK) ──────
+// Mantemos local porque buildCadastroAgent precisa de um ZodObject puro
+// (sem discriminator) — @openai/agents rejeita discriminatedUnion via
+// typeGuards.mjs:14 (vide spike Sub 1.D). Schema identico ao pre-Fase 2A
+// — NAO mexer ate Task 8 deletar buildCadastroAgent.
+const LegacyCadastroOutputSchema = z.object({
   resposta_cliente: z.string().min(1),
   dados_persistidos: z.object({
     nome: z.string().nullable().optional(),
@@ -39,8 +50,6 @@ export const CadastroOutputSchema = z.object({
   campos_conflitantes: z.array(z.string()),
   email_recusado: z.boolean(),
   proxima_acao: z.enum(['pergunta', 'handoff', 'enviar_portfolio', 'erro']),
-  // Sub-3.3: payload do envio de portfolio. Null em todas as ações exceto
-  // 'enviar_portfolio'. Validado pos-parse via validateCadastroOutputInvariant.
   payload_portfolio: z.object({
     estilo: z.string().nullable().default(null),
     max: z.number().int().min(1).max(10).nullable().default(null),
@@ -48,26 +57,14 @@ export const CadastroOutputSchema = z.object({
   }).nullable().default(null),
 });
 
-// Valida invariante pos-parse. Retorna { valid: true } ou
-// { valid: false, reason: string } pra route.js converter em HTTP 500
-// OU silently force pergunta (caso especial: data_nascimento nao-ISO).
-//
-// Sub-3.3: aceita 2o arg clientContext pra validar invariante
-// 'enviar_portfolio' (requer portfolio_disponivel=true E payload_portfolio
-// nao-null). Default {} mantem retrocompatibilidade com chamadas 1-arg.
+// LEGACY validator — chamado por route.js via closure do builder. Identico
+// ao pre-Fase 2A. Sera deletado em Task 8 (schema strict + helper cross-field
+// substituem todas as invariantes daqui).
 export function validateCadastroOutputInvariant(out, clientContext = {}) {
   if (!out || typeof out !== 'object') {
     return { valid: false, reason: 'output ausente ou nao-objeto' };
   }
 
-  // Validacao pos-output do formato ISO de data_nascimento.
-  // Se mini emitir formato errado (ex: "12/03/1995"), route.js silently
-  // force pergunta — fluxo continua sem 500.
-  //
-  // Sub-3.3: skip se proxima_acao='enviar_portfolio' (intent transversal,
-  // data_nascimento irrelevante; modelo as vezes emite "null" string aqui
-  // e nao queremos que isso engatilhe silent-force-pergunta no route.js
-  // sobrescrevendo resposta_cliente do envio de portfolio).
   const dn = out.dados_persistidos?.data_nascimento;
   if (out.proxima_acao !== 'enviar_portfolio' && dn && !/^\d{4}-\d{2}-\d{2}$/.test(dn)) {
     return { valid: false, reason: `data_nascimento nao-ISO: ${dn}` };
@@ -103,7 +100,8 @@ export function validateCadastroOutputInvariant(out, clientContext = {}) {
   return { valid: true };
 }
 
-// ── Builder ──────────────────────────────────────────────────────────────
+// LEGACY builder — usado por router.js linha 12+21 e route.js linha 158.
+// CLEANUP: deletar quando Task 8 migrar route.js pra runCadastroAgent.
 export function buildCadastroAgent({ env, tenant, conversa, clientContext, baseUrl = 'http://localhost:8788' }) {
   const ctx = clientContext || {};
   const instructions = generatePromptColetaCadastro(tenant, conversa, ctx);
@@ -113,10 +111,48 @@ export function buildCadastroAgent({ env, tenant, conversa, clientContext, baseU
     model: 'gpt-4o-mini',
     instructions,
     tools: [],
-    outputType: CadastroOutputSchema,
+    outputType: LegacyCadastroOutputSchema,
   });
-  // Closure-bound validator (paridade Sub-3.2): route.js chama validator(out)
-  // com 1 arg, closure carrega clientContext pra invariant enviar_portfolio.
   const validator = (out) => validateCadastroOutputInvariant(out, ctx);
   return { agent, validator };
+}
+
+// ── NOVO (Fase 2A): runCadastroAgent — funcao pura sem classe Agent ────
+
+function normalizeHistoryItem(item) {
+  // historico de conversa: pode vir com role+content ja shapeado, ou com
+  // shape do Supabase (autor='cliente'|'bot' + texto). Normaliza pra OpenAI.
+  if (item.role && item.content != null) return { role: item.role, content: item.content };
+  if (item.autor && item.texto != null) {
+    return { role: item.autor === 'cliente' ? 'user' : 'assistant', content: item.texto };
+  }
+  return item;
+}
+
+export async function runCadastroAgent({
+  env,
+  tenant,
+  conversa,
+  clientContext,
+  mensagem,
+  historico,
+  openaiClient,
+}) {
+  const ctx = clientContext || {};
+  const instructions = generatePromptColetaCadastro(tenant, conversa, ctx);
+
+  const input = [
+    ...((historico || []).map(normalizeHistoryItem)),
+    { role: 'user', content: mensagem },
+  ];
+
+  return await runtime.run({
+    apiKey: env.OPENAI_API_KEY,
+    openaiClient,
+    model: 'gpt-4o-mini',
+    instructions,
+    input,
+    outputSchema: CadastroOutputSchema,
+    schemaName: 'cadastro_output',
+  });
 }
