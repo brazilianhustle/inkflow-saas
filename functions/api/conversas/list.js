@@ -122,7 +122,7 @@ export async function onRequest(context) {
   const previews = await Promise.all(conversas.map(async (c) => {
     try {
       const session_id = `${tenant_id}_${c.telefone}`;
-      const pr = await fetch(`${SUPABASE_URL}/rest/v1/n8n_chat_histories?session_id=eq.${encodeURIComponent(session_id)}&select=message&order=id.desc&limit=1`, {
+      const pr = await fetch(`${SUPABASE_URL}/rest/v1/conversa_mensagens?session_id=eq.${encodeURIComponent(session_id)}&select=message&order=id.desc&limit=1`, {
         headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` },
       });
       if (!pr.ok) return '';

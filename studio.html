@@ -2304,10 +2304,10 @@ async function executarAcaoConversa(action) {
 
 // ═══ Polling 8s (Caminho B — Real-time) ═══
 //
-// CONTEXT: RLS policies em conversas e n8n_chat_histories bloqueiam
-// access via anon key (`n8n_chat_histories.anon_no_access` policy = `false`,
+// CONTEXT: RLS policies em conversas e conversa_mensagens bloqueiam
+// access via anon key (`conversa_mensagens.anon_no_access` policy = `false`,
 // `conversas` RLS enabled sem policy anon). Supabase Realtime via anon key
-// não funciona sem hardening RLS — P2 backlog "n8n_chat_histories tenant
+// não funciona sem hardening RLS — P2 backlog "conversa_mensagens tenant
 // isolation proper" cobre isso. Pra PR 4: polling 8s usando os mesmos
 // endpoints já implementados (que usam service-role key server-side).
 //

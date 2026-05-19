@@ -64,7 +64,7 @@ test('list — happy path: stub Supabase, retorna conversas + previews (grupo=ho
         { id: 'c2', telefone: '5511888888888', estado: 'aguardando_sinal', estado_agente: 'ativo', last_msg_at: '2026-05-04T11:00:00Z', valor_proposto: 500, dados_coletados: {}, dados_cadastro: null },
       ]), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
-    if (url.includes('/rest/v1/n8n_chat_histories?')) {
+    if (url.includes('/rest/v1/conversa_mensagens?')) {
       return new Response(JSON.stringify([
         { message: { content: 'Oi! Quero fazer uma tattoo de leão no antebraço.' } }
       ]), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -82,8 +82,8 @@ test('list — happy path: stub Supabase, retorna conversas + previews (grupo=ho
     assert.equal(body.conversas.length, 2);
     assert.equal(body.conversas[0].last_msg_preview.length > 0, true);
     // Coverage: garante que session_id é construído como ${tenantId}_${telefone}
-    const histCalls = calls.filter(u => u.includes('/rest/v1/n8n_chat_histories?'));
-    assert.ok(histCalls.length >= 1, 'pelo menos 1 fetch pra n8n_chat_histories');
+    const histCalls = calls.filter(u => u.includes('/rest/v1/conversa_mensagens?'));
+    assert.ok(histCalls.length >= 1, 'pelo menos 1 fetch pra conversa_mensagens');
     assert.ok(
       histCalls.some(u => u.includes(`session_id=eq.${encodeURIComponent(`${tenantId}_5511999999999`)}`)),
       'session_id deve ser ${tenantId}_${telefone} URL-encoded'
@@ -180,13 +180,13 @@ test('list — preview falha em uma conversa não derruba o batch (silent failur
   const origFetch = globalThis.fetch;
   let previewCallCount = 0;
   globalThis.fetch = async (url) => {
-    if (url.includes('/rest/v1/conversas?') && !url.includes('n8n_chat_histories')) {
+    if (url.includes('/rest/v1/conversas?') && !url.includes('conversa_mensagens')) {
       return new Response(JSON.stringify([
         { id: 'c1', telefone: '111', estado: 'qualificando', estado_agente: 'coletando_tattoo', last_msg_at: '2026-05-04T12:00:00Z', valor_proposto: null, dados_coletados: {}, dados_cadastro: null },
         { id: 'c2', telefone: '222', estado: 'qualificando', estado_agente: 'coletando_tattoo', last_msg_at: '2026-05-04T11:00:00Z', valor_proposto: null, dados_coletados: {}, dados_cadastro: null },
       ]), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
-    if (url.includes('/rest/v1/n8n_chat_histories?')) {
+    if (url.includes('/rest/v1/conversa_mensagens?')) {
       previewCallCount++;
       if (previewCallCount === 1) {
         throw new Error('simulated network error');
@@ -220,7 +220,7 @@ test('list — grupo=hoje constrói URL com or=(estado_agente.in,estado.in) + la
   const origFetch = globalThis.fetch;
   let conversasUrl = null;
   globalThis.fetch = async (url) => {
-    if (url.includes('/rest/v1/conversas?') && !url.includes('n8n_chat_histories')) {
+    if (url.includes('/rest/v1/conversas?') && !url.includes('conversa_mensagens')) {
       conversasUrl = url;
       return new Response('[]', { status: 200 });
     }
@@ -249,7 +249,7 @@ test('list — grupo=negociacao constrói URL com estado_agente=in.(...) direto 
   const origFetch = globalThis.fetch;
   let conversasUrl = null;
   globalThis.fetch = async (url) => {
-    if (url.includes('/rest/v1/conversas?') && !url.includes('n8n_chat_histories')) {
+    if (url.includes('/rest/v1/conversas?') && !url.includes('conversa_mensagens')) {
       conversasUrl = url;
       return new Response('[]', { status: 200 });
     }
@@ -278,7 +278,7 @@ test('list — grupo=hoje + before_ts → URL contém or=(...) + last_msg_at=lt.
   const origFetch = globalThis.fetch;
   let conversasUrl = null;
   globalThis.fetch = async (url) => {
-    if (url.includes('/rest/v1/conversas?') && !url.includes('n8n_chat_histories')) {
+    if (url.includes('/rest/v1/conversas?') && !url.includes('conversa_mensagens')) {
       conversasUrl = url;
       return new Response('[]', { status: 200 });
     }

@@ -64,7 +64,7 @@ test('1. golden path tattoo — Task 9 implementa', async () => {
         conversaPatch = JSON.parse(init.body);
         return new Response('[]', { status: 200 });
       }
-      if (path === '/rest/v1/n8n_chat_histories' && init?.method === 'POST') {
+      if (path === '/rest/v1/conversa_mensagens' && init?.method === 'POST') {
         n8nInserts.push(JSON.parse(init.body));
         return new Response('[]', { status: 201 });
       }
@@ -104,7 +104,7 @@ test('2. terminal aguardando_tatuador — Task 8 implementa', async () => {
   assert.equal(sendTelegramSpy.mock.callCount(), 1);
   assert.equal(sendTelegramSpy.mock.calls[0].arguments[0], '99999');
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Cliente Joao/);
-  const patchCall = supaCalls.find(c => c.method === 'PATCH' && c.path.includes('n8n_chat_histories'));
+  const patchCall = supaCalls.find(c => c.method === 'PATCH' && c.path.includes('conversa_mensagens'));
   assert.ok(patchCall, 'PATCH status=processed deve ter sido chamado');
 });
 
@@ -242,7 +242,7 @@ test('9. midia base64 in nao duplica — Task 10 implementa', async () => {
       if (path.startsWith('/rest/v1/conversas?tenant_id=')) {
         return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
       }
-      if (path === '/rest/v1/n8n_chat_histories' && init?.method === 'POST') {
+      if (path === '/rest/v1/conversa_mensagens' && init?.method === 'POST') {
         n8nInsertCount++;
         const body = JSON.parse(init.body);
         assert.equal(body.message.type, 'ai', 'pipeline so insere msg ai/out');
@@ -263,7 +263,7 @@ test('10. historico mapeado — Task 9 implementa', async () => {
       if (path.startsWith('/rest/v1/conversas?tenant_id=') && !init?.method) {
         return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
       }
-      if (path.startsWith('/rest/v1/n8n_chat_histories?session_id=')) {
+      if (path.startsWith('/rest/v1/conversa_mensagens?session_id=')) {
         return new Response(JSON.stringify([
           { id: 1, message: { type: 'human', content: 'msg1' } },
           { id: 2, message: { type: 'ai', content: 'resp1' } },
@@ -313,7 +313,7 @@ test('14. historico query usa whitelist status=eq.processed (anti history poison
       if (path.startsWith('/rest/v1/conversas?tenant_id=') && !init?.method) {
         return new Response(JSON.stringify([{ id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} }]), { status: 200 });
       }
-      if (path.startsWith('/rest/v1/n8n_chat_histories?session_id=')) {
+      if (path.startsWith('/rest/v1/conversa_mensagens?session_id=')) {
         histQuery = path;
         return new Response('[]', { status: 200 });
       }

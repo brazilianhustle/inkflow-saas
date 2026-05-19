@@ -101,7 +101,7 @@ export async function processMessage(env, msg, depsOverride = {}) {
           `tenant ${tenant.id} sem tatuador_telegram_chat_id em estado terminal (${conversa.estado_agente})`,
         );
       }
-      await deps.supaFetch(`/rest/v1/n8n_chat_histories?id=eq.${msgRowId}`, {
+      await deps.supaFetch(`/rest/v1/conversa_mensagens?id=eq.${msgRowId}`, {
         method: 'PATCH',
         body: JSON.stringify({ status: 'processed' }),
       });
@@ -116,7 +116,7 @@ export async function processMessage(env, msg, depsOverride = {}) {
     // - Race quando cliente manda 2 msgs rapidas: msg N+1 pode nao ver msg N ainda
     //   em received — aceitavel (proxima invoke ja vai ver msg N processed).
     const histRes = await deps.supaFetch(
-      `/rest/v1/n8n_chat_histories?session_id=eq.${encodeURIComponent(session_id)}` +
+      `/rest/v1/conversa_mensagens?session_id=eq.${encodeURIComponent(session_id)}` +
       `&status=eq.processed&order=created_at.asc&limit=40&select=id,message`,
     );
     const histRows = await histRes.json();
@@ -170,8 +170,8 @@ export async function processMessage(env, msg, depsOverride = {}) {
       }),
     });
 
-    // Etapa 6: INSERT n8n_chat_histories OUT (type='ai')
-    await deps.supaFetch('/rest/v1/n8n_chat_histories', {
+    // Etapa 6: INSERT conversa_mensagens OUT (type='ai')
+    await deps.supaFetch('/rest/v1/conversa_mensagens', {
       method: 'POST',
       body: JSON.stringify({
         session_id,
@@ -230,14 +230,14 @@ export async function processMessage(env, msg, depsOverride = {}) {
 
     // Marca msg IN como processada (DEPOIS das etapas 7-8 — se Evolution falhar,
     // o catch path patcha status=failed em vez disso).
-    await deps.supaFetch(`/rest/v1/n8n_chat_histories?id=eq.${msgRowId}`, {
+    await deps.supaFetch(`/rest/v1/conversa_mensagens?id=eq.${msgRowId}`, {
       method: 'PATCH',
       body: JSON.stringify({ status: 'processed' }),
     });
 
   } catch (e) {
     console.error('[pipeline] failed:', { evoMessageId, telefone, error: e.message, stack: e.stack });
-    await deps.supaFetch(`/rest/v1/n8n_chat_histories?id=eq.${msgRowId}`, {
+    await deps.supaFetch(`/rest/v1/conversa_mensagens?id=eq.${msgRowId}`, {
       method: 'PATCH',
       body: JSON.stringify({ status: 'failed' }),
     }).catch(() => {});

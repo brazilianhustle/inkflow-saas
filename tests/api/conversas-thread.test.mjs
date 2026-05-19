@@ -59,7 +59,7 @@ test('thread — happy path: retorna mensagens com role mapeado e session_id ser
         { id: 'cv1', telefone: '5511999999999', estado_agente: 'coletando_tattoo', estado_agente_anterior: null, pausada_em: null, dados_coletados: {}, dados_cadastro: null, valor_proposto: null }
       ]), { status: 200 });
     }
-    if (url.includes('/rest/v1/n8n_chat_histories?')) {
+    if (url.includes('/rest/v1/conversa_mensagens?')) {
       mensagensUrl = url;
       return new Response(JSON.stringify([
         { id: 3, message: { type: 'human', content: 'Oi quero tattoo' }, created_at: '2026-05-04T12:00:00Z' },
@@ -100,7 +100,7 @@ test('thread — before_ts cursor → adiciona created_at=lt', async () => {
     if (url.includes('/rest/v1/conversas?')) {
       return new Response(JSON.stringify([{ id: 'cv1', telefone: '5511999999999' }]), { status: 200 });
     }
-    if (url.includes('/rest/v1/n8n_chat_histories?')) {
+    if (url.includes('/rest/v1/conversa_mensagens?')) {
       mensagensUrl = url;
       return new Response('[]', { status: 200 });
     }
@@ -128,7 +128,7 @@ test('thread — limit clamped pra 200 max', async () => {
     if (url.includes('/rest/v1/conversas?')) {
       return new Response(JSON.stringify([{ id: 'cv1', telefone: '5511999999999' }]), { status: 200 });
     }
-    if (url.includes('/rest/v1/n8n_chat_histories?')) {
+    if (url.includes('/rest/v1/conversa_mensagens?')) {
       mensagensUrl = url;
       return new Response('[]', { status: 200 });
     }
