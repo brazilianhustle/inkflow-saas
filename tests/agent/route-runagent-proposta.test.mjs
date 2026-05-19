@@ -13,14 +13,18 @@ const FAKE_CONVERSA = {
   dados_coletados: {}, dados_cadastro: { nome: 'Cli' },
 };
 
-// Fake fetch pra mockar todos os callTool (prefetch + side-effects)
+// Fake fetch pra mockar todos os callTool (prefetch + side-effects).
+// Retorna { calledUrls } pra spy de quais tools foram chamadas.
 function setupFakeFetch(handlers) {
+  const calledUrls = [];
   globalThis.fetch = async (url) => {
     const u = typeof url === 'string' ? url : url.toString();
+    calledUrls.push(u);
     const matched = Object.keys(handlers).find(k => u.includes(k));
     if (!matched) return new Response('{"ok":true,"slots":[]}', { status: 200 });
     return new Response(JSON.stringify(handlers[matched]), { status: 200 });
   };
+  return { calledUrls };
 }
 
 function makeFakeOpenAI(parsed) {
@@ -80,15 +84,23 @@ test('runAgent: escolhendo_horario + reservar_horario slot em horarios_livres', 
   assert.equal(r.estado_novo, 'aguardando_sinal');
 });
 
-test('runAgent: aguardando_sinal + reservar_horario slot em slots_reservados (TC-P09)', async () => {
-  setupFakeFetch({
+test('runAgent: aguardando_sinal + reservar_horario slot em slots_reservados (TC-P09) — SKIP reservar-horario, regen link', async () => {
+  // Cenario TC-P09: cliente em aguardando_sinal avisa que link venceu.
+  // Slot ja esta reservado (tentative) — chamar reservar-horario causaria
+  // 409 contra a propria tentative do cliente (conflict query nao filtra
+  // por telefone). Orchestration deve SKIPar reservar-horario e chamar
+  // gerar-link-sinal direto com o agendamento_id existente em slots_reservados.
+  const { calledUrls } = setupFakeFetch({
     'consultar-proposta-tatuador': {
       ok: true, status: 'aguardando_sinal',
-      slots_reservados: [{ inicio: '2026-05-14T13:00:00Z', fim: '2026-05-14T16:00:00Z' }],
+      slots_reservados: [{
+        inicio: '2026-05-14T13:00:00Z', fim: '2026-05-14T16:00:00Z',
+        agendamento_id: 'agd-tcp09',
+      }],
     },
     'consultar-portfolio-disponivel': { ok: true, portfolio_disponivel: false },
-    'reservar-horario': { ok: true, agendamento_id: 'agd-1' },
     'gerar-link-sinal': { ok: true, link_pagamento: 'https://pay', hold_horas: 24 },
+    // INTENCIONALMENTE sem mock de 'reservar-horario' — se for chamada, test falha
   });
   const r = await runAgent({
     env: FAKE_ENV,
@@ -102,6 +114,12 @@ test('runAgent: aguardando_sinal + reservar_horario slot em slots_reservados (TC
     }),
   });
   assert.equal(r.ok, true);
+  // Gate: reservar-horario NAO chamada (slot ja em slots_reservados)
+  const reservarCalled = calledUrls.some(u => u.includes('reservar-horario'));
+  assert.equal(reservarCalled, false, 'reservar-horario deveria ser SKIPADA quando slot bate em slots_reservados');
+  // Gate: gerar-link-sinal chamada com agendamento_id existente
+  const gerarCalls = calledUrls.filter(u => u.includes('gerar-link-sinal'));
+  assert.equal(gerarCalls.length, 1, 'gerar-link-sinal deve ser chamada exatamente 1x');
 });
 
 test('runAgent: silent force pergunta quando slot fora da lista', async () => {

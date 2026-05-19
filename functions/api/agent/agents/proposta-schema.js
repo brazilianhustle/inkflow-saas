@@ -10,12 +10,11 @@
 //
 // Spec Caminho C Fase 2 section 2.2.
 import { z } from 'zod';
-
-const PayloadPortfolio = z.object({
-  estilo: z.string().nullable(),
-  max: z.number().int().min(1).max(10),
-  motivo: z.string().min(1),
-});
+// Reusa schema canonical do contract pra LLM constrained decoding casar com
+// o validator pos-parse (extractPortfolioIntent). Sem reuso, divergir
+// .min/.max em um lado vazaria HTTP 500 (LLM emitiria valor que schema
+// aceita mas contract rejeita).
+import { PortfolioIntentSchema as PayloadPortfolio } from '../../../_lib/agent-runtime/contracts/portfolio-intent.js';
 
 // — Shape sentinel (campos null quando action nao usa o campo) —
 function sentinelBranch(acao) {

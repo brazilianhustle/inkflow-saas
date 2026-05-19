@@ -239,9 +239,17 @@ export async function runAgent({
       const reason = e?.message || '';
       if (/fora da lista/.test(reason)) {
         console.warn('[agent/route] silently force pergunta (slot fora):', reason);
-        const slots = mergedClientContext.horarios_livres || [];
-        const legendas = slots.map(s => s.legenda).filter(Boolean).join(', ') || '(nenhum slot disponivel)';
-        working = forcePergunta(out, `Esse horario nao esta na lista — escolhe um destes? ${legendas}`);
+        // Em aguardando_sinal so populamos slots_reservados (sem horarios_livres) —
+        // se LLM alucinou slot fora do reservado, oferece o reservado em vez de
+        // dizer "(nenhum slot disponivel)" enganosamente.
+        const reservados = mergedClientContext.slots_reservados || [];
+        if (estado_atual === 'aguardando_sinal' && reservados.length > 0) {
+          working = forcePergunta(out, `Seu horario reservado ainda esta valido — quer que eu reenvie o link desse horario?`);
+        } else {
+          const slots = mergedClientContext.horarios_livres || [];
+          const legendas = slots.map(s => s.legenda).filter(Boolean).join(', ') || '(nenhum slot disponivel)';
+          working = forcePergunta(out, `Esse horario nao esta na lista — escolhe um destes? ${legendas}`);
+        }
         invariantCheck = { valid: false, reason };
       } else if (/> valor_proposto/.test(reason)) {
         console.warn('[agent/route] silently force pergunta (valor > proposto):', reason);
@@ -270,6 +278,7 @@ export async function runAgent({
   if (PROPOSTA_SUBSTATES.has(estado_atual)) {
     finalOut = await executeOrchestration(enforced, {
       env, tenant, conversa, telefone, sideEffects,
+      clientContext: mergedClientContext,
     });
   }
 
@@ -379,7 +388,7 @@ export function forcePergunta(out, msg) {
   return { ...out, proxima_acao: 'pergunta', resposta_cliente: msg };
 }
 
-export async function executeOrchestration(out, { env, tenant, conversa, telefone, sideEffects }) {
+export async function executeOrchestration(out, { env, tenant, conversa, telefone, sideEffects, clientContext }) {
   switch (out.proxima_acao) {
     case 'pergunta':
     case 'oferecendo_horario':
@@ -387,16 +396,33 @@ export async function executeOrchestration(out, { env, tenant, conversa, telefon
       return out;
 
     case 'reservar_horario': {
-      const nome = conversa?.dados_cadastro?.nome || conversa?.nome || telefone;
-      const ag = await callTool(env, 'reservar-horario', {
-        tenant_id: tenant.id,
-        telefone, nome,
-        inicio: out.slot_inicio,
-        fim: out.slot_fim,
-      });
-      sideEffects.push({ tool: 'reservar-horario', ok: ag.ok, agendamento_id: ag.agendamento_id });
-      if (!ag.ok) {
-        return forcePergunta(out, 'Esse horario acabou de sair — pode escolher outro?');
+      // TC-P09: se o slot ja esta em ctx.slots_reservados (cliente avisando
+      // que link venceu), SKIPa reservar-horario e regenera link direto via
+      // gerar-link-sinal com o agendamento_id existente. Sem skip, a conflict
+      // query de reservar-horario (que nao filtra por telefone) bateria
+      // contra a propria tentative do cliente -> 409 "slot-ocupado" -> bot
+      // diria "acabou de sair" sobre o slot que ainda e dele.
+      const ctxSlots = clientContext?.slots_reservados || [];
+      const existing = ctxSlots.find(
+        s => s.inicio === out.slot_inicio && s.fim === out.slot_fim && s.agendamento_id
+      );
+      let agendamento_id;
+      if (existing) {
+        agendamento_id = existing.agendamento_id;
+        sideEffects.push({ tool: 'reservar-horario', ok: true, agendamento_id, skipped: 'slot_em_reservados' });
+      } else {
+        const nome = conversa?.dados_cadastro?.nome || conversa?.nome || telefone;
+        const ag = await callTool(env, 'reservar-horario', {
+          tenant_id: tenant.id,
+          telefone, nome,
+          inicio: out.slot_inicio,
+          fim: out.slot_fim,
+        });
+        sideEffects.push({ tool: 'reservar-horario', ok: ag.ok, agendamento_id: ag.agendamento_id });
+        if (!ag.ok) {
+          return forcePergunta(out, 'Esse horario acabou de sair — pode escolher outro?');
+        }
+        agendamento_id = ag.agendamento_id;
       }
       // Fallback chain dupla — config_precificacao.sinal_percentual (jsonb)
       // OR tenant.sinal_percentual (legacy column) OR 30 default.
@@ -404,7 +430,7 @@ export async function executeOrchestration(out, { env, tenant, conversa, telefon
       const valor_sinal = calcularValorSinal(conversa.valor_proposto, sinal_pct);
       const lk = await callTool(env, 'gerar-link-sinal', {
         tenant_id: tenant.id,
-        agendamento_id: ag.agendamento_id,
+        agendamento_id,
         valor_sinal,
       });
       sideEffects.push({ tool: 'gerar-link-sinal', ok: lk.ok });
