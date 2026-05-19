@@ -37,6 +37,17 @@ const CAMPOS_TATTOO   = ['descricao_tattoo', 'tamanho_cm', 'local_corpo', 'estil
 const CAMPOS_CADASTRO = ['nome', 'data_nascimento', 'email'];
 const OBR_TATTOO      = ['descricao_tattoo', 'tamanho_cm', 'local_corpo'];
 
+// Campos correlacionados EXCLUSIVAMENTE pelo pipeline (Etapa 4.5 grava os _msg_id;
+// a tool enviar_orcamento_tatuador grava os _file_id apos upload pro Telegram).
+// O LLM nunca deve escreve-los via essa tool — sao FKs/file_ids de infraestrutura,
+// nao dados coletados do cliente. A whitelist abaixo ja rejeitaria como "campo
+// invalido", mas o guard explicito da um erro distinto (logs + agent enxergam a
+// causa: alucinacao de campo pipeline-only, nao typo de campo legitimo).
+const PIPELINE_ONLY_FIELDS = [
+  'foto_local_msg_id', 'foto_local_file_id',
+  'refs_imagens_msg_ids', 'refs_imagens_file_ids',
+];
+
 // Normaliza data_nascimento pra ISO (YYYY-MM-DD). Aceita:
 // - YYYY-MM-DD (passa direto se valido)
 // - DD/MM/YYYY ou DD-MM-YYYY
@@ -137,6 +148,11 @@ async function handle({ env, input }) {
   if (!tenant_id) return { status: 400, body: { ok: false, error: 'tenant_id obrigatorio' } };
   if (!telefone)  return { status: 400, body: { ok: false, error: 'telefone obrigatorio' } };
   if (!campo)     return { status: 400, body: { ok: false, error: 'campo obrigatorio' } };
+
+  // 1b. Guard: rejeita campos pipeline-only (LLM nao pode setar FKs/file_ids).
+  if (PIPELINE_ONLY_FIELDS.includes(campo)) {
+    return { status: 400, body: { ok: false, error: 'campo-pipeline-readonly', campo } };
+  }
 
   // 2. Validação de campo
   const isCadastro = CAMPOS_CADASTRO.includes(campo);

@@ -278,3 +278,61 @@ test('dados_coletados: auth falha retorna 401', async () => {
     globalThis.fetch = origFetch;
   }
 });
+
+// Guard PIPELINE_ONLY_FIELDS — o LLM nao pode setar foto_local_msg_id/file_id
+// nem refs_imagens_msg_ids/file_ids (correlacionados pelo pipeline/tool de orcamento).
+test('dados_coletados: rejeita campo pipeline-only (foto_local_msg_id) vindo do LLM', async () => {
+  const origFetch = globalThis.fetch;
+  let upsertChamado = false;
+  globalThis.fetch = async (url, opts) => {
+    if (url.includes('on_conflict')) upsertChamado = true;
+    if (url.includes('tool_calls_log')) return new Response('', { status: 201 });
+    return new Response(JSON.stringify([]), { status: 200 });
+  };
+  try {
+    const ctx = buildContext({
+      tenant_id: TENANT_ID, telefone: TELEFONE,
+      campo: 'foto_local_msg_id', valor: 999,
+    });
+    const res = await onRequest(ctx);
+    const body = await res.json();
+    assert.equal(res.status, 400);
+    assert.match(body.error, /pipeline-readonly|campo-pipeline/i);
+    assert.equal(upsertChamado, false, 'guard antes do upsert');
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test('dados_coletados: rejeita refs_imagens_file_ids vindo do LLM', async () => {
+  const origFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    if (url.includes('tool_calls_log')) return new Response('', { status: 201 });
+    return new Response(JSON.stringify([]), { status: 200 });
+  };
+  try {
+    const ctx = buildContext({
+      tenant_id: TENANT_ID, telefone: TELEFONE,
+      campo: 'refs_imagens_file_ids', valor: ['x'],
+    });
+    const res = await onRequest(ctx);
+    assert.equal(res.status, 400);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
+test('dados_coletados: aceita campo legitimo lado a lado (local_corpo OK)', async () => {
+  const origFetch = globalThis.fetch;
+  mockSuccessFlow();
+  try {
+    const ctx = buildContext({
+      tenant_id: TENANT_ID, telefone: TELEFONE,
+      campo: 'local_corpo', valor: 'pulso',
+    });
+    const res = await onRequest(ctx);
+    assert.notEqual(res.status, 400);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
