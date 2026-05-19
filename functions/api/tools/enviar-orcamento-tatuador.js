@@ -66,17 +66,20 @@ export function montarLinhaIdade(cad, today = new Date()) {
 export function montarBriefing(conv) {
   const dc = conv?.dados_coletados || {};
   const nome = conv?.dados_cadastro?.nome || 'O cliente';
-  // dados_coletados (via tool dados_coletados) usa descricao_tattoo/tamanho_cm;
-  // aceitamos os aliases legados descricao_curta/altura_cm pra robustez.
+  // descricao_tattoo (tool dados_coletados) e descricao_curta (agente) sao o MESMO
+  // campo logico (descricao da tattoo) — dual-read por robustez.
   const descricao = dc.descricao_tattoo || dc.descricao_curta;
-  const tamanho = dc.altura_cm ?? dc.tamanho_cm;
   const partes = [];
   if (descricao) partes.push(`uma tatuagem de ${descricao}`);
   if (dc.estilo) partes.push(`estilo ${dc.estilo}`);
   if (dc.local_corpo) partes.push(`no ${dc.local_corpo}`);
-  if (tamanho != null) partes.push(`~${tamanho}cm`);
+  // tamanho_cm = tamanho APROXIMADO da tattoo (opcional; cliente raramente informa).
+  if (dc.tamanho_cm != null) partes.push(`~${dc.tamanho_cm}cm`);
 
   let frase = `${nome} quer ${partes.join(', ')}.`;
+  // altura_cm = altura do CLIENTE (corpo), NAO o tamanho da tattoo. O tatuador usa
+  // pra calcular a proporcao no dia — por isso sai separada e rotulada.
+  if (dc.altura_cm != null) frase += ` Altura do cliente: ${dc.altura_cm}cm.`;
   const detalhes = [];
   if (dc.foto_local) detalhes.push('a foto do local');
   const nRefs = Array.isArray(dc.refs_imagens) ? dc.refs_imagens.length : 0;
