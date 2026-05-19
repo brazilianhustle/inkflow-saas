@@ -23,7 +23,13 @@ export function contextoProposta(tenant, conversa, ctx) {
     }
   } else if (estado_atual === 'aguardando_sinal') {
     const status = ctx?.proposta_status ?? 'desconhecido';
-    blocoEstado = `Status da proposta atual: ${status}`;
+    const reservados = Array.isArray(ctx?.slots_reservados) ? ctx.slots_reservados : [];
+    let blocoReservados = '';
+    if (reservados.length > 0) {
+      const linhas = reservados.map(s => `- slot_inicio=${s.inicio}, slot_fim=${s.fim}`).join('\n');
+      blocoReservados = `\nSlots ja reservados (use EXATAMENTE estes ao re-reservar):\n${linhas}`;
+    }
+    blocoEstado = `Status da proposta atual: ${status}${blocoReservados}`;
   }
 
   return `# §1 CONTEXTO

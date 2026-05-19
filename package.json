@@ -15,7 +15,6 @@
     "inkflow-agent:baseline": "node --env-file=evals/.env scripts/inkflow-agent/run-baseline.mjs"
   },
   "dependencies": {
-    "@openai/agents": "^0.1.0",
     "openai": "^4.104.0",
     "zod": "^3.23.0"
   }

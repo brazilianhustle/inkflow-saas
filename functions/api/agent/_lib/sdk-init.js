@@ -1,5 +1,7 @@
-// SDK init helpers — @openai/agents config + auth.
-// Usado por functions/api/agent/agents/*.js e route.js.
+// SDK init helpers — OpenAI key validation.
+// Usado por functions/api/agent/route.js (validateEnv pre-runAgent).
+// Pos Fase 2B: nao ha mais SDK init real — runtime.run injeta apiKey
+// explicita. Este arquivo so faz validate.
 
 const REQUIRED_VARS = ['OPENAI_API_KEY'];
 

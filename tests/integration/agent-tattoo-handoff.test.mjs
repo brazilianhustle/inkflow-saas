@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runAgent } from '../../functions/api/agent/route.js';
-import { getNextState, validateTransition } from '../../functions/api/agent/router.js';
+import { getNextState, validateAction } from '../../functions/api/agent/router.js';
 
 const FAKE_TENANT = {
   id: 't1', nome_estudio: 'Estudio X', nome_agente: 'Bot',
@@ -79,7 +79,7 @@ test('runAgent estado=tattoo handoff valido: ok + estado proximo cadastro', asyn
   assert.equal(result.estado_novo, 'cadastro');
 
   // Contrato extraivel
-  const payload = validateTransition('tattoo', fakeOut);
+  const payload = validateAction('tattoo', fakeOut, {});
   assert.equal(payload.descricao_curta, 'rosa pequena traco fino');
 
   // Estado proximo via router (paridade com result.estado_novo)

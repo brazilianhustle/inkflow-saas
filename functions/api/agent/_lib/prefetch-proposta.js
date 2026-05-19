@@ -17,11 +17,15 @@ export async function prefetchPropostaContext({ env, tenant, conversa, telefone,
   }
 
   if (estado_atual === 'aguardando_sinal') {
+    // Caminho C Fase 2B TC-P09: agendamento ativo do cliente. Slot ja
+    // reservado nao consta em horarios_livres — extractPropostaAction
+    // (contract) aceita slot em horarios_livres OR slots_reservados.
     const r = await callTool(env, 'consultar-proposta-tatuador', {
       tenant_id: tenant.id,
       telefone,
     });
     ctx.proposta_status = r.ok ? r.status : null;
+    ctx.slots_reservados = r.ok && Array.isArray(r.slots_reservados) ? r.slots_reservados : [];
   }
 
   return ctx;
