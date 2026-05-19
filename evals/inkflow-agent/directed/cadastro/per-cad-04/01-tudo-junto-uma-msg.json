@@ -1,0 +1,18 @@
+{
+  "id": "per-cad-04-01-tudo-junto-uma-msg",
+  "titulo": "PER-CAD-04 — cliente joga nome+data+email numa msg unica",
+  "descricao": "Cliente impaciente fornece os 3 OBR numa unica mensagem. Bot deve parsear, validar e fechar com handoff direto.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-04",
+  "turns_cliente": [
+    "Ana Pereira, 25/12/1992, ana.pereira@gmail.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_not_contain": ["mais um momento", "precisamos confirmar", "qual seu nome"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

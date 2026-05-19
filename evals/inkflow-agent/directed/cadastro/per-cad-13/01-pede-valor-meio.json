@@ -1,0 +1,22 @@
+{
+  "id": "per-cad-13-01-pede-valor-meio",
+  "titulo": "PER-CAD-13 — cliente pergunta preço durante cadastro",
+  "descricao": "Cliente impaciente pergunta 'quanto custa?' no meio do fluxo. Bot deve redirecionar gentilmente sem mencionar faixa de valor (papel do PropostaAgent posterior) e continuar coletando os OBR. Cobre decisao cravada #5.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-13",
+  "turns_cliente": [
+    "Mateus Rocha",
+    "qual a faixa de preço de uma fineline?",
+    "tá, 14/07/1995",
+    "mateus.rocha@email.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_not_contain": ["R$", "fica em torno", "varia entre", "valor médio", "faixa de", "uns 200", "uns 300", "preço médio"],
+    "should_contain_at_least_one": ["depois", "tatuador", "ele te passa", "primeiro a referência"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

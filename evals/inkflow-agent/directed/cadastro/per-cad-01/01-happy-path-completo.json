@@ -1,0 +1,22 @@
+{
+  "id": "per-cad-01-01-happy-path-completo",
+  "titulo": "PER-CAD-01 — happy path nome+data+email completos",
+  "descricao": "Cliente fornece os 3 OBR (nome, data_nascimento, email) em respostas separadas. Bot deve coletar tudo e fechar com handoff sem soar formulário.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-01",
+  "turns_cliente": [
+    "oi",
+    "Joao Silva",
+    "12/03/1995",
+    "joao.silva@example.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_not_contain": ["preencha", "formulário", "Anotei", "Confirmado", "Registrado"],
+    "should_contain_at_least_one": ["pronto", "show", "beleza", "perfeito"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

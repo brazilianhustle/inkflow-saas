@@ -1,0 +1,21 @@
+{
+  "id": "per-cad-08-01-menor-idade",
+  "titulo": "PER-CAD-08 — cliente menor de idade (data nascimento < 18 anos)",
+  "descricao": "Cliente fornece data que indica menor de idade. Bot deve, via enforceMenorIdade pos-output (existente), redirecionar pra handoff com tatuador (nao seguir o fluxo normal). Schema strict NAO bloqueia — eh validacao de negocio.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-08",
+  "turns_cliente": [
+    "Vinicius",
+    "08/02/2012",
+    "vini@email.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_contain_at_least_one": ["responsavel", "tatuador vai te chamar", "passar pra ele"],
+    "should_not_contain": ["pode fazer", "vamos prosseguir"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

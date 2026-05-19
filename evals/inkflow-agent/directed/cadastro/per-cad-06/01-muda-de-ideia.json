@@ -1,0 +1,22 @@
+{
+  "id": "per-cad-06-01-muda-de-ideia",
+  "titulo": "PER-CAD-06 — cliente desiste no meio do cadastro",
+  "descricao": "Cliente comeca cadastro, depois fala que vai pensar. Bot deve permanecer em 'pergunta' (estado nao muda pra handoff) e nao forcar. Cobre comportamento de naturalidade no pivot.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-06",
+  "turns_cliente": [
+    "Lucas",
+    "15/06/1993",
+    "ah pera, vou pensar melhor antes",
+    "depois te falo, valeu"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "pergunta",
+    "should_not_contain": ["mas precisa", "vou anotar mesmo assim", "preciso do email"],
+    "should_contain_at_least_one": ["claro", "tranquilo", "quando quiser"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

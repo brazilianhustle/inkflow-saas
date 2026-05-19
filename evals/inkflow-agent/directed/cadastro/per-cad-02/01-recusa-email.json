@@ -1,0 +1,22 @@
+{
+  "id": "per-cad-02-01-recusa-email",
+  "titulo": "PER-CAD-02 — recusa email firme, handoff com email_recusado=true",
+  "descricao": "Cliente recusa email explicitamente. Bot deve aceitar (nao insistir) e fazer handoff com email=null + email_recusado=true. Cobre invariante cross-field critica.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-02",
+  "turns_cliente": [
+    "Maria Souza",
+    "20/05/1990",
+    "nao quero passar email nao",
+    "nao mesmo, sem email"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_not_contain": ["mas precisa", "exige email", "obrigatorio o email"],
+    "should_contain_at_least_one": ["sem problema", "tranquilo", "beleza", "pode ser"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

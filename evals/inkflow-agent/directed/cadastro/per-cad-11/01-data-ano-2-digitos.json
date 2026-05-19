@@ -1,0 +1,21 @@
+{
+  "id": "per-cad-11-01-data-ano-2-digitos",
+  "titulo": "PER-CAD-11 — cliente fornece data com ano 2 digitos (DD/MM/AA)",
+  "descricao": "Cliente: '02/05/95'. Bot deve normalizar automaticamente pra 1995-05-02 (regra cravada: anos 00-07 → 20XX, 08-99 → 19XX, ja que cliente maior de idade hoje nasceu antes de 2008). NAO re-perguntar o ano.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-11",
+  "turns_cliente": [
+    "Bruno Costa",
+    "02/05/95",
+    "bruno.costa@email.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_not_contain": ["qual o ano", "1907", "2095", "ano completo", "ano com 4 digitos", "ambiguidade"],
+    "should_contain_at_least_one": ["pronto", "show", "beleza", "perfeito"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

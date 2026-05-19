@@ -1,0 +1,23 @@
+{
+  "id": "per-cad-15-01-indeciso-pivoteia",
+  "titulo": "PER-CAD-15 — cliente pivoteia entre cadastro, portfolio e valor",
+  "descricao": "Cliente abre pedindo referencias, decide cadastrar no meio, pergunta preco antes de terminar, volta pro cadastro. Bot deve manter contexto do que ja coletou e responder intents transversais (portfolio + valor) sem reiniciar fluxo. Cobre decisao cravada #7 (multi-intent encadeado).",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-15",
+  "turns_cliente": [
+    "manda umas referencias fineline antes",
+    "ah achei legal, vou cadastrar entao. Tiago Almeida",
+    "12/09/1994",
+    "espera, quanto que fica uma media-large?",
+    "tá, tiago.almeida@email.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_not_contain": ["qual seu nome de novo", "voltando pro inicio", "começar de novo", "R$", "varia entre", "uns 300"],
+    "should_contain_at_least_one": ["Tiago", "tatuador te passa", "depois"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

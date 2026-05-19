@@ -1,0 +1,21 @@
+{
+  "id": "per-cad-17-01-mal-humorado-seco",
+  "titulo": "PER-CAD-17 — cliente seco e mal-humorado (1-2 palavras por turno)",
+  "descricao": "Cliente responde curto e seco (sem 'oi', sem 'obrigado', data ja em ISO). Bot deve espelhar o registro do cliente (manifesto v2) — nao forcar amabilidade nem virar frio/formal demais. Testa adequacao tonal, NAO parsing.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-17",
+  "turns_cliente": [
+    "Pedro",
+    "1995-07-22",
+    "p@x.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_not_contain": ["fico muito feliz", "que otimo", "obrigado por compartilhar", "adorei", "incrivel", "maravilhoso"],
+    "should_contain_at_least_one": ["pronto", "beleza", "fechou", "show"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "per-cad-07-01-pede-portfolio-meio",
+  "titulo": "PER-CAD-07 — cliente pede portfolio no meio do cadastro",
+  "descricao": "Cliente comeca cadastro, depois pede 'me manda umas referencias'. Bot deve emitir proxima_acao='enviar_portfolio' com payload_portfolio. Cobre intent transversal.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-07",
+  "turns_cliente": [
+    "Bruno",
+    "manda umas referencias fineline pra eu ver"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "enviar_portfolio",
+    "should_not_contain": ["nao posso", "preciso terminar cadastro"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}
