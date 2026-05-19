@@ -237,8 +237,8 @@ export async function enviarFotosOrcamento(env, chatId, conv, depsOverride = {})
 function inlineKeyboard(orcid) {
   return {
     inline_keyboard: [[
-      { text: '✅ Fechar valor', callback_data: `fechar:${orcid}` },
-      { text: '❌ Recusar',      callback_data: `recusar:${orcid}` },
+      { text: '💵 Informar valor', callback_data: `fechar:${orcid}` },
+      { text: '❌ Recusar',         callback_data: `recusar:${orcid}` },
     ]],
   };
 }
@@ -260,7 +260,9 @@ async function enviarTelegram(env, chat_id, text, reply_markup) {
   const r = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id, text, parse_mode: 'Markdown', reply_markup }),
+    // Sem parse_mode: o texto do orcamento e plain text (briefing natural). Markdown
+    // quebraria com chars especiais em nome/email/descricao do cliente (ex: a_b@x.com).
+    body: JSON.stringify({ chat_id, text, reply_markup }),
   });
   const body = await r.json();
   if (!body.ok) throw new Error(`telegram-${body.error_code}: ${body.description}`);
@@ -284,17 +286,31 @@ async function handle({ env, input }) {
     };
   }
 
-  // Idempotencia: se ja tem orcid, retorna o existente sem reenviar
+  // Idempotencia: se ja tem orcid, NAO reenvia o texto. Mas se as fotos ficaram
+  // pendentes (msg_id sem file_id — upload falhou numa chamada anterior), roda SO
+  // o upload das fotos faltantes (retry parcial).
   if (conv.orcid) {
+    const dc = conv.dados_coletados || {};
+    const fotosPendentes =
+      (dc.foto_local_msg_id && !dc.foto_local_file_id)
+      || ((dc.refs_imagens_msg_ids?.length || 0) > (dc.refs_imagens_file_ids?.length || 0));
+
+    if (!fotosPendentes) {
+      return {
+        status: 200,
+        body: { ok: true, orcid: conv.orcid, idempotente: true, estado_agente: conv.estado_agente },
+      };
+    }
+
+    let resultadoFotos;
+    try {
+      resultadoFotos = await enviarFotosOrcamento(env, tenant.tatuador_telegram_chat_id, conv);
+    } catch (e) {
+      resultadoFotos = { falhas_total: true, error: e.message };
+    }
     return {
       status: 200,
-      body: {
-        ok: true,
-        orcid: conv.orcid,
-        idempotente: true,
-        estado_agente: conv.estado_agente,
-        dica: 'orcamento ja enviado anteriormente',
-      },
+      body: { ok: true, orcid: conv.orcid, retry_fotos: true, enviadas: resultadoFotos.enviadas ?? 0 },
     };
   }
 
@@ -325,10 +341,33 @@ async function handle({ env, input }) {
     body: JSON.stringify({ orcid, estado_agente: 'aguardando_tatuador' }),
   });
 
-  // Envia Telegram. Se falhar, reverter estado pra agente poder tentar de novo.
+  // Envia as fotos do briefing ANTES do texto. Falha aqui NAO bloqueia o orcamento:
+  // montarTextoOrcamento anota a falha e o tatuador abre a conversa pra ver as fotos.
+  let resultadoFotos;
+  try {
+    resultadoFotos = await enviarFotosOrcamento(env, tenant.tatuador_telegram_chat_id, conv);
+  } catch (e) {
+    console.error(`[enviar-orcamento] enviarFotosOrcamento crash: ${e.message}`);
+    resultadoFotos = { enviadas: 0, falhas_total: true, error: e.message };
+  }
+
+  // Observability — um evento por orcamento com o resultado do upload de fotos.
+  console.log(JSON.stringify({
+    evento: 'fotos-orcamento-enviadas',
+    orcid, tenant_id, telefone,
+    tentadas: resultadoFotos.tentadas || 0,
+    enviadas: resultadoFotos.enviadas || 0,
+    falhas: resultadoFotos.falhas || 0,
+    falhas_total: !!resultadoFotos.falhas_total,
+  }));
+
+  // Texto do orcamento + botoes. Se falhar, reverter estado pra agente tentar de novo.
   let tgResult;
   try {
-    tgResult = await enviarTelegram(env, tenant.tatuador_telegram_chat_id, montarTextoOrcamento(conv), inlineKeyboard(orcid));
+    tgResult = await enviarTelegram(
+      env, tenant.tatuador_telegram_chat_id,
+      montarTextoOrcamento(conv, resultadoFotos), inlineKeyboard(orcid),
+    );
   } catch (e) {
     // Rollback: limpar orcid e voltar estado pra coletando_cadastro
     await supaFetch(env, `/rest/v1/conversas?id=eq.${encodeURIComponent(conversa_id)}`, {
