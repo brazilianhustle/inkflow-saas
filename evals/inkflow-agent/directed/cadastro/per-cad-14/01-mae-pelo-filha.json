@@ -1,0 +1,22 @@
+{
+  "id": "per-cad-14-01-mae-pelo-filha",
+  "titulo": "PER-CAD-14 — mãe inicia cadastro em nome da filha (filha ≥18)",
+  "descricao": "Mae fala 'é pra minha filha Maria, ela tem 24'. Bot deve coletar dados da PESSOA QUE VAI TATUAR (filha), nao da mae. Mantem pronomes consistentes ('ela'). Handoff com flag terceiro_intermediando=true pro tatuador validar consentimento offline. Cobre decisao cravada #6.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-14",
+  "turns_cliente": [
+    "oi, é pra minha filha, ela quer fazer uma tatuagem",
+    "ela se chama Maria Eduarda Carvalho",
+    "nasceu em 03/04/2002, tem 24 anos",
+    "o email dela é maria.eduarda@email.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_contain_at_least_one": ["Maria Eduarda", "ela", "filha"],
+    "should_not_contain": ["seu nome", "sua data", "qual o seu nome", "anotei voce", "voce nasceu"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

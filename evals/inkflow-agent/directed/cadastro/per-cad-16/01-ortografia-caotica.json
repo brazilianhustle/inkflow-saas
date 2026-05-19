@@ -1,0 +1,22 @@
+{
+  "id": "per-cad-16-01-ortografia-caotica",
+  "titulo": "PER-CAD-16 — cliente escreve com ortografia caotica e abreviacoes",
+  "descricao": "Cliente escreve com typos extremos, abreviacoes (tdb, vcs, fzr) e sem pontuacao. Bot deve interpretar e NAO virar formulario ('voce quis dizer?' redundante). Estressa tolerancia linguistica sem regredir naturalidade. Email com typo de dominio (gmial.com) passa formato Zod — bot nao corrige.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-16",
+  "turns_cliente": [
+    "tdb quero fzr uma tatto cm vcs",
+    "meu nme eh Jao da slv",
+    "nci em 15/11/97",
+    "jao.silva@gmial.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_not_contain": ["voce quis dizer", "confirma seu nome", "esta correto", "pode repetir mais claro", "escreva direito"],
+    "should_contain_at_least_one": ["pronto", "show", "beleza", "perfeito", "fechou"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

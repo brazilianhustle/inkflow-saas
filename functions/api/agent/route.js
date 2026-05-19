@@ -14,6 +14,7 @@ import { run } from '@openai/agents';
 import { setDefaultOpenAIKey } from '@openai/agents-openai';
 import { selectAgentBuilder, isStateImplemented, getNextState, validateTransition } from './router.js';
 import { runTattooAgent } from './agents/tattoo.js';
+import { runCadastroAgent } from './agents/cadastro.js';
 import { buildFallbackOutput } from '../../_lib/agent-runtime/fallbacks.js';
 import { validateEnv } from './_lib/sdk-init.js';
 import { enforceMenorIdade } from './_lib/enforce-menor-idade.js';
@@ -77,6 +78,18 @@ function inferAgentName(estado) {
   if (estado === 'cadastro') return 'cadastro';
   if (PROPOSTA_SUBSTATES.has(estado)) return 'proposta';
   return estado;
+}
+
+// Validador residual cross-field: 'handoff' com email=null exige email_recusado=true.
+// Codificar via discriminated union exigiria 5 branches (split handoff em
+// handoff_com_email vs handoff_sem_email_recusado), custo maior que beneficio.
+// Mantemos esse residual unico no Cadastro (spec Fase 2 section 2.1).
+export function validateCadastroHandoffEmail(out) {
+  if (!out || out.proxima_acao !== 'handoff') return null;
+  if (out.dados_persistidos?.email == null && out.email_recusado !== true) {
+    return { reason: 'handoff sem email nem email_recusado=true' };
+  }
+  return null;
 }
 
 export async function runAgent({
@@ -152,8 +165,58 @@ export async function runAgent({
       }
     }
     working = out;
+  } else if (estado_atual === 'cadastro') {
+    // ─── Caminho C Fase 2A: path novo Cadastro ─────────────────────────
+    // runCadastroAgent + Responses API + discriminated union strict.
+    // Schema garante invariantes do handoff exceto cross-field email-or-recusado,
+    // que e checado abaixo via validateCadastroHandoffEmail (silently force pergunta).
+    let out;
+    try {
+      out = await runCadastroAgent({
+        env, tenant, conversa, clientContext: mergedClientContext,
+        mensagem, historico,
+        openaiClient,
+      });
+    } catch (e) {
+      console.error('[agent/route] runCadastroAgent exhausted retries:', {
+        message: e?.message, status: e?.status, code: e?.code,
+      });
+      out = buildFallbackOutput('cadastro');
+    }
+    // Validador residual cross-field (silently force pergunta).
+    // NAO usa forcePergunta() — esse helper so flipa proxima_acao+resposta_cliente,
+    // deixando dados_completos:true + campos_faltando:[] do handoff (estado
+    // inconsistente). Aqui mutamos dados_completos:false + adicionamos 'email' em
+    // campos_faltando, espelhando o silent force de data_nascimento nao-ISO no
+    // legacy path abaixo. NAO mutamos dados_persistidos.email — cliente pode ter
+    // passado email valido E recusado ou estar prestes a passar; nao invalida o
+    // que ja foi coletado. Tambem atualiza invariantCheck pra telemetria
+    // (invariant_passed=false + reason) — sem isso logAgentTurn reportaria valid:true
+    // e perderiamos observabilidade de quantas vezes o LLM produz essa violacao.
+    const violated = validateCadastroHandoffEmail(out);
+    if (violated) {
+      console.warn('[agent/route] silently force pergunta (cadastro residual):', violated.reason);
+      out = {
+        ...out,
+        proxima_acao: 'pergunta',
+        resposta_cliente: 'Pra avancar preciso do email — ou me confirma que prefere seguir sem.',
+        dados_completos: false,
+        campos_faltando: Array.from(new Set([...(out.campos_faltando || []), 'email'])),
+      };
+      invariantCheck = { valid: false, reason: violated.reason };
+    }
+    // Contract handoff cross-agent.
+    if (out.proxima_acao === 'handoff') {
+      try {
+        validateTransition('cadastro', out);
+      } catch (e) {
+        console.error('[agent/route] cadastro handoff contract violation:', e?.message);
+        return { ok: false, error: 'invariant-violation', reason: e?.message, status: 500 };
+      }
+    }
+    working = out;
   } else {
-    // ─── Path antigo: cadastro, proposta (intocado ate Fase 2) ────────
+    // ─── Path antigo: proposta (intocado ate Fase 2B) ─────────────────
     const builder = selectAgentBuilder(estado_atual);
     const { agent, validator } = builder({ env, tenant, conversa, clientContext: mergedClientContext, estado_atual });
 

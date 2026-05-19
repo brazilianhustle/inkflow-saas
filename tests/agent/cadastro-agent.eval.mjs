@@ -13,7 +13,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { Agent, run } from '@openai/agents';
-import { CadastroOutputSchema } from '../../functions/api/agent/agents/cadastro.js';
+import { LegacyCadastroOutputSchema as CadastroOutputSchema } from '../../functions/api/agent/agents/cadastro.js';
 import { generatePromptColetaCadastro } from '../../functions/_lib/prompts/coleta/cadastro/generate.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

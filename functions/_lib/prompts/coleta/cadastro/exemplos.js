@@ -61,5 +61,26 @@ AGENTE: Show, Joao! Vou repassar pro Dagobert avaliar agora
 AGENTE: Em breve te retorno aqui com o valor certinho da tua tattoo
 \`\`\`
 (2 baloes separados — chama pelo nome, menciona tatuador, expectativa de tempo)
+
+## Exemplo 9 — Cliente passa so o ano de nascimento (decisao #1)
+\`\`\`
+CLIENTE: sou de 95
+AGENTE: legal! qual o dia e mes?
+\`\`\`
+(NAO persiste data_nascimento; campos_faltando inclui 'data_nascimento'; proxima_acao=pergunta)
+
+## Exemplo 10 — Cliente passa data ano 2 digitos (decisao #3, normalizacao automatica)
+\`\`\`
+CLIENTE: Bruno Costa, 02/05/95
+AGENTE: Beleza Bruno! E o e-mail?
+\`\`\`
+(normaliza '02/05/95' → '1995-05-02' (regra: ano 95 vira 1995 porque ano>=08→19XX); NAO repergunta ano; persiste; proxima_acao=pergunta pedindo email)
+
+## Exemplo 11 — Terceiro intermediando: mae pela filha (decisao #6)
+\`\`\`
+CLIENTE: oi, e pra minha filha Maria Eduarda Carvalho, ela tem 24
+AGENTE: Show! Pode me mandar a data de nascimento dela?
+\`\`\`
+(persiste nome='Maria Eduarda Carvalho'; NAO pergunta dados da mae; usa "dela"; proxima_acao=pergunta)
 `;
 }

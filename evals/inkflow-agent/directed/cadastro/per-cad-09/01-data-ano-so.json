@@ -1,0 +1,22 @@
+{
+  "id": "per-cad-09-01-data-ano-so",
+  "titulo": "PER-CAD-09 — cliente fornece apenas o ano de nascimento",
+  "descricao": "Cliente: 'sou de 95'. Bot precisa re-perguntar dia + mes (schema strict exige ISO YYYY-MM-DD; aceitar so ano significaria inventar DD/MM). Decisao cravada: caminho B (re-ask) preserva integridade do dado pro tatuador.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-09",
+  "turns_cliente": [
+    "Carlos Lima",
+    "sou de 95",
+    "18 de marco",
+    "carlos.lima@email.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_not_contain": ["1995-01-01", "01/01/1995", "vou assumir", "presumi"],
+    "should_contain_at_least_one": ["dia", "mes", "qual o dia", "que dia"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "per-cad-05-01-corrige-nome",
+  "titulo": "PER-CAD-05 — cliente corrige nome previamente fornecido",
+  "descricao": "Cliente fala nome, depois corrige. Bot deve usar o NOME novo (nao acumular dois). Cobre invariante de campos_conflitantes ou substituicao limpa.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-05",
+  "turns_cliente": [
+    "Carlos",
+    "ah espera, na verdade e Carlos Eduardo Mendes",
+    "10/04/1985",
+    "carlos.mendes@email.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_contain_at_least_one": ["Carlos Eduardo"],
+    "should_not_contain": ["Anotei Carlos", "tem dois nomes"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

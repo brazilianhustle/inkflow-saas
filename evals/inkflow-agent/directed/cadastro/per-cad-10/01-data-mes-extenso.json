@@ -1,0 +1,22 @@
+{
+  "id": "per-cad-10-01-data-mes-extenso",
+  "titulo": "PER-CAD-10 — cliente fornece dia + mes por extenso, sem ano",
+  "descricao": "Cliente: 'nasci em 02 de maio'. Bot deve interpretar 'maio'→'05' e re-perguntar so o ano. LLM gpt-4o-mini consegue parsing trivial via prompt.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-10",
+  "turns_cliente": [
+    "Renata Souza",
+    "nasci em 02 de maio",
+    "1988",
+    "renata@email.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_not_contain": ["qual data", "data completa", "data inteira", "nao entendi"],
+    "should_contain_at_least_one": ["ano", "qual ano", "que ano"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

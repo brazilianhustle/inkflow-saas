@@ -1,0 +1,20 @@
+{
+  "id": "per-cad-03-01-data-formato-errado",
+  "titulo": "PER-CAD-03 — cliente envia data em formato DD/MM/AAAA",
+  "descricao": "Cliente fornece data em formato brasileiro (15/08/1988). Bot deve interpretar e converter pro ISO YYYY-MM-DD internamente. Schema strict NAO aceita formato DD/MM, entao bot precisa normalizar antes de emitir handoff.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-03",
+  "turns_cliente": [
+    "Pedro Oliveira",
+    "15/08/1988",
+    "pedro@email.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_not_contain": ["formato errado", "data invalida", "nao entendi"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}

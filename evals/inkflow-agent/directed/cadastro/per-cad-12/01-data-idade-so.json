@@ -1,0 +1,22 @@
+{
+  "id": "per-cad-12-01-data-idade-so",
+  "titulo": "PER-CAD-12 — cliente fornece apenas a idade, sem data",
+  "descricao": "Cliente: 'tenho 19 anos'. Bot NAO deve aceitar so idade pro handoff (schema strict exige data_nascimento ISO; aceitar idade significaria mudanca de produto/LGPD adiada pro backlog P3). Decisao cravada: caminho B - re-ask gentilmente pela data completa.",
+  "estado_atual": "cadastro",
+  "persona": "PER-CAD-12",
+  "turns_cliente": [
+    "Fernanda Alves",
+    "tenho 19 anos",
+    "08/11/2006",
+    "fernanda@email.com"
+  ],
+  "expected": {
+    "proxima_acao_esperada": "handoff",
+    "should_not_contain": ["so idade", "podemos seguir sem data", "vou registrar 19", "sem problema sem data"],
+    "should_contain_at_least_one": ["dia", "mes", "ano", "data de nascimento", "que dia"]
+  },
+  "thresholds": {
+    "naturalidade_min": 4.0,
+    "manifesto_adherence_min": 0.85
+  }
+}
