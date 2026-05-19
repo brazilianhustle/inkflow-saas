@@ -278,8 +278,10 @@ test('montarLinhaIdade: ainda nao fez aniversario este ano', () => {
 test('montarBriefing: gera texto natural com campos completos', () => {
   const conv = {
     dados_coletados: {
-      descricao_curta: 'borboleta', local_corpo: 'pulso', altura_cm: 8, estilo: 'fineline',
-      foto_local: 'presente', refs_imagens: ['ref1', 'ref2'],
+      descricao_curta: 'borboleta', local_corpo: 'pulso',
+      tamanho_cm: 8,    // tamanho da TATTOO (opcional)
+      altura_cm: 165,   // altura do CLIENTE (corpo) — NAO e o tamanho da tattoo
+      estilo: 'fineline', foto_local: 'presente', refs_imagens: ['ref1', 'ref2'],
     },
     dados_cadastro: { nome: 'Maria' },
   };
@@ -287,14 +289,29 @@ test('montarBriefing: gera texto natural com campos completos', () => {
   assert.match(txt, /borboleta/);
   assert.match(txt, /fineline/);
   assert.match(txt, /pulso/);
-  assert.match(txt, /8\s*cm/i);
+  // tamanho da tattoo aparece como ~8cm
+  assert.match(txt, /~?8\s*cm/i);
+  // altura do cliente aparece SEPARADA e rotulada (nao como tamanho da tattoo)
+  assert.match(txt, /altura do cliente[^\d]*165\s*cm/i);
   assert.match(txt, /foto do local/i);
   assert.match(txt, /2\s+refer/i);
 });
 
+test('montarBriefing: altura_cm (corpo) NUNCA vira o tamanho da tattoo', () => {
+  // So altura (cliente alto), sem tamanho de tattoo → NAO deve descrever a tattoo
+  // como "~170cm". A altura sai rotulada; o tamanho fica ausente (opcional).
+  const conv = {
+    dados_coletados: { descricao_curta: 'leao', local_corpo: 'costas', altura_cm: 170, estilo: 'realismo' },
+    dados_cadastro: { nome: 'Joao' },
+  };
+  const txt = montarBriefing(conv);
+  assert.match(txt, /altura do cliente[^\d]*170\s*cm/i);
+  assert.doesNotMatch(txt, /tatuagem de leao[^.]*170/i); // 170 nao entra na descricao da tattoo
+});
+
 test('montarBriefing: sem foto_local → omite mencao', () => {
   const conv = {
-    dados_coletados: { descricao_curta: 'rosa', local_corpo: 'costas', altura_cm: 15, estilo: 'realismo' },
+    dados_coletados: { descricao_curta: 'rosa', local_corpo: 'costas', altura_cm: 170, estilo: 'realismo' },
     dados_cadastro: { nome: 'Joao' },
   };
   const txt = montarBriefing(conv);

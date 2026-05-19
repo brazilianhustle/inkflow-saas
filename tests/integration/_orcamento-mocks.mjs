@@ -36,7 +36,8 @@ export function makeConversa({ dados_coletados, dados_cadastro, orcid = null, es
   return {
     id: 'c1', estado_agente, orcid, tenant_id: TENANT_ID,
     dados_coletados: dados_coletados || {
-      descricao_curta: 'borboleta', local_corpo: 'pulso', altura_cm: 8, estilo: 'fineline',
+      // altura_cm = altura do CLIENTE (corpo); tamanho_cm = tamanho da tattoo (opcional).
+      descricao_curta: 'borboleta', local_corpo: 'pulso', altura_cm: 165, estilo: 'fineline',
     },
     dados_cadastro: dados_cadastro || { nome: 'Maria', data_nascimento: '2001-03-15', email: 'maria@x.com' },
     tenants: { id: TENANT_ID, tatuador_telegram_chat_id: TG_CHAT, nome_estudio: 'Estudio' },
