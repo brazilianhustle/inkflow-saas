@@ -9,6 +9,7 @@ import { sendTelegramTo, sendTelegramAlert } from './telegram.js';
 import { runAgent } from '../api/agent/route.js';
 import { callTool } from '../api/agent/_lib/call-tool.js';
 import { classificarFoto } from './foto-classifier.js';
+import { enviarMidia } from './telegram-media.js';
 
 export const TERMINAL_STATES = new Set([
   'aguardando_tatuador',
@@ -48,6 +49,7 @@ export function defaultDeps(env) {
     sendTelegramAdmin: (text) => sendTelegramAlert(env, text),
     runAgent: (args) => runAgent({ env, ...args }),
     callTool: (toolName, body) => callTool(env, toolName, body),
+    enviarMidia,
     now: () => new Date().toISOString(),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   };
@@ -97,6 +99,27 @@ export async function processMessage(env, msg, depsOverride = {}) {
           tenant.tatuador_telegram_chat_id,
           `📩 Cliente ${pushName ?? telefone} (${tenant.nome_estudio}) mandou msg:\n${preview(texto, 200)}`,
         );
+        // Re-encaminha foto avulsa pos-handoff (se presente) + cleanup base64 so apos upload OK.
+        if (mediaBase64 && mediaMimetype?.startsWith('image/')) {
+          try {
+            const nome = conversa.dados_cadastro?.nome || pushName || telefone;
+            await deps.enviarMidia(
+              env,
+              tenant.tatuador_telegram_chat_id,
+              mediaBase64,
+              mediaMimetype,
+              `📸 ${nome} mandou +1 foto`,
+            );
+            await deps.supaFetch(`/rest/v1/rpc/zerar_media_base64`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ p_msg_id: msgRowId }),
+            });
+          } catch (e) {
+            console.warn(`[pipeline] pos-handoff foto falhou: ${e.message}`);
+            // nao-fatal: base64 fica intacto (cleanup so roda apos upload OK)
+          }
+        }
       } else {
         await deps.sendTelegramAdmin(
           `tenant ${tenant.id} sem tatuador_telegram_chat_id em estado terminal (${conversa.estado_agente})`,
