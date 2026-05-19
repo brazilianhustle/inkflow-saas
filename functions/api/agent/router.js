@@ -12,6 +12,7 @@
 import { buildCadastroAgent } from './agents/cadastro.js';
 import { buildPropostaAgent } from './agents/proposta.js';
 import { extractHandoffPayload as extractTattooHandoff } from '../../_lib/agent-runtime/contracts/tattoo-handoff.js';
+import { extractCadastroHandoff } from '../../_lib/agent-runtime/contracts/cadastro-handoff.js';
 
 const PROPOSTA_SUBSTATES = ['propondo_valor', 'escolhendo_horario', 'aguardando_sinal'];
 
@@ -72,11 +73,11 @@ export function getNextState(estado_atual, out) {
 // valida o payload contra o contrato tipado e retorna o objeto extraido
 // (ou throw se invalido).
 //
-// Fase 1: apenas tattoo. Fase 2 adiciona cadastro e proposta.
+// Fase 2A: tattoo (Fase 1) + cadastro. Proposta segue na Fase 2B.
 const HANDOFF_CONTRACTS = {
   tattoo: { extract: extractTattooHandoff },
-  // cadastro: { extract: extractCadastroHandoff }, // Fase 2
-  // proposta: { extract: extractPropostaHandoff }, // Fase 2 (3 substates)
+  cadastro: { extract: extractCadastroHandoff },
+  // proposta: { extract: extractPropostaHandoff }, // Fase 2B (3 substates)
 };
 
 export function validateTransition(estado_atual, out) {

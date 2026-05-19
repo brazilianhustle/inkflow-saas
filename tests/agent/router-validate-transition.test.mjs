@@ -23,8 +23,21 @@ test('validateTransition: proxima_acao != handoff retorna null', () => {
   assert.equal(payload, null);
 });
 
-test('validateTransition: estado sem contrato (cadastro Fase 2) retorna null', () => {
-  const payload = validateTransition('cadastro', { proxima_acao: 'handoff', dados_persistidos: {} });
+test('validateTransition: cadastro + handoff valido retorna payload extraido (Fase 2A)', () => {
+  const out = {
+    proxima_acao: 'handoff',
+    dados_persistidos: { nome: 'Joao', data_nascimento: '1995-03-12', email: 'j@e.com' },
+    email_recusado: false,
+  };
+  const payload = validateTransition('cadastro', out);
+  assert.equal(payload.nome, 'Joao');
+  assert.equal(payload.data_nascimento, '1995-03-12');
+  assert.equal(payload.email, 'j@e.com');
+  assert.equal(payload.email_recusado, false);
+});
+
+test('validateTransition: estado sem contrato (proposta Fase 2B) retorna null', () => {
+  const payload = validateTransition('proposta', { proxima_acao: 'handoff', dados_persistidos: {} });
   assert.equal(payload, null);
 });
 
