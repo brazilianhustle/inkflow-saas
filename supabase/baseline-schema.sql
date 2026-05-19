@@ -24,7 +24,7 @@
 -- public.conversas             (hasindexes=true, hastriggers=true)
 -- public.dados_cliente         (hasindexes=true, hastriggers=true)
 -- public.logs                  (hasindexes=true, hastriggers=true)
--- public.n8n_chat_histories    (hasindexes=true, hastriggers=true)
+-- public.conversa_mensagens    (hasindexes=true, hastriggers=true)
 -- public.onboarding_links      (hasindexes=true, hastriggers=true)
 -- public.payment_logs          (hasindexes=true, hastriggers=true)
 -- public.signups_log           (hasindexes=true, hastriggers=true)
@@ -84,7 +84,7 @@
 -- public.update_conversa_last_msg_at()
 --   args: (none)
 --   security: INVOKER
---   note: trigger function (n8n_chat_histories AFTER INSERT)
+--   note: trigger function (conversa_mensagens AFTER INSERT)
 --
 -- public.update_updated_at()
 --   args: (none)
@@ -102,7 +102,7 @@
 --   timing: BEFORE UPDATE
 --   fires:  EXECUTE FUNCTION update_updated_at()
 --
--- n8n_chat_histories.trg_n8n_chat_histories_update_conversa
+-- conversa_mensagens.trg_conversa_mensagens_update_conversa
 --   timing: AFTER INSERT
 --   fires:  EXECUTE FUNCTION update_conversa_last_msg_at()
 --
@@ -149,9 +149,9 @@
 --   authenticated_read_own_logs
 --   service_role_logs
 --
--- n8n_chat_histories  (2 policies)
---   anon_no_access_chat_histories
---   service_role_chat_histories
+-- conversa_mensagens  (2 policies)
+--   anon_no_access_conversa_mensagens
+--   service_role_conversa_mensagens
 --
 -- onboarding_links    (1 policy)
 --   service_role_onboarding_links
@@ -224,8 +224,8 @@
 -- logs.idx_logs_tenant_telefone                        OK
 -- logs.logs_pkey                                       OK  (pk)
 --
--- n8n_chat_histories.idx_chat_histories_session        OK
--- n8n_chat_histories.n8n_chat_histories_pkey           OK  (pk)
+-- conversa_mensagens.idx_conversa_mensagens_session        OK
+-- conversa_mensagens.conversa_mensagens_pkey           OK  (pk)
 --
 -- onboarding_links.idx_onboarding_links_key            OK
 -- onboarding_links.onboarding_links_key_key            OK  (unique)

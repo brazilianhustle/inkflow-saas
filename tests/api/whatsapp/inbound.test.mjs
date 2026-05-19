@@ -74,7 +74,7 @@ test('inbound: idempotente (INSERT retorna []) → 200 idempotent:true, NAO disp
     if (url.includes('/rest/v1/tenants?')) {
       return new Response(JSON.stringify([{ id: 'tid', evo_instance: 'inkflow_test', tatuador_telegram_chat_id: '99' }]), { status: 200 });
     }
-    if (url.includes('/rest/v1/n8n_chat_histories') && opts?.method === 'POST') {
+    if (url.includes('/rest/v1/conversa_mensagens') && opts?.method === 'POST') {
       return new Response('[]', { status: 201 });  // ignore-duplicates hit
     }
     return new Response('[]', { status: 200 });
@@ -95,7 +95,7 @@ test('inbound: INSERT OK (row populada) → 200 accepted:<id> + waitUntil chamad
     if (url.includes('/rest/v1/tenants?')) {
       return new Response(JSON.stringify([{ id: 'tid', evo_instance: 'inkflow_test', tatuador_telegram_chat_id: '99' }]), { status: 200 });
     }
-    if (url.includes('/rest/v1/n8n_chat_histories') && opts?.method === 'POST') {
+    if (url.includes('/rest/v1/conversa_mensagens') && opts?.method === 'POST') {
       return new Response(JSON.stringify([{ id: 12345 }]), { status: 201 });
     }
     return new Response('[]', { status: 200 });
