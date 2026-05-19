@@ -35,6 +35,11 @@ function tgJson(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: TELEGRAM_HEADERS });
 }
 
+function escapeMarkdown(s) {
+  // Escape Markdown V1 do Telegram (parse_mode: 'Markdown'). Escapa _ * ` [
+  return String(s ?? '').replace(/[_*`[]/g, m => `\\${m}`);
+}
+
 function supaKey(env) {
   return env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
 }
@@ -161,7 +166,7 @@ async function handleCallback(env, cb) {
 
   // Busca conversa por orcid
   const r = await supaFetch(env,
-    `/rest/v1/conversas?orcid=eq.${encodeURIComponent(orcid)}&select=id,estado_agente,valor_proposto,dados_coletados`
+    `/rest/v1/conversas?orcid=eq.${encodeURIComponent(orcid)}&select=id,estado_agente,valor_proposto,dados_coletados,dados_cadastro`
   );
   const rows = r.ok ? await r.json() : [];
   if (!rows || rows.length === 0) {
@@ -172,9 +177,13 @@ async function handleCallback(env, cb) {
 
   switch (acao) {
     case 'fechar': {
-      // Pede valor via force_reply
+      // Pede valor via force_reply citando o NOME do cliente (UX — antes citava o
+      // orcid tecnico). O orcid PRECISA continuar no texto: handleText() correlaciona
+      // o reply ao orcamento via regex orc_... na mensagem citada. Sem ele aqui a
+      // captura de valor quebraria. Fica como footer "ref:" discreto.
+      const nomeCliente = conv.dados_cadastro?.nome || 'cliente';
       await sendMessage(env, cb.from.id,
-        `Qual valor pra \`${orcid}\`? Manda so o numero (ex: 750)`,
+        `Qual valor pra *${escapeMarkdown(nomeCliente)}*? Manda so o numero (ex: 750)\n\nref: \`${orcid}\``,
         { reply_markup: { force_reply: true, selective: false } }
       );
       await answerCallbackQuery(env, cb.id);
@@ -188,8 +197,9 @@ async function handleCallback(env, cb) {
         headers: { Prefer: 'return=minimal' },
         body: JSON.stringify({ estado_agente: 'lead_frio', dados_coletados: dados }),
       });
+      const nomeCliente = conv.dados_cadastro?.nome || 'cliente';
       await answerCallbackQuery(env, cb.id, '✓ Recusado');
-      await sendMessage(env, cb.from.id, `📝 Orcamento \`${orcid}\` recusado. Cliente sera avisado pelo bot.`);
+      await sendMessage(env, cb.from.id, `📝 Orcamento da *${escapeMarkdown(nomeCliente)}* recusado. Cliente sera avisado pelo bot.`);
       await disparaReentrada(env, conv.id, 'recusar', { orcid });
       return tgJson({ ok: true, acao: 'recusar' });
     }
