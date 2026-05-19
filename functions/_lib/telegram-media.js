@@ -97,10 +97,15 @@ export async function sendTelegramMediaGroup(env, chatId, items, deps = {}) {
   });
   fd.append('media', JSON.stringify(media));
   const result = await tgFetch(url, fd, deps);
-  // Telegram retorna array de Messages na mesma ordem
-  return result.map(msg => ({
-    file_id: msg?.photo?.[0]?.file_id,
-  }));
+  // Telegram retorna array de Messages na mesma ordem. Pega o file_id da maior
+  // resolucao (ultimo da array photo, igual sendTelegramPhoto). Se algum item vier
+  // sem file_id (resposta malformada apesar de ok:true), throw — o caller trata o
+  // grupo inteiro como falha e NAO zera o base64 (evita perder a foto pra sempre).
+  return result.map((msg, i) => {
+    const file_id = msg?.photo?.[msg.photo.length - 1]?.file_id ?? msg?.photo?.[0]?.file_id;
+    if (!file_id) throw new Error(`telegram-mediagroup-no-file-id[${i}]`);
+    return { file_id };
+  });
 }
 
 export async function enviarMidia(env, chatId, base64, mimetype, caption = null, deps = {}) {

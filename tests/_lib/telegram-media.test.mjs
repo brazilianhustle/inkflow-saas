@@ -145,6 +145,21 @@ test('enviarMidia: mimetype null/undefined → sendDocument fallback', async () 
   assert.match(url, /sendDocument$/);
 });
 
+test('sendTelegramMediaGroup: throw se algum item vem sem file_id (evita perder base64)', async () => {
+  const fetchMock = mock.fn(async () => new Response(JSON.stringify({
+    ok: true,
+    result: [{ photo: [{ file_id: 'g1' }] }, { /* malformado: sem photo */ }],
+  }), { status: 200 }));
+  const items = [
+    { base64: B64_1PX_JPEG, mimetype: 'image/jpeg' },
+    { base64: B64_1PX_JPEG, mimetype: 'image/jpeg' },
+  ];
+  await assert.rejects(
+    () => sendTelegramMediaGroup(ENV, CHAT, items, { fetch: fetchMock }),
+    /no-file-id/,
+  );
+});
+
 test('throw quando INKFLOW_TELEGRAM_BOT_TOKEN ausente', async () => {
   await assert.rejects(
     () => sendTelegramPhoto({}, CHAT, B64_1PX_JPEG, 'image/jpeg'),
