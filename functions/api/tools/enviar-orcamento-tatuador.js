@@ -32,51 +32,69 @@ function gerarOrcid() {
   return `orc_${rand}`;
 }
 
-function calcularIdadeAnos(isoDate) {
-  if (!isoDate) return null;
-  const nasc = new Date(`${isoDate}T12:00:00Z`);
-  if (Number.isNaN(nasc.getTime())) return null;
-  const hoje = new Date();
+export function formatarDataBr(iso) {
+  if (!iso || typeof iso !== 'string') return null;
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  return `${m[3]}/${m[2]}/${m[1]}`;
+}
+
+function calcIdade(isoNasc, today = new Date()) {
+  const m = isoNasc.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  const nasc = new Date(`${m[1]}-${m[2]}-${m[3]}T00:00:00Z`);
+  const hoje = today instanceof Date ? today : new Date(today);
   let idade = hoje.getUTCFullYear() - nasc.getUTCFullYear();
-  const m = hoje.getUTCMonth() - nasc.getUTCMonth();
-  if (m < 0 || (m === 0 && hoje.getUTCDate() < nasc.getUTCDate())) idade--;
-  return idade;
+  const mNow = hoje.getUTCMonth(); const dNow = hoje.getUTCDate();
+  const mN = nasc.getUTCMonth();   const dN = nasc.getUTCDate();
+  if (mNow < mN || (mNow === mN && dNow < dN)) idade--;
+  return idade >= 0 ? idade : null;
 }
 
-function escapeMarkdown(s) {
-  // Escape Markdown V1 do Telegram (parse_mode: 'Markdown'). Escapa _ * ` [
-  if (!s) return '';
-  return String(s).replace(/[_*`[]/g, m => `\\${m}`);
+export function montarLinhaIdade(cad, today = new Date()) {
+  if (!cad?.data_nascimento) return null;
+  const dataBr = formatarDataBr(cad.data_nascimento);
+  const idade = calcIdade(cad.data_nascimento, today);
+  if (!dataBr || idade === null) return null;
+  return `🎂 ${idade} anos (${dataBr})`;
 }
 
-function montarTextoOrcamento(orcid, conv) {
-  const cad = conv.dados_cadastro || {};
-  const dat = conv.dados_coletados || {};
-  const idade = calcularIdadeAnos(cad.data_nascimento);
-  const nome = escapeMarkdown(cad.nome || '?');
-  const desc = escapeMarkdown(dat.descricao_tattoo || dat.descricao_curta || '?');
-  const local = escapeMarkdown(dat.local_corpo || '?');
-  const estilo = escapeMarkdown(dat.estilo);
-  const fotos = dat.foto_local ? 1 : 0;
-  const refs = Array.isArray(dat.refs_imagens) ? dat.refs_imagens.length : 0;
+export function montarBriefing(conv) {
+  const dc = conv?.dados_coletados || {};
+  const nome = conv?.dados_cadastro?.nome || 'O cliente';
+  // dados_coletados (via tool dados_coletados) usa descricao_tattoo/tamanho_cm;
+  // aceitamos os aliases legados descricao_curta/altura_cm pra robustez.
+  const descricao = dc.descricao_tattoo || dc.descricao_curta;
+  const tamanho = dc.altura_cm ?? dc.tamanho_cm;
+  const partes = [];
+  if (descricao) partes.push(`uma tatuagem de ${descricao}`);
+  if (dc.estilo) partes.push(`estilo ${dc.estilo}`);
+  if (dc.local_corpo) partes.push(`no ${dc.local_corpo}`);
+  if (tamanho != null) partes.push(`~${tamanho}cm`);
 
-  const linhas = [
-    '📋 *Novo orçamento*',
-    '',
-    `👤 ${nome}${idade !== null ? ` (${idade} anos)` : ''}`,
-  ];
-  if (cad.email) linhas.push(`📧 ${escapeMarkdown(cad.email)}`);
-  linhas.push(`🆔 \`${orcid}\``);
-  linhas.push('');
-  linhas.push('🎨 *Tattoo*');
-  linhas.push(`   • ${desc}`);
-  linhas.push(`   • altura: ${dat.altura_cm}cm`);
-  if (dat.tamanho_cm) linhas.push(`   • tamanho aproximado: ${dat.tamanho_cm}cm`);
-  linhas.push(`   • ${local}`);
-  if (estilo) linhas.push(`   • estilo: ${estilo}`);
-  linhas.push('');
-  linhas.push(`📸 Fotos: ${fotos} do local, ${refs} referência${refs === 1 ? '' : 's'}`);
+  let frase = `${nome} quer ${partes.join(', ')}.`;
+  const detalhes = [];
+  if (dc.foto_local) detalhes.push('a foto do local');
+  const nRefs = Array.isArray(dc.refs_imagens) ? dc.refs_imagens.length : 0;
+  if (nRefs > 0) detalhes.push(`${nRefs} referência${nRefs > 1 ? 's' : ''}`);
+  if (detalhes.length > 0) frase += ` Mandou ${detalhes.join(' + ')}.`;
+  return frase;
+}
 
+export function montarTextoOrcamento(conv, resultadoFotos = null, today = new Date()) {
+  const nome = conv?.dados_cadastro?.nome || 'cliente';
+  const email = conv?.dados_cadastro?.email;
+  const linhas = ['📋 Novo orçamento', '', `👤 ${nome}`];
+  const linhaIdade = montarLinhaIdade(conv?.dados_cadastro, today);
+  if (linhaIdade) linhas.push(linhaIdade);
+  if (email) linhas.push(`📧 ${email}`);
+  linhas.push('', montarBriefing(conv));
+
+  if (resultadoFotos?.falhas_total) {
+    linhas.push('', '📸 ⚠️ Não foi possível anexar as fotos do briefing. Abra a conversa pra ver.');
+  } else if (resultadoFotos?.falhas > 0) {
+    linhas.push('', `📸 ⚠️ ${resultadoFotos.falhas} de ${resultadoFotos.tentadas} fotos não anexaram.`);
+  }
   return linhas.join('\n');
 }
 
@@ -174,7 +192,7 @@ async function handle({ env, input }) {
   // Envia Telegram. Se falhar, reverter estado pra agente poder tentar de novo.
   let tgResult;
   try {
-    tgResult = await enviarTelegram(env, tenant.tatuador_telegram_chat_id, montarTextoOrcamento(orcid, conv), inlineKeyboard(orcid));
+    tgResult = await enviarTelegram(env, tenant.tatuador_telegram_chat_id, montarTextoOrcamento(conv), inlineKeyboard(orcid));
   } catch (e) {
     // Rollback: limpar orcid e voltar estado pra coletando_cadastro
     await supaFetch(env, `/rest/v1/conversas?id=eq.${encodeURIComponent(conversa_id)}`, {
@@ -197,4 +215,4 @@ async function handle({ env, input }) {
 }
 
 export const onRequest = withTool('enviar_orcamento_tatuador', handle);
-export { gerarOrcid, montarTextoOrcamento, inlineKeyboard };
+export { gerarOrcid, inlineKeyboard };

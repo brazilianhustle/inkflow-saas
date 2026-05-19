@@ -1,7 +1,7 @@
 // Testes do handler enviar-orcamento-tatuador (refator pra contrato tenant_id+telefone).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { onRequest } from '../../functions/api/tools/enviar-orcamento-tatuador.js';
+import { onRequest, formatarDataBr, montarLinhaIdade, montarBriefing, montarTextoOrcamento } from '../../functions/api/tools/enviar-orcamento-tatuador.js';
 
 const TENANT_ID = '00000000-0000-0000-0000-000000000001';
 const TELEFONE = '+5511999999999';
@@ -241,4 +241,97 @@ test('rejeita payload sem estilo — campos-faltando inclui estilo', async () =>
   } finally {
     globalThis.fetch = origFetch;
   }
+});
+
+// ── Task 7: helpers visuais (briefing, idade, data, texto sem orcid) ─────────
+
+test('formatarDataBr: ISO valida → dd/mm/yyyy', () => {
+  assert.equal(formatarDataBr('2001-03-15'), '15/03/2001');
+});
+
+test('formatarDataBr: ISO invalida → null (defensivo)', () => {
+  assert.equal(formatarDataBr('xxx'), null);
+  assert.equal(formatarDataBr(null), null);
+  assert.equal(formatarDataBr(undefined), null);
+});
+
+test('montarLinhaIdade: data presente → "🎂 25 anos (15/03/2001)"', () => {
+  const linha = montarLinhaIdade({ data_nascimento: '2001-03-15' }, new Date('2026-05-19'));
+  assert.match(linha, /🎂\s*25 anos\s*\(15\/03\/2001\)/);
+});
+
+test('montarLinhaIdade: data ausente → null (omite linha)', () => {
+  assert.equal(montarLinhaIdade({ data_nascimento: null }), null);
+  assert.equal(montarLinhaIdade({}), null);
+});
+
+test('montarLinhaIdade: aniversariante hoje (born 1990-05-19) → 36 em 2026-05-19', () => {
+  const linha = montarLinhaIdade({ data_nascimento: '1990-05-19' }, new Date('2026-05-19'));
+  assert.match(linha, /36 anos/);
+});
+
+test('montarLinhaIdade: ainda nao fez aniversario este ano', () => {
+  const linha = montarLinhaIdade({ data_nascimento: '2000-12-25' }, new Date('2026-05-19'));
+  assert.match(linha, /25 anos/);
+});
+
+test('montarBriefing: gera texto natural com campos completos', () => {
+  const conv = {
+    dados_coletados: {
+      descricao_curta: 'borboleta', local_corpo: 'pulso', altura_cm: 8, estilo: 'fineline',
+      foto_local: 'presente', refs_imagens: ['ref1', 'ref2'],
+    },
+    dados_cadastro: { nome: 'Maria' },
+  };
+  const txt = montarBriefing(conv);
+  assert.match(txt, /borboleta/);
+  assert.match(txt, /fineline/);
+  assert.match(txt, /pulso/);
+  assert.match(txt, /8\s*cm/i);
+  assert.match(txt, /foto do local/i);
+  assert.match(txt, /2\s+refer/i);
+});
+
+test('montarBriefing: sem foto_local → omite mencao', () => {
+  const conv = {
+    dados_coletados: { descricao_curta: 'rosa', local_corpo: 'costas', altura_cm: 15, estilo: 'realismo' },
+    dados_cadastro: { nome: 'Joao' },
+  };
+  const txt = montarBriefing(conv);
+  assert.doesNotMatch(txt, /foto do local/i);
+});
+
+test('montarTextoOrcamento: SEM orcid visivel + linha idade + briefing', () => {
+  const conv = {
+    dados_coletados: { descricao_curta: 'borboleta', local_corpo: 'pulso', altura_cm: 8, estilo: 'fineline', foto_local: 'presente' },
+    dados_cadastro: { nome: 'Maria', data_nascimento: '2001-03-15', email: 'maria@x.com' },
+    orcid: 'orc_xyz123',
+  };
+  const txt = montarTextoOrcamento(conv, null, new Date('2026-05-19'));
+  assert.doesNotMatch(txt, /orc_/);
+  assert.doesNotMatch(txt, /🆔/);
+  assert.match(txt, /Maria/);
+  assert.match(txt, /25 anos/);
+  assert.match(txt, /maria@x\.com/);
+  assert.match(txt, /borboleta/);
+});
+
+test('montarTextoOrcamento: append nota se resultadoFotos.falhas > 0', () => {
+  const conv = {
+    dados_coletados: { descricao_curta: 'x', local_corpo: 'y', altura_cm: 5, estilo: 'z' },
+    dados_cadastro: { nome: 'X' },
+    orcid: 'o',
+  };
+  const txt = montarTextoOrcamento(conv, { tentadas: 3, enviadas: 1, falhas: 2 });
+  assert.match(txt, /2 de 3 fotos n[aã]o anexaram/i);
+});
+
+test('montarTextoOrcamento: append nota se resultadoFotos.falhas_total', () => {
+  const conv = {
+    dados_coletados: { descricao_curta: 'x', local_corpo: 'y', altura_cm: 5, estilo: 'z' },
+    dados_cadastro: { nome: 'X' },
+    orcid: 'o',
+  };
+  const txt = montarTextoOrcamento(conv, { falhas_total: true });
+  assert.match(txt, /n[aã]o foi poss[ií]vel anexar as fotos/i);
 });
