@@ -152,3 +152,32 @@ test('runAgent estado=cadastro fallback: retries exhausted -> mensagem amigavel'
   assert.equal(result.proxima_acao, 'pergunta');
   assert.match(result.resposta_cliente, /segundinho|respondo/i);
 });
+
+test('runAgent estado=cadastro handoff com payload bypass schema: hard-fail invariant', async () => {
+  // Injeta direto via fake client um output que o schema strict normalmente
+  // rejeitaria (data_nascimento nao-ISO). Schema seria barrado em runtime.run real,
+  // mas o fake client retorna direto — exercise defesa em profundidade
+  // validateTransition('cadastro') no route.js.
+  const fakeOut = {
+    proxima_acao: 'handoff',
+    resposta_cliente: 'show',
+    dados_persistidos: { nome: 'X', data_nascimento: '99-99-99', email: 'a@b.com' },
+    dados_completos: true,
+    campos_faltando: [], campos_conflitantes: [],
+    email_recusado: false,
+    payload_portfolio: null,
+  };
+  const result = await runAgent({
+    env: FAKE_ENV, tenant_id: FAKE_TENANT.id,
+    mensagem: 'x',
+    telefone: '+5511999999999',
+    historico: [], tenant: FAKE_TENANT,
+    estado_atual: 'cadastro', conversa: FAKE_CONVERSA,
+    clientContext: {},
+    openaiClient: makeFakeClient(fakeOut),
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'invariant-violation');
+  assert.equal(result.status, 500);
+  assert.match(result.reason || '', /data_nascimento|invalid_string|regex/i);
+});

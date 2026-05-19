@@ -184,10 +184,26 @@ export async function runAgent({
       out = buildFallbackOutput('cadastro');
     }
     // Validador residual cross-field (silently force pergunta).
+    // NAO usa forcePergunta() — esse helper so flipa proxima_acao+resposta_cliente,
+    // deixando dados_completos:true + campos_faltando:[] do handoff (estado
+    // inconsistente). Aqui mutamos dados_completos:false + adicionamos 'email' em
+    // campos_faltando, espelhando o silent force de data_nascimento nao-ISO no
+    // legacy path abaixo. NAO mutamos dados_persistidos.email — cliente pode ter
+    // passado email valido E recusado ou estar prestes a passar; nao invalida o
+    // que ja foi coletado. Tambem atualiza invariantCheck pra telemetria
+    // (invariant_passed=false + reason) — sem isso logAgentTurn reportaria valid:true
+    // e perderiamos observabilidade de quantas vezes o LLM produz essa violacao.
     const violated = validateCadastroHandoffEmail(out);
     if (violated) {
       console.warn('[agent/route] silently force pergunta (cadastro residual):', violated.reason);
-      out = forcePergunta(out, 'Pra avancar preciso do email — ou me confirma que prefere seguir sem.');
+      out = {
+        ...out,
+        proxima_acao: 'pergunta',
+        resposta_cliente: 'Pra avancar preciso do email — ou me confirma que prefere seguir sem.',
+        dados_completos: false,
+        campos_faltando: Array.from(new Set([...(out.campos_faltando || []), 'email'])),
+      };
+      invariantCheck = { valid: false, reason: violated.reason };
     }
     // Contract handoff cross-agent.
     if (out.proxima_acao === 'handoff') {
