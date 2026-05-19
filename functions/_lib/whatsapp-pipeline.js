@@ -3,7 +3,6 @@
 // Carrega conversa, chama runAgent, persiste estado, despacha outbound.
 //
 // Deps injetadas via depsOverride pra integration tests sem fetch real.
-import { setDefaultOpenAIKey } from '@openai/agents-openai';
 import { supaFetch } from '../api/tools/_tool-helpers.js';
 import { evoSend } from './evolution-send.js';
 import { sendTelegramTo, sendTelegramAlert } from './telegram.js';
@@ -46,12 +45,7 @@ export function defaultDeps(env) {
     evoSend: (tenant, payload) => evoSend(env, tenant, payload),
     sendTelegram: (chatId, text) => sendTelegramTo(env, chatId, text),
     sendTelegramAdmin: (text) => sendTelegramAlert(env, text),
-    runAgent: (args) => {
-      // Idempotente — mesmo padrao de onRequest (route.js). Necessario porque
-      // pipeline chama runAgent direto, sem passar pelo HTTP wrapper.
-      if (env?.OPENAI_API_KEY) setDefaultOpenAIKey(env.OPENAI_API_KEY);
-      return runAgent({ env, ...args });
-    },
+    runAgent: (args) => runAgent({ env, ...args }),
     callTool: (toolName, body) => callTool(env, toolName, body),
     now: () => new Date().toISOString(),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),

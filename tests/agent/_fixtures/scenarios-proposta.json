@@ -6,16 +6,36 @@
     "valor_proposto": 750,
     "decisao_desconto": null,
     "horarios_livres": [
-      { "inicio": "2026-05-12T17:00:00Z", "fim": "2026-05-12T20:00:00Z", "legenda": "ter 12/05 14h-17h" },
-      { "inicio": "2026-05-14T13:00:00Z", "fim": "2026-05-14T16:00:00Z", "legenda": "qui 14/05 10h-13h" }
+      {
+        "inicio": "2026-05-12T17:00:00Z",
+        "fim": "2026-05-12T20:00:00Z",
+        "legenda": "ter 12/05 14h-17h"
+      },
+      {
+        "inicio": "2026-05-14T13:00:00Z",
+        "fim": "2026-05-14T16:00:00Z",
+        "legenda": "qui 14/05 10h-13h"
+      }
     ],
     "historico": [
-      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+      {
+        "role": "assistant",
+        "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?"
+      }
     ],
     "mensagem": "fechou, vamos marcar",
     "assertions": [
-      { "type": "proxima_acao_equals", "value": "oferecendo_horario" },
-      { "type": "resposta_cliente_contains_slots", "value": ["ter", "qui"] }
+      {
+        "type": "proxima_acao_equals",
+        "value": "oferecendo_horario"
+      },
+      {
+        "type": "resposta_cliente_contains_slots",
+        "value": [
+          "ter",
+          "qui"
+        ]
+      }
     ]
   },
   {
@@ -26,12 +46,21 @@
     "decisao_desconto": null,
     "horarios_livres": [],
     "historico": [
-      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+      {
+        "role": "assistant",
+        "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?"
+      }
     ],
     "mensagem": "ta um pouco caro",
     "assertions": [
-      { "type": "proxima_acao_equals", "value": "pergunta" },
-      { "type": "resposta_cliente_matches", "value": "\\?" }
+      {
+        "type": "proxima_acao_equals",
+        "value": "pergunta"
+      },
+      {
+        "type": "resposta_cliente_matches",
+        "value": "\\?"
+      }
     ]
   },
   {
@@ -42,12 +71,23 @@
     "decisao_desconto": null,
     "horarios_livres": [],
     "historico": [
-      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+      {
+        "role": "assistant",
+        "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?"
+      }
     ],
     "mensagem": "consegue por 600?",
     "assertions": [
-      { "type": "proxima_acao_equals", "value": "pediu_desconto" },
-      { "type": "payload_includes", "value": { "valor_pedido_cliente": 600 } }
+      {
+        "type": "proxima_acao_equals",
+        "value": "pediu_desconto"
+      },
+      {
+        "type": "payload_includes",
+        "value": {
+          "valor_pedido_cliente": 600
+        }
+      }
     ]
   },
   {
@@ -58,11 +98,17 @@
     "decisao_desconto": null,
     "horarios_livres": [],
     "historico": [
-      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+      {
+        "role": "assistant",
+        "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?"
+      }
     ],
     "mensagem": "vou pensar e te volto",
     "assertions": [
-      { "type": "proxima_acao_equals", "value": "adiou" }
+      {
+        "type": "proxima_acao_equals",
+        "value": "adiou"
+      }
     ]
   },
   {
@@ -72,15 +118,29 @@
     "valor_proposto": 600,
     "decisao_desconto": "aceito",
     "horarios_livres": [
-      { "inicio": "2026-05-12T17:00:00Z", "fim": "2026-05-12T20:00:00Z", "legenda": "ter 12/05 14h-17h" },
-      { "inicio": "2026-05-14T13:00:00Z", "fim": "2026-05-14T16:00:00Z", "legenda": "qui 14/05 10h-13h" }
+      {
+        "inicio": "2026-05-12T17:00:00Z",
+        "fim": "2026-05-12T20:00:00Z",
+        "legenda": "ter 12/05 14h-17h"
+      },
+      {
+        "inicio": "2026-05-14T13:00:00Z",
+        "fim": "2026-05-14T16:00:00Z",
+        "legenda": "qui 14/05 10h-13h"
+      }
     ],
     "historico": [
-      { "role": "assistant", "content": "Show! Ele topou em R$ 600. Bora marcar?" }
+      {
+        "role": "assistant",
+        "content": "Show! Ele topou em R$ 600. Bora marcar?"
+      }
     ],
     "mensagem": "vamos",
     "assertions": [
-      { "type": "proxima_acao_equals", "value": "oferecendo_horario" }
+      {
+        "type": "proxima_acao_equals",
+        "value": "oferecendo_horario"
+      }
     ]
   },
   {
@@ -91,11 +151,17 @@
     "decisao_desconto": "recusado",
     "horarios_livres": [],
     "historico": [
-      { "role": "assistant", "content": "Ele preferiu manter R$ 750. Ta fechado pra ti? Bora marcar?" }
+      {
+        "role": "assistant",
+        "content": "Ele preferiu manter R$ 750. Ta fechado pra ti? Bora marcar?"
+      }
     ],
     "mensagem": "humm, vou pensar",
     "assertions": [
-      { "type": "proxima_acao_equals", "value": "adiou" }
+      {
+        "type": "proxima_acao_equals",
+        "value": "adiou"
+      }
     ]
   },
   {
@@ -105,16 +171,36 @@
     "valor_proposto": 750,
     "decisao_desconto": null,
     "horarios_livres": [
-      { "inicio": "2026-05-12T17:00:00Z", "fim": "2026-05-12T20:00:00Z", "legenda": "ter 12/05 14h-17h" },
-      { "inicio": "2026-05-14T13:00:00Z", "fim": "2026-05-14T16:00:00Z", "legenda": "qui 14/05 10h-13h" }
+      {
+        "inicio": "2026-05-12T17:00:00Z",
+        "fim": "2026-05-12T20:00:00Z",
+        "legenda": "ter 12/05 14h-17h"
+      },
+      {
+        "inicio": "2026-05-14T13:00:00Z",
+        "fim": "2026-05-14T16:00:00Z",
+        "legenda": "qui 14/05 10h-13h"
+      }
     ],
     "historico": [
-      { "role": "assistant", "content": "Tenho ter 12/05 das 14h as 17h ou qui 14/05 das 10h as 13h. Qual prefere?" }
+      {
+        "role": "assistant",
+        "content": "Tenho ter 12/05 das 14h as 17h ou qui 14/05 das 10h as 13h. Qual prefere?"
+      }
     ],
     "mensagem": "qui",
     "assertions": [
-      { "type": "proxima_acao_equals", "value": "reservar_horario" },
-      { "type": "payload_includes", "value": { "slot_inicio": "2026-05-14T13:00:00Z", "slot_fim": "2026-05-14T16:00:00Z" } }
+      {
+        "type": "proxima_acao_equals",
+        "value": "reservar_horario"
+      },
+      {
+        "type": "payload_includes",
+        "value": {
+          "slot_inicio": "2026-05-14T13:00:00Z",
+          "slot_fim": "2026-05-14T16:00:00Z"
+        }
+      }
     ]
   },
   {
@@ -124,15 +210,30 @@
     "valor_proposto": 750,
     "decisao_desconto": null,
     "horarios_livres": [
-      { "inicio": "2026-05-12T17:00:00Z", "fim": "2026-05-12T20:00:00Z", "legenda": "ter 12/05 14h-17h" }
+      {
+        "inicio": "2026-05-12T17:00:00Z",
+        "fim": "2026-05-12T20:00:00Z",
+        "legenda": "ter 12/05 14h-17h"
+      }
     ],
     "historico": [
-      { "role": "assistant", "content": "Tenho ter 12/05 das 14h as 17h. Qual prefere?" }
+      {
+        "role": "assistant",
+        "content": "Tenho ter 12/05 das 14h as 17h. Qual prefere?"
+      }
     ],
     "mensagem": "amanha 9h?",
     "assertions": [
-      { "type": "proxima_acao_equals", "value": "pergunta" },
-      { "type": "resposta_cliente_contains_slots", "value": ["ter"] }
+      {
+        "type": "proxima_acao_equals",
+        "value": "pergunta"
+      },
+      {
+        "type": "resposta_cliente_contains_slots",
+        "value": [
+          "ter"
+        ]
+      }
     ]
   },
   {
@@ -143,14 +244,31 @@
     "decisao_desconto": null,
     "proposta_status": "aguardando_pgto",
     "horarios_livres": [
-      { "inicio": "2026-05-14T13:00:00Z", "fim": "2026-05-14T16:00:00Z", "legenda": "qui 14/05 10h-13h" }
+      {
+        "inicio": "2026-05-14T13:00:00Z",
+        "fim": "2026-05-14T16:00:00Z",
+        "legenda": "qui 14/05 10h-13h"
+      }
     ],
     "historico": [
-      { "role": "assistant", "content": "Bora! Pra agendar... R$ 225,00. https://mp/abc..." }
+      {
+        "role": "assistant",
+        "content": "Bora! Pra agendar... R$ 225,00. https://mp/abc..."
+      }
     ],
     "mensagem": "o link venceu",
     "assertions": [
-      { "type": "proxima_acao_equals", "value": "reservar_horario" }
+      {
+        "type": "proxima_acao_equals",
+        "value": "reservar_horario"
+      }
+    ],
+    "slots_reservados": [
+      {
+        "inicio": "2026-05-14T13:00:00Z",
+        "fim": "2026-05-14T16:00:00Z",
+        "agendamento_id": "agd-tcp09"
+      }
     ]
   },
   {
@@ -162,11 +280,17 @@
     "proposta_status": "aguardando_pgto",
     "horarios_livres": [],
     "historico": [
-      { "role": "assistant", "content": "Bora! Pra agendar... R$ 225,00. https://mp/abc..." }
+      {
+        "role": "assistant",
+        "content": "Bora! Pra agendar... R$ 225,00. https://mp/abc..."
+      }
     ],
     "mensagem": "preciso mudar pra outro dia",
     "assertions": [
-      { "type": "proxima_acao_equals", "value": "reagendamento" }
+      {
+        "type": "proxima_acao_equals",
+        "value": "reagendamento"
+      }
     ]
   },
   {
@@ -177,11 +301,17 @@
     "decisao_desconto": null,
     "horarios_livres": [],
     "historico": [
-      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+      {
+        "role": "assistant",
+        "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?"
+      }
     ],
     "mensagem": "vai se f*der, ta caro pra caramba",
     "assertions": [
-      { "type": "proxima_acao_equals", "value": "cliente_agressivo" }
+      {
+        "type": "proxima_acao_equals",
+        "value": "cliente_agressivo"
+      }
     ]
   }
 ]

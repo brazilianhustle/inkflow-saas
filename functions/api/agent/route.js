@@ -10,11 +10,10 @@
 // Sub-1: estado conversacional vem no payload (in-memory). Sub-3 puxa de Supabase.
 // Sub-4.1: logica do agent extraida pra runAgent({...}) — onRequest vira wrapper HTTP fino.
 // Pipeline WhatsApp (whatsapp-pipeline.js) chama runAgent direto sem HTTP.
-import { run } from '@openai/agents';
-import { setDefaultOpenAIKey } from '@openai/agents-openai';
-import { selectAgentBuilder, isStateImplemented, getNextState, validateTransition } from './router.js';
+import { isStateImplemented, getNextState, validateAction } from './router.js';
 import { runTattooAgent } from './agents/tattoo.js';
 import { runCadastroAgent } from './agents/cadastro.js';
+import { runPropostaAgent } from './agents/proposta.js';
 import { buildFallbackOutput } from '../../_lib/agent-runtime/fallbacks.js';
 import { validateEnv } from './_lib/sdk-init.js';
 import { enforceMenorIdade } from './_lib/enforce-menor-idade.js';
@@ -158,7 +157,7 @@ export async function runAgent({
     // ou throw ZodError se shape invalido.
     if (out.proxima_acao === 'handoff') {
       try {
-        validateTransition('tattoo', out);
+        validateAction('tattoo', out, mergedClientContext);
       } catch (e) {
         console.error('[agent/route] handoff contract violation:', e?.message);
         return { ok: false, error: 'invariant-violation', reason: e?.message, status: 500 };
@@ -208,79 +207,65 @@ export async function runAgent({
     // Contract handoff cross-agent.
     if (out.proxima_acao === 'handoff') {
       try {
-        validateTransition('cadastro', out);
+        validateAction('cadastro', out, mergedClientContext);
       } catch (e) {
         console.error('[agent/route] cadastro handoff contract violation:', e?.message);
         return { ok: false, error: 'invariant-violation', reason: e?.message, status: 500 };
       }
     }
     working = out;
-  } else {
-    // ─── Path antigo: proposta (intocado ate Fase 2B) ─────────────────
-    const builder = selectAgentBuilder(estado_atual);
-    const { agent, validator } = builder({ env, tenant, conversa, clientContext: mergedClientContext, estado_atual });
-
-    // Constroi messages do historico + mensagem atual.
-    // Historico: items com role=assistant precisam shape tipado (SDK valida via Zod).
-    const messages = [
-      ...historico.map(normalizeHistoryItem),
-      { role: 'user', content: mensagem },
-    ];
-
-    let result;
+  } else if (PROPOSTA_SUBSTATES.has(estado_atual)) {
+    // ─── Caminho C Fase 2B: PropostaAgent path novo (3 substates) ──────
+    let out;
     try {
-      // maxTurns 20: default 10 aperta cenarios multi-turn com tools.
-      result = await run(agent, messages, { maxTurns: 20 });
+      out = await runPropostaAgent({
+        env, tenant, conversa, clientContext: mergedClientContext,
+        mensagem, historico, estado_atual,
+        openaiClient,
+      });
     } catch (e) {
-      // Detail intencionalmente generico — evita info-leak do SDK/OpenAI errors.
-      // Logs server-side carregam o detalhe completo.
-      console.error('[agent/route] run() failed:', e);
-      return { ok: false, error: 'agent-run-failed', status: 500 };
+      console.error('[agent/route] runPropostaAgent exhausted retries:', {
+        message: e?.message, status: e?.status, code: e?.code,
+      });
+      out = buildFallbackOutput('proposta');
     }
-
-    // finalOutput pode ser undefined (max turns, refusal, schema violation).
-    // Sem guard, acesso a out.resposta_cliente joga TypeError fora do try/catch.
-    const out = result?.finalOutput;
-    if (!out) {
-      console.error('[agent/route] no finalOutput', { result });
-      return { ok: false, error: 'no-final-output', status: 500 };
-    }
-
-    // Validator vem do builder (closure pattern Sub-3.2).
-    working = out;
-    invariantCheck = validator(working);
-
-    if (!invariantCheck.valid) {
-      if (estado_atual === 'cadastro' && invariantCheck.reason?.startsWith('data_nascimento nao-ISO')) {
-        // Caso especial Sub-3.1: data_nascimento mal-formatada — silently force
-        // pergunta. Agente reformula no proximo turno.
-        console.warn('[agent/route] silently force pergunta (data_nascimento nao-ISO):', invariantCheck.reason);
-        working = {
-          ...working,
-          dados_persistidos: { ...(working.dados_persistidos || {}), data_nascimento: null },
-          dados_completos: false,
-          campos_faltando: Array.from(new Set([...(working.campos_faltando || []), 'data_nascimento'])),
-          proxima_acao: 'pergunta',
-          resposta_cliente: 'Nao consegui ler a data — pode mandar tipo 12/03/1995?',
-        };
-      } else if (PROPOSTA_SUBSTATES.has(estado_atual) && /(nao-ISO|fora da lista)/.test(invariantCheck.reason || '')) {
-        // Caso especial Sub-3.2: slot mal-formatado ou inexistente — silently
-        // force pergunta com lista atualizada de slots.
-        console.warn('[agent/route] silently force pergunta (slot invalido):', invariantCheck.reason);
-        const slots = mergedClientContext.horarios_livres || [];
-        const legendas = slots.map(s => s.legenda).join(', ') || '(nenhum slot disponivel)';
-        const msg = invariantCheck.reason.startsWith('slot fora')
-          ? `Esse horario nao esta na lista — escolhe um destes? ${legendas}`
-          : `Nao consegui ler o horario — pode escolher um da lista? ${legendas}`;
-        working = { ...working, proxima_acao: 'pergunta', resposta_cliente: msg };
+    // Valida payload da acao contra contract (slot em ctx, valor<=proposto,
+    // portfolio_disponivel). Schema strict ja garante shape (slot ISO,
+    // valor>0). Aqui sao invariantes context-dependent.
+    try {
+      validateAction(estado_atual, out, mergedClientContext);
+      working = out;
+    } catch (e) {
+      const reason = e?.message || '';
+      if (/fora da lista/.test(reason)) {
+        console.warn('[agent/route] silently force pergunta (slot fora):', reason);
+        // Em aguardando_sinal so populamos slots_reservados (sem horarios_livres) —
+        // se LLM alucinou slot fora do reservado, oferece o reservado em vez de
+        // dizer "(nenhum slot disponivel)" enganosamente.
+        const reservados = mergedClientContext.slots_reservados || [];
+        if (estado_atual === 'aguardando_sinal' && reservados.length > 0) {
+          working = forcePergunta(out, `Seu horario reservado ainda esta valido — quer que eu reenvie o link desse horario?`);
+        } else {
+          const slots = mergedClientContext.horarios_livres || [];
+          const legendas = slots.map(s => s.legenda).filter(Boolean).join(', ') || '(nenhum slot disponivel)';
+          working = forcePergunta(out, `Esse horario nao esta na lista — escolhe um destes? ${legendas}`);
+        }
+        invariantCheck = { valid: false, reason };
+      } else if (/> valor_proposto/.test(reason)) {
+        console.warn('[agent/route] silently force pergunta (valor > proposto):', reason);
+        working = forcePergunta(out, `O valor pedido excede o proposto — pode confirmar o valor?`);
+        invariantCheck = { valid: false, reason };
+      } else if (/portfolio_disponivel/.test(reason)) {
+        console.warn('[agent/route] silently force pergunta (portfolio indisp):', reason);
+        working = forcePergunta(out, `Posso te mostrar referencias depois — bora seguir?`);
+        invariantCheck = { valid: false, reason };
       } else {
-        // Hard-fail: violacao de contrato (proxima_acao nao permitida no estado,
-        // payload obrigatorio missing, valor_pedido > valor_proposto, etc).
-        // Bug do agent — nao UX issue.
-        console.error('[agent/route] invariant violation:', invariantCheck.reason, working);
-        return { ok: false, error: 'invariant-violation', reason: invariantCheck.reason, status: 500 };
+        console.error('[agent/route] proposta action contract violation:', reason);
+        return { ok: false, error: 'invariant-violation', reason, status: 500 };
       }
     }
+  } else {
+    return { ok: false, error: `estado_atual='${estado_atual}' nao implementado`, status: 501 };
   }
 
   // Aplica enforceMenorIdade APOS invariante. So afeta cadastro (helper
@@ -293,6 +278,7 @@ export async function runAgent({
   if (PROPOSTA_SUBSTATES.has(estado_atual)) {
     finalOut = await executeOrchestration(enforced, {
       env, tenant, conversa, telefone, sideEffects,
+      clientContext: mergedClientContext,
     });
   }
 
@@ -352,10 +338,6 @@ export async function onRequest({ request, env, waitUntil }) {
     return json({ ok: false, error: 'env-incomplete', missing: envCheck.missing }, 503);
   }
 
-  // Cloudflare Workers nao tem process.env — SDK precisa receber a key explicita.
-  // setDefaultOpenAIKey e idempotente; chama-se a cada request pra cobrir multi-tenant futuro.
-  setDefaultOpenAIKey(env.OPENAI_API_KEY);
-
   let body;
   try {
     body = await request.json();
@@ -406,7 +388,7 @@ export function forcePergunta(out, msg) {
   return { ...out, proxima_acao: 'pergunta', resposta_cliente: msg };
 }
 
-export async function executeOrchestration(out, { env, tenant, conversa, telefone, sideEffects }) {
+export async function executeOrchestration(out, { env, tenant, conversa, telefone, sideEffects, clientContext }) {
   switch (out.proxima_acao) {
     case 'pergunta':
     case 'oferecendo_horario':
@@ -414,16 +396,33 @@ export async function executeOrchestration(out, { env, tenant, conversa, telefon
       return out;
 
     case 'reservar_horario': {
-      const nome = conversa?.dados_cadastro?.nome || conversa?.nome || telefone;
-      const ag = await callTool(env, 'reservar-horario', {
-        tenant_id: tenant.id,
-        telefone, nome,
-        inicio: out.slot_inicio,
-        fim: out.slot_fim,
-      });
-      sideEffects.push({ tool: 'reservar-horario', ok: ag.ok, agendamento_id: ag.agendamento_id });
-      if (!ag.ok) {
-        return forcePergunta(out, 'Esse horario acabou de sair — pode escolher outro?');
+      // TC-P09: se o slot ja esta em ctx.slots_reservados (cliente avisando
+      // que link venceu), SKIPa reservar-horario e regenera link direto via
+      // gerar-link-sinal com o agendamento_id existente. Sem skip, a conflict
+      // query de reservar-horario (que nao filtra por telefone) bateria
+      // contra a propria tentative do cliente -> 409 "slot-ocupado" -> bot
+      // diria "acabou de sair" sobre o slot que ainda e dele.
+      const ctxSlots = clientContext?.slots_reservados || [];
+      const existing = ctxSlots.find(
+        s => s.inicio === out.slot_inicio && s.fim === out.slot_fim && s.agendamento_id
+      );
+      let agendamento_id;
+      if (existing) {
+        agendamento_id = existing.agendamento_id;
+        sideEffects.push({ tool: 'reservar-horario', ok: true, agendamento_id, skipped: 'slot_em_reservados' });
+      } else {
+        const nome = conversa?.dados_cadastro?.nome || conversa?.nome || telefone;
+        const ag = await callTool(env, 'reservar-horario', {
+          tenant_id: tenant.id,
+          telefone, nome,
+          inicio: out.slot_inicio,
+          fim: out.slot_fim,
+        });
+        sideEffects.push({ tool: 'reservar-horario', ok: ag.ok, agendamento_id: ag.agendamento_id });
+        if (!ag.ok) {
+          return forcePergunta(out, 'Esse horario acabou de sair — pode escolher outro?');
+        }
+        agendamento_id = ag.agendamento_id;
       }
       // Fallback chain dupla — config_precificacao.sinal_percentual (jsonb)
       // OR tenant.sinal_percentual (legacy column) OR 30 default.
@@ -431,7 +430,7 @@ export async function executeOrchestration(out, { env, tenant, conversa, telefon
       const valor_sinal = calcularValorSinal(conversa.valor_proposto, sinal_pct);
       const lk = await callTool(env, 'gerar-link-sinal', {
         tenant_id: tenant.id,
-        agendamento_id: ag.agendamento_id,
+        agendamento_id,
         valor_sinal,
       });
       sideEffects.push({ tool: 'gerar-link-sinal', ok: lk.ok });

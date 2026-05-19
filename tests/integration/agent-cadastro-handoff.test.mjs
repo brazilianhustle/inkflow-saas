@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runAgent } from '../../functions/api/agent/route.js';
-import { getNextState, validateTransition } from '../../functions/api/agent/router.js';
+import { getNextState, validateAction } from '../../functions/api/agent/router.js';
 
 const FAKE_TENANT = {
   id: 't1', nome_estudio: 'Estudio X', nome_agente: 'Bot',
@@ -59,7 +59,7 @@ test('runAgent estado=cadastro handoff valido: ok + estado proximo aguardando_ta
   assert.equal(result.proxima_acao, 'handoff');
   assert.equal(result.estado_novo, 'aguardando_tatuador');
 
-  const payload = validateTransition('cadastro', fakeOut);
+  const payload = validateAction('cadastro', fakeOut, {});
   assert.equal(payload.nome, 'Joao Silva');
   assert.equal(payload.data_nascimento, '1995-03-12');
 
@@ -157,7 +157,7 @@ test('runAgent estado=cadastro handoff com payload bypass schema: hard-fail inva
   // Injeta direto via fake client um output que o schema strict normalmente
   // rejeitaria (data_nascimento nao-ISO). Schema seria barrado em runtime.run real,
   // mas o fake client retorna direto — exercise defesa em profundidade
-  // validateTransition('cadastro') no route.js.
+  // validateAction('cadastro') no route.js.
   const fakeOut = {
     proxima_acao: 'handoff',
     resposta_cliente: 'show',
