@@ -48,4 +48,12 @@ CREATE POLICY service_role_conversa_mensagens
   USING (true)
   WITH CHECK (true);
 
+-- 6) Rename CHECK constraint (adicionada na sub-4.1)
+ALTER TABLE public.conversa_mensagens
+  RENAME CONSTRAINT n8n_chat_histories_status_check TO conversa_mensagens_status_check;
+
+-- 7) Rename UNIQUE partial index (adicionado na sub-4.1)
+ALTER INDEX IF EXISTS public.n8n_chat_histories_session_evo_msg_idx
+  RENAME TO conversa_mensagens_session_evo_msg_idx;
+
 COMMIT;
