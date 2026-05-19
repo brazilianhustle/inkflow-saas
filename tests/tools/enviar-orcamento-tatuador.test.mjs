@@ -1,7 +1,7 @@
 // Testes do handler enviar-orcamento-tatuador (refator pra contrato tenant_id+telefone).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { onRequest, formatarDataBr, montarLinhaIdade, montarBriefing, montarTextoOrcamento } from '../../functions/api/tools/enviar-orcamento-tatuador.js';
+import { onRequest, formatarDataBr, montarLinhaIdade, montarBriefing, montarTextoOrcamento, selecionarFotosOrcamento, enviarFotosOrcamento } from '../../functions/api/tools/enviar-orcamento-tatuador.js';
 
 const TENANT_ID = '00000000-0000-0000-0000-000000000001';
 const TELEFONE = '+5511999999999';
@@ -334,4 +334,178 @@ test('montarTextoOrcamento: append nota se resultadoFotos.falhas_total', () => {
   };
   const txt = montarTextoOrcamento(conv, { falhas_total: true });
   assert.match(txt, /n[aã]o foi poss[ií]vel anexar as fotos/i);
+});
+
+// ── Task 8: selecionarFotosOrcamento + enviarFotosOrcamento ──────────────────
+
+test('selecionarFotosOrcamento: 1 local + 2 refs → 3 itens', () => {
+  const conv = { dados_coletados: { foto_local_msg_id: 42, refs_imagens_msg_ids: [43, 44] } };
+  const r = selecionarFotosOrcamento(conv);
+  assert.deepEqual(r, [
+    { msg_id: 42, tipo: 'local' },
+    { msg_id: 43, tipo: 'ref' },
+    { msg_id: 44, tipo: 'ref' },
+  ]);
+});
+
+test('selecionarFotosOrcamento: 0 local + 0 refs → array vazio', () => {
+  const conv = { dados_coletados: {} };
+  assert.deepEqual(selecionarFotosOrcamento(conv), []);
+});
+
+test('selecionarFotosOrcamento: cap 10 (1 local + 9 refs mais recentes de 15)', () => {
+  const refs = Array.from({ length: 15 }, (_, i) => 100 + i);  // [100..114]
+  const conv = { dados_coletados: { foto_local_msg_id: 42, refs_imagens_msg_ids: refs } };
+  const r = selecionarFotosOrcamento(conv);
+  assert.equal(r.length, 10);
+  assert.equal(r[0].tipo, 'local');
+  assert.equal(r[0].msg_id, 42);
+  // Pega as 9 ULTIMAS refs: 106..114
+  assert.deepEqual(r.slice(1).map(x => x.msg_id), [106, 107, 108, 109, 110, 111, 112, 113, 114]);
+});
+
+test('selecionarFotosOrcamento: 12 refs sem foto local → cap 10 (10 mais recentes)', () => {
+  const refs = Array.from({ length: 12 }, (_, i) => 100 + i);
+  const conv = { dados_coletados: { refs_imagens_msg_ids: refs } };
+  const r = selecionarFotosOrcamento(conv);
+  assert.equal(r.length, 10);
+  assert.deepEqual(r.map(x => x.msg_id), [102, 103, 104, 105, 106, 107, 108, 109, 110, 111]);
+});
+
+test('enviarFotosOrcamento: 1 local + 2 refs JPEG → sendMediaGroup, PATCH file_ids, RPC zerar 3x', async () => {
+  const conv = {
+    id: 'c1',
+    dados_coletados: { foto_local_msg_id: 42, refs_imagens_msg_ids: [43, 44] },
+    dados_cadastro: { nome: 'Maria' },
+  };
+  const supaCalls = [];
+  const tgCalls = [];
+  const deps = {
+    supaFetch: async (path, init = {}) => {
+      supaCalls.push({ path, method: init.method || 'GET', body: init.body });
+      if (path.includes('/conversa_mensagens?')) {
+        return new Response(JSON.stringify([
+          { id: 42, message: { media_base64: 'B42', media_mimetype: 'image/jpeg' } },
+          { id: 43, message: { media_base64: 'B43', media_mimetype: 'image/jpeg' } },
+          { id: 44, message: { media_base64: 'B44', media_mimetype: 'image/jpeg' } },
+        ]), { status: 200 });
+      }
+      return new Response(null, { status: 204 });
+    },
+    sendTelegramMediaGroup: async (env, chat, items) => {
+      tgCalls.push({ tipo: 'mediaGroup', items });
+      return items.map((_, i) => ({ file_id: `FID_${i}` }));
+    },
+    sendTelegramPhoto: async () => ({ file_id: 'FID_solo' }),
+    sendTelegramDocument: async () => { throw new Error('nao esperado'); },
+  };
+  const r = await enviarFotosOrcamento({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, '99', conv, deps);
+  assert.equal(r.enviadas, 3);
+  assert.equal(r.falhas, 0);
+  // PATCH dados_coletados com file_ids
+  const patch = supaCalls.find(c => c.method === 'PATCH' && c.path.includes('/conversas?id=eq.c1'));
+  assert.ok(patch);
+  const body = JSON.parse(patch.body);
+  assert.equal(body.dados_coletados.foto_local_file_id, 'FID_0');
+  assert.deepEqual(body.dados_coletados.refs_imagens_file_ids, ['FID_1', 'FID_2']);
+  // RPC zerar chamado 3 vezes
+  const rpcs = supaCalls.filter(c => c.path.includes('/rpc/zerar_media_base64'));
+  assert.equal(rpcs.length, 3);
+});
+
+test('enviarFotosOrcamento: 1 foto unica JPEG → sendTelegramPhoto (nao MediaGroup)', async () => {
+  const conv = {
+    id: 'c1',
+    dados_coletados: { foto_local_msg_id: 42 },
+    dados_cadastro: { nome: 'Maria' },
+  };
+  let usouSolo = false;
+  const deps = {
+    supaFetch: async (path) => {
+      if (path.includes('/conversa_mensagens?')) {
+        return new Response(JSON.stringify([
+          { id: 42, message: { media_base64: 'B42', media_mimetype: 'image/jpeg' } },
+        ]), { status: 200 });
+      }
+      return new Response(null, { status: 204 });
+    },
+    sendTelegramPhoto: async () => { usouSolo = true; return { file_id: 'SOLO' }; },
+    sendTelegramMediaGroup: async () => { throw new Error('nao esperado'); },
+    sendTelegramDocument: async () => { throw new Error('nao esperado'); },
+  };
+  await enviarFotosOrcamento({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, '99', conv, deps);
+  assert.ok(usouSolo);
+});
+
+test('enviarFotosOrcamento: mix JPEG + HEIC → 1 sendDocument(HEIC) + 1 sendMediaGroup(JPEGs)', async () => {
+  const conv = {
+    id: 'c1',
+    dados_coletados: { foto_local_msg_id: 42, refs_imagens_msg_ids: [43, 44] },
+    dados_cadastro: { nome: 'Maria' },
+  };
+  let chamouDoc = false; let chamouGroup = false;
+  const deps = {
+    supaFetch: async (path) => {
+      if (path.includes('/conversa_mensagens?')) {
+        return new Response(JSON.stringify([
+          { id: 42, message: { media_base64: 'B42', media_mimetype: 'image/jpeg' } },
+          { id: 43, message: { media_base64: 'B43', media_mimetype: 'image/heic' } },
+          { id: 44, message: { media_base64: 'B44', media_mimetype: 'image/jpeg' } },
+        ]), { status: 200 });
+      }
+      return new Response(null, { status: 204 });
+    },
+    sendTelegramMediaGroup: async (env, chat, items) => {
+      chamouGroup = true; assert.equal(items.length, 2);
+      return items.map((_, i) => ({ file_id: `JPEG_${i}` }));
+    },
+    sendTelegramDocument: async () => { chamouDoc = true; return { file_id: 'HEIC' }; },
+    sendTelegramPhoto: async () => ({ file_id: 'JPEG_solo' }),
+  };
+  const r = await enviarFotosOrcamento({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, '99', conv, deps);
+  assert.ok(chamouDoc, 'HEIC via sendDocument');
+  assert.ok(chamouGroup, 'JPEGs via mediaGroup');
+  assert.equal(r.enviadas, 3);
+});
+
+test('enviarFotosOrcamento: 0 fotos → return {enviadas:0, tentadas:0}', async () => {
+  const conv = { id: 'c1', dados_coletados: {}, dados_cadastro: {} };
+  const deps = {
+    supaFetch: async () => new Response('[]', { status: 200 }),
+    sendTelegramPhoto: async () => { throw new Error('nao esperado'); },
+    sendTelegramMediaGroup: async () => { throw new Error('nao esperado'); },
+    sendTelegramDocument: async () => { throw new Error('nao esperado'); },
+  };
+  const r = await enviarFotosOrcamento({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, '99', conv, deps);
+  assert.equal(r.enviadas, 0);
+  assert.equal(r.tentadas, 0);
+});
+
+test('enviarFotosOrcamento: upload throw → cleanup NAO roda (base64 intacto)', async () => {
+  const conv = {
+    id: 'c1',
+    dados_coletados: { foto_local_msg_id: 42, refs_imagens_msg_ids: [43] },
+    dados_cadastro: { nome: 'Maria' },
+  };
+  const rpcCalls = [];
+  const deps = {
+    supaFetch: async (path, init = {}) => {
+      if (path.includes('/conversa_mensagens?')) {
+        return new Response(JSON.stringify([
+          { id: 42, message: { media_base64: 'B', media_mimetype: 'image/jpeg' } },
+          { id: 43, message: { media_base64: 'B', media_mimetype: 'image/jpeg' } },
+        ]), { status: 200 });
+      }
+      if (path.includes('/rpc/zerar_media_base64')) {
+        rpcCalls.push(init.body);
+      }
+      return new Response(null, { status: 204 });
+    },
+    sendTelegramMediaGroup: async () => { throw new Error('telegram-413: too large'); },
+    sendTelegramPhoto: async () => { throw new Error('telegram-413: too large'); },
+    sendTelegramDocument: async () => { throw new Error('telegram-413: too large'); },
+  };
+  const r = await enviarFotosOrcamento({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, '99', conv, deps);
+  assert.equal(r.falhas_total, true);
+  assert.equal(rpcCalls.length, 0, 'cleanup NAO deve rodar se upload falhou');
 });

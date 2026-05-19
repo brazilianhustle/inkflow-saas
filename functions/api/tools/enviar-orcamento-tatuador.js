@@ -19,10 +19,14 @@
 // existente (a tool deve ser chamada UMA vez por orcamento; reentrada do
 // agente em propondo_valor nao re-chama esta tool).
 import { withTool, supaFetch } from './_tool-helpers.js';
+import { sendTelegramPhoto, sendTelegramDocument, sendTelegramMediaGroup } from '../../_lib/telegram-media.js';
 
 const TENANT_FIELDS = [
   'id', 'nome_estudio', 'tatuador_telegram_chat_id', 'tatuador_telegram_username',
 ].join(',');
+
+const FOTO_CAP_TOTAL = 10;
+const TELEGRAM_PHOTO_MIMETYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 function gerarOrcid() {
   // 6 chars base36 (alfanumerico). Probabilidade de colisao baixa pra
@@ -96,6 +100,138 @@ export function montarTextoOrcamento(conv, resultadoFotos = null, today = new Da
     linhas.push('', `📸 ⚠️ ${resultadoFotos.falhas} de ${resultadoFotos.tentadas} fotos não anexaram.`);
   }
   return linhas.join('\n');
+}
+
+export function selecionarFotosOrcamento(conv) {
+  const dc = conv?.dados_coletados || {};
+  const out = [];
+  if (dc.foto_local_msg_id) out.push({ msg_id: dc.foto_local_msg_id, tipo: 'local' });
+  const refs = Array.isArray(dc.refs_imagens_msg_ids) ? dc.refs_imagens_msg_ids : [];
+  // Cap: total 10. Se tem local, sobra 9 pra refs. Pega as mais recentes (ultimos).
+  const restante = FOTO_CAP_TOTAL - out.length;
+  const refsSel = refs.slice(-restante);
+  for (const id of refsSel) out.push({ msg_id: id, tipo: 'ref' });
+  return out;
+}
+
+export async function enviarFotosOrcamento(env, chatId, conv, depsOverride = {}) {
+  const deps = {
+    supaFetch: async (path, init) => await supaFetch(env, path, init),
+    sendTelegramPhoto, sendTelegramDocument, sendTelegramMediaGroup,
+    ...depsOverride,
+  };
+  const itens = selecionarFotosOrcamento(conv);
+  if (itens.length === 0) return { tentadas: 0, enviadas: 0, falhas: 0 };
+
+  // Batch SELECT base64 + mimetype
+  const ids = itens.map(x => x.msg_id);
+  const sel = await deps.supaFetch(
+    `/rest/v1/conversa_mensagens?id=in.(${ids.join(',')})&select=id,message`,
+  );
+  const rows = await sel.json();
+  const byId = new Map(rows.map(r => [r.id, r.message || {}]));
+
+  // Separa em buckets por mimetype
+  const carrossel = [];  // JPEGs/PNGs/WEBPs
+  const documents = [];  // HEIC/HEIF/TIFF/outros
+  for (const it of itens) {
+    const m = byId.get(it.msg_id);
+    if (!m?.media_base64) continue;
+    const mt = (m.media_mimetype || '').toLowerCase();
+    const bucket = TELEGRAM_PHOTO_MIMETYPES.has(mt) ? carrossel : documents;
+    bucket.push({ ...it, base64: m.media_base64, mimetype: m.media_mimetype });
+  }
+
+  const tentadas = carrossel.length + documents.length;
+  let enviadas = 0; let falhas = 0;
+  // Ordem: foto_local-file_id primeiro (pra mapeamento PATCH); refs collect na sequencia
+  let fotoLocalFileId = null;
+  const refsFileIds = [];
+  const usedIds = [];  // msg_ids enviados com sucesso (para RPC zerar)
+
+  // Documents primeiro (sem caption, individuais)
+  for (const d of documents) {
+    try {
+      const { file_id } = await deps.sendTelegramDocument(env, chatId, d.base64, d.mimetype, null, null);
+      if (d.tipo === 'local') fotoLocalFileId = file_id;
+      else refsFileIds.push(file_id);
+      usedIds.push(d.msg_id);
+      enviadas++;
+    } catch (e) {
+      console.warn(`[orc] doc ${d.msg_id} falhou: ${e.message}`);
+      falhas++;
+    }
+  }
+
+  // Carrossel
+  if (carrossel.length === 1) {
+    const c = carrossel[0];
+    try {
+      const nome = conv.dados_cadastro?.nome || 'cliente';
+      const { file_id } = await deps.sendTelegramPhoto(env, chatId, c.base64, c.mimetype, `📸 ${nome} — fotos do briefing`);
+      if (c.tipo === 'local') fotoLocalFileId = file_id;
+      else refsFileIds.push(file_id);
+      usedIds.push(c.msg_id);
+      enviadas++;
+    } catch (e) {
+      console.warn(`[orc] foto solo ${c.msg_id} falhou: ${e.message}`);
+      falhas++;
+    }
+  } else if (carrossel.length >= 2) {
+    const nome = conv.dados_cadastro?.nome || 'cliente';
+    const groupItems = carrossel.map((c, i) => ({
+      base64: c.base64,
+      mimetype: c.mimetype,
+      ...(i === 0 ? { caption: `📸 ${nome} — fotos do briefing` } : {}),
+    }));
+    try {
+      const results = await deps.sendTelegramMediaGroup(env, chatId, groupItems);
+      results.forEach((r, i) => {
+        const c = carrossel[i];
+        if (c.tipo === 'local') fotoLocalFileId = r.file_id;
+        else refsFileIds.push(r.file_id);
+        usedIds.push(c.msg_id);
+      });
+      enviadas += carrossel.length;
+    } catch (e) {
+      console.warn(`[orc] mediaGroup falhou: ${e.message}`);
+      falhas += carrossel.length;
+    }
+  }
+
+  // Se nenhum upload deu certo, return falha total — NAO faz PATCH nem cleanup
+  if (enviadas === 0) {
+    return { tentadas, enviadas: 0, falhas, falhas_total: true };
+  }
+
+  // PATCH dados_coletados com file_ids
+  const dadosAtuais = conv.dados_coletados || {};
+  const novosDados = { ...dadosAtuais };
+  if (fotoLocalFileId) novosDados.foto_local_file_id = fotoLocalFileId;
+  if (refsFileIds.length > 0) {
+    const atuais = Array.isArray(dadosAtuais.refs_imagens_file_ids) ? dadosAtuais.refs_imagens_file_ids : [];
+    novosDados.refs_imagens_file_ids = [...atuais, ...refsFileIds];
+  }
+  await deps.supaFetch(`/rest/v1/conversas?id=eq.${conv.id}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify({ dados_coletados: novosDados }),
+  });
+
+  // Cleanup base64 via RPC atomico, so dos msg_ids que upload OK
+  for (const id of usedIds) {
+    try {
+      await deps.supaFetch('/rest/v1/rpc/zerar_media_base64', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_msg_id: id }),
+      });
+    } catch (e) {
+      console.warn(`[orc] RPC zerar ${id} falhou: ${e.message}`);
+    }
+  }
+
+  return { tentadas, enviadas, falhas };
 }
 
 function inlineKeyboard(orcid) {
