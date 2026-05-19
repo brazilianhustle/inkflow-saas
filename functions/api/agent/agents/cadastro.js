@@ -9,10 +9,11 @@
 //
 // Agora: openai SDK puro + Responses API + schema strict discriminated
 // union (constrained decoding token-level). Handoff sem invariantes e
-// estruturalmente impossivel. Validador residual unico
-// (validateCadastroHandoffEmail) vive em route.js pra invariante
-// cross-field 'handoff com email=null exige email_recusado=true' que vai
-// ser ligada na Task 8.
+// estruturalmente impossivel. Validador residual unico (cross-field
+// 'handoff sem email exige email_recusado=true') sera adicionado em
+// route.js na Task 8. Contract extractCadastroHandoff
+// (functions/_lib/agent-runtime/contracts/cadastro-handoff.js) valida
+// shape do payload pos-extracao.
 //
 // LEGADO TRANSITORIO ATE TASK 8 (route.js migration):
 // - buildCadastroAgent + LegacyCadastroOutputSchema continuam exportados
@@ -38,7 +39,12 @@ export const CadastroOutputSchema = _StrictSchema;
 // (sem discriminator) — @openai/agents rejeita discriminatedUnion via
 // typeGuards.mjs:14 (vide spike Sub 1.D). Schema identico ao pre-Fase 2A
 // — NAO mexer ate Task 8 deletar buildCadastroAgent.
-const LegacyCadastroOutputSchema = z.object({
+//
+// Eval-only fallback: @openai/agents SDK rejeita discriminatedUnion
+// (typeGuards.mjs:14). Evals legados usam este permissivo até serem
+// reescritos pra runCadastroAgent + runtime.run.
+// CLEANUP: deletar quando evals migrarem.
+export const LegacyCadastroOutputSchema = z.object({
   resposta_cliente: z.string().min(1),
   dados_persistidos: z.object({
     nome: z.string().nullable().optional(),

@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { Agent, run } from '@openai/agents';
 import { TattooOutputSchema } from '../../functions/api/agent/agents/tattoo.js';
-import { CadastroOutputSchema } from '../../functions/api/agent/agents/cadastro.js';
+import { LegacyCadastroOutputSchema as CadastroOutputSchema } from '../../functions/api/agent/agents/cadastro.js';
 import { generatePromptColetaTattoo } from '../../functions/_lib/prompts/coleta/tattoo/generate.js';
 import { generatePromptColetaCadastro } from '../../functions/_lib/prompts/coleta/cadastro/generate.js';
 

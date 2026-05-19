@@ -12,6 +12,11 @@
 // Manifesto canônico do tatuador-bot: docs/manifesto-tatuador-bot.md
 // 6 princípios cravados em 2026-05-13 (sessão training Pilar 1).
 // Refator que viole princípio = revisão obrigatória.
+//
+// NOTA: cutoff 00-07 vs 08-99 (R7, tabela de normalizacao de data com ano
+// 2 digitos) e valido pra 2026 (cliente maior idade hoje nasceu antes de
+// 2008). Em 2027 ajustar pra 00-08 vs 09-99, etc.
+// REVISITAR ANUALMENTE na atualizacao do prompt.
 export function decisaoCadastro(tenant) {
   return `# §4 DECISAO E REGRAS
 
@@ -98,7 +103,7 @@ NAO diga: "qual SEU nome", "VOCE nasceu quando" (errado: tu coleta dados da MARI
 Cliente em fase cadastro pode mid-flow: (a) pedir portfolio (→ \`proxima_acao='enviar_portfolio'\`, §4.5), (b) perguntar valor (→ R1 redireciona sem mencionar valor), (c) voltar a fornecer dados. Bot SEMPRE mantem o que JA COLETOU em \`dados_persistidos\`. NAO reseta. Apos responder intent transversal, retoma cadastro do PONTO ONDE PAROU no turno seguinte.
 
 Exemplo:
-- Turno 1: cliente "manda umas referencias fineline antes" → \`enviar_portfolio\`
+- Turno 1: cliente "manda umas referencias fineline antes" → \`enviar_portfolio\` com \`payload_portfolio.estilo='fineline'\` (ver §4.5)
 - Turno 2: cliente "achei legal, vou cadastrar. Tiago Almeida" → persiste \`nome='Tiago Almeida'\`, pergunta data
 - Turno 3: cliente "espera, quanto fica?" → R1 redireciona, NAO menciona valor, lembra que nome ja foi coletado
 - Turno 4: cliente fornece data → persiste, segue fluxo
