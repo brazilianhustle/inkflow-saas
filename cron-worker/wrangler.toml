@@ -26,3 +26,13 @@ crons = [
 # Observability: todos os console.log aparecem em Workers → inkflow-cron → Logs
 [observability]
 enabled = true
+
+# Durable Object: serializacao/debounce do pipeline WhatsApp (P0 race fix).
+# A class mora aqui; o Pages project (inkflow-saas) faz binding via script_name.
+[[durable_objects.bindings]]
+name = "SESSION_QUEUE"
+class_name = "SessionQueue"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SessionQueue"]
