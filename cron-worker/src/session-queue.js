@@ -4,8 +4,8 @@
 // — sem extends DurableObject — pra ser importável/testável fora do runtime de Workers.
 // Backend SQLite vem da migration new_sqlite_classes no wrangler.toml.
 
-export const DEBOUNCE_MS = 4000;   // janela de silêncio que agrupa balões
-export const MAX_WAIT_MS = 15000;  // teto desde o 1º balão do lote
+export const DEBOUNCE_MS = 8000;   // janela de silêncio que agrupa balões (8s: balões humanos chegam ~4-5s apart; 4s fragmentava o lote — smoke E2E 2026-05-20)
+export const MAX_WAIT_MS = 20000;  // teto desde o 1º balão do lote (20s acompanha o DEBOUNCE maior pra não cortar rajadas de 2-3 balões cedo demais)
 
 // Mesma convenção do index.js: host único como constante de módulo (single source).
 const BASE_URL = 'https://inkflowbrasil.com';

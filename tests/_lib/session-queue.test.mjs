@@ -69,7 +69,8 @@ test('enqueue: teto MAX_WAIT respeitado se cliente não para de digitar', async 
     await q.fetch(enqReq(101));               // first = t0
     mock.timers.setTime(t0 + MAX_WAIT_MS - 1000); // perto do teto
     await q.fetch(enqReq(102));
-    // min(now+DEBOUNCE, first+MAX) = min(t0+MAX+3000, t0+MAX) = t0+MAX
+    // min(now+DEBOUNCE, first+MAX) = min(t0+MAX-1000+DEBOUNCE, t0+MAX) = t0+MAX
+    // (vale enquanto DEBOUNCE > 1000; o teto sempre vence perto do limite)
     assert.equal(st.alarmAt, t0 + MAX_WAIT_MS);
   } finally { mock.timers.reset(); }
 });
