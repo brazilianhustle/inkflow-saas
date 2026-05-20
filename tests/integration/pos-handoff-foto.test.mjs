@@ -1,7 +1,7 @@
 // tests/integration/pos-handoff-foto.test.mjs
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import { processMessage } from '../../functions/_lib/whatsapp-pipeline.js';
+import { processBatch } from '../../functions/_lib/whatsapp-pipeline.js';
 
 const TENANT = {
   id: '00000000-0000-0000-0000-000000000001',
@@ -10,7 +10,18 @@ const TENANT = {
   config_agente: {}, config_precificacao: {}, gatilhos_handoff: [], faqs: [], fewshots_por_modo: {},
 };
 
-function makeDeps({ conversaTerminal, capturedTg, capturedRpc, capturedFetchUrls }) {
+const TELEFONE = '5511999';
+
+function makeBatch({ msgRowId, tenantId = TENANT.id, telefone = TELEFONE } = {}) {
+  return {
+    session_id: `${tenantId}_${telefone}`,
+    tenantId,
+    telefone,
+    msgRowIds: [msgRowId],
+  };
+}
+
+function makeDeps({ conversaTerminal, capturedTg, capturedRpc, capturedFetchUrls, msgRowId, mediaBase64, mediaMimetype, texto }) {
   return {
     now: () => '2026-05-19T00:00:00Z',
     runAgent: async () => ({ ok: true }),
@@ -22,6 +33,16 @@ function makeDeps({ conversaTerminal, capturedTg, capturedRpc, capturedFetchUrls
     },
     supaFetch: async (path, init = {}) => {
       capturedFetchUrls.push({ path, method: init.method || 'GET' });
+      // Etapa 0a: tenant lookup by id
+      if (init.method === undefined && path.startsWith('/rest/v1/tenants?id=eq.')) {
+        return new Response(JSON.stringify([TENANT]), { status: 200 });
+      }
+      // Etapa 0b: SELECT lote de linhas
+      if (init.method === undefined && path.startsWith('/rest/v1/conversa_mensagens?id=in.')) {
+        return new Response(JSON.stringify([
+          { id: msgRowId, message: { type: 'human', content: texto, media_base64: mediaBase64, media_mimetype: mediaMimetype }, created_at: '2026-05-19T00:00:00Z' },
+        ]), { status: 200 });
+      }
       if (init.method === undefined && path.includes('/conversas?')) {
         return new Response(JSON.stringify([conversaTerminal]), { status: 200 });
       }
@@ -40,18 +61,15 @@ test('Estado terminal + foto JPEG: re-encaminha como photo + RPC zerar', async (
     dados_coletados: {}, dados_cadastro: { nome: 'Maria' },
   };
   const tg = []; const rpc = []; const urls = [];
-  const deps = makeDeps({ conversaTerminal, capturedTg: tg, capturedRpc: rpc, capturedFetchUrls: urls });
-  await processMessage(
+  const deps = makeDeps({ conversaTerminal, capturedTg: tg, capturedRpc: rpc, capturedFetchUrls: urls, msgRowId: 99, mediaBase64: 'BLOB', mediaMimetype: 'image/jpeg', texto: 'achei mais essa' });
+  await processBatch(
     { INKFLOW_TELEGRAM_BOT_TOKEN: 't' },
-    {
-      tenantId: TENANT.id, telefone: '5511999', evoMessageId: 'E', texto: 'achei mais essa',
-      mediaBase64: 'BLOB', mediaMimetype: 'image/jpeg', pushName: 'Maria', msgRowId: 99, tenant: TENANT,
-    },
+    makeBatch({ msgRowId: 99 }),
     deps,
   );
-  // 1) sendTelegram texto preview (existente)
-  assert.ok(tg.some(x => x.text?.includes('Cliente Maria')), 'texto preview enviado');
-  // 2) enviarMidia chamado com caption nome
+  // 1) sendTelegram texto preview (existente) — pipeline envia "Cliente ${telefone}"
+  assert.ok(tg.some(x => x.text?.includes('Cliente')), 'texto preview enviado');
+  // 2) enviarMidia chamado com caption nome (nome vem de dados_cadastro.nome)
   assert.ok(tg.some(x => x.midia && x.caption?.includes('Maria mandou +1 foto')));
   // 3) RPC zerar_media_base64 chamado com msg_id=99
   assert.ok(rpc.some(r => r.p_msg_id === 99));
@@ -63,13 +81,10 @@ test('Estado terminal SEM foto: comportamento atual (so texto preview)', async (
     dados_coletados: {}, dados_cadastro: { nome: 'Maria' },
   };
   const tg = []; const rpc = []; const urls = [];
-  const deps = makeDeps({ conversaTerminal, capturedTg: tg, capturedRpc: rpc, capturedFetchUrls: urls });
-  await processMessage(
+  const deps = makeDeps({ conversaTerminal, capturedTg: tg, capturedRpc: rpc, capturedFetchUrls: urls, msgRowId: 100, mediaBase64: null, mediaMimetype: null, texto: 'oi' });
+  await processBatch(
     { INKFLOW_TELEGRAM_BOT_TOKEN: 't' },
-    {
-      tenantId: TENANT.id, telefone: '5511999', evoMessageId: 'E', texto: 'oi',
-      mediaBase64: null, mediaMimetype: null, pushName: 'Maria', msgRowId: 100, tenant: TENANT,
-    },
+    makeBatch({ msgRowId: 100 }),
     deps,
   );
   assert.ok(tg.some(x => x.text), 'texto preview enviado');
@@ -83,13 +98,10 @@ test('Estado terminal + foto HEIC: re-encaminha como document', async () => {
     dados_coletados: {}, dados_cadastro: { nome: 'Maria' },
   };
   const tg = []; const rpc = []; const urls = [];
-  const deps = makeDeps({ conversaTerminal, capturedTg: tg, capturedRpc: rpc, capturedFetchUrls: urls });
-  await processMessage(
+  const deps = makeDeps({ conversaTerminal, capturedTg: tg, capturedRpc: rpc, capturedFetchUrls: urls, msgRowId: 101, mediaBase64: 'BLOB', mediaMimetype: 'image/heic', texto: '' });
+  await processBatch(
     { INKFLOW_TELEGRAM_BOT_TOKEN: 't' },
-    {
-      tenantId: TENANT.id, telefone: '5511999', evoMessageId: 'E', texto: '',
-      mediaBase64: 'BLOB', mediaMimetype: 'image/heic', pushName: 'Maria', msgRowId: 101, tenant: TENANT,
-    },
+    makeBatch({ msgRowId: 101 }),
     deps,
   );
   assert.ok(tg.some(x => x.midia && x.mimetype === 'image/heic'));
@@ -101,14 +113,11 @@ test('Estado terminal + foto upload throw: NAO chama RPC (cleanup so se OK)', as
     dados_coletados: {}, dados_cadastro: { nome: 'Maria' },
   };
   const tg = []; const rpc = []; const urls = [];
-  const deps = makeDeps({ conversaTerminal, capturedTg: tg, capturedRpc: rpc, capturedFetchUrls: urls });
+  const deps = makeDeps({ conversaTerminal, capturedTg: tg, capturedRpc: rpc, capturedFetchUrls: urls, msgRowId: 102, mediaBase64: 'BLOB', mediaMimetype: 'image/jpeg', texto: '' });
   deps.enviarMidia = async () => { throw new Error('telegram-413: too large'); };
-  await processMessage(
+  await processBatch(
     { INKFLOW_TELEGRAM_BOT_TOKEN: 't' },
-    {
-      tenantId: TENANT.id, telefone: '5511999', evoMessageId: 'E', texto: '',
-      mediaBase64: 'BLOB', mediaMimetype: 'image/jpeg', pushName: 'Maria', msgRowId: 102, tenant: TENANT,
-    },
+    makeBatch({ msgRowId: 102 }),
     deps,
   );
   // Pipeline NAO deve crashar; RPC NAO chamado
