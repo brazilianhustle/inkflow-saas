@@ -6,7 +6,21 @@
 
 export const DEBOUNCE_MS = 4000;   // janela de silêncio que agrupa balões
 export const MAX_WAIT_MS = 15000;  // teto desde o 1º balão do lote
-const PROCESS_BATCH_URL = 'https://inkflowbrasil.com/api/whatsapp/process-batch';
+
+// Mesma convenção do index.js: host único como constante de módulo (single source).
+const BASE_URL = 'https://inkflowbrasil.com';
+const PROCESS_BATCH_URL = `${BASE_URL}/api/whatsapp/process-batch`;
+
+// Estado persistido (única chave de storage do DO), shape:
+//   batch = { msgRowIds: number[], session_id, tenantId, telefone, firstEnqueuedAt: number }
+const BATCH_KEY = 'batch';
+
+// Retorna um batch válido: o stored se tiver msgRowIds[] array, senão um novo vazio.
+// Defende contra registro corrompido (evita TypeError → alarm em retry infinito).
+function freshBatch(stored, { session_id, tenantId, telefone, now }) {
+  if (stored && Array.isArray(stored.msgRowIds)) return stored;
+  return { msgRowIds: [], session_id, tenantId, telefone, firstEnqueuedAt: now };
+}
 
 export class SessionQueue {
   constructor(state, env) {
@@ -27,15 +41,14 @@ export class SessionQueue {
     if (msgRowId == null || !session_id) return new Response('bad-enqueue', { status: 400 });
 
     const now = Date.now();
-    const batch = (await this.state.storage.get('batch')) || {
-      msgRowIds: [], session_id, tenantId, telefone, firstEnqueuedAt: now,
-    };
+    const stored = await this.state.storage.get(BATCH_KEY);
+    const batch = freshBatch(stored, { session_id, tenantId, telefone, now });
     batch.session_id = session_id;
     batch.tenantId = tenantId;
     batch.telefone = telefone;
     if (!batch.firstEnqueuedAt) batch.firstEnqueuedAt = now;
     if (!batch.msgRowIds.includes(msgRowId)) batch.msgRowIds.push(msgRowId);
-    await this.state.storage.put('batch', batch);
+    await this.state.storage.put(BATCH_KEY, batch);
 
     const alarmAt = Math.min(now + DEBOUNCE_MS, batch.firstEnqueuedAt + MAX_WAIT_MS);
     await this.state.storage.setAlarm(alarmAt);
@@ -43,8 +56,19 @@ export class SessionQueue {
   }
 
   async alarm() {
-    const batch = await this.state.storage.get('batch');
-    if (!batch || batch.msgRowIds.length === 0) return;
+    // Misconfig do binding: falha rápido e descritivo (padrão do index.js) em vez de
+    // mandar 'x-cron-secret: undefined' e tomar 401 confuso.
+    if (!this.env.CRON_SECRET) throw new Error('CRON_SECRET env binding ausente');
+
+    const batch = await this.state.storage.get(BATCH_KEY);
+    if (!batch) return;
+    // Self-heal: registro corrompido (msgRowIds nao-array) seria retry infinito. Limpa e sai.
+    if (!Array.isArray(batch.msgRowIds)) {
+      console.error('[session-queue] batch corrompido (msgRowIds nao-array), descartando');
+      await this.state.storage.delete(BATCH_KEY);
+      return;
+    }
+    if (batch.msgRowIds.length === 0) return;
     const sending = [...batch.msgRowIds];
 
     const res = await fetch(PROCESS_BATCH_URL, {
@@ -60,13 +84,16 @@ export class SessionQueue {
     }
 
     // Sucesso: remove só os ids enviados; balões que chegaram durante o POST ficam.
-    const after = (await this.state.storage.get('batch')) || { msgRowIds: [] };
-    const remaining = after.msgRowIds.filter(id => !sending.includes(id));
+    const after = await this.state.storage.get(BATCH_KEY);
+    const afterIds = (after && Array.isArray(after.msgRowIds)) ? after.msgRowIds : [];
+    const remaining = afterIds.filter(id => !sending.includes(id));
     if (remaining.length > 0) {
-      await this.state.storage.put('batch', { ...after, msgRowIds: remaining, firstEnqueuedAt: Date.now() });
+      // Sobreviventes formam um NOVO lote: firstEnqueuedAt reinicia o teto a partir de agora.
+      // (Sessão de altíssimo volume pode estender o teto a cada flush — aceitável p/ o caso real.)
+      await this.state.storage.put(BATCH_KEY, { ...after, msgRowIds: remaining, firstEnqueuedAt: Date.now() });
       await this.state.storage.setAlarm(Date.now() + DEBOUNCE_MS);
     } else {
-      await this.state.storage.delete('batch');
+      await this.state.storage.delete(BATCH_KEY);
     }
   }
 }

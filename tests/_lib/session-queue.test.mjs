@@ -123,3 +123,67 @@ test('alarm: balão que chegou durante o POST sobrevive e re-arma alarm', async 
     assert.ok(st.alarmAt != null, 're-armou alarm pro próximo ciclo');
   } finally { globalThis.fetch = orig; }
 });
+
+test('fetch: rota desconhecida → 404', async () => {
+  const st = fakeState();
+  const q = new SessionQueue(st, ENV);
+  const res = await q.fetch(new Request('https://do/qualquer', { method: 'POST' }));
+  assert.equal(res.status, 404);
+});
+
+test('enqueue: msgRowId ausente ou session_id ausente → 400', async () => {
+  const st = fakeState();
+  const q = new SessionQueue(st, ENV);
+  const semId = new Request('https://do/enqueue', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: SID, tenantId: 'T', telefone: '5511' }), // sem msgRowId
+  });
+  assert.equal((await q.fetch(semId)).status, 400);
+  const semSession = new Request('https://do/enqueue', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ msgRowId: 1, tenantId: 'T', telefone: '5511' }), // sem session_id
+  });
+  assert.equal((await q.fetch(semSession)).status, 400);
+});
+
+test('alarm: CRON_SECRET ausente → lança (fail-fast), nada de fetch', async () => {
+  const st = fakeState();
+  await st.storage.put('batch', { msgRowIds: [101], session_id: SID, tenantId: 'T', telefone: '5511', firstEnqueuedAt: 1 });
+  const orig = globalThis.fetch;
+  let called = false;
+  globalThis.fetch = async () => { called = true; return new Response('{}', { status: 200 }); };
+  try {
+    const q = new SessionQueue(st, {}); // env sem CRON_SECRET
+    await assert.rejects(() => q.alarm(), /CRON_SECRET/);
+    assert.equal(called, false, 'nao deve chamar process-batch sem secret');
+  } finally { globalThis.fetch = orig; }
+});
+
+test('alarm: batch corrompido (msgRowIds nao-array) → self-heal (delete), nao retry infinito', async () => {
+  const st = fakeState();
+  await st.storage.put('batch', { msgRowIds: 'oops', session_id: SID }); // shape corrompido
+  const orig = globalThis.fetch;
+  let called = false;
+  globalThis.fetch = async () => { called = true; return new Response('{}', { status: 200 }); };
+  try {
+    const q = new SessionQueue(st, ENV);
+    await q.alarm(); // nao deve lançar
+    assert.equal(await st.storage.get('batch'), undefined, 'batch corrompido descartado');
+    assert.equal(called, false, 'nao chama process-batch com batch invalido');
+  } finally { globalThis.fetch = orig; }
+});
+
+test('enqueue: batch corrompido em storage é resetado em vez de quebrar', async () => {
+  const st = fakeState();
+  await st.storage.put('batch', { msgRowIds: null }); // corrompido
+  const t0 = 2_000_000;
+  mock.timers.enable({ apis: ['Date'], now: t0 });
+  try {
+    const q = new SessionQueue(st, ENV);
+    const res = await q.fetch(enqReq(101));
+    assert.equal(res.status, 200);
+    const batch = await st.storage.get('batch');
+    assert.deepEqual(batch.msgRowIds, [101], 'reset limpo + novo balão');
+    assert.equal(batch.firstEnqueuedAt, t0);
+  } finally { mock.timers.reset(); }
+});
