@@ -22,6 +22,20 @@ function freshBatch(stored, { session_id, tenantId, telefone, now }) {
   return { msgRowIds: [], session_id, tenantId, telefone, firstEnqueuedAt: now };
 }
 
+// Alerta admin via Telegram (mesmo padrão fail-open do notifyFailure em index.js).
+async function notifyAdmin(env, detail) {
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: `⚠️ SessionQueue: ${detail}` }),
+    });
+  } catch {
+    // fail-open: se Telegram tambem falhar, pelo menos tem o console.error
+  }
+}
+
 export class SessionQueue {
   constructor(state, env) {
     this.state = state;
@@ -79,7 +93,16 @@ export class SessionQueue {
       }),
     });
     if (!res.ok) {
-      // Lança → o runtime do DO re-agenda o alarm com backoff durável. Lote preservado.
+      if (res.status >= 400 && res.status < 500) {
+        // Permanente (401 secret mismatch, 400 contrato): retry nao resolve e ficaria em loop
+        // sem ninguem saber. Alerta admin e para. Msgs continuam 'received' no DB (recuperaveis
+        // por varredura fase-2/manual). Espelha isRetryable()+notifyFailure() do index.js.
+        console.error(`[session-queue] process-batch ${res.status} permanente — descartando lote da sessao ${batch.session_id}`);
+        await notifyAdmin(this.env, `process-batch HTTP ${res.status} (permanente) na sessao ${batch.session_id} — lote nao processado, msgs ficam received`);
+        await this.state.storage.delete(BATCH_KEY);
+        return;
+      }
+      // Transiente (5xx / cold start / upstream): lança → DO re-agenda alarm com backoff durável.
       throw new Error(`process-batch HTTP ${res.status}`);
     }
 

@@ -102,7 +102,12 @@ export async function processBatch(env, batch, depsOverride = {}) {
   const texto = rows.map(r => r.message?.content).filter(c => c && c.trim()).join('\n');
   const fotos = rows
     .filter(r => r.message?.media_base64 && r.message?.media_mimetype?.startsWith('image/'))
-    .map(r => ({ msgRowId: r.id, mediaBase64: r.message.media_base64, mediaMimetype: r.message.media_mimetype }));
+    .map(r => ({
+      msgRowId: r.id, mediaBase64: r.message.media_base64, mediaMimetype: r.message.media_mimetype,
+      // caption PROPRIA da foto — classificacao usa o texto DELA, nao o texto concatenado do
+      // lote (senao um keyword numa msg vaza pra todas as fotos → todas viram 'local').
+      caption: r.message.content || '',
+    }));
 
   try {
     // Etapa 1: LOAD/CREATE conversa
@@ -157,11 +162,13 @@ export async function processBatch(env, batch, depsOverride = {}) {
     }
 
     // Etapa 3: histórico (status=eq.processed; exclui as linhas do lote atual)
+    // order=desc+limit pega os 40 MAIS RECENTES (asc+limit pegava os mais antigos);
+    // reverse() devolve em ordem cronológica pro runAgent.
     const histRes = await deps.supaFetch(
       `/rest/v1/conversa_mensagens?session_id=eq.${encodeURIComponent(session_id)}` +
-      `&status=eq.processed&order=created_at.asc&limit=40&select=id,message`,
+      `&status=eq.processed&order=created_at.desc&limit=40&select=id,message`,
     );
-    const histRows = await histRes.json();
+    const histRows = (await histRes.json()).reverse();
     const loteSet = new Set(msgRowIds);
     const historico = histRows
       .filter(r => !loteSet.has(r.id))
@@ -205,14 +212,17 @@ export async function processBatch(env, batch, depsOverride = {}) {
         let dadosAcc = isCadastro ? { ...dadosPreMerge } : { ...novoDadosColetados };
         let tentativas = dadosPreMerge.tentativas_foto_local || conversa.estado_extra?.tentativas_foto_local || 0;
         let fotoLocalAtual = dadosPreMerge.foto_local;
+        // No maximo UMA foto_local por lote: a 1ª classificada 'local' vence; qualquer outra
+        // (mesmo se 'local') vai pra refs em vez de sobrescrever — nunca dropa foto silenciosamente.
+        let localAtribuidaNoLote = false;
         for (const foto of fotos) {
-          const tipo = deps.classificarFoto({ tentativas_foto_local: tentativas, foto_local_atual: fotoLocalAtual, texto_turno: texto });
-          if (tipo === 'local') {
+          const tipo = deps.classificarFoto({ tentativas_foto_local: tentativas, foto_local_atual: fotoLocalAtual, texto_turno: foto.caption });
+          if (tipo === 'local' && !localAtribuidaNoLote) {
             dadosAcc = { ...dadosAcc, foto_local_msg_id: foto.msgRowId };
-            // classificarFoto so testa truthiness de foto_local_atual (L1: !foto_local_atual),
-            // entao qualquer valor truthy marca "ja tem foto local" → proximas fotos viram ref.
+            // L1 (!foto_local_atual): proximas fotos do lote ja veem foto local presente.
             // Valor in-memory do loop; NAO e persistido como foto_local.
             fotoLocalAtual = foto.msgRowId;
+            localAtribuidaNoLote = true;
           } else {
             const ids = Array.isArray(dadosAcc.refs_imagens_msg_ids) ? dadosAcc.refs_imagens_msg_ids : [];
             dadosAcc = { ...dadosAcc, refs_imagens_msg_ids: [...ids, foto.msgRowId] };

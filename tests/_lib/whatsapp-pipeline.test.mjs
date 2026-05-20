@@ -1,6 +1,7 @@
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { processBatch, TERMINAL_STATES, TYPING_DELAY_MS } from '../../functions/_lib/whatsapp-pipeline.js';
+import { classificarFoto as classificarFotoReal } from '../../functions/_lib/foto-classifier.js';
 
 const TENANT = {
   id: '00000000-0000-0000-0000-000000000001',
@@ -355,15 +356,18 @@ test('10. historico mapeado — Task 9 implementa', async () => {
     supaFetch: batchSupaFetch({
       conversa,
       rows: rowsFor([{ id: MSG_ROW_ID, content: 'oi' }]),
+      // Query usa order=created_at.desc → mock devolve newest-first; pipeline da reverse()
+      // pra cronológico. Por isso a ordem aqui e do mais novo pro mais antigo.
       hist: [
-        { id: 1, message: { type: 'human', content: 'msg1' } },
-        { id: 2, message: { type: 'ai', content: 'resp1' } },
         { id: MSG_ROW_ID, message: { type: 'human', content: 'oi' } },
+        { id: 2, message: { type: 'ai', content: 'resp1' } },
+        { id: 1, message: { type: 'human', content: 'msg1' } },
       ],
     }),
     runAgent: async (args) => { runAgentCallArg = args; return { ok: true, resposta_cliente: 'r', estado_novo: 'tattoo', dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo' }; },
   });
   await processBatch({}, baseBatch(), deps);
+  // historico em ordem cronológica (apos reverse), lote atual excluido.
   assert.deepEqual(runAgentCallArg.historico, [
     { role: 'user', content: 'msg1' },
     { role: 'assistant', content: 'resp1' },
@@ -596,4 +600,49 @@ test('Etapa 4.5: 2 fotos no lote → 1ª foto_local, 2ª vai pra refs', async ()
   const fotoPatch = conversaPatches.find(p => p.foto_local_msg_id || p.refs_imagens_msg_ids);
   assert.equal(fotoPatch.foto_local_msg_id, 201);
   assert.deepEqual(fotoPatch.refs_imagens_msg_ids, [202]);
+});
+
+test('Etapa 4.5: classificador REAL — keyword na caption de UMA foto nao vaza pras outras', async () => {
+  // Regressao: com texto concatenado do lote, o keyword "braço" da foto 201 vazava pra foto 202
+  // (KEYWORDS_LOCAL/L2 olha so o texto) → ambas viravam 'local' → foto_local sobrescrita pra 202,
+  // foto 201 (o corpo real) sumia. Fix: classifica cada foto pela caption DELA + 1 local por lote.
+  let conversaPatches = [];
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 201, content: 'aqui no meu braço', media_base64: 'a', media_mimetype: 'image/jpeg' }, // local (keyword)
+        { id: 202, content: 'tipo essa daqui', media_base64: 'b', media_mimetype: 'image/jpeg' },     // ref (sem keyword)
+      ]),
+      onPatch: (path, body) => { if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.dados_coletados) conversaPatches.push(body.dados_coletados); },
+    }),
+    runAgent: async () => ({ ok: true, resposta_cliente: 'recebi', estado_novo: 'tattoo', dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo' }),
+    classificarFoto: classificarFotoReal, // classificador de verdade (sem stub)
+  });
+  await processBatch({}, baseBatch({ msgRowIds: [201, 202] }), deps);
+  const fotoPatch = conversaPatches.find(p => p.foto_local_msg_id || p.refs_imagens_msg_ids);
+  assert.equal(fotoPatch.foto_local_msg_id, 201, 'a foto cuja caption tem keyword e a local');
+  assert.deepEqual(fotoPatch.refs_imagens_msg_ids, [202], 'a outra vira ref, nao e dropada');
+});
+
+test('Etapa 4.5: classificador REAL — 2 fotos ambas com keyword → 1ª local, 2ª ref (nao dropa)', async () => {
+  let conversaPatches = [];
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 301, content: 'no meu braço', media_base64: 'a', media_mimetype: 'image/jpeg' },
+        { id: 302, content: 'e na minha perna tambem', media_base64: 'b', media_mimetype: 'image/jpeg' },
+      ]),
+      onPatch: (path, body) => { if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.dados_coletados) conversaPatches.push(body.dados_coletados); },
+    }),
+    runAgent: async () => ({ ok: true, resposta_cliente: 'recebi', estado_novo: 'tattoo', dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo' }),
+    classificarFoto: classificarFotoReal,
+  });
+  await processBatch({}, baseBatch({ msgRowIds: [301, 302] }), deps);
+  const fotoPatch = conversaPatches.find(p => p.foto_local_msg_id || p.refs_imagens_msg_ids);
+  assert.equal(fotoPatch.foto_local_msg_id, 301, 'so a 1ª local vence');
+  assert.deepEqual(fotoPatch.refs_imagens_msg_ids, [302], '2ª local vai pra refs em vez de sobrescrever (sem drop)');
 });

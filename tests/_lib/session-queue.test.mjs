@@ -93,7 +93,7 @@ test('alarm: POSTa o lote pro process-batch e limpa em sucesso', async () => {
   } finally { globalThis.fetch = orig; }
 });
 
-test('alarm: process-batch falha → lança (DO re-tenta) e NÃO limpa o lote', async () => {
+test('alarm: process-batch 5xx → lança (DO re-tenta) e NÃO limpa o lote', async () => {
   const st = fakeState();
   await st.storage.put('batch', { msgRowIds: [101], session_id: SID, tenantId: 'T', telefone: '5511', firstEnqueuedAt: 1 });
   const orig = globalThis.fetch;
@@ -102,6 +102,36 @@ test('alarm: process-batch falha → lança (DO re-tenta) e NÃO limpa o lote', 
     const q = new SessionQueue(st, ENV);
     await assert.rejects(() => q.alarm());
     assert.deepEqual((await st.storage.get('batch')).msgRowIds, [101], 'lote preservado pra retry');
+  } finally { globalThis.fetch = orig; }
+});
+
+test('alarm: process-batch 4xx (401 permanente) → alerta admin, limpa lote, NAO re-tenta', async () => {
+  const st = fakeState();
+  await st.storage.put('batch', { msgRowIds: [101], session_id: SID, tenantId: 'T', telefone: '5511', firstEnqueuedAt: 1 });
+  const orig = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url) => {
+    calls.push(url);
+    if (url.includes('/api/whatsapp/process-batch')) return new Response('unauthorized', { status: 401 });
+    return new Response('{}', { status: 200 }); // telegram sendMessage
+  };
+  try {
+    const q = new SessionQueue(st, { CRON_SECRET: 'sek', TELEGRAM_BOT_TOKEN: 'tok', TELEGRAM_CHAT_ID: '9' });
+    await q.alarm(); // NAO deve lançar (4xx e permanente)
+    assert.equal(await st.storage.get('batch'), undefined, 'lote descartado (sem loop infinito)');
+    assert.ok(calls.some(u => u.includes('api.telegram.org')), 'alertou admin via Telegram');
+  } finally { globalThis.fetch = orig; }
+});
+
+test('alarm: 4xx sem credenciais Telegram → ainda limpa lote (fail-open, sem lançar)', async () => {
+  const st = fakeState();
+  await st.storage.put('batch', { msgRowIds: [101], session_id: SID, tenantId: 'T', telefone: '5511', firstEnqueuedAt: 1 });
+  const orig = globalThis.fetch;
+  globalThis.fetch = async () => new Response('bad', { status: 400 });
+  try {
+    const q = new SessionQueue(st, { CRON_SECRET: 'sek' }); // sem TELEGRAM_*
+    await q.alarm();
+    assert.equal(await st.storage.get('batch'), undefined, 'lote descartado mesmo sem poder alertar');
   } finally { globalThis.fetch = orig; }
 });
 
