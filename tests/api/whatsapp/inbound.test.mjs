@@ -8,6 +8,13 @@ const ENV = {
   SUPABASE_SERVICE_ROLE_KEY: 'svc-key',
 };
 
+function mockSessionQueue(enqueueSpy) {
+  return {
+    idFromName: (name) => ({ name }),
+    get: () => ({ fetch: enqueueSpy }),
+  };
+}
+
 function buildContext({ method = 'POST', body, secret = 'shh', waitUntilSpy } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (secret !== null) headers['x-webhook-secret'] = secret;
@@ -88,23 +95,65 @@ test('inbound: idempotente (INSERT retorna []) → 200 idempotent:true, NAO disp
   } finally { globalThis.fetch = orig; }
 });
 
-test('inbound: INSERT OK (row populada) → 200 accepted:<id> + waitUntil chamado', async () => {
+test('inbound: INSERT OK → enfileira no DO via waitUntil (nao chama processMessage)', async () => {
   const orig = globalThis.fetch;
-  const waitSpy = mock.fn();
+  const waitSpy = mock.fn((p) => p); // executa a promise
+  const enqueueSpy = mock.fn(async () => new Response('{"accepted":12345}', { status: 200 }));
   globalThis.fetch = async (url, opts) => {
-    if (url.includes('/rest/v1/tenants?')) {
-      return new Response(JSON.stringify([{ id: 'tid', evo_instance: 'inkflow_test', tatuador_telegram_chat_id: '99' }]), { status: 200 });
-    }
-    if (url.includes('/rest/v1/conversa_mensagens') && opts?.method === 'POST') {
-      return new Response(JSON.stringify([{ id: 12345 }]), { status: 201 });
-    }
+    if (url.includes('/rest/v1/tenants?')) return new Response(JSON.stringify([{ id: 'tid', evo_instance: 'inkflow_test', tatuador_telegram_chat_id: '99' }]), { status: 200 });
+    if (url.includes('/rest/v1/conversa_mensagens') && opts?.method === 'POST') return new Response(JSON.stringify([{ id: 12345 }]), { status: 201 });
     return new Response('[]', { status: 200 });
   };
+  const env = { WEBHOOK_SECRET: 'shh', SUPABASE_SERVICE_ROLE_KEY: 'svc-key', SESSION_QUEUE: mockSessionQueue(enqueueSpy) };
   try {
-    const res = await onRequest(buildContext({ body: VALID_PAYLOAD, waitUntilSpy: waitSpy }));
+    const ctx = buildContext({ body: VALID_PAYLOAD, waitUntilSpy: waitSpy });
+    ctx.env = env;
+    const res = await onRequest(ctx);
     const json = await res.json();
     assert.equal(res.status, 200);
     assert.equal(json.accepted, 12345);
-    assert.equal(waitSpy.mock.callCount(), 1);
+    assert.equal(enqueueSpy.mock.callCount(), 1, 'enfileirou no DO 1×');
+    const enqReq = enqueueSpy.mock.calls[0].arguments[0];
+    const enqBody = JSON.parse(await enqReq.text());
+    assert.equal(enqBody.msgRowId, 12345);
+    assert.equal(enqBody.session_id, 'tid_5511999');
+  } finally { globalThis.fetch = orig; }
+});
+
+test('inbound: enqueue rejeita → .catch engole, ainda 200 accepted (persist-first)', async () => {
+  const orig = globalThis.fetch;
+  const waitSpy = mock.fn((p) => p); // executa a promise (rejeitada) — o .catch interno trata
+  const enqueueSpy = mock.fn(async () => { throw new Error('DO unreachable'); });
+  globalThis.fetch = async (url, opts) => {
+    if (url.includes('/rest/v1/tenants?')) return new Response(JSON.stringify([{ id: 'tid', evo_instance: 'inkflow_test' }]), { status: 200 });
+    if (url.includes('/rest/v1/conversa_mensagens') && opts?.method === 'POST') return new Response(JSON.stringify([{ id: 12345 }]), { status: 201 });
+    return new Response('[]', { status: 200 });
+  };
+  try {
+    const ctx = buildContext({ body: VALID_PAYLOAD, waitUntilSpy: waitSpy });
+    ctx.env = { WEBHOOK_SECRET: 'shh', SUPABASE_SERVICE_ROLE_KEY: 'svc-key', SESSION_QUEUE: mockSessionQueue(enqueueSpy) };
+    const res = await onRequest(ctx);
+    const json = await res.json();
+    // Ack 200 mesmo com enqueue falhando — msg ja persistida (received), recuperavel.
+    assert.equal(res.status, 200);
+    assert.equal(json.accepted, 12345);
+    assert.equal(enqueueSpy.mock.callCount(), 1);
+  } finally { globalThis.fetch = orig; }
+});
+
+test('inbound: sem binding SESSION_QUEUE → 200 queued:false (nao silencia)', async () => {
+  const orig = globalThis.fetch;
+  globalThis.fetch = async (url, opts) => {
+    if (url.includes('/rest/v1/tenants?')) return new Response(JSON.stringify([{ id: 'tid', evo_instance: 'inkflow_test' }]), { status: 200 });
+    if (url.includes('/rest/v1/conversa_mensagens') && opts?.method === 'POST') return new Response(JSON.stringify([{ id: 12345 }]), { status: 201 });
+    return new Response('[]', { status: 200 });
+  };
+  try {
+    const ctx = buildContext({ body: VALID_PAYLOAD });
+    ctx.env = { WEBHOOK_SECRET: 'shh', SUPABASE_SERVICE_ROLE_KEY: 'svc-key' }; // sem SESSION_QUEUE
+    const res = await onRequest(ctx);
+    const json = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(json.queued, false);
   } finally { globalThis.fetch = orig; }
 });

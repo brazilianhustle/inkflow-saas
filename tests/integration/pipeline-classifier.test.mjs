@@ -1,7 +1,7 @@
 // tests/integration/pipeline-classifier.test.mjs
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import { processMessage } from '../../functions/_lib/whatsapp-pipeline.js';
+import { processBatch } from '../../functions/_lib/whatsapp-pipeline.js';
 
 const TENANT = {
   id: '00000000-0000-0000-0000-000000000001',
@@ -12,16 +12,21 @@ const TENANT = {
   gatilhos_handoff: [], faqs: [], fewshots_por_modo: {},
 };
 
-function buildMsg(overrides = {}) {
+const TELEFONE = '5511999998888';
+const MSG_ROW_ID = 42;
+
+// Batch-de-1 padrão para todos os cenários deste arquivo.
+function makeBatch(overrides = {}) {
   return {
-    tenantId: TENANT.id, telefone: '5511999998888',
-    evoMessageId: 'EVO_1', texto: '', mediaBase64: 'BASE64BLOB', mediaMimetype: 'image/jpeg',
-    pushName: 'Maria', msgRowId: 42, tenant: TENANT,
+    session_id: `${TENANT.id}_${TELEFONE}`,
+    tenantId: TENANT.id,
+    telefone: TELEFONE,
+    msgRowIds: [MSG_ROW_ID],
     ...overrides,
   };
 }
 
-function makeDeps({ conversaInicial, runAgentOut, capturedPatches }) {
+function makeDeps({ conversaInicial, runAgentOut, capturedPatches, mediaBase64 = 'BASE64BLOB', mediaMimetype = 'image/jpeg', texto = '' }) {
   return {
     now: () => '2026-05-19T00:00:00Z',
     runAgent: async () => runAgentOut,
@@ -30,11 +35,22 @@ function makeDeps({ conversaInicial, runAgentOut, capturedPatches }) {
     sendTelegram: async () => {},
     sendTelegramAdmin: async () => {},
     supaFetch: async (path, init = {}) => {
+      // Etapa 0a: tenant lookup by id
+      if (init.method === undefined && path.startsWith('/rest/v1/tenants?id=eq.')) {
+        return new Response(JSON.stringify([TENANT]), { status: 200 });
+      }
+      // Etapa 0b: SELECT lote de linhas
+      if (init.method === undefined && path.startsWith('/rest/v1/conversa_mensagens?id=in.')) {
+        return new Response(JSON.stringify([
+          { id: MSG_ROW_ID, message: { type: 'human', content: texto, media_base64: mediaBase64, media_mimetype: mediaMimetype }, created_at: '2026-05-19T00:00:00Z' },
+        ]), { status: 200 });
+      }
       // GET conversa
       if (init.method === undefined && path.includes('/conversas?')) {
         return new Response(JSON.stringify([conversaInicial]), { status: 200 });
       }
-      // GET historico
+      // GET historico (cai aqui: ?session_id=... nao casa o ?id=in. da Etapa 0b acima.
+      // markStatus PATCH tambem casa este includes(), mas o guard method===undefined o exclui.)
       if (init.method === undefined && path.includes('/conversa_mensagens?')) {
         return new Response(JSON.stringify([]), { status: 200 });
       }
@@ -60,11 +76,12 @@ test('Cenario A: foto proativa LOCAL via L2 (keyword "pulso")', async () => {
     conversaInicial,
     runAgentOut: { ok: true, agent_usado: 'tattoo', dados_persistidos: { local_corpo: 'pulso', foto_local: 'presente' } },
     capturedPatches: patches,
+    texto: 'aqui o, no pulso',
   });
-  await processMessage({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, buildMsg({ texto: 'aqui o, no pulso' }), deps);
+  await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
   // Procura PATCH com foto_local_msg_id
-  const fotoPatch = patches.find(p => p.body?.dados_coletados?.foto_local_msg_id === 42);
-  assert.ok(fotoPatch, 'esperado PATCH com foto_local_msg_id=42');
+  const fotoPatch = patches.find(p => p.body?.dados_coletados?.foto_local_msg_id === MSG_ROW_ID);
+  assert.ok(fotoPatch, `esperado PATCH com foto_local_msg_id=${MSG_ROW_ID}`);
 });
 
 test('Cenario B: cliente ignorou pedido foto, manda turno depois (L1 hit)', async () => {
@@ -79,9 +96,10 @@ test('Cenario B: cliente ignorou pedido foto, manda turno depois (L1 hit)', asyn
     conversaInicial,
     runAgentOut: { ok: true, agent_usado: 'tattoo', dados_persistidos: { foto_local: 'presente' } },
     capturedPatches: patches,
+    texto: '',
   });
-  await processMessage({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, buildMsg({ texto: '' }), deps);
-  const fotoPatch = patches.find(p => p.body?.dados_coletados?.foto_local_msg_id === 42);
+  await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
+  const fotoPatch = patches.find(p => p.body?.dados_coletados?.foto_local_msg_id === MSG_ROW_ID);
   assert.ok(fotoPatch);
 });
 
@@ -97,11 +115,12 @@ test('Cenario C: foto 2 (foto_local ja presente) → classifica como ref', async
     conversaInicial,
     runAgentOut: { ok: true, agent_usado: 'tattoo', dados_persistidos: { refs_imagens: ['ref1'] } },
     capturedPatches: patches,
+    texto: 'mais essa',
   });
-  await processMessage({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, buildMsg({ texto: 'mais essa' }), deps);
+  await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
   const refPatch = patches.find(p => Array.isArray(p.body?.dados_coletados?.refs_imagens_msg_ids));
   assert.ok(refPatch);
-  assert.deepEqual(refPatch.body.dados_coletados.refs_imagens_msg_ids, [42]);
+  assert.deepEqual(refPatch.body.dados_coletados.refs_imagens_msg_ids, [MSG_ROW_ID]);
 });
 
 test('Cenario D: ref proativa sem keyword body → L3 default ref', async () => {
@@ -114,11 +133,12 @@ test('Cenario D: ref proativa sem keyword body → L3 default ref', async () => 
     conversaInicial,
     runAgentOut: { ok: true, agent_usado: 'tattoo', dados_persistidos: { refs_imagens: ['x'] } },
     capturedPatches: patches,
+    texto: 'tipo essa daqui',
   });
-  await processMessage({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, buildMsg({ texto: 'tipo essa daqui' }), deps);
+  await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
   const refPatch = patches.find(p => Array.isArray(p.body?.dados_coletados?.refs_imagens_msg_ids));
   assert.ok(refPatch);
-  assert.deepEqual(refPatch.body.dados_coletados.refs_imagens_msg_ids, [42]);
+  assert.deepEqual(refPatch.body.dados_coletados.refs_imagens_msg_ids, [MSG_ROW_ID]);
 });
 
 test('mediaBase64 null → skip classifier (nenhum PATCH com _msg_id)', async () => {
@@ -131,10 +151,13 @@ test('mediaBase64 null → skip classifier (nenhum PATCH com _msg_id)', async ()
     conversaInicial,
     runAgentOut: { ok: true, agent_usado: 'tattoo', dados_persistidos: {} },
     capturedPatches: patches,
+    texto: 'oi',
+    mediaBase64: null,
+    mediaMimetype: null,
   });
-  await processMessage(
+  await processBatch(
     { INKFLOW_TELEGRAM_BOT_TOKEN: 't' },
-    buildMsg({ texto: 'oi', mediaBase64: null, mediaMimetype: null }),
+    makeBatch(),
     deps,
   );
   const fotoPatch = patches.find(p =>

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "InkFlow cron dispatcher Worker — chama endpoints CF Pages em schedule",
   "private": true,
+  "type": "module",
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",

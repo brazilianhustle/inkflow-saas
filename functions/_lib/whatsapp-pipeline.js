@@ -1,6 +1,7 @@
 // functions/_lib/whatsapp-pipeline.js
-// Pipeline async chamado por inbound.js via context.waitUntil.
-// Carrega conversa, chama runAgent, persiste estado, despacha outbound.
+// Pipeline async chamado por process-batch endpoint via Durable Object alarm.
+// Serializa N mensagens do lote como 1 turno: Etapa 0 (tenant+rows) fora do try,
+// montagem N msgs→1 turno, Etapas 1-8 preservadas, marca N msgRowIds processed/failed.
 //
 // Deps injetadas via depsOverride pra integration tests sem fetch real.
 import { supaFetch } from '../api/tools/_tool-helpers.js';
@@ -50,6 +51,7 @@ export function defaultDeps(env) {
     runAgent: (args) => runAgent({ env, ...args }),
     callTool: (toolName, body) => callTool(env, toolName, body),
     enviarMidia,
+    classificarFoto,
     now: () => new Date().toISOString(),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   };
@@ -59,17 +61,59 @@ function preview(s, n = 200) {
   return String(s || '').slice(0, n);
 }
 
-export async function processMessage(env, msg, depsOverride = {}) {
+// PATCH status pra todos os ids do lote de uma vez.
+async function markStatus(deps, msgRowIds, status) {
+  await deps.supaFetch(`/rest/v1/conversa_mensagens?id=in.(${msgRowIds.join(',')})`, {
+    method: 'PATCH', body: JSON.stringify({ status }),
+  });
+}
+
+export async function processBatch(env, batch, depsOverride = {}) {
   const deps = { ...defaultDeps(env), ...depsOverride };
-  const { tenantId, telefone, evoMessageId, texto, mediaBase64, mediaMimetype,
-          pushName, msgRowId, tenant } = msg;
-  const session_id = `${tenantId}_${telefone}`;
+  let { session_id, tenantId, telefone, msgRowIds } = batch;
+  // Fallback: deriva tenantId/telefone do session_id (formato `${uuid}_${telefone}`).
+  // Usado so em testes/invocacao manual — o DO sempre envia tenantId+telefone no body.
+  if (!tenantId || !telefone) {
+    const i = session_id.indexOf('_');
+    tenantId = tenantId || session_id.slice(0, i);
+    telefone = telefone || session_id.slice(i + 1);
+  }
+
+  // ── Etapa 0 (FORA do try): leituras que, se falharem, devem fazer o DO re-tentar.
+  // tenant lookup por id (mesmas colunas do inbound).
+  const tenRes = await deps.supaFetch(
+    `/rest/v1/tenants?id=eq.${encodeURIComponent(tenantId)}` +
+    `&select=id,nome_estudio,evo_instance,evo_apikey,evo_base_url,tatuador_telegram_chat_id,config_agente,config_precificacao,sinal_percentual,gatilhos_handoff,faq_texto,fewshots_por_modo,portfolio_urls,horario_funcionamento,duracao_sessao_padrao_h&limit=1`,
+  );
+  const tenArr = await tenRes.json();
+  const tenant = tenArr?.[0];
+  if (!tenant) throw new Error(`tenant-nao-encontrado: ${tenantId}`);
+
+  // SELECT as N linhas do lote, em ordem.
+  const rowsRes = await deps.supaFetch(
+    `/rest/v1/conversa_mensagens?id=in.(${msgRowIds.join(',')})&order=created_at.asc&select=id,message`,
+  );
+  const rows = await rowsRes.json();
+  if (!Array.isArray(rows) || rows.length === 0) throw new Error(`lote-vazio: ${msgRowIds.join(',')}`);
+
+  // Montagem do lote → 1 turno.
+  // Lote so-foto (sem caption) → texto='' (mesmo comportamento do processMessage antigo).
+  // Passar a imagem ao LLM e o P1 "foto do cliente nunca chega ao LLM" — fora de escopo aqui.
+  const texto = rows.map(r => r.message?.content).filter(c => c && c.trim()).join('\n');
+  const fotos = rows
+    .filter(r => r.message?.media_base64 && r.message?.media_mimetype?.startsWith('image/'))
+    .map(r => ({
+      msgRowId: r.id, mediaBase64: r.message.media_base64, mediaMimetype: r.message.media_mimetype,
+      // caption PROPRIA da foto — classificacao usa o texto DELA, nao o texto concatenado do
+      // lote (senao um keyword numa msg vaza pra todas as fotos → todas viram 'local').
+      caption: r.message.content || '',
+    }));
 
   try {
     // Etapa 1: LOAD/CREATE conversa
     const convRes = await deps.supaFetch(
       `/rest/v1/conversas?tenant_id=eq.${tenantId}&telefone=eq.${encodeURIComponent(telefone)}` +
-      `&select=id,estado_agente,dados_coletados,dados_cadastro,valor_proposto,orcid,pausada_em&limit=1`,
+      `&select=id,estado_agente,dados_coletados,dados_cadastro,valor_proposto,orcid,pausada_em,estado_extra&limit=1`,
     );
     const convArr = await convRes.json();
     let conversa = convArr[0];
@@ -87,9 +131,7 @@ export async function processMessage(env, msg, depsOverride = {}) {
       let arr = [];
       try { arr = JSON.parse(insText); } catch {}
       conversa = Array.isArray(arr) ? arr[0] : null;
-      if (!conversa) {
-        throw new Error(`conversa-create-failed (status=${insStatus}): ${insText.slice(0, 200)}`);
-      }
+      if (!conversa) throw new Error(`conversa-create-failed (status=${insStatus}): ${insText.slice(0, 200)}`);
     }
 
     // Etapa 2: EARLY-RETURN estado terminal
@@ -97,85 +139,57 @@ export async function processMessage(env, msg, depsOverride = {}) {
       if (tenant.tatuador_telegram_chat_id) {
         await deps.sendTelegram(
           tenant.tatuador_telegram_chat_id,
-          `📩 Cliente ${pushName ?? telefone} (${tenant.nome_estudio}) mandou msg:\n${preview(texto, 200)}`,
+          `📩 Cliente ${telefone} (${tenant.nome_estudio}) mandou msg:\n${preview(texto, 200)}`,
         );
-        // Re-encaminha foto avulsa pos-handoff (se presente) + cleanup base64 so apos upload OK.
-        if (mediaBase64 && mediaMimetype?.startsWith('image/')) {
+        // Re-encaminha foto(s) avulsa(s) pos-handoff; cleanup base64 só após upload OK.
+        for (const foto of fotos) {
           try {
-            const nome = conversa.dados_cadastro?.nome || pushName || telefone;
-            await deps.enviarMidia(
-              env,
-              tenant.tatuador_telegram_chat_id,
-              mediaBase64,
-              mediaMimetype,
-              `📸 ${nome} mandou +1 foto`,
-            );
+            const nome = conversa.dados_cadastro?.nome || telefone;
+            await deps.enviarMidia(env, tenant.tatuador_telegram_chat_id, foto.mediaBase64, foto.mediaMimetype, `📸 ${nome} mandou +1 foto`);
             await deps.supaFetch(`/rest/v1/rpc/zerar_media_base64`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ p_msg_id: msgRowId }),
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ p_msg_id: foto.msgRowId }),
             });
           } catch (e) {
             console.warn(`[pipeline] pos-handoff foto falhou: ${e.message}`);
-            // nao-fatal: base64 fica intacto (cleanup so roda apos upload OK)
           }
         }
       } else {
-        await deps.sendTelegramAdmin(
-          `tenant ${tenant.id} sem tatuador_telegram_chat_id em estado terminal (${conversa.estado_agente})`,
-        );
+        await deps.sendTelegramAdmin(`tenant ${tenant.id} sem tatuador_telegram_chat_id em estado terminal (${conversa.estado_agente})`);
       }
-      await deps.supaFetch(`/rest/v1/conversa_mensagens?id=eq.${msgRowId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: 'processed' }),
-      });
+      await markStatus(deps, msgRowIds, 'processed');
       return;
     }
 
-    // Etapa 3: MONTA historico (últimos 40, exclui msgRowId atual + status!=processed)
-    // Whitelist em vez de blacklist: só msgs CONFIRMADAS processed entram no contexto.
-    // - 'received' órfãs (pipeline crashou pre-PATCH, CF restart mid-flight, .catch()
-    //   engolido no PATCH final) ficavam vazando com blacklist neq.failed antiga.
-    // - 'failed' continua excluído.
-    // - Race quando cliente manda 2 msgs rapidas: msg N+1 pode nao ver msg N ainda
-    //   em received — aceitavel (proxima invoke ja vai ver msg N processed).
+    // Etapa 3: histórico (status=eq.processed; exclui as linhas do lote atual)
+    // order=desc+limit pega os 40 MAIS RECENTES (asc+limit pegava os mais antigos);
+    // reverse() devolve em ordem cronológica pro runAgent.
     const histRes = await deps.supaFetch(
       `/rest/v1/conversa_mensagens?session_id=eq.${encodeURIComponent(session_id)}` +
-      `&status=eq.processed&order=created_at.asc&limit=40&select=id,message`,
+      `&status=eq.processed&order=created_at.desc&limit=40&select=id,message`,
     );
-    const histRows = await histRes.json();
+    const histRows = (await histRes.json()).reverse();
+    const loteSet = new Set(msgRowIds);
     const historico = histRows
-      .filter(r => r.id !== msgRowId)
+      .filter(r => !loteSet.has(r.id))
       .map(r => {
-        const msgObj = r.message || {};
-        return {
-          role: msgObj.type === 'ai' ? 'assistant' : 'user',
-          content: msgObj.content || '',
-        };
+        const m = r.message || {};
+        return { role: m.type === 'ai' ? 'assistant' : 'user', content: m.content || '' };
       });
 
-    // Etapa 4: runAgent — mapeia DB state -> agent state pra invocar.
+    // Etapa 4: runAgent (1× pro turno)
     const estadoAgente = dbToAgent(conversa.estado_agente);
     let agentOut;
     try {
       agentOut = await deps.runAgent({
         tenant_id: tenantId, telefone, mensagem: texto,
-        estado_atual: estadoAgente,
-        dados_acumulados: conversa.dados_coletados || {},
-        historico,
-        tenant, conversa: { ...conversa, estado_agente: estadoAgente },
-        clientContext: {},
+        estado_atual: estadoAgente, dados_acumulados: conversa.dados_coletados || {},
+        historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente }, clientContext: {},
       });
-    } catch (e) {
-      throw new Error(`runAgent threw: ${e.message}`);
-    }
-    if (!agentOut?.ok) {
-      throw new Error(`runAgent returned ok:false: ${agentOut?.error || 'unknown'}`);
-    }
+    } catch (e) { throw new Error(`runAgent threw: ${e.message}`); }
+    if (!agentOut?.ok) throw new Error(`runAgent returned ok:false: ${agentOut?.error || 'unknown'}`);
 
     // Etapa 5: UPDATE conversa
-    // Cadastro merge em dados_cadastro (preserva dados_coletados).
-    // Tattoo/proposta/etc merge em dados_coletados (preserva dados_cadastro).
     const isCadastro = agentOut.agent_usado === 'cadastro';
     const novoDadosColetados = isCadastro
       ? (conversa.dados_coletados || {})
@@ -183,128 +197,82 @@ export async function processMessage(env, msg, depsOverride = {}) {
     const novoDadosCadastro = isCadastro
       ? { ...(conversa.dados_cadastro || {}), ...(agentOut.dados_persistidos || {}) }
       : (conversa.dados_cadastro || {});
-
     await deps.supaFetch(`/rest/v1/conversas?id=eq.${conversa.id}`, {
       method: 'PATCH',
       body: JSON.stringify({
         estado_agente: agentToDb(agentOut.estado_novo),
-        dados_coletados: novoDadosColetados,
-        dados_cadastro: novoDadosCadastro,
-        updated_at: deps.now(),
+        dados_coletados: novoDadosColetados, dados_cadastro: novoDadosCadastro, updated_at: deps.now(),
       }),
     });
 
-    // Etapa 4.5: classificar foto e PATCH msg_id em dados_coletados
-    // (additive PATCH; campos foto_local_msg_id / refs_imagens_msg_ids)
-    if (mediaBase64 && mediaMimetype?.startsWith('image/')) {
+    // Etapa 4.5: classificar CADA foto do lote (loop), acumulando, com 1 PATCH final.
+    if (fotos.length > 0) {
       try {
-        // Para a classificacao, usar o estado PRE-merge da foto_local: se o agent
-        // setou foto_local nesse mesmo turno, L1 ainda deve poder disparar (a foto
-        // que chegou ESTE turno e a candidata a foto_local). Por isso lemos
-        // conversa.dados_coletados (pre-merge), nao novoDadosColetados.
         const dadosPreMerge = conversa.dados_coletados || {};
-        const dadosParaPatch = isCadastro ? dadosPreMerge : novoDadosColetados;
-        const tentativas = dadosPreMerge.tentativas_foto_local
-          || conversa.estado_extra?.tentativas_foto_local || 0;
-        const fotoLocalAtual = dadosPreMerge.foto_local;
-        const tipo = classificarFoto({
-          tentativas_foto_local: tentativas,
-          foto_local_atual: fotoLocalAtual,
-          texto_turno: texto,
-        });
-
-        let patchBody;
-        if (tipo === 'local') {
-          patchBody = { dados_coletados: { ...dadosParaPatch, foto_local_msg_id: msgRowId } };
-        } else {
-          const idsAtuais = Array.isArray(dadosParaPatch.refs_imagens_msg_ids)
-            ? dadosParaPatch.refs_imagens_msg_ids : [];
-          patchBody = { dados_coletados: { ...dadosParaPatch, refs_imagens_msg_ids: [...idsAtuais, msgRowId] } };
+        let dadosAcc = isCadastro ? { ...dadosPreMerge } : { ...novoDadosColetados };
+        let tentativas = dadosPreMerge.tentativas_foto_local || conversa.estado_extra?.tentativas_foto_local || 0;
+        let fotoLocalAtual = dadosPreMerge.foto_local;
+        // No maximo UMA foto_local por lote: a 1ª classificada 'local' vence; qualquer outra
+        // (mesmo se 'local') vai pra refs em vez de sobrescrever — nunca dropa foto silenciosamente.
+        let localAtribuidaNoLote = false;
+        for (const foto of fotos) {
+          const tipo = deps.classificarFoto({ tentativas_foto_local: tentativas, foto_local_atual: fotoLocalAtual, texto_turno: foto.caption });
+          if (tipo === 'local' && !localAtribuidaNoLote) {
+            dadosAcc = { ...dadosAcc, foto_local_msg_id: foto.msgRowId };
+            // L1 (!foto_local_atual): proximas fotos do lote ja veem foto local presente.
+            // Valor in-memory do loop; NAO e persistido como foto_local.
+            fotoLocalAtual = foto.msgRowId;
+            localAtribuidaNoLote = true;
+          } else {
+            const ids = Array.isArray(dadosAcc.refs_imagens_msg_ids) ? dadosAcc.refs_imagens_msg_ids : [];
+            dadosAcc = { ...dadosAcc, refs_imagens_msg_ids: [...ids, foto.msgRowId] };
+          }
         }
         await deps.supaFetch(`/rest/v1/conversas?id=eq.${conversa.id}`, {
-          method: 'PATCH',
-          headers: { Prefer: 'return=minimal' },
-          body: JSON.stringify(patchBody),
+          method: 'PATCH', headers: { Prefer: 'return=minimal' },
+          body: JSON.stringify({ dados_coletados: dadosAcc }),
         });
       } catch (e) {
         console.warn(`[pipeline] etapa-4.5 classificador falhou: ${e.message}`);
-        // nao-fatal: pipeline segue, foto fica orfa (sem msg_id correlacionado)
       }
     }
 
-    // Etapa 6: INSERT conversa_mensagens OUT (type='ai')
+    // Etapa 6: INSERT resposta AI
     await deps.supaFetch('/rest/v1/conversa_mensagens', {
       method: 'POST',
-      body: JSON.stringify({
-        session_id,
-        message: { type: 'ai', content: agentOut.resposta_cliente },
-        status: 'processed',
-        created_at: deps.now(),
-      }),
+      body: JSON.stringify({ session_id, message: { type: 'ai', content: agentOut.resposta_cliente }, status: 'processed', created_at: deps.now() }),
     });
 
-    // Etapa 7: Evolution outbound (text + media URLs)
-    // Multi-message split por \n\n (refator manifesto 2026-05-13).
-    // Balões curtos sequenciais são mais naturais no WhatsApp do que textão único.
-    const baloes = agentOut.resposta_cliente
-      .split(/\n\s*\n/)
-      .map(b => b.trim())
-      .filter(Boolean);
-
-    if (baloes.length === 0) {
-      throw new Error(`resposta_cliente vazia após split (tenant=${tenant.id})`);
-    }
-
+    // Etapa 7: Evolution outbound (split \n\n)
+    const baloes = agentOut.resposta_cliente.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+    if (baloes.length === 0) throw new Error(`resposta_cliente vazia após split (tenant=${tenant.id})`);
     for (let i = 0; i < baloes.length; i++) {
-      // Typing delay antes de cada balão (UX — bot nao deve parecer robo instantaneo).
       await deps.sleep(TYPING_DELAY_MS);
-      const sendRes = await deps.evoSend(tenant, {
-        type: 'text', to: telefone, text: baloes[i],
-      });
-      if (!sendRes.ok) {
-        // Throw — catch path patcha status=failed e notifica admin com a mensagem.
-        throw new Error(`evo sendText falhou balão ${i + 1}/${baloes.length}: ${sendRes.error || 'unknown'} (tenant=${tenant.id})`);
-      }
+      const sendRes = await deps.evoSend(tenant, { type: 'text', to: telefone, text: baloes[i] });
+      if (!sendRes.ok) throw new Error(`evo sendText falhou balão ${i + 1}/${baloes.length}: ${sendRes.error || 'unknown'} (tenant=${tenant.id})`);
     }
     if (Array.isArray(agentOut.urls_portfolio) && agentOut.urls_portfolio.length > 0) {
       for (const url of agentOut.urls_portfolio) {
         const m = await deps.evoSend(tenant, { type: 'media', to: telefone, url });
-        if (!m.ok) {
-          await deps.sendTelegramAdmin(`evo sendMedia falhou: ${url} (${m.error || 'unknown'})`);
-          // Não throw — texto principal foi entregue
-        }
+        if (!m.ok) await deps.sendTelegramAdmin(`evo sendMedia falhou: ${url} (${m.error || 'unknown'})`);
       }
     }
 
-    // Etapa 8: side-effect handoff cadastro → enviar-orcamento-tatuador
+    // Etapa 8: handoff cadastro → enviar-orcamento-tatuador
     if (estadoAgente === 'cadastro' && agentOut.proxima_acao === 'handoff') {
       if (!tenant.tatuador_telegram_chat_id) {
         await deps.sendTelegramAdmin(`handoff sem tatuador_telegram_chat_id em ${tenant.id}`);
       } else {
-        const r = await deps.callTool('enviar-orcamento-tatuador', {
-          tenant_id: tenant.id, telefone,
-        });
-        if (!r.ok) {
-          await deps.sendTelegramAdmin(`enviar-orcamento-tatuador falhou: ${r.error || 'unknown'}`);
-        }
+        const r = await deps.callTool('enviar-orcamento-tatuador', { tenant_id: tenant.id, telefone });
+        if (!r.ok) await deps.sendTelegramAdmin(`enviar-orcamento-tatuador falhou: ${r.error || 'unknown'}`);
       }
     }
 
-    // Marca msg IN como processada (DEPOIS das etapas 7-8 — se Evolution falhar,
-    // o catch path patcha status=failed em vez disso).
-    await deps.supaFetch(`/rest/v1/conversa_mensagens?id=eq.${msgRowId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status: 'processed' }),
-    });
-
+    // Marca TODAS as msgs do lote processed (depois das Etapas 7-8).
+    await markStatus(deps, msgRowIds, 'processed');
   } catch (e) {
-    console.error('[pipeline] failed:', { evoMessageId, telefone, error: e.message, stack: e.stack });
-    await deps.supaFetch(`/rest/v1/conversa_mensagens?id=eq.${msgRowId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status: 'failed' }),
-    }).catch(() => {});
-    await deps.sendTelegramAdmin(
-      `🚨 pipeline failed (msg ${evoMessageId}): ${e.message}\n${preview(e.stack, 500)}`,
-    );
+    console.error('[pipeline] batch failed:', { session_id, msgRowIds, error: e.message, stack: e.stack });
+    await markStatus(deps, msgRowIds, 'failed').catch(() => {});
+    await deps.sendTelegramAdmin(`🚨 pipeline batch failed (sessao ${session_id}): ${e.message}\n${preview(e.stack, 500)}`);
   }
 }

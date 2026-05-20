@@ -1,10 +1,9 @@
 // functions/api/whatsapp/inbound.js
 // POST /api/whatsapp/inbound — webhook Evolution v2.
 // Auth: x-webhook-secret. Persist-first + idempotencia via UNIQUE partial.
-// Ack 200 < 200ms; processamento via waitUntil(processMessage).
+// Ack 200 < 200ms; enfileira no DO SessionQueue via waitUntil(stub.fetch('/enqueue')).
 
 import { parseEvolutionPayload } from '../../_lib/evolution-parser.js';
-import { processMessage } from '../../_lib/whatsapp-pipeline.js';
 import { supaFetch } from '../tools/_tool-helpers.js';
 
 const HEADERS = { 'Content-Type': 'application/json' };
@@ -84,18 +83,28 @@ export async function onRequest(context) {
     return json({ ok: true, idempotent: true });
   }
 
-  // Dispatch async
-  const msg = {
-    tenantId: tenant.id, telefone: inbound.telefone,
-    evoMessageId: inbound.evoMessageId, texto: inbound.texto,
-    mediaBase64: inbound.mediaBase64, mediaMimetype: inbound.mediaMimetype,
-    pushName: inbound.pushName, msgRowId: insertedRow.id, tenant,
-  };
-  if (typeof waitUntil === 'function') {
-    waitUntil(processMessage(env, msg).catch(e => {
-      console.error('[inbound] waitUntil processMessage rejected:', e.message);
+  // Dispatch async: enfileira no Durable Object (serializa + debounce por sessao).
+  // Em CF Pages waitUntil sempre existe; sem ele nao da pra fire-and-forget sem bloquear
+  // o ack — entao tratamos como nao-enfileirado (msg fica received, recuperavel).
+  if (env.SESSION_QUEUE && typeof waitUntil === 'function') {
+    // host 'do' e ignorado pelo runtime do DO — so o path /enqueue importa.
+    // telefone vai junto por conveniencia do DO (evita reparsear o session_id).
+    const enqueueReq = new Request('https://do/enqueue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        msgRowId: insertedRow.id, session_id, tenantId: tenant.id, telefone: inbound.telefone,
+      }),
+    });
+    const id = env.SESSION_QUEUE.idFromName(session_id);
+    const stub = env.SESSION_QUEUE.get(id);
+    waitUntil(stub.fetch(enqueueReq).catch(e => {
+      console.error('[inbound] enqueue rejected:', e.message);
     }));
+    return json({ ok: true, accepted: insertedRow.id });
   }
 
-  return json({ ok: true, accepted: insertedRow.id });
+  // Sem binding ou sem waitUntil (dev local): msg fica `received`; recuperavel por retry/varredura.
+  console.error('[inbound] nao enfileirado (SESSION_QUEUE/waitUntil ausente) — msg', insertedRow.id, 'fica received');
+  return json({ ok: true, accepted: insertedRow.id, queued: false });
 }

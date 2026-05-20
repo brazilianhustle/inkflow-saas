@@ -5,3 +5,10 @@ pages_build_output_dir = "."
 
 [ai]
 binding = "AI"
+
+# Durable Object definido no Worker inkflow-cron (cron-worker/). Pages SO faz binding
+# via script_name — nunca define a class. Deploy do inkflow-cron PRECISA vir antes.
+[[durable_objects.bindings]]
+name = "SESSION_QUEUE"
+class_name = "SessionQueue"
+script_name = "inkflow-cron"

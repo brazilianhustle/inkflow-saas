@@ -9,6 +9,8 @@
 //   wrangler secret put TELEGRAM_BOT_TOKEN  (opcional, pra alerta de falha)
 //   wrangler secret put TELEGRAM_CHAT_ID    (opcional)
 
+export { SessionQueue } from './session-queue.js';
+
 const BASE_URL = 'https://inkflowbrasil.com';
 
 // Mapa: cron expression → { path, secretEnv }
