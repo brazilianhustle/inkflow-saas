@@ -68,7 +68,8 @@ test('Estado terminal + foto JPEG: re-encaminha como photo + RPC zerar', async (
     deps,
   );
   // 1) sendTelegram texto preview (existente) — pipeline envia "Cliente ${telefone}"
-  assert.ok(tg.some(x => x.text?.includes('Cliente')), 'texto preview enviado');
+  //    (pushName nao chega no batch → fallback telefone; assert confirma identidade)
+  assert.ok(tg.some(x => x.text?.includes('Cliente ' + TELEFONE)), 'texto preview enviado');
   // 2) enviarMidia chamado com caption nome (nome vem de dados_cadastro.nome)
   assert.ok(tg.some(x => x.midia && x.caption?.includes('Maria mandou +1 foto')));
   // 3) RPC zerar_media_base64 chamado com msg_id=99
