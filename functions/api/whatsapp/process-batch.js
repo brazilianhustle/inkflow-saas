@@ -15,7 +15,9 @@ export async function onRequest(context) {
   let body;
   try { body = await request.json(); } catch { return json({ ok: false, error: 'body-invalido' }, 400); }
   const { session_id, msgRowIds, tenantId, telefone } = body || {};
-  if (!session_id || !Array.isArray(msgRowIds) || msgRowIds.length === 0) {
+  // Contrato do DO: sempre envia session_id + tenantId + telefone + msgRowIds[].
+  // Exigimos todos na fronteira (fail-fast) em vez de depender do fallback do pipeline.
+  if (!session_id || !tenantId || !telefone || !Array.isArray(msgRowIds) || msgRowIds.length === 0) {
     return json({ ok: false, error: 'bad-batch' }, 400);
   }
   try {
@@ -23,6 +25,8 @@ export async function onRequest(context) {
     return json({ ok: true });
   } catch (e) {
     // Falha de infra (Etapa 0: leitura DB). 500 sinaliza ao DO re-tentar.
+    // Endpoint interno-only (auth x-cron-secret, chamado so pelo DO) → e.message no body
+    // e seguro: a resposta volta pro alarm() do DO, nunca pra um cliente externo.
     console.error('[process-batch] failed:', e.message);
     return json({ ok: false, error: e.message }, 500);
   }
