@@ -113,9 +113,15 @@ export async function processBatch(env, batch, depsOverride = {}) {
     // Etapa 1: LOAD/CREATE conversa
     const convRes = await deps.supaFetch(
       `/rest/v1/conversas?tenant_id=eq.${tenantId}&telefone=eq.${encodeURIComponent(telefone)}` +
-      `&select=id,estado_agente,dados_coletados,dados_cadastro,valor_proposto,orcid,pausada_em,estado_extra&limit=1`,
+      `&select=id,estado_agente,dados_coletados,dados_cadastro,valor_proposto,orcid,pausada_em&limit=1`,
     );
     const convArr = await convRes.json();
+    // Guard: SELECT falho (status>=400 / corpo nao-array) NAO e "conversa inexistente".
+    // Sem isto, convArr[0] undefined cai no INSERT cego → 409 duplicate key mascarando a causa
+    // real (ex: coluna inexistente no select). Throw da erro claro em vez de 409 enganoso.
+    if (!convRes.ok || !Array.isArray(convArr)) {
+      throw new Error(`conversa-select-failed (status=${convRes.status}): ${preview(JSON.stringify(convArr), 200)}`);
+    }
     let conversa = convArr[0];
     if (!conversa) {
       const ins = await deps.supaFetch('/rest/v1/conversas', {
