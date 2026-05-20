@@ -84,7 +84,11 @@ export async function onRequest(context) {
   }
 
   // Dispatch async: enfileira no Durable Object (serializa + debounce por sessao).
-  if (env.SESSION_QUEUE) {
+  // Em CF Pages waitUntil sempre existe; sem ele nao da pra fire-and-forget sem bloquear
+  // o ack — entao tratamos como nao-enfileirado (msg fica received, recuperavel).
+  if (env.SESSION_QUEUE && typeof waitUntil === 'function') {
+    // host 'do' e ignorado pelo runtime do DO — so o path /enqueue importa.
+    // telefone vai junto por conveniencia do DO (evita reparsear o session_id).
     const enqueueReq = new Request('https://do/enqueue', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -94,15 +98,13 @@ export async function onRequest(context) {
     });
     const id = env.SESSION_QUEUE.idFromName(session_id);
     const stub = env.SESSION_QUEUE.get(id);
-    if (typeof waitUntil === 'function') {
-      waitUntil(stub.fetch(enqueueReq).catch(e => {
-        console.error('[inbound] enqueue rejected:', e.message);
-      }));
-    }
+    waitUntil(stub.fetch(enqueueReq).catch(e => {
+      console.error('[inbound] enqueue rejected:', e.message);
+    }));
     return json({ ok: true, accepted: insertedRow.id });
   }
 
-  // Sem binding (dev local sem DO): msg fica `received`; recuperavel por retry/varredura.
-  console.error('[inbound] SESSION_QUEUE binding ausente — msg', insertedRow.id, 'fica received (nao enfileirada)');
+  // Sem binding ou sem waitUntil (dev local): msg fica `received`; recuperavel por retry/varredura.
+  console.error('[inbound] nao enfileirado (SESSION_QUEUE/waitUntil ausente) — msg', insertedRow.id, 'fica received');
   return json({ ok: true, accepted: insertedRow.id, queued: false });
 }

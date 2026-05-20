@@ -120,6 +120,27 @@ test('inbound: INSERT OK → enfileira no DO via waitUntil (nao chama processMes
   } finally { globalThis.fetch = orig; }
 });
 
+test('inbound: enqueue rejeita → .catch engole, ainda 200 accepted (persist-first)', async () => {
+  const orig = globalThis.fetch;
+  const waitSpy = mock.fn((p) => p); // executa a promise (rejeitada) — o .catch interno trata
+  const enqueueSpy = mock.fn(async () => { throw new Error('DO unreachable'); });
+  globalThis.fetch = async (url, opts) => {
+    if (url.includes('/rest/v1/tenants?')) return new Response(JSON.stringify([{ id: 'tid', evo_instance: 'inkflow_test' }]), { status: 200 });
+    if (url.includes('/rest/v1/conversa_mensagens') && opts?.method === 'POST') return new Response(JSON.stringify([{ id: 12345 }]), { status: 201 });
+    return new Response('[]', { status: 200 });
+  };
+  try {
+    const ctx = buildContext({ body: VALID_PAYLOAD, waitUntilSpy: waitSpy });
+    ctx.env = { WEBHOOK_SECRET: 'shh', SUPABASE_SERVICE_ROLE_KEY: 'svc-key', SESSION_QUEUE: mockSessionQueue(enqueueSpy) };
+    const res = await onRequest(ctx);
+    const json = await res.json();
+    // Ack 200 mesmo com enqueue falhando — msg ja persistida (received), recuperavel.
+    assert.equal(res.status, 200);
+    assert.equal(json.accepted, 12345);
+    assert.equal(enqueueSpy.mock.callCount(), 1);
+  } finally { globalThis.fetch = orig; }
+});
+
 test('inbound: sem binding SESSION_QUEUE → 200 queued:false (nao silencia)', async () => {
   const orig = globalThis.fetch;
   globalThis.fetch = async (url, opts) => {
