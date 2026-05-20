@@ -49,7 +49,8 @@ function makeDeps({ conversaInicial, runAgentOut, capturedPatches, mediaBase64 =
       if (init.method === undefined && path.includes('/conversas?')) {
         return new Response(JSON.stringify([conversaInicial]), { status: 200 });
       }
-      // GET historico
+      // GET historico (cai aqui: ?session_id=... nao casa o ?id=in. da Etapa 0b acima.
+      // markStatus PATCH tambem casa este includes(), mas o guard method===undefined o exclui.)
       if (init.method === undefined && path.includes('/conversa_mensagens?')) {
         return new Response(JSON.stringify([]), { status: 200 });
       }
@@ -80,7 +81,7 @@ test('Cenario A: foto proativa LOCAL via L2 (keyword "pulso")', async () => {
   await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
   // Procura PATCH com foto_local_msg_id
   const fotoPatch = patches.find(p => p.body?.dados_coletados?.foto_local_msg_id === MSG_ROW_ID);
-  assert.ok(fotoPatch, 'esperado PATCH com foto_local_msg_id=42');
+  assert.ok(fotoPatch, `esperado PATCH com foto_local_msg_id=${MSG_ROW_ID}`);
 });
 
 test('Cenario B: cliente ignorou pedido foto, manda turno depois (L1 hit)', async () => {

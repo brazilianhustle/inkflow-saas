@@ -12,7 +12,7 @@ const TENANT = {
 
 const TELEFONE = '5511999';
 
-function makeBatch({ msgRowId, tenantId = TENANT.id, telefone = TELEFONE } = {}) {
+function makeBatch({ msgRowId = 42, tenantId = TENANT.id, telefone = TELEFONE } = {}) {
   return {
     session_id: `${tenantId}_${telefone}`,
     tenantId,
@@ -88,7 +88,7 @@ test('Estado terminal SEM foto: comportamento atual (so texto preview)', async (
     makeBatch({ msgRowId: 100 }),
     deps,
   );
-  assert.ok(tg.some(x => x.text), 'texto preview enviado');
+  assert.ok(tg.some(x => x.text?.includes('Cliente ' + TELEFONE)), 'texto preview enviado');
   assert.equal(tg.filter(x => x.midia).length, 0);
   assert.equal(rpc.length, 0);
 });
