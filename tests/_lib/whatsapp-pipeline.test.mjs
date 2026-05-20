@@ -114,6 +114,56 @@ test('RACE GUARD: 2 balões no mesmo lote → runAgent 1× e considera ambos os 
   assert.match(runAgentSpy.mock.calls[0].arguments[0].mensagem, /no antebraço/);
 });
 
+test('HOTFIX: Etapa 1 select NÃO pede coluna fantasma estado_extra (mismatch schema→query)', async () => {
+  // Regressão: estado_extra não existe na tabela conversas (nenhuma migration cria).
+  // Pedi-la no select → PostgREST 400 → código tratava como "conversa não existe" → INSERT → 409.
+  let convSelectPath = null;
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const deps = mockDeps({
+    supaFetch: async (path, init) => {
+      if (path.startsWith('/rest/v1/tenants?id=eq.') && !init?.method)
+        return new Response(JSON.stringify([TENANT]), { status: 200 });
+      if (path.startsWith('/rest/v1/conversa_mensagens?id=in.') && !init?.method)
+        return new Response(JSON.stringify(rowsFor([{ id: MSG_ROW_ID, content: 'oi' }])), { status: 200 });
+      if (path.startsWith('/rest/v1/conversas?tenant_id=') && !init?.method) {
+        convSelectPath = path;
+        return new Response(JSON.stringify([conversa]), { status: 200 });
+      }
+      if (path.startsWith('/rest/v1/conversa_mensagens?session_id=') && !init?.method)
+        return new Response(JSON.stringify([]), { status: 200 });
+      return new Response('[]', { status: 200 });
+    },
+  });
+  await processBatch({}, baseBatch(), deps);
+  assert.ok(convSelectPath, 'select da conversa deve ter rodado');
+  assert.ok(!convSelectPath.includes('estado_extra'),
+    `select não deve pedir coluna inexistente estado_extra (path: ${convSelectPath})`);
+});
+
+test('HOTFIX: SELECT da conversa com erro 4xx → NÃO tenta INSERT cego (evita 409 mascarado)', async () => {
+  // Guard defensivo: "convArr[0] undefined" significava tanto "não existe" quanto "select falhou".
+  // Um select que falha (não-array / status>=400) deve THROW (transiente, DO re-tenta), nunca virar
+  // INSERT cego que mascara a causa real como 409 duplicate key.
+  let insertTentado = false;
+  const deps = mockDeps({
+    supaFetch: async (path, init) => {
+      if (path.startsWith('/rest/v1/tenants?id=eq.') && !init?.method)
+        return new Response(JSON.stringify([TENANT]), { status: 200 });
+      if (path.startsWith('/rest/v1/conversa_mensagens?id=in.') && !init?.method)
+        return new Response(JSON.stringify(rowsFor([{ id: MSG_ROW_ID, content: 'oi' }])), { status: 200 });
+      if (path.startsWith('/rest/v1/conversas?tenant_id=') && !init?.method)
+        return new Response(JSON.stringify({ code: '42703', message: 'column conversas.estado_extra does not exist' }), { status: 400 });
+      if (path === '/rest/v1/conversas' && init?.method === 'POST') {
+        insertTentado = true;
+        return new Response(JSON.stringify({ code: '23505', message: 'duplicate key' }), { status: 409 });
+      }
+      return new Response('[]', { status: 200 });
+    },
+  });
+  await processBatch({}, baseBatch(), deps);
+  assert.equal(insertTentado, false, 'SELECT falho não deve disparar INSERT cego (que vira 409)');
+});
+
 test('1. golden path tattoo — Task 9 implementa', async () => {
   let conversaPatch = null;
   let n8nInserts = [];
