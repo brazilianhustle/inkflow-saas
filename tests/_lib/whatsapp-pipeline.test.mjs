@@ -174,7 +174,8 @@ test('2. terminal aguardando_tatuador — Task 8 implementa', async () => {
   assert.equal(runAgentSpy.mock.callCount(), 0);
   assert.equal(sendTelegramSpy.mock.callCount(), 1);
   assert.equal(sendTelegramSpy.mock.calls[0].arguments[0], '99999');
-  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Cliente/);
+  // pushName nao chega no batch → mensagem usa telefone (fallback). Confirma o wiring.
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Cliente 5511999998888/);
   const patchCall = supaCalls.find(c => c.method === 'PATCH' && c.path.includes('conversa_mensagens'));
   assert.ok(patchCall, 'PATCH status=processed deve ter sido chamado');
 });
@@ -267,8 +268,8 @@ test('6. conversa nova — Task 8 implementa', async () => {
       return new Response('[]', { status: 200 });
     },
   });
-  // Etapas 4-9 ainda lançam (placeholder), mas após a Etapa 1 CREATE que é o que estamos testando.
-  // O catch path engole o throw + chama PATCH failed + sendTelegramAdmin. POST conversas já aconteceu.
+  // runAgent stub (mockDeps) retorna ok → pipeline roda ate o fim. Asserimos o POST
+  // de CREATE conversa (Etapa 1), que e o foco deste teste.
   await processBatch({}, baseBatch(), deps);
   assert.equal(postBody?.estado_agente, 'coletando_tattoo');
   assert.deepEqual(postBody?.dados_coletados, {});

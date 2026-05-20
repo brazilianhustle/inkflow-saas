@@ -72,6 +72,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
   const deps = { ...defaultDeps(env), ...depsOverride };
   let { session_id, tenantId, telefone, msgRowIds } = batch;
   // Fallback: deriva tenantId/telefone do session_id (formato `${uuid}_${telefone}`).
+  // Usado so em testes/invocacao manual — o DO sempre envia tenantId+telefone no body.
   if (!tenantId || !telefone) {
     const i = session_id.indexOf('_');
     tenantId = tenantId || session_id.slice(0, i);
@@ -96,6 +97,8 @@ export async function processBatch(env, batch, depsOverride = {}) {
   if (!Array.isArray(rows) || rows.length === 0) throw new Error(`lote-vazio: ${msgRowIds.join(',')}`);
 
   // Montagem do lote → 1 turno.
+  // Lote so-foto (sem caption) → texto='' (mesmo comportamento do processMessage antigo).
+  // Passar a imagem ao LLM e o P1 "foto do cliente nunca chega ao LLM" — fora de escopo aqui.
   const texto = rows.map(r => r.message?.content).filter(c => c && c.trim()).join('\n');
   const fotos = rows
     .filter(r => r.message?.media_base64 && r.message?.media_mimetype?.startsWith('image/'))
@@ -206,7 +209,10 @@ export async function processBatch(env, batch, depsOverride = {}) {
           const tipo = deps.classificarFoto({ tentativas_foto_local: tentativas, foto_local_atual: fotoLocalAtual, texto_turno: texto });
           if (tipo === 'local') {
             dadosAcc = { ...dadosAcc, foto_local_msg_id: foto.msgRowId };
-            fotoLocalAtual = foto.msgRowId; // próxima foto vê foto_local presente → vira ref
+            // classificarFoto so testa truthiness de foto_local_atual (L1: !foto_local_atual),
+            // entao qualquer valor truthy marca "ja tem foto local" → proximas fotos viram ref.
+            // Valor in-memory do loop; NAO e persistido como foto_local.
+            fotoLocalAtual = foto.msgRowId;
           } else {
             const ids = Array.isArray(dadosAcc.refs_imagens_msg_ids) ? dadosAcc.refs_imagens_msg_ids : [];
             dadosAcc = { ...dadosAcc, refs_imagens_msg_ids: [...ids, foto.msgRowId] };
