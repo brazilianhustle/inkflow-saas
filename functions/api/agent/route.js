@@ -61,11 +61,11 @@ function normalizeHistoryItem(h) {
 //
 // Args:
 //   env, tenant_id, telefone, mensagem, estado_atual, dados_acumulados, historico,
-//   tenant (resolvido), conversa (resolvido), clientContext (bare; runAgent merge prefetch)
+//   imagens (tattoo-only), tenant (resolvido), conversa (resolvido), clientContext (bare; runAgent merge prefetch)
 //
 // Return success: { ok: true, resposta_cliente, estado_novo, dados_persistidos,
 //   dados_completos, campos_faltando, campos_conflitantes, proxima_acao, agent_usado,
-//   side_effects?, urls_portfolio }
+//   side_effects?, urls_portfolio, analise_imagens, cobertura_suspeita }
 // Return failure: { ok: false, error, status, reason? }
 //   - estado nao implementado: status 501
 //   - run() throw: error 'agent-run-failed', status 500

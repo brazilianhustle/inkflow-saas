@@ -92,4 +92,4 @@ test('runAgent (tattoo): surfacia analise_imagens no retorno', async () => {
   assert.equal(r.ok, true);
   assert.equal(r.analise_imagens[0].tipo, 'referencia');
   assert.equal(r.cobertura_suspeita, null);
-});
+});;
