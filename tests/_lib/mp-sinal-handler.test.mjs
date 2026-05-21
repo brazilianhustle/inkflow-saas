@@ -352,6 +352,7 @@ test('mp-sinal-handler — L15: notifyPosPagamento fail-open quando Evolution fa
     const { notifyPosPagamento } = await import('../../functions/_lib/mp-sinal-handler.js');
     // Não deve lançar
     await notifyPosPagamento(env, { tenant_id: VALID_TENANT_UUID, cliente_telefone: '5511999', cliente_nome: 'Ana', inicio: '2026-05-23T13:00:00Z', sinal_valor: 210 });
-    assert.ok(true);
+    const urls = handler.calls.map(c => c.url);
+    assert.ok(urls.some(u => u.includes('api.telegram.org')), 'tatuador notificado mesmo quando WhatsApp (Evolution) falha');
   });
 });
