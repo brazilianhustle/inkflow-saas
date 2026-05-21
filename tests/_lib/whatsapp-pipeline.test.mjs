@@ -697,6 +697,80 @@ test('Etapa 4.5: classificador REAL — 2 fotos ambas com keyword → 1ª local,
   assert.deepEqual(fotoPatch.refs_imagens_msg_ids, [302], '2ª local vai pra refs em vez de sobrescrever (sem drop)');
 });
 
+test('Etapa 4.5 model-driven: 2 corpos → 1ª vira foto_local, 2ª demovida pra ref (first-local-wins via analise_imagens)', async () => {
+  // Test A: garante que analise_imagens=[corpo, corpo] → 1ª local vence, 2ª corpo NÃO sobrescreve
+  // (invariante "no máximo 1 foto_local por lote" sob roteamento model-driven, sem heurística).
+  let conversaPatches = [];
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 401, content: '', media_base64: 'c1', media_mimetype: 'image/jpeg' },
+        { id: 402, content: '', media_base64: 'c2', media_mimetype: 'image/jpeg' },
+      ]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.dados_coletados)
+          conversaPatches.push(body.dados_coletados);
+      },
+    }),
+    runAgent: async () => ({
+      ok: true, resposta_cliente: 'recebi', estado_novo: 'tattoo',
+      dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo',
+      analise_imagens: [
+        { tipo: 'corpo', descricao: 'antebraco', corpo_tem_tattoo: false, corpo_tem_marcacao: false },
+        { tipo: 'corpo', descricao: 'outra parte', corpo_tem_tattoo: false, corpo_tem_marcacao: false },
+      ],
+    }),
+    // classificarFoto NÃO deve ser chamado (analise_imagens presente para ambas as fotos)
+    classificarFoto: () => { throw new Error('classificarFoto nao devia ser chamado: analise_imagens presente'); },
+  });
+  await processBatch({}, baseBatch({ msgRowIds: [401, 402] }), deps);
+  const fotoPatch = conversaPatches.find(p => p.foto_local_msg_id || p.refs_imagens_msg_ids);
+  assert.ok(fotoPatch, 'deve existir PATCH com roteamento de fotos');
+  assert.equal(fotoPatch.foto_local_msg_id, 401, '1ª corpo (id=401) vence como foto_local');
+  assert.ok(Array.isArray(fotoPatch.refs_imagens_msg_ids) && fotoPatch.refs_imagens_msg_ids.includes(402),
+    '2ª corpo (id=402) demovida para refs_imagens_msg_ids');
+  assert.ok(!fotoPatch.refs_imagens_msg_ids?.includes(401),
+    'id=401 (foto_local) nao aparece em refs_imagens_msg_ids');
+});
+
+test('Etapa 4.5 model-driven: corpo + referencia → local + ref (roteamento misto via analise_imagens)', async () => {
+  // Test B: analise_imagens=[corpo, referencia] → 401 vira foto_local, 402 vira ref.
+  let conversaPatches = [];
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 401, content: '', media_base64: 'c1', media_mimetype: 'image/jpeg' },
+        { id: 402, content: '', media_base64: 'c2', media_mimetype: 'image/jpeg' },
+      ]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.dados_coletados)
+          conversaPatches.push(body.dados_coletados);
+      },
+    }),
+    runAgent: async () => ({
+      ok: true, resposta_cliente: 'recebi', estado_novo: 'tattoo',
+      dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo',
+      analise_imagens: [
+        { tipo: 'corpo', descricao: 'antebraco pele limpa', corpo_tem_tattoo: false, corpo_tem_marcacao: false },
+        { tipo: 'referencia', descricao: 'rosa fineline', corpo_tem_tattoo: false, corpo_tem_marcacao: false },
+      ],
+    }),
+    classificarFoto: () => { throw new Error('classificarFoto nao devia ser chamado: analise_imagens presente'); },
+  });
+  await processBatch({}, baseBatch({ msgRowIds: [401, 402] }), deps);
+  const fotoPatch = conversaPatches.find(p => p.foto_local_msg_id || p.refs_imagens_msg_ids);
+  assert.ok(fotoPatch, 'deve existir PATCH com roteamento de fotos');
+  assert.equal(fotoPatch.foto_local_msg_id, 401, 'corpo (id=401) vira foto_local');
+  assert.ok(Array.isArray(fotoPatch.refs_imagens_msg_ids) && fotoPatch.refs_imagens_msg_ids.includes(402),
+    'referencia (id=402) vai para refs_imagens_msg_ids');
+  assert.ok(!fotoPatch.refs_imagens_msg_ids?.includes(401),
+    'id=401 (foto_local) nao aparece em refs_imagens_msg_ids');
+});
+
 test('pipeline: passa imagens (base64+mimetype+msgRowId) ao runAgent, cap 4', async () => {
   let capturedRunAgent;
   const rows = rowsFor([
