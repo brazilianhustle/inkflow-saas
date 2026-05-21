@@ -17,11 +17,14 @@ export const CONTRACT_COLETA_TATTOO = {
     'local_corpo',
     'dados_persistidos',
     'proxima_acao',
+    'recebe as imagens',
   ],
   must_not_contain: [
     // Tools removidas (audit Fase 9 — pure structured-output).
     'dados_coletados',
     'handoff_to_cadastro',
+    // Lie removida do R4 — modelo agora VE a foto diretamente.
+    'injeta descricao textual',
     // Tools fantasma legacy (nunca existiram como tool real).
     'acionar_handoff',
     'enviar_orcamento_tatuador',

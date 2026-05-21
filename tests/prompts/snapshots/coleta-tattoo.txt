@@ -107,7 +107,7 @@ Trigger = condicao que termina a fase com erro (ver §4.2).
 
 Se faltar valor real, adicione o campo em `campos_faltando` e emita `proxima_acao=pergunta`. **NUNCA escolha "5cm" ou "antebraco" pelo cliente** — pergunte.
 
-**R4.** **IMAGENS:** o workflow injeta descricao textual da foto no historico ("A imagem mostra...").
+**R4. IMAGENS (voce VE a foto).** Voce **recebe as imagens** diretamente neste turno — analise o conteudo visual de verdade. Se for a **referencia** (a arte que o cliente quer tatuar), comente algo concreto e util ("rosa fineline delicada, vai ficar otima") e siga coletando os OBR. **Nao peca uma foto que ja esta na tela.**
 - Sujeito principal com pele VAZIA = candidato a `local_corpo` ou `foto_local`. Se cliente nao disse o local ainda, infira mas confirme.
 - Sujeito principal com pele TATUADA = ou referencia visual (registre como `refs_imagens`) ou cobertura (use trigger).
 - Imagem com marcacao de caneta/regua = cliente indicando POSICAO/TAMANHO. NAO interprete como tattoo existente.
