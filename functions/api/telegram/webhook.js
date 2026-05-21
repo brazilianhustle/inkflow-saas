@@ -77,6 +77,19 @@ async function answerCallbackQuery(env, callback_query_id, text) {
   return tgCall(env, 'answerCallbackQuery', { callback_query_id, ...(text ? { text } : {}) });
 }
 
+async function removeInlineKeyboard(env, cb) {
+  // Camada 1 da idempotencia: remove os botoes do card apos o 1o clique → nao ha
+  // o que re-clicar. cb.message pode faltar (callbacks muito antigos) → best-effort.
+  const message_id = cb.message?.message_id;
+  const chat_id = cb.message?.chat?.id;
+  if (!message_id || chat_id == null) return;
+  try {
+    await tgCall(env, 'editMessageReplyMarkup', { chat_id, message_id, reply_markup: { inline_keyboard: [] } });
+  } catch (e) {
+    console.warn('editMessageReplyMarkup falhou:', e?.message);
+  }
+}
+
 async function disparaReentrada(env, conversa_id, evento, extra = {}) {
   // Reentrada e um endpoint CF Pages interno (substitui o workflow n8n
   // original — simples o bastante pra nao precisar de n8n). URL configuravel
@@ -174,6 +187,7 @@ async function handleCallback(env, cb) {
     return tgJson({ ok: false, error: 'orcid-nao-encontrado' });
   }
   const conv = rows[0];
+  const dc = conv.dados_coletados || {};
 
   switch (acao) {
     case 'fechar': {
@@ -187,11 +201,18 @@ async function handleCallback(env, cb) {
         { reply_markup: { force_reply: true, selective: false } }
       );
       await answerCallbackQuery(env, cb.id);
+      await removeInlineKeyboard(env, cb); // decisao tomada (informar valor) → botoes somem
       return tgJson({ ok: true, acao: 'aguardando_valor' });
     }
 
     case 'recusar': {
-      const dados = { ...(conv.dados_coletados || {}), tatuador_recusou: true, mensagem_tatuador: 'recusou' };
+      // Camada 2: ja recusado → no-op (nao re-notifica o cliente)
+      if (conv.estado_agente === 'lead_frio' && dc.tatuador_recusou) {
+        await answerCallbackQuery(env, cb.id, '✓ Ja recusado');
+        await removeInlineKeyboard(env, cb);
+        return tgJson({ ok: true, acao: 'recusar', idempotente: true });
+      }
+      const dados = { ...dc, tatuador_recusou: true, mensagem_tatuador: 'recusou' };
       await supaFetch(env, `/rest/v1/conversas?id=eq.${encodeURIComponent(conv.id)}`, {
         method: 'PATCH',
         headers: { Prefer: 'return=minimal' },
@@ -200,6 +221,7 @@ async function handleCallback(env, cb) {
       const nomeCliente = conv.dados_cadastro?.nome || 'cliente';
       await answerCallbackQuery(env, cb.id, '✓ Recusado');
       await sendMessage(env, cb.from.id, `📝 Orcamento da *${escapeMarkdown(nomeCliente)}* recusado. Cliente sera avisado pelo bot.`);
+      await removeInlineKeyboard(env, cb);
       await disparaReentrada(env, conv.id, 'recusar', { orcid });
       return tgJson({ ok: true, acao: 'recusar' });
     }
@@ -210,7 +232,13 @@ async function handleCallback(env, cb) {
         await answerCallbackQuery(env, cb.id, '❌ Valor invalido no callback');
         return tgJson({ ok: false, error: 'valor-invalido' });
       }
-      const dados = { ...(conv.dados_coletados || {}), decisao_desconto: 'aceito' };
+      // Camada 2: ja aceito com o mesmo valor → no-op (nao re-notifica o cliente)
+      if (dc.decisao_desconto === 'aceito' && conv.valor_proposto === valorExtra) {
+        await answerCallbackQuery(env, cb.id, '✓ Ja aceito');
+        await removeInlineKeyboard(env, cb);
+        return tgJson({ ok: true, acao: 'aceitar', valor: valorExtra, idempotente: true });
+      }
+      const dados = { ...dc, decisao_desconto: 'aceito' };
       await supaFetch(env, `/rest/v1/conversas?id=eq.${encodeURIComponent(conv.id)}`, {
         method: 'PATCH',
         headers: { Prefer: 'return=minimal' },
@@ -222,12 +250,19 @@ async function handleCallback(env, cb) {
       });
       await answerCallbackQuery(env, cb.id, '✓ Aceito');
       await sendMessage(env, cb.from.id, `✅ Desconto aceito em R$ ${valorExtra}. Bot ja avisou o cliente.`);
+      await removeInlineKeyboard(env, cb);
       await disparaReentrada(env, conv.id, 'aceitar_desconto', { orcid, valor: valorExtra });
       return tgJson({ ok: true, acao: 'aceitar', valor: valorExtra });
     }
 
     case 'manter': {
-      const dados = { ...(conv.dados_coletados || {}), decisao_desconto: 'recusado' };
+      // Camada 2: ja mantido (desconto recusado) → no-op (nao re-notifica o cliente)
+      if (dc.decisao_desconto === 'recusado') {
+        await answerCallbackQuery(env, cb.id, '✓ Ja mantido');
+        await removeInlineKeyboard(env, cb);
+        return tgJson({ ok: true, acao: 'manter', idempotente: true });
+      }
+      const dados = { ...dc, decisao_desconto: 'recusado' };
       await supaFetch(env, `/rest/v1/conversas?id=eq.${encodeURIComponent(conv.id)}`, {
         method: 'PATCH',
         headers: { Prefer: 'return=minimal' },
@@ -235,6 +270,7 @@ async function handleCallback(env, cb) {
       });
       await answerCallbackQuery(env, cb.id, '✓ Mantido');
       await sendMessage(env, cb.from.id, `✅ Valor mantido em R$ ${conv.valor_proposto}. Bot ja avisou o cliente.`);
+      await removeInlineKeyboard(env, cb);
       await disparaReentrada(env, conv.id, 'manter_valor', { orcid });
       return tgJson({ ok: true, acao: 'manter' });
     }
@@ -264,7 +300,7 @@ async function handleText(env, message) {
 
   // Busca conversa por orcid
   const r = await supaFetch(env,
-    `/rest/v1/conversas?orcid=eq.${encodeURIComponent(orcid)}&select=id,estado_agente`
+    `/rest/v1/conversas?orcid=eq.${encodeURIComponent(orcid)}&select=id,estado_agente,valor_proposto`
   );
   const rows = r.ok ? await r.json() : [];
   if (!rows || rows.length === 0) {
@@ -272,6 +308,13 @@ async function handleText(env, message) {
     return tgJson({ ok: false, error: 'orcid-nao-encontrado' });
   }
   const conv = rows[0];
+
+  // Idempotencia: mesmo valor ja registrado → no-op (nao re-notifica o cliente).
+  // Informar um valor DIFERENTE e mudanca legitima e segue o fluxo normal.
+  if (conv.valor_proposto === valor && conv.estado_agente === 'propondo_valor') {
+    await sendMessage(env, message.chat.id, `✅ Valor R$ ${valor} ja estava registrado.`);
+    return tgJson({ ok: true, valor, idempotente: true });
+  }
 
   await supaFetch(env, `/rest/v1/conversas?id=eq.${encodeURIComponent(conv.id)}`, {
     method: 'PATCH',
