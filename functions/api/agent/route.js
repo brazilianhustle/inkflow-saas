@@ -21,7 +21,7 @@ import { prefetchPropostaContext } from './_lib/prefetch-proposta.js';
 import { prefetchPortfolio } from './_lib/prefetch-portfolio.js';
 import { callTool } from './_lib/call-tool.js';
 import { calcularValorSinal } from './_lib/calcular-sinal.js';
-import { formatLinkSinalMessage } from './_lib/format-link-sinal-msg.js';
+import { formatLinkSinalMessage, formatPixSinalMessage } from './_lib/format-link-sinal-msg.js';
 import { logAgentTurn } from '../../_lib/telemetry/agent-turn-logger.js';
 
 const HEADERS = {
@@ -436,17 +436,25 @@ export async function executeOrchestration(out, { env, tenant, conversa, telefon
         tenant_id: tenant.id,
         agendamento_id,
         valor_sinal,
+        metodo: 'pix', // Pix é o padrão; a tool cai pro cartão se ENABLE_PIX_SINAL=false
       });
-      sideEffects.push({ tool: 'gerar-link-sinal', ok: lk.ok });
+      sideEffects.push({ tool: 'gerar-link-sinal', ok: lk.ok, metodo: lk.metodo_usado });
       if (!lk.ok) {
         return forcePergunta(out, 'Tive um problema gerando o link — me da um minuto?');
       }
-      const resposta_cliente = formatLinkSinalMessage({
-        agent_text: out.resposta_cliente,
-        sinal_pct, valor_sinal,
-        link_pagamento: lk.link_pagamento,
-        hold_horas: lk.hold_horas ?? 24,
-      });
+      const resposta_cliente = lk.metodo_usado === 'pix'
+        ? formatPixSinalMessage({
+            agent_text: out.resposta_cliente,
+            sinal_pct, valor_sinal,
+            copia_e_cola: lk.copia_e_cola,
+            hold_horas: lk.hold_horas ?? 48,
+          })
+        : formatLinkSinalMessage({
+            agent_text: out.resposta_cliente,
+            sinal_pct, valor_sinal,
+            link_pagamento: lk.link_pagamento,
+            hold_horas: lk.hold_horas ?? 24,
+          });
       return { ...out, resposta_cliente };
     }
 

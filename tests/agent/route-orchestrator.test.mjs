@@ -140,6 +140,36 @@ test('executeOrchestration cliente_agressivo: chama acionar-handoff com motivo c
   assert.equal(sideEffects[0].motivo, 'cliente_agressivo');
 });
 
+test('executeOrchestration reservar_horario: Pix → resposta com copia-e-cola em balão', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+
+  globalThis.fetch = mock.fn(async (url, init) => {
+    if (url.includes('reservar-horario')) {
+      return { ok: true, status: 200, json: async () => ({ ok: true, agendamento_id: 'ag-1' }) };
+    }
+    if (url.includes('gerar-link-sinal')) {
+      const body = JSON.parse(init.body);
+      assert.equal(body.metodo, 'pix'); // orquestrador pede Pix
+      return { ok: true, status: 200, json: async () => ({
+        ok: true, metodo_usado: 'pix', copia_e_cola: 'PIX-COPIA-COLA', hold_horas: 48,
+      }) };
+    }
+    throw new Error(`unexpected fetch ${url}`);
+  });
+
+  const sideEffects = [];
+  const r = await executeOrchestration(
+    { resposta_cliente: 'Bora!', proxima_acao: 'reservar_horario', slot_inicio: '2026-05-23T13:00:00Z', slot_fim: '2026-05-23T16:00:00Z' },
+    { env: baseEnv, tenant: baseTenant, conversa: baseConversa, telefone: '5511', sideEffects, clientContext: {} }
+  );
+
+  assert.match(r.resposta_cliente, /PIX-COPIA-COLA/);
+  const baloes = r.resposta_cliente.split(/\n\s*\n/);
+  assert.equal(baloes[baloes.length - 1], 'PIX-COPIA-COLA'); // código no último balão
+  assert.equal(sideEffects.find(s => s.tool === 'gerar-link-sinal').metodo, 'pix');
+});
+
 test('executeOrchestration noop cases: pergunta/oferecendo_horario/adiou retornam out sem fetch', async (t) => {
   const originalFetch = globalThis.fetch;
   t.after(() => { globalThis.fetch = originalFetch; });
