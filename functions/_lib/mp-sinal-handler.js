@@ -24,6 +24,44 @@ async function supaFetch(env, path, init = {}) {
   });
 }
 
+// Loop pós-pagamento (Fase 1). Notifica cliente (WhatsApp) + tatuador (Telegram)
+// após o sinal cair. Fail-open total: nenhuma falha aqui invalida o sinal.
+// Idempotência: o caller (processMpSinal) só chama isto após o guard
+// already-processed, então webhook duplicado NÃO re-notifica.
+export async function notifyPosPagamento(env, ag) {
+  try {
+    const tRes = await supaFetch(env, `/rest/v1/tenants?id=eq.${encodeURIComponent(ag.tenant_id)}&select=evo_apikey,evo_instance,tatuador_telegram_chat_id,nome_estudio`);
+    const tenant = tRes.ok ? (await tRes.json())[0] : null;
+    if (!tenant) return;
+    const quando = ag.inicio
+      ? new Date(ag.inicio).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'long', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+      : 'seu horario';
+
+    if (ag.cliente_telefone) {
+      const { evoSend } = await import('./evolution-send.js');
+      const r = await evoSend(env, tenant, {
+        type: 'text', to: ag.cliente_telefone,
+        text: `Recebemos teu sinal! ✅ Teu horario ta confirmado pra ${quando}. Qualquer coisa e so chamar aqui. Ate la!`,
+      });
+      if (!r.ok) console.warn('mp-sinal-handler: evoSend cliente falhou (fail-open):', r.error || r.skipped);
+    }
+
+    if (tenant.tatuador_telegram_chat_id) {
+      const { sendTelegramTo } = await import('./telegram.js');
+      const valorTxt = ag.sinal_valor != null ? `R$ ${Number(ag.sinal_valor).toFixed(2).replace('.', ',')}` : '';
+      const r = await sendTelegramTo(env, tenant.tatuador_telegram_chat_id,
+        `💰 Sinal pago! ${ag.cliente_nome || 'Cliente'} confirmou o horario de ${quando}. Sinal ${valorTxt}.`);
+      if (!r.ok) console.warn('mp-sinal-handler: sendTelegramTo tatuador falhou (fail-open):', r.error || r.skipped);
+    }
+
+    // [Fase 2 — gancho] Criar evento no Google Calendar entraria aqui
+    // (agendamentos.gcal_event_id + tenants.google_calendar_id), após OAuth
+    // Google por tenant. Reusa a infra de conexões OAuth do MP Connect.
+  } catch (e) {
+    console.warn('mp-sinal-handler: notifyPosPagamento falhou (fail-open):', e?.message);
+  }
+}
+
 // Processa um paymentId: busca no MP, promove agendamento tentative → confirmed
 // se status=approved e external_reference bate. Idempotente (so promove se ainda tentative).
 // Retorna objeto com { ok, processed, agendamento_id?, status?, ignored? }.
@@ -72,6 +110,9 @@ export async function processMpSinal(env, paymentId) {
     return { ok: true, ignored: 'already-processed', agendamento_id };
   }
   const ag = updated[0];
+
+  // Loop pós-pagamento (notificações fail-open). Após o guard already-processed.
+  await notifyPosPagamento(env, ag);
 
   // Atualiza conversa correspondente para confirmado e marca lifecycle fechado
   if (ag.cliente_telefone && ag.tenant_id) {
