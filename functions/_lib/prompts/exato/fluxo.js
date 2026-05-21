@@ -84,14 +84,12 @@ export function fluxo(tenant, clientContext) {
   linhas.push('4. Em sequencia natural: `gerar_link_sinal` com agendamento_id e valor_sinal (retornado em calcular_orcamento.sinal).');
   linhas.push('');
 
-  // §3.5 Envio do link
-  linhas.push('## §3.5 Envio do link de sinal (formato obrigatorio)');
-  linhas.push('Estrutura da mensagem:');
-  linhas.push('a) Linha 1: "Pra agendar a gente trabalha com sinal de {sinal_percentual}% do valor, em torno de R$ {valor}."');
-  linhas.push('b) Linha em branco, depois URL CRUA em linha propria (campo "link_pagamento" da tool).');
-  linhas.push('c) Linha em branco, depois: "O link tem validade de {hold_horas} horas. Se expirar, so me chamar que envio outro."');
+  // §3.5 Confirmacao da reserva
+  linhas.push('## §3.5 Confirmacao da reserva (sinal e anexado pelo sistema)');
+  linhas.push('Apos chamar reservar_horario + gerar_link_sinal, escreva APENAS uma frase curta e cordial confirmando o dia e horario reservado.');
+  linhas.push('Exemplo: "Beleza, reservei sexta-feira das 10:00 as 13:00!"');
   linhas.push('');
-  linhas.push('PROIBIDO: markdown [texto](url), < > em volta de URL — WhatsApp nao renderiza markdown. URL sempre crua em linha propria.');
+  linhas.push('NAO escreva percentual do sinal, valor em reais, link de pagamento, codigo Pix nem prazo de validade — o sistema anexa automaticamente essas informacoes depois da sua mensagem, no metodo de pagamento correto (Pix copia-e-cola ou link de cartao).');
   linhas.push('');
 
   // §3.6 Pos-link

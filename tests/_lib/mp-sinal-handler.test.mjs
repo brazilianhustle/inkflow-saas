@@ -200,29 +200,24 @@ test('mp-sinal-handler — L7: PATCH retorna [] → already-processed (idempotê
   });
 });
 
-// L8 — HAPPY PATH com cliente_telefone → 5 calls em ordem
-// INTENTIONAL: 5 calls (não 3) porque markConversaFechada (lifecycle) faz GET + PATCH
-// internamente. Padrão read-then-write valida estado_agente antes de fechar.
-test('mp-sinal-handler — L8: HAPPY PATH com cliente_telefone → 5 calls em ordem', async () => {
-  const env = mockEnv();
+// L8 — HAPPY PATH com cliente_telefone → 8 calls em ordem
+// INTENTIONAL: 8 calls (não 5) porque notifyPosPagamento (Task 5) adiciona
+// GET tenant + sendText (WhatsApp) + sendTelegramTo ANTES do bloco conversa-lifecycle.
+test('mp-sinal-handler — L8: HAPPY PATH com cliente_telefone → 8 calls em ordem', async () => {
+  const env = mockEnv({ EVO_BASE_URL: 'https://evo.test', INKFLOW_TELEGRAM_BOT_TOKEN: 'tg-tok' });
   const handler = fetchMatcher({
-    '/v1/payments/': () => jsonResponse({
-      external_reference: `sinal:${VALID_AGENDAMENTO_UUID}`,
-      status: 'approved',
-    }),
+    '/v1/payments/': () => jsonResponse({ external_reference: `sinal:${VALID_AGENDAMENTO_UUID}`, status: 'approved' }),
     '/rest/v1/agendamentos': () => jsonResponse([{
-      id: VALID_AGENDAMENTO_UUID,
-      cliente_telefone: '5511999',
-      tenant_id: VALID_TENANT_UUID,
+      id: VALID_AGENDAMENTO_UUID, cliente_telefone: '5511999', cliente_nome: 'Ana',
+      tenant_id: VALID_TENANT_UUID, inicio: '2026-05-23T13:00:00Z', sinal_valor: 210,
     }]),
     '/rest/v1/conversas?tenant_id=': () => jsonResponse([{ id: VALID_CONVERSA_UUID }]),
-    '/rest/v1/conversas?id=': ({ method }) => {
-      // Discriminate: GET (lifecycle read) vs PATCH (lifecycle write)
-      if (method === 'GET') {
-        return jsonResponse([{ dados_coletados: {}, estado_agente: 'aberto' }]);
-      }
-      return jsonResponse([{ id: VALID_CONVERSA_UUID, estado_agente: 'fechado' }]);
-    },
+    '/rest/v1/conversas?id=': ({ method }) =>
+      method === 'GET' ? jsonResponse([{ dados_coletados: {}, estado_agente: 'aberto' }])
+                       : jsonResponse([{ id: VALID_CONVERSA_UUID, estado_agente: 'fechado' }]),
+    '/rest/v1/tenants': () => jsonResponse([{ evo_apikey: 'k', evo_instance: 'inst', tatuador_telegram_chat_id: '999', nome_estudio: 'Estudio X' }]),
+    'message/sendText': () => jsonResponse({ ok: true }),
+    'api.telegram.org': () => jsonResponse({ ok: true }),
   });
   await withMockFetch(handler, async () => {
     const { processMpSinal } = await import('../../functions/_lib/mp-sinal-handler.js');
@@ -234,26 +229,37 @@ test('mp-sinal-handler — L8: HAPPY PATH com cliente_telefone → 5 calls em or
       status: 'confirmed',
       payment_id: 'pay-1',
     });
-    // Calls (em ordem): MP GET → PATCH agendamento → PATCH conversa(tenant+phone)
-    //                   → GET conversa(id) → PATCH conversa(id, neq.fechado)
-    assert.equal(handler.calls.length, 5);
+    // Calls (em ordem): MP GET → PATCH agendamento → GET tenant (notify) →
+    //   POST sendText (notify) → POST telegram (notify) →
+    //   PATCH conversa(tenant+phone) → GET conversa(id) → PATCH conversa(id)
+    assert.equal(handler.calls.length, 8);
     assert.ok(handler.calls[0].url.includes('/v1/payments/'), 'call 0: MP GET payment');
     assert.equal(handler.calls[0].method, 'GET');
     assert.ok(handler.calls[1].url.includes('/rest/v1/agendamentos'), 'call 1: PATCH agendamento');
     assert.equal(handler.calls[1].method, 'PATCH');
-    assert.ok(handler.calls[2].url.includes('/rest/v1/conversas?tenant_id='), 'call 2: PATCH conversa by tenant+phone');
-    assert.equal(handler.calls[2].method, 'PATCH');
-    assert.ok(handler.calls[3].url.includes('/rest/v1/conversas?id='), 'call 3: GET conversa by id (lifecycle read)');
-    assert.equal(handler.calls[3].method, 'GET');
-    assert.ok(handler.calls[4].url.includes('/rest/v1/conversas?id='), 'call 4: PATCH conversa (lifecycle write)');
-    assert.equal(handler.calls[4].method, 'PATCH');
-    assert.ok(handler.calls[4].url.includes('&estado_agente=neq.fechado'),
+    assert.ok(handler.calls[2].url.includes('/rest/v1/tenants'), 'call 2: GET tenant (loop pós-pgto)');
+    assert.equal(handler.calls[2].method, 'GET');
+    assert.ok(handler.calls[3].url.includes('message/sendText'), 'call 3: POST sendText WhatsApp cliente');
+    assert.equal(handler.calls[3].method, 'POST');
+    assert.ok(handler.calls[4].url.includes('api.telegram.org'), 'call 4: POST Telegram tatuador');
+    assert.equal(handler.calls[4].method, 'POST');
+    assert.ok(handler.calls[5].url.includes('/rest/v1/conversas?tenant_id='), 'call 5: PATCH conversa by tenant+phone');
+    assert.equal(handler.calls[5].method, 'PATCH');
+    assert.ok(handler.calls[6].url.includes('/rest/v1/conversas?id='), 'call 6: GET conversa by id (lifecycle read)');
+    assert.equal(handler.calls[6].method, 'GET');
+    assert.ok(handler.calls[7].url.includes('/rest/v1/conversas?id='), 'call 7: PATCH conversa (lifecycle write)');
+    assert.equal(handler.calls[7].method, 'PATCH');
+    assert.ok(handler.calls[7].url.includes('&estado_agente=neq.fechado'),
       'PATCH lifecycle URL must contain &estado_agente=neq.fechado filter');
+    assert.ok(handler.calls.some(c => c.url.includes('message/sendText')), 'enviou WhatsApp');
+    assert.ok(handler.calls.some(c => c.url.includes('api.telegram.org')), 'enviou Telegram');
   });
 });
 
-// L9 — HAPPY PATH sem cliente_telefone → 2 calls (conversa NÃO tocada)
-test('mp-sinal-handler — L9: HAPPY PATH sem cliente_telefone → 2 calls', async () => {
+// L9 — HAPPY PATH sem cliente_telefone → 3 calls (conversa NÃO tocada; notify busca tenant mas não envia nada)
+// INTENTIONAL: 3 calls (não 2) porque notifyPosPagamento sempre busca o tenant.
+// Sem cliente_telefone + sem tatuador_telegram_chat_id → nenhum send é disparado.
+test('mp-sinal-handler — L9: HAPPY PATH sem cliente_telefone → 3 calls', async () => {
   const env = mockEnv();
   const handler = fetchMatcher({
     '/v1/payments/': () => jsonResponse({
@@ -265,13 +271,14 @@ test('mp-sinal-handler — L9: HAPPY PATH sem cliente_telefone → 2 calls', asy
       cliente_telefone: null,
       tenant_id: VALID_TENANT_UUID,
     }]),
+    '/rest/v1/tenants': () => jsonResponse([{ nome_estudio: 'X' }]),
   });
   await withMockFetch(handler, async () => {
     const { processMpSinal } = await import('../../functions/_lib/mp-sinal-handler.js');
     const result = await processMpSinal(env, 'pay-1');
     assert.equal(result.processed, true);
     assert.equal(result.agendamento_id, VALID_AGENDAMENTO_UUID);
-    assert.equal(handler.calls.length, 2);
+    assert.equal(handler.calls.length, 3);
   });
 });
 
@@ -309,3 +316,43 @@ for (const input of [
     assert.equal(isSinalCandidateEvent(input), false);
   });
 }
+
+// L14 — notifyPosPagamento: dispara evoSend (cliente) + sendTelegramTo (tatuador)
+test('mp-sinal-handler — L14: notifyPosPagamento dispara WhatsApp + Telegram', async () => {
+  const env = mockEnv({ EVO_BASE_URL: 'https://evo.test', INKFLOW_TELEGRAM_BOT_TOKEN: 'tg-tok' });
+  const handler = fetchMatcher({
+    '/rest/v1/tenants': () => jsonResponse([{
+      evo_apikey: 'k', evo_instance: 'inst', tatuador_telegram_chat_id: '999', nome_estudio: 'Estudio X',
+    }]),
+    'evo.test/message/sendText': () => jsonResponse({ ok: true }),
+    'api.telegram.org': () => jsonResponse({ ok: true }),
+  });
+  await withMockFetch(handler, async () => {
+    const { notifyPosPagamento } = await import('../../functions/_lib/mp-sinal-handler.js');
+    await notifyPosPagamento(env, {
+      tenant_id: VALID_TENANT_UUID, cliente_telefone: '5511999', cliente_nome: 'Ana',
+      inicio: '2026-05-23T13:00:00Z', sinal_valor: 210,
+    });
+    const urls = handler.calls.map(c => c.url);
+    assert.ok(urls.some(u => u.includes('/rest/v1/tenants')), 'buscou tenant');
+    assert.ok(urls.some(u => u.includes('evo.test/message/sendText')), 'enviou WhatsApp ao cliente');
+    assert.ok(urls.some(u => u.includes('api.telegram.org')), 'enviou Telegram ao tatuador');
+  });
+});
+
+// L15 — notifyPosPagamento é fail-open: Evolution falha não lança
+test('mp-sinal-handler — L15: notifyPosPagamento fail-open quando Evolution falha', async () => {
+  const env = mockEnv({ EVO_BASE_URL: 'https://evo.test', INKFLOW_TELEGRAM_BOT_TOKEN: 'tg-tok' });
+  const handler = fetchMatcher({
+    '/rest/v1/tenants': () => jsonResponse([{ evo_apikey: 'k', evo_instance: 'inst', tatuador_telegram_chat_id: '999', nome_estudio: 'X' }]),
+    'evo.test/message/sendText': () => jsonResponse({ error: 'down' }, 500),
+    'api.telegram.org': () => jsonResponse({ ok: true }),
+  });
+  await withMockFetch(handler, async () => {
+    const { notifyPosPagamento } = await import('../../functions/_lib/mp-sinal-handler.js');
+    // Não deve lançar
+    await notifyPosPagamento(env, { tenant_id: VALID_TENANT_UUID, cliente_telefone: '5511999', cliente_nome: 'Ana', inicio: '2026-05-23T13:00:00Z', sinal_valor: 210 });
+    const urls = handler.calls.map(c => c.url);
+    assert.ok(urls.some(u => u.includes('api.telegram.org')), 'tatuador notificado mesmo quando WhatsApp (Evolution) falha');
+  });
+});
