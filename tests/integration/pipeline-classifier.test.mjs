@@ -166,3 +166,71 @@ test('mediaBase64 null → skip classifier (nenhum PATCH com _msg_id)', async ()
   );
   assert.equal(fotoPatch, undefined);
 });
+
+test('Cenario E: analise_imagens tipo=corpo → foto_local_msg_id', async () => {
+  const conversaInicial = { id: 'c1', estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {}, estado_extra: {} };
+  const patches = [];
+  const deps = makeDeps({
+    conversaInicial,
+    runAgentOut: {
+      ok: true, agent_usado: 'tattoo', dados_persistidos: {},
+      analise_imagens: [{ tipo: 'corpo', descricao: 'antebraco pele limpa', corpo_tem_tattoo: false, corpo_tem_marcacao: false }],
+    },
+    capturedPatches: patches,
+    texto: 'aqui o local',
+  });
+  await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
+  const fotoPatch = patches.find(p => p.body?.dados_coletados?.foto_local_msg_id === MSG_ROW_ID);
+  assert.ok(fotoPatch, 'tipo=corpo deve virar foto_local');
+});
+
+test('Cenario F: analise_imagens tipo=referencia → refs (nao local)', async () => {
+  const conversaInicial = { id: 'c1', estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {}, estado_extra: {} };
+  const patches = [];
+  const deps = makeDeps({
+    conversaInicial,
+    runAgentOut: {
+      ok: true, agent_usado: 'tattoo', dados_persistidos: {},
+      analise_imagens: [{ tipo: 'referencia', descricao: 'rosa fineline', corpo_tem_tattoo: false, corpo_tem_marcacao: false }],
+    },
+    capturedPatches: patches,
+    texto: 'no braço',
+  });
+  await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
+  const refPatch = patches.find(p => Array.isArray(p.body?.dados_coletados?.refs_imagens_msg_ids));
+  assert.ok(refPatch);
+  assert.deepEqual(refPatch.body.dados_coletados.refs_imagens_msg_ids, [MSG_ROW_ID]);
+  const fotoPatch = patches.find(p => p.body?.dados_coletados?.foto_local_msg_id === MSG_ROW_ID);
+  assert.equal(fotoPatch, undefined, 'referencia nunca vira foto_local');
+});
+
+test('Cenario G: analise_imagens tipo=incerto → refs (nunca dropa)', async () => {
+  const conversaInicial = { id: 'c1', estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {}, estado_extra: {} };
+  const patches = [];
+  const deps = makeDeps({
+    conversaInicial,
+    runAgentOut: {
+      ok: true, agent_usado: 'tattoo', dados_persistidos: {},
+      analise_imagens: [{ tipo: 'incerto', descricao: 'foto ambigua', corpo_tem_tattoo: false, corpo_tem_marcacao: false }],
+    },
+    capturedPatches: patches,
+    texto: 'olha',
+  });
+  await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
+  const refPatch = patches.find(p => Array.isArray(p.body?.dados_coletados?.refs_imagens_msg_ids));
+  assert.ok(refPatch, 'incerto roteia como ref por padrao');
+});
+
+test('Cenario H (fallback): sem analise_imagens → heuristico (L2 keyword)', async () => {
+  const conversaInicial = { id: 'c1', estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {}, estado_extra: {} };
+  const patches = [];
+  const deps = makeDeps({
+    conversaInicial,
+    runAgentOut: { ok: true, agent_usado: 'tattoo', dados_persistidos: { local_corpo: 'pulso' } },
+    capturedPatches: patches,
+    texto: 'aqui no pulso',
+  });
+  await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
+  const fotoPatch = patches.find(p => p.body?.dados_coletados?.foto_local_msg_id === MSG_ROW_ID);
+  assert.ok(fotoPatch, 'fallback heuristico L2 classifica pulso como local');
+});

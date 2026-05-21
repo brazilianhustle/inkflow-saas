@@ -222,23 +222,33 @@ export async function processBatch(env, batch, depsOverride = {}) {
       }),
     });
 
-    // Etapa 4.5: classificar CADA foto do lote (loop), acumulando, com 1 PATCH final.
+    // Etapa 4.5: rotear CADA foto do lote. Fonte de verdade = analise_imagens do
+    // modelo (que VIU a foto). Fallback = foto-classifier heuristico quando a visao
+    // falhou/ausente. Correlacao por indice: fotos[i] <-> analise[i] <-> msgRowId.
+    // 1 PATCH final acumulado.
     if (fotos.length > 0) {
       try {
         const dadosPreMerge = conversa.dados_coletados || {};
         let dadosAcc = isCadastro ? { ...dadosPreMerge } : { ...novoDadosColetados };
         let tentativas = dadosPreMerge.tentativas_foto_local || conversa.estado_extra?.tentativas_foto_local || 0;
         let fotoLocalAtual = dadosPreMerge.foto_local;
-        // No maximo UMA foto_local por lote: a 1ª classificada 'local' vence; qualquer outra
-        // (mesmo se 'local') vai pra refs em vez de sobrescrever — nunca dropa foto silenciosamente.
+        const analise = Array.isArray(agentOut.analise_imagens) ? agentOut.analise_imagens : null;
+        // No maximo UMA foto_local por lote: a 1ª 'local' vence; demais viram ref.
         let localAtribuidaNoLote = false;
-        for (const foto of fotos) {
-          const tipo = deps.classificarFoto({ tentativas_foto_local: tentativas, foto_local_atual: fotoLocalAtual, texto_turno: foto.caption });
+        for (let i = 0; i < fotos.length; i++) {
+          const foto = fotos[i];
+          let tipo; // 'local' | 'ref'
+          const a = analise && analise[i];
+          if (a) {
+            // Modelo viu a imagem: corpo→local; referencia/incerto→ref (incerto nunca dropa).
+            tipo = a.tipo === 'corpo' ? 'local' : 'ref';
+          } else {
+            // Fallback heuristico (visao ausente p/ esta foto).
+            tipo = deps.classificarFoto({ tentativas_foto_local: tentativas, foto_local_atual: fotoLocalAtual, texto_turno: foto.caption });
+          }
           if (tipo === 'local' && !localAtribuidaNoLote) {
             dadosAcc = { ...dadosAcc, foto_local_msg_id: foto.msgRowId };
-            // L1 (!foto_local_atual): proximas fotos do lote ja veem foto local presente.
-            // Valor in-memory do loop; NAO e persistido como foto_local.
-            fotoLocalAtual = foto.msgRowId;
+            fotoLocalAtual = foto.msgRowId; // proximas fotos do lote ja veem local presente
             localAtribuidaNoLote = true;
           } else {
             const ids = Array.isArray(dadosAcc.refs_imagens_msg_ids) ? dadosAcc.refs_imagens_msg_ids : [];
