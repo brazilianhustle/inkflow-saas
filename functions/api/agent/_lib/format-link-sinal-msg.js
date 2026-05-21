@@ -12,3 +12,16 @@ export function formatLinkSinalMessage({ agent_text, sinal_pct, valor_sinal, lin
 function formatBRL(n) {
   return Number(n).toFixed(2).replace('.', ',');
 }
+
+// Variante Pix — copia-e-cola em balão próprio. O pipeline (whatsapp-pipeline.js)
+// quebra a resposta_cliente em balões por \n\n; aqui o código fica isolado no
+// último balão pra o cliente copiar com um toque. PROIBIDO markdown — WhatsApp
+// não renderiza e poluiria o copia-e-cola.
+export function formatPixSinalMessage({ agent_text, sinal_pct, valor_sinal, copia_e_cola, hold_horas }) {
+  const explicacao =
+    `Pra garantir teu horario a gente pede um sinal de ${sinal_pct}%, que fica em R$ ${formatBRL(valor_sinal)}. ` +
+    `E so copiar o codigo Pix abaixo e pagar no app do teu banco — assim que cair, teu horario ta confirmado. ` +
+    `(O codigo vale ${hold_horas}h.)`;
+  const prefix = agent_text && agent_text.trim() ? `${agent_text.trim()}\n\n` : '';
+  return `${prefix}${explicacao}\n\n${copia_e_cola}`;
+}
