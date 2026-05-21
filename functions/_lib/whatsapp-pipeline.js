@@ -22,6 +22,9 @@ export const TERMINAL_STATES = new Set([
 // Aplicado antes do evoSend(text) na Etapa 7 — apenas no happy path.
 export const TYPING_DELAY_MS = 1500;
 
+// Cap de imagens enviadas ao LLM por turno (custo). A Etapa 4.5 usa fotos[] (sem cap).
+const MAX_IMAGENS_VISAO = 4;
+
 // DB usa nomes legacy (coletando_tattoo/cadastro) por causa do CHECK constraint
 // herdado do n8n. Agent SDK usa nomes curtos (tattoo/cadastro). Mapeamos nas
 // fronteiras: ler do DB -> dbToAgent, escrever no DB -> agentToDb.
@@ -109,9 +112,11 @@ export async function processBatch(env, batch, depsOverride = {}) {
       caption: r.message.content || '',
     }));
   // Cap pro modelo (custo). A Etapa 4.5 ainda classifica/persiste TODAS as fotos do lote.
-  const MAX_IMAGENS_VISAO = 4;
+  // Ordem preservada (slice, nao filter): imagens[i].msgRowId === fotos[i].msgRowId — a Etapa 4.5 (A5) usa esse indice.
   const imagens = fotos.slice(0, MAX_IMAGENS_VISAO).map(f => ({
-    base64: f.mediaBase64, mimetype: f.mediaMimetype, msgRowId: f.msgRowId,
+    base64: f.mediaBase64,
+    mimetype: f.mediaMimetype,
+    msgRowId: f.msgRowId,
   }));
 
   try {

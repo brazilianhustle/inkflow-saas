@@ -718,4 +718,5 @@ test('pipeline: passa imagens (base64+mimetype+msgRowId) ao runAgent, cap 4', as
   await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, baseBatch({ msgRowIds: [1, 2, 3, 4, 5, 6] }), deps);
   assert.equal(capturedRunAgent.imagens.length, 4, 'cap de 4 imagens');
   assert.deepEqual(capturedRunAgent.imagens[0], { base64: 'A0', mimetype: 'image/jpeg', msgRowId: 1 });
+  assert.equal(capturedRunAgent.imagens[3].base64, 'A3', 'a 4a imagem incluida e a do indice 3 (A3); A4/A5 ficam de fora');
 });
