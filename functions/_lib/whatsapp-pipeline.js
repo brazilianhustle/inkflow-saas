@@ -235,6 +235,8 @@ export async function processBatch(env, batch, depsOverride = {}) {
         const analise = Array.isArray(agentOut.analise_imagens) ? agentOut.analise_imagens : null;
         // No maximo UMA foto_local por lote: a 1ª 'local' vence; demais viram ref.
         let localAtribuidaNoLote = false;
+        // Memoria de recall: descricao da arte SO de fotos 'referencia' (nao 'corpo').
+        const descricoesRef = [];
         for (let i = 0; i < fotos.length; i++) {
           const foto = fotos[i];
           let tipo; // 'local' | 'ref'
@@ -253,12 +255,27 @@ export async function processBatch(env, batch, depsOverride = {}) {
           } else {
             const ids = Array.isArray(dadosAcc.refs_imagens_msg_ids) ? dadosAcc.refs_imagens_msg_ids : [];
             dadosAcc = { ...dadosAcc, refs_imagens_msg_ids: [...ids, foto.msgRowId] };
+            if (a && a.tipo === 'referencia' && a.descricao && a.descricao.trim()) {
+              descricoesRef.push({ msgRowId: foto.msgRowId, descricao: a.descricao.trim() });
+            }
           }
         }
         await deps.supaFetch(`/rest/v1/conversas?id=eq.${conversa.id}`, {
           method: 'PATCH', headers: { Prefer: 'return=minimal' },
           body: JSON.stringify({ dados_coletados: dadosAcc }),
         });
+        // Persiste descricao da arte de referencia (jsonb_set targeted, preserva
+        // demais chaves do message + coexiste com zerar_media_base64).
+        for (const d of descricoesRef) {
+          try {
+            await deps.supaFetch(`/rest/v1/rpc/set_descricao_visual`, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ p_msg_id: d.msgRowId, p_descricao: d.descricao }),
+            });
+          } catch (e) {
+            console.warn(`[pipeline] set_descricao_visual falhou (msg ${d.msgRowId}): ${e.message}`);
+          }
+        }
       } catch (e) {
         console.warn(`[pipeline] etapa-4.5 classificador falhou: ${e.message}`);
       }

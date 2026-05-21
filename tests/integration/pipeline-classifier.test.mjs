@@ -59,6 +59,11 @@ function makeDeps({ conversaInicial, runAgentOut, capturedPatches, mediaBase64 =
         const body = JSON.parse(init.body);
         capturedPatches.push({ path, body });
       }
+      // RPC set_descricao_visual (memoria da arte de referencia)
+      if (init.method === 'POST' && path.includes('/rpc/set_descricao_visual')) {
+        capturedPatches.push({ path, body: JSON.parse(init.body) });
+        return new Response(null, { status: 204 });
+      }
       // PATCH msg row (status processed)
       // Note: Node 25 undici rejects new Response('', { status: 204 }) — must use null body
       return new Response(null, { status: 204 });
@@ -233,4 +238,40 @@ test('Cenario H (fallback): sem analise_imagens → heuristico (L2 keyword)', as
   await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
   const fotoPatch = patches.find(p => p.body?.dados_coletados?.foto_local_msg_id === MSG_ROW_ID);
   assert.ok(fotoPatch, 'fallback heuristico L2 classifica pulso como local');
+});
+
+test('Cenario I: referencia com descricao → grava descricao_visual via RPC', async () => {
+  const conversaInicial = { id: 'c1', estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {}, estado_extra: {} };
+  const patches = [];
+  const deps = makeDeps({
+    conversaInicial,
+    runAgentOut: {
+      ok: true, agent_usado: 'tattoo', dados_persistidos: {},
+      analise_imagens: [{ tipo: 'referencia', descricao: 'rosa fineline delicada', corpo_tem_tattoo: false, corpo_tem_marcacao: false }],
+    },
+    capturedPatches: patches,
+    texto: 'olha essa',
+  });
+  await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
+  const rpc = patches.find(p => p.path.includes('/rpc/set_descricao_visual'));
+  assert.ok(rpc, 'esperava chamada RPC set_descricao_visual');
+  assert.equal(rpc.body.p_msg_id, MSG_ROW_ID);
+  assert.equal(rpc.body.p_descricao, 'rosa fineline delicada');
+});
+
+test('Cenario J: corpo NAO gera descricao_visual (recall e so da arte)', async () => {
+  const conversaInicial = { id: 'c1', estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {}, estado_extra: {} };
+  const patches = [];
+  const deps = makeDeps({
+    conversaInicial,
+    runAgentOut: {
+      ok: true, agent_usado: 'tattoo', dados_persistidos: {},
+      analise_imagens: [{ tipo: 'corpo', descricao: 'antebraco com tattoo', corpo_tem_tattoo: true, corpo_tem_marcacao: false }],
+    },
+    capturedPatches: patches,
+    texto: 'meu braço',
+  });
+  await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
+  const rpc = patches.find(p => p.path.includes('/rpc/set_descricao_visual'));
+  assert.equal(rpc, undefined, 'foto de corpo nao gera memoria de recall');
 });
