@@ -1,3 +1,4 @@
+-- supabase/migrations/2026-05-20-add-set-descricao-visual-rpc.sql
 -- set_descricao_visual: grava message.descricao_visual targeted (jsonb_set) sem
 -- clobber das demais chaves do `message` (preserva media_base64/content).
 -- Memoria de recall da arte de referencia (feature visao-fotos-agente Fase A).

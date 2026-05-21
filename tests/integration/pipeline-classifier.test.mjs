@@ -224,6 +224,8 @@ test('Cenario G: analise_imagens tipo=incerto → refs (nunca dropa)', async () 
   await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, makeBatch(), deps);
   const refPatch = patches.find(p => Array.isArray(p.body?.dados_coletados?.refs_imagens_msg_ids));
   assert.ok(refPatch, 'incerto roteia como ref por padrao');
+  const rpcG = patches.find(p => p.path?.includes('/rpc/set_descricao_visual'));
+  assert.equal(rpcG, undefined, 'incerto (mesmo com descricao) nao gera memoria de recall');
 });
 
 test('Cenario H (fallback): sem analise_imagens → heuristico (L2 keyword)', async () => {

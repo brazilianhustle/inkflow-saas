@@ -771,6 +771,43 @@ test('Etapa 4.5 model-driven: corpo + referencia → local + ref (roteamento mis
     'id=401 (foto_local) nao aparece em refs_imagens_msg_ids');
 });
 
+test('Etapa 4.5 multi-ref: 2 fotos referencia → RPC set_descricao_visual dispara 2x com payloads pareados', async () => {
+  // Fan-out: cada foto 'referencia' com descricao deve gerar 1 chamada RPC com seu proprio
+  // p_msg_id + p_descricao. Verifica pareamento correto (501→'arte A', 502→'arte B').
+  const rpcCalls = [];
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 501, content: '', media_base64: 'ref1', media_mimetype: 'image/jpeg' },
+        { id: 502, content: '', media_base64: 'ref2', media_mimetype: 'image/jpeg' },
+      ]),
+      onPost: (path, body) => {
+        if (path.includes('/rpc/set_descricao_visual')) {
+          rpcCalls.push({ path, body });
+        }
+      },
+    }),
+    runAgent: async () => ({
+      ok: true, resposta_cliente: 'recebi as refs', estado_novo: 'tattoo',
+      dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo',
+      analise_imagens: [
+        { tipo: 'referencia', descricao: 'arte A', corpo_tem_tattoo: false, corpo_tem_marcacao: false },
+        { tipo: 'referencia', descricao: 'arte B', corpo_tem_tattoo: false, corpo_tem_marcacao: false },
+      ],
+    }),
+  });
+  await processBatch({}, baseBatch({ msgRowIds: [501, 502] }), deps);
+  assert.equal(rpcCalls.length, 2, 'exatamente 2 chamadas RPC (1 por foto referencia)');
+  const rpcA = rpcCalls.find(c => c.body.p_msg_id === 501);
+  const rpcB = rpcCalls.find(c => c.body.p_msg_id === 502);
+  assert.ok(rpcA, 'RPC para msg_id=501 deve existir');
+  assert.equal(rpcA.body.p_descricao, 'arte A', 'payload de 501 deve ter descricao "arte A"');
+  assert.ok(rpcB, 'RPC para msg_id=502 deve existir');
+  assert.equal(rpcB.body.p_descricao, 'arte B', 'payload de 502 deve ter descricao "arte B"');
+});
+
 test('pipeline: passa imagens (base64+mimetype+msgRowId) ao runAgent, cap 4', async () => {
   let capturedRunAgent;
   const rows = rowsFor([

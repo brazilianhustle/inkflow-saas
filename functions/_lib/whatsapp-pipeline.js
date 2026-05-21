@@ -255,6 +255,8 @@ export async function processBatch(env, batch, depsOverride = {}) {
           } else {
             const ids = Array.isArray(dadosAcc.refs_imagens_msg_ids) ? dadosAcc.refs_imagens_msg_ids : [];
             dadosAcc = { ...dadosAcc, refs_imagens_msg_ids: [...ids, foto.msgRowId] };
+            // Memoria SO de 'referencia' (confianca alta). 'incerto' tambem cai aqui (else=ref)
+            // mas NAO vira memoria: descricao de foto ambigua nao deve semear arte falsa.
             if (a && a.tipo === 'referencia' && a.descricao && a.descricao.trim()) {
               descricoesRef.push({ msgRowId: foto.msgRowId, descricao: a.descricao.trim() });
             }
@@ -266,6 +268,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
         });
         // Persiste descricao da arte de referencia (jsonb_set targeted, preserva
         // demais chaves do message + coexiste com zerar_media_base64).
+        // Apos o PATCH de dados_coletados (ja persistido); a RPC anota a linha de mensagem. Ordem importa.
         for (const d of descricoesRef) {
           try {
             await deps.supaFetch(`/rest/v1/rpc/set_descricao_visual`, {
