@@ -10,6 +10,7 @@
 // gera novo link. Se cancelled, reabre pra tentative e reseta slot_expira_em.
 
 import { withTool, supaFetch } from './_tool-helpers.js';
+import { getMpAccessToken } from '../../_lib/mp-token.js';
 
 const MP_API = 'https://api.mercadopago.com/checkout/preferences';
 const HOLD_MIN = 2880; // 48 horas — mesmo TTL do reservar-horario
@@ -23,7 +24,7 @@ export const onRequest = withTool('gerar_link_sinal', async ({ env, input }) => 
     return { status: 400, body: { ok: false, error: 'valor_sinal invalido' } };
   }
 
-  const MP_TOKEN = env.MP_ACCESS_TOKEN;
+  const MP_TOKEN = getMpAccessToken(env); // tenant entra no Plano MP Connect
   if (!MP_TOKEN) return { status: 503, body: { ok: false, error: 'mp-nao-configurado' } };
 
   // Valida que o agendamento existe em status permitido (tentative ou cancelled)

@@ -6,6 +6,8 @@
 // A decisao de processar esta centralizada aqui — external_reference precisa
 // bater com "sinal:<agendamento_uuid>". Fora desse formato, retorna ignored.
 
+import { getMpAccessToken } from './mp-token.js';
+
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 const MP_API = 'https://api.mercadopago.com';
 
@@ -26,7 +28,7 @@ async function supaFetch(env, path, init = {}) {
 // se status=approved e external_reference bate. Idempotente (so promove se ainda tentative).
 // Retorna objeto com { ok, processed, agendamento_id?, status?, ignored? }.
 export async function processMpSinal(env, paymentId) {
-  const MP_TOKEN = env.MP_ACCESS_TOKEN;
+  const MP_TOKEN = getMpAccessToken(env);
   if (!MP_TOKEN) return { ok: false, error: 'mp-not-configured' };
   if (!paymentId) return { ok: true, ignored: 'no-payment-id' };
 
