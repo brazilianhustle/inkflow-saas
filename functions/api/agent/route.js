@@ -61,11 +61,11 @@ function normalizeHistoryItem(h) {
 //
 // Args:
 //   env, tenant_id, telefone, mensagem, estado_atual, dados_acumulados, historico,
-//   tenant (resolvido), conversa (resolvido), clientContext (bare; runAgent merge prefetch)
+//   imagens (tattoo-only), tenant (resolvido), conversa (resolvido), clientContext (bare; runAgent merge prefetch)
 //
 // Return success: { ok: true, resposta_cliente, estado_novo, dados_persistidos,
 //   dados_completos, campos_faltando, campos_conflitantes, proxima_acao, agent_usado,
-//   side_effects?, urls_portfolio }
+//   side_effects?, urls_portfolio, analise_imagens, cobertura_suspeita }
 // Return failure: { ok: false, error, status, reason? }
 //   - estado nao implementado: status 501
 //   - run() throw: error 'agent-run-failed', status 500
@@ -100,6 +100,7 @@ export async function runAgent({
   estado_atual,
   dados_acumulados,
   historico,
+  imagens,
   tenant,
   conversa,
   clientContext,
@@ -140,7 +141,7 @@ export async function runAgent({
     try {
       out = await runTattooAgent({
         env, tenant, conversa, clientContext: mergedClientContext,
-        mensagem, historico,
+        mensagem, historico, imagens,
         openaiClient,
       });
     } catch (e) {
@@ -321,6 +322,8 @@ export async function runAgent({
     agent_usado: estado_atual,
     side_effects: PROPOSTA_SUBSTATES.has(estado_atual) ? sideEffects : undefined,
     urls_portfolio,
+    analise_imagens: finalOut.analise_imagens ?? null,
+    cobertura_suspeita: finalOut.cobertura_suspeita ?? null,
   };
 }
 
@@ -370,6 +373,7 @@ export async function onRequest({ request, env, waitUntil }) {
     estado_atual,
     dados_acumulados,
     historico,
+    imagens: Array.isArray(body?.imagens) ? body.imagens : undefined,
     tenant,
     conversa,
     clientContext: body?.clientContext || {},

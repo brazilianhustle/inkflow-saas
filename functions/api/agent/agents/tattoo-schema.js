@@ -16,6 +16,22 @@
 // exige root type=object). Caller recebe shape identico a este.
 import { z } from 'zod';
 
+// Sub-shape: uma entrada de analise por imagem (1:1 com imagens[i], na ordem recebida).
+const AnaliseImagem = z.object({
+  tipo: z.enum(['referencia', 'corpo', 'incerto']),
+  descricao: z.string(),
+  corpo_tem_tattoo: z.boolean(),   // so relevante se tipo='corpo'
+  corpo_tem_marcacao: z.boolean(), // brush/caneta = posicao/tamanho, NAO tattoo existente
+});
+
+// Campos de visao compartilhados por TODOS os 4 branches do discriminated union.
+// Strict mode (zodTextFormat) exige toda chave em `required`; semantica "opcional"
+// vem do .nullable() (mesmo padrao dos opcionais ja existentes em DadosParciais).
+const camposVisao = {
+  analise_imagens: z.array(AnaliseImagem).nullable(),
+  cobertura_suspeita: z.boolean().nullable(),
+};
+
 // Sub-shape: dados quando handoff NAO foi atingido (todos nullable)
 const DadosParciais = z.object({
   descricao_curta: z.string().nullable(),
@@ -54,6 +70,7 @@ const PerguntaOutput = z.object({
   campos_faltando: z.array(z.string()).min(1),
   campos_conflitantes: z.array(z.string()),
   payload_portfolio: z.null(),
+  ...camposVisao,
 });
 
 // ─── Branch 2: handoff ─────────────────────────────────────────────────
@@ -65,6 +82,7 @@ const HandoffOutput = z.object({
   campos_faltando: z.array(z.string()).length(0),
   campos_conflitantes: z.array(z.string()).length(0),
   payload_portfolio: z.null(),
+  ...camposVisao,
 });
 
 // ─── Branch 3: enviar_portfolio ────────────────────────────────────────
@@ -76,6 +94,7 @@ const EnviarPortfolioOutput = z.object({
   campos_faltando: z.array(z.string()),
   campos_conflitantes: z.array(z.string()),
   payload_portfolio: PayloadPortfolio,
+  ...camposVisao,
 });
 
 // ─── Branch 4: erro ────────────────────────────────────────────────────
@@ -87,6 +106,7 @@ const ErroOutput = z.object({
   campos_faltando: z.array(z.string()),
   campos_conflitantes: z.array(z.string()),
   payload_portfolio: z.null(),
+  ...camposVisao,
 });
 
 export const TattooOutputSchema = z.discriminatedUnion('proxima_acao', [

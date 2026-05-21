@@ -22,6 +22,9 @@ export const TERMINAL_STATES = new Set([
 // Aplicado antes do evoSend(text) na Etapa 7 — apenas no happy path.
 export const TYPING_DELAY_MS = 1500;
 
+// Cap de imagens enviadas ao LLM por turno (custo). A Etapa 4.5 usa fotos[] (sem cap).
+const MAX_IMAGENS_VISAO = 4;
+
 // DB usa nomes legacy (coletando_tattoo/cadastro) por causa do CHECK constraint
 // herdado do n8n. Agent SDK usa nomes curtos (tattoo/cadastro). Mapeamos nas
 // fronteiras: ler do DB -> dbToAgent, escrever no DB -> agentToDb.
@@ -108,6 +111,13 @@ export async function processBatch(env, batch, depsOverride = {}) {
       // lote (senao um keyword numa msg vaza pra todas as fotos → todas viram 'local').
       caption: r.message.content || '',
     }));
+  // Cap pro modelo (custo). A Etapa 4.5 ainda classifica/persiste TODAS as fotos do lote.
+  // Ordem preservada (slice, nao filter): imagens[i].msgRowId === fotos[i].msgRowId — a Etapa 4.5 (A5) usa esse indice.
+  const imagens = fotos.slice(0, MAX_IMAGENS_VISAO).map(f => ({
+    base64: f.mediaBase64,
+    mimetype: f.mediaMimetype,
+    msgRowId: f.msgRowId,
+  }));
 
   try {
     // Etapa 1: LOAD/CREATE conversa
@@ -191,6 +201,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
         tenant_id: tenantId, telefone, mensagem: texto,
         estado_atual: estadoAgente, dados_acumulados: conversa.dados_coletados || {},
         historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente }, clientContext: {},
+        imagens,
       });
     } catch (e) { throw new Error(`runAgent threw: ${e.message}`); }
     if (!agentOut?.ok) throw new Error(`runAgent returned ok:false: ${agentOut?.error || 'unknown'}`);
@@ -211,33 +222,63 @@ export async function processBatch(env, batch, depsOverride = {}) {
       }),
     });
 
-    // Etapa 4.5: classificar CADA foto do lote (loop), acumulando, com 1 PATCH final.
+    // Etapa 4.5: rotear CADA foto do lote. Fonte de verdade = analise_imagens do
+    // modelo (que VIU a foto). Fallback = foto-classifier heuristico quando a visao
+    // falhou/ausente. Correlacao por indice: fotos[i] <-> analise[i] <-> msgRowId.
+    // 1 PATCH final acumulado.
     if (fotos.length > 0) {
       try {
         const dadosPreMerge = conversa.dados_coletados || {};
         let dadosAcc = isCadastro ? { ...dadosPreMerge } : { ...novoDadosColetados };
         let tentativas = dadosPreMerge.tentativas_foto_local || conversa.estado_extra?.tentativas_foto_local || 0;
         let fotoLocalAtual = dadosPreMerge.foto_local;
-        // No maximo UMA foto_local por lote: a 1ª classificada 'local' vence; qualquer outra
-        // (mesmo se 'local') vai pra refs em vez de sobrescrever — nunca dropa foto silenciosamente.
+        const analise = Array.isArray(agentOut.analise_imagens) ? agentOut.analise_imagens : null;
+        // No maximo UMA foto_local por lote: a 1ª 'local' vence; demais viram ref.
         let localAtribuidaNoLote = false;
-        for (const foto of fotos) {
-          const tipo = deps.classificarFoto({ tentativas_foto_local: tentativas, foto_local_atual: fotoLocalAtual, texto_turno: foto.caption });
+        // Memoria de recall: descricao da arte SO de fotos 'referencia' (nao 'corpo').
+        const descricoesRef = [];
+        for (let i = 0; i < fotos.length; i++) {
+          const foto = fotos[i];
+          let tipo; // 'local' | 'ref'
+          const a = analise && analise[i];
+          if (a) {
+            // Modelo viu a imagem: corpo→local; referencia/incerto→ref (incerto nunca dropa).
+            tipo = a.tipo === 'corpo' ? 'local' : 'ref';
+          } else {
+            // Fallback heuristico (visao ausente p/ esta foto).
+            tipo = deps.classificarFoto({ tentativas_foto_local: tentativas, foto_local_atual: fotoLocalAtual, texto_turno: foto.caption });
+          }
           if (tipo === 'local' && !localAtribuidaNoLote) {
             dadosAcc = { ...dadosAcc, foto_local_msg_id: foto.msgRowId };
-            // L1 (!foto_local_atual): proximas fotos do lote ja veem foto local presente.
-            // Valor in-memory do loop; NAO e persistido como foto_local.
-            fotoLocalAtual = foto.msgRowId;
+            fotoLocalAtual = foto.msgRowId; // proximas fotos do lote ja veem local presente
             localAtribuidaNoLote = true;
           } else {
             const ids = Array.isArray(dadosAcc.refs_imagens_msg_ids) ? dadosAcc.refs_imagens_msg_ids : [];
             dadosAcc = { ...dadosAcc, refs_imagens_msg_ids: [...ids, foto.msgRowId] };
+            // Memoria SO de 'referencia' (confianca alta). 'incerto' tambem cai aqui (else=ref)
+            // mas NAO vira memoria: descricao de foto ambigua nao deve semear arte falsa.
+            if (a && a.tipo === 'referencia' && a.descricao && a.descricao.trim()) {
+              descricoesRef.push({ msgRowId: foto.msgRowId, descricao: a.descricao.trim() });
+            }
           }
         }
         await deps.supaFetch(`/rest/v1/conversas?id=eq.${conversa.id}`, {
           method: 'PATCH', headers: { Prefer: 'return=minimal' },
           body: JSON.stringify({ dados_coletados: dadosAcc }),
         });
+        // Persiste descricao da arte de referencia (jsonb_set targeted, preserva
+        // demais chaves do message + coexiste com zerar_media_base64).
+        // Apos o PATCH de dados_coletados (ja persistido); a RPC anota a linha de mensagem. Ordem importa.
+        for (const d of descricoesRef) {
+          try {
+            await deps.supaFetch(`/rest/v1/rpc/set_descricao_visual`, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ p_msg_id: d.msgRowId, p_descricao: d.descricao }),
+            });
+          } catch (e) {
+            console.warn(`[pipeline] set_descricao_visual falhou (msg ${d.msgRowId}): ${e.message}`);
+          }
+        }
       } catch (e) {
         console.warn(`[pipeline] etapa-4.5 classificador falhou: ${e.message}`);
       }
