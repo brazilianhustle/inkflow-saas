@@ -17,5 +17,7 @@ export function buildFallbackOutput(_agentName) {
     campos_faltando: [],
     campos_conflitantes: [],
     payload_portfolio: null,
+    analise_imagens: null,
+    cobertura_suspeita: null,
   };
 }
