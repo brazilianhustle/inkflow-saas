@@ -108,6 +108,11 @@ export async function processBatch(env, batch, depsOverride = {}) {
       // lote (senao um keyword numa msg vaza pra todas as fotos → todas viram 'local').
       caption: r.message.content || '',
     }));
+  // Cap pro modelo (custo). A Etapa 4.5 ainda classifica/persiste TODAS as fotos do lote.
+  const MAX_IMAGENS_VISAO = 4;
+  const imagens = fotos.slice(0, MAX_IMAGENS_VISAO).map(f => ({
+    base64: f.mediaBase64, mimetype: f.mediaMimetype, msgRowId: f.msgRowId,
+  }));
 
   try {
     // Etapa 1: LOAD/CREATE conversa
@@ -191,6 +196,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
         tenant_id: tenantId, telefone, mensagem: texto,
         estado_atual: estadoAgente, dados_acumulados: conversa.dados_coletados || {},
         historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente }, clientContext: {},
+        imagens,
       });
     } catch (e) { throw new Error(`runAgent threw: ${e.message}`); }
     if (!agentOut?.ok) throw new Error(`runAgent returned ok:false: ${agentOut?.error || 'unknown'}`);

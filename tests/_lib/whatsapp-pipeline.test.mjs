@@ -696,3 +696,26 @@ test('Etapa 4.5: classificador REAL — 2 fotos ambas com keyword → 1ª local,
   assert.equal(fotoPatch.foto_local_msg_id, 301, 'so a 1ª local vence');
   assert.deepEqual(fotoPatch.refs_imagens_msg_ids, [302], '2ª local vai pra refs em vez de sobrescrever (sem drop)');
 });
+
+test('pipeline: passa imagens (base64+mimetype+msgRowId) ao runAgent, cap 4', async () => {
+  let capturedRunAgent;
+  const rows = rowsFor([
+    { id: 1, content: 'olha essas', media_base64: 'A0', media_mimetype: 'image/jpeg' },
+    { id: 2, content: '', media_base64: 'A1', media_mimetype: 'image/jpeg' },
+    { id: 3, content: '', media_base64: 'A2', media_mimetype: 'image/png' },
+    { id: 4, content: '', media_base64: 'A3', media_mimetype: 'image/jpeg' },
+    { id: 5, content: '', media_base64: 'A4', media_mimetype: 'image/jpeg' },
+    { id: 6, content: '', media_base64: 'A5', media_mimetype: 'image/jpeg' },
+  ]);
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {}, estado_extra: {} };
+  const deps = mockDeps({
+    runAgent: async (args) => {
+      capturedRunAgent = args;
+      return { ok: true, resposta_cliente: 'oi', estado_novo: 'tattoo', dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo' };
+    },
+    supaFetch: batchSupaFetch({ conversa, rows }),
+  });
+  await processBatch({ INKFLOW_TELEGRAM_BOT_TOKEN: 't' }, baseBatch({ msgRowIds: [1, 2, 3, 4, 5, 6] }), deps);
+  assert.equal(capturedRunAgent.imagens.length, 4, 'cap de 4 imagens');
+  assert.deepEqual(capturedRunAgent.imagens[0], { base64: 'A0', mimetype: 'image/jpeg', msgRowId: 1 });
+});
