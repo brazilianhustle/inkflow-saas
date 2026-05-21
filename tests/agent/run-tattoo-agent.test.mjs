@@ -120,3 +120,66 @@ test('runTattooAgent: schema strict aplicado em text.format (json_schema + stric
   assert.equal(captured.text.format.schema.type, 'object');
   assert.ok(captured.text.format.schema.properties.output, 'wrap envelope com property output');
 });
+
+test('runTattooAgent: monta content multimodal quando imagens presentes', async () => {
+  const fake = makeFakeClient({
+    proxima_acao: 'pergunta', resposta_cliente: 'vi a ref',
+    dados_persistidos: { estilo: null, tamanho_cm: null, altura_cm: null, local_corpo: null, cor_preferencia: null, descricao_curta: null, foto_local: null },
+    dados_completos: false, campos_faltando: ['local_corpo'], campos_conflitantes: [],
+    payload_portfolio: null, analise_imagens: null, cobertura_suspeita: null,
+  });
+  await runTattooAgent({
+    env: { OPENAI_API_KEY: 'sk-test' },
+    tenant: FAKE_TENANT, conversa: FAKE_CONVERSA, clientContext: {},
+    mensagem: 'olha essa ref',
+    historico: [],
+    imagens: [{ base64: 'AAAA', mimetype: 'image/jpeg', msgRowId: 7 }],
+    openaiClient: fake,
+  });
+  const captured = fake._captured();
+  const last = captured.input[captured.input.length - 1];
+  assert.equal(last.role, 'user');
+  assert.ok(Array.isArray(last.content), 'content deve ser array multimodal');
+  assert.equal(last.content[0].type, 'input_text');
+  assert.equal(last.content[0].text, 'olha essa ref');
+  assert.equal(last.content[1].type, 'input_image');
+  assert.equal(last.content[1].image_url, 'data:image/jpeg;base64,AAAA');
+  assert.equal(last.content[1].detail, 'low');
+});
+
+test('runTattooAgent: content string (texto-only) quando sem imagens', async () => {
+  const fake = makeFakeClient({
+    proxima_acao: 'pergunta', resposta_cliente: 'x',
+    dados_persistidos: { estilo: null, tamanho_cm: null, altura_cm: null, local_corpo: null, cor_preferencia: null, descricao_curta: null, foto_local: null },
+    dados_completos: false, campos_faltando: ['local_corpo'], campos_conflitantes: [],
+    payload_portfolio: null, analise_imagens: null, cobertura_suspeita: null,
+  });
+  await runTattooAgent({
+    env: { OPENAI_API_KEY: 'sk-test' },
+    tenant: FAKE_TENANT, conversa: FAKE_CONVERSA, clientContext: {},
+    mensagem: 'so texto', historico: [], openaiClient: fake,
+  });
+  const captured = fake._captured();
+  const last = captured.input[captured.input.length - 1];
+  assert.equal(typeof last.content, 'string');
+  assert.equal(last.content, 'so texto');
+});
+
+test('runTattooAgent: cap de 4 imagens no content', async () => {
+  const fake = makeFakeClient({
+    proxima_acao: 'pergunta', resposta_cliente: 'x',
+    dados_persistidos: { estilo: null, tamanho_cm: null, altura_cm: null, local_corpo: null, cor_preferencia: null, descricao_curta: null, foto_local: null },
+    dados_completos: false, campos_faltando: ['local_corpo'], campos_conflitantes: [],
+    payload_portfolio: null, analise_imagens: null, cobertura_suspeita: null,
+  });
+  const seis = Array.from({ length: 6 }, (_, i) => ({ base64: `B${i}`, mimetype: 'image/png', msgRowId: i }));
+  await runTattooAgent({
+    env: { OPENAI_API_KEY: 'sk-test' },
+    tenant: FAKE_TENANT, conversa: FAKE_CONVERSA, clientContext: {},
+    mensagem: 'varias', historico: [], imagens: seis, openaiClient: fake,
+  });
+  const captured = fake._captured();
+  const last = captured.input[captured.input.length - 1];
+  const imgs = last.content.filter(c => c.type === 'input_image');
+  assert.equal(imgs.length, 4);
+});

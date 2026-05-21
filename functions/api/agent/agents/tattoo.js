@@ -40,6 +40,10 @@ function normalizeHistoryItem(item) {
   return item;
 }
 
+// Cap de imagens enviadas ao modelo por turno (custo). A pipeline tambem capa
+// no envio; este cap e defesa-em-profundidade no render do content.
+const MAX_IMAGENS_VISAO = 4;
+
 export async function runTattooAgent({
   env,
   tenant,
@@ -47,14 +51,29 @@ export async function runTattooAgent({
   clientContext,
   mensagem,
   historico,
+  imagens,
   openaiClient,
 }) {
   const ctx = clientContext || {};
   const instructions = generatePromptColetaTattoo(tenant, conversa, ctx);
 
+  // Content do turno ATUAL: array multimodal so quando ha imagens neste turno.
+  // Turnos seguintes nao re-enviam imagem (historico carrega comentario + descricao).
+  const imgs = Array.isArray(imagens) ? imagens.slice(0, MAX_IMAGENS_VISAO) : [];
+  const turnoContent = imgs.length > 0
+    ? [
+        { type: 'input_text', text: mensagem },
+        ...imgs.map((img) => ({
+          type: 'input_image',
+          image_url: `data:${img.mimetype};base64,${img.base64}`,
+          detail: 'low',
+        })),
+      ]
+    : mensagem;
+
   const input = [
     ...((historico || []).map(normalizeHistoryItem)),
-    { role: 'user', content: mensagem },
+    { role: 'user', content: turnoContent },
   ];
 
   return await runtime.run({
