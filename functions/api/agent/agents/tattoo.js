@@ -59,10 +59,14 @@ export async function runTattooAgent({
 
   // Content do turno ATUAL: array multimodal so quando ha imagens neste turno.
   // Turnos seguintes nao re-enviam imagem (historico carrega comentario + descricao).
-  const imgs = Array.isArray(imagens) ? imagens.slice(0, MAX_IMAGENS_VISAO) : [];
+  // So entradas com mimetype+base64 viram input_image (evita data:undefined;base64,undefined).
+  const imgs = (Array.isArray(imagens) ? imagens : [])
+    .filter((img) => img?.mimetype && img?.base64)
+    .slice(0, MAX_IMAGENS_VISAO);
+  // Turno so-foto (sem caption) chega com mensagem='' → omite o input_text vazio.
   const turnoContent = imgs.length > 0
     ? [
-        { type: 'input_text', text: mensagem },
+        ...(mensagem ? [{ type: 'input_text', text: mensagem }] : []),
         ...imgs.map((img) => ({
           type: 'input_image',
           image_url: `data:${img.mimetype};base64,${img.base64}`,
