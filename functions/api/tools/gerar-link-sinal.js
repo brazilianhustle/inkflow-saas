@@ -80,7 +80,8 @@ export const onRequest = withTool('gerar_link_sinal', async ({ env, input }) => 
 
   // Helper de persistência (compartilhado pelos dois caminhos).
   async function persistir(patchExtra) {
-    const agendamentoPatch = { sinal_valor: Number(valor_sinal), ...patchExtra };
+    const { mp_preference_id, ...agExtra } = patchExtra;
+    const agendamentoPatch = { sinal_valor: Number(valor_sinal), ...agExtra };
     if (regenerado) agendamentoPatch.status = 'tentative';
     await supaFetch(env, `/rest/v1/agendamentos?id=eq.${encodeURIComponent(agendamento_id)}`, {
       method: 'PATCH', body: JSON.stringify(agendamentoPatch),
@@ -89,7 +90,7 @@ export const onRequest = withTool('gerar_link_sinal', async ({ env, input }) => 
       await supaFetch(env, `/rest/v1/conversas?tenant_id=eq.${encodeURIComponent(tenant_id)}&telefone=eq.${encodeURIComponent(ag.cliente_telefone)}`, {
         method: 'PATCH',
         body: JSON.stringify({
-          ...(patchExtra.mp_preference_id ? { mp_preference_id: patchExtra.mp_preference_id } : {}),
+          ...(mp_preference_id ? { mp_preference_id } : {}),
           estado: 'aguardando_sinal',
           slot_tentative_id: agendamento_id,
           slot_expira_em: novoSlotExpira,
