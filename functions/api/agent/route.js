@@ -100,6 +100,7 @@ export async function runAgent({
   estado_atual,
   dados_acumulados,
   historico,
+  imagens,
   tenant,
   conversa,
   clientContext,
@@ -140,7 +141,7 @@ export async function runAgent({
     try {
       out = await runTattooAgent({
         env, tenant, conversa, clientContext: mergedClientContext,
-        mensagem, historico,
+        mensagem, historico, imagens,
         openaiClient,
       });
     } catch (e) {
@@ -321,6 +322,8 @@ export async function runAgent({
     agent_usado: estado_atual,
     side_effects: PROPOSTA_SUBSTATES.has(estado_atual) ? sideEffects : undefined,
     urls_portfolio,
+    analise_imagens: finalOut.analise_imagens ?? null,
+    cobertura_suspeita: finalOut.cobertura_suspeita ?? null,
   };
 }
 
@@ -370,6 +373,7 @@ export async function onRequest({ request, env, waitUntil }) {
     estado_atual,
     dados_acumulados,
     historico,
+    imagens: Array.isArray(body?.imagens) ? body.imagens : undefined,
     tenant,
     conversa,
     clientContext: body?.clientContext || {},
