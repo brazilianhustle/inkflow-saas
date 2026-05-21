@@ -123,8 +123,8 @@ de um sub-projeto próprio. Provavelmente compartilham a mesma infra de "conexõ
 | `functions/api/tools/gerar-link-sinal.js` | Param `metodo: 'pix' \| 'cartao'` (default `pix`). `pix` → `POST /v1/payments`; `cartao` → o código Preference atual (intocado). Persiste `mp_payment_id`. Respeita `ENABLE_PIX_SINAL`. |
 | `functions/api/agent/_lib/format-link-sinal-msg.js` | Mensagem Pix: copia-e-cola em **balão próprio** (fácil de copiar, sem markdown) + instrução. Mantém a versão cartão pro fallback. |
 | `functions/_lib/mp-sinal-handler.js` | Após promover `confirmed`: busca o tenant → `evoSend` confirmação ao **cliente** + `sendTelegramTo` aviso ao **tatuador**. Ambos **fail-open**. Gancho comentado pro Calendar (Fase 2). |
-| PropostaAgent — `prompts/coleta/proposta/*` + schema + `route.js` | Duas ações novas no estado `aguardando_sinal`: `enviar_qr_sinal` e `oferecer_cartao_sinal`. |
-| Helper QR sob demanda | Re-busca `GET /v1/payments/{mp_payment_id}` → envia `qr_code_base64` como imagem (`evoSend` `type: 'media'`). **Não** guarda a imagem no banco. |
+| PropostaAgent — `prompts/coleta/proposta/*` + schema + `route.js` | Três ações novas no estado `aguardando_sinal`: `reenviar_pix_sinal`, `oferecer_cartao_sinal` (só mediante objeção, **nunca proativo**) e `verificar_pagamento_sinal` ("já paguei"). |
+| Helper reenviar/verificar Pix | Re-busca `GET /v1/payments/{mp_payment_id}` → reenvia copia-e-cola e/ou `qr_code_base64` como imagem (`evoSend`); e verifica status (`approved` → promove via handler). **Não** guarda dados do Pix no banco. |
 | `getMpAccessToken(tenant, env)` (novo helper) | Fonte única do token MP. **Hoje** retorna `env.MP_ACCESS_TOKEN` (global); **amanhã** o token do estúdio via Connect. Usado por `gerar-link-sinal` e `mp-sinal-handler`. É a costura entre esta feature e o sub-projeto Connect. |
 
 ## Fluxo de dados — geração do Pix
@@ -153,14 +153,22 @@ plan — provavelmente nenhuma** (todas as colunas necessárias já existem).
 
 ## Gatilhos conversacionais (estado `aguardando_sinal`)
 
-O PropostaAgent já gera o Pix ao reservar o horário. No estado `aguardando_sinal`, duas
+O PropostaAgent já gera o Pix ao reservar o horário. No estado `aguardando_sinal`, **três**
 intenções adicionais do cliente:
 
-- **Pede o QR** ("me manda o QR", "tem o código pra escanear?") → ação `enviar_qr_sinal` →
-  helper re-busca o `qr_code_base64` e envia a imagem.
+- **Pede o QR ou o código de novo** ("me manda o QR", "tem o código pra escanear?", "manda o
+  pix de novo") → ação `reenviar_pix_sinal` → helper re-busca via `GET /v1/payments/{id}` e
+  re-envia o **copia-e-cola** e/ou o **QR (`qr_code_base64`) como imagem**, conforme o pedido.
+  *(Gap #4: cobre código E QR, não só QR.)*
 - **Objeta o Pix** ("tem que ser Pix?", "não consigo Pix", "dá pra cartão?") → ação
   `oferecer_cartao_sinal` → bot responde com a copy de estúdio; se o cliente aceitar, chama
-  `gerar-link-sinal` com `metodo: 'cartao'` e envia o link de checkout.
+  `gerar-link-sinal` com `metodo: 'cartao'` e envia o link de checkout (**cancela o Pix
+  pendente** — ver erros). **Só dispara mediante objeção explícita — nunca proativo** (Gap #2:
+  coberto por teste de não-regressão).
+- **Diz que já pagou** ("já fiz o pix", "acabei de pagar", "paguei e aí?") → ação
+  `verificar_pagamento_sinal` → `GET /v1/payments/{mp_payment_id}`; se `approved`, promove na
+  hora (mesmo caminho do handler) e confirma; se ainda pendente, tranquiliza ("assim que cair
+  eu te aviso na hora, pode deixar"). *(Gap #1: rede de segurança pra webhook perdido.)*
 
 Modeladas como ações do agente (coerente com a arquitetura strict-schema do PropostaAgent,
 Fase 2B), não como heurística de palavra-chave.
@@ -174,6 +182,12 @@ Após o PATCH que promove `tentative → confirmed` (idempotente, já existe):
 3. **Tatuador (Telegram):** `sendTelegramTo(env, tenant.tatuador_telegram_chat_id, text)`.
 4. **[Fase 2 — gancho]** comentário marcando onde a criação do evento no Google Calendar
    entraria.
+
+**Idempotência (Gap #1 colateral):** as notificações ficam **após** o guard
+`already-processed` (o early-return quando o PATCH `tentative→confirmed` não retorna linha) —
+assim webhook duplicado **não re-notifica** cliente nem tatuador. A ação
+`verificar_pagamento_sinal` reusa exatamente este caminho, então "já paguei" + webhook
+chegando juntos também só notificam uma vez.
 
 **Fail-open:** falha em qualquer notificação **não invalida** o sinal — só loga (mesmo padrão
 do `markConversaFechada` atual).
@@ -210,6 +224,15 @@ do `markConversaFechada` atual).
 - **Notificação cliente/tatuador falha no webhook** → fail-open; o sinal continua válido.
 - **Pagou mas o slot já caiu pra outro** (raro com hold 48h) → **fora do escopo do fix
   automático**: alerta admin via `sendTelegramAdmin` pra resolução manual (eventual reembolso).
+- **[Gap #1] Webhook nunca chega** (MP fora do ar / rede) → o cliente pode acionar
+  `verificar_pagamento_sinal` ("já paguei"), que confere ativamente via `GET /v1/payments` e
+  promove se `approved`. **Reconciliação proativa via cron** (varre `aguardando_sinal` perto de
+  expirar e confere status no MP) fica como **opção recomendada no plan** — fecha o caso sem o
+  cliente precisar avisar.
+- **[Gap #3] Pagamento duplo (Pix + cartão no fallback):** ao gerar o link de cartão por
+  objeção, **cancelar o Pix pendente** (`PUT /v1/payments/{id}` → `status: cancelled`) pra
+  evitar o cliente pagar os dois. Se o cancel falhar → fail-open (raro; ambos têm o mesmo
+  `external_reference` e o handler é idempotente, mas registrar pra eventual reembolso manual).
 
 ## Testes (TDD)
 
@@ -221,7 +244,16 @@ do `markConversaFechada` atual).
 - `format-link-sinal-msg` Pix: copia-e-cola em balão próprio, sem markdown.
 - `mp-sinal-handler` dispara `evoSend` (cliente) + `sendTelegramTo` (tatuador) após
   `confirmed`; **fail-open** quando qualquer um falha.
-- PropostaAgent emite `enviar_qr_sinal` (pedido de QR) e `oferecer_cartao_sinal` (objeção).
+- PropostaAgent emite `reenviar_pix_sinal` (pede QR/código), `oferecer_cartao_sinal` (objeção)
+  e `verificar_pagamento_sinal` ("já paguei").
+- **[Gap #2] Não-regressão (decisão de produto crítica):** o PropostaAgent **nunca** emite
+  `oferecer_cartao_sinal` sem objeção explícita do cliente (Pix puro → bot **não menciona
+  cartão** em nenhum momento).
+- **[Gap #1]** `verificar_pagamento_sinal`: `approved` → promove e confirma; pendente →
+  tranquiliza **sem** promover.
+- **[Gap #3]** fallback cartão **cancela o Pix pendente** ao gerar o link.
+- **[Gap #1 colateral]** notificações pós-pagamento **não disparam** em webhook duplicado
+  (guard de idempotência).
 
 **Smoke com pago REAL** (tenant de teste `db686ef2`, conta MP real, valor baixíssimo):
 conversa do zero → escolhe horário → recebe copia-e-cola → **paga de verdade** → webhook
@@ -230,6 +262,18 @@ Verificar no banco: `agendamentos.status = 'confirmed'`, `sinal_pago_em`, `mp_pa
 > ⚠️ Enquanto o MP Connect não existir, este smoke cai **na conta do InkFlow** (token global) —
 > são centavos do Leandro, só pra validar o **encanamento técnico**. Cobrança de cliente real
 > só após o Connect (item 7).
+
+## Notas de implementação (gaps menores — resolver no plan/impl)
+
+- **Valor mínimo do Pix:** confirmar o mínimo aceito pelo MP pra o smoke (centavos). O sinal
+  real é % do valor proposto, sem problema.
+- **`date_of_expiration`:** formato ISO 8601 **com offset** (`...-03:00`), dentro do teto do
+  MP; 48h ok.
+- **`payer.first_name` ausente:** fallback quando o nome do cliente não estiver disponível.
+- **Smoke exige webhook público:** rodar contra prod/preview deployado (o `notification_url`
+  precisa ser alcançável), não localhost.
+- **LGPD:** o email sintético `cli{telefone}@inkflowbrasil.com` embute o telefone (PII menor)
+  enviado ao MP — registrar; alternativa é um hash do telefone se preferir não expor.
 
 ## Fora de escopo (Fase 1)
 
