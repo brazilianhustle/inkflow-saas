@@ -125,3 +125,29 @@ test('gerar-link-sinal metodo default = pix quando omitido', async () => {
     assert.equal(body.metodo_usado, 'pix');
   } finally { globalThis.fetch = orig; }
 });
+
+test('gerar-link-sinal metodo=pix: MP responde sem qr_code → 502 mp-sem-qr', async () => {
+  const orig = globalThis.fetch;
+  globalThis.fetch = async (url, init = {}) => {
+    const u = String(url);
+    if (u.includes('/rest/v1/agendamentos') && (init.method || 'GET') === 'GET') {
+      return new Response(JSON.stringify([{ id: AG_ID, status: 'tentative', inicio: '2026-05-23T13:00:00Z', fim: '2026-05-23T16:00:00Z', cliente_nome: 'Ana', cliente_telefone: '+5511988887777' }]), { status: 200 });
+    }
+    if (u.includes('/rest/v1/tenants')) {
+      return new Response(JSON.stringify([{ nome_estudio: 'Estudio X', sinal_percentual: 30 }]), { status: 200 });
+    }
+    if (u.includes('api.mercadopago.com/v1/payments')) {
+      return new Response(JSON.stringify({ id: 999, point_of_interaction: { transaction_data: {} } }), { status: 201 });
+    }
+    if (u.includes('/rest/v1/agendamentos') || u.includes('/rest/v1/conversas') || u.includes('tool_calls_log')) {
+      return new Response('', { status: 200 });
+    }
+    throw new Error(`unexpected fetch ${u}`);
+  };
+  try {
+    const res = await onRequest(buildContext({ tenant_id: TENANT_ID, agendamento_id: AG_ID, valor_sinal: 225, metodo: 'pix' }, baseEnv()));
+    const body = await res.json();
+    assert.equal(res.status, 502);
+    assert.equal(body.error, 'mp-sem-qr');
+  } finally { globalThis.fetch = orig; }
+});

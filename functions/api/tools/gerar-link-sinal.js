@@ -1,13 +1,12 @@
 // ── Tool 3.4 — gerar_link_sinal ────────────────────────────────────────────
 // POST /api/tools/gerar-link-sinal
 // Headers: X-Inkflow-Tool-Secret
-// Body: { tenant_id, agendamento_id, valor_sinal }
-// Cria Preference Mercado Pago one-shot, salva mp_preference_id no agendamento
-// e retorna link. Webhook /api/webhooks/mp-sinal promove para confirmed
-// quando o pagamento cai.
-//
-// Aceita regeneracao: se o agendamento estiver em status 'cancelled' ou 'tentative',
-// gera novo link. Se cancelled, reabre pra tentative e reseta slot_expira_em.
+// Body: { tenant_id, agendamento_id, valor_sinal, metodo? }
+// Gera cobrança de sinal via Mercado Pago. Padrão: Pix dinâmico (POST
+// /v1/payments → copia-e-cola + QR, persiste mp_payment_id). Fallback para
+// cartão/Preference quando metodo='cartao' ou ENABLE_PIX_SINAL='false'.
+// Aceita regeneracao: status 'tentative' ou 'cancelled'. Se cancelled,
+// reabre pra tentative e reseta slot_expira_em.
 
 import { withTool, supaFetch } from './_tool-helpers.js';
 import { getMpAccessToken } from '../../_lib/mp-token.js';
@@ -71,7 +70,8 @@ export const onRequest = withTool('gerar_link_sinal', async ({ env, input }) => 
 
   const siteUrl = env.SITE_URL || 'https://inkflowbrasil.com';
   const externalRef = `sinal:${agendamento_id}`;
-  const novoSlotExpira = new Date(Date.now() + HOLD_MIN * 60000).toISOString();
+  const expiresAt = new Date(Date.now() + HOLD_MIN * 60000);
+  const novoSlotExpira = expiresAt.toISOString();
 
   // Pix é o padrão (decisão #2). Flag ENABLE_PIX_SINAL=false força o cartão
   // (rollback sem revert). metodo='cartao' explícito também força o cartão.
@@ -109,7 +109,7 @@ export const onRequest = withTool('gerar_link_sinal', async ({ env, input }) => 
       payment_method_id: 'pix',
       external_reference: externalRef,
       notification_url: `${siteUrl}/api/webhooks/mp-sinal`,
-      date_of_expiration: isoComOffsetSP(new Date(Date.now() + HOLD_MIN * 60000)),
+      date_of_expiration: isoComOffsetSP(expiresAt),
       payer: {
         email: telDigits ? `cli${telDigits}@inkflowbrasil.com` : 'cliente@inkflowbrasil.com',
         first_name: ag.cliente_nome || 'Cliente',
@@ -186,6 +186,7 @@ export const onRequest = withTool('gerar_link_sinal', async ({ env, input }) => 
   const pref = await mpRes.json();
   const link = pref.init_point || pref.sandbox_init_point;
   if (!link) return { status: 502, body: { ok: false, error: 'mp-sem-link' } };
+  // mp_payment_id: null — cartão não tem payment id na geração (só após pagar)
   await persistir({ mp_payment_id: null, mp_preference_id: pref.id });
   return {
     status: 200,
