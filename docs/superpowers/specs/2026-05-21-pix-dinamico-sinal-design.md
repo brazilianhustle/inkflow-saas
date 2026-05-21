@@ -9,6 +9,7 @@ related:
   - functions/_lib/prompts/coleta/proposta/
   - functions/_lib/evolution-send.js
   - functions/_lib/telegram.js
+  - functions/api/create-subscription.js
 backlog_entry: "P1 (NEXT) — Pix dinâmico no checkout do sinal (Caminho 1: API Pix + webhook), 2026-05-21"
 ---
 
@@ -41,9 +42,12 @@ O bot passa a cobrar o sinal por **Pix dinâmico** como padrão, entregando o **
 dentro da própria conversa do WhatsApp**. Quando o sinal é pago, o **loop se fecha**: o cliente
 recebe confirmação no WhatsApp e o tatuador é avisado no Telegram.
 
-A feature é desenhada como o **caminho total** (visão completa, incluindo onde o Google
-Calendar encaixa), mas **dividida em fases** porque o Calendar exige OAuth Google por estúdio
-— uma engrenagem própria, do tamanho de um sub-projeto.
+A feature é desenhada como o **caminho total** (visão completa), mas **dividida em fases**.
+Duas das peças são **conexões OAuth de terceiros por estúdio** — Mercado Pago Connect (pra o
+sinal cair na conta do estúdio) e Google Calendar (pra criar o evento) — cada uma do tamanho
+de um sub-projeto próprio. Provavelmente compartilham a mesma infra de "conexões por tenant"
+(storage de token, renovação, revogação). Ficam fora desta feature; ver
+**"Conta recebedora & ordem de implementação"** abaixo.
 
 ### Fase 1 (esta feature — implementável agora)
 
@@ -55,10 +59,23 @@ Calendar encaixa), mas **dividida em fases** porque o Calendar exige OAuth Googl
    Só aparece se o cliente objetar o Pix, com tom de estúdio.
 4. **Confirmação ao cliente no WhatsApp** quando o sinal é pago.
 5. **Aviso ao tatuador no Telegram** quando o sinal é pago.
+6. **Abstração da fonte do token MP** (`getMpAccessToken(tenant)`) — hoje devolve o token
+   global; é o ponto de extensão que o MP Connect vai preencher sem refatorar o Pix.
+
+### Sub-projeto pré-go-live (NÃO nesta feature) — Mercado Pago Connect
+
+7. **MP Connect (OAuth por estúdio)** pra o sinal cair **direto na conta do estúdio**. Hoje só
+   existe **uma** `MP_ACCESS_TOKEN` global (conta do InkFlow, usada nas assinaturas do SaaS) —
+   `gerar-link-sinal.js:26` usa ela. **Não há credencial MP por tenant** (confirmado: sem
+   `mp_access_token`/`collector_id`/split/OAuth no código). Logo, sem o Connect o sinal cairia
+   na conta do InkFlow — aceitável **só pra smoke técnico**, **não** pra cliente real
+   (intermediação financeira tem implicação fiscal/BACEN). É **pré-requisito de go-live com
+   cliente pagante**, brainstorm/spec próprio. 1ª tarefa do sub-projeto: checagem barata de
+   viabilidade (o tipo de conta dos estúdios suporta Connect/`application_fee`?).
 
 ### Fase 2 (futuro — brainstorm próprio, NÃO nesta feature)
 
-6. **Criar evento no Google Calendar** ao confirmar o agendamento. Hoje só existe a coluna
+8. **Criar evento no Google Calendar** ao confirmar o agendamento. Hoje só existe a coluna
    `agendamentos.gcal_event_id` (vazia, nunca preenchida) e
    `tenants.google_calendar_id`/`google_drive_folder` (aceitos via API). **Zero integração
    real** — exige OAuth Google por tenant, storage de refresh token, renovação e tratamento de
@@ -85,6 +102,19 @@ Calendar encaixa), mas **dividida em fases** porque o Calendar exige OAuth Googl
    `ENABLE_TRIAL_V2`/`ENABLE_COLETA_MODE`). Off → volta pro checkout/Preference atual.
 8. **Estender a tool `gerar-link-sinal`** com `metodo: 'pix' | 'cartao'` (default `pix`) — em
    vez de criar uma tool nova. Reuso máximo.
+9. **Conta recebedora = Modelo A (MP Connect/OAuth).** O sinal deve cair **na conta do
+   estúdio**, não na do InkFlow. Como o Connect é sub-projeto próprio (item 7), esta feature
+   usa a **abstração `getMpAccessToken(tenant)`** (token global por trás, por enquanto). Quando
+   o Connect entregar, ele preenche a abstração e o sinal passa a cair no estúdio **sem tocar
+   no código do Pix**. (Modelos descartados: B = conta InkFlow + repasse manual = intermediação
+   financeira; C = colar token MP por tenant = fricção + guardar token de terceiro.)
+10. **Ordem de implementação (decisão de engenharia):** (1) definir a **interface do token**
+    `getMpAccessToken(tenant)`; (2) **Pix dinâmico** (esta feature) consumindo a interface, com
+    o global por trás — smoke técnico valida tudo; (3) **MP Connect** (sub-projeto) preenche a
+    interface — pré-requisito de go-live; (4) **Google Calendar** (Fase 2), reusando a infra de
+    conexões OAuth do Connect. Justificativa: isola o que varia, entrega valor testável cedo,
+    retrabalho ~zero, e o Connect (mais caro/incerto) é construído depois de o consumidor
+    deixar o requisito cristalino.
 
 ## Arquitetura — componentes que mudam
 
@@ -95,13 +125,15 @@ Calendar encaixa), mas **dividida em fases** porque o Calendar exige OAuth Googl
 | `functions/_lib/mp-sinal-handler.js` | Após promover `confirmed`: busca o tenant → `evoSend` confirmação ao **cliente** + `sendTelegramTo` aviso ao **tatuador**. Ambos **fail-open**. Gancho comentado pro Calendar (Fase 2). |
 | PropostaAgent — `prompts/coleta/proposta/*` + schema + `route.js` | Duas ações novas no estado `aguardando_sinal`: `enviar_qr_sinal` e `oferecer_cartao_sinal`. |
 | Helper QR sob demanda | Re-busca `GET /v1/payments/{mp_payment_id}` → envia `qr_code_base64` como imagem (`evoSend` `type: 'media'`). **Não** guarda a imagem no banco. |
+| `getMpAccessToken(tenant, env)` (novo helper) | Fonte única do token MP. **Hoje** retorna `env.MP_ACCESS_TOKEN` (global); **amanhã** o token do estúdio via Connect. Usado por `gerar-link-sinal` e `mp-sinal-handler`. É a costura entre esta feature e o sub-projeto Connect. |
 
 ## Fluxo de dados — geração do Pix
 
 `POST https://api.mercadopago.com/v1/payments`
 
-- **Headers:** `Authorization: Bearer ${MP_ACCESS_TOKEN}`, `X-Idempotency-Key:
-  sinal-{agendamento_id}` (evita Pix duplicado em retry).
+- **Headers:** `Authorization: Bearer ${getMpAccessToken(tenant, env)}` *(global hoje, token
+  do estúdio via Connect amanhã)*, `X-Idempotency-Key: sinal-{agendamento_id}` (evita Pix
+  duplicado em retry).
 - **Body:**
   - `transaction_amount`: valor do sinal (ex.: 30% do `valor_proposto`)
   - `description`: `"Sinal tatuagem - {nome_estudio}"`
@@ -195,9 +227,14 @@ do `markConversaFechada` atual).
 conversa do zero → escolhe horário → recebe copia-e-cola → **paga de verdade** → webhook
 confirma → cliente recebe a confirmação no WhatsApp + tatuador recebe o aviso no Telegram.
 Verificar no banco: `agendamentos.status = 'confirmed'`, `sinal_pago_em`, `mp_payment_id`.
+> ⚠️ Enquanto o MP Connect não existir, este smoke cai **na conta do InkFlow** (token global) —
+> são centavos do Leandro, só pra validar o **encanamento técnico**. Cobrança de cliente real
+> só após o Connect (item 7).
 
 ## Fora de escopo (Fase 1)
 
+- **MP Connect / OAuth por estúdio** (item 7) — sub-projeto próprio, **pré-requisito de go-live
+  com cliente pagante**. Esta feature só deixa a costura pronta (`getMpAccessToken`).
 - Google Calendar (Fase 2 — OAuth Google por estúdio, brainstorm próprio).
 - Parcelamento (P1 separado no backlog).
 - Refator de tom/naturalidade da copy (P1 separado).
