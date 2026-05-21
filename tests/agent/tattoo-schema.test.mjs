@@ -90,6 +90,7 @@ test('handoff sem descricao_curta e REJEITADO', () => {
     campos_faltando: [],
     campos_conflitantes: [],
     payload_portfolio: null,
+    ...VISAO_VAZIA,
   });
   assert.equal(r.success, false);
 });
@@ -104,6 +105,7 @@ test('handoff com altura_cm null e REJEITADO (handoff exige non-null)', () => {
     },
     dados_completos: true, campos_faltando: [], campos_conflitantes: [],
     payload_portfolio: null,
+    ...VISAO_VAZIA,
   });
   assert.equal(r.success, false);
 });
@@ -119,6 +121,7 @@ test('handoff com dados_completos=false e REJEITADO (literal:true)', () => {
     dados_completos: false,
     campos_faltando: [], campos_conflitantes: [],
     payload_portfolio: null,
+    ...VISAO_VAZIA,
   });
   assert.equal(r.success, false);
 });
@@ -134,6 +137,7 @@ test('handoff com campos_conflitantes nao-vazio e REJEITADO (length:0)', () => {
     dados_completos: true, campos_faltando: [],
     campos_conflitantes: ['x'],
     payload_portfolio: null,
+    ...VISAO_VAZIA,
   });
   assert.equal(r.success, false);
 });
@@ -159,6 +163,7 @@ test('enviar_portfolio com payload_portfolio null e REJEITADO', () => {
     dados_persistidos: DADOS_VAZIOS,
     dados_completos: false, campos_faltando: ['local_corpo'], campos_conflitantes: [],
     payload_portfolio: null,
+    ...VISAO_VAZIA,
   });
   assert.equal(r.success, false);
 });
@@ -186,6 +191,7 @@ test('proxima_acao desconhecido e REJEITADO', () => {
     dados_persistidos: DADOS_VAZIOS,
     dados_completos: false, campos_faltando: [], campos_conflitantes: [],
     payload_portfolio: null,
+    ...VISAO_VAZIA,
   });
   assert.equal(r.success, false);
 });
@@ -251,4 +257,34 @@ test('output sem analise_imagens e REJEITADO (campo required)', () => {
     // analise_imagens AUSENTE de proposito + cobertura_suspeita ausente
   });
   assert.equal(r.success, false);
+});
+
+test('cobertura_suspeita true (estado nao-null) passa', () => {
+  const ok = TattooOutputSchema.safeParse({
+    proxima_acao: 'pergunta',
+    resposta_cliente: 'seria uma cobertura?',
+    dados_persistidos: DADOS_VAZIOS,
+    dados_completos: false,
+    campos_faltando: ['local_corpo'],
+    campos_conflitantes: [],
+    payload_portfolio: null,
+    analise_imagens: [{ tipo: 'corpo', descricao: 'antebraco com tattoo', corpo_tem_tattoo: true, corpo_tem_marcacao: false }],
+    cobertura_suspeita: true,
+  });
+  assert.equal(ok.success, true);
+});
+
+test('analise_imagens [] (array vazio) passa', () => {
+  const ok = TattooOutputSchema.safeParse({
+    proxima_acao: 'pergunta',
+    resposta_cliente: 'qual o local?',
+    dados_persistidos: DADOS_VAZIOS,
+    dados_completos: false,
+    campos_faltando: ['local_corpo'],
+    campos_conflitantes: [],
+    payload_portfolio: null,
+    analise_imagens: [],
+    cobertura_suspeita: null,
+  });
+  assert.equal(ok.success, true);
 });
