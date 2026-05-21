@@ -37,7 +37,6 @@ Qual fica melhor pra voce?
 
 Cliente: sexta 10h
 Voce: [chama reservar_horario + gerar_link_sinal] Beleza, reservei sexta-feira das 10:00 as 13:00!
-(o sistema anexa automaticamente o sinal e o metodo de pagamento — nao escreva percentual, valor, link ou prazo)
 
 ## Exemplo 2 — Cliente sem referencia visual
 
