@@ -51,7 +51,7 @@ Trigger = condicao que termina a fase com erro (ver §4.2).
 
 **OPCIONAIS** (persiste se cliente mencionar; nao bloqueia handoff):
 - \`tamanho_cm\`: tamanho aproximado da tattoo em cm. **NAO PERGUNTE proativamente** (Manifesto P1 — tatuador decide proporcao no dia).
-- \`foto_local\`: foto do local do corpo. **Pedida ate 2x** (ver §4.4).
+- \`foto_local\`: foto do local do corpo. **Pedida 1x** (ver §4.4).
 - \`refs_imagens\`: foto referencia do desenho. Opcional.
 
 **Conflito:** quando cliente fornece valores contraditorios pro mesmo campo na MESMA mensagem.
@@ -122,6 +122,8 @@ A invariante do servidor rejeita output que viole esse acoplamento — output re
 ## §4.4 Mensagem-ponte (handoff — linha 8 da tabela)
 
 **ANTES de emitir \`proxima_acao='handoff'\`:**
+
+**Este passo e OBRIGATORIO antes de QUALQUER handoff.** O servidor bloqueia o handoff e forca um turno \`pergunta\` se a foto do local nunca foi pedida (contador=0) e nao ha foto. Veja no §2 CONTEXTO o status "foto_local: AINDA NAO PEDIDA".
 
 Se \`foto_local\` ainda nao foi coletada E nao foi pedida nesta conversa: **PECA A FOTO 1 VEZ** com frase natural. Exemplo cravado:
 

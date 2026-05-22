@@ -201,6 +201,32 @@
         "dados_completos": true,
         "dados_persistidos_inclui": ["descricao_curta", "tamanho_cm", "local_corpo"]
       }
+    },
+    {
+      "id": "TC-11",
+      "descricao": "Bug 1: 4 OBR completos, foto nunca pedida -> pede foto (pergunta), NAO handoff",
+      "hipoteses": ["Bug1"],
+      "input": {
+        "tenant_id": "00000000-0000-0000-0000-000000000001",
+        "telefone": "+5511900000011",
+        "mensagens": [
+          { "role": "user", "content": "isso, pode ser" }
+        ],
+        "estado_atual": "tattoo",
+        "dados_acumulados": {
+          "descricao_curta": "rosa",
+          "local_corpo": "antebraco direito",
+          "altura_cm": 170,
+          "estilo": "fineline"
+        },
+        "historico": [
+          { "role": "assistant", "content": "Top! Rosa fineline no antebraco direito, 170cm. Fechou?" }
+        ]
+      },
+      "expected": {
+        "proxima_acao": "pergunta",
+        "dados_completos": false
+      }
     }
   ]
 }
