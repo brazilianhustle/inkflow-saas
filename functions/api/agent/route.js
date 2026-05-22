@@ -176,8 +176,12 @@ export async function runAgent({
       };
       pediuFotoLocal = true;
     } else if (out.proxima_acao === 'pergunta' && obrCompletos && tentativasFoto === 0
-               && !temFotoLocal && (out.campos_conflitantes?.length ?? 0) === 0) {
-      // LLM ja pediu a foto organicamente neste turno (4 OBR completos, sem conflito).
+               && !temFotoLocal && (out.campos_conflitantes?.length ?? 0) === 0
+               && /foto/i.test(out.resposta_cliente || '')) {
+      // LLM ja pediu a foto organicamente neste turno (4 OBR completos, sem
+      // conflito) E a resposta menciona foto. O guard /foto/ evita contar como
+      // "foto pedida" um turno de fallback de rede (mensagem generica) ou uma
+      // pergunta de outro assunto (confirmacao/FAQ) com OBR ja completos.
       pediuFotoLocal = true;
     }
     // Valida payload do handoff contra contrato cross-agent (so quando

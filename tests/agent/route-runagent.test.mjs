@@ -166,3 +166,75 @@ test('Bug1 gate: handoff com foto_local presente → handoff passa mesmo sem con
   assert.equal(r.ok, true);
   assert.equal(r.proxima_acao, 'handoff');
 });
+
+// Output 'pergunta' com os 4 OBR completos (reusado nos testes do else-if do gate).
+const PERGUNTA_OBR_COMPLETO = {
+  proxima_acao: 'pergunta',
+  resposta_cliente: '<override>',
+  dados_persistidos: {
+    descricao_curta: 'rosa', local_corpo: 'antebraco', altura_cm: 170,
+    estilo: 'fineline', tamanho_cm: null, cor_preferencia: null, foto_local: null,
+  },
+  dados_completos: false,
+  campos_faltando: [],
+  campos_conflitantes: [],
+  payload_portfolio: null,
+  analise_imagens: null,
+  cobertura_suspeita: null,
+};
+function fakePergunta(resposta) {
+  return {
+    responses: {
+      parse: async () => ({ status: 'completed', id: 'r',
+        output_parsed: { output: { ...PERGUNTA_OBR_COMPLETO, resposta_cliente: resposta } } }),
+    },
+  };
+}
+
+test('Bug1 gate: pergunta com OBR completos mas resposta NAO sobre foto → NAO marca pediu_foto_local', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = { id: 'c', telefone: '5511', estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'confirma',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: fakePergunta('Beleza! Confirma que e no antebraco direito mesmo?'),
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'pergunta');
+  assert.ok(!r.pediu_foto_local, 'contador nao deve subir quando a pergunta nao e sobre foto');
+});
+
+test('Bug1 gate: pergunta com OBR completos E resposta sobre foto → marca pediu_foto_local', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = { id: 'c', telefone: '5511', estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'fechou',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: fakePergunta('Show! Consegue mandar uma foto do local?'),
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'pergunta');
+  assert.equal(r.pediu_foto_local, true);
+});
+
+test('Bug1 gate: fallback de rede (sem foto na resposta) NAO marca pediu_foto_local mesmo com OBR completos no DB', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  // 4 OBR ja completos no DB, foto nunca pedida; rede cai → buildFallbackOutput.
+  const conversa = { id: 'c', telefone: '5511', estado_agente: 'tattoo',
+    dados_coletados: { descricao_curta: 'rosa', local_corpo: 'antebraco', altura_cm: 170, estilo: 'fineline' },
+    dados_cadastro: {} };
+  const throwingClient = {
+    responses: { parse: async () => { const e = new Error('network down'); e.status = 503; throw e; } },
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'oi',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: throwingClient,
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'pergunta');
+  assert.ok(!r.pediu_foto_local, 'fallback de rede nao pode contar como foto pedida');
+});
