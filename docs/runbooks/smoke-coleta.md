@@ -61,9 +61,9 @@ Spec/design: `docs/superpowers/specs/2026-05-22-smoke-harness-design.md`.
 |---|---|---|---|---|
 | R1 | Ir ate cadastro; dizer "tenho 30 anos"; depois "nasci em 15/03/1996" | S1: idade solta nao vira data_nascimento | `data_nascimento` segue null apos idade; bot pede a data; persiste so apos data explicita | `verify.sh` -> `[conversas] data_nasc` |
 | R2 | Acionar reentrada automatica; cliente responde depois | S2: reentrada entra no historico do agente | Fala automatica aparece em `conversa_mensagens` (type=ai); bot nao age como se nada tivesse acontecido | `verify.sh` -> `[conversa_mensagens]` |
-| R3 | Em proposta, aceitar valor; antes de escolher slot, "manda o pix" | S3: sem Pix antes do horario | Bot pede pra escolher horario; sem agendamento/mp_payment_id | `verify.sh` -> `[agendamentos]` vazio; tail `[cron]` sem reservar-horario |
-| R4 | Resposta com confirmacao+pergunta; reentrada; confirmacao pos-pagamento | S4/S5: baloes por `\n\n` | Textos separados por linha em branco saem como mensagens separadas | `verify.sh` -> content com ⏎; tail Evolution |
-| R5 | Briefing com local "perna"; pedir desconto; escolher horario | Proposta + briefing | Briefing "na perna"; bot nao confirma desconto sozinho; confirma dia/horario ao escolher | `verify.sh` -> `[conversas] valor_proposto`; tail briefing |
+| R3 | Em proposta, aceitar valor; antes de escolher slot, "manda o pix" | S3: sem Pix antes do horario | Bot pede pra escolher horario; sem agendamento/mp_payment_id | `verify.sh` -> `[agendamentos]` vazio; tail `[pages]` sem chamar tools reservar-horario/gerar-link-sinal antes do slot |
+| R4 | Resposta com confirmacao+pergunta; reentrada; confirmacao pos-pagamento | S4/S5: baloes por `\n\n` | Textos separados por linha em branco saem como mensagens separadas | WhatsApp: chega em balões separados; tail `[pages]` (whatsapp-pipeline Etapa 7: split `\n\n` → N× sendText); `verify.sh` -> content com ⏎⏎ |
+| R5 | Briefing com local "perna"; pedir desconto; escolher horario | Proposta + briefing | Briefing "na perna"; bot nao confirma desconto sozinho; confirma dia/horario ao escolher | `verify.sh` -> `[conversas] valor_proposto`; tail `[pages]` (tool enviar-orcamento-tatuador: briefing "na perna") |
 
 ## Sinais de regressao (abrir item se aparecer)
 
