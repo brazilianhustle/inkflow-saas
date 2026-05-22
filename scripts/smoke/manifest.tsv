@@ -1,0 +1,12 @@
+# scripts/smoke/manifest.tsv
+# Tabelas de rastro de conversa a limpar no smoke.
+# Formato (TSV): tabela<TAB>estrategia<TAB>descricao
+# Estrategias: tenant_telefone | tenant_cliente_telefone | session_id | via_conversa
+# Colunas validadas contra o schema real por preflight.sh.
+conversas	tenant_telefone	estado/orcamento da conversa
+conversa_mensagens	session_id	historico do agente (type ai/human)
+agendamentos	tenant_cliente_telefone	slots/sinais
+orcamentos	tenant_telefone	orcamentos gerados
+tool_calls_log	tenant_telefone	log de tool calls
+logs	tenant_telefone	logs gerais por telefone
+agent_turn_logs	via_conversa	telemetria por turno (so tem conversa_id)
