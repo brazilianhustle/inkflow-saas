@@ -35,6 +35,10 @@ const HEADERS = {
 // reuso em runAgent + (futuro) outros call-sites.
 const PROPOSTA_SUBSTATES = new Set(['propondo_valor', 'escolhendo_horario', 'aguardando_sinal']);
 
+// Bug 1: copy canônica do pedido de foto do local (espelha §4.4 do prompt tattoo).
+// Usada como backstop quando o LLM tenta handoff sem nunca ter pedido a foto.
+const PEDIDO_FOTO_LOCAL = 'Fechou! Consegue mandar também uma foto do local? É importante pro tatuador ter noção do espaço e passar o valor certinho.';
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: HEADERS });
 }
@@ -132,6 +136,7 @@ export async function runAgent({
 
   let working;
   let invariantCheck = { valid: true };
+  let pediuFotoLocal = false;
 
   if (estado_atual === 'tattoo') {
     // ─── Caminho C Fase 1: path novo, schema strict ────────────────────
@@ -152,6 +157,32 @@ export async function runAgent({
         message: e?.message, status: e?.status, code: e?.code,
       });
       out = buildFallbackOutput('tattoo');
+    }
+    // ─── Bug 1: trava leve foto do local pedida >=1x antes do handoff ───
+    // Contador vive em dados_coletados.tentativas_foto_local (estado_extra
+    // NAO existe na tabela conversas). Se o LLM tentar handoff sem nunca ter
+    // pedido a foto e sem foto presente, forca um turno pergunta pedindo a
+    // foto (a foto continua OPCIONAL — basta ter sido pedida 1x).
+    const dadosApos = { ...(conversa?.dados_coletados || {}), ...(out.dados_persistidos || {}) };
+    const tentativasFoto = conversa?.dados_coletados?.tentativas_foto_local || 0;
+    const temFotoLocal = !!dadosApos.foto_local;
+    const obrCompletos = ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']
+      .every(k => dadosApos[k] != null && dadosApos[k] !== '');
+    if (out.proxima_acao === 'handoff' && tentativasFoto === 0 && !temFotoLocal) {
+      out = {
+        ...forcePergunta(out, PEDIDO_FOTO_LOCAL),
+        dados_completos: false,
+        campos_faltando: ['foto_local'],
+      };
+      pediuFotoLocal = true;
+    } else if (out.proxima_acao === 'pergunta' && obrCompletos && tentativasFoto === 0
+               && !temFotoLocal && (out.campos_conflitantes?.length ?? 0) === 0
+               && /foto/i.test(out.resposta_cliente || '')) {
+      // LLM ja pediu a foto organicamente neste turno (4 OBR completos, sem
+      // conflito) E a resposta menciona foto. O guard /foto/ evita contar como
+      // "foto pedida" um turno de fallback de rede (mensagem generica) ou uma
+      // pergunta de outro assunto (confirmacao/FAQ) com OBR ja completos.
+      pediuFotoLocal = true;
     }
     // Valida payload do handoff contra contrato cross-agent (so quando
     // proxima_acao=handoff). validateTransition retorna payload extraido
@@ -324,6 +355,7 @@ export async function runAgent({
     urls_portfolio,
     analise_imagens: finalOut.analise_imagens ?? null,
     cobertura_suspeita: finalOut.cobertura_suspeita ?? null,
+    pediu_foto_local: estado_atual === 'tattoo' ? pediuFotoLocal : undefined,
   };
 }
 

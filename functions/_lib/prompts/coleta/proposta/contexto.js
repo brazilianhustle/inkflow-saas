@@ -11,6 +11,7 @@ export function contextoProposta(tenant, conversa, ctx) {
   // Alinha com _shared/contexto.js:4 pattern.
   const sinal_pct = tenant?.config_precificacao?.sinal_percentual ?? tenant?.sinal_percentual ?? 30;
   const portfolio_status = ctx?.portfolio_disponivel ? 'disponivel' : 'nao cadastrado';
+  const valor_apresentado = ctx?.valor_apresentado === true ? 'sim' : 'nao';
 
   let blocoEstado = '';
   if (estado_atual === 'propondo_valor' || estado_atual === 'escolhendo_horario') {
@@ -38,6 +39,7 @@ Cliente: ${cliente_nome}
 Estado atual: ${estado_atual}
 Valor proposto: R$ ${valor_proposto}
 Decisao desconto previa: ${decisao_desconto}
+Valor ja apresentado ao cliente: ${valor_apresentado}
 Sinal percentual configurado: ${sinal_pct}%
 Portfolio: ${portfolio_status}
 

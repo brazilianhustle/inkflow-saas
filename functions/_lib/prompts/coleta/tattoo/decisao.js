@@ -51,7 +51,7 @@ Trigger = condicao que termina a fase com erro (ver §4.2).
 
 **OPCIONAIS** (persiste se cliente mencionar; nao bloqueia handoff):
 - \`tamanho_cm\`: tamanho aproximado da tattoo em cm. **NAO PERGUNTE proativamente** (Manifesto P1 — tatuador decide proporcao no dia).
-- \`foto_local\`: foto do local do corpo. **Pedida ate 2x** (ver §4.4).
+- \`foto_local\`: foto do local do corpo. **Pedida 1x** (ver §4.4).
 - \`refs_imagens\`: foto referencia do desenho. Opcional.
 
 **Conflito:** quando cliente fornece valores contraditorios pro mesmo campo na MESMA mensagem.
@@ -119,9 +119,23 @@ Excecao: \`campos_faltando=[]\` (conflito puro, linhas 6/10/11 — sem campo OBR
 
 A invariante do servidor rejeita output que viole esse acoplamento — output retorna erro 500 e cliente nao recebe resposta. **Mantenha decisao alinhada ao texto.**
 
+**R10. ALTURA × TAMANHO (Manifesto P1/P3 — desambiguacao por magnitude).** Numeros que o cliente manda podem ser ALTURA da pessoa (\`altura_cm\`) ou TAMANHO da tattoo (\`tamanho_cm\`). Classifique:
+- Normalize "1.81", "1,81", "1.81m", "1,81 m" -> 181 (\`altura_cm\`). "181" -> 181.
+- numero **≤ 50** (com ou sem "cm") -> SEMPRE \`tamanho_cm\` (tamanho da tattoo, opcional). NUNCA e altura.
+- numero em **metros** (1,40–2,49) OU inteiro **≥ 140** -> \`altura_cm\` (altura da pessoa).
+- **zona morta rara** (51–139): caso raríssimo -> na duvida, PERGUNTE se e altura ou tamanho.
+- Se voce **acabou de perguntar a altura**, o numero da resposta e altura.
+Exemplo: "5cm, sou 1.81" -> \`tamanho_cm=5\`, \`altura_cm=181\`.
+
+**R11. EXTRACAO MULTI-CAMPO.** Se o cliente fornece VARIOS campos numa unica mensagem ("rosa fineline na perna, 5cm, sou 1.81"), persista TODOS de uma vez em \`dados_persistidos\` no MESMO turno (descricao_curta, local_corpo, estilo, altura_cm, tamanho_cm). NUNCA re-pergunte um campo que o cliente ja deu — so pergunte o que realmente falta.
+
+**R12. FOTO COMO TEMA.** Se o cliente manda uma foto de REFERENCIA (a arte que quer tatuar) e NAO descreveu o tema em texto, use a descricao visual da referencia como \`descricao_curta\` (ex: "rosa fineline" a partir da imagem). NAO fique pedindo "tema/ideia" quando a referencia ja mostra o desenho.
+
 ## §4.4 Mensagem-ponte (handoff — linha 8 da tabela)
 
 **ANTES de emitir \`proxima_acao='handoff'\`:**
+
+**Este passo e OBRIGATORIO antes de QUALQUER handoff.** O servidor bloqueia o handoff e forca um turno \`pergunta\` se a foto do local nunca foi pedida (contador=0) e nao ha foto. Veja no §2 CONTEXTO o status "foto_local: AINDA NAO PEDIDA".
 
 Se \`foto_local\` ainda nao foi coletada E nao foi pedida nesta conversa: **PECA A FOTO 1 VEZ** com frase natural. Exemplo cravado:
 

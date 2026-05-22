@@ -831,3 +831,42 @@ test('pipeline: passa imagens (base64+mimetype+msgRowId) ao runAgent, cap 4', as
   assert.deepEqual(capturedRunAgent.imagens[0], { base64: 'A0', mimetype: 'image/jpeg', msgRowId: 1 });
   assert.equal(capturedRunAgent.imagens[3].base64, 'A3', 'a 4a imagem incluida e a do indice 3 (A3); A4/A5 ficam de fora');
 });
+
+test('Bug1: pediu_foto_local incrementa dados_coletados.tentativas_foto_local', async () => {
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  let patchBody = null;
+  const deps = mockDeps({
+    runAgent: async () => ({
+      ok: true, resposta_cliente: 'manda a foto do local?', estado_novo: 'tattoo',
+      dados_persistidos: { descricao_curta: 'rosa', local_corpo: 'perna', altura_cm: 170, estilo: 'fineline' },
+      proxima_acao: 'pergunta', agent_usado: 'tattoo', pediu_foto_local: true,
+    }),
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: 201, content: 'rosa fineline na perna, sou 1.70' }]),
+      onPatch: (path, body) => { if (body.dados_coletados) patchBody = body; },
+    }),
+  });
+  await processBatch({}, baseBatch({ msgRowIds: [201] }), deps);
+  assert.ok(patchBody, 'deve ter PATCH com dados_coletados');
+  assert.equal(patchBody.dados_coletados.tentativas_foto_local, 1);
+});
+
+test('Bug1: sem pediu_foto_local NAO escreve contador', async () => {
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  let patchBody = null;
+  const deps = mockDeps({
+    runAgent: async () => ({
+      ok: true, resposta_cliente: 'qual o local?', estado_novo: 'tattoo',
+      dados_persistidos: { descricao_curta: 'rosa' },
+      proxima_acao: 'pergunta', agent_usado: 'tattoo',
+    }),
+    supaFetch: batchSupaFetch({
+      conversa, rows: rowsFor([{ id: 202, content: 'quero uma rosa' }]),
+      onPatch: (path, body) => { if (body.dados_coletados) patchBody = body; },
+    }),
+  });
+  await processBatch({}, baseBatch({ msgRowIds: [202] }), deps);
+  assert.ok(patchBody);
+  assert.equal(patchBody.dados_coletados.tentativas_foto_local, undefined);
+});

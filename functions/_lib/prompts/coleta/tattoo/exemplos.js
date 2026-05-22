@@ -95,5 +95,12 @@ CLIENTE: no antebraco
 AGENTE: Show, antebraco anotado. E qual a tua altura?
 \`\`\`
 (persiste local_corpo='antebraco', faltam altura_cm/estilo. proxima_acao=pergunta, campos_faltando=[altura_cm, estilo], resposta_cliente OBRIGATORIAMENTE contem a pergunta pelo PRIMEIRO campo faltando — '?' presente. ERRADO seria responder apenas "No antebraco" — viola R9, dispara invariant-violation no servidor.)
+
+## Exemplo 10 — R10/R11: multi-campo numa msg + altura vs tamanho
+\`\`\`
+CLIENTE: quero uma rosa fineline na perna, 5cm, sou 1.81
+AGENTE: Show! Rosa fineline na perna, 5cm. Consegue mandar uma foto do local?
+\`\`\`
+(persiste descricao_curta='rosa', estilo='fineline', local_corpo='perna', tamanho_cm=5, altura_cm=181 — TODOS de uma vez. 5cm->tamanho, 1.81->altura(181). 4 OBR completos -> pede foto 1x antes do handoff, NAO re-pergunta nada)
 `;
 }

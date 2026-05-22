@@ -211,6 +211,11 @@ export async function processBatch(env, batch, depsOverride = {}) {
     const novoDadosColetados = isCadastro
       ? (conversa.dados_coletados || {})
       : { ...(conversa.dados_coletados || {}), ...(agentOut.dados_persistidos || {}) };
+    // Bug 1: incrementa contador de foto pedida. Persiste em dados_coletados
+    // (estado_extra nao existe na tabela). route.js sinaliza via pediu_foto_local.
+    if (agentOut.pediu_foto_local && !isCadastro) {
+      novoDadosColetados.tentativas_foto_local = (conversa.dados_coletados?.tentativas_foto_local || 0) + 1;
+    }
     const novoDadosCadastro = isCadastro
       ? { ...(conversa.dados_cadastro || {}), ...(agentOut.dados_persistidos || {}) }
       : (conversa.dados_cadastro || {});
@@ -230,7 +235,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
       try {
         const dadosPreMerge = conversa.dados_coletados || {};
         let dadosAcc = isCadastro ? { ...dadosPreMerge } : { ...novoDadosColetados };
-        let tentativas = dadosPreMerge.tentativas_foto_local || conversa.estado_extra?.tentativas_foto_local || 0;
+        let tentativas = dadosPreMerge.tentativas_foto_local || 0;
         let fotoLocalAtual = dadosPreMerge.foto_local;
         const analise = Array.isArray(agentOut.analise_imagens) ? agentOut.analise_imagens : null;
         // No maximo UMA foto_local por lote: a 1ª 'local' vence; demais viram ref.

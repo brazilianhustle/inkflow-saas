@@ -28,6 +28,23 @@ function normalizeHistoryItem(item) {
   return item;
 }
 
+// Bug 2: o valor ATUAL ja foi mostrado ao cliente? Deriva do historico —
+// procura o numero do valor numa fala do assistant. Self-contained (sem flag
+// persistida). Pos-desconto: valor muda (ex: 600); historico so tem o antigo
+// (750) -> retorna false -> bot re-apresenta o novo valor.
+// Match por fronteira de digito (nao substring cru): 600 NAO casa dentro de
+// "6000"/"1600" — evita falso-positivo quando o historico cita outro numero
+// que contem os digitos do valor atual.
+function valorJaApresentado(historico, valor) {
+  if (valor == null) return false;
+  const alvo = String(valor).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(?<!\\d)${alvo}(?!\\d)`);
+  return (historico || []).some(item => {
+    const norm = normalizeHistoryItem(item);
+    return norm.role === 'assistant' && re.test(String(norm.content ?? ''));
+  });
+}
+
 const SCHEMA_NAME_BY_STATE = {
   propondo_valor: 'proposta_propondo_valor',
   escolhendo_horario: 'proposta_escolhendo_horario',
@@ -49,7 +66,9 @@ export async function runPropostaAgent({
     throw new Error(`Estado proposta desconhecido: ${estado_atual}`);
   }
   const ctx = clientContext || {};
-  const instructions = generatePromptColetaProposta(tenant, conversa, ctx);
+  const valorAtual = ctx.valor_proposto ?? conversa?.valor_proposto;
+  const ctxComFlag = { ...ctx, valor_apresentado: valorJaApresentado(historico, valorAtual) };
+  const instructions = generatePromptColetaProposta(tenant, conversa, ctxComFlag);
 
   const input = [
     ...((historico || []).map(normalizeHistoryItem)),

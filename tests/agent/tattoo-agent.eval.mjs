@@ -87,5 +87,11 @@ for (const scenario of scenarios) {
         assert.ok(filled, `${scenario.id}: esperava ${c} preenchido — got=${JSON.stringify(v)}`);
       }
     }
+    if (scenario.expected.dados_persistidos_valores) {
+      for (const [k, v] of Object.entries(scenario.expected.dados_persistidos_valores)) {
+        assert.equal((out.dados_persistidos || {})[k], v,
+          `${scenario.id}: ${k} esperado=${v} got=${JSON.stringify((out.dados_persistidos || {})[k])}`);
+      }
+    }
   });
 }
