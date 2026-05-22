@@ -313,5 +313,24 @@
         "value": "cliente_agressivo"
       }
     ]
+  },
+  {
+    "id": "TC-P12",
+    "descricao": "Bug 2: valor ja apresentado + cliente 'bora' -> oferecendo_horario, NAO re-pergunta valor",
+    "estado_atual": "propondo_valor",
+    "valor_proposto": 750,
+    "decisao_desconto": null,
+    "horarios_livres": [
+      { "inicio": "2026-05-12T17:00:00Z", "fim": "2026-05-12T20:00:00Z", "legenda": "ter 12/05 14h-17h" },
+      { "inicio": "2026-05-14T13:00:00Z", "fim": "2026-05-14T16:00:00Z", "legenda": "qui 14/05 10h-13h" }
+    ],
+    "historico": [
+      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+    ],
+    "mensagem": "bora",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "oferecendo_horario" },
+      { "type": "resposta_cliente_not_matches", "value": "quanto tu tava pensando" }
+    ]
   }
 ]

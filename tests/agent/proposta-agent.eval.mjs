@@ -81,6 +81,9 @@ if (!process.env.OPENAI_API_KEY) {
             assert.ok(lower.includes(term.toLowerCase()),
               `${sc.id}: faltou "${term}" em "${out.resposta_cliente}"`);
           }
+        } else if (a.type === 'resposta_cliente_not_matches') {
+          assert.ok(!new RegExp(a.value, 'i').test(out.resposta_cliente || ''),
+            `${sc.id}: resposta NAO deveria casar /${a.value}/ — "${out.resposta_cliente}"`);
         }
       }
     });

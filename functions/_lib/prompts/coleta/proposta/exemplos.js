@@ -8,11 +8,11 @@ CLIENTE: fechou, vamos marcar
 AGENTE: Show! Tenho ter 12/05 das 14h as 17h ou qui 14/05 das 10h as 13h. Qual prefere?
 // proxima_acao=oferecendo_horario, sem payload
 
-## Exemplo 2 — Caminho B sem valor
-[estado=propondo_valor, valor_proposto=750]
+## Exemplo 2 — Caminho B: reclama do preco SEM aceitar (unico caso de "quanto tu tava pensando")
+[estado=propondo_valor, valor_proposto=750, valor ja apresentado=sim]
 CLIENTE: ta um pouco caro
 AGENTE: Quanto tu tava pensando?
-// proxima_acao=pergunta
+// proxima_acao=pergunta — cliente RECLAMOU e NAO aceitou. Se ele dissesse "bora", seria oferecendo_horario.
 
 ## Exemplo 3 — Caminho B com valor
 [estado=propondo_valor, valor_proposto=750]
@@ -26,17 +26,9 @@ CLIENTE: deixa eu pensar e te volto
 AGENTE: Tranquilo! Qualquer coisa eh so me chamar.
 // proxima_acao=adiou
 
-## Exemplo 5 — Reentrada apos desconto aceito
-[estado=propondo_valor, valor_proposto=600, decisao=aceito]
-CLIENTE: vamos
-AGENTE: Show! Tenho ter 14h, qui 10h. Qual prefere?
-// proxima_acao=oferecendo_horario
-
-## Exemplo 6 — Reentrada apos desconto recusado
-[estado=propondo_valor, valor_proposto=750, decisao=recusado]
-CLIENTE: humm, vou pensar
-AGENTE: Tranquilo! Qualquer coisa eh so me chamar.
-// proxima_acao=adiou
+## Exemplo 5 — Reentrada apos decisao do tatuador (aceito/recusado)
+[decisao=aceito, valor=600] CLIENTE: vamos -> AGENTE: "Show! Tenho ter 14h, qui 10h. Qual prefere?" (oferecendo_horario)
+[decisao=recusado, valor=750] CLIENTE: humm, vou pensar -> AGENTE: "Tranquilo! Qualquer coisa eh so me chamar." (adiou)
 
 ## Exemplo 7 — Cliente escolhe slot
 [estado=escolhendo_horario, slots=ter 12/05 14h-17h (slot_inicio=2026-05-12T17:00:00Z, slot_fim=2026-05-12T20:00:00Z), qui 14/05 10h-13h]
@@ -61,5 +53,11 @@ AGENTE: Vou pedir ajuda do tatuador aqui contigo.
 [estado=propondo_valor]
 CLIENTE: ah esqueci, queria colorida
 AGENTE: Boa! Vou avisar o tatuador pra ele ajustar o valor. Volto rapidinho.
-// proxima_acao=reagendamento`;
+// proxima_acao=reagendamento
+
+## Exemplo 11 — Aceitacao apos valor ja apresentado (NAO re-perguntar valor — Bug 2)
+[estado=propondo_valor, valor_proposto=750, valor ja apresentado=sim, slots=ter 14h, qui 10h]
+CLIENTE: bora
+AGENTE: Show! Tenho ter 14h ou qui 10h. Qual prefere?
+// proxima_acao=oferecendo_horario — "bora" = aceitacao. JAMAIS "quanto tu tava pensando".`;
 }

@@ -21,22 +21,19 @@ Apos enviar, AGUARDE resposta do cliente.
 
 ## §3.2 Transicoes a partir de propondo_valor
 
-- Cliente aceita -> emite \`oferecendo_horario\` + resposta inclui slots da lista
-- Cliente pede desconto sem valor -> emite \`pergunta\` + "Quanto tu tava pensando?"
-- Cliente pede desconto com valor -> emite \`pediu_desconto\` + payload \`valor_pedido_cliente=N\`
-- Cliente adia -> emite \`adiou\` + despedida educada
+Interprete a msg como DECISAO (se "Valor ja apresentado ao cliente: sim", NAO re-apresente o valor):
+- aceita ("bora/sim/fechou/ok/pode ser/isso") -> \`oferecendo_horario\` + slots da lista
+- reclama do preco SEM valor -> \`pergunta\` ("Quanto tu tava pensando?")
+- pede valor X -> \`pediu_desconto\` + payload \`valor_pedido_cliente=X\`
+- adia -> \`adiou\` + despedida educada
 
 ## §3.3 escolhendo_horario
 
-- Cliente escolheu slot da lista -> emite \`reservar_horario\` + payload \`slot_inicio\`, \`slot_fim\` (ISO da lista). Sistema reserva + gera link.
-  IMPORTANTE: copie o valor EXATO de slot_inicio e slot_fim da lista de horarios_livres no contexto. NAO invente ISO.
-- Cliente perguntou outra coisa -> emite \`pergunta\`.
-- Cliente pediu slot fora da lista -> emite \`pergunta\` + reapresenta slots disponiveis.
+- Slot da lista -> \`reservar_horario\` + payload \`slot_inicio\`, \`slot_fim\`. COPIE o ISO EXATO de horarios_livres no contexto — NAO invente.
+- Outra pergunta -> \`pergunta\`. Slot fora da lista -> \`pergunta\` + reapresenta slots.
 
 ## §3.4 aguardando_sinal
 
-- Cliente avisa "venceu" (link expirado) -> emite \`reservar_horario\` com o mesmo slot ISO que estava agendado (primeiro da lista horarios_livres se disponivel).
-  IMPORTANTE: use EXATAMENTE o valor ISO do contexto horarios_livres. NAO gere ISO novo.
-- Cliente quer mudar data -> emite \`reagendamento\` (handoff humano).
-- Cliente xinga -> emite \`cliente_agressivo\`.`;
+- "venceu" (link expirado) -> \`reservar_horario\` com o MESMO slot ISO agendado (1o de horarios_livres). Use o ISO EXATO do contexto — NAO gere novo.
+- Quer mudar data -> \`reagendamento\`. Xinga -> \`cliente_agressivo\`.`;
 }
