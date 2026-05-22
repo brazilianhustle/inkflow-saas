@@ -161,3 +161,20 @@ test('Bug2: pos-desconto valor novo nao apresentado -> "nao" (historico so tem v
   // valor atual = 600 (novo, pos-desconto); historico so tem 750 -> ainda nao apresentado.
   assert.match(fake._captured().instructions, /Valor ja apresentado ao cliente: nao/);
 });
+
+test('Bug2: valor=600 com "R$ 6000" no historico -> "nao" (substring NAO conta como apresentado)', async () => {
+  const fake = makeFakeClient({
+    proxima_acao: 'pergunta', resposta_cliente: 'x',
+    slot_inicio: null, slot_fim: null, valor_pedido_cliente: null, payload_portfolio: null,
+  });
+  await runPropostaAgent({
+    env: { OPENAI_API_KEY: 'sk-test' },
+    tenant: FAKE_TENANT, conversa: FAKE_CONVERSA,
+    clientContext: { valor_proposto: 600, horarios_livres: [] },
+    mensagem: 'e ai?',
+    historico: [{ role: 'assistant', content: 'Vou precisar de uns R$ 6000 pra cobrir toda a arte.' }],
+    estado_atual: 'propondo_valor', openaiClient: fake,
+  });
+  // "6000" contem "600" como substring, mas 600 nunca foi apresentado de fato.
+  assert.match(fake._captured().instructions, /Valor ja apresentado ao cliente: nao/);
+});

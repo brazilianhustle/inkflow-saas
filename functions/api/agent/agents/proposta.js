@@ -32,12 +32,16 @@ function normalizeHistoryItem(item) {
 // procura o numero do valor numa fala do assistant. Self-contained (sem flag
 // persistida). Pos-desconto: valor muda (ex: 600); historico so tem o antigo
 // (750) -> retorna false -> bot re-apresenta o novo valor.
+// Match por fronteira de digito (nao substring cru): 600 NAO casa dentro de
+// "6000"/"1600" — evita falso-positivo quando o historico cita outro numero
+// que contem os digitos do valor atual.
 function valorJaApresentado(historico, valor) {
   if (valor == null) return false;
-  const alvo = String(valor);
+  const alvo = String(valor).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(?<!\\d)${alvo}(?!\\d)`);
   return (historico || []).some(item => {
     const norm = normalizeHistoryItem(item);
-    return norm.role === 'assistant' && String(norm.content ?? '').includes(alvo);
+    return norm.role === 'assistant' && re.test(String(norm.content ?? ''));
   });
 }
 
