@@ -61,7 +61,7 @@ Resultado esperado:
 Resultado esperado:
 
 - O bot pede para escolher um dos horarios enviados.
-- Nao gera Pix/sinal antes de `estado_atual=escolhendo_horario` com slot valido.
+- Nao gera Pix/sinal antes de `estado_agente=escolhendo_horario` com slot valido.
 
 ### Roteiro 4 — Baloes por `\n\n`
 
