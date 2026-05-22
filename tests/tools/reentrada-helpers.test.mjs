@@ -93,7 +93,7 @@ test('S2 reentrada: registra mensagem automatica em conversa_mensagens para entr
     if (u.includes('evo.test/message/sendText')) {
       return new Response(JSON.stringify({ ok: true }), { status: 200 });
     }
-    if (u.includes('/rest/v1/chat_messages') || u.includes('/rest/v1/conversa_mensagens')) {
+    if (u.includes('/rest/v1/conversa_mensagens')) {
       return new Response(JSON.stringify({ ok: true }), { status: 201 });
     }
     throw new Error(`unexpected fetch ${u}`);

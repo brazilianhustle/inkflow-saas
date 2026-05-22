@@ -30,3 +30,6 @@ web/.env*.local
 web/*.tsbuildinfo
 supabase/.temp/
 .smoke-evidence/
+
+# cache do harness de smoke (swagger do PostgREST)
+scripts/smoke/.cache/

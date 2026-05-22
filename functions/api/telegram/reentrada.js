@@ -5,7 +5,7 @@
 //
 // Chamado pelo /api/telegram/webhook após callback do tatuador (fechar valor,
 // aceitar desconto, manter valor, recusar). Monta mensagem template baseada
-// no evento, envia via Evolution sendText, loga em chat_messages.
+// no evento, envia via Evolution sendText, loga em conversa_mensagens.
 //
 // Por que isso e um endpoint CF Pages e nao um workflow n8n:
 // - Reentrada e simples: 1 mensagem template + 1 chamada Evolution.
@@ -83,22 +83,6 @@ function montarMensagem(evento, valor, valor_proposto) {
   }
 }
 
-async function logChatMessage(env, { tenant_id, conversa_id, telefone, conteudo, direcao = 'out' }) {
-  try {
-    await supaFetch(env, '/rest/v1/chat_messages', {
-      method: 'POST',
-      headers: { Prefer: 'return=minimal' },
-      body: JSON.stringify({
-        tenant_id, conversa_id, telefone,
-        direcao, tipo: 'texto',
-        conteudo,
-      }),
-    });
-  } catch (e) {
-    console.warn('reentrada: log chat_messages falhou:', e.message);
-  }
-}
-
 async function logConversaMensagem(env, { tenant_id, telefone, conteudo }) {
   try {
     await supaFetch(env, '/rest/v1/conversa_mensagens', {
@@ -159,22 +143,13 @@ async function handle(env, input) {
     return { status: 502, body: { ok: false, error: 'evolution-error', detail: evoRes.error || 'unknown' } };
   }
 
-  // Logs fail-open, mas aguardados: se a resposta voltar antes, o runtime pode
+  // Log fail-open, mas aguardado: se a resposta voltar antes, o runtime pode
   // encerrar a promise e a fala automatica nao entrar no historico do agente.
-  await Promise.all([
-    logChatMessage(env, {
-      tenant_id: conv.tenant_id,
-      conversa_id: conv.id,
-      telefone: conv.telefone,
-      conteudo: msg,
-      direcao: 'out',
-    }),
-    logConversaMensagem(env, {
-      tenant_id: conv.tenant_id,
-      telefone: conv.telefone,
-      conteudo: msg,
-    }),
-  ]);
+  await logConversaMensagem(env, {
+    tenant_id: conv.tenant_id,
+    telefone: conv.telefone,
+    conteudo: msg,
+  });
 
   return {
     status: 200,
