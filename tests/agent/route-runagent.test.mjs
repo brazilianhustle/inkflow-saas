@@ -93,3 +93,76 @@ test('runAgent (tattoo): surfacia analise_imagens no retorno', async () => {
   assert.equal(r.analise_imagens[0].tipo, 'referencia');
   assert.equal(r.cobertura_suspeita, null);
 });
+
+// ─── Bug 1: gate handoff só após foto pedida >=1x ──────────────────────
+const HANDOFF_OUT = {
+  proxima_acao: 'handoff',
+  resposta_cliente: 'Show, anotei tudo!',
+  dados_persistidos: {
+    descricao_curta: 'rosa', local_corpo: 'antebraco', altura_cm: 170,
+    estilo: 'fineline', tamanho_cm: null, cor_preferencia: null, foto_local: null,
+  },
+  dados_completos: true,
+  campos_faltando: [],
+  campos_conflitantes: [],
+  payload_portfolio: null,
+  analise_imagens: null,
+  cobertura_suspeita: null,
+};
+
+function fakeHandoff() {
+  return {
+    responses: {
+      parse: async () => ({ status: 'completed', id: 'r', output_parsed: { output: HANDOFF_OUT } }),
+    },
+  };
+}
+
+test('Bug1 gate: handoff sem foto pedida (contador 0, sem foto) → força pergunta + pediu_foto_local', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = { id: 'c', telefone: '5511', estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'isso, pode ser',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: fakeHandoff(),
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'pergunta', 'gate deve rebaixar handoff→pergunta');
+  assert.equal(r.estado_novo, 'tattoo', 'estado permanece tattoo (sem handoff)');
+  assert.equal(r.pediu_foto_local, true);
+  assert.match(r.resposta_cliente, /foto/i);
+});
+
+test('Bug1 gate: handoff com contador=1 → handoff passa', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = { id: 'c', telefone: '5511', estado_agente: 'tattoo',
+    dados_coletados: { tentativas_foto_local: 1 }, dados_cadastro: {} };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'isso',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: fakeHandoff(),
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'handoff');
+  assert.equal(r.estado_novo, 'cadastro');
+  assert.ok(!r.pediu_foto_local);
+});
+
+test('Bug1 gate: handoff com foto_local presente → handoff passa mesmo sem contador', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = { id: 'c', telefone: '5511', estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const comFoto = {
+    responses: { parse: async () => ({ status: 'completed', id: 'r',
+      output_parsed: { output: { ...HANDOFF_OUT, dados_persistidos: { ...HANDOFF_OUT.dados_persistidos, foto_local: 'msg-123' } } } }) },
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'mandei a foto',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: comFoto,
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'handoff');
+});

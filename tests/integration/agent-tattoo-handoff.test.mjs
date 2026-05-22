@@ -21,7 +21,7 @@ const FAKE_TENANT = {
 const FAKE_CONVERSA = {
   id: 'c1', telefone: '+5511999999999',
   estado_agente: 'coletando_tattoo',
-  dados_coletados: {}, dados_cadastro: {},
+  dados_coletados: { tentativas_foto_local: 1 }, dados_cadastro: {},
 };
 const FAKE_ENV = {
   OPENAI_API_KEY: 'sk-test',

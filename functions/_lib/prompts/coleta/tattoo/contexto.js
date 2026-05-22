@@ -42,10 +42,15 @@ export function contextoTattoo(tenant, conversa, clientContext) {
   if (dados.tamanho_cm)     dadosLinhas.push(`- tamanho_cm (opcional): ${dados.tamanho_cm}cm`);
   if (dados.foto_local)     dadosLinhas.push(`- foto_local: presente`);
 
-  // Status foto pedida ate 2x (refator manifesto P3)
-  const tentativasFoto = conversa?.estado_extra?.tentativas_foto_local || 0;
-  if (tentativasFoto > 0 && !dados.foto_local) {
-    dadosLinhas.push(`- foto_local: pedida ${tentativasFoto}x sem resposta`);
+  // Status foto do local (refator manifesto P3 + Bug 1). Contador vive em
+  // dados_coletados.tentativas_foto_local (estado_extra nao existe na tabela).
+  // Sinal "AINDA NAO PEDIDA" so aparece quando ja ha algum OBR coletado, pra
+  // nao poluir o turno 1 — o bot so pede a foto perto do handoff (§4.4).
+  const tentativasFoto = dados.tentativas_foto_local || 0;
+  if (!dados.foto_local && (dadosLinhas.length > 0 || tentativasFoto > 0)) {
+    dadosLinhas.push(tentativasFoto > 0
+      ? `- foto_local: pedida ${tentativasFoto}x sem resposta`
+      : `- foto_local: AINDA NAO PEDIDA — peca 1x antes do handoff (§4.4)`);
   }
 
   if (Array.isArray(dados.refs_imagens) && dados.refs_imagens.length) {
