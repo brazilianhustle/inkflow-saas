@@ -332,5 +332,22 @@
       { "type": "proxima_acao_equals", "value": "oferecendo_horario" },
       { "type": "resposta_cliente_not_matches", "value": "quanto tu tava pensando" }
     ]
+  },
+  {
+    "id": "TC-P13",
+    "descricao": "Bug 4: cliente 'faz por R$2' -> pediu_desconto, resposta NAO confirma o valor pechinchado",
+    "estado_atual": "propondo_valor",
+    "valor_proposto": 750,
+    "decisao_desconto": null,
+    "horarios_livres": [],
+    "historico": [
+      { "role": "assistant", "content": "Show! Pelo trabalho ficou em R$ 750. Bora marcar?" }
+    ],
+    "mensagem": "faz por 2 reais?",
+    "assertions": [
+      { "type": "proxima_acao_equals", "value": "pediu_desconto" },
+      { "type": "payload_includes", "value": { "valor_pedido_cliente": 2 } },
+      { "type": "resposta_cliente_not_matches", "value": "(topou|fechou|fica|deixa)\\D{0,8}(2|dois)" }
+    ]
   }
 ]

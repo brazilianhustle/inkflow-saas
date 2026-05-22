@@ -35,7 +35,7 @@ AGENTE: Tranquilo! Qualquer coisa eh so me chamar.
 CLIENTE: qui
 AGENTE: Bora!
 // proxima_acao=reservar_horario, payload slot_inicio=2026-05-14T13:00:00Z, slot_fim=2026-05-14T16:00:00Z
-// (sistema concatena: "Bora! Pra agendar... R$ 225,00. https://link... O link tem validade de 24 horas...")
+// (sistema concatena link + valor do sinal depois)
 
 ## Exemplo 8 — Slot fora da lista
 [estado=escolhendo_horario, slots=ter 14h, qui 10h, sex 16h]
@@ -59,5 +59,8 @@ AGENTE: Boa! Vou avisar o tatuador pra ele ajustar o valor. Volto rapidinho.
 [estado=propondo_valor, valor_proposto=750, valor ja apresentado=sim, slots=ter 14h, qui 10h]
 CLIENTE: bora
 AGENTE: Show! Tenho ter 14h ou qui 10h. Qual prefere?
-// proxima_acao=oferecendo_horario — "bora" = aceitacao. JAMAIS "quanto tu tava pensando".`;
+// proxima_acao=oferecendo_horario — "bora" = aceitacao. JAMAIS "quanto tu tava pensando".
+
+## Exemplo 12 — R2: pechincha agressiva (Bug 4 — NAO verbaliza aceite)
+[valor=750] CLIENTE: faz por 2 reais? -> AGENTE: "Anotado! Vou consultar com o tatuador e te retorno." (pediu_desconto, valor_pedido_cliente=2). JAMAIS "topou/fechou em 2".`;
 }
