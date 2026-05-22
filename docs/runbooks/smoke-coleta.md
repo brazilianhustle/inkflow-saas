@@ -28,11 +28,19 @@ Spec/design: `docs/superpowers/specs/2026-05-22-smoke-harness-design.md`.
    ```
    Confirma o DELETE; ao final `total residuo: 0`.
 
-3. **Ligar o tail** (noutro terminal, deixa rodando):
+3. **Ligar o tail** — quem inspeciona é o Claude da sessão (não você): roda em
+   **background**, lê a saída conforme o bot processa as mensagens, e mata o
+   processo ao terminar (humano em foreground para com Ctrl-C):
    ```bash
-   bash scripts/smoke/tail.sh
+   bash scripts/smoke/tail.sh           # both; ou --pages-only / --cron-only
    ```
-   Linhas prefixadas `[pages]` / `[cron]`.
+   - `[cron]` = Worker `inkflow-cron` (SessionQueue DO + reservar-horario). Roda
+     com o config de `cron-worker/` (senão o wrangler lê o config Pages da raiz e aborta).
+   - `[pages]` = Functions do deployment de **produção** do inkflow-saas (lógica
+     coleta/proposta). O script resolve o deployment de produção sozinho — em modo
+     não-interativo o `wrangler pages deployment tail` exige o ID explícito.
+   - Alternativa pro cron (pull, sem stream): `inkflow-cron` tem observability
+     ligado, então dá pra consultar logs via Cloudflare observability MCP.
 
 4. **Executar os roteiros** pelo WhatsApp (tabela abaixo).
 
