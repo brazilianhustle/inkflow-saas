@@ -112,3 +112,52 @@ test('runPropostaAgent: monta input com historico + mensagem', async () => {
   assert.deepEqual(captured.input[1], { role: 'assistant', content: 'opa' });
   assert.equal(captured.input[2].content, 'mensagem nova');
 });
+
+test('Bug2: valor no historico -> instructions diz "Valor ja apresentado ao cliente: sim"', async () => {
+  const fake = makeFakeClient({
+    proxima_acao: 'oferecendo_horario', resposta_cliente: 'show, tenho ter e qui',
+    slot_inicio: null, slot_fim: null, valor_pedido_cliente: null, payload_portfolio: null,
+  });
+  await runPropostaAgent({
+    env: { OPENAI_API_KEY: 'sk-test' },
+    tenant: FAKE_TENANT, conversa: FAKE_CONVERSA,
+    clientContext: { valor_proposto: 750, horarios_livres: [] },
+    mensagem: 'bora',
+    historico: [{ role: 'assistant', content: 'Show! Pelo trabalho ficou em R$ 750. Bora marcar?' }],
+    estado_atual: 'propondo_valor',
+    openaiClient: fake,
+  });
+  assert.match(fake._captured().instructions, /Valor ja apresentado ao cliente: sim/);
+});
+
+test('Bug2: historico vazio -> "Valor ja apresentado ao cliente: nao"', async () => {
+  const fake = makeFakeClient({
+    proxima_acao: 'pergunta', resposta_cliente: 'x',
+    slot_inicio: null, slot_fim: null, valor_pedido_cliente: null, payload_portfolio: null,
+  });
+  await runPropostaAgent({
+    env: { OPENAI_API_KEY: 'sk-test' },
+    tenant: FAKE_TENANT, conversa: FAKE_CONVERSA,
+    clientContext: { valor_proposto: 750, horarios_livres: [] },
+    mensagem: 'oi', historico: [],
+    estado_atual: 'propondo_valor', openaiClient: fake,
+  });
+  assert.match(fake._captured().instructions, /Valor ja apresentado ao cliente: nao/);
+});
+
+test('Bug2: pos-desconto valor novo nao apresentado -> "nao" (historico so tem valor antigo)', async () => {
+  const fake = makeFakeClient({
+    proxima_acao: 'oferecendo_horario', resposta_cliente: 'ele topou em 600',
+    slot_inicio: null, slot_fim: null, valor_pedido_cliente: null, payload_portfolio: null,
+  });
+  await runPropostaAgent({
+    env: { OPENAI_API_KEY: 'sk-test' },
+    tenant: FAKE_TENANT, conversa: FAKE_CONVERSA,
+    clientContext: { valor_proposto: 600, decisao_desconto: 'aceito', horarios_livres: [] },
+    mensagem: 'e ai, o tatuador topou?',
+    historico: [{ role: 'assistant', content: 'Show! Pelo trabalho ficou em R$ 750. Bora marcar?' }],
+    estado_atual: 'propondo_valor', openaiClient: fake,
+  });
+  // valor atual = 600 (novo, pos-desconto); historico so tem 750 -> ainda nao apresentado.
+  assert.match(fake._captured().instructions, /Valor ja apresentado ao cliente: nao/);
+});

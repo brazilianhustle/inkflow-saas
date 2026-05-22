@@ -10,6 +10,7 @@ Cliente: Maria Silva
 Estado atual: propondo_valor
 Valor proposto: R$ 750
 Decisao desconto previa: nenhuma
+Valor ja apresentado ao cliente: nao
 Sinal percentual configurado: 30%
 Portfolio: nao cadastrado
 
