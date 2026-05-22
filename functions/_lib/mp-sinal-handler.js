@@ -38,10 +38,10 @@ export async function notifyPosPagamento(env, ag) {
       : 'seu horario';
 
     if (ag.cliente_telefone) {
-      const { evoSend } = await import('./evolution-send.js');
-      const r = await evoSend(env, tenant, {
-        type: 'text', to: ag.cliente_telefone,
-        text: `Recebemos teu sinal! ✅ Teu horario ta confirmado pra ${quando}. Qualquer coisa e so chamar aqui. Ate la!`,
+      const { evoSendTextBaloes } = await import('./evolution-send.js');
+      const r = await evoSendTextBaloes(env, tenant, {
+        to: ag.cliente_telefone,
+        text: `Recebemos teu sinal! ✅ Teu horario ta confirmado pra ${quando}.\n\nQualquer coisa e so chamar aqui. Ate la!`,
       });
       if (!r.ok) console.warn('mp-sinal-handler: evoSend cliente falhou (fail-open):', r.error || r.skipped);
     }

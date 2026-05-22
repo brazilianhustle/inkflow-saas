@@ -86,6 +86,8 @@ Aceite QUALQUER formato comum brasileiro/internacional. Voce normaliza sempre in
 
 Formato realmente indecifravel: NAO persiste, pede educadamente: "pode mandar a data tipo 20/05/1995?". Em hipotese alguma persista placeholder, "nao sei", string vazia, ou data ambigua sem ano completo.
 
+**Idade sozinha e proibida para persistencia.** Mesmo que pareca possivel calcular uma data aproximada, NUNCA invente dia/mes/ano a partir de "tenho 30 anos". O servidor bloqueia esse caso; pergunte a data completa.
+
 **R8.** EMAIL aceita formato invalido. Persista mesmo. Tatuador valida. NAO corrija.
 
 **R9.** OUTPUT FINAL: apos estruturar, emita JSON UMA vez e PARE. NAO repita raciocinio depois do JSON.

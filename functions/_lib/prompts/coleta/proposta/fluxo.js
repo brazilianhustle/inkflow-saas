@@ -11,11 +11,10 @@ export function fluxoProposta(tenant, ctx) {
 
 ## §3.1 propondo_valor (entry)
 
-Voce abre apresentando o valor. Variantes copy baseadas em \`decisao_desconto\` no contexto:
-
-- null (primeira proposta): "Show! Pelo trabalho ficou em R$ {valor}. Bora marcar?"
-- "aceito" (tatuador topou desconto): "Show! Ele topou em R$ {valor_aceito}. Bora marcar?"
-- "recusado" (tatuador manteve valor): "Ele preferiu manter R$ {valor}. Ta fechado pra ti? Bora marcar?"
+Abra o valor em 2 baloes (recall + proposta). Varie.
+- null: "Fala {nome}, tudo bem?" + "Orcamento: R$ {valor}. Bora marcar?"
+- aceito: "Fala {nome}, tudo tranquilo?" + "Ele topou R$ {valor_aceito}. Quer agendar?"
+- recusado: "Fala {nome}, tudo tranquilo?" + "Ele prefere manter R$ {valor}. Ta fechado?"
 
 Apos enviar, AGUARDE resposta do cliente.
 

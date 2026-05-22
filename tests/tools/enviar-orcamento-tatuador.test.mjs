@@ -1,7 +1,7 @@
 // Testes do handler enviar-orcamento-tatuador (refator pra contrato tenant_id+telefone).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { onRequest, formatarDataBr, montarLinhaIdade, montarBriefing, montarTextoOrcamento, selecionarFotosOrcamento, enviarFotosOrcamento } from '../../functions/api/tools/enviar-orcamento-tatuador.js';
+import { onRequest, formatarDataBr, montarLinhaIdade, montarBriefing, montarTextoOrcamento, selecionarFotosOrcamento, enviarFotosOrcamento, localComPreposicao } from '../../functions/api/tools/enviar-orcamento-tatuador.js';
 
 const TENANT_ID = '00000000-0000-0000-0000-000000000001';
 const TELEFONE = '+5511999999999';
@@ -295,6 +295,22 @@ test('montarBriefing: gera texto natural com campos completos', () => {
   assert.match(txt, /altura do cliente[^\d]*165\s*cm/i);
   assert.match(txt, /foto do local/i);
   assert.match(txt, /2\s+refer/i);
+});
+
+test('localComPreposicao: concorda genero em locais comuns', () => {
+  assert.equal(localComPreposicao('perna'), 'na perna');
+  assert.equal(localComPreposicao('coxa direita'), 'na coxa direita');
+  assert.equal(localComPreposicao('costas'), 'nas costas');
+  assert.equal(localComPreposicao('antebraco'), 'no antebraco');
+});
+
+test('montarBriefing: nao escreve "no perna"', () => {
+  const txt = montarBriefing({
+    dados_coletados: { descricao_curta: 'rosa', local_corpo: 'perna', altura_cm: 181, estilo: 'fineline' },
+    dados_cadastro: { nome: 'Mario' },
+  });
+  assert.match(txt, /na perna/);
+  assert.doesNotMatch(txt, /no perna/);
 });
 
 test('montarBriefing: altura_cm (corpo) NUNCA vira o tamanho da tattoo', () => {

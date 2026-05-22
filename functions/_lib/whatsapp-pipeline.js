@@ -5,7 +5,7 @@
 //
 // Deps injetadas via depsOverride pra integration tests sem fetch real.
 import { supaFetch } from '../api/tools/_tool-helpers.js';
-import { evoSend } from './evolution-send.js';
+import { evoSend, splitBaloes } from './evolution-send.js';
 import { sendTelegramTo, sendTelegramAlert } from './telegram.js';
 import { runAgent } from '../api/agent/route.js';
 import { callTool } from '../api/agent/_lib/call-tool.js';
@@ -296,7 +296,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
     });
 
     // Etapa 7: Evolution outbound (split \n\n)
-    const baloes = agentOut.resposta_cliente.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+    const baloes = splitBaloes(agentOut.resposta_cliente);
     if (baloes.length === 0) throw new Error(`resposta_cliente vazia após split (tenant=${tenant.id})`);
     for (let i = 0; i < baloes.length; i++) {
       await deps.sleep(TYPING_DELAY_MS);

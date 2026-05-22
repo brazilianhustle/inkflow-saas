@@ -99,7 +99,9 @@ AGENTE: Show, antebraco anotado. E qual a tua altura?
 ## Exemplo 10 — R10/R11: multi-campo numa msg + altura vs tamanho
 \`\`\`
 CLIENTE: quero uma rosa fineline na perna, 5cm, sou 1.81
-AGENTE: Show! Rosa fineline na perna, 5cm. Consegue mandar uma foto do local?
+AGENTE: Rosa fineline na perna, 5cm, anotado.
+
+AGENTE: Consegue mandar uma foto do local que deseja tatuar?
 \`\`\`
 (persiste descricao_curta='rosa', estilo='fineline', local_corpo='perna', tamanho_cm=5, altura_cm=181 — TODOS de uma vez. 5cm->tamanho, 1.81->altura(181). 4 OBR completos -> pede foto 1x antes do handoff, NAO re-pergunta nada)
 `;

@@ -4,7 +4,7 @@
 // Timeout 10s. Retorna {ok, status?, error?}.
 
 export async function evoSend(env, tenant, payload) {
-  const baseUrl = env.EVO_BASE_URL || 'https://evo.inkflowbrasil.com';
+  const baseUrl = tenant?.evo_base_url || env.EVO_BASE_URL || 'https://evo.inkflowbrasil.com';
   const apikey = tenant?.evo_apikey || env.EVO_GLOBAL_KEY;
   const instance = tenant?.evo_instance;
   if (!apikey || !instance) {
@@ -38,4 +38,18 @@ export async function evoSend(env, tenant, payload) {
   } catch (e) {
     return { ok: false, error: e.message };
   }
+}
+
+export function splitBaloes(text) {
+  return String(text || '').split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+}
+
+export async function evoSendTextBaloes(env, tenant, { to, text }) {
+  const baloes = splitBaloes(text);
+  if (baloes.length === 0) return { ok: false, error: 'empty-text' };
+  for (let i = 0; i < baloes.length; i++) {
+    const r = await evoSend(env, tenant, { type: 'text', to, text: baloes[i] });
+    if (!r.ok) return { ...r, balao_index: i };
+  }
+  return { ok: true, baloes: baloes.length };
 }

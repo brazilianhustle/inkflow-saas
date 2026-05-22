@@ -17,7 +17,9 @@ AGENTE: Quanto tu tava pensando?
 ## Exemplo 3 — Caminho B com valor
 [estado=propondo_valor, valor_proposto=750]
 CLIENTE: consegue por 600?
-AGENTE: Anotado! Vou consultar com o tatuador e te retorno.
+AGENTE: Poxa, esse e o valor que o tatuador costuma cobrar.
+
+AGENTE: Vou passar tua proposta pra ele e te retorno, beleza?
 // proxima_acao=pediu_desconto, payload valor_pedido_cliente=600
 
 ## Exemplo 4 — Caminho C (adia)
@@ -33,7 +35,7 @@ AGENTE: Tranquilo! Qualquer coisa eh so me chamar.
 ## Exemplo 7 — Cliente escolhe slot
 [estado=escolhendo_horario, slots=ter 12/05 14h-17h (slot_inicio=2026-05-12T17:00:00Z, slot_fim=2026-05-12T20:00:00Z), qui 14/05 10h-13h]
 CLIENTE: qui
-AGENTE: Bora!
+AGENTE: Perfeito! Vamos seguir com teu agendamento pra quinta das 10h.
 // proxima_acao=reservar_horario, payload slot_inicio=2026-05-14T13:00:00Z, slot_fim=2026-05-14T16:00:00Z
 // (sistema concatena link + valor do sinal depois)
 
@@ -62,5 +64,5 @@ AGENTE: Show! Tenho ter 14h ou qui 10h. Qual prefere?
 // proxima_acao=oferecendo_horario — "bora" = aceitacao. JAMAIS "quanto tu tava pensando".
 
 ## Exemplo 12 — R2: pechincha agressiva (Bug 4 — NAO verbaliza aceite)
-[valor=750] CLIENTE: faz por 2 reais? -> AGENTE: "Anotado! Vou consultar com o tatuador e te retorno." (pediu_desconto, valor_pedido_cliente=2). JAMAIS "topou/fechou em 2".`;
+[valor=750] CLIENTE: faz por 2 reais? -> AGENTE: "Poxa, esse e o valor que o tatuador costuma cobrar.\n\nVou passar tua proposta pra ele e te retorno, beleza?" (pediu_desconto, valor_pedido_cliente=2). JAMAIS "topou/fechou em 2".`;
 }

@@ -63,6 +63,18 @@ export function montarLinhaIdade(cad, today = new Date()) {
   return `🎂 ${idade} anos (${dataBr})`;
 }
 
+export function localComPreposicao(local) {
+  const s = String(local || '').trim();
+  if (!s) return '';
+  const primeira = s.toLowerCase().split(/\s+/)[0];
+  if (['perna', 'coxa', 'panturrilha', 'costela', 'mao', 'mão', 'nuca', 'barriga'].includes(primeira)) {
+    return `na ${s}`;
+  }
+  if (['costas', 'costelas'].includes(primeira)) return `nas ${s}`;
+  if (['bracos', 'braços', 'dedos', 'pes'].includes(primeira)) return `nos ${s}`;
+  return `no ${s}`;
+}
+
 export function montarBriefing(conv) {
   const dc = conv?.dados_coletados || {};
   const nome = conv?.dados_cadastro?.nome || 'O cliente';
@@ -72,7 +84,7 @@ export function montarBriefing(conv) {
   const partes = [];
   if (descricao) partes.push(`uma tatuagem de ${descricao}`);
   if (dc.estilo) partes.push(`estilo ${dc.estilo}`);
-  if (dc.local_corpo) partes.push(`no ${dc.local_corpo}`);
+  if (dc.local_corpo) partes.push(localComPreposicao(dc.local_corpo));
   // tamanho_cm = tamanho APROXIMADO da tattoo (opcional; cliente raramente informa).
   if (dc.tamanho_cm != null) partes.push(`~${dc.tamanho_cm}cm`);
 

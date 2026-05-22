@@ -42,6 +42,25 @@ test('executeOrchestration reservar_horario: !ok de reservar-horario vira pergun
   assert.equal(sideEffects[0].ok, false);
 });
 
+test('S3 executeOrchestration: nao gera sinal se reservar_horario vier fora de escolhendo_horario', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+
+  const fetchMock = mock.fn();
+  globalThis.fetch = fetchMock;
+
+  const sideEffects = [];
+  const r = await executeOrchestration(
+    { resposta_cliente: 'Bora!', proxima_acao: 'reservar_horario', slot_inicio: '2026-05-12T17:00:00Z', slot_fim: '2026-05-12T20:00:00Z' },
+    { env: baseEnv, tenant: baseTenant, conversa: baseConversa, telefone: '5511', sideEffects, estado_atual: 'propondo_valor' }
+  );
+
+  assert.equal(r.proxima_acao, 'pergunta');
+  assert.match(r.resposta_cliente, /escolhe um dos horarios/);
+  assert.equal(fetchMock.mock.callCount(), 0);
+  assert.equal(sideEffects[0].skipped, 'estado_propondo_valor');
+});
+
 test('executeOrchestration reservar_horario: !ok de gerar-link-sinal vira pergunta + 2 side effects', async (t) => {
   const originalFetch = globalThis.fetch;
   t.after(() => { globalThis.fetch = originalFetch; });

@@ -19,6 +19,8 @@
 // - 'manter_valor'     → "Ele preferiu manter R$ X. Tá fechado pra ti? Bora marcar?"
 // - 'recusar'          → "Infelizmente o tatuador não vai poder fazer essa peça. Posso te ajudar com outra ideia?"
 
+import { evoSendTextBaloes } from '../../_lib/evolution-send.js';
+
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
 
 const HEADERS = {
@@ -97,6 +99,22 @@ async function logChatMessage(env, { tenant_id, conversa_id, telefone, conteudo,
   }
 }
 
+async function logConversaMensagem(env, { tenant_id, telefone, conteudo }) {
+  try {
+    await supaFetch(env, '/rest/v1/conversa_mensagens', {
+      method: 'POST',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({
+        session_id: `${tenant_id}_${telefone}`,
+        message: { type: 'ai', content: conteudo },
+        status: 'processed',
+      }),
+    });
+  } catch (e) {
+    console.warn('reentrada: log conversa_mensagens falhou:', e.message);
+  }
+}
+
 async function handle(env, input) {
   const { conversa_id, evento, orcid, valor } = input || {};
   if (!conversa_id) return { status: 400, body: { ok: false, error: 'conversa_id obrigatorio' } };
@@ -131,32 +149,32 @@ async function handle(env, input) {
     return { status: 400, body: { ok: false, error: `evento desconhecido: ${evento}` } };
   }
 
-  // Envia via Evolution
-  const evoBase = tenant.evo_base_url || env.EVO_BASE_URL || 'https://evo.inkflowbrasil.com';
-  const evoKey = tenant.evo_apikey || env.EVO_GLOBAL_KEY || '';
-  if (!evoKey) {
-    return { status: 503, body: { ok: false, error: 'evo-apikey-ausente' } };
-  }
-
-  const evoRes = await fetch(`${evoBase}/message/sendText/${encodeURIComponent(tenant.evo_instance)}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', apikey: evoKey },
-    body: JSON.stringify({ number: conv.telefone, text: msg }),
-  });
-
+  const sendTenant = {
+    ...tenant,
+    evo_base_url: tenant.evo_base_url || env.EVO_BASE_URL || 'https://evo.inkflowbrasil.com',
+    evo_apikey: tenant.evo_apikey || env.EVO_GLOBAL_KEY || '',
+  };
+  const evoRes = await evoSendTextBaloes(env, sendTenant, { to: conv.telefone, text: msg });
   if (!evoRes.ok) {
-    const detail = await evoRes.text().catch(() => '');
-    return { status: 502, body: { ok: false, error: 'evolution-error', http: evoRes.status, detail: detail.slice(0, 200) } };
+    return { status: 502, body: { ok: false, error: 'evolution-error', detail: evoRes.error || 'unknown' } };
   }
 
-  // Log assincrono
-  logChatMessage(env, {
-    tenant_id: conv.tenant_id,
-    conversa_id: conv.id,
-    telefone: conv.telefone,
-    conteudo: msg,
-    direcao: 'out',
-  });
+  // Logs fail-open, mas aguardados: se a resposta voltar antes, o runtime pode
+  // encerrar a promise e a fala automatica nao entrar no historico do agente.
+  await Promise.all([
+    logChatMessage(env, {
+      tenant_id: conv.tenant_id,
+      conversa_id: conv.id,
+      telefone: conv.telefone,
+      conteudo: msg,
+      direcao: 'out',
+    }),
+    logConversaMensagem(env, {
+      tenant_id: conv.tenant_id,
+      telefone: conv.telefone,
+      conteudo: msg,
+    }),
+  ]);
 
   return {
     status: 200,
@@ -197,4 +215,4 @@ export async function onRequest(context) {
 }
 
 // Exports pra teste
-export { montarMensagem, fmtBRL };
+export { montarMensagem, fmtBRL, handle };

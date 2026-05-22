@@ -95,6 +95,34 @@ export function validateCadastroHandoffEmail(out) {
   return null;
 }
 
+function mentionsAgeOnly(text) {
+  const s = String(text || '').toLowerCase();
+  const hasAge = /\b\d{1,3}\s*(anos?|aninhos?)\b/.test(s);
+  if (!hasAge) return false;
+  const hasDate =
+    /\b\d{1,2}[\/.-]\d{1,2}(?:[\/.-]\d{2,4})?\b/.test(s)
+    || /\b\d{4}-\d{2}-\d{2}\b/.test(s)
+    || /\b\d{1,2}\s+de\s+(jan|janeiro|fev|fevereiro|mar|marco|março|abr|abril|mai|maio|jun|junho|jul|julho|ago|agosto|set|setembro|out|outubro|nov|novembro|dez|dezembro)\b/.test(s);
+  return !hasDate;
+}
+
+export function rejectCadastroDateFromAgeOnly(out, mensagem, existingDate = null) {
+  const persisted = out?.dados_persistidos || {};
+  if (!persisted.data_nascimento || !mentionsAgeOnly(mensagem)) return { out, violated: null };
+  if (existingDate && persisted.data_nascimento === existingDate) return { out, violated: null };
+  return {
+    out: {
+      ...out,
+      proxima_acao: 'pergunta',
+      resposta_cliente: 'Pra eu mandar certinho pro tatuador, me passa tua data de nascimento completa?',
+      dados_persistidos: { ...persisted, data_nascimento: null },
+      dados_completos: false,
+      campos_faltando: Array.from(new Set([...(out.campos_faltando || []), 'data_nascimento'])),
+    },
+    violated: { reason: 'data_nascimento persistida a partir de idade sem data explicita' },
+  };
+}
+
 export async function runAgent({
   env,
   ctx,
@@ -236,6 +264,12 @@ export async function runAgent({
       };
       invariantCheck = { valid: false, reason: violated.reason };
     }
+    const ageOnlyGuard = rejectCadastroDateFromAgeOnly(out, mensagem, conversa?.dados_cadastro?.data_nascimento);
+    if (ageOnlyGuard.violated) {
+      console.warn('[agent/route] silently force pergunta (cadastro age-only):', ageOnlyGuard.violated.reason);
+      out = ageOnlyGuard.out;
+      invariantCheck = { valid: false, reason: ageOnlyGuard.violated.reason };
+    }
     // Contract handoff cross-agent.
     if (out.proxima_acao === 'handoff') {
       try {
@@ -309,7 +343,7 @@ export async function runAgent({
   let finalOut = enforced;
   if (PROPOSTA_SUBSTATES.has(estado_atual)) {
     finalOut = await executeOrchestration(enforced, {
-      env, tenant, conversa, telefone, sideEffects,
+      env, tenant, conversa, telefone, sideEffects, estado_atual,
       clientContext: mergedClientContext,
     });
   }
@@ -424,7 +458,7 @@ export function forcePergunta(out, msg) {
   return { ...out, proxima_acao: 'pergunta', resposta_cliente: msg };
 }
 
-export async function executeOrchestration(out, { env, tenant, conversa, telefone, sideEffects, clientContext }) {
+export async function executeOrchestration(out, { env, tenant, conversa, telefone, sideEffects, clientContext, estado_atual }) {
   switch (out.proxima_acao) {
     case 'pergunta':
     case 'oferecendo_horario':
@@ -442,6 +476,10 @@ export async function executeOrchestration(out, { env, tenant, conversa, telefon
       const existing = ctxSlots.find(
         s => s.inicio === out.slot_inicio && s.fim === out.slot_fim && s.agendamento_id
       );
+      if (!existing && estado_atual && estado_atual !== 'escolhendo_horario') {
+        sideEffects.push({ tool: 'reservar-horario', ok: false, skipped: `estado_${estado_atual}` });
+        return forcePergunta(out, 'Antes de gerar o sinal, escolhe um dos horarios que te mandei?');
+      }
       let agendamento_id;
       if (existing) {
         agendamento_id = existing.agendamento_id;

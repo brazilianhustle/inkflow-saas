@@ -200,10 +200,10 @@ test('mp-sinal-handler — L7: PATCH retorna [] → already-processed (idempotê
   });
 });
 
-// L8 — HAPPY PATH com cliente_telefone → 8 calls em ordem
-// INTENTIONAL: 8 calls (não 5) porque notifyPosPagamento (Task 5) adiciona
-// GET tenant + sendText (WhatsApp) + sendTelegramTo ANTES do bloco conversa-lifecycle.
-test('mp-sinal-handler — L8: HAPPY PATH com cliente_telefone → 8 calls em ordem', async () => {
+// L8 — HAPPY PATH com cliente_telefone → 9 calls em ordem
+// INTENTIONAL: 9 calls porque notifyPosPagamento divide a mensagem do cliente
+// em 2 balões + sendTelegramTo antes do bloco conversa-lifecycle.
+test('mp-sinal-handler — L8: HAPPY PATH com cliente_telefone → 9 calls em ordem', async () => {
   const env = mockEnv({ EVO_BASE_URL: 'https://evo.test', INKFLOW_TELEGRAM_BOT_TOKEN: 'tg-tok' });
   const handler = fetchMatcher({
     '/v1/payments/': () => jsonResponse({ external_reference: `sinal:${VALID_AGENDAMENTO_UUID}`, status: 'approved' }),
@@ -230,9 +230,9 @@ test('mp-sinal-handler — L8: HAPPY PATH com cliente_telefone → 8 calls em or
       payment_id: 'pay-1',
     });
     // Calls (em ordem): MP GET → PATCH agendamento → GET tenant (notify) →
-    //   POST sendText (notify) → POST telegram (notify) →
+    //   POST sendText x2 (notify) → POST telegram (notify) →
     //   PATCH conversa(tenant+phone) → GET conversa(id) → PATCH conversa(id)
-    assert.equal(handler.calls.length, 8);
+    assert.equal(handler.calls.length, 9);
     assert.ok(handler.calls[0].url.includes('/v1/payments/'), 'call 0: MP GET payment');
     assert.equal(handler.calls[0].method, 'GET');
     assert.ok(handler.calls[1].url.includes('/rest/v1/agendamentos'), 'call 1: PATCH agendamento');
@@ -241,15 +241,17 @@ test('mp-sinal-handler — L8: HAPPY PATH com cliente_telefone → 8 calls em or
     assert.equal(handler.calls[2].method, 'GET');
     assert.ok(handler.calls[3].url.includes('message/sendText'), 'call 3: POST sendText WhatsApp cliente');
     assert.equal(handler.calls[3].method, 'POST');
-    assert.ok(handler.calls[4].url.includes('api.telegram.org'), 'call 4: POST Telegram tatuador');
+    assert.ok(handler.calls[4].url.includes('message/sendText'), 'call 4: POST sendText WhatsApp cliente (2o balao)');
     assert.equal(handler.calls[4].method, 'POST');
-    assert.ok(handler.calls[5].url.includes('/rest/v1/conversas?tenant_id='), 'call 5: PATCH conversa by tenant+phone');
-    assert.equal(handler.calls[5].method, 'PATCH');
-    assert.ok(handler.calls[6].url.includes('/rest/v1/conversas?id='), 'call 6: GET conversa by id (lifecycle read)');
-    assert.equal(handler.calls[6].method, 'GET');
-    assert.ok(handler.calls[7].url.includes('/rest/v1/conversas?id='), 'call 7: PATCH conversa (lifecycle write)');
-    assert.equal(handler.calls[7].method, 'PATCH');
-    assert.ok(handler.calls[7].url.includes('&estado_agente=neq.fechado'),
+    assert.ok(handler.calls[5].url.includes('api.telegram.org'), 'call 5: POST Telegram tatuador');
+    assert.equal(handler.calls[5].method, 'POST');
+    assert.ok(handler.calls[6].url.includes('/rest/v1/conversas?tenant_id='), 'call 6: PATCH conversa by tenant+phone');
+    assert.equal(handler.calls[6].method, 'PATCH');
+    assert.ok(handler.calls[7].url.includes('/rest/v1/conversas?id='), 'call 7: GET conversa by id (lifecycle read)');
+    assert.equal(handler.calls[7].method, 'GET');
+    assert.ok(handler.calls[8].url.includes('/rest/v1/conversas?id='), 'call 8: PATCH conversa (lifecycle write)');
+    assert.equal(handler.calls[8].method, 'PATCH');
+    assert.ok(handler.calls[8].url.includes('&estado_agente=neq.fechado'),
       'PATCH lifecycle URL must contain &estado_agente=neq.fechado filter');
     assert.ok(handler.calls.some(c => c.url.includes('message/sendText')), 'enviou WhatsApp');
     assert.ok(handler.calls.some(c => c.url.includes('api.telegram.org')), 'enviou Telegram');

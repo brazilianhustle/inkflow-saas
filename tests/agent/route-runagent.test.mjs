@@ -219,6 +219,72 @@ test('Bug1 gate: pergunta com OBR completos E resposta sobre foto → marca pedi
   assert.equal(r.pediu_foto_local, true);
 });
 
+const CADASTRO_HANDOFF_OUT = {
+  proxima_acao: 'handoff',
+  resposta_cliente: 'Perfeito, vou mandar pro tatuador.',
+  dados_persistidos: { nome: 'Mario', data_nascimento: '1993-10-19', email: null },
+  dados_completos: true,
+  campos_faltando: [],
+  campos_conflitantes: [],
+  email_recusado: true,
+  payload_portfolio: null,
+};
+
+function fakeCadastro(out = CADASTRO_HANDOFF_OUT) {
+  return {
+    responses: {
+      parse: async () => ({ status: 'completed', id: 'r', output_parsed: { output: out } }),
+    },
+  };
+}
+
+test('S1 cadastro: idade sem data explicita nao persiste data_nascimento inventada', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = { id: 'c', telefone: '5511', estado_agente: 'cadastro', dados_coletados: {}, dados_cadastro: {} };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'tenho 30 anos',
+    estado_atual: 'cadastro', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: fakeCadastro(),
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'pergunta');
+  assert.equal(r.estado_novo, 'cadastro');
+  assert.equal(r.dados_persistidos.data_nascimento, null);
+  assert.ok(r.campos_faltando.includes('data_nascimento'));
+});
+
+test('S1 cadastro: idade com data explicita permite data_nascimento', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = { id: 'c', telefone: '5511', estado_agente: 'cadastro', dados_coletados: {}, dados_cadastro: {} };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'tenho 30 anos, nasci em 19/10/1993',
+    estado_atual: 'cadastro', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: fakeCadastro(),
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'handoff');
+  assert.equal(r.dados_persistidos.data_nascimento, '1993-10-19');
+});
+
+test('S1 cadastro: idade sem data nao apaga data_nascimento ja existente no cadastro', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = {
+    id: 'c', telefone: '5511', estado_agente: 'cadastro', dados_coletados: {},
+    dados_cadastro: { data_nascimento: '1993-10-19' },
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'sim, tenho 30 anos',
+    estado_atual: 'cadastro', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: fakeCadastro(),
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'handoff');
+  assert.equal(r.dados_persistidos.data_nascimento, '1993-10-19');
+});
+
 test('Bug1 gate: fallback de rede (sem foto na resposta) NAO marca pediu_foto_local mesmo com OBR completos no DB', async () => {
   const { runAgent } = await import('../../functions/api/agent/route.js');
   // 4 OBR ja completos no DB, foto nunca pedida; rede cai → buildFallbackOutput.

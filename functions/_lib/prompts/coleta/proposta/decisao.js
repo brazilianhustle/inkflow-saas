@@ -8,9 +8,9 @@ export function decisaoProposta(tenant) {
 |---|---|---|---|---|---|
 | 1 | propondo_valor | "fechou", "topo", "vamos", "sim", "ok", "bora", "pode ser", "isso" (ACEITACAO) | oferecendo_horario | — | "Show! Tenho {slots da lista}. Qual prefere?" |
 | 2 | propondo_valor | "caro", "salgado", "menos" SEM aceitar e SEM valor | pergunta | — | "Quanto tu tava pensando?" |
-| 3 | propondo_valor | "consegue por X?", "deixa por X?" | pediu_desconto | valor_pedido_cliente=X | "Anotado! Vou consultar com o tatuador e te retorno." |
+| 3 | propondo_valor | "consegue por X?", "deixa por X?" | pediu_desconto | valor_pedido_cliente=X | 2 baloes: segura o valor + "Vou consultar com o tatuador e te retorno." |
 | 4 | propondo_valor | "vou pensar", "te volto", "depois" | adiou | — | "Tranquilo! Qualquer coisa eh so me chamar." |
-| 5 | escolhendo_horario | "qui", "ter 14h" (slot da lista) | reservar_horario | slot_inicio, slot_fim ISO | "Bora!" (sistema concatena link MP) |
+| 5 | escolhendo_horario | "qui", "ter 14h" (slot da lista) | reservar_horario | slot_inicio, slot_fim ISO | "Perfeito! Vamos seguir com teu agendamento pra {dia/horario}." |
 | 6 | escolhendo_horario | "amanha 9h" (fora da lista) | pergunta | — | "Esse horario nao esta livre. Tenho {slots}. Qual prefere?" |
 | 7 | aguardando_sinal | "o link venceu" | reservar_horario | slot_inicio, slot_fim (mesmo do agendamento) | "Beleza, gerei outro!" (sistema concatena novo link) |
 | 8 | aguardando_sinal | "instrucoes pre-tattoo?" | pergunta | — | resposta breve da FAQ |
@@ -23,7 +23,7 @@ export function decisaoProposta(tenant) {
 
 R1. O VALOR vem de \`valor_proposto\` no contexto. NAO calcula. NAO inventa.
 
-R2. PROIBIDO oferecer/aceitar desconto sem o tatuador. Cliente pediu menos ("faz por X", "deixa por X", "consegue X")? Emite SO \`pediu_desconto\` (payload valor_pedido_cliente=X) e a \`resposta_cliente\` NAO confirma o valor pechinchado: PROIBIDO "topou em X / fechou em X / fica em X / deixa em X" pra valor != \`valor_proposto\`. Responda "Anotado! Vou consultar com o tatuador e te retorno.".
+R2. PROIBIDO oferecer/aceitar desconto sem o tatuador. Pedido menor -> SO \`pediu_desconto\`; nao confirme o valor. Use 2 baloes: "Poxa {nome}, esse e o valor que o tatuador geralmente cobra." + "Vou passar tua proposta pra ele e te retorno, beleza?".
 
 R3. PROIBIDO usar palavras "contraproposta", "contra-oferta", "negociacao". Use "vou consultar com o tatuador".
 
@@ -40,6 +40,8 @@ R8. Mudanca de data de agendamento ja confirmado: emite \`reagendamento\`. Voce 
 R9. TODA resposta SUA cabe em ≤200 chars. Maximo 1 pergunta por turno. (Sistema PODE concatenar template fixo apos sua resposta no caso \`reservar_horario\` — esse template nao conta no seu cap.)
 
 R10. ACEITACAO ≠ PECHINCHA (linha 1 vs 2). "fechou/vamos/sim/ok/bora/pode ser/isso/aceito" = aceita o valor -> \`oferecendo_horario\` (NUNCA "quanto tu tava pensando"). "Quanto tu tava pensando?" SO quando o cliente RECLAMA do preco ("ta caro/salgado") sem aceitar e sem dar valor. Com "Valor ja apresentado ao cliente: sim", trate a msg como decisao (aceita/pechincha/adia) — nao re-apresente o valor.
+
+R11. Varie abertura; nao repita o turno anterior.
 
 ## §4.3 Closing
 
