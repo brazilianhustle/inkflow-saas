@@ -200,7 +200,11 @@ export async function processBatch(env, batch, depsOverride = {}) {
       agentOut = await deps.runAgent({
         tenant_id: tenantId, telefone, mensagem: texto,
         estado_atual: estadoAgente, dados_acumulados: conversa.dados_coletados || {},
-        historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente }, clientContext: {},
+        historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente },
+        clientContext: {
+          batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
+          batch_joined_by: 'newline',
+        },
         imagens,
       });
     } catch (e) { throw new Error(`runAgent threw: ${e.message}`); }

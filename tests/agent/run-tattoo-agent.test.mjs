@@ -80,6 +80,26 @@ test('runTattooAgent: monta input com historico + mensagem', async () => {
   assert.equal(captured.model, 'gpt-4o-mini');
 });
 
+test('runTattooAgent: inclui contexto de lote sequencial nas instructions', async () => {
+  const fake = makeFakeClient({
+    proxima_acao: 'pergunta', resposta_cliente: 'x',
+    dados_persistidos: { estilo: null, tamanho_cm: null, altura_cm: null, local_corpo: null, cor_preferencia: null, descricao_curta: null, foto_local: null },
+    dados_completos: false, campos_faltando: ['local_corpo'], campos_conflitantes: [],
+    payload_portfolio: null, analise_imagens: null, cobertura_suspeita: null,
+  });
+  await runTattooAgent({
+    env: { OPENAI_API_KEY: 'sk-test' },
+    tenant: FAKE_TENANT, conversa: FAKE_CONVERSA,
+    clientContext: { batch_message_count: 2, batch_joined_by: 'newline' },
+    mensagem: 'Tenho 1.60\nquanto fica',
+    historico: [],
+    openaiClient: fake,
+  });
+  const captured = fake._captured();
+  assert.match(captured.instructions, /Turno atual: 2 baloes do cliente no mesmo lote/);
+  assert.match(captured.instructions, /lote unico/);
+});
+
 test('runTattooAgent: normaliza historico shape Supabase (autor+texto)', async () => {
   const fake = makeFakeClient({
     proxima_acao: 'pergunta', resposta_cliente: 'x',

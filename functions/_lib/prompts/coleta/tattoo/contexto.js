@@ -31,6 +31,9 @@ export function contextoTattoo(tenant, conversa, clientContext) {
   } else {
     linhas.push('- Cliente ja conversou antes — NAO se apresente novamente');
   }
+  if (ctx.batch_message_count > 1) {
+    linhas.push(`- Turno atual: ${ctx.batch_message_count} baloes do cliente no mesmo lote; trate como um lote unico, nao como conversas separadas`);
+  }
   linhas.push('');
 
   // Dados ja coletados — refator manifesto 2026-05-13 — 4 OBR + status foto

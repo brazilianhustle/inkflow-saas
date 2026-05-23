@@ -112,6 +112,8 @@ test('RACE GUARD: 2 balões no mesmo lote → runAgent 1× e considera ambos os 
   assert.equal(runAgentSpy.mock.callCount(), 1, 'runAgent deve rodar 1× pro lote inteiro');
   assert.match(runAgentSpy.mock.calls[0].arguments[0].mensagem, /quero uma tattoo/);
   assert.match(runAgentSpy.mock.calls[0].arguments[0].mensagem, /no antebraço/);
+  assert.equal(runAgentSpy.mock.calls[0].arguments[0].clientContext.batch_message_count, 2);
+  assert.equal(runAgentSpy.mock.calls[0].arguments[0].clientContext.batch_joined_by, 'newline');
 });
 
 test('HOTFIX: Etapa 1 select NÃO pede coluna fantasma estado_extra (mismatch schema→query)', async () => {

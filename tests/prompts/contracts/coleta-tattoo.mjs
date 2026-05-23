@@ -18,6 +18,11 @@ export const CONTRACT_COLETA_TATTOO = {
     'dados_persistidos',
     'proxima_acao',
     'recebe as imagens',
+    'Me chamo',
+    'nome e opcional',
+    'lote unico',
+    'NAO repita a mesma pergunta',
+    'tipo=\'incerto\'',
   ],
   must_not_contain: [
     // Tools removidas (audit Fase 9 — pure structured-output).
@@ -36,6 +41,8 @@ export const CONTRACT_COLETA_TATTOO = {
     'enviar_objecao_tatuador',
     // Naming antigo — schema usa descricao_curta.
     'descricao_tattoo',
+    // Template robotico que o smoke flagrou.
+    'Anotei:',
   ],
   max_tokens: 6000,
 };
