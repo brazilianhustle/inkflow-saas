@@ -232,6 +232,71 @@ function forceAmbiguousTattooPhotoQuestion(out, dadosApos, conversa) {
   };
 }
 
+function isPhotoLocalClarification(text) {
+  const s = String(text || '').toLowerCase();
+  return /\b(do local|foto do local|local da tatuagem|local do corpo)\b/.test(s)
+    || /\bsem\s+(tattoo|tatuagem|tatuagens)\b/.test(s);
+}
+
+function promoteClarifiedLocalPhoto(out, dadosApos, mensagem, conversa) {
+  if (!out || hasValue(dadosApos?.foto_local) || hasValue(dadosApos?.foto_local_msg_id)) {
+    return { out, dadosApos, promoted: false };
+  }
+  if (!isPhotoLocalClarification(mensagem)) return { out, dadosApos, promoted: false };
+  const refs = Array.isArray(conversa?.dados_coletados?.refs_imagens_msg_ids)
+    ? conversa.dados_coletados.refs_imagens_msg_ids
+    : [];
+  const msgId = refs[refs.length - 1];
+  if (!msgId) return { out, dadosApos, promoted: false };
+  const local = String(dadosApos?.local_corpo || '').trim() || 'local confirmado';
+  const nextDados = {
+    ...dadosApos,
+    foto_local: `foto do local confirmada pelo cliente (${local})`,
+    foto_local_msg_id: msgId,
+  };
+  return {
+    out: { ...out, dados_persistidos: { ...(out.dados_persistidos || {}), ...nextDados } },
+    dadosApos: nextDados,
+    promoted: true,
+  };
+}
+
+function shouldForceCadastroAfterTattooPhoto(out, dadosApos, mensagem, promotedPhoto) {
+  if (!promotedPhoto) return false;
+  const obrCompletos = ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']
+    .every(k => hasValue(dadosApos?.[k]));
+  if (!obrCompletos) return false;
+  const resposta = String(out?.resposta_cliente || '').trim();
+  const askedPrice = /\b(quanto|valor|pre[cç]o|fica|custa|orcamento|orçamento)\b/i.test(String(mensagem || ''));
+  return out?.proxima_acao !== 'handoff' && (askedPrice || !/\?/.test(resposta));
+}
+
+function forceTattooCadastroHandoff(out, dadosApos, mensagem) {
+  const askedPrice = /\b(quanto|valor|pre[cç]o|fica|custa|orcamento|orçamento)\b/i.test(String(mensagem || ''));
+  const prefix = askedPrice
+    ? 'Sobre valor, o tatuador confirma certinho depois de avaliar tua ideia.'
+    : 'Combinado, com a ideia e o local anotados.';
+  return {
+    ...out,
+    proxima_acao: 'handoff',
+    resposta_cliente: `${prefix}\n\nPra liberar teu orçamento personalizado, me passa nome completo e data de nascimento?`,
+    dados_persistidos: {
+      descricao_curta: dadosApos.descricao_curta,
+      local_corpo: dadosApos.local_corpo,
+      altura_cm: dadosApos.altura_cm,
+      estilo: dadosApos.estilo,
+      tamanho_cm: dadosApos.tamanho_cm ?? null,
+      cor_preferencia: dadosApos.cor_preferencia ?? null,
+      foto_local: dadosApos.foto_local ?? null,
+      foto_local_msg_id: dadosApos.foto_local_msg_id,
+    },
+    dados_completos: true,
+    campos_faltando: [],
+    campos_conflitantes: [],
+    payload_portfolio: null,
+  };
+}
+
 export function rejectCadastroDateFromAgeOnly(out, mensagem, existingDate = null) {
   const persisted = out?.dados_persistidos || {};
   if (!persisted.data_nascimento || !mentionsAgeOnly(mensagem)) return { out, violated: null };
@@ -320,11 +385,17 @@ export async function runAgent({
     // NAO existe na tabela conversas). Se o LLM tentar handoff sem nunca ter
     // pedido a foto e sem foto presente, forca um turno pergunta pedindo a
     // foto (a foto continua OPCIONAL — basta ter sido pedida 1x).
-    const dadosApos = mergePreservingExisting(conversa?.dados_coletados || {}, out.dados_persistidos || {});
+    let dadosApos = mergePreservingExisting(conversa?.dados_coletados || {}, out.dados_persistidos || {});
     out = { ...out, dados_persistidos: mergePreservingExisting(out.dados_persistidos || {}, dadosApos) };
     out = enforceTattooQuestionCoherence(out, dadosApos, mensagem);
     if (hasAmbiguousTattooBodyPhoto(out, imagens)) {
       out = forceAmbiguousTattooPhotoQuestion(out, dadosApos, conversa);
+    }
+    const promotedPhoto = promoteClarifiedLocalPhoto(out, dadosApos, mensagem, conversa);
+    out = promotedPhoto.out;
+    dadosApos = promotedPhoto.dadosApos;
+    if (shouldForceCadastroAfterTattooPhoto(out, dadosApos, mensagem, promotedPhoto.promoted)) {
+      out = forceTattooCadastroHandoff(out, dadosApos, mensagem);
     }
     const tentativasFoto = conversa?.dados_coletados?.tentativas_foto_local || 0;
     const temFotoLocal = !!out.dados_persistidos?.foto_local;

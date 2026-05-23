@@ -408,6 +408,66 @@ test('Bug1 gate: pergunta com OBR completos E resposta sobre foto → marca pedi
   assert.equal(r.pediu_foto_local, true);
 });
 
+test('tattoo: confirmacao de foto ambigua como local promove ref e avanca para cadastro', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = {
+    id: 'c',
+    telefone: '5511',
+    estado_agente: 'tattoo',
+    dados_coletados: {
+      descricao_curta: 'borboleta',
+      local_corpo: 'perna direita',
+      altura_cm: 160,
+      estilo: 'fineline',
+      refs_imagens_msg_ids: [11951],
+      tentativas_foto_local: 1,
+    },
+    dados_cadastro: {},
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511',
+    mensagem: 'do local, seria na perna direita\nsem tatuagem\nquanto é',
+    estado_atual: 'tattoo', dados_acumulados: conversa.dados_coletados, historico: [],
+    tenant: TENANT_STUB,
+    conversa,
+    clientContext: { batch_message_count: 3 },
+    openaiClient: {
+      responses: {
+        parse: async () => ({
+          status: 'completed',
+          id: 'r',
+          output_parsed: { output: {
+            proxima_acao: 'pergunta',
+            resposta_cliente: 'Viu que a tatuagem seria na perna direita',
+            dados_persistidos: {
+              descricao_curta: null,
+              local_corpo: 'perna direita',
+              altura_cm: null,
+              estilo: null,
+              tamanho_cm: null,
+              cor_preferencia: null,
+              foto_local: null,
+            },
+            dados_completos: false,
+            campos_faltando: ['foto_local'],
+            campos_conflitantes: [],
+            payload_portfolio: null,
+            analise_imagens: null,
+            cobertura_suspeita: null,
+          } },
+        }),
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'handoff');
+  assert.equal(r.estado_novo, 'cadastro');
+  assert.equal(r.dados_persistidos.foto_local_msg_id, 11951);
+  assert.match(r.dados_persistidos.foto_local, /foto do local confirmada/i);
+  assert.match(r.resposta_cliente, /nome completo/i);
+  assert.match(r.resposta_cliente, /data de nascimento/i);
+});
+
 const CADASTRO_HANDOFF_OUT = {
   proxima_acao: 'handoff',
   resposta_cliente: 'Perfeito, vou mandar pro tatuador.',
