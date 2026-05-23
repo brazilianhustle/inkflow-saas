@@ -94,6 +94,39 @@ test('runAgent (tattoo): surfacia analise_imagens no retorno', async () => {
   assert.equal(r.cobertura_suspeita, null);
 });
 
+test('runAgent (tattoo): primeiro contato com saudacao pura força 2 baloes canonicos', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'oi',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: { ...TENANT_STUB, nome_agente: 'Assistente' },
+    conversa: CONVERSA_STUB,
+    clientContext: { is_first_contact: true },
+    openaiClient: {
+      responses: {
+        parse: async () => ({
+          status: 'completed',
+          id: 'r',
+          output_parsed: { output: {
+            proxima_acao: 'pergunta',
+            resposta_cliente: 'Oii, tudo bem? Como posso te chamar?',
+            dados_persistidos: { estilo: null, tamanho_cm: null, altura_cm: null, local_corpo: null, cor_preferencia: null, descricao_curta: null, foto_local: null },
+            dados_completos: false,
+            campos_faltando: ['descricao_curta'],
+            campos_conflitantes: [],
+            payload_portfolio: null,
+            analise_imagens: null,
+            cobertura_suspeita: null,
+          } },
+        }),
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.resposta_cliente, 'Oii, tudo bem?\n\nMe chamo Assistente, muito prazer! Como posso te chamar?');
+  assert.deepEqual(r.campos_faltando, ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']);
+});
+
 // ─── Bug 1: gate handoff só após foto pedida >=1x ──────────────────────
 const HANDOFF_OUT = {
   proxima_acao: 'handoff',

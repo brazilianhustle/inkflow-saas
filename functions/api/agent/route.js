@@ -106,6 +106,37 @@ function mentionsAgeOnly(text) {
   return !hasDate;
 }
 
+function isGreetingOnly(text) {
+  const s = String(text || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[!?.\s]/g, ' ')
+    .trim();
+  return /^(oi|oii|oiii|ola|olaa|bom dia|boa tarde|boa noite|e ai|salve)$/.test(s);
+}
+
+function forceFirstContactGreeting(out, tenant) {
+  const nomeAgente = tenant?.nome_agente || 'atendente';
+  return {
+    ...out,
+    proxima_acao: 'pergunta',
+    resposta_cliente: `Oii, tudo bem?\n\nMe chamo ${nomeAgente}, muito prazer! Como posso te chamar?`,
+    dados_persistidos: {
+      descricao_curta: null,
+      local_corpo: null,
+      altura_cm: null,
+      estilo: null,
+      tamanho_cm: null,
+      cor_preferencia: null,
+      foto_local: null,
+    },
+    dados_completos: false,
+    campos_faltando: ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo'],
+    campos_conflitantes: [],
+    payload_portfolio: null,
+  };
+}
+
 export function rejectCadastroDateFromAgeOnly(out, mensagem, existingDate = null) {
   const persisted = out?.dados_persistidos || {};
   if (!persisted.data_nascimento || !mentionsAgeOnly(mensagem)) return { out, violated: null };
@@ -185,6 +216,9 @@ export async function runAgent({
         message: e?.message, status: e?.status, code: e?.code,
       });
       out = buildFallbackOutput('tattoo');
+    }
+    if (mergedClientContext.is_first_contact && isGreetingOnly(mensagem)) {
+      out = forceFirstContactGreeting(out, tenant);
     }
     // ─── Bug 1: trava leve foto do local pedida >=1x antes do handoff ───
     // Contador vive em dados_coletados.tentativas_foto_local (estado_extra

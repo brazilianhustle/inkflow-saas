@@ -195,6 +195,9 @@ export async function processBatch(env, batch, depsOverride = {}) {
 
     // Etapa 4: runAgent (1× pro turno)
     const estadoAgente = dbToAgent(conversa.estado_agente);
+    const isFirstContact = historico.length === 0
+      && Object.keys(conversa.dados_coletados || {}).length === 0
+      && Object.keys(conversa.dados_cadastro || {}).length === 0;
     let agentOut;
     try {
       agentOut = await deps.runAgent({
@@ -202,6 +205,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
         estado_atual: estadoAgente, dados_acumulados: conversa.dados_coletados || {},
         historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente },
         clientContext: {
+          is_first_contact: isFirstContact,
           batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
           batch_joined_by: 'newline',
         },
