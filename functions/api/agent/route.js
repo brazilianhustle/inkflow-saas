@@ -199,6 +199,39 @@ function enforceTattooQuestionCoherence(out, dadosApos, mensagem) {
   };
 }
 
+function hasAmbiguousTattooBodyPhoto(out, imagens) {
+  if (!Array.isArray(imagens) || imagens.length === 0) return false;
+  if (out?.cobertura_suspeita) return false;
+  const analise = Array.isArray(out?.analise_imagens) ? out.analise_imagens : [];
+  return analise.some(a => a?.tipo === 'corpo' && a?.corpo_tem_tattoo === true);
+}
+
+function forceAmbiguousTattooPhotoQuestion(out, dadosApos, conversa) {
+  const local = String(dadosApos?.local_corpo || '').trim() || 'local do corpo';
+  const analise = Array.isArray(out?.analise_imagens)
+    ? out.analise_imagens.map(a => (
+      a?.tipo === 'corpo' && a?.corpo_tem_tattoo === true
+        ? { ...a, tipo: 'incerto' }
+        : a
+    ))
+    : out?.analise_imagens;
+  return {
+    ...out,
+    proxima_acao: 'pergunta',
+    resposta_cliente: `Vi a foto, mas fiquei em dúvida: ela é referência do desenho/estilo ou é pra mostrar o local (${local})?`,
+    dados_persistidos: {
+      ...dadosApos,
+      foto_local: conversa?.dados_coletados?.foto_local ?? null,
+      foto_local_msg_id: conversa?.dados_coletados?.foto_local_msg_id ?? null,
+    },
+    dados_completos: false,
+    campos_faltando: ['tipo_foto'],
+    campos_conflitantes: [],
+    payload_portfolio: null,
+    analise_imagens: analise ?? null,
+  };
+}
+
 export function rejectCadastroDateFromAgeOnly(out, mensagem, existingDate = null) {
   const persisted = out?.dados_persistidos || {};
   if (!persisted.data_nascimento || !mentionsAgeOnly(mensagem)) return { out, violated: null };
@@ -290,10 +323,13 @@ export async function runAgent({
     const dadosApos = mergePreservingExisting(conversa?.dados_coletados || {}, out.dados_persistidos || {});
     out = { ...out, dados_persistidos: mergePreservingExisting(out.dados_persistidos || {}, dadosApos) };
     out = enforceTattooQuestionCoherence(out, dadosApos, mensagem);
+    if (hasAmbiguousTattooBodyPhoto(out, imagens)) {
+      out = forceAmbiguousTattooPhotoQuestion(out, dadosApos, conversa);
+    }
     const tentativasFoto = conversa?.dados_coletados?.tentativas_foto_local || 0;
-    const temFotoLocal = !!dadosApos.foto_local;
+    const temFotoLocal = !!out.dados_persistidos?.foto_local;
     const obrCompletos = ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']
-      .every(k => dadosApos[k] != null && dadosApos[k] !== '');
+      .every(k => out.dados_persistidos?.[k] != null && out.dados_persistidos?.[k] !== '');
     if (out.proxima_acao === 'handoff' && tentativasFoto === 0 && !temFotoLocal) {
       out = {
         ...forcePergunta(out, PEDIDO_FOTO_LOCAL),
@@ -303,6 +339,7 @@ export async function runAgent({
       pediuFotoLocal = true;
     } else if (out.proxima_acao === 'pergunta' && obrCompletos && tentativasFoto === 0
                && !temFotoLocal && (out.campos_conflitantes?.length ?? 0) === 0
+               && !(out.campos_faltando || []).includes('tipo_foto')
                && /foto/i.test(out.resposta_cliente || '')) {
       // LLM ja pediu a foto organicamente neste turno (4 OBR completos, sem
       // conflito) E a resposta menciona foto. O guard /foto/ evita contar como

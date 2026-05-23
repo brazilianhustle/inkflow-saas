@@ -221,6 +221,68 @@ test('runAgent (tattoo): resposta numerica solta vira pergunta coesa sobre campo
   assert.deepEqual(r.campos_faltando, ['estilo']);
 });
 
+test('runAgent (tattoo): foto de corpo ja tatuado no turno atual vira pergunta de ambiguidade', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = {
+    ...CONVERSA_STUB,
+    dados_coletados: {
+      descricao_curta: 'borboleta',
+      local_corpo: 'perna',
+      altura_cm: 160,
+      estilo: 'fineline',
+      tentativas_foto_local: 1,
+    },
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: '',
+    estado_atual: 'tattoo', dados_acumulados: conversa.dados_coletados, historico: [],
+    tenant: TENANT_STUB,
+    conversa,
+    clientContext: {},
+    imagens: [{ base64: 'ZZ', mimetype: 'image/jpeg', msgRowId: 11941 }],
+    openaiClient: {
+      responses: {
+        parse: async () => ({
+          status: 'completed',
+          id: 'r',
+          output_parsed: { output: {
+            proxima_acao: 'handoff',
+            resposta_cliente: 'Borboleta em fineline na perna fica elegante e bem visivel.',
+            dados_persistidos: {
+              descricao_curta: 'borboleta',
+              local_corpo: 'perna',
+              altura_cm: 160,
+              estilo: 'fineline',
+              tamanho_cm: null,
+              cor_preferencia: null,
+              foto_local: 'foto de uma perna com tatuagens',
+            },
+            dados_completos: true,
+            campos_faltando: [],
+            campos_conflitantes: [],
+            payload_portfolio: null,
+            analise_imagens: [{
+              tipo: 'corpo',
+              descricao: 'foto de uma perna com tatuagens',
+              corpo_tem_tattoo: true,
+              corpo_tem_marcacao: false,
+            }],
+            cobertura_suspeita: null,
+          } },
+        }),
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'pergunta');
+  assert.equal(r.estado_novo, 'tattoo');
+  assert.match(r.resposta_cliente, /refer[eê]ncia|local/i);
+  assert.equal(r.dados_persistidos.foto_local, null);
+  assert.deepEqual(r.campos_faltando, ['tipo_foto']);
+  assert.equal(r.analise_imagens[0].tipo, 'incerto');
+  assert.ok(!r.pediu_foto_local);
+});
+
 // ─── Bug 1: gate handoff só após foto pedida >=1x ──────────────────────
 const HANDOFF_OUT = {
   proxima_acao: 'handoff',
