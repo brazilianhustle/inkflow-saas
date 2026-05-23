@@ -86,7 +86,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
   // tenant lookup por id (mesmas colunas do inbound).
   const tenRes = await deps.supaFetch(
     `/rest/v1/tenants?id=eq.${encodeURIComponent(tenantId)}` +
-    `&select=id,nome_estudio,evo_instance,evo_apikey,evo_base_url,tatuador_telegram_chat_id,config_agente,config_precificacao,sinal_percentual,gatilhos_handoff,faq_texto,fewshots_por_modo,portfolio_urls,horario_funcionamento,duracao_sessao_padrao_h&limit=1`,
+    `&select=id,nome_agente,nome_estudio,evo_instance,evo_apikey,evo_base_url,tatuador_telegram_chat_id,config_agente,config_precificacao,sinal_percentual,gatilhos_handoff,faq_texto,fewshots_por_modo,portfolio_urls,horario_funcionamento,duracao_sessao_padrao_h&limit=1`,
   );
   const tenArr = await tenRes.json();
   const tenant = tenArr?.[0];

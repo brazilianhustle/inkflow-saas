@@ -137,6 +137,68 @@ function forceFirstContactGreeting(out, tenant) {
   };
 }
 
+function hasValue(v) {
+  return v !== null && v !== undefined && v !== '';
+}
+
+function mergePreservingExisting(existing = {}, patch = {}) {
+  const out = { ...existing };
+  for (const [k, v] of Object.entries(patch || {})) {
+    if (hasValue(v) || !hasValue(out[k])) out[k] = v;
+  }
+  return out;
+}
+
+function tattooMissingFields(dados) {
+  return ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo'].filter(k => !hasValue(dados?.[k]));
+}
+
+function asksForCollectedField(text, dados, firstMissing) {
+  const s = String(text || '').toLowerCase();
+  return (firstMissing !== 'altura_cm' && hasValue(dados.altura_cm) && /\b(altura|alto|alta)\b/.test(s))
+    || (firstMissing !== 'estilo' && hasValue(dados.estilo) && /\bestilo\b/.test(s))
+    || (firstMissing !== 'local_corpo' && hasValue(dados.local_corpo) && /\b(local|parte do corpo|onde)\b/.test(s));
+}
+
+function tattooQuestionFor(field, dados, mensagem) {
+  const askedPrice = /\b(quanto|valor|pre[cç]o|fica|custa|orcamento|orçamento)\b/i.test(String(mensagem || ''));
+  const prefix = askedPrice
+    ? 'Sobre valor o tatuador confirma quando avaliar tua ideia'
+    : null;
+  if (field === 'estilo') {
+    const confirm = hasValue(dados.altura_cm) ? `Fechou, ${dados.altura_cm}cm` : 'Fechou';
+    const ask = prefix
+      ? `${prefix}. Me diz o estilo que tu prefere?`
+      : 'Me diz o estilo que tu prefere?';
+    return `${confirm}\n\n${ask}`;
+  }
+  if (field === 'altura_cm') {
+    return prefix
+      ? `${prefix}. Qual a tua altura?`
+      : 'Qual a tua altura?';
+  }
+  if (field === 'local_corpo') return 'Em qual parte do corpo tu quer fazer?';
+  if (field === 'descricao_curta') return 'Me conta o que tu quer tatuar?';
+  return 'Me confirma esse detalhe pra eu seguir?';
+}
+
+function enforceTattooQuestionCoherence(out, dadosApos, mensagem) {
+  if (!out || out.proxima_acao !== 'pergunta') return out;
+  const missing = tattooMissingFields(dadosApos);
+  if (missing.length === 0) return out;
+  const resposta = String(out.resposta_cliente || '').trim();
+  const invalid = !/\?/.test(resposta)
+    || /^\d+(?:[,.]\d+)?\s*(?:cm|m)?$/i.test(resposta)
+    || asksForCollectedField(resposta, dadosApos, missing[0]);
+  if (!invalid) return out;
+  return {
+    ...out,
+    resposta_cliente: tattooQuestionFor(missing[0], dadosApos, mensagem),
+    dados_completos: false,
+    campos_faltando: missing,
+  };
+}
+
 export function rejectCadastroDateFromAgeOnly(out, mensagem, existingDate = null) {
   const persisted = out?.dados_persistidos || {};
   if (!persisted.data_nascimento || !mentionsAgeOnly(mensagem)) return { out, violated: null };
@@ -225,7 +287,9 @@ export async function runAgent({
     // NAO existe na tabela conversas). Se o LLM tentar handoff sem nunca ter
     // pedido a foto e sem foto presente, forca um turno pergunta pedindo a
     // foto (a foto continua OPCIONAL — basta ter sido pedida 1x).
-    const dadosApos = { ...(conversa?.dados_coletados || {}), ...(out.dados_persistidos || {}) };
+    const dadosApos = mergePreservingExisting(conversa?.dados_coletados || {}, out.dados_persistidos || {});
+    out = { ...out, dados_persistidos: mergePreservingExisting(out.dados_persistidos || {}, dadosApos) };
+    out = enforceTattooQuestionCoherence(out, dadosApos, mensagem);
     const tentativasFoto = conversa?.dados_coletados?.tentativas_foto_local || 0;
     const temFotoLocal = !!dadosApos.foto_local;
     const obrCompletos = ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']
