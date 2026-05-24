@@ -1,5 +1,5 @@
 ---
-last_reviewed: 2026-05-03
+last_reviewed: 2026-05-24
 owner: leandro
 status: stable
 related: [stack.md, flows.md, ids.md, secrets.md, limits.md, runbooks/README.md, methodology/index.md]
@@ -26,7 +26,7 @@ related: [stack.md, flows.md, ids.md, secrets.md, limits.md, runbooks/README.md,
 | `secrets.md` | Mapa de secrets — APENAS nomes e ponteiros pra fonte canônica (Bitwarden + CF Pages env). Procedure de rotação. **ZERO valores plaintext.** |
 | `limits.md` | Quotas de Vultr / CF Workers / CF Pages / Supabase / MP / MailerLite / Telegram / n8n / LLM providers + thresholds warn/critical. Alimenta auditores #3 (VPS limits) e #5 (billing health) do Sub-projeto 3. |
 | `runbooks/` | Procedimentos operacionais. Ver `runbooks/README.md` pro índice completo + `runbooks/<incidente>.md` por procedimento. |
-| `methodology/index.md` | Doutrina de operação: matriz principal-subagent, incident-response, release-protocol. Ver `methodology/` pro índice completo. |
+| `methodology/index.md` | Doutrina de operação: matriz principal-subagent, incident-response, release-protocol, eval comparativo e doutrina para mudanças conversacionais. Ver `methodology/` pro índice completo. |
 
 ## Runbooks disponíveis
 
