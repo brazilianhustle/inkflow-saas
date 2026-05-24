@@ -112,7 +112,7 @@ test('RACE GUARD: 2 balões no mesmo lote → runAgent 1× e considera ambos os 
   assert.equal(runAgentSpy.mock.callCount(), 1, 'runAgent deve rodar 1× pro lote inteiro');
   assert.match(runAgentSpy.mock.calls[0].arguments[0].mensagem, /quero uma tattoo/);
   assert.match(runAgentSpy.mock.calls[0].arguments[0].mensagem, /no antebraço/);
-  assert.equal(runAgentSpy.mock.calls[0].arguments[0].clientContext.is_first_contact, true);
+  assert.equal(runAgentSpy.mock.calls[0].arguments[0].clientContext.is_first_contact, false);
   assert.equal(runAgentSpy.mock.calls[0].arguments[0].clientContext.batch_message_count, 2);
   assert.equal(runAgentSpy.mock.calls[0].arguments[0].clientContext.batch_joined_by, 'newline');
 });
@@ -312,7 +312,7 @@ test('ConversationRouter Slice 1: foto com legenda passa pelo runAgent para pres
   assert.equal(fotoPatch.foto_local_msg_id, MSG_ROW_ID);
 });
 
-test('ConversationRouter Slice 1: primeiro contato cai no runAgent para preservar apresentação', async () => {
+test('ConversationRouter Slice 1: primeiro contato com saudacao pura cai no runAgent para preservar apresentação', async () => {
   const runAgentSpy = mock.fn(async (args) => {
     assert.equal(args.clientContext.is_first_contact, true);
     return {
@@ -334,7 +334,7 @@ test('ConversationRouter Slice 1: primeiro contato cai no runAgent para preserva
   const deps = mockDeps({
     supaFetch: batchSupaFetch({
       conversa,
-      rows: rowsFor([{ id: MSG_ROW_ID, content: 'oi, quanto custa uma tattoo no braço?' }]),
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'oi' }]),
       onPost: (path, body) => {
         if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
       },
@@ -346,6 +346,45 @@ test('ConversationRouter Slice 1: primeiro contato cai no runAgent para preserva
 
   assert.equal(runAgentSpy.mock.callCount(), 1);
   assert.equal(aiInsert.message.content, 'Atendente:\nOi, eu te ajudo por aqui');
+});
+
+test('ConversationRouter Slice 1: primeiro contato misto com preço usa router e não fica só na saudação', async () => {
+  const runAgentSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: {},
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 101, content: 'opa' },
+        { id: 102, content: 'eu quero fazer um anjo na perna' },
+        { id: 103, content: 'quanto fica' },
+      ]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101, 102, 103] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.dados_coletados.descricao_curta, 'anjo');
+  assert.equal(conversaPatch.dados_coletados.local_corpo, 'perna');
+  assert.match(aiInsert.message.content, /O valor depende/);
+  assert.match(aiInsert.message.content, /Pra montar tua proposta certinho/);
+  assert.match(aiInsert.message.content, /Qual tua altura\?/);
+  assert.doesNotMatch(aiInsert.message.content, /^Oii, tudo bem\??$/);
 });
 
 test('ConversationRouter Slice 1.1: preço em lote misto persiste dados explícitos e retoma próximo campo', async () => {

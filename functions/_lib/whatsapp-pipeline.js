@@ -68,6 +68,15 @@ function preview(s, n = 200) {
   return String(s || '').slice(0, n);
 }
 
+function isGreetingOnly(text) {
+  const s = String(text || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[!?.\s]/g, ' ')
+    .trim();
+  return /^(oi|oii|oiii|ola|olaa|opa|bom dia|boa tarde|boa noite|e ai|salve)$/.test(s);
+}
+
 // PATCH status pra todos os ids do lote de uma vez.
 async function markStatus(deps, msgRowIds, status) {
   await deps.supaFetch(`/rest/v1/conversa_mensagens?id=in.(${msgRowIds.join(',')})`, {
@@ -206,9 +215,10 @@ export async function processBatch(env, batch, depsOverride = {}) {
     const isFirstContact = historico.length === 0
       && Object.keys(conversa.dados_coletados || {}).length === 0
       && Object.keys(conversa.dados_cadastro || {}).length === 0;
+    const isFirstContactGreetingOnly = isFirstContact && isGreetingOnly(texto);
     let agentOut;
     const routerDisabled = String(env?.DISABLE_CONVERSATION_ROUTER || '').toLowerCase() === 'true';
-    const routerEligible = !routerDisabled && !isFirstContact && imagens.length === 0;
+    const routerEligible = !routerDisabled && !isFirstContactGreetingOnly && imagens.length === 0;
     if (routerEligible) {
       agentOut = deps.routeConversationTurn({
         estado_atual: estadoAgente,
@@ -218,7 +228,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
         tenant,
         conversa: { ...conversa, estado_agente: estadoAgente },
         clientContext: {
-          is_first_contact: isFirstContact,
+          is_first_contact: isFirstContactGreetingOnly,
           batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
           batch_joined_by: 'newline',
         },
@@ -235,7 +245,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
           estado_atual: estadoAgente, dados_acumulados: conversa.dados_coletados || {},
           historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente },
           clientContext: {
-            is_first_contact: isFirstContact,
+            is_first_contact: isFirstContactGreetingOnly,
             batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
             batch_joined_by: 'newline',
           },
