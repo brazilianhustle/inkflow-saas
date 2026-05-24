@@ -33,6 +33,84 @@ function missingTattooFields(dados = {}) {
   return ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo'].filter(k => !hasValue(dados[k]));
 }
 
+const LOCAL_PATTERNS = [
+  ['braço', /\bbraco\b/],
+  ['antebraço', /\bantebraco\b/],
+  ['perna', /\bperna\b/],
+  ['costas', /\bcostas\b/],
+  ['peito', /\bpeito\b/],
+  ['ombro', /\bombro\b/],
+  ['pulso', /\bpulso\b/],
+  ['mão', /\bmao\b/],
+  ['pescoço', /\bpescoco\b/],
+  ['panturrilha', /\bpanturrilha\b/],
+  ['coxa', /\bcoxa\b/],
+  ['canela', /\bcanela\b/],
+  ['barriga', /\bbarriga\b/],
+  ['costela', /\bcostela\b/],
+];
+
+const ESTILO_PATTERNS = [
+  ['realista', /\brealismo\b|\brealista\b/],
+  ['fineline', /\bfineline\b|\bfine line\b|\btraco fino\b|\btraço fino\b/],
+  ['blackwork', /\bblackwork\b/],
+  ['old school', /\bold school\b/],
+  ['minimalista', /\bminimalista\b/],
+  ['colorida', /\bcolorida\b|\bcolorido\b/],
+  ['preto e cinza', /\bpreto e cinza\b|\bpreto e branco\b/],
+];
+
+function firstPatternValue(patterns, text) {
+  const hit = patterns.find(([, re]) => re.test(text));
+  return hit ? hit[0] : null;
+}
+
+function cleanDescricao(raw) {
+  return String(raw || '')
+    .replace(/\b(quanto|quantop|qnto)\s+tempo.*$/i, '')
+    .replace(/\bquanto\s+(fica|custa|e).*$/i, '')
+    .replace(/\bqual\s+valor.*$/i, '')
+    .replace(/\bme\s+passa\s+(o\s+)?preco.*$/i, '')
+    .replace(/\b(no|na|em)\s+(braco|antebraco|perna|costas|peito|ombro|pulso|mao|pescoco|panturrilha|coxa|canela|barriga|costela)\b.*$/i, '')
+    .replace(/\b(realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto e cinza|preto e branco)\b/gi, '')
+    .replace(/\b(uma?|uns|umas|de|do|da|tatuagem|tattoo|tauagem)\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function extractTattooHints(message, dados = {}) {
+  const s = normalize(message);
+  const extracted = {};
+
+  if (!hasValue(dados.local_corpo)) {
+    const local = firstPatternValue(LOCAL_PATTERNS, s);
+    if (local) extracted.local_corpo = local;
+  }
+
+  if (!hasValue(dados.estilo)) {
+    const estilo = firstPatternValue(ESTILO_PATTERNS, s);
+    if (estilo) extracted.estilo = estilo;
+  }
+
+  if (!hasValue(dados.descricao_curta)) {
+    const patterns = [
+      /\b(?:tatuagem|tattoo|tauagem)\s+de\s+(?:um|uma|uns|umas)?\s*([a-z0-9 ]+?)(?=\b(?:no|na|em|com|realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto|quanto|quantop|qnto|qual|me passa|$))/,
+      /\b(?:quero|queria|penso em|pretendo)\s+(?:fazer\s+)?(?:uma?\s+)?(?:tatuagem|tattoo|tauagem)?\s*(?:de\s+)?(?:um|uma)?\s*([a-z0-9 ]+?)(?=\b(?:no|na|em|com|realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto|quanto|quantop|qnto|qual|me passa|$))/,
+      /\b(?:um|uma)\s+([a-z0-9 ]+?)(?=\s+\b(?:no|na|em)\b)/,
+    ];
+    for (const re of patterns) {
+      const m = s.match(re);
+      const desc = cleanDescricao(m?.[1]);
+      if (desc && desc.length >= 3 && !/^(fazer|tatuagem|tattoo|tauagem)$/.test(desc)) {
+        extracted.descricao_curta = desc;
+        break;
+      }
+    }
+  }
+
+  return extracted;
+}
+
 function tattooResumeQuestion(conversa = {}) {
   const dados = conversa.dados_coletados || {};
   const missing = missingTattooFields(dados);
@@ -82,8 +160,8 @@ function detectIntent(text) {
   if (processo) return { intent: 'processo_tatuagem', confidence: 0.9, risk: 'medium' };
 
   const tempo =
-    /\b(quanto tempo|quantas horas|demora muito|demora quanto|faz em uma sessao|faz em 1 sessao|uma sessao|precisa de mais de uma sessao|mesmo dia)\b/.test(s)
-    && /\b(demora|tempo|horas|sessao|sessao|dia)\b/.test(s);
+    /\b((quanto|quantop|qnto) tempo|quantas horas|demora muito|demora quanto|faz em uma sessao|faz em 1 sessao|uma sessao|precisa de mais de uma sessao|mesmo dia)\b/.test(s)
+    && /\b(demora|tempo|horas|sessao|dia)\b/.test(s);
   if (tempo) return { intent: 'tempo_sessao', confidence: 0.88, risk: 'medium' };
 
   const preco =
@@ -119,7 +197,20 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, disabl
   const detected = detectIntent(mensagem);
   if (!detected) return null;
 
-  const resposta = responseForIntent(detected.intent, estado_atual, conversa);
+  const extracted = estado_atual === 'tattoo'
+    ? extractTattooHints(mensagem, conversa?.dados_coletados || {})
+    : {};
+  const conversaParaRetomada = estado_atual === 'tattoo'
+    ? {
+        ...conversa,
+        dados_coletados: {
+          ...(conversa?.dados_coletados || {}),
+          ...extracted,
+        },
+      }
+    : conversa;
+
+  const resposta = responseForIntent(detected.intent, estado_atual, conversaParaRetomada);
   if (!resposta) return null;
 
   return {
@@ -130,10 +221,10 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, disabl
     risk: detected.risk,
     resposta_cliente: resposta,
     estado_novo: estado_atual,
-    dados_persistidos: {},
+    dados_persistidos: extracted,
     dados_completos: false,
     campos_faltando: estado_atual === 'tattoo'
-      ? missingTattooFields(conversa?.dados_coletados || {})
+      ? missingTattooFields(conversaParaRetomada?.dados_coletados || {})
       : [],
     campos_conflitantes: [],
     proxima_acao: 'pergunta',
@@ -149,4 +240,5 @@ export const _test = {
   detectIntent,
   normalize,
   resumeQuestionForState,
+  extractTattooHints,
 };

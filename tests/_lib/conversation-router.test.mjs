@@ -18,6 +18,8 @@ test('ConversationRouter: classifica preço genérico sem tratar negociação', 
 
 test('ConversationRouter: classifica tempo de sessão', () => {
   assert.equal(_test.detectIntent('quanto tempo demora?')?.intent, 'tempo_sessao');
+  assert.equal(_test.detectIntent('quantop tempo demora?')?.intent, 'tempo_sessao');
+  assert.equal(_test.detectIntent('qnto tempo demora?')?.intent, 'tempo_sessao');
   assert.equal(_test.detectIntent('faz em uma sessão?')?.intent, 'tempo_sessao');
   assert.equal(_test.detectIntent('quantas horas leva essa tattoo?')?.intent, 'tempo_sessao');
 });
@@ -41,6 +43,22 @@ test('ConversationRouter: preço genérico responde e preserva estado', () => {
   assert.deepEqual(out.dados_persistidos, {});
   assert.match(out.resposta_cliente, /O valor depende/);
   assert.match(out.resposta_cliente, /parte do corpo\?/);
+});
+
+test('ConversationRouter: preço com dados explícitos persiste e retoma pelo próximo campo', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quero fazer uma tauagem de um leao no braço\nquanto fica?',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+  });
+  assert.equal(out.intent, 'preco_generico');
+  assert.deepEqual(out.dados_persistidos, {
+    descricao_curta: 'leao',
+    local_corpo: 'braço',
+  });
+  assert.deepEqual(out.campos_faltando, ['altura_cm', 'estilo']);
+  assert.match(out.resposta_cliente, /Qual tua altura\?/);
+  assert.doesNotMatch(out.resposta_cliente, /Me conta o que tu pensa em tatuar\?/);
 });
 
 test('ConversationRouter: cadastro retoma cadastro, não coleta tattoo', () => {
