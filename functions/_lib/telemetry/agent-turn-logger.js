@@ -71,7 +71,7 @@ export function buildTurnLogPayload({
 
 export function logAgentTurn(ctx, env, fields) {
   const url = env?.SUPABASE_URL;
-  const key = env?.SUPABASE_SERVICE_ROLE_KEY;
+  const key = env?.SUPABASE_SERVICE_ROLE_KEY || env?.SUPABASE_SERVICE_KEY;
   if (!url || !key) return;
 
   if (!ctx || typeof ctx.waitUntil !== 'function') {
@@ -87,6 +87,7 @@ export function logAgentTurn(ctx, env, fields) {
 }
 
 async function _doInsert(env, fields) {
+  const key = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
   const payload = buildTurnLogPayload(fields);
   const url = `${env.SUPABASE_URL}/rest/v1/agent_turn_logs`;
   const doFetch = env._fetch || fetch;
@@ -94,8 +95,8 @@ async function _doInsert(env, fields) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
-      'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+      'apikey': key,
+      'Authorization': `Bearer ${key}`,
       'Prefer': 'return=minimal',
     },
     body: JSON.stringify(payload),
