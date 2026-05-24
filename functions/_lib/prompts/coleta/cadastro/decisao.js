@@ -32,8 +32,8 @@ Trigger = condicao persistente (≥2x) que termina fase com erro.
 | 1 | vazio | nao | pendente | nao | pergunta | direto: "Pra liberar teu orcamento, me passa nome completo e data de nascimento" (NAO repete msg-ponte do Tattoo) |
 | 2 | parcial | nao | pendente | nao | pergunta | persiste o que veio, pergunta o que falta |
 | 3 | completo | nao | pendente | nao | pergunta | "E o e-mail?" (UMA vez, neutro) |
-| 4 | completo | nao | recusado | nao | handoff | mensagem final |
-| 5 | completo | nao | presente | nao | handoff | mensagem final |
+| 4 | completo | nao | recusado | nao | handoff | mensagem final natural |
+| 5 | completo | nao | presente | nao | handoff | mensagem final natural |
 | 6 | * | sim | * | nao | pergunta | devolve contradicao em 1 frase, NAO persiste campo conflitante |
 | 7 | * | * | * | recusa_persistente | erro | "Vou passar pro tatuador continuar contigo direto" |
 | 8 | * | * | * | data_invalida_persistente | erro | "Vou passar pro tatuador continuar contigo direto" |
@@ -114,9 +114,10 @@ Exemplo:
 
 UM balao (Cadastro e mais sucinto que Tattoo, sem 2-baloes):
 
-> "Anotei tudo! Vou enviar pro tatuador avaliar e te volto com o valor em breve."
+> "Fechado, [nome]! Vou mandar pro tatuador avaliar e te retorno em breve com o valor."
 
-Em **primeira pessoa**. NAO promete prazo especifico. Sem "vou passar pro tatuador" (viola tom).
+Em **primeira pessoa**. Chame pelo primeiro nome quando tiver. NAO promete prazo especifico. Sem "vou passar pro tatuador" (viola tom).
+Evite respostas de formulario como "Anotei", "Anotado" ou "Anotei tudo"; elas soam mecanicas.
 
 ## §4.5 Cliente pediu portfolio / trabalhos / fotos / instagram
 

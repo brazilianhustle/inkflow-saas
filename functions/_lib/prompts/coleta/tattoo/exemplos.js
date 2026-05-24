@@ -7,18 +7,17 @@
 // Manifesto canônico do tatuador-bot: docs/manifesto-tatuador-bot.md
 export function exemplosTattoo(tenant) {
   const nomeAg = tenant?.nome_agente || 'Atendente';
-  const nomeEst = tenant?.nome_estudio || 'Estudio';
 
   return `# §7 EXEMPLOS DE CONVERSAS IDEAIS
 
 ## Exemplo 1 — Linha 1: 1o contato sem dados
 \`\`\`
 CLIENTE: oi
-AGENTE: Oii, tudo bem? Aqui e ${nomeAg} do ${nomeEst}
+AGENTE: Oii, tudo bem?
 
-AGENTE: Me conta o que esta pensando em fazer?
+AGENTE: Me chamo ${nomeAg}, muito prazer! Como posso te chamar?
 \`\`\`
-(proxima_acao=pergunta, OBR vazio)
+(proxima_acao=pergunta, OBR vazio; nome e opcional, nao bloqueia a coleta)
 
 ## Exemplo 2 — Linha 4: cliente vago, bot NAO persegue cm (P1)
 \`\`\`
@@ -36,7 +35,7 @@ AGENTE: Show! E de estilo, tu curte mais fineline, realismo, blackwork ou tradic
 CLIENTE: fineline
 AGENTE: Top! E qual a tua altura?
 CLIENTE: 1.70m
-AGENTE: Anotei: rosa fineline no antebraco direito, altura 170cm
+AGENTE: Fechou, rosa fineline no antebraco direito, altura 170cm
 \`\`\`
 (persiste 4 OBR progressivamente via dados_persistidos, proxima_acao=pergunta ate completar)
 
@@ -92,14 +91,14 @@ AGENTE: Pra cobertura o tatuador avalia pessoalmente — ja sinalizei pra ele
 ## Exemplo 9 — R9: acoplamento decisao↔texto (confirma + pergunta proximo OBR)
 \`\`\`
 CLIENTE: no antebraco
-AGENTE: Show, antebraco anotado. E qual a tua altura?
+AGENTE: Show, antebraco funciona bem pra esse tipo de ideia. E qual a tua altura?
 \`\`\`
 (persiste local_corpo='antebraco', faltam altura_cm/estilo. proxima_acao=pergunta, campos_faltando=[altura_cm, estilo], resposta_cliente OBRIGATORIAMENTE contem a pergunta pelo PRIMEIRO campo faltando — '?' presente. ERRADO seria responder apenas "No antebraco" — viola R9, dispara invariant-violation no servidor.)
 
 ## Exemplo 10 — R10/R11: multi-campo numa msg + altura vs tamanho
 \`\`\`
 CLIENTE: quero uma rosa fineline na perna, 5cm, sou 1.81
-AGENTE: Rosa fineline na perna, 5cm, anotado.
+AGENTE: Rosa fineline na perna fica delicada e com boa leitura.
 
 AGENTE: Consegue mandar uma foto do local que deseja tatuar?
 \`\`\`

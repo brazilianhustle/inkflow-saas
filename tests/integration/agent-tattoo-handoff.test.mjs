@@ -42,6 +42,31 @@ function makeFakeClient(parsed) {
   };
 }
 
+function tattooPerguntaOut(overrides = {}) {
+  const { dados_persistidos: dadosOverride, ...rest } = overrides;
+  return {
+    proxima_acao: 'pergunta',
+    resposta_cliente: 'E de estilo, tu curte mais fineline, realismo, blackwork ou tradicional?',
+    dados_persistidos: {
+      descricao_curta: null,
+      local_corpo: null,
+      altura_cm: null,
+      estilo: null,
+      tamanho_cm: null,
+      cor_preferencia: null,
+      foto_local: null,
+      ...(dadosOverride || {}),
+    },
+    dados_completos: false,
+    campos_faltando: ['estilo'],
+    campos_conflitantes: [],
+    payload_portfolio: null,
+    analise_imagens: null,
+    cobertura_suspeita: null,
+    ...rest,
+  };
+}
+
 test('runAgent estado=tattoo handoff valido: ok + estado proximo cadastro', async () => {
   const fakeOut = {
     proxima_acao: 'handoff',
@@ -119,6 +144,108 @@ test('runAgent estado=tattoo pergunta: ok + estado proximo permanece tattoo', as
   assert.deepEqual(result.campos_faltando, ['local_corpo']);
 });
 
+test('runAgent tattoo: resposta curta de estilo preenche estilo e avanca para cadastro', async () => {
+  const conversa = {
+    ...FAKE_CONVERSA,
+    dados_coletados: {
+      descricao_curta: 'anjo',
+      local_corpo: 'braco',
+      altura_cm: 181,
+      tentativas_foto_local: 1,
+      foto_local: 'presente',
+    },
+  };
+  const result = await runAgent({
+    env: FAKE_ENV,
+    tenant_id: FAKE_TENANT.id,
+    mensagem: 'realismo',
+    telefone: '+5511999999999',
+    historico: [{ role: 'assistant', content: 'Me diz o estilo que tu prefere?' }],
+    tenant: FAKE_TENANT,
+    estado_atual: 'tattoo',
+    conversa,
+    clientContext: {},
+    openaiClient: makeFakeClient(tattooPerguntaOut({ resposta_cliente: 'realismo' })),
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.dados_persistidos.estilo, 'realismo');
+  assert.equal(result.proxima_acao, 'handoff');
+  assert.equal(result.estado_novo, 'cadastro');
+});
+
+test('runAgent tattoo: foto de local contradiz texto salvo e pede confirmacao', async () => {
+  const conversa = {
+    ...FAKE_CONVERSA,
+    dados_coletados: {
+      descricao_curta: 'anjo',
+      local_corpo: 'braco',
+      altura_cm: 181,
+      estilo: 'realismo',
+      tentativas_foto_local: 1,
+    },
+  };
+  const result = await runAgent({
+    env: FAKE_ENV,
+    tenant_id: FAKE_TENANT.id,
+    mensagem: '',
+    telefone: '+5511999999999',
+    historico: [],
+    tenant: FAKE_TENANT,
+    estado_atual: 'tattoo',
+    conversa,
+    clientContext: {},
+    imagens: [{ mimetype: 'image/jpeg', base64: 'AAA' }],
+    openaiClient: makeFakeClient(tattooPerguntaOut({
+      resposta_cliente: 'Anjo em realismo no braco vai ficar incrivel.',
+      dados_persistidos: { foto_local: 'presente' },
+      campos_faltando: ['local_corpo'],
+      analise_imagens: [{ tipo: 'corpo', descricao: 'foto de uma perna com pele limpa', corpo_tem_tattoo: false, corpo_tem_marcacao: false }],
+    })),
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.proxima_acao, 'pergunta');
+  assert.equal(result.estado_novo, 'tattoo');
+  assert.match(result.resposta_cliente, /parece perna.*falado braco/i);
+  assert.deepEqual(result.campos_conflitantes, ['local_corpo']);
+});
+
+test('runAgent tattoo: esclarecimento textual reaproveita foto recente do local', async () => {
+  const conversa = {
+    ...FAKE_CONVERSA,
+    dados_coletados: {
+      descricao_curta: 'anjo',
+      local_corpo: 'braco',
+      altura_cm: 181,
+      estilo: 'realismo',
+      tentativas_foto_local: 1,
+      refs_imagens_msg_ids: [77],
+    },
+  };
+  const result = await runAgent({
+    env: FAKE_ENV,
+    tenant_id: FAKE_TENANT.id,
+    mensagem: 'do outro lado, pele limpa',
+    telefone: '+5511999999999',
+    historico: [{ role: 'assistant', content: 'Vi que já tem tattoo nesse local. Seria pra cobertura?' }],
+    tenant: FAKE_TENANT,
+    estado_atual: 'tattoo',
+    conversa,
+    clientContext: {},
+    openaiClient: makeFakeClient(tattooPerguntaOut({
+      resposta_cliente: 'Consegue mandar uma foto do local?',
+      campos_faltando: ['foto_local'],
+    })),
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.dados_persistidos.foto_local_msg_id, 77);
+  assert.equal(result.proxima_acao, 'handoff');
+  assert.equal(result.estado_novo, 'cadastro');
+});
+
+
 test('runAgent estado=tattoo: runtime exhausts retries -> buildFallbackOutput', async () => {
   const fakeClient = {
     responses: {
@@ -145,5 +272,5 @@ test('runAgent estado=tattoo: runtime exhausts retries -> buildFallbackOutput', 
   assert.equal(result.ok, true);
   assert.equal(result.proxima_acao, 'pergunta');
   assert.equal(result.estado_novo, 'tattoo');
-  assert.match(result.resposta_cliente, /segundinho|respondo/i);
+  assert.match(result.resposta_cliente, /segundinho|respondo|quer tatuar/i);
 });

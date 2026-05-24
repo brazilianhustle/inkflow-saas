@@ -131,10 +131,34 @@ test('executeOrchestration pediu_desconto: !ok de enviar-objecao-tatuador vira p
   );
 
   assert.equal(r.proxima_acao, 'pergunta');
-  assert.match(r.resposta_cliente, /Anota ai/);
+  assert.match(r.resposta_cliente, /qualidade do trabalho/);
+  assert.match(r.resposta_cliente, /vou passar tua proposta/i);
+  assert.doesNotMatch(r.resposta_cliente, /anota/i);
   assert.equal(sideEffects.length, 1);
   assert.equal(sideEffects[0].tool, 'enviar-objecao-tatuador');
   assert.equal(sideEffects[0].ok, false);
+});
+
+test('executeOrchestration pediu_desconto: happy path substitui resposta seca por 2 baloes educados', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+
+  globalThis.fetch = mock.fn(async () => ({
+    ok: true, status: 200, json: async () => ({ ok: true }),
+  }));
+
+  const sideEffects = [];
+  const r = await executeOrchestration(
+    { resposta_cliente: 'Questao de valor quem decide e o tatuador.', proxima_acao: 'pediu_desconto', valor_pedido_cliente: 300 },
+    { env: baseEnv, tenant: baseTenant, conversa: baseConversa, telefone: '5511', sideEffects }
+  );
+
+  assert.equal(r.proxima_acao, 'pediu_desconto');
+  assert.match(r.resposta_cliente, /qualidade do trabalho/);
+  assert.match(r.resposta_cliente, /vou passar tua proposta/i);
+  assert.match(r.resposta_cliente, /\n\n/);
+  assert.doesNotMatch(r.resposta_cliente, /Questao de valor quem decide/i);
+  assert.equal(sideEffects[0].ok, true);
 });
 
 test('executeOrchestration cliente_agressivo: chama acionar-handoff com motivo correto', async (t) => {

@@ -11,6 +11,8 @@ import { runAgent } from '../api/agent/route.js';
 import { callTool } from '../api/agent/_lib/call-tool.js';
 import { classificarFoto } from './foto-classifier.js';
 import { enviarMidia } from './telegram-media.js';
+import { routeConversationTurn } from './conversation-router.js';
+import { logAgentTurn } from './telemetry/agent-turn-logger.js';
 
 export const TERMINAL_STATES = new Set([
   'aguardando_tatuador',
@@ -55,6 +57,8 @@ export function defaultDeps(env) {
     callTool: (toolName, body) => callTool(env, toolName, body),
     enviarMidia,
     classificarFoto,
+    routeConversationTurn,
+    logAgentTurn: (fields) => logAgentTurn(null, env, fields),
     now: () => new Date().toISOString(),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   };
@@ -72,6 +76,7 @@ async function markStatus(deps, msgRowIds, status) {
 }
 
 export async function processBatch(env, batch, depsOverride = {}) {
+  const t0 = Date.now();
   const deps = { ...defaultDeps(env), ...depsOverride };
   let { session_id, tenantId, telefone, msgRowIds } = batch;
   // Fallback: deriva tenantId/telefone do session_id (formato `${uuid}_${telefone}`).
@@ -86,7 +91,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
   // tenant lookup por id (mesmas colunas do inbound).
   const tenRes = await deps.supaFetch(
     `/rest/v1/tenants?id=eq.${encodeURIComponent(tenantId)}` +
-    `&select=id,nome_estudio,evo_instance,evo_apikey,evo_base_url,tatuador_telegram_chat_id,config_agente,config_precificacao,sinal_percentual,gatilhos_handoff,faq_texto,fewshots_por_modo,portfolio_urls,horario_funcionamento,duracao_sessao_padrao_h&limit=1`,
+    `&select=id,nome_agente,nome_estudio,evo_instance,evo_apikey,evo_base_url,tatuador_telegram_chat_id,config_agente,config_precificacao,sinal_percentual,gatilhos_handoff,faq_texto,fewshots_por_modo,portfolio_urls,horario_funcionamento,duracao_sessao_padrao_h&limit=1`,
   );
   const tenArr = await tenRes.json();
   const tenant = tenArr?.[0];
@@ -193,18 +198,79 @@ export async function processBatch(env, batch, depsOverride = {}) {
         return { role: m.type === 'ai' ? 'assistant' : 'user', content: m.content || '' };
       });
 
-    // Etapa 4: runAgent (1× pro turno)
+    // Etapa 4: ConversationRouter leve antes do agent operacional.
+    // Slice 1 trata dúvidas laterais texto-only em estados de coleta sem
+    // alterar estado crítico. Confidence baixa / intent desconhecida cai no
+    // runAgent atual.
     const estadoAgente = dbToAgent(conversa.estado_agente);
+    const isFirstContact = historico.length === 0
+      && Object.keys(conversa.dados_coletados || {}).length === 0
+      && Object.keys(conversa.dados_cadastro || {}).length === 0;
     let agentOut;
-    try {
-      agentOut = await deps.runAgent({
-        tenant_id: tenantId, telefone, mensagem: texto,
-        estado_atual: estadoAgente, dados_acumulados: conversa.dados_coletados || {},
-        historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente }, clientContext: {},
+    const routerDisabled = String(env?.DISABLE_CONVERSATION_ROUTER || '').toLowerCase() === 'true';
+    const routerEligible = !routerDisabled && !isFirstContact && imagens.length === 0;
+    if (routerEligible) {
+      agentOut = deps.routeConversationTurn({
+        estado_atual: estadoAgente,
+        mensagem: texto,
+        historico,
         imagens,
+        tenant,
+        conversa: { ...conversa, estado_agente: estadoAgente },
+        clientContext: {
+          is_first_contact: isFirstContact,
+          batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
+          batch_joined_by: 'newline',
+        },
+        disabled: false,
       });
+    } else {
+      agentOut = null;
+    }
+
+    try {
+      if (!agentOut) {
+        agentOut = await deps.runAgent({
+          tenant_id: tenantId, telefone, mensagem: texto,
+          estado_atual: estadoAgente, dados_acumulados: conversa.dados_coletados || {},
+          historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente },
+          clientContext: {
+            is_first_contact: isFirstContact,
+            batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
+            batch_joined_by: 'newline',
+          },
+          imagens,
+        });
+      }
     } catch (e) { throw new Error(`runAgent threw: ${e.message}`); }
     if (!agentOut?.ok) throw new Error(`runAgent returned ok:false: ${agentOut?.error || 'unknown'}`);
+    if (agentOut.handled_by === 'conversation_router') {
+      try {
+        deps.logAgentTurn?.({
+          conversa_id: conversa.id,
+          tenant_id: tenantId,
+          turn_index: historico.length + 1,
+          agent_name: 'conversation_router',
+          agent_version: env.AGENT_VERSION || '2026-05-24-router-slice-1',
+          estado_agente: estadoAgente,
+          model: 'rules',
+          client_input_text: texto,
+          client_input_type: 'text',
+          prompt_full: null,
+          context_metadata: {
+            router_intent: agentOut.intent,
+            router_confidence: agentOut.confidence,
+            router_risk: agentOut.risk,
+            history_turns_n: historico.length,
+          },
+          llm_output_parsed: agentOut,
+          invariant_passed: true,
+          latency_total_ms: Date.now() - t0,
+        });
+      } catch (e) {
+        console.warn('[pipeline] router telemetry failed:', e?.message || e);
+      }
+    }
 
     // Etapa 5: UPDATE conversa
     const isCadastro = agentOut.agent_usado === 'cadastro';

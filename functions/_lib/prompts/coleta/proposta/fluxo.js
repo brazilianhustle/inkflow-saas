@@ -22,7 +22,7 @@ Apos enviar, AGUARDE resposta do cliente.
 
 Interprete a msg como DECISAO (se "Valor ja apresentado ao cliente: sim", NAO re-apresente o valor):
 - aceita ("bora/sim/fechou/ok/pode ser/isso") -> \`oferecendo_horario\` + slots da lista
-- reclama do preco SEM valor -> \`pergunta\` ("Quanto tu tava pensando?")
+- reclama do preco SEM valor -> \`pergunta\` ("Entendo. Qual valor tu tinha em mente?")
 - pede valor X -> \`pediu_desconto\` + payload \`valor_pedido_cliente=X\`
 - adia -> \`adiou\` + despedida educada
 

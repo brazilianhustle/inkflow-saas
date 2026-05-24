@@ -37,6 +37,36 @@ test('parser: imageMessage com caption + base64 → mediaBase64 + mediaMimetype'
   assert.equal(r.inbound.mediaMimetype, 'image/jpeg');
 });
 
+test('parser: viewOnceMessageV2 com imageMessage preserva caption + base64', () => {
+  const body = { ...baseUpsert, data: { ...baseUpsert.data, base64: '/9j/NESTED', message: {
+    viewOnceMessageV2: {
+      message: {
+        imageMessage: { caption: 'essa daqui', mimetype: 'image/jpeg' },
+      },
+    },
+  }}};
+  const r = parseEvolutionPayload(body);
+  assert.equal(r.ok, true);
+  assert.equal(r.inbound.texto, 'essa daqui');
+  assert.equal(r.inbound.mediaBase64, '/9j/NESTED');
+  assert.equal(r.inbound.mediaMimetype, 'image/jpeg');
+});
+
+test('parser: ephemeralMessage com imageMessage preserva midia aninhada', () => {
+  const body = { ...baseUpsert, data: { ...baseUpsert.data, message: {
+    ephemeralMessage: {
+      message: {
+        imageMessage: { caption: 'ref', mimetype: 'image/png', base64: 'PNG64' },
+      },
+    },
+  }}};
+  const r = parseEvolutionPayload(body);
+  assert.equal(r.ok, true);
+  assert.equal(r.inbound.texto, 'ref');
+  assert.equal(r.inbound.mediaBase64, 'PNG64');
+  assert.equal(r.inbound.mediaMimetype, 'image/png');
+});
+
 test('parser: audioMessage com base64', () => {
   const body = { ...baseUpsert, data: { ...baseUpsert.data, message: {
     audioMessage: { mimetype: 'audio/ogg' },

@@ -94,6 +94,195 @@ test('runAgent (tattoo): surfacia analise_imagens no retorno', async () => {
   assert.equal(r.cobertura_suspeita, null);
 });
 
+test('runAgent (tattoo): primeiro contato com saudacao pura força 2 baloes canonicos', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'oi',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: { ...TENANT_STUB, nome_agente: 'Assistente' },
+    conversa: CONVERSA_STUB,
+    clientContext: { is_first_contact: true },
+    openaiClient: {
+      responses: {
+        parse: async () => ({
+          status: 'completed',
+          id: 'r',
+          output_parsed: { output: {
+            proxima_acao: 'pergunta',
+            resposta_cliente: 'Oii, tudo bem? Como posso te chamar?',
+            dados_persistidos: { estilo: null, tamanho_cm: null, altura_cm: null, local_corpo: null, cor_preferencia: null, descricao_curta: null, foto_local: null },
+            dados_completos: false,
+            campos_faltando: ['descricao_curta'],
+            campos_conflitantes: [],
+            payload_portfolio: null,
+            analise_imagens: null,
+            cobertura_suspeita: null,
+          } },
+        }),
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.resposta_cliente, 'Oii, tudo bem?\n\nMe chamo Assistente, muito prazer! Como posso te chamar?');
+  assert.deepEqual(r.campos_faltando, ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']);
+});
+
+test('runAgent (tattoo): nao deixa resposta pedir altura ja persistida no mesmo lote', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511',
+    mensagem: 'quero uma borboleta delicada na perna\ntenho 1.60',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB,
+    conversa: CONVERSA_STUB,
+    clientContext: { batch_message_count: 2 },
+    openaiClient: {
+      responses: {
+        parse: async () => ({
+          status: 'completed',
+          id: 'r',
+          output_parsed: { output: {
+            proxima_acao: 'pergunta',
+            resposta_cliente: 'Massa! E qual a tua altura?',
+            dados_persistidos: {
+              descricao_curta: 'borboleta delicada',
+              local_corpo: 'perna',
+              altura_cm: 160,
+              estilo: null,
+              tamanho_cm: null,
+              cor_preferencia: null,
+              foto_local: null,
+            },
+            dados_completos: false,
+            campos_faltando: ['altura_cm'],
+            campos_conflitantes: [],
+            payload_portfolio: null,
+            analise_imagens: null,
+            cobertura_suspeita: null,
+          } },
+        }),
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.match(r.resposta_cliente, /estilo/i);
+  assert.doesNotMatch(r.resposta_cliente, /qual a tua altura/i);
+  assert.deepEqual(r.campos_faltando, ['estilo']);
+});
+
+test('runAgent (tattoo): resposta numerica solta vira pergunta coesa sobre campo faltante', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = {
+    ...CONVERSA_STUB,
+    dados_coletados: {
+      descricao_curta: 'borboleta delicada',
+      local_corpo: 'perna',
+      altura_cm: 160,
+    },
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511',
+    mensagem: 'quanto fica?',
+    estado_atual: 'tattoo', dados_acumulados: conversa.dados_coletados, historico: [],
+    tenant: TENANT_STUB,
+    conversa,
+    clientContext: {},
+    openaiClient: {
+      responses: {
+        parse: async () => ({
+          status: 'completed',
+          id: 'r',
+          output_parsed: { output: {
+            proxima_acao: 'pergunta',
+            resposta_cliente: '1.60',
+            dados_persistidos: {
+              descricao_curta: null,
+              local_corpo: null,
+              altura_cm: null,
+              estilo: null,
+              tamanho_cm: null,
+              cor_preferencia: null,
+              foto_local: null,
+            },
+            dados_completos: false,
+            campos_faltando: ['estilo'],
+            campos_conflitantes: [],
+            payload_portfolio: null,
+            analise_imagens: null,
+            cobertura_suspeita: null,
+          } },
+        }),
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.match(r.resposta_cliente, /Sobre valor/i);
+  assert.match(r.resposta_cliente, /estilo/i);
+  assert.deepEqual(r.campos_faltando, ['estilo']);
+});
+
+test('runAgent (tattoo): foto de corpo ja tatuado no turno atual vira pergunta de ambiguidade', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = {
+    ...CONVERSA_STUB,
+    dados_coletados: {
+      descricao_curta: 'borboleta',
+      local_corpo: 'perna',
+      altura_cm: 160,
+      estilo: 'fineline',
+      tentativas_foto_local: 1,
+    },
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: '',
+    estado_atual: 'tattoo', dados_acumulados: conversa.dados_coletados, historico: [],
+    tenant: TENANT_STUB,
+    conversa,
+    clientContext: {},
+    imagens: [{ base64: 'ZZ', mimetype: 'image/jpeg', msgRowId: 11941 }],
+    openaiClient: {
+      responses: {
+        parse: async () => ({
+          status: 'completed',
+          id: 'r',
+          output_parsed: { output: {
+            proxima_acao: 'handoff',
+            resposta_cliente: 'Borboleta em fineline na perna fica elegante e bem visivel.',
+            dados_persistidos: {
+              descricao_curta: 'borboleta',
+              local_corpo: 'perna',
+              altura_cm: 160,
+              estilo: 'fineline',
+              tamanho_cm: null,
+              cor_preferencia: null,
+              foto_local: 'foto de uma perna com tatuagens',
+            },
+            dados_completos: true,
+            campos_faltando: [],
+            campos_conflitantes: [],
+            payload_portfolio: null,
+            analise_imagens: [{
+              tipo: 'corpo',
+              descricao: 'foto de uma perna com tatuagens',
+              corpo_tem_tattoo: true,
+              corpo_tem_marcacao: false,
+            }],
+            cobertura_suspeita: null,
+          } },
+        }),
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'pergunta');
+  assert.equal(r.estado_novo, 'tattoo');
+  assert.match(r.resposta_cliente, /refer[eê]ncia|local/i);
+  assert.equal(r.dados_persistidos.foto_local, null);
+  assert.deepEqual(r.campos_faltando, ['tipo_foto']);
+  assert.equal(r.analise_imagens[0].tipo, 'incerto');
+  assert.ok(!r.pediu_foto_local);
+});
+
 // ─── Bug 1: gate handoff só após foto pedida >=1x ──────────────────────
 const HANDOFF_OUT = {
   proxima_acao: 'handoff',
@@ -167,6 +356,28 @@ test('Bug1 gate: handoff com foto_local presente → handoff passa mesmo sem con
   assert.equal(r.proxima_acao, 'handoff');
 });
 
+test('Bug1 gate: handoff com foto_local_msg_id presente → handoff passa mesmo sem contador', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = {
+    id: 'c',
+    telefone: '5511',
+    estado_agente: 'tattoo',
+    dados_coletados: { foto_local_msg_id: 77 },
+    dados_cadastro: {},
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'isso',
+    estado_atual: 'tattoo', dados_acumulados: conversa.dados_coletados, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: fakeHandoff(),
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'handoff');
+  assert.equal(r.estado_novo, 'cadastro');
+  assert.ok(!r.pediu_foto_local);
+  assert.equal(r.dados_persistidos.foto_local_msg_id, 77);
+});
+
 // Output 'pergunta' com os 4 OBR completos (reusado nos testes do else-if do gate).
 const PERGUNTA_OBR_COMPLETO = {
   proxima_acao: 'pergunta',
@@ -217,6 +428,66 @@ test('Bug1 gate: pergunta com OBR completos E resposta sobre foto → marca pedi
   assert.equal(r.ok, true);
   assert.equal(r.proxima_acao, 'pergunta');
   assert.equal(r.pediu_foto_local, true);
+});
+
+test('tattoo: confirmacao de foto ambigua como local promove ref e avanca para cadastro', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = {
+    id: 'c',
+    telefone: '5511',
+    estado_agente: 'tattoo',
+    dados_coletados: {
+      descricao_curta: 'borboleta',
+      local_corpo: 'perna direita',
+      altura_cm: 160,
+      estilo: 'fineline',
+      refs_imagens_msg_ids: [11951],
+      tentativas_foto_local: 1,
+    },
+    dados_cadastro: {},
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511',
+    mensagem: 'do local, seria na perna direita\nsem tatuagem\nquanto é',
+    estado_atual: 'tattoo', dados_acumulados: conversa.dados_coletados, historico: [],
+    tenant: TENANT_STUB,
+    conversa,
+    clientContext: { batch_message_count: 3 },
+    openaiClient: {
+      responses: {
+        parse: async () => ({
+          status: 'completed',
+          id: 'r',
+          output_parsed: { output: {
+            proxima_acao: 'pergunta',
+            resposta_cliente: 'Viu que a tatuagem seria na perna direita',
+            dados_persistidos: {
+              descricao_curta: null,
+              local_corpo: 'perna direita',
+              altura_cm: null,
+              estilo: null,
+              tamanho_cm: null,
+              cor_preferencia: null,
+              foto_local: null,
+            },
+            dados_completos: false,
+            campos_faltando: ['foto_local'],
+            campos_conflitantes: [],
+            payload_portfolio: null,
+            analise_imagens: null,
+            cobertura_suspeita: null,
+          } },
+        }),
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'handoff');
+  assert.equal(r.estado_novo, 'cadastro');
+  assert.equal(r.dados_persistidos.foto_local_msg_id, 11951);
+  assert.match(r.dados_persistidos.foto_local, /foto do local confirmada/i);
+  assert.match(r.resposta_cliente, /nome completo/i);
+  assert.match(r.resposta_cliente, /data de nascimento/i);
 });
 
 const CADASTRO_HANDOFF_OUT = {

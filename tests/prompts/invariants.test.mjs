@@ -63,6 +63,27 @@ test('invariante v2: coleta-tattoo contem §4 DECISAO E REGRAS', () => {
   assert.match(out, /# §3 OBJETIVO/, 'coleta-tattoo v2 sem secao OBJETIVO');
 });
 
+test('invariante smoke: coleta-tattoo ancora saudacao inicial em 2 baloes com nome opcional', () => {
+  const out = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_TATTOO, CLIENT_CONTEXT_CANONICO);
+  assert.match(out, /AGENTE: Oii, tudo bem\?\n\nAGENTE: Me chamo Lina, muito prazer! Como posso te chamar\?/);
+  assert.match(out, /nome e opcional/i);
+});
+
+test('invariante smoke: coleta-tattoo descreve lote sequencial quando contexto indica batch', () => {
+  const out = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_TATTOO, {
+    ...CLIENT_CONTEXT_CANONICO,
+    batch_message_count: 2,
+    batch_joined_by: 'newline',
+  });
+  assert.match(out, /Turno atual: 2 baloes do cliente no mesmo lote/i);
+  assert.match(out, /lote unico/i);
+});
+
+test('invariante smoke: coleta-tattoo nao ensina template "Anotei:"', () => {
+  const out = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_TATTOO, CLIENT_CONTEXT_CANONICO);
+  assert.doesNotMatch(out, /Anotei:/);
+});
+
 test('invariante v2: coleta-cadastro contem §4 DECISAO E REGRAS', () => {
   const out = generateSystemPrompt(TENANT_CANONICO, CONVERSA_COLETA_CADASTRO, CLIENT_CONTEXT_CANONICO);
   assert.match(out, /# §4 DECISAO E REGRAS/, 'coleta-cadastro v2 sem secao DECISAO');
