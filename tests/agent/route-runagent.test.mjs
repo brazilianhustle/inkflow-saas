@@ -253,6 +253,58 @@ test('runAgent (tattoo): resposta numerica solta vira pergunta coesa sobre campo
   assert.deepEqual(r.campos_faltando, ['estilo']);
 });
 
+test('runAgent (tattoo): resposta curta de estilo nao confirma altura antiga', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = {
+    ...CONVERSA_STUB,
+    dados_coletados: {
+      descricao_curta: 'rosa com bússola',
+      local_corpo: 'braço',
+      altura_cm: 170,
+    },
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511',
+    mensagem: 'realismo',
+    estado_atual: 'tattoo', dados_acumulados: conversa.dados_coletados, historico: [],
+    tenant: TENANT_STUB,
+    conversa,
+    clientContext: {},
+    openaiClient: {
+      responses: {
+        parse: async () => ({
+          status: 'completed',
+          id: 'r',
+          output_parsed: { output: {
+            proxima_acao: 'pergunta',
+            resposta_cliente: 'Fechou, 170cm. Agora, onde exatamente no braço tu quer a tattoo?',
+            dados_persistidos: {
+              descricao_curta: 'rosa com bússola',
+              local_corpo: 'braço',
+              altura_cm: 170,
+              estilo: '',
+              tamanho_cm: null,
+              cor_preferencia: '',
+              foto_local: '',
+            },
+            dados_completos: false,
+            campos_faltando: ['local_corpo'],
+            campos_conflitantes: [],
+            payload_portfolio: null,
+            analise_imagens: null,
+            cobertura_suspeita: null,
+          } },
+        }),
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.dados_persistidos.estilo, 'realismo');
+  assert.match(r.resposta_cliente, /Fechou, realismo/);
+  assert.match(r.resposta_cliente, /Onde exatamente no braço tu quer a tattoo\?/);
+  assert.doesNotMatch(r.resposta_cliente, /170cm/);
+});
+
 test('runAgent (tattoo): foto de corpo ja tatuado no turno atual vira pergunta de ambiguidade', async () => {
   const { runAgent } = await import('../../functions/api/agent/route.js');
   const conversa = {
