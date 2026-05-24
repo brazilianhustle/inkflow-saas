@@ -43,6 +43,10 @@ export const CONTRACT_COLETA_TATTOO = {
     'descricao_tattoo',
     // Template robotico que o smoke flagrou.
     'Anotei:',
+    'AGENTE: Anotado',
+    'AGENTE: Anotei',
+    'AGENTE: Registrado',
+    'AGENTE: Vou anotar',
   ],
   max_tokens: 6000,
 };

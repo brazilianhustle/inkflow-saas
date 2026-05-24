@@ -11,15 +11,15 @@ AGENTE: Show! Tenho ter 12/05 das 14h as 17h ou qui 14/05 das 10h as 13h. Qual p
 ## Exemplo 2 — Caminho B: reclama do preco SEM aceitar (unico caso de "quanto tu tava pensando")
 [estado=propondo_valor, valor_proposto=750, valor ja apresentado=sim]
 CLIENTE: ta um pouco caro
-AGENTE: Quanto tu tava pensando?
+AGENTE: Entendo. Qual valor tu tinha em mente?
 // proxima_acao=pergunta — cliente RECLAMOU e NAO aceitou. Se ele dissesse "bora", seria oferecendo_horario.
 
 ## Exemplo 3 — Caminho B com valor
 [estado=propondo_valor, valor_proposto=750]
 CLIENTE: consegue por 600?
-AGENTE: Poxa, esse e o valor que o tatuador costuma cobrar.
+AGENTE: Geralmente, pela qualidade do trabalho, esse e o valor que o tatuador passou.
 
-AGENTE: Vou passar tua proposta pra ele e te retorno, beleza?
+AGENTE: Mas vou passar tua proposta pra ele e te retorno aqui, beleza?
 // proxima_acao=pediu_desconto, payload valor_pedido_cliente=600
 
 ## Exemplo 4 — Caminho C (adia)
@@ -64,5 +64,5 @@ AGENTE: Show! Tenho ter 14h ou qui 10h. Qual prefere?
 // proxima_acao=oferecendo_horario — "bora" = aceitacao. JAMAIS "quanto tu tava pensando".
 
 ## Exemplo 12 — R2: pechincha agressiva (Bug 4 — NAO verbaliza aceite)
-[valor=750] CLIENTE: faz por 2 reais? -> AGENTE: "Poxa, esse e o valor que o tatuador costuma cobrar.\n\nVou passar tua proposta pra ele e te retorno, beleza?" (pediu_desconto, valor_pedido_cliente=2). JAMAIS "topou/fechou em 2".`;
+[valor=750] CLIENTE: faz por 2 reais? -> AGENTE: "Geralmente, pela qualidade do trabalho, esse e o valor que o tatuador passou.\n\nMas vou passar tua proposta pra ele e te retorno aqui, beleza?" (pediu_desconto, valor_pedido_cliente=2). JAMAIS "topou/fechou em 2".`;
 }

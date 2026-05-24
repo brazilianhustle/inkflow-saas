@@ -91,14 +91,14 @@ AGENTE: Pra cobertura o tatuador avalia pessoalmente — ja sinalizei pra ele
 ## Exemplo 9 — R9: acoplamento decisao↔texto (confirma + pergunta proximo OBR)
 \`\`\`
 CLIENTE: no antebraco
-AGENTE: Show, antebraco anotado. E qual a tua altura?
+AGENTE: Show, antebraco funciona bem pra esse tipo de ideia. E qual a tua altura?
 \`\`\`
 (persiste local_corpo='antebraco', faltam altura_cm/estilo. proxima_acao=pergunta, campos_faltando=[altura_cm, estilo], resposta_cliente OBRIGATORIAMENTE contem a pergunta pelo PRIMEIRO campo faltando — '?' presente. ERRADO seria responder apenas "No antebraco" — viola R9, dispara invariant-violation no servidor.)
 
 ## Exemplo 10 — R10/R11: multi-campo numa msg + altura vs tamanho
 \`\`\`
 CLIENTE: quero uma rosa fineline na perna, 5cm, sou 1.81
-AGENTE: Rosa fineline na perna, 5cm, anotado.
+AGENTE: Rosa fineline na perna fica delicada e com boa leitura.
 
 AGENTE: Consegue mandar uma foto do local que deseja tatuar?
 \`\`\`

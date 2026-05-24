@@ -14,7 +14,7 @@
 // - Se virar mais complexo no futuro, da pra migrar pra n8n facilmente.
 //
 // Eventos suportados:
-// - 'fechar'           → "Show! Pelo trabalho ficou em R$ X. Bora marcar?"
+// - 'fechar'           → reintroduz o cliente + apresenta valor contextualizado em 2 balões.
 // - 'aceitar_desconto' → "Show! Ele topou em R$ X. Bora marcar?"
 // - 'manter_valor'     → "Ele preferiu manter R$ X. Tá fechado pra ti? Bora marcar?"
 // - 'recusar'          → "Infelizmente o tatuador não vai poder fazer essa peça. Posso te ajudar com outra ideia?"
@@ -68,10 +68,75 @@ function fmtBRL(valor) {
   return n % 1 === 0 ? String(n) : n.toFixed(2).replace('.', ',');
 }
 
-function montarMensagem(evento, valor, valor_proposto) {
+function primeiroNome(nome) {
+  const s = String(nome || '').trim();
+  if (!s) return null;
+  return s.split(/\s+/)[0] || null;
+}
+
+function nomeTatuador(tenant = {}) {
+  const cfg = tenant.config_agente || {};
+  return (
+    tenant.tatuador_nome ||
+    tenant.nome_tatuador ||
+    cfg.tatuador_nome ||
+    cfg.nome_tatuador ||
+    cfg.nome_profissional ||
+    tenant.tatuador_telegram_username ||
+    null
+  );
+}
+
+function rotuloTatuador(tenant = {}) {
+  const cfg = tenant.config_agente || {};
+  const genero = String(cfg.tatuador_genero || cfg.genero_tatuador || '').toLowerCase();
+  const artigo = genero === 'feminino' || genero === 'f' || genero === 'mulher' ? 'a' : 'o';
+  const papel = artigo === 'a' ? 'tatuadora' : 'tatuador';
+  const nome = nomeTatuador(tenant);
+  return nome ? `${artigo} noss${artigo} ${papel} ${nome}` : `${artigo} noss${artigo} ${papel}`;
+}
+
+function ucfirst(s) {
+  const str = String(s || '');
+  return str ? str[0].toUpperCase() + str.slice(1) : str;
+}
+
+function localComPreposicao(local) {
+  const s = String(local || '').trim();
+  if (!s) return '';
+  const primeira = s.toLowerCase().split(/\s+/)[0];
+  if (['perna', 'coxa', 'panturrilha', 'costela', 'mao', 'mão', 'nuca', 'barriga'].includes(primeira)) return `na ${s}`;
+  if (['costas', 'costelas'].includes(primeira)) return `nas ${s}`;
+  if (['bracos', 'braços', 'dedos', 'pes', 'pés'].includes(primeira)) return `nos ${s}`;
+  return `no ${s}`;
+}
+
+function artigoIndefinido(descricao) {
+  const s = String(descricao || '').trim().toLowerCase();
+  if (/^(rosa|flor|borboleta|frase|escrita|mandala|caveira)\b/.test(s)) return 'Uma';
+  return 'Um';
+}
+
+function resumoTattoo(dados = {}) {
+  const descricao = String(dados.descricao_tattoo || dados.descricao_curta || 'tatuagem').trim();
+  const estilo = String(dados.estilo || '').toLowerCase();
+  const local = localComPreposicao(dados.local_corpo);
+  const base = `${artigoIndefinido(descricao)} ${descricao}`;
+  const detalhe = estilo.includes('fine') && !/delicad/i.test(descricao) ? ' delicada' : '';
+  const localTxt = local ? ` ${local}` : '';
+  const tamanhoTxt = dados.tamanho_cm != null ? ' nessa pegada de tamanho' : '';
+  return `${base}${detalhe}${localTxt}${tamanhoTxt}`;
+}
+
+function montarMensagem(evento, valor, valor_proposto, conv = {}) {
   switch (evento) {
-    case 'fechar':
-      return `Show! Pelo trabalho ficou em R$ ${fmtBRL(valor)}. Bora marcar?`;
+    case 'fechar': {
+      const nomeCliente = primeiroNome(conv.dados_cadastro?.nome);
+      const abertura = nomeCliente ? `Fala ${nomeCliente}, tudo bem?` : 'Fala, tudo bem?';
+      const intro = `${abertura} ${ucfirst(rotuloTatuador(conv.tenants))} acabou de me passar o seu orçamento`;
+      const proposta = `${resumoTattoo(conv.dados_coletados)} ficaria por R$ ${fmtBRL(valor)}! O que me diz, vamos agendar?`;
+      return `${intro}\n\n${proposta}`;
+    }
     case 'aceitar_desconto':
       return `Show! Ele topou em R$ ${fmtBRL(valor)}. Bora marcar?`;
     case 'manter_valor':
@@ -123,7 +188,7 @@ async function handle(env, input) {
   // Carrega conversa + tenant
   const r = await supaFetch(env,
     `/rest/v1/conversas?id=eq.${encodeURIComponent(conversa_id)}` +
-    '&select=id,telefone,valor_proposto,orcid,tenant_id,tenants(id,nome_agente,evo_instance,evo_apikey,evo_base_url)'
+    '&select=id,telefone,valor_proposto,orcid,tenant_id,dados_coletados,dados_cadastro,tenants(id,nome,nome_agente,tatuador_telegram_username,config_agente,evo_instance,evo_apikey,evo_base_url)'
   );
   if (!r.ok) return { status: 500, body: { ok: false, error: 'db-error' } };
   const rows = await r.json();
@@ -144,7 +209,7 @@ async function handle(env, input) {
   }
 
   // Monta mensagem
-  const msg = montarMensagem(evento, valor, conv.valor_proposto);
+  const msg = montarMensagem(evento, valor, conv.valor_proposto, conv);
   if (!msg) {
     return { status: 400, body: { ok: false, error: `evento desconhecido: ${evento}` } };
   }
@@ -215,4 +280,4 @@ export async function onRequest(context) {
 }
 
 // Exports pra teste
-export { montarMensagem, fmtBRL, handle };
+export { montarMensagem, fmtBRL, handle, resumoTattoo, rotuloTatuador };

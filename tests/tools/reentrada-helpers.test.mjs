@@ -3,7 +3,7 @@
 // fase de testes de tool full.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { montarMensagem, fmtBRL, handle } from '../../functions/api/telegram/reentrada.js';
+import { montarMensagem, fmtBRL, handle, resumoTattoo, rotuloTatuador } from '../../functions/api/telegram/reentrada.js';
 
 // ── fmtBRL ────────────────────────────────────────────────────────────────
 
@@ -34,8 +34,12 @@ test('fmtBRL: string nao numerica retorna como veio', () => {
 
 test('montarMensagem: evento "fechar"', () => {
   assert.equal(
-    montarMensagem('fechar', 750),
-    'Show! Pelo trabalho ficou em R$ 750. Bora marcar?'
+    montarMensagem('fechar', 750, null, {
+      dados_cadastro: { nome: 'Leandro Marquex' },
+      dados_coletados: { descricao_curta: 'rosa', estilo: 'fineline', local_corpo: 'perna', tamanho_cm: 5 },
+      tenants: { config_agente: { nome_tatuador: 'Rafa' } },
+    }),
+    'Fala Leandro, tudo bem? O nosso tatuador Rafa acabou de me passar o seu orçamento\n\nUma rosa delicada na perna nessa pegada de tamanho ficaria por R$ 750! O que me diz, vamos agendar?'
   );
 });
 
@@ -68,9 +72,20 @@ test('montarMensagem: evento desconhecido retorna null', () => {
 });
 
 test('montarMensagem: valores com decimais sao formatados', () => {
+  assert.match(montarMensagem('fechar', 750.50), /R\$ 750,50/);
+});
+
+test('rotuloTatuador: usa feminino quando configurado', () => {
   assert.equal(
-    montarMensagem('fechar', 750.50),
-    'Show! Pelo trabalho ficou em R$ 750,50. Bora marcar?'
+    rotuloTatuador({ config_agente: { genero_tatuador: 'feminino', nome_tatuador: 'Marina' } }),
+    'a nossa tatuadora Marina',
+  );
+});
+
+test('resumoTattoo: contextualiza descricao, estilo, local e tamanho', () => {
+  assert.equal(
+    resumoTattoo({ descricao_curta: 'rosa', estilo: 'fineline', local_corpo: 'perna', tamanho_cm: 5 }),
+    'Uma rosa delicada na perna nessa pegada de tamanho',
   );
 });
 
@@ -87,7 +102,9 @@ test('S2 reentrada: registra mensagem automatica em conversa_mensagens para entr
         valor_proposto: 750,
         orcid: 'orc_123',
         tenant_id: 'tenant-1',
-        tenants: { id: 'tenant-1', evo_instance: 'inst', evo_apikey: 'k', evo_base_url: 'https://evo.test' },
+        dados_cadastro: { nome: 'Leandro Marquex' },
+        dados_coletados: { descricao_curta: 'rosa', estilo: 'fineline', local_corpo: 'perna', tamanho_cm: 5 },
+        tenants: { id: 'tenant-1', config_agente: { nome_tatuador: 'Rafa' }, evo_instance: 'inst', evo_apikey: 'k', evo_base_url: 'https://evo.test' },
       }]), { status: 200 });
     }
     if (u.includes('evo.test/message/sendText')) {
@@ -108,8 +125,13 @@ test('S2 reentrada: registra mensagem automatica em conversa_mensagens para entr
     assert.ok(hist, 'deve inserir conversa_mensagens');
     assert.equal(hist.body.session_id, 'tenant-1_5511999');
     assert.equal(hist.body.message.type, 'ai');
+    assert.match(hist.body.message.content, /Fala Leandro/);
     assert.match(hist.body.message.content, /R\$ 750/);
     assert.equal(hist.body.status, 'processed');
+    const sends = calls.filter(c => c.url.includes('evo.test/message/sendText'));
+    assert.equal(sends.length, 2);
+    assert.match(sends[0].body.text, /acabou de me passar/);
+    assert.match(sends[1].body.text, /Uma rosa delicada/);
   } finally {
     globalThis.fetch = orig;
   }

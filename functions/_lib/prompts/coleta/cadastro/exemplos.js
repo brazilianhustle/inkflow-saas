@@ -21,21 +21,21 @@ AGENTE: Beleza Maria. E a data de nascimento?
 ## Exemplo 3 — Linha 3: completo OBR, sem email
 \`\`\`
 CLIENTE: 12/03/1995
-AGENTE: Anotado. E o e-mail?
+AGENTE: Boa. E o e-mail?
 \`\`\`
 (persiste data_nascimento='1995-03-12' [normalizado pra ISO], proxima_acao=pergunta)
 
 ## Exemplo 4 — Linha 4: email recusado, handoff
 \`\`\`
 CLIENTE: nao tenho email
-AGENTE: Anotei tudo! Vou enviar pro tatuador avaliar e te volto com o valor em breve
+AGENTE: Fechado, Maria! Vou mandar pro tatuador avaliar e te retorno em breve com o valor
 \`\`\`
 (email_recusado=true, dados_completos=true, proxima_acao=handoff)
 
 ## Exemplo 5 — Linha 5: tudo de uma vez
 \`\`\`
 CLIENTE: Maria Silva, 12/03/1995, maria@email.com
-AGENTE: Anotei tudo! Vou enviar pro tatuador avaliar e te volto com o valor em breve
+AGENTE: Fechado, Maria! Vou mandar pro tatuador avaliar e te retorno em breve com o valor
 \`\`\`
 (persiste 3 campos via dados_persistidos [data normalizada pra ISO], dados_completos=true, proxima_acao=handoff)
 

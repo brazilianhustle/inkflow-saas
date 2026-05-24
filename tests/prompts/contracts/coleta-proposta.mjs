@@ -50,6 +50,13 @@ export const CONTRACT_COLETA_PROPOSTA = {
     '[chama tool',
     // Markdown link (WhatsApp nao renderiza — link MP fica URL crua)
     '](http',
+    // Tom mecanico/rebaixado no caminho de pechincha.
+    'AGENTE: Anotado',
+    'AGENTE: Anotei',
+    'AGENTE: Anota',
+    'Anota ai',
+    'Poxa, esse e o valor que o tatuador costuma cobrar',
+    'Quanto tu tava pensando?',
   ],
   max_tokens: 2500,
 };

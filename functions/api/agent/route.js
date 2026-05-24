@@ -182,6 +182,65 @@ function tattooQuestionFor(field, dados, mensagem) {
   return 'Me confirma esse detalhe pra eu seguir?';
 }
 
+const STYLE_ALIASES = new Map([
+  ['realismo', 'realismo'],
+  ['realista', 'realismo'],
+  ['fineline', 'fineline'],
+  ['fine line', 'fineline'],
+  ['blackwork', 'blackwork'],
+  ['black work', 'blackwork'],
+  ['tradicional', 'tradicional'],
+  ['aquarela', 'aquarela'],
+]);
+
+function normalizeTokenText(text) {
+  return String(text || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function detectShortStyleAnswer(text) {
+  const s = normalizeTokenText(text);
+  const stripped = s.replace(/^(estilo|quero|queria|prefiro|pode ser|seria)\s+/, '').trim();
+  return STYLE_ALIASES.get(stripped) || null;
+}
+
+function applyShortStyleAnswer(out, dadosApos, mensagem) {
+  if (hasValue(dadosApos?.estilo)) return { out, dadosApos, changed: false };
+  const estilo = detectShortStyleAnswer(mensagem);
+  if (!estilo) return { out, dadosApos, changed: false };
+  const nextDados = { ...dadosApos, estilo };
+  return {
+    out: {
+      ...out,
+      dados_persistidos: { ...(out.dados_persistidos || {}), estilo },
+      campos_faltando: (out.campos_faltando || []).filter(c => c !== 'estilo'),
+    },
+    dadosApos: nextDados,
+    changed: true,
+  };
+}
+
+function asksForStyleAgain(text) {
+  const s = normalizeTokenText(text);
+  return /\bestilo\b/.test(s) || /\b(fineline|realismo|blackwork|tradicional)\b/.test(s);
+}
+
+function shouldForceHandoffAfterCompletedObr(out, dadosApos, mensagem, styleChanged) {
+  if (out?.proxima_acao !== 'pergunta') return false;
+  if ((out?.campos_faltando || []).includes('tipo_foto')) return false;
+  if ((out.campos_conflitantes?.length ?? 0) > 0) return false;
+  const obrCompletos = ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']
+    .every(k => hasValue(dadosApos?.[k]));
+  if (!obrCompletos) return false;
+  const resposta = String(out.resposta_cliente || '').trim();
+  const echoedUser = normalizeTokenText(resposta) === normalizeTokenText(mensagem);
+  return styleChanged || echoedUser || asksForStyleAgain(resposta);
+}
+
 function enforceTattooQuestionCoherence(out, dadosApos, mensagem) {
   if (!out || out.proxima_acao !== 'pergunta') return out;
   const missing = tattooMissingFields(dadosApos);
@@ -232,10 +291,58 @@ function forceAmbiguousTattooPhotoQuestion(out, dadosApos, conversa) {
   };
 }
 
+const BODY_REGION_ALIASES = [
+  { key: 'braco', label: 'braco', re: /\b(braco|braço|antebraco|antebraço|biceps|bíceps|pulso)\b/i },
+  { key: 'perna', label: 'perna', re: /\b(perna|coxa|panturrilha|canela|joelho|tornozelo)\b/i },
+  { key: 'costas', label: 'costas', re: /\b(costas|nuca)\b/i },
+  { key: 'peito', label: 'peito', re: /\b(peito|torax|tórax)\b/i },
+  { key: 'ombro', label: 'ombro', re: /\b(ombro)\b/i },
+  { key: 'costela', label: 'costela', re: /\b(costela|lateral)\b/i },
+];
+
+function detectBodyRegion(text) {
+  const s = normalizeTokenText(text);
+  return BODY_REGION_ALIASES.find(r => r.re.test(s)) || null;
+}
+
+function findVisualBodyRegion(out) {
+  const analise = Array.isArray(out?.analise_imagens) ? out.analise_imagens : [];
+  for (const a of analise) {
+    if (a?.tipo !== 'corpo') continue;
+    const region = detectBodyRegion(a.descricao || '');
+    if (region) return region;
+  }
+  return null;
+}
+
+function forceBodyRegionMismatchQuestion(out, dadosApos) {
+  const textual = detectBodyRegion(dadosApos?.local_corpo || '');
+  const visual = findVisualBodyRegion(out);
+  if (!textual || !visual || textual.key === visual.key) return { out, changed: false };
+  return {
+    out: {
+      ...out,
+      proxima_acao: 'pergunta',
+      resposta_cliente: `Pela foto parece ${visual.label}, mas tu tinha falado ${textual.label}. Qual local fica valendo?`,
+      dados_persistidos: {
+        ...(out.dados_persistidos || {}),
+        local_corpo: dadosApos.local_corpo,
+      },
+      dados_completos: false,
+      campos_faltando: ['local_corpo'],
+      campos_conflitantes: ['local_corpo'],
+      payload_portfolio: null,
+    },
+    changed: true,
+  };
+}
+
 function isPhotoLocalClarification(text) {
   const s = String(text || '').toLowerCase();
   return /\b(do local|foto do local|local da tatuagem|local do corpo)\b/.test(s)
-    || /\bsem\s+(tattoo|tatuagem|tatuagens)\b/.test(s);
+    || /\bsem\s+(tattoo|tatuagem|tatuagens)\b/.test(s)
+    || /\bpele\s+limpa\b/.test(s)
+    || /\b(do outro lado|outro lado)\b/.test(s);
 }
 
 function promoteClarifiedLocalPhoto(out, dadosApos, mensagem, conversa) {
@@ -263,12 +370,14 @@ function promoteClarifiedLocalPhoto(out, dadosApos, mensagem, conversa) {
 
 function shouldForceCadastroAfterTattooPhoto(out, dadosApos, mensagem, promotedPhoto) {
   if (!promotedPhoto) return false;
+  if ((out?.campos_faltando || []).includes('tipo_foto')) return false;
   const obrCompletos = ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']
     .every(k => hasValue(dadosApos?.[k]));
   if (!obrCompletos) return false;
   const resposta = String(out?.resposta_cliente || '').trim();
   const askedPrice = /\b(quanto|valor|pre[cç]o|fica|custa|orcamento|orçamento)\b/i.test(String(mensagem || ''));
-  return out?.proxima_acao !== 'handoff' && (askedPrice || !/\?/.test(resposta));
+  const pediuFotoDeNovo = /\bfoto\b/i.test(resposta);
+  return out?.proxima_acao !== 'handoff' && (askedPrice || pediuFotoDeNovo || !/\?/.test(resposta));
 }
 
 function forceTattooCadastroHandoff(out, dadosApos, mensagem) {
@@ -387,7 +496,12 @@ export async function runAgent({
     // foto (a foto continua OPCIONAL — basta ter sido pedida 1x).
     let dadosApos = mergePreservingExisting(conversa?.dados_coletados || {}, out.dados_persistidos || {});
     out = { ...out, dados_persistidos: mergePreservingExisting(out.dados_persistidos || {}, dadosApos) };
+    const stylePatch = applyShortStyleAnswer(out, dadosApos, mensagem);
+    out = stylePatch.out;
+    dadosApos = stylePatch.dadosApos;
     out = enforceTattooQuestionCoherence(out, dadosApos, mensagem);
+    const regionMismatch = forceBodyRegionMismatchQuestion(out, dadosApos);
+    out = regionMismatch.out;
     if (hasAmbiguousTattooBodyPhoto(out, imagens)) {
       out = forceAmbiguousTattooPhotoQuestion(out, dadosApos, conversa);
     }
@@ -395,6 +509,9 @@ export async function runAgent({
     out = promotedPhoto.out;
     dadosApos = promotedPhoto.dadosApos;
     if (shouldForceCadastroAfterTattooPhoto(out, dadosApos, mensagem, promotedPhoto.promoted)) {
+      out = forceTattooCadastroHandoff(out, dadosApos, mensagem);
+    }
+    if (shouldForceHandoffAfterCompletedObr(out, dadosApos, mensagem, stylePatch.changed) && !regionMismatch.changed) {
       out = forceTattooCadastroHandoff(out, dadosApos, mensagem);
     }
     const tentativasFoto = conversa?.dados_coletados?.tentativas_foto_local || 0;
@@ -735,14 +852,15 @@ export async function executeOrchestration(out, { env, tenant, conversa, telefon
     }
 
     case 'pediu_desconto': {
+      const respostaDesconto = 'Geralmente, pela qualidade do trabalho, esse é o valor que o tatuador passou.\n\nMas vou passar tua proposta pra ele e te retorno aqui, beleza?';
       const r = await callTool(env, 'enviar-objecao-tatuador', {
         tenant_id: tenant.id,
         telefone,
         valor_pedido_cliente: out.valor_pedido_cliente,
       });
       sideEffects.push({ tool: 'enviar-objecao-tatuador', ok: r.ok });
-      if (!r.ok) return forcePergunta(out, 'Anota ai — vou consultar e ja volto.');
-      return out;
+      if (!r.ok) return forcePergunta(out, respostaDesconto);
+      return { ...out, resposta_cliente: respostaDesconto };
     }
 
     case 'reagendamento':

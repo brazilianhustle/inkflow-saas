@@ -36,6 +36,9 @@ export const CONTRACT_COLETA_CADASTRO = {
     'consultar_horarios_livres',
     'reservar_horario',
     'gerar_link_sinal',
+    // Tom de formulario rejeitado no smoke 2026-05-23.
+    'AGENTE: Anotado',
+    'AGENTE: Anotei',
   ],
   max_tokens: 6000,
 };
