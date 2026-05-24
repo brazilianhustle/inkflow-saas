@@ -19,7 +19,7 @@ function mockEnv({ failInsert = false } = {}) {
     SUPABASE_SERVICE_ROLE_KEY: 'stub-key',
     _fetch: async (url, opts) => {
       if (failInsert) return { ok: false, status: 500, text: async () => 'db down' };
-      inserted.push({ url, body: JSON.parse(opts.body) });
+      inserted.push({ url, headers: opts.headers, body: JSON.parse(opts.body) });
       return { ok: true, status: 201, text: async () => '' };
     },
   };
@@ -80,6 +80,26 @@ test('logAgentTurn insere via fetch + nao bloqueia (fire-and-forget)', async () 
   await ctx.waited[0];
   assert.equal(env.inserted.length, 1);
   assert.equal(env.inserted[0].body.conversa_id, 'c1');
+});
+
+test('logAgentTurn aceita SUPABASE_SERVICE_KEY quando SERVICE_ROLE_KEY nao existe', async () => {
+  const ctx = mockCtx();
+  const env = mockEnv();
+  env.SUPABASE_SERVICE_KEY = 'fallback-key';
+  delete env.SUPABASE_SERVICE_ROLE_KEY;
+
+  logAgentTurn(ctx, env, {
+    conversa_id: 'c1', tenant_id: 't1', turn_index: 1,
+    agent_name: 'conversation_router', agent_version: 'v1', estado_agente: 'tattoo', model: 'rules',
+    prompt_full: null,
+  });
+
+  assert.equal(ctx.waited.length, 1);
+  await ctx.waited[0];
+  assert.equal(env.inserted.length, 1);
+  assert.equal(env.inserted[0].headers.apikey, 'fallback-key');
+  assert.equal(env.inserted[0].headers.Authorization, 'Bearer fallback-key');
+  assert.equal(env.inserted[0].body.agent_name, 'conversation_router');
 });
 
 test('logAgentTurn nao throw quando insert falha (resiliente)', async () => {
