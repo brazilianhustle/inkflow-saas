@@ -102,6 +102,23 @@ test('logAgentTurn aceita SUPABASE_SERVICE_KEY quando SERVICE_ROLE_KEY nao exist
   assert.equal(env.inserted[0].body.agent_name, 'conversation_router');
 });
 
+test('logAgentTurn usa URL default quando SUPABASE_URL nao existe', async () => {
+  const ctx = mockCtx();
+  const env = mockEnv();
+  delete env.SUPABASE_URL;
+
+  logAgentTurn(ctx, env, {
+    conversa_id: 'c1', tenant_id: 't1', turn_index: 1,
+    agent_name: 'conversation_router', agent_version: 'v1', estado_agente: 'tattoo', model: 'rules',
+    prompt_full: null,
+  });
+
+  assert.equal(ctx.waited.length, 1);
+  await ctx.waited[0];
+  assert.equal(env.inserted.length, 1);
+  assert.match(env.inserted[0].url, /^https:\/\/bfzuxxuscyplfoimvomh\.supabase\.co\/rest\/v1\/agent_turn_logs$/);
+});
+
 test('logAgentTurn nao throw quando insert falha (resiliente)', async () => {
   const ctx = mockCtx();
   const env = mockEnv({ failInsert: true });

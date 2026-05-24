@@ -104,7 +104,7 @@ function responseForIntent(intent, estado, conversa) {
     return `O valor depende do tamanho, detalhe e local do corpo. O tatuador confirma certinho depois de avaliar tua ideia.\n\n${resume}`;
   }
   if (intent === 'tempo_sessao') {
-    return `Depende do tamanho, detalhe e local do corpo. O tatuador confirma melhor quando avaliar tua ideia.\n\n${resume}`;
+    return `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\n${resume}`;
   }
   if (intent === 'processo_tatuagem') {
     return `Funciona assim: eu entendo tua ideia, junto as infos principais e o tatuador avalia pra passar valor e horário.\n\n${resume}`;

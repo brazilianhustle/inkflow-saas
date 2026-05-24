@@ -54,6 +54,18 @@ test('ConversationRouter: cadastro retoma cadastro, não coleta tattoo', () => {
   assert.match(out.resposta_cliente, /data de nascimento/);
 });
 
+test('ConversationRouter: tempo de sessão responde sobre duração, não preço', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quanto tempo demora?',
+    conversa: CONVERSA_TATTOO,
+  });
+  assert.equal(out.intent, 'tempo_sessao');
+  assert.match(out.resposta_cliente, /tempo de sessão/);
+  assert.match(out.resposta_cliente, /uma sessão ou mais/);
+  assert.doesNotMatch(out.resposta_cliente, /O valor depende/);
+});
+
 test('ConversationRouter: ignora estados fora do Slice 1 e kill switch', () => {
   assert.equal(routeConversationTurn({
     estado_atual: 'propondo_valor',
