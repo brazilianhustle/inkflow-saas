@@ -95,7 +95,7 @@ function extractTattooHints(message, dados = {}) {
   if (!hasValue(dados.descricao_curta)) {
     const patterns = [
       /\b(?:tatuagem|tattoo|tauagem)\s+de\s+(?:um|uma|uns|umas)?\s*([a-z0-9 ]+?)(?=\b(?:no|na|em|com|realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto|quanto|quantop|qnto|qual|me passa|$))/,
-      /\b(?:quero|queria|penso em|pretendo)\s+(?:fazer\s+)?(?:uma?\s+)?(?:tatuagem|tattoo|tauagem)?\s*(?:de\s+)?(?:um|uma)?\s*([a-z0-9 ]+?)(?=\b(?:no|na|em|com|realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto|quanto|quantop|qnto|qual|me passa|$))/,
+      /\b(?:quero|queria|penso em|pretendo)\s+(?:fazer\s+)?(?:uma?\s+)?(?:tatuagem|tattoo|tauagem)?\s*(?:de\s+)?(?:um|uma)?\s*([a-z0-9 ]+?)(?=\b(?:no|na|em|realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto|quanto|quantop|qnto|qual|me passa|$))/,
       /\b(?:um|uma)\s+([a-z0-9 ]+?)(?=\s+\b(?:no|na|em)\b)/,
     ];
     for (const re of patterns) {
@@ -178,14 +178,17 @@ function detectIntent(text) {
 
 function responseForIntent(intent, estado, conversa) {
   const resume = resumeQuestionForState(estado, conversa);
+  const resumed = estado === 'tattoo'
+    ? `Pra montar tua proposta certinho, preciso só de algumas infos. ${resume}`
+    : resume;
   if (intent === 'preco_generico') {
-    return `O valor depende do tamanho, detalhe e local do corpo. O tatuador confirma certinho depois de avaliar tua ideia.\n\n${resume}`;
+    return `O valor depende do tamanho, detalhe e local do corpo. O tatuador confirma certinho depois de avaliar tua ideia.\n\n${resumed}`;
   }
   if (intent === 'tempo_sessao') {
-    return `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\n${resume}`;
+    return `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\n${resumed}`;
   }
   if (intent === 'processo_tatuagem') {
-    return `Funciona assim: eu entendo tua ideia, junto as infos principais e o tatuador avalia pra passar valor e horário.\n\n${resume}`;
+    return `Funciona assim: eu entendo tua ideia, junto as infos principais e o tatuador avalia pra passar valor e horário.\n\n${resumed}`;
   }
   return null;
 }

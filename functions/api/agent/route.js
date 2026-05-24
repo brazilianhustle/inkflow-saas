@@ -208,6 +208,14 @@ function detectShortStyleAnswer(text) {
   return STYLE_ALIASES.get(stripped) || null;
 }
 
+function bodyLocationPhrase(localCorpo) {
+  const local = String(localCorpo || '').trim();
+  if (!local) return 'no corpo';
+  return /^(perna|coxa|panturrilha|canela|costela|barriga|m[aã]o)$/i.test(local)
+    ? `na ${local}`
+    : `no ${local}`;
+}
+
 function applyShortStyleAnswer(out, dadosApos, mensagem) {
   if (hasValue(dadosApos?.estilo)) return { out, dadosApos, changed: false };
   const estilo = detectShortStyleAnswer(mensagem);
@@ -229,9 +237,27 @@ function asksForStyleAgain(text) {
   return /\bestilo\b/.test(s) || /\b(fineline|realismo|blackwork|tradicional)\b/.test(s);
 }
 
+function reanchorShortStyleTurn(out, dadosApos, styleChanged) {
+  if (!styleChanged || out?.proxima_acao !== 'pergunta') return out;
+  const resposta = String(out.resposta_cliente || '');
+  const asksLocal = (out.campos_faltando || []).includes('local_corpo')
+    || /\b(onde|local|parte do corpo)\b/i.test(resposta);
+  const confirmsOldHeight = hasValue(dadosApos?.altura_cm)
+    && new RegExp(`\\b${dadosApos.altura_cm}\\s*cm\\b`, 'i').test(resposta);
+  if (!asksLocal || !confirmsOldHeight) return out;
+  const estilo = dadosApos?.estilo || 'esse estilo';
+  return {
+    ...out,
+    resposta_cliente: `Fechou, ${estilo}\n\nOnde exatamente ${bodyLocationPhrase(dadosApos?.local_corpo)} tu quer a tattoo?`,
+  };
+}
+
 function shouldForceHandoffAfterCompletedObr(out, dadosApos, mensagem, styleChanged) {
   if (out?.proxima_acao !== 'pergunta') return false;
   if ((out?.campos_faltando || []).includes('tipo_foto')) return false;
+  if ((out?.campos_faltando || []).some(c => ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo'].includes(c))) {
+    return false;
+  }
   if ((out.campos_conflitantes?.length ?? 0) > 0) return false;
   const obrCompletos = ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']
     .every(k => hasValue(dadosApos?.[k]));
@@ -499,6 +525,7 @@ export async function runAgent({
     const stylePatch = applyShortStyleAnswer(out, dadosApos, mensagem);
     out = stylePatch.out;
     dadosApos = stylePatch.dadosApos;
+    out = reanchorShortStyleTurn(out, dadosApos, stylePatch.changed);
     out = enforceTattooQuestionCoherence(out, dadosApos, mensagem);
     const regionMismatch = forceBodyRegionMismatchQuestion(out, dadosApos);
     out = regionMismatch.out;

@@ -42,6 +42,7 @@ test('ConversationRouter: preço genérico responde e preserva estado', () => {
   assert.equal(out.agent_usado, 'conversation_router');
   assert.deepEqual(out.dados_persistidos, {});
   assert.match(out.resposta_cliente, /O valor depende/);
+  assert.match(out.resposta_cliente, /Pra montar tua proposta certinho/);
   assert.match(out.resposta_cliente, /parte do corpo\?/);
 });
 
@@ -59,6 +60,21 @@ test('ConversationRouter: preço com dados explícitos persiste e retoma pelo pr
   assert.deepEqual(out.campos_faltando, ['altura_cm', 'estilo']);
   assert.match(out.resposta_cliente, /Qual tua altura\?/);
   assert.doesNotMatch(out.resposta_cliente, /Me conta o que tu pensa em tatuar\?/);
+});
+
+test('ConversationRouter: preserva descrição composta antes do local', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'eu quero fazer uma rosa com bussula no braço\nquanto fica',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+  });
+  assert.equal(out.intent, 'preco_generico');
+  assert.deepEqual(out.dados_persistidos, {
+    descricao_curta: 'rosa com bussula',
+    local_corpo: 'braço',
+  });
+  assert.match(out.resposta_cliente, /Pra montar tua proposta certinho/);
+  assert.match(out.resposta_cliente, /Qual tua altura\?/);
 });
 
 test('ConversationRouter: cadastro retoma cadastro, não coleta tattoo', () => {
