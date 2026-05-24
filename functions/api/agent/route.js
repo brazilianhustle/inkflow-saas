@@ -112,7 +112,7 @@ function isGreetingOnly(text) {
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[!?.\s]/g, ' ')
     .trim();
-  return /^(oi|oii|oiii|ola|olaa|bom dia|boa tarde|boa noite|e ai|salve)$/.test(s);
+  return /^(oi|oii|oiii|ola|olaa|opa|bom dia|boa tarde|boa noite|e ai|salve)$/.test(s);
 }
 
 function forceFirstContactGreeting(out, tenant) {

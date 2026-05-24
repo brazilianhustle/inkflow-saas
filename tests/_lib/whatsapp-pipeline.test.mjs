@@ -348,6 +348,43 @@ test('ConversationRouter Slice 1: primeiro contato cai no runAgent para preserva
   assert.equal(aiInsert.message.content, 'Atendente:\nOi, eu te ajudo por aqui');
 });
 
+test('ConversationRouter Slice 1.1: preço em lote misto persiste dados explícitos e retoma próximo campo', async () => {
+  const runAgentSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: {},
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 101, content: 'quero fazer uma tauagem de um leao no braço' },
+        { id: 102, content: 'quanto fica?' },
+      ]),
+      hist: [{ id: 1, message: { type: 'ai', content: 'Oii, tudo bem?' } }],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101, 102] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.dados_coletados.descricao_curta, 'leao');
+  assert.equal(conversaPatch.dados_coletados.local_corpo, 'braço');
+  assert.match(aiInsert.message.content, /Qual tua altura\?/);
+  assert.doesNotMatch(aiInsert.message.content, /Me conta o que tu pensa em tatuar\?/);
+});
+
 test('2. terminal aguardando_tatuador — Task 8 implementa', async () => {
   let supaCalls = [];
   const sendTelegramSpy = mock.fn(async () => ({ ok: true }));
