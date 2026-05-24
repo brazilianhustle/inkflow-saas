@@ -1,5 +1,7 @@
 # Doutrina Do Atendimento Premium
 
+> Regra canônica de mudança: antes de adicionar prompt, regex ou exceção conversacional, aplicar [`Conversation Change Doctrine`](../canonical/methodology/conversation-change-doctrine.md). O objetivo é evitar acúmulo de regras ruidosas: decidir explicitamente entre **adicionar**, **substituir** ou **redesenhar**.
+
 ## Tese
 
 O InkFlow não deve ser apenas um formulário conversacional. Ele deve agir como um atendente consultivo de estúdio sério: acolhe, entende, responde o suficiente, não inventa decisões técnicas e conduz o cliente até o orçamento/agendamento com segurança.
@@ -144,3 +146,22 @@ Antes de implementar qualquer mudança conversacional, responder:
 7. Como o bot retoma o fluxo?
 8. Qual teste prova que está correto?
 9. Qual smoke real valida?
+10. Esta mudança é correção local, substituição ou sinal de redesenho?
+
+## Regra Anti-Ruído
+
+O atendimento premium não deve evoluir por acúmulo cego de prompt e exceção.
+
+Antes de cada novo slice ou hardening:
+
+- **Adicionar regra** apenas quando a falha for pequena, clara, testável e reversível.
+- **Substituir regra** quando uma regra existente estiver ampla, competindo ou gerando falso positivo.
+- **Redesenhar camada** quando a mesma família de falha exigir exceções sucessivas ou depender de intenção + dados + histórico + mídia ao mesmo tempo.
+
+Sinais para parar e repensar:
+
+- terceira exceção nova para a mesma intent;
+- prompt crescendo para compensar falha de estado/pipeline;
+- regex longa sem teste de falso positivo;
+- resposta tecnicamente correta mas desatenta ao que o cliente já disse;
+- necessidade de explicar ao humano por que a resposta "faz sentido" mesmo soando ruim.

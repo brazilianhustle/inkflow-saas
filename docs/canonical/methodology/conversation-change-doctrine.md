@@ -1,0 +1,180 @@
+---
+last_reviewed: 2026-05-24
+owner: leandro
+status: stable
+related: [index.md, eval-comparative-strategy.md, release-protocol.md, ../../atendimento-premium/01-doutrina.md]
+---
+
+# Conversation Change Doctrine
+
+Doutrina para qualquer mudança em atendimento conversacional do InkFlow Agent.
+
+## Tese
+
+Mudança conversacional não pode virar acúmulo infinito de prompt, regex e exceções.
+
+O padrão correto é:
+
+```text
+observar -> classificar -> decidir se é regra, substituição ou redesenho -> validar -> registrar
+```
+
+Adicionar regra é permitido quando o problema é localizado. Se o padrão de falha se repetir, a obrigação é parar e repensar a camada, não continuar empilhando ruído.
+
+## Triagem Obrigatória
+
+Antes de alterar prompt, router, regex, schema, agent ou pipeline, responder:
+
+1. A falha é local ou sistêmica?
+2. A causa é classificação, extração, estado, tom, batching, prompt ou ferramenta?
+3. A correção deve adicionar uma regra, substituir uma regra existente ou redesenhar a camada?
+4. Qual risco novo essa mudança introduz?
+5. Qual teste prova o comportamento sem depender de interpretação subjetiva?
+6. Qual smoke real confirma que o cliente percebe melhoria?
+
+## Classificação De Mudança
+
+### 1. Correção Local
+
+Use quando:
+
+- o bug tem causa clara;
+- o padrão é pequeno e observável;
+- a regra nova é curta, testável e diretamente ligada ao smoke;
+- não altera estado crítico, dinheiro, agenda ou handoff.
+
+Exemplos:
+
+- aceitar `opa` como saudação;
+- tolerar typo frequente como `qnto tempo`;
+- extrair `leao no braço` quando aparece no mesmo turno de `quanto fica?`.
+
+Gate:
+
+- teste unitário do caso;
+- teste de integração se tocar pipeline;
+- smoke real depois do deploy.
+
+### 2. Substituição
+
+Use quando:
+
+- existe regra antiga que está errada ou ampla demais;
+- o problema é conflito entre regras;
+- corrigir adicionando outra exceção deixaria o sistema mais ambíguo.
+
+Exemplos:
+
+- trocar uma regex genérica que captura `valor` em contexto emocional por classificação mais restrita;
+- substituir retomada fixa por retomada derivada dos dados já persistidos.
+
+Gate:
+
+- teste do caso novo;
+- teste de não regressão do caso antigo;
+- evidência de que a regra antiga não deve sobreviver.
+
+### 3. Redesenho
+
+Use quando:
+
+- a mesma classe de falha exige várias exceções sucessivas;
+- regras começam a competir entre si;
+- o prompt fica longo e contraditório;
+- o router passa a carregar lógica de agent;
+- a mudança depende de contexto, estado, imagem, histórico ou intenção ao mesmo tempo;
+- o erro é de arquitetura, não de frase.
+
+Exemplos:
+
+- criar uma camada `TurnUnderstanding` para intenção + dados explícitos + retomada;
+- mover decisão de batching para o pipeline;
+- separar atendimento consultivo de operação de coleta;
+- usar classificador estruturado em vez de regex quando a variação humana ficar alta.
+
+Gate:
+
+- plano técnico antes de código;
+- contrato de input/output;
+- fallback e kill switch;
+- testes de invariantes;
+- smoke real antes de avançar de slice.
+
+## Sinais De Alerta
+
+Parar e reavaliar se acontecer qualquer um:
+
+- terceira exceção nova para a mesma intent;
+- regex com muitos sinônimos sem teste de falso positivo;
+- prompt crescendo para compensar falha de estado ou pipeline;
+- mudança que melhora um smoke e piora outro;
+- resposta correta tecnicamente, mas desatenta ao que o cliente já disse;
+- dado explícito do cliente ignorado;
+- ordem de resposta estranha por debounce/batching;
+- necessidade de explicar o comportamento como "tecnicamente correto" embora soe ruim para cliente.
+
+## Regra Do General
+
+O agente deve escolher uma das três ordens:
+
+```text
+ADICIONAR regra   -> se a falha é pequena, clara, testável e reversível.
+SUBSTITUIR regra  -> se há regra existente competindo ou criando ruído.
+REDESENHAR camada -> se a variação humana já excedeu o modelo de regras.
+```
+
+Se a decisão for "adicionar", registrar por que ainda não é caso de redesenho.
+
+## Limite De Complexidade
+
+Uma camada de regras só continua saudável enquanto:
+
+- cada regra cabe em uma intenção clara;
+- cada regra tem teste;
+- cada regra tem evidência de smoke ou bug real;
+- a ordem das regras é compreensível;
+- fallback para camada operacional continua simples.
+
+Se a regra precisa conhecer muitos detalhes de estado, histórico e mídia, ela provavelmente pertence a uma camada mais estruturada, não a um patch.
+
+## Como Validar
+
+### Mudanças Determinísticas
+
+Use invariantes binárias:
+
+- classificou ou não classificou;
+- persistiu ou não persistiu;
+- mudou estado ou preservou;
+- chamou ferramenta ou não chamou;
+- retomou com o campo correto.
+
+### Mudanças De Tom
+
+Não declarar vitória por impressão isolada. Usar:
+
+- smoke humano;
+- exemplos comparáveis;
+- A/B quando houver avaliação por juiz LLM;
+- critério de não regressão.
+
+## Aplicação Ao Atendimento Premium
+
+Para cada slice:
+
+1. Implementar pequeno.
+2. Smoke real.
+3. Se falhar, classificar a falha.
+4. Corrigir localmente só se for localizado.
+5. Se a mesma família falhar de novo, abrir plano de redesenho.
+6. Só avançar para o próximo slice quando o slice atual estiver estável em teste e smoke.
+
+## Frase De Controle
+
+Antes de mergear qualquer mudança conversacional:
+
+```text
+Esta mudança reduz complexidade ou só esconde complexidade nova?
+```
+
+Se a resposta for "só esconde", não mergear como regra. Redesenhar.
