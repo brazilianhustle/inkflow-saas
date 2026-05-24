@@ -11,6 +11,7 @@ import { runAgent } from '../api/agent/route.js';
 import { callTool } from '../api/agent/_lib/call-tool.js';
 import { classificarFoto } from './foto-classifier.js';
 import { enviarMidia } from './telegram-media.js';
+import { routeConversationTurn } from './conversation-router.js';
 
 export const TERMINAL_STATES = new Set([
   'aguardando_tatuador',
@@ -55,6 +56,7 @@ export function defaultDeps(env) {
     callTool: (toolName, body) => callTool(env, toolName, body),
     enviarMidia,
     classificarFoto,
+    routeConversationTurn,
     now: () => new Date().toISOString(),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   };
@@ -193,24 +195,45 @@ export async function processBatch(env, batch, depsOverride = {}) {
         return { role: m.type === 'ai' ? 'assistant' : 'user', content: m.content || '' };
       });
 
-    // Etapa 4: runAgent (1× pro turno)
+    // Etapa 4: ConversationRouter leve antes do agent operacional.
+    // Slice 1 trata dúvidas laterais texto-only em estados de coleta sem
+    // alterar estado crítico. Confidence baixa / intent desconhecida cai no
+    // runAgent atual.
     const estadoAgente = dbToAgent(conversa.estado_agente);
     const isFirstContact = historico.length === 0
       && Object.keys(conversa.dados_coletados || {}).length === 0
       && Object.keys(conversa.dados_cadastro || {}).length === 0;
     let agentOut;
+    const routerDisabled = String(env?.DISABLE_CONVERSATION_ROUTER || '').toLowerCase() === 'true';
+    agentOut = deps.routeConversationTurn({
+      estado_atual: estadoAgente,
+      mensagem: texto,
+      historico,
+      imagens,
+      tenant,
+      conversa: { ...conversa, estado_agente: estadoAgente },
+      clientContext: {
+        is_first_contact: isFirstContact,
+        batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
+        batch_joined_by: 'newline',
+      },
+      disabled: routerDisabled,
+    });
+
     try {
-      agentOut = await deps.runAgent({
-        tenant_id: tenantId, telefone, mensagem: texto,
-        estado_atual: estadoAgente, dados_acumulados: conversa.dados_coletados || {},
-        historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente },
-        clientContext: {
-          is_first_contact: isFirstContact,
-          batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
-          batch_joined_by: 'newline',
-        },
-        imagens,
-      });
+      if (!agentOut) {
+        agentOut = await deps.runAgent({
+          tenant_id: tenantId, telefone, mensagem: texto,
+          estado_atual: estadoAgente, dados_acumulados: conversa.dados_coletados || {},
+          historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente },
+          clientContext: {
+            is_first_contact: isFirstContact,
+            batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
+            batch_joined_by: 'newline',
+          },
+          imagens,
+        });
+      }
     } catch (e) { throw new Error(`runAgent threw: ${e.message}`); }
     if (!agentOut?.ok) throw new Error(`runAgent returned ok:false: ${agentOut?.error || 'unknown'}`);
 

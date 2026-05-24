@@ -200,6 +200,70 @@ test('1. golden path tattoo — Task 9 implementa', async () => {
   assert.equal(n8nInserts[0].message.content, 'me conta o tamanho?');
 });
 
+test('ConversationRouter Slice 1: preço genérico responde sem chamar runAgent nem mudar estado', async () => {
+  const runAgentSpy = mock.fn(async () => {
+    throw new Error('runAgent nao deveria ser chamado');
+  });
+  let conversaPatch = null;
+  let aiInsert = null;
+  const evoCalls = [];
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'rosa' },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'quanto fica?' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.estado_agente) {
+          conversaPatch = body;
+        }
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+    evoSend: async (_tenant, payload) => { evoCalls.push(payload); return { ok: true }; },
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
+  assert.deepEqual(conversaPatch.dados_coletados, { descricao_curta: 'rosa' });
+  assert.match(aiInsert.message.content, /O valor depende/);
+  assert.match(aiInsert.message.content, /parte do corpo\?/);
+  assert.equal(evoCalls.length, 2, 'resposta em 2 balões');
+});
+
+test('ConversationRouter Slice 1: kill switch cai no runAgent atual', async () => {
+  const runAgentSpy = mock.fn(async () => ({
+    ok: true, resposta_cliente: 'agent respondeu', estado_novo: 'tattoo',
+    dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo',
+  }));
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: {},
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'quanto fica?' }]),
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({ DISABLE_CONVERSATION_ROUTER: 'true' }, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 1);
+});
+
 test('2. terminal aguardando_tatuador — Task 8 implementa', async () => {
   let supaCalls = [];
   const sendTelegramSpy = mock.fn(async () => ({ ok: true }));
