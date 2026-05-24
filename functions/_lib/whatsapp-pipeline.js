@@ -205,20 +205,25 @@ export async function processBatch(env, batch, depsOverride = {}) {
       && Object.keys(conversa.dados_cadastro || {}).length === 0;
     let agentOut;
     const routerDisabled = String(env?.DISABLE_CONVERSATION_ROUTER || '').toLowerCase() === 'true';
-    agentOut = deps.routeConversationTurn({
-      estado_atual: estadoAgente,
-      mensagem: texto,
-      historico,
-      imagens,
-      tenant,
-      conversa: { ...conversa, estado_agente: estadoAgente },
-      clientContext: {
-        is_first_contact: isFirstContact,
-        batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
-        batch_joined_by: 'newline',
-      },
-      disabled: routerDisabled,
-    });
+    const routerEligible = !routerDisabled && !isFirstContact && imagens.length === 0;
+    if (routerEligible) {
+      agentOut = deps.routeConversationTurn({
+        estado_atual: estadoAgente,
+        mensagem: texto,
+        historico,
+        imagens,
+        tenant,
+        conversa: { ...conversa, estado_agente: estadoAgente },
+        clientContext: {
+          is_first_contact: isFirstContact,
+          batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
+          batch_joined_by: 'newline',
+        },
+        disabled: false,
+      });
+    } else {
+      agentOut = null;
+    }
 
     try {
       if (!agentOut) {

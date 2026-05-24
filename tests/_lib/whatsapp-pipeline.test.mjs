@@ -264,6 +264,85 @@ test('ConversationRouter Slice 1: kill switch cai no runAgent atual', async () =
   assert.equal(runAgentSpy.mock.callCount(), 1);
 });
 
+test('ConversationRouter Slice 1: foto com legenda passa pelo runAgent para preservar visão', async () => {
+  const runAgentSpy = mock.fn(async (args) => {
+    assert.equal(args.imagens.length, 1, 'runAgent deve receber a imagem do turno');
+    return {
+      ok: true,
+      resposta_cliente: 'recebi tua foto',
+      estado_novo: 'tattoo',
+      dados_persistidos: {},
+      proxima_acao: 'pergunta',
+      agent_usado: 'tattoo',
+      analise_imagens: [
+        { tipo: 'corpo', descricao: 'antebraco', corpo_tem_tattoo: false, corpo_tem_marcacao: false },
+      ],
+    };
+  });
+  let conversaPatches = [];
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'rosa' },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'quanto fica?', media_base64: 'img', media_mimetype: 'image/jpeg' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.dados_coletados) {
+          conversaPatches.push(body.dados_coletados);
+        }
+      },
+    }),
+    runAgent: runAgentSpy,
+    classificarFoto: () => { throw new Error('classificarFoto nao devia rodar quando analise_imagens existe'); },
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 1);
+  const fotoPatch = conversaPatches.find(p => p.foto_local_msg_id || p.refs_imagens_msg_ids);
+  assert.equal(fotoPatch.foto_local_msg_id, MSG_ROW_ID);
+});
+
+test('ConversationRouter Slice 1: primeiro contato cai no runAgent para preservar apresentação', async () => {
+  const runAgentSpy = mock.fn(async (args) => {
+    assert.equal(args.clientContext.is_first_contact, true);
+    return {
+      ok: true,
+      resposta_cliente: 'Atendente:\nOi, eu te ajudo por aqui',
+      estado_novo: 'tattoo',
+      dados_persistidos: {},
+      proxima_acao: 'pergunta',
+      agent_usado: 'tattoo',
+    };
+  });
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: {},
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'oi, quanto custa uma tattoo no braço?' }]),
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 1);
+  assert.equal(aiInsert.message.content, 'Atendente:\nOi, eu te ajudo por aqui');
+});
+
 test('2. terminal aguardando_tatuador — Task 8 implementa', async () => {
   let supaCalls = [];
   const sendTelegramSpy = mock.fn(async () => ({ ok: true }));
