@@ -8,6 +8,8 @@
 
 import crypto from 'node:crypto';
 
+const DEFAULT_SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
+
 export function buildTurnLogPayload({
   conversa_id,
   tenant_id,
@@ -70,7 +72,7 @@ export function buildTurnLogPayload({
 }
 
 export function logAgentTurn(ctx, env, fields) {
-  const url = env?.SUPABASE_URL;
+  const url = env?.SUPABASE_URL || DEFAULT_SUPABASE_URL;
   const key = env?.SUPABASE_SERVICE_ROLE_KEY || env?.SUPABASE_SERVICE_KEY;
   if (!url || !key) return;
 
@@ -87,9 +89,10 @@ export function logAgentTurn(ctx, env, fields) {
 }
 
 async function _doInsert(env, fields) {
+  const supabaseUrl = env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
   const key = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SERVICE_KEY;
   const payload = buildTurnLogPayload(fields);
-  const url = `${env.SUPABASE_URL}/rest/v1/agent_turn_logs`;
+  const url = `${supabaseUrl}/rest/v1/agent_turn_logs`;
   const doFetch = env._fetch || fetch;
   const res = await doFetch(url, {
     method: 'POST',
