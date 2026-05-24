@@ -2,6 +2,7 @@
 // POST interno — chamado pelo alarm() do DO SessionQueue. Auth: x-cron-secret.
 // Roda o pipeline pro lote. Throw inesperado → 500 (o DO re-tenta com backoff durável).
 import { processBatch } from '../../_lib/whatsapp-pipeline.js';
+import { logAgentTurn } from '../../_lib/telemetry/agent-turn-logger.js';
 
 const HEADERS = { 'Content-Type': 'application/json' };
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: HEADERS });
@@ -21,7 +22,9 @@ export async function onRequest(context) {
     return json({ ok: false, error: 'bad-batch' }, 400);
   }
   try {
-    await processBatch(env, { session_id, tenantId, telefone, msgRowIds });
+    await processBatch(env, { session_id, tenantId, telefone, msgRowIds }, {
+      logAgentTurn: (fields) => logAgentTurn(context, env, fields),
+    });
     return json({ ok: true });
   } catch (e) {
     // Falha de infra (Etapa 0: leitura DB). 500 sinaliza ao DO re-tentar.

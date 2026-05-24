@@ -207,6 +207,7 @@ test('ConversationRouter Slice 1: preço genérico responde sem chamar runAgent 
   let conversaPatch = null;
   let aiInsert = null;
   const evoCalls = [];
+  const logAgentTurnSpy = mock.fn();
   const conversa = {
     id: CONVERSA_ID,
     estado_agente: 'coletando_tattoo',
@@ -228,11 +229,15 @@ test('ConversationRouter Slice 1: preço genérico responde sem chamar runAgent 
     }),
     runAgent: runAgentSpy,
     evoSend: async (_tenant, payload) => { evoCalls.push(payload); return { ok: true }; },
+    logAgentTurn: logAgentTurnSpy,
   });
 
   await processBatch({}, baseBatch(), deps);
 
   assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(logAgentTurnSpy.mock.callCount(), 1);
+  assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].agent_name, 'conversation_router');
+  assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].context_metadata.router_intent, 'preco_generico');
   assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
   assert.deepEqual(conversaPatch.dados_coletados, { descricao_curta: 'rosa' });
   assert.match(aiInsert.message.content, /O valor depende/);

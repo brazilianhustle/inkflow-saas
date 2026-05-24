@@ -356,6 +356,28 @@ test('Bug1 gate: handoff com foto_local presente → handoff passa mesmo sem con
   assert.equal(r.proxima_acao, 'handoff');
 });
 
+test('Bug1 gate: handoff com foto_local_msg_id presente → handoff passa mesmo sem contador', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = {
+    id: 'c',
+    telefone: '5511',
+    estado_agente: 'tattoo',
+    dados_coletados: { foto_local_msg_id: 77 },
+    dados_cadastro: {},
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'isso',
+    estado_atual: 'tattoo', dados_acumulados: conversa.dados_coletados, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: fakeHandoff(),
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'handoff');
+  assert.equal(r.estado_novo, 'cadastro');
+  assert.ok(!r.pediu_foto_local);
+  assert.equal(r.dados_persistidos.foto_local_msg_id, 77);
+});
+
 // Output 'pergunta' com os 4 OBR completos (reusado nos testes do else-if do gate).
 const PERGUNTA_OBR_COMPLETO = {
   proxima_acao: 'pergunta',

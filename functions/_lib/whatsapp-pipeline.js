@@ -12,6 +12,7 @@ import { callTool } from '../api/agent/_lib/call-tool.js';
 import { classificarFoto } from './foto-classifier.js';
 import { enviarMidia } from './telegram-media.js';
 import { routeConversationTurn } from './conversation-router.js';
+import { logAgentTurn } from './telemetry/agent-turn-logger.js';
 
 export const TERMINAL_STATES = new Set([
   'aguardando_tatuador',
@@ -57,6 +58,7 @@ export function defaultDeps(env) {
     enviarMidia,
     classificarFoto,
     routeConversationTurn,
+    logAgentTurn: (fields) => logAgentTurn(null, env, fields),
     now: () => new Date().toISOString(),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   };
@@ -74,6 +76,7 @@ async function markStatus(deps, msgRowIds, status) {
 }
 
 export async function processBatch(env, batch, depsOverride = {}) {
+  const t0 = Date.now();
   const deps = { ...defaultDeps(env), ...depsOverride };
   let { session_id, tenantId, telefone, msgRowIds } = batch;
   // Fallback: deriva tenantId/telefone do session_id (formato `${uuid}_${telefone}`).
@@ -241,6 +244,33 @@ export async function processBatch(env, batch, depsOverride = {}) {
       }
     } catch (e) { throw new Error(`runAgent threw: ${e.message}`); }
     if (!agentOut?.ok) throw new Error(`runAgent returned ok:false: ${agentOut?.error || 'unknown'}`);
+    if (agentOut.handled_by === 'conversation_router') {
+      try {
+        deps.logAgentTurn?.({
+          conversa_id: conversa.id,
+          tenant_id: tenantId,
+          turn_index: historico.length + 1,
+          agent_name: 'conversation_router',
+          agent_version: env.AGENT_VERSION || '2026-05-24-router-slice-1',
+          estado_agente: estadoAgente,
+          model: 'rules',
+          client_input_text: texto,
+          client_input_type: 'text',
+          prompt_full: null,
+          context_metadata: {
+            router_intent: agentOut.intent,
+            router_confidence: agentOut.confidence,
+            router_risk: agentOut.risk,
+            history_turns_n: historico.length,
+          },
+          llm_output_parsed: agentOut,
+          invariant_passed: true,
+          latency_total_ms: Date.now() - t0,
+        });
+      } catch (e) {
+        console.warn('[pipeline] router telemetry failed:', e?.message || e);
+      }
+    }
 
     // Etapa 5: UPDATE conversa
     const isCadastro = agentOut.agent_usado === 'cadastro';

@@ -515,7 +515,9 @@ export async function runAgent({
       out = forceTattooCadastroHandoff(out, dadosApos, mensagem);
     }
     const tentativasFoto = conversa?.dados_coletados?.tentativas_foto_local || 0;
-    const temFotoLocal = !!out.dados_persistidos?.foto_local;
+    const temFotoLocal = hasValue(out.dados_persistidos?.foto_local)
+      || hasValue(out.dados_persistidos?.foto_local_msg_id)
+      || hasValue(dadosApos?.foto_local_msg_id);
     const obrCompletos = ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']
       .every(k => out.dados_persistidos?.[k] != null && out.dados_persistidos?.[k] !== '');
     if (out.proxima_acao === 'handoff' && tentativasFoto === 0 && !temFotoLocal) {
