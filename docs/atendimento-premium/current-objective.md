@@ -69,17 +69,18 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - Context/Tenant Manager iniciado: montagem de `clientContext` efetivo saiu de `route.js` para `tenant-context-manager.js`; portfolio e contexto de proposta continuam equivalentes, com teste local e validação HTTP/WhatsApp real pelo fluxo `portfolio_disponivel`.
 - Autonomy Gate promovido deliberadamente para Level 3 apos recomendacao objetiva: 40 scenarios PASS, 18 WhatsApp reais PASS e gates criticos PASS. A janela atual permite mini-campanha de ate 4 micro-slices da mesma familia, com parada em qualquer falha.
 - Autonomy Gate ganhou criterios futuros para recomendar Level 4: 70 scenarios PASS, 35 WhatsApp reais PASS, gates criticos PASS e docs obrigatorios de rollback/staging e politica de loop Level 4.
+- Context/Tenant Manager ganhou observabilidade propria em `agent_turn_logs.context_metadata`: HTTP radar e WhatsApp real definitivo passaram exigindo `tenant_context_layer=tenant_context_manager`, `tenant_context_state=tattoo` e `tenant_context_portfolio_disponivel=true`.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T195358Z-3969
+run_id: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T200943Z-1465
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_tattoo
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T195358Z-3969/
+evidence: .smoke-evidence/scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T200943Z-1465/
 ```
 
 Mensagem:
@@ -97,6 +98,7 @@ orcid: none
 copy_risk: baixo
 copy: oferece envio de exemplos sem URL manual, preco, agendamento, sinal ou pagamento
 context: tenant_context_manager injeta portfolio_disponivel=true antes do agent
+observability: agent_turn_logs.context_metadata confirmou tenant_context_layer/state/portfolio_disponivel
 tool: tail confirmou enviar-portfolio / portfolio
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
