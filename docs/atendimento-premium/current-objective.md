@@ -18,7 +18,7 @@ deploy: GitHub Actions Deploy to Cloudflare Pages passou em 2026-05-25
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: docs: require real whatsapp validation per slice
+ultimo_commit_validado: feat: log router decision reasons
 ```
 
 ## Ultimos Marcos
@@ -63,35 +63,36 @@ ultimo_commit_validado: docs: require real whatsapp validation per slice
 - Smoke Scenario Registry agora tem gate automatico `EXPECTED_AGENT_LOG_JQ_TRUE`, com polling curto para logs fire-and-forget; o scenario `tattoo-cliente-irritado-handoff` valida comportamento e observabilidade no mesmo run.
 - Politica corrigida: HTTP production smoke e radar inicial; WhatsApp real e validacao definitiva por micro-slice conversacional. Foram criados scenarios WhatsApp real para idade isolada, menoridade, cobertura, pedido humano e cliente irritado.
 - WhatsApp real retrospectivo passou para os gaps recentes: idade isolada nao persistiu data inventada; menoridade, cobertura, pedido humano e cliente irritado sairam para humano com `orcid=null`, tail limpo e agent-log gate quando aplicavel.
+- IntentPolicy/observabilidade do Router iniciado: `ConversationRouter` agora retorna `reason` e `can_mutate_state` junto de `intent`, `confidence` e `risk`; `whatsapp-pipeline` grava esses campos em `agent_turn_logs`; HTTP e WhatsApp real de preco generico passaram exigindo `router_reason=generic_price_question_without_negotiation`.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T184724Z-19864
+run_id: scenario-whatsapp-real-lateral-preco-generico-20260525T191651Z-20855
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: aguardando_tatuador
+expected_state: coletando_tattoo
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T184724Z-19864/
+evidence: .smoke-evidence/scenario-whatsapp-real-lateral-preco-generico-20260525T191651Z-20855/
 ```
 
 Mensagem:
 
 ```text
-voces demoram demais, ninguem responde
+quanto fica uma rosa fineline no braco?
 ```
 
 Resultado:
 
 ```text
-estado_agente: aguardando_tatuador
+estado_agente: coletando_tattoo
 resposta_ai_posterior_ao_humano: true
 orcid: none
 copy_risk: baixo
-copy: pede desculpa pela frustracao e aciona pessoa do estudio para assumir, sem seguir coleta normal
-escalation: client_upset / high / requires_orcid=false
-observability: agent_turn_logs agent_name=escalation_manager reason_code=client_upset
+copy: explica que valor depende de tamanho/detalhe/local e que tatuador confirma apos avaliar, sem inventar preco
+router: preco_generico / confidence>=0.8 / risk=high / can_mutate_state=false
+observability: agent_turn_logs agent_name=conversation_router router_reason=generic_price_question_without_negotiation
 observability_gate: EXPECTED_AGENT_LOG_JQ_TRUE PASS
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
@@ -107,7 +108,7 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar a rodada;
 - escolher ate 2 micro-slices relacionados;
 - depois de cada micro-slice, rodar HTTP como radar e WhatsApp real como validacao definitiva antes de registrar smoke/gate/commit saudavel;
-- candidatos: consolidar proximo slice de cadastro premium, refinamento de observabilidade ou escalation/handoff humano mais formal.
+- candidatos: expandir `IntentPolicy` para outros intents com `reason/can_mutate_state` em gates reais, consolidar proximo slice de cadastro premium, ou formalizar Context/Tenant Manager.
 
 ## Comando De Retomada
 

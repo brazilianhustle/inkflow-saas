@@ -244,6 +244,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** foram criados e rodados scenarios WhatsApp real para os gaps recentes: idade isolada, menoridade, cobertura, pedido humano e cliente irritado. `cadastro-handoff` e `escalation-manager` agora exigem esses PASS reais em seus slice gates.
 
+## 2026-05-25 - Router precisa explicar a decisão de intent
+
+**Status:** decidido.
+
+**Decisão:** `ConversationRouter` passa a retornar, para cada intent resolvida, `reason` e `can_mutate_state` alem de `intent`, `confidence` e `risk`. O pipeline grava esses campos em `agent_turn_logs.context_metadata` como `router_reason` e `router_can_mutate_state`.
+
+**Motivo:** confidence sem motivo ainda exige leitura do codigo para entender por que o bot escolheu um caminho. O padrao premium precisa explicar a decisao de atendimento no proprio log, e o smoke precisa conseguir transformar essa explicacao em gate.
+
+**Alternativas rejeitadas:**
+
+- manter apenas `intent/confidence/risk`;
+- depender do texto do bot para inferir motivo;
+- adicionar observabilidade apenas em escalation, deixando router lateral sem explicabilidade.
+
+**Camada responsável:** `ConversationRouter`, `whatsapp-pipeline`, `agent_turn_logs` e `Smoke Scenario Registry`.
+
+**Impacto:** `lateral-preco-generico` e `whatsapp-real-lateral-preco-generico` agora falham se nao existir row `agent_name=conversation_router` com `router_reason=generic_price_question_without_negotiation`, confidence minima, risco e permissao de mutacao de estado esperados. HTTP production smoke e WhatsApp real passaram em 2026-05-25.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
