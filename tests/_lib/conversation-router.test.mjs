@@ -334,6 +334,30 @@ test('ConversationRouter: preço repetido usa resposta curta sem repetir texto i
   assert.doesNotMatch(out.resposta_cliente, /O valor depende do tamanho/);
 });
 
+test('ConversationRouter: se foto pendente foi adiada, responde lateral e orienta mandar depois', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'agora nao consigo\nquanto fica?',
+    conversa: {
+      dados_coletados: {
+        descricao_curta: 'rosa',
+        local_corpo: 'braço',
+        altura_cm: 170,
+        estilo: 'fineline',
+      },
+      dados_cadastro: {},
+    },
+    historico: [
+      { role: 'assistant', content: 'Fechou! Consegue mandar também uma foto do local? É importante pro tatuador ter noção do espaço e passar o valor certinho.' },
+    ],
+  });
+  assert.equal(out.intent, 'preco_generico');
+  assert.deepEqual(out.dados_persistidos, {});
+  assert.match(out.resposta_cliente, /O valor depende/);
+  assert.match(out.resposta_cliente, /Sem problema, pode mandar a foto depois/);
+  assert.match(out.resposta_cliente, /Quando conseguir, me manda a foto do local/i);
+});
+
 test('ConversationRouter: retomada longa não repete quando já apareceu no histórico', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',

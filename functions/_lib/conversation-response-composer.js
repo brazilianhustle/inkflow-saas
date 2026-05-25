@@ -68,6 +68,9 @@ function resumeForState({ estado, resume, nextField, context = {} }) {
   const displayPrefix = pendingResolution.displayName ? `Boa, ${pendingResolution.displayName}. ` : '';
 
   if (isFirstContact && estado === 'tattoo') return firstContactResumeQuestion();
+  if (estado === 'tattoo' && pendingResolution.field === 'foto_local' && pendingResolution.deferred) {
+    return 'Sem problema, pode mandar a foto depois. Quando conseguir, me manda a foto do local pra eu seguir.';
+  }
   if (awaitingFormAnswer) return null;
   if (estado !== 'tattoo') return resume;
 

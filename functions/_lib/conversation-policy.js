@@ -159,6 +159,20 @@ export function resolveBodyLocation(message) {
     : { answered: false, value: null, confidence: 0, reason: 'no_body_location', match: null };
 }
 
+export function resolvePhotoLocalAnswer(message) {
+  const s = normalize(message);
+  if (/\b(agora nao consigo|nao consigo agora|nao consigo|nao posso agora|sem foto agora|mando depois|envio depois|depois eu mando|mais tarde)\b/.test(s)) {
+    return {
+      answered: false,
+      value: null,
+      confidence: 0.88,
+      reason: 'photo_deferred',
+      deferred: true,
+    };
+  }
+  return { answered: false, value: null, confidence: 0, reason: 'no_photo_local', deferred: false };
+}
+
 function cleanCadastroLine(message) {
   return String(message || '')
     .split(/\n+/)
@@ -257,6 +271,7 @@ const FIELD_RESOLVERS = {
   altura_cm: resolveHeightCm,
   estilo: resolveTattooStyle,
   local_corpo: resolveBodyLocation,
+  foto_local: resolvePhotoLocalAnswer,
   nome_completo: resolveFullName,
   data_nascimento: resolveBirthDate,
   email: resolveEmail,
@@ -280,6 +295,7 @@ function resultForResolvedField(field, resolved) {
     field,
     confidence: resolved.confidence,
     reason: resolved.reason,
+    deferred: Boolean(resolved.deferred),
   };
 }
 
