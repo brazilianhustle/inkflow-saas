@@ -151,6 +151,16 @@ Smoke deve validar:
 - ausência de side effect indevido;
 - logs sem erro.
 
+Para WhatsApp real, registrar tambem prova de mensagem. O run so vira validacao definitiva se houver:
+
+- `evolution-send.json` comprovando envio pela instancia remetente real;
+- `poll.json` comprovando mensagem humana exata recebida e resposta AI posterior;
+- `transcript.md` com HUMANO e BOT;
+- `judgment.md` com veredito tecnico e `copy_risk`;
+- `agent-turn-logs.json` e `scenario-agent-log-jq.txt` quando o comportamento exige observabilidade decisoria.
+
+Sem essas provas, o teste pode ser tratado como tentativa operacional, mas nao como PASS definitivo do micro-slice.
+
 ## 8. Registro
 
 Depois do smoke:

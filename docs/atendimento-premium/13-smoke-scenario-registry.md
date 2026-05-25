@@ -64,6 +64,43 @@ Sem WhatsApp real PASS -> slice fica WIP validado parcialmente.
 
 Em blocos grandes, nao esperar o fim do bloco para rodar WhatsApp real. Rodar por micro-slice assim que o HTTP passar; no fim do bloco, rodar apenas o rehearsal consolidado do gate.
 
+## Prova Obrigatoria Para `whatsapp_real`
+
+Um scenario `whatsapp_real` so conta como PASS definitivo quando o diretorio de evidencia provar a mensagem real em quatro pontos:
+
+```text
+1. envio externo pela Evolution remetente;
+2. entrada real no webhook/Supabase como humano;
+3. resposta real do bot persistida;
+4. decisao observavel quando o scenario exigir gate de log.
+```
+
+Arquivos mínimos:
+
+```text
+scenario-plan.txt       plano do scenario, instancia e mensagem
+evolution-send.json     POST real para Evolution + status 2xx + id da mensagem
+poll.json               humano received + bot processed
+transcript.md           conversa legivel com timestamps
+judgment.md             veredito tecnico/conversacional
+```
+
+Arquivos obrigatorios quando aplicavel:
+
+```text
+agent-turn-logs.json       rows consultadas em agent_turn_logs
+scenario-agent-log-jq.txt  filtro jq esperado + status ok
+tail-excerpt.log           trecho do tail sem erro proibido
+```
+
+Ao registrar em `smoke-runs.md`, a coluna `Decisao` deve mencionar explicitamente a cadeia real validada, por exemplo:
+
+```text
+Evolution central enviou -> webhook registrou humano exato -> bot respondeu -> agent-log gate PASS.
+```
+
+Se a evidencia tiver apenas resposta HTTP, `poll.json` sem `evolution-send.json`, ou transcript sem envio Evolution, o registro nao pode ser chamado de WhatsApp real.
+
 ## Contrato De Um Cenario
 
 Campos principais:

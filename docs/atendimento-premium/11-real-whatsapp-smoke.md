@@ -86,18 +86,41 @@ SMOKE_EXPECT_HUMAN_TEXT       setado automaticamente pelo runner para amarrar o 
   summary.md
 ```
 
+## Prova De Mensagem Real
+
+Todo smoke `whatsapp_real` precisa deixar prova auditavel de que a mensagem saiu da instancia remetente real, entrou pelo webhook real e recebeu resposta real do bot.
+
+Nao basta dizer que "passou". A evidencia precisa permitir reconstituir a cadeia:
+
+```text
+Evolution central enviou -> WhatsApp entregou ao numero do bot -> webhook persistiu humano -> bot respondeu -> logs explicam decisao
+```
+
+Checklist obrigatorio:
+
+- `scenario-plan.txt`: mostra `SCENARIO_TYPE=whatsapp_real`, instancia remetente, telefone remetente, numero do bot e mensagem planejada.
+- `evolution-send.json`: mostra endpoint `/message/sendText/<instance>` ou `/message/sendMedia/<instance>`, destino do bot, `http_status` 2xx, id da mensagem Evolution e texto/midia enviado.
+- `poll.json`: mostra a mensagem humana exata em `conversa_mensagens` com `message.type="human"` e `status="received"`, seguida de resposta `message.type="ai"` e `status="processed"`.
+- `transcript.md`: mostra, de forma legivel, o turno HUMANO e o turno BOT com timestamps.
+- `judgment.md`: registra `final_state`, `orcid`, checks tecnicos, ultima mensagem humana, ultima resposta do bot e `copy_risk`.
+- quando houver gate de observabilidade, `agent-turn-logs.json` e `scenario-agent-log-jq.txt` precisam mostrar a decisao esperada (`agent_name`, intent/reason/risk/confidence ou reason_code).
+
+Se qualquer uma dessas provas estiver ausente, o smoke real pode ter sido executado, mas nao pode ser usado como validacao definitiva do micro-slice.
+
 ## Criterio De PASS
 
 O smoke WhatsApp real so passa quando:
 
 - a instancia remetente esta `open`;
 - Evolution `sendText` retorna 2xx;
+- `evolution-send.json` comprova o envio pela instancia remetente real para o numero oficial do bot;
 - o webhook real gera mensagem humana exata no Supabase para o telefone remetente;
 - o polling detecta resposta AI sem estado esperado, ou atinge o estado esperado quando definido;
 - se o estado esperado for `aguardando_tatuador`, existe `orcid`;
 - `verify-after.txt` confirma estado/dados esperados;
 - `transcript.md` mostra a conversa real em formato legivel;
 - `judgment.md` confirma checks tecnicos e aponta risco de copy;
+- se o scenario declarar `EXPECTED_AGENT_LOG_JQ_TRUE`, `agent-turn-logs.json` e `scenario-agent-log-jq.txt` confirmam a decisao esperada;
 - `tail-excerpt.log` nao mostra erro runtime relevante.
 
 ## Limite Estrategico
