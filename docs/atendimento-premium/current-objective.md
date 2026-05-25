@@ -38,6 +38,7 @@ worktree_esperado: limpo
 - Slice `atendimento-lateral` ganhou cenarios HTTP obrigatorios para preco generico, tempo de sessao e processo; os tres passaram e o gate retornou `slice_completion: pass`.
 - Ensaio WhatsApp real para `lateral-preco-generico` passou e virou `FINAL_REHEARSAL_SCENARIO` obrigatorio do gate `atendimento-lateral`.
 - Scenario `lateral-portfolio-disponivel` passou com bot text gate e tail gate confirmando acionamento de portfolio.
+- Scenario `lateral-historia-vida-homenagem` passou no contrato minimo: acolhimento breve, uma pergunta util e estado seguro.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -77,7 +78,7 @@ Ampliar a Onda 1 com o proximo comportamento lateral usando o loop completo.
 
 Escopo recomendado:
 
-- escolher entre `historia_vida` ou `pergunta_imagem`;
+- atacar `pergunta_imagem`, que depende de midia/visao e fecha a parte mais sensivel da Onda 1;
 - criar contrato, scenarios HTTP e gate update;
 - rodar radar HTTP;
 - adicionar WhatsApp real se tocar expectativa operacional ou risco de promessa indevida.

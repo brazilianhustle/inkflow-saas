@@ -20,6 +20,7 @@ SMOKE_SCENARIO_DRY_RUN=1 \
 ```text
 docs/atendimento-premium/smoke-scenarios/
   cadastro-handoff-email-recusado.env
+  lateral-historia-vida-homenagem.env
   lateral-portfolio-disponivel.env
   lateral-preco-generico.env
   lateral-processo-tatuagem.env
@@ -157,6 +158,23 @@ estado final deve continuar coletando_tattoo
 resposta deve mencionar envio/exemplos/trabalhos/referencias
 resposta nao pode escrever URL manual, preco ou fechamento de valor
 tail deve mostrar acionamento de portfolio
+```
+
+`lateral-historia-vida-homenagem`
+
+Objetivo:
+
+```text
+Validar que historia emocional com homenagem recebe acolhimento breve, preserva o briefing e conduz com uma pergunta util.
+```
+
+Contrato:
+
+```text
+estado final deve continuar coletando_tattoo
+resposta deve acolher sem textao
+resposta deve preservar homenagem/pai/passaros/frase ou conduzir para local/referencia
+resposta nao pode virar terapia, falar de preco, agendar, sinal ou fechar proposta
 ```
 
 `lateral-tempo-sessao`
