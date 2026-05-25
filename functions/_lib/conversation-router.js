@@ -148,6 +148,60 @@ function intentDecision(intent, { confidence, risk, reason, can_mutate_state = f
   return { intent, confidence, risk, reason, can_mutate_state };
 }
 
+const DEFAULT_TENANT_HANDOFF_TRIGGERS = ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'];
+const GENERIC_HANDOFF_TRIGGER_ALIASES = new Map([
+  ['mao', ['mao', 'maos']],
+  ['pescoco', ['pescoco']],
+  ['rosto', ['rosto', 'face', 'facial']],
+  ['retoque', ['retoque', 'retocar']],
+]);
+const ROUTER_HANDLED_HANDOFF_TRIGGERS = new Set(['cobertura']);
+
+function tenantHandoffTriggers(clientContext = {}, tenant = {}) {
+  const fromContext = clientContext?.tenant_rules?.gatilhos_handoff;
+  const fromTenant = tenant?.gatilhos_handoff;
+  const source = Array.isArray(fromContext) && fromContext.length
+    ? fromContext
+    : Array.isArray(fromTenant) && fromTenant.length
+      ? fromTenant
+      : DEFAULT_TENANT_HANDOFF_TRIGGERS;
+  return source
+    .map(trigger => normalize(trigger))
+    .filter(Boolean);
+}
+
+function triggerTerms(trigger) {
+  const aliases = GENERIC_HANDOFF_TRIGGER_ALIASES.get(trigger) || [trigger];
+  return aliases
+    .map(term => normalize(term))
+    .filter(Boolean);
+}
+
+function detectTenantHandoffTrigger(text, { tenant, clientContext } = {}) {
+  const s = normalize(text);
+  if (!s) return null;
+  const triggers = tenantHandoffTriggers(clientContext, tenant);
+  for (const trigger of triggers) {
+    if (ROUTER_HANDLED_HANDOFF_TRIGGERS.has(trigger)) continue;
+    if (trigger.includes('_')) continue;
+    for (const term of triggerTerms(trigger)) {
+      const re = new RegExp(`(^|\\s)${term}(\\s|$)`);
+      if (re.test(s)) {
+        return {
+          ...intentDecision('tenant_handoff_trigger', {
+            confidence: 0.88,
+            risk: 'high',
+            reason: 'tenant_configured_handoff_trigger_detected',
+            can_mutate_state: true,
+          }),
+          matched_trigger: trigger,
+        };
+      }
+    }
+  }
+  return null;
+}
+
 function detectIntent(text) {
   const s = normalize(text);
   if (!s) return null;
@@ -248,7 +302,7 @@ function responseForIntent(intent, estado, conversa, context = {}) {
 }
 
 function escalationOutput({ detected, estado_atual, intent }) {
-  if (!['cobertura', 'human_requested', 'client_upset'].includes(intent)) return null;
+  if (!['cobertura', 'human_requested', 'client_upset', 'tenant_handoff_trigger'].includes(intent)) return null;
   if (intent === 'human_requested') {
     return {
       ok: true,
@@ -313,6 +367,39 @@ function escalationOutput({ detected, estado_atual, intent }) {
     };
   }
 
+  if (intent === 'tenant_handoff_trigger') {
+    return {
+      ok: true,
+      handled_by: 'conversation_router',
+      intent,
+      confidence: detected.confidence,
+      risk: detected.risk,
+      reason: detected.reason,
+      can_mutate_state: detected.can_mutate_state,
+      matched_trigger: detected.matched_trigger || null,
+      resposta_cliente: 'Pra essa região ou caso, o tatuador precisa avaliar direto com segurança. Vou acionar uma pessoa do estúdio para assumir por aqui.',
+      estado_novo: 'aguardando_tatuador',
+      dados_persistidos: {},
+      dados_completos: false,
+      campos_faltando: ['tenant_handoff_trigger'],
+      campos_conflitantes: [],
+      proxima_acao: 'erro',
+      agent_usado: estado_atual === 'cadastro' ? 'cadastro' : 'conversation_router',
+      side_effects: [],
+      urls_portfolio: [],
+      analise_imagens: null,
+      cobertura_suspeita: null,
+      escalation: {
+        required: true,
+        reason_code: 'tenant_handoff_trigger',
+        reason_label: 'gatilho de handoff do estúdio',
+        severity: 'high',
+        source: 'tenant_rules',
+        requires_orcid: false,
+      },
+    };
+  }
+
   return {
     ok: true,
     handled_by: 'conversation_router',
@@ -348,7 +435,12 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
   if (disabled) return null;
   if (!HANDLED_STATES.has(estado_atual)) return null;
 
-  const detected = detectIntent(mensagem);
+  const baseDetected = detectIntent(mensagem);
+  const tenantDetected = estado_atual === 'tattoo'
+    ? detectTenantHandoffTrigger(mensagem, { tenant, clientContext })
+    : null;
+  const baseHasExplicitEscalation = ['human_requested', 'client_upset', 'cobertura'].includes(baseDetected?.intent);
+  const detected = tenantDetected && !baseHasExplicitEscalation ? tenantDetected : baseDetected;
   if (!detected) return null;
 
   const escalation = escalationOutput({ detected, estado_atual, intent: detected.intent });
@@ -407,6 +499,7 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
 
 export const _test = {
   detectIntent,
+  detectTenantHandoffTrigger,
   normalize,
   resumeQuestionForState,
   nextTattooField,

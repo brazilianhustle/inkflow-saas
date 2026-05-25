@@ -119,6 +119,48 @@ test('ConversationRouter: cobertura textual aciona escalonamento humano sem cole
   assert.doesNotMatch(out.resposta_cliente, /Qual tua altura|parte do corpo|estilo/i);
 });
 
+test('ConversationRouter: gatilho de handoff do tenant aciona humano antes de coleta', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quero fazer uma tattoo no rosto quanto fica?',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    clientContext: {
+      tenant_rules: {
+        gatilhos_handoff: ['rosto', 'mao', 'pescoco'],
+      },
+    },
+  });
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'tenant_handoff_trigger');
+  assert.equal(out.reason, 'tenant_configured_handoff_trigger_detected');
+  assert.equal(out.matched_trigger, 'rosto');
+  assert.equal(out.can_mutate_state, true);
+  assert.equal(out.proxima_acao, 'erro');
+  assert.equal(out.estado_novo, 'aguardando_tatuador');
+  assert.equal(out.escalation.reason_code, 'tenant_handoff_trigger');
+  assert.equal(out.escalation.source, 'tenant_rules');
+  assert.equal(out.escalation.requires_orcid, false);
+  assert.deepEqual(out.dados_persistidos, {});
+  assert.match(out.resposta_cliente, /tatuador|pessoa do estúdio/i);
+  assert.doesNotMatch(out.resposta_cliente, /Qual tua altura|parte do corpo|estilo|valor depende/i);
+});
+
+test('ConversationRouter: gatilho de tenant nao sobrescreve cobertura explicita', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quero cobrir uma tattoo antiga no rosto',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    clientContext: {
+      tenant_rules: {
+        gatilhos_handoff: ['rosto', 'mao', 'pescoco'],
+      },
+    },
+  });
+  assert.equal(out.intent, 'cobertura');
+  assert.equal(out.escalation.reason_code, 'cover_up');
+  assert.equal(out.cobertura_suspeita, true);
+});
+
 test('ConversationRouter: preço genérico responde e preserva estado', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',

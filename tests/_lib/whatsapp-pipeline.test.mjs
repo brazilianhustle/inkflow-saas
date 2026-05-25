@@ -43,11 +43,11 @@ function baseBatch(overrides = {}) {
 
 // mockDeps já existente ganha resposta da Etapa 0 (tenant + rows) configurável.
 // Helper que monta um supaFetch cobrindo tenant lookup, SELECT do lote, conversa, histórico.
-function batchSupaFetch({ conversa, rows, onPatch, onPost, hist = [], newerReceived = [] }) {
+function batchSupaFetch({ conversa, rows, onPatch, onPost, hist = [], newerReceived = [], tenant = TENANT }) {
   return async (path, init) => {
     // Etapa 0a: tenant lookup por id
     if (path.startsWith('/rest/v1/tenants?id=eq.') && !init?.method) {
-      return new Response(JSON.stringify([TENANT]), { status: 200 });
+      return new Response(JSON.stringify([tenant]), { status: 200 });
     }
     // Etapa 0b: SELECT linhas do lote
     if (path.startsWith('/rest/v1/conversa_mensagens?id=in.') && !init?.method) {
@@ -1169,6 +1169,72 @@ test('4e. tattoo cliente irritado aciona humano com marcador rastreavel', async 
   assert.equal(workflowLog.context_metadata.workflow_transition_allowed, true);
   assert.equal(workflowLog.context_metadata.workflow_escalation_reason_code, 'client_upset');
   assert.equal(workflowLog.context_metadata.workflow_escalation_requires_orcid, false);
+});
+
+test('4f. tattoo gatilho de handoff do tenant aciona humano com observabilidade completa', async () => {
+  const callToolSpy = mock.fn(async () => ({ ok: true }));
+  const sendTelegramSpy = mock.fn(async () => ({ ok: true }));
+  const logAgentTurnSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const tenant = {
+    ...TENANT,
+    gatilhos_handoff: ['rosto', 'mao', 'pescoco'],
+  };
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      tenant,
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'quero tatuar no rosto quanto fica?' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: async () => {
+      throw new Error('router deveria interceptar gatilho de tenant');
+    },
+    callTool: callToolSpy,
+    sendTelegram: sendTelegramSpy,
+    logAgentTurn: logAgentTurnSpy,
+  });
+  await processBatch({}, baseBatch(), deps);
+  assert.equal(callToolSpy.mock.callCount(), 0);
+  assert.equal(sendTelegramSpy.mock.callCount(), 1);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /\[escalation:tenant_handoff_trigger\]/);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /gatilho de handoff do estúdio/i);
+  assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
+  assert.equal(aiInsert.message.content, 'Pra essa região ou caso, o tatuador precisa avaliar direto com segurança. Vou acionar uma pessoa do estúdio para assumir por aqui.');
+
+  const logs = logAgentTurnSpy.mock.calls.map(call => call.arguments[0]);
+  const routerLog = logs.find(payload => payload.agent_name === 'conversation_router');
+  assert.ok(routerLog, 'ConversationRouter deve registrar gatilho de tenant');
+  assert.equal(routerLog.context_metadata.router_intent, 'tenant_handoff_trigger');
+  assert.equal(routerLog.context_metadata.router_reason, 'tenant_configured_handoff_trigger_detected');
+  assert.equal(routerLog.context_metadata.router_can_mutate_state, true);
+  assert.equal(routerLog.context_metadata.tenant_context_layer, 'tenant_context_manager');
+  assert.equal(routerLog.context_metadata.tenant_context_handoff_triggers_source, 'custom');
+  assert.equal(routerLog.context_metadata.tenant_context_has_handoff_triggers, true);
+  assert.equal(routerLog.context_metadata.tenant_context_gatilhos_handoff_count, 3);
+
+  const workflowLog = logs.find(payload => payload.agent_name === 'workflow_manager');
+  assert.ok(workflowLog, 'Workflow Manager deve oficializar transicao de gatilho tenant');
+  assert.equal(workflowLog.context_metadata.workflow_reason, 'escalation_required');
+  assert.equal(workflowLog.context_metadata.workflow_from_state, 'tattoo');
+  assert.equal(workflowLog.context_metadata.workflow_to_state, 'aguardando_tatuador');
+  assert.equal(workflowLog.context_metadata.workflow_transition_allowed, true);
+  assert.equal(workflowLog.context_metadata.workflow_escalation_reason_code, 'tenant_handoff_trigger');
+  assert.equal(workflowLog.context_metadata.workflow_escalation_requires_orcid, false);
+
+  const escalationLog = logs.find(payload => payload.agent_name === 'escalation_manager');
+  assert.ok(escalationLog, 'Escalation Manager deve registrar gatilho tenant');
+  assert.equal(escalationLog.context_metadata.escalation_reason_code, 'tenant_handoff_trigger');
+  assert.equal(escalationLog.context_metadata.escalation_severity, 'high');
+  assert.equal(escalationLog.context_metadata.escalation_source, 'tenant_rules');
+  assert.equal(escalationLog.context_metadata.escalation_requires_orcid, false);
 });
 
 test('5. portfolio intent — Task 10 implementa', async () => {
