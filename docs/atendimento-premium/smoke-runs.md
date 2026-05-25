@@ -15,6 +15,7 @@ Ao fim de smoke monitorado:
 
 | Data UTC | Run ID | Tipo | Alvo | Telefone | Resultado | Evidencia | Decisao |
 |---|---|---|---|---|---|---|---|
+| 2026-05-25 18:24 | `scenario-tattoo-cliente-irritado-handoff-20260525T182425Z-29429` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-cliente-irritado-handoff-20260525T182425Z-29429/` | Gate automatico de observabilidade validado: comportamento permaneceu `estado=aguardando_tatuador`, `orcid=null`, copy risk baixo, bot/tail/poll gates PASS e `scenario-agent-log-jq.txt` confirmou `agent_turn_logs` com `agent_name=escalation_manager`, `reason_code=client_upset`, `severity=high`, `requires_orcid=false`. |
 | 2026-05-25 18:10 | `scenario-tattoo-cliente-irritado-handoff-20260525T181051Z-11526` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-cliente-irritado-handoff-20260525T181051Z-11526/` | Telemetria explicita do Escalation Manager validada em producao: comportamento permaneceu `estado=aguardando_tatuador`, `orcid=null`, copy de desescalada segura e Supabase `agent_turn_logs` registrou `agent_name=escalation_manager`, `reason_code=client_upset`, `severity=high`, `requires_orcid=false`. |
 | 2026-05-25 17:42 | `scenario-tattoo-cliente-irritado-handoff-20260525T174206Z-4099` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-cliente-irritado-handoff-20260525T174206Z-4099/` | Cliente irritado validado em producao: lead novo com "voces demoram demais, ninguem responde" virou `estado=aguardando_tatuador`, `orcid=null`, resposta pediu desculpa pela frustracao e acionou pessoa do estudio, sem formulario/preco/agendamento/sinal, bot text/tail/poll jq gates PASS. |
 | 2026-05-25 17:31 | `scenario-tattoo-pedido-humano-handoff-20260525T173158Z-14363` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-pedido-humano-handoff-20260525T173158Z-14363/` | Pedido explicito de humano/tatuador validado em producao: lead novo com "quero falar com o tatuador" virou `estado=aguardando_tatuador`, `orcid=null`, resposta aciona tatuador sem continuar formulario, sem preco/agendamento/sinal, bot text/tail/poll jq gates PASS. |
@@ -45,7 +46,7 @@ Ao fim de smoke monitorado:
 
 ## Run De Referencia Atual
 
-### `scenario-tattoo-cliente-irritado-handoff-20260525T181051Z-11526`
+### `scenario-tattoo-cliente-irritado-handoff-20260525T182425Z-29429`
 
 Mensagem:
 
@@ -75,5 +76,6 @@ Leitura estrategica:
 - Cliente claramente irritado nao entra em coleta normal e nao cria orcamento.
 - Escalation Manager classifica o motivo como `client_upset`, com severidade alta e sem `orcid`.
 - Observabilidade confirmou row em `agent_turn_logs` com `agent_name=escalation_manager`, `reason_code=client_upset`, `severity=high`, `requires_orcid=false`.
+- O scenario agora falha automaticamente se essa row nao aparecer dentro da janela de polling do gate.
 - Tail gate confirmou ausencia de `enviar-orcamento-tatuador`, `pipeline batch failed` e `unhandled`.
 - O scenario fica como evidencia de expansao do Escalation Manager para risco de experiencia/atendimento na fase tattoo.

@@ -18,7 +18,7 @@ deploy: GitHub Actions Deploy to Cloudflare Pages passou em 2026-05-25
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 841fbb9 feat: log escalation manager decisions
+ultimo_commit_validado: f9a5bd6 feat: gate smoke scenarios on agent logs
 ```
 
 ## Ultimos Marcos
@@ -60,17 +60,18 @@ ultimo_commit_validado: 841fbb9 feat: log escalation manager decisions
 - Escalation Manager expandido para pedido explicito de humano/tatuador: `human_requested` agora sai para humano em `aguardando_tatuador`, sem `orcid`, sem coleta normal e sem orcamento automatico; smoke HTTP em producao passou.
 - Escalation Manager expandido para cliente irritado: `client_upset` agora sai para humano em `aguardando_tatuador`, sem `orcid`, sem coleta normal e sem orcamento automatico; smoke HTTP em producao passou.
 - Observabilidade explicita do Escalation Manager validada: cada handoff humano agora registra um turn `agent_name=escalation_manager` em `agent_turn_logs` com `reason_code`, severidade, fonte, `requires_orcid`, estado final e resposta enviada; smoke HTTP em producao confirmou row `client_upset`.
+- Smoke Scenario Registry agora tem gate automatico `EXPECTED_AGENT_LOG_JQ_TRUE`, com polling curto para logs fire-and-forget; o scenario `tattoo-cliente-irritado-handoff` valida comportamento e observabilidade no mesmo run.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-tattoo-cliente-irritado-handoff-20260525T181051Z-11526
+run_id: scenario-tattoo-cliente-irritado-handoff-20260525T182425Z-29429
 tipo: Scenario HTTP monitorado
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: aguardando_tatuador
 orcid: none
-evidence: .smoke-evidence/scenario-tattoo-cliente-irritado-handoff-20260525T181051Z-11526/
+evidence: .smoke-evidence/scenario-tattoo-cliente-irritado-handoff-20260525T182425Z-29429/
 ```
 
 Mensagem:
@@ -89,6 +90,7 @@ copy_risk: baixo
 copy: pede desculpa pela frustracao e aciona pessoa do estudio para assumir, sem seguir coleta normal
 escalation: client_upset / high / requires_orcid=false
 observability: agent_turn_logs agent_name=escalation_manager reason_code=client_upset
+observability_gate: EXPECTED_AGENT_LOG_JQ_TRUE PASS
 chain: HTTP smoke -> webhook -> pipeline -> resposta
 ```
 

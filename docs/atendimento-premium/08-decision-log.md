@@ -220,6 +220,18 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** o smoke `tattoo-cliente-irritado-handoff` em producao confirmou `agent_turn_logs.agent_name=escalation_manager` com `reason_code=client_upset`, `severity=high` e `requires_orcid=false`.
 
+## 2026-05-25 - Observabilidade precisa virar gate, nao checklist manual
+
+**Status:** decidido.
+
+**Decisão:** scenarios podem declarar `EXPECTED_AGENT_LOG_JQ_TRUE`; o runner consulta `agent_turn_logs` desde o inicio do run e aplica o filtro `jq` como gate automatico.
+
+**Motivo:** uma verificacao manual no Supabase prova o comportamento uma vez, mas nao escala o loop. O smoke precisa falhar sozinho quando o log decisorio esperado nao existir.
+
+**Detalhe operacional:** como `logAgentTurn` e fire-and-forget, o gate faz polling curto antes de falhar. Isso evita falso negativo quando a resposta do bot chega antes da row de telemetria.
+
+**Impacto:** `tattoo-cliente-irritado-handoff` agora valida conversa, tail, estado, copy e row `agent_name=escalation_manager` no mesmo processo.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
