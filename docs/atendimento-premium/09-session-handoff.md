@@ -63,6 +63,7 @@ Context/Tenant Manager 2.0 tambem passou a registrar o gatilho exato que bateu n
 Context/Tenant Manager 2.0 fechou a rodada Level 3 propagando o gatilho exato ate o Escalation Manager: `escalation_matched_tenant_trigger="rosto"` aparece em `agent_turn_logs` e no Telegram interno como `Gatilho tenant: rosto`. HTTP radar e WhatsApp real `central -> bot` passaram.
 Handoff Package / Telegram Premium foi iniciado como nova familia Level 3: Escalation Manager agora monta `handoff_package_v1`, inclui resumo operacional/flags no Telegram ao humano e registra metadados do pacote em `agent_turn_logs`. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `tattoo-cliente-irritado-handoff`.
 Handoff Package / Telegram Premium tambem cobre o handoff de orcamento: o texto do Telegram inclui `Pacote: handoff_package_v1` e o Workflow Manager registra `workflow_handoff_package_required=true`/`workflow_handoff_package_version="handoff_package_v1"` quando cadastro e tattoo estao completos. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-handoff`.
+Handoff Package / Telegram Premium agora tem trace id operacional: Telegram de escalation/orcamento inclui `Trace: hp_*`, Escalation Manager grava `handoff_package_trace_id` e Workflow Manager grava `workflow_handoff_package_trace_id`; HTTP radar e WhatsApp real `central -> bot` passaram exigindo o trace no fluxo `cadastro-handoff`.
 Workflow Manager entrou como proxima familia Level 3: cadastro completo com recusa de email agora registra row propria em `agent_turn_logs` via `agent_name=workflow_manager`, com `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real `central -> bot` passaram exigindo essa observabilidade.
 Workflow Manager tambem virou autoridade de nao-mutacao para intents laterais do Router: quando `can_mutate_state=false`, preserva o estado atual e registra `workflow_reason=state_preserved_by_router_policy` ou `mutation_blocked_by_router_policy`. O fluxo de preco generico passou em HTTP radar e WhatsApp real exigindo `conversation_router` + `workflow_manager` no mesmo turno.
 Workflow Manager tambem passou a explicar bloqueios de cadastro incompleto com faltantes exatos: idade isolada preserva `estado=coletando_cadastro`, nao persiste `data_nascimento`, nao cria `orcid` e registra `workflow_reason=requirements_missing`, `workflow_missing_cadastro_count=2` e `workflow_missing_tattoo_count=0`. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-data-idade-nao-persiste`.
@@ -408,6 +409,18 @@ telemetria: workflow_manager cadastro_and_tattoo_complete com workflow_handoff_p
 rodada: Level 3 familia Handoff Package / Telegram Premium; 2 de ate 4 micro-slices concluidos, parar em qualquer falha.
 ```
 
+```text
+Handoff Package / Telegram Premium - Trace ID
+commit: ef610e0 feat: trace handoff package ids
+local: node --test tests/**/*.test.mjs PASS (1171)
+ci: Tests e Deploy PASS
+http radar: scenario-cadastro-handoff-email-recusado-20260525T223239Z-27298 PASS
+whatsapp real: scenario-whatsapp-real-cadastro-handoff-20260525T223312Z-22407 PASS
+prova real: Cliente "pode seguir sem email / quanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia. Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+telemetria: workflow_manager cadastro_and_tattoo_complete com workflow_handoff_package_trace_id=hp_160fc7c7a7; orcid criado.
+rodada: Level 3 familia Handoff Package / Telegram Premium; 3 de ate 4 micro-slices concluidos, parar em qualquer falha.
+```
+
 ## Próxima Ação Recomendada
 
 Antes de codar nova frente:
@@ -415,7 +428,7 @@ Antes de codar nova frente:
 1. Confirmar worktree.
 2. Rodar `bash scripts/smoke/continuity-bundle.sh --force` se o contexto estiver abaixo de 20% ou a sessao tiver sido compactada.
 3. Confirmar Autonomy Gate Level 3 e gate do slice relacionado.
-4. Atacar no maximo 4 micro-slices da mesma familia por rodada; a rodada atual e Handoff Package / Telegram Premium e esta em 2/4.
+4. Atacar no maximo 4 micro-slices da mesma familia por rodada; a rodada atual e Handoff Package / Telegram Premium e esta em 3/4.
 5. Registrar smoke em `smoke-runs.md` e atualizar o gate do slice antes de ampliar autonomia.
 
 Minha recomendação estratégica:

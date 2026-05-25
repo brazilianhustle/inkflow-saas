@@ -81,6 +81,7 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - Context/Tenant Manager 2.0 propagou o gatilho tenant exato ate o Escalation Manager: `escalation_manager.context_metadata.escalation_matched_tenant_trigger="rosto"` e Telegram interno inclui `Gatilho tenant: rosto`; HTTP radar e WhatsApp real definitivo passaram.
 - Handoff Package / Telegram Premium iniciado: Escalation Manager agora monta `handoff_package_v1` com resumo operacional/flags para humano e registra metadados do pacote em `agent_turn_logs`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cliente_irritado`.
 - Handoff Package / Telegram Premium expandido para orçamento: texto de Telegram do orçamento inclui `Pacote: handoff_package_v1` e Workflow Manager registra `workflow_handoff_package_required=true`/`workflow_handoff_package_version="handoff_package_v1"`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
+- Handoff Package / Telegram Premium ganhou trace id operacional: Telegram de escalation/orçamento inclui `Trace: hp_*` e `agent_turn_logs` registra `handoff_package_trace_id`/`workflow_handoff_package_trace_id`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a registrar decisao propria em `agent_turn_logs`: cadastro completo com recusa de email agora confirma `workflow_layer=workflow_manager`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a impor nao-mutacao para intents laterais do Router com `can_mutate_state=false`: preco generico preservou `estado=coletando_tattoo` e registrou `workflow_reason=state_preserved_by_router_policy`; HTTP radar e WhatsApp real definitivo passaram exigindo Router + Workflow Manager no mesmo turno.
 - Workflow Manager passou a calcular requisitos faltantes exatos por fase e expor bloqueio formal de cadastro incompleto: idade isolada preservou `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null` e registrou `workflow_reason=requirements_missing` com contagens de faltantes; HTTP radar e WhatsApp real definitivo passaram.
@@ -89,13 +90,13 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-cadastro-handoff-20260525T222253Z-9952
+run_id: scenario-whatsapp-real-cadastro-handoff-20260525T223312Z-22407
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: orc_eljsdn
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260525T222253Z-9952/
+orcid: orc_evpd0l
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260525T223312Z-22407/
 ```
 
 Mensagem:
@@ -110,10 +111,10 @@ Resultado:
 ```text
 estado_agente: aguardando_tatuador
 resposta_ai_posterior_ao_humano: true
-orcid: orc_eljsdn
+orcid: orc_evpd0l
 copy_risk: baixo
 copy: responde lateral de tempo e fecha envio ao tatuador sem prometer prazo fechado
-handoff_package: agent_turn_logs confirmou workflow_handoff_package_required=true e workflow_handoff_package_version=handoff_package_v1
+handoff_package: agent_turn_logs confirmou workflow_handoff_package_required=true, workflow_handoff_package_version=handoff_package_v1 e workflow_handoff_package_trace_id=hp_160fc7c7a7
 decision_chain: cadastro completo -> workflow_manager cadastro_and_tattoo_complete -> enviar-orcamento-tatuador com pacote handoff_package_v1
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
@@ -121,7 +122,7 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Rodada Handoff Package / Telegram Premium em Level 3. Slices 1 e 2 de ate 4 concluidos: Handoff Package v1 para escalation humano e pacote de orçamento.
+Rodada Handoff Package / Telegram Premium em Level 3. Slices 1, 2 e 3 de ate 4 concluidos: pacote para escalation humano, pacote de orçamento e trace id cruzavel entre Telegram/logs/evidencia.
 ```
 
 Escopo recomendado:

@@ -443,6 +443,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `tattoo-gatilho-tenant-handoff` e `whatsapp-real-tattoo-gatilho-tenant-handoff` passaram exigindo Router `tenant_handoff_trigger`, Workflow Manager `escalation_required` e Escalation Manager `source=tenant_rules`, com `estado=aguardando_tatuador`, `orcid=null` e sem preco/formulario.
 
+## 2026-05-25 - Handoff Package precisa de trace id cruzavel
+
+**Status:** decidido.
+
+**Decisão:** todo `handoff_package_v1` deve ter um trace id curto `hp_*` derivado da conversa e registrado nos pontos de auditoria. Telegram de escalation/orcamento inclui `Trace: hp_*`; `agent_turn_logs` registra `handoff_package_trace_id` no Escalation Manager e `workflow_handoff_package_trace_id` no Workflow Manager.
+
+**Motivo:** pacote premium sem identificador comum ainda exigia abrir Telegram, logs e evidencia manualmente para cruzar um atendimento. O trace transforma o handoff em unidade operacional auditavel.
+
+**Alternativas rejeitadas:**
+
+- usar somente `orcid`, porque escalation humano de risco pode nao criar orçamento;
+- expor o UUID completo da conversa no Telegram;
+- depender apenas do timestamp do smoke.
+
+**Camada responsável:** `Handoff Package`, `WorkflowManager`, `EscalationManager`, Telegram tools e smoke scenario registry.
+
+**Impacto:** HTTP radar `cadastro-handoff-email-recusado` e WhatsApp real `whatsapp-real-cadastro-handoff` passaram exigindo `workflow_handoff_package_trace_id` com prefixo `hp_`; unit tests cobrem trace no Telegram de escalation e orçamento.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
