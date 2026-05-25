@@ -30,6 +30,7 @@ test('TenantContextManager: injeta portfolio sem mutar clientContext original', 
       estilos_aceitos: [],
       estilos_recusados: [],
       uses_legacy_style_catalog: false,
+      modo_atendimento: null,
     },
     portfolio_disponivel: true,
   });
@@ -51,6 +52,7 @@ test('TenantContextManager: contexto derivado sobrescreve flags transversais ant
       estilos_aceitos: [],
       estilos_recusados: [],
       uses_legacy_style_catalog: false,
+      modo_atendimento: null,
     },
     portfolio_disponivel: false,
     eh_recorrente: true,
@@ -88,6 +90,7 @@ test('TenantContextManager: injeta contexto de proposta somente em substate de p
       estilos_aceitos: [],
       estilos_recusados: [],
       uses_legacy_style_catalog: false,
+      modo_atendimento: null,
     },
     portfolio_disponivel: true,
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
@@ -114,6 +117,7 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
       estilos_aceitos: ['fineline'],
       estilos_recusados: ['tribal'],
       uses_legacy_style_catalog: false,
+      modo_atendimento: 'individual',
     },
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
     nome_cliente: 'Joao Silva',
@@ -132,6 +136,7 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
     tenant_context_estilos_aceitos_count: 1,
     tenant_context_estilos_recusados_count: 1,
     tenant_context_uses_legacy_style_catalog: false,
+    tenant_context_modo_atendimento: 'individual',
   });
   assert.equal(Object.hasOwn(summary, 'nome_cliente'), false);
 });
@@ -144,6 +149,7 @@ test('TenantContextManager: deriva regras operacionais do tenant com fallback se
     estilos_aceitos: [],
     estilos_recusados: [],
     uses_legacy_style_catalog: false,
+    modo_atendimento: null,
   });
 
   assert.deepEqual(deriveTenantRules({ config_agente: {} }), {
@@ -153,6 +159,7 @@ test('TenantContextManager: deriva regras operacionais do tenant com fallback se
     estilos_aceitos: [],
     estilos_recusados: [],
     uses_legacy_style_catalog: false,
+    modo_atendimento: null,
   });
 });
 
@@ -162,6 +169,7 @@ test('TenantContextManager: normaliza catalogo de estilos explicito e legado', (
       estilos_aceitos: ['fineline', ' ', 'blackwork'],
       estilo: ['realismo'],
       estilos_recusados: ['tribal'],
+      modo_atendimento: ' individual ',
     },
   }), {
     aceita_cobertura: true,
@@ -170,6 +178,7 @@ test('TenantContextManager: normaliza catalogo de estilos explicito e legado', (
     estilos_aceitos: ['fineline', 'blackwork'],
     estilos_recusados: ['tribal'],
     uses_legacy_style_catalog: false,
+    modo_atendimento: 'individual',
   });
 
   assert.deepEqual(deriveTenantRules({
@@ -183,5 +192,6 @@ test('TenantContextManager: normaliza catalogo de estilos explicito e legado', (
     estilos_aceitos: ['fineline', 'blackwork'],
     estilos_recusados: [],
     uses_legacy_style_catalog: true,
+    modo_atendimento: null,
   });
 });

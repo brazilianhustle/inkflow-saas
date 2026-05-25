@@ -17,6 +17,11 @@ function normalizeList(values) {
     .filter(Boolean);
 }
 
+function normalizeText(value) {
+  const text = String(value || '').trim();
+  return text || null;
+}
+
 export function isPropostaSubstate(estado) {
   return PROPOSTA_SUBSTATES.has(estado);
 }
@@ -41,6 +46,7 @@ export function summarizeTenantContext(context = {}, estado_atual = '') {
     tenant_context_estilos_aceitos_count: estilosAceitos.length,
     tenant_context_estilos_recusados_count: estilosRecusados.length,
     tenant_context_uses_legacy_style_catalog: tenantRules.uses_legacy_style_catalog === true,
+    tenant_context_modo_atendimento: tenantRules.modo_atendimento || null,
   };
 }
 
@@ -55,6 +61,7 @@ export function deriveTenantRules(tenant = {}) {
     estilos_aceitos: explicitAcceptedStyles.length ? explicitAcceptedStyles : legacyAcceptedStyles,
     estilos_recusados: normalizeList(tenant.config_agente?.estilos_recusados),
     uses_legacy_style_catalog: explicitAcceptedStyles.length === 0 && legacyAcceptedStyles.length > 0,
+    modo_atendimento: normalizeText(tenant.config_agente?.modo_atendimento),
   };
 }
 
