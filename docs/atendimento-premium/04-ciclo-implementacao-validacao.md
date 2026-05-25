@@ -11,10 +11,12 @@ Este processo evita transformar o atendimento premium em uma coleção de prompt
 4. Desenhar contrato técnico
 5. Implementar slice pequeno
 6. Rodar testes automatizados
-7. Rodar smoke real no WhatsApp
-8. Registrar achados
-9. Ajustar ficha/plano
-10. Repetir
+7. Rodar smoke HTTP de radar
+8. Rodar smoke real no WhatsApp quando o radar passar
+9. Registrar achados e evidence
+10. Rodar gate formal do slice
+11. Ajustar ficha/plano
+12. Repetir
 ```
 
 ## 1. Observar
@@ -157,6 +159,30 @@ Depois do smoke:
 - registrar frase real que funcionou/falhou;
 - mover casos descobertos para backlog ou nova intent;
 - ajustar prioridade da onda se necessário.
+
+## 9. Gate Formal Do Slice
+
+Todo slice que vira fundação para próximos passos precisa declarar seus cenários obrigatórios em:
+
+```text
+docs/atendimento-premium/slice-gates/<slice>.env
+```
+
+Antes de considerar o slice concluído:
+
+```bash
+bash scripts/smoke/check-slice-gate.sh <slice>
+```
+
+O gate precisa passar com:
+
+- PASS recente registrado em `smoke-runs.md`;
+- evidence dir local existente;
+- `summary.md`, `poll.json`, `transcript.md` e `judgment.md`;
+- pelo menos um smoke HTTP de radar para feedback rápido quando aplicável;
+- smoke WhatsApp real para comportamento crítico, handoff, dinheiro, agenda, risco ou estado terminal.
+
+Se o gate falhar, o slice continua aberto. Se falhar por `contract_*`, abrir `plan-review.md` antes de alterar plano ou código.
 
 ## Gates Para Avançar De Onda
 

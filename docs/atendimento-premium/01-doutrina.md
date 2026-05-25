@@ -175,13 +175,21 @@ Antes de avançar para outro slice:
 1. Rodar `git status --short`.
 2. Entender todo arquivo modificado ou não rastreado.
 3. Rodar os testes relevantes da frente.
-4. Atualizar handoff/decision log quando a direção mudou.
-5. Fazer commit automático quando o slice estiver coerente, testado e reversível.
+4. Declarar ou atualizar `docs/atendimento-premium/slice-gates/<slice>.env`.
+5. Rodar `bash scripts/smoke/check-slice-gate.sh <slice>` quando houver smoke obrigatório.
+6. Atualizar handoff/decision log quando a direção mudou.
+7. Fazer commit automático quando o slice estiver coerente, testado e reversível.
 
 Regra prática:
 
 ```text
 Se a mudança virou fundação para próximos passos, ela precisa estar commitada antes do próximo ataque.
+```
+
+Regra de gate:
+
+```text
+Sem gate registrado e PASS, o slice nao esta fechado; esta apenas em WIP validado parcialmente.
 ```
 
 Não commitar automaticamente quando teste relevante falhar, o trabalho estiver no meio de uma refatoração, o diff misturar assuntos independentes, houver mudanças do usuário no mesmo escopo, o estado local não rodar, ou a mudança exigir coordenação operacional de deploy/secret/migration/rollback.

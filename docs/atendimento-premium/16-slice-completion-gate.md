@@ -14,6 +14,12 @@ bash scripts/smoke/check-slice-gate.sh cadastro-handoff
 docs/atendimento-premium/slice-gates/<slice>.env
 ```
 
+Para criar um novo gate, copiar o modelo:
+
+```text
+docs/atendimento-premium/templates/slice-gate.env
+```
+
 O gate declara:
 
 - `SLICE_ID`;
@@ -36,6 +42,20 @@ whatsapp-real-cadastro-handoff
 ```
 
 O primeiro e o radar HTTP. O segundo e o ensaio final com envio real via Evolution `central` para o numero oficial do bot.
+
+## Padrao Obrigatorio
+
+Todo slice premium que alterar comportamento de atendimento precisa ter gate versionado antes de ser declarado concluido.
+
+O gate deve existir quando o slice:
+
+- muda estado;
+- extrai ou persiste dados;
+- responde pergunta lateral recorrente;
+- mexe em handoff, orçamento, agenda, menoridade, cobertura, negociação ou irritação;
+- cria novo contrato de prompt, router, policy, workflow ou guardrail.
+
+Para slices somente documentais ou refactors internos sem mudança de comportamento, registrar no commit ou no `current-objective.md` por que o gate nao se aplica.
 
 ## Criterio De PASS
 
@@ -73,4 +93,5 @@ O slice fica bloqueado quando:
 3. Rodar scenario WhatsApp real quando o HTTP passar.
 4. Atualizar `smoke-runs.md`.
 5. Rodar `check-slice-gate.sh`.
-6. So considerar o slice fechado se o gate retornar PASS.
+6. Registrar o resultado do gate quando ele muda a decisao do plano.
+7. So considerar o slice fechado se o gate retornar PASS.
