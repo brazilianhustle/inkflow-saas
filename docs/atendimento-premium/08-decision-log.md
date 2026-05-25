@@ -208,6 +208,18 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** escalonamento por menoridade agora carrega `reason_code=minor_age`, `severity=high`, `requires_orcid=false` e mensagem Telegram com marcador `[escalation:minor_age]`. Cobertura textual entrou no contrato com `reason_code=cover_up`, validado pelo smoke `tattoo-cobertura-handoff-humano`. Pedido explicito de humano/tatuador entrou com `reason_code=human_requested`, validado pelo smoke `tattoo-pedido-humano-handoff`. Cliente irritado entrou com `reason_code=client_upset`, `severity=high`, validado pelo smoke `tattoo-cliente-irritado-handoff`.
 
+## 2026-05-25 - Escalation Manager precisa logar a propria decisao
+
+**Status:** decidido.
+
+**Decisão:** todo handoff humano classificado pelo `EscalationManager` deve registrar um turn em `agent_turn_logs` com `agent_name=escalation_manager`, incluindo `reason_code`, `reason_label`, severidade, fonte, `requires_orcid`, estado final, ids das mensagens e resposta enviada ao cliente.
+
+**Motivo:** Telegram e transcript mostram o que aconteceu, mas nao bastam para observabilidade premium. O sistema precisa explicar por que saiu para humano sem exigir leitura do codigo ou deducao pelo estado final.
+
+**Camada responsável:** `whatsapp-pipeline` chamando `logAgentTurn` apos `evaluateEscalation`.
+
+**Impacto:** o smoke `tattoo-cliente-irritado-handoff` em producao confirmou `agent_turn_logs.agent_name=escalation_manager` com `reason_code=client_upset`, `severity=high` e `requires_orcid=false`.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
