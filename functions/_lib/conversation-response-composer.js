@@ -49,6 +49,10 @@ function answerForIntent(intent, context = {}) {
     return 'Funciona assim: eu entendo tua ideia, junto as infos principais e o tatuador avalia pra passar valor e horário.';
   }
 
+  if (intent === 'historia_vida') {
+    return 'Entendi. Dá pra pensar em algo simbólico e delicado com essa ideia.';
+  }
+
   return null;
 }
 
@@ -62,12 +66,12 @@ function compactResumeQuestion(nextField, fallback) {
 }
 
 function resumeForState({ estado, resume, nextField, context = {} }) {
-  const { clientContext, historico = [], pendingResolution = {} } = context;
+  const { clientContext, historico = [], pendingResolution = {}, intent } = context;
   const isFirstContact = clientContext?.is_first_contact === true;
   const awaitingFormAnswer = estado === 'tattoo' && pendingResolution.pending && !pendingResolution.answered;
   const displayPrefix = pendingResolution.displayName ? `Boa, ${pendingResolution.displayName}. ` : '';
 
-  if (isFirstContact && estado === 'tattoo') return firstContactResumeQuestion();
+  if (isFirstContact && estado === 'tattoo' && intent !== 'historia_vida') return firstContactResumeQuestion();
   if (estado === 'tattoo' && pendingResolution.field === 'foto_local' && pendingResolution.deferred) {
     return 'Sem problema, pode mandar a foto depois. Quando conseguir, me manda a foto do local pra eu seguir.';
   }
@@ -91,7 +95,7 @@ export function composeRouterResponse({ intent, estado, resume, nextField, conte
   const answer = answerForIntent(intent, context);
   if (!answer) return null;
 
-  const resumed = resumeForState({ estado, resume, nextField, context });
+  const resumed = resumeForState({ estado, resume, nextField, context: { ...context, intent } });
   const answerWithIntro = `${intro}${answer}`;
   return resumed ? `${answerWithIntro}\n\n${resumed}` : answerWithIntro;
 }

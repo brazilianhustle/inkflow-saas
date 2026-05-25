@@ -45,7 +45,9 @@ next_action="Abrir os artefatos do evidence dir e classificar manualmente."
 if [ "$EXIT_CODE" = "0" ]; then
   failure_class="pass_triage"
   next_action="Nenhuma acao corretiva obrigatoria. Usar como baseline."
-elif [ -f "$EVIDENCE_DIR/evolution-send.json" ] && ! jq -e '.ok == true' "$EVIDENCE_DIR/evolution-send.json" >/dev/null 2>&1; then
+elif [ -f "$EVIDENCE_DIR/evolution-send.json" ] \
+  && ! jq -e '.ok == true' "$EVIDENCE_DIR/evolution-send.json" >/dev/null 2>&1 \
+  && ! grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' "$EVIDENCE_DIR/evolution-send.json"; then
   failure_class="infra_evolution_send"
   next_action="Verificar instancia remetente, API key, estado open e resposta do endpoint sendText."
 elif [ -f "$EVIDENCE_DIR/inbound-response.txt" ] && grep -Eiq 'HTTP [45][0-9][0-9]|ERRO|error' "$EVIDENCE_DIR/inbound-response.txt"; then

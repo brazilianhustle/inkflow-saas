@@ -31,6 +31,12 @@ test('ConversationRouter: classifica processo de tatuagem', () => {
   assert.equal(_test.detectIntent('primeiro eu mando a ideia?')?.intent, 'processo_tatuagem');
 });
 
+test('ConversationRouter: classifica história de vida', () => {
+  assert.equal(_test.detectIntent('quero fazer uma homenagem pro meu pai que faleceu')?.intent, 'historia_vida');
+  assert.equal(_test.detectIntent('essa frase tem um significado muito importante pra mim')?.intent, 'historia_vida');
+  assert.equal(_test.detectIntent('é minha primeira tattoo e tô com medo')?.intent, 'historia_vida');
+});
+
 test('ConversationRouter: preço genérico responde e preserva estado', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',
@@ -144,6 +150,26 @@ test('ConversationRouter: primeiro contato misto com "quanto que é" mantém int
   assert.match(out.resposta_cliente, /O valor depende/);
   assert.match(out.resposta_cliente, /como posso te chamar\?$/i);
   assert.doesNotMatch(out.resposta_cliente, /Qual tua altura\?/);
+});
+
+test('ConversationRouter: história de vida em primeiro contato não ignora briefing para pedir nome', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quero fazer uma homenagem pro meu pai que faleceu, pensei em passaros e uma frase',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    tenant: { nome_agente: 'Assistente' },
+    clientContext: { is_first_contact: true },
+  });
+  assert.equal(out.intent, 'historia_vida');
+  assert.equal(out.estado_novo, 'tattoo');
+  assert.equal(out.agent_usado, 'conversation_router');
+  assert.deepEqual(out.dados_persistidos, {
+    descricao_curta: 'homenagem ao pai com passaros e frase',
+  });
+  assert.match(out.resposta_cliente, /^Oii, tudo bem\? Me chamo Assistente/);
+  assert.match(out.resposta_cliente, /Dá pra pensar em algo simbólico/);
+  assert.match(out.resposta_cliente, /parte do corpo\?/);
+  assert.doesNotMatch(out.resposta_cliente, /como posso te chamar/i);
 });
 
 test('ConversationRouter: se pergunta de formulário está pendente, responde objeção sem continuar formulário', () => {

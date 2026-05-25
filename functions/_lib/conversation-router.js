@@ -87,6 +87,19 @@ function extractTattooHints(message, dados = {}) {
         break;
       }
     }
+    if (!extracted.descricao_curta && /\bhomenagem\b/.test(s)) {
+      const alvo = s.match(/\b(pai|mae|mãe|avo|avô|avó|irmao|irmão|irma|irmã|filho|filha)\b/)?.[1];
+      const elementos = [];
+      if (/\bpassaros?\b/.test(s)) elementos.push('passaros');
+      if (/\bfrase\b/.test(s)) elementos.push('frase');
+      if (alvo || elementos.length > 0) {
+        extracted.descricao_curta = [
+          'homenagem',
+          alvo ? `ao ${alvo}` : null,
+          elementos.length ? `com ${elementos.join(' e ')}` : null,
+        ].filter(Boolean).join(' ');
+      }
+    }
   }
 
   return extracted;
@@ -133,6 +146,12 @@ function isNonPriceValueContext(text) {
 function detectIntent(text) {
   const s = normalize(text);
   if (!s) return null;
+
+  const historiaVida =
+    (/\b(homenagem|faleceu|falecido|superacao|supera[cç]ao|primeira tattoo|primeira tatuagem|medo|receio)\b/.test(s)
+      || /\bsignificado\b.{0,40}\bimportante\b/.test(s))
+    && !isNegotiation(s);
+  if (historiaVida) return { intent: 'historia_vida', confidence: 0.84, risk: 'medium' };
 
   const processo =
     /\b(como funciona|qual o processo|quais os passos|como faco para marcar|como faço para marcar|como marca|como agendar|primeiro eu mando|preciso pagar antes)\b/.test(s)
