@@ -42,13 +42,19 @@ test('ConversationRouter: classifica processo de tatuagem', () => {
 });
 
 test('ConversationRouter: classifica história de vida', () => {
-  assert.equal(_test.detectIntent('quero fazer uma homenagem pro meu pai que faleceu')?.intent, 'historia_vida');
+  const detected = _test.detectIntent('quero fazer uma homenagem pro meu pai que faleceu');
+  assert.equal(detected?.intent, 'historia_vida');
+  assert.equal(detected?.reason, 'emotional_context_or_life_story_detected');
+  assert.equal(detected?.can_mutate_state, false);
   assert.equal(_test.detectIntent('essa frase tem um significado muito importante pra mim')?.intent, 'historia_vida');
   assert.equal(_test.detectIntent('é minha primeira tattoo e tô com medo')?.intent, 'historia_vida');
 });
 
 test('ConversationRouter: classifica pergunta sobre imagem', () => {
-  assert.equal(_test.detectIntent('o que você viu na imagem?')?.intent, 'pergunta_imagem');
+  const detected = _test.detectIntent('o que você viu na imagem?');
+  assert.equal(detected?.intent, 'pergunta_imagem');
+  assert.equal(detected?.reason, 'image_interpretation_question_without_media_context');
+  assert.equal(detected?.can_mutate_state, false);
   assert.equal(_test.detectIntent('o que aparece nessa foto?')?.intent, 'pergunta_imagem');
   assert.equal(_test.detectIntent('você entendeu a foto?')?.intent, 'pergunta_imagem');
   assert.equal(_test.detectIntent('dá pra ver a tattoo?')?.intent, 'pergunta_imagem');
@@ -257,6 +263,8 @@ test('ConversationRouter: pergunta de imagem sem mídia pede reenvio e não volt
     conversa: { dados_coletados: { descricao_curta: 'rosa' }, dados_cadastro: {} },
   });
   assert.equal(out.intent, 'pergunta_imagem');
+  assert.equal(out.reason, 'image_interpretation_question_without_media_context');
+  assert.equal(out.can_mutate_state, false);
   assert.equal(out.estado_novo, 'tattoo');
   assert.deepEqual(out.dados_persistidos, {});
   assert.match(out.resposta_cliente, /não estou vendo uma imagem clara/i);

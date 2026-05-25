@@ -65,23 +65,24 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - WhatsApp real retrospectivo passou para os gaps recentes: idade isolada nao persistiu data inventada; menoridade, cobertura, pedido humano e cliente irritado sairam para humano com `orcid=null`, tail limpo e agent-log gate quando aplicavel.
 - IntentPolicy/observabilidade do Router iniciado: `ConversationRouter` agora retorna `reason` e `can_mutate_state` junto de `intent`, `confidence` e `risk`; `whatsapp-pipeline` grava esses campos em `agent_turn_logs`; HTTP e WhatsApp real de preco generico passaram exigindo `router_reason=generic_price_question_without_negotiation`.
 - IntentPolicy/observabilidade do Router expandido para `tempo_sessao` e `processo_tatuagem`: testes locais, HTTP radar e WhatsApp real passaram exigindo `router_reason`, `router_risk=medium` e `router_can_mutate_state=false`.
+- IntentPolicy/observabilidade do Router expandido para `pergunta_imagem` e `historia_vida`: testes locais, HTTP radar e WhatsApp real passaram exigindo `router_reason`, `router_risk=medium` e `router_can_mutate_state=false`.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-lateral-processo-tatuagem-20260525T193747Z-10247
+run_id: scenario-whatsapp-real-lateral-historia-vida-homenagem-20260525T194619Z-18504
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_tattoo
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-lateral-processo-tatuagem-20260525T193747Z-10247/
+evidence: .smoke-evidence/scenario-whatsapp-real-lateral-historia-vida-homenagem-20260525T194619Z-18504/
 ```
 
 Mensagem:
 
 ```text
-como funciona pra fazer uma tattoo?
+quero fazer uma homenagem pro meu pai que faleceu, pensei em passaros e uma frase
 ```
 
 Resultado:
@@ -91,9 +92,9 @@ estado_agente: coletando_tattoo
 resposta_ai_posterior_ao_humano: true
 orcid: none
 copy_risk: baixo
-copy: explica fluxo de ideia, infos principais e avaliacao do tatuador, sem expor sistema nem fechar preco/agendamento/sinal
-router: processo_tatuagem / confidence>=0.8 / risk=medium / can_mutate_state=false
-observability: agent_turn_logs agent_name=conversation_router router_reason=tattoo_process_or_booking_flow_question
+copy: acolhe breve, preserva briefing emocional e retoma pergunta util, sem terapia, preco, agendamento ou sinal
+router: historia_vida / confidence>=0.8 / risk=medium / can_mutate_state=false
+observability: agent_turn_logs agent_name=conversation_router router_reason=emotional_context_or_life_story_detected
 observability_gate: EXPECTED_AGENT_LOG_JQ_TRUE PASS
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
