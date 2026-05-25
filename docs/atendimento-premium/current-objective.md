@@ -70,36 +70,37 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - Autonomy Gate promovido deliberadamente para Level 3 apos recomendacao objetiva: 40 scenarios PASS, 18 WhatsApp reais PASS e gates criticos PASS. A janela atual permite mini-campanha de ate 4 micro-slices da mesma familia, com parada em qualquer falha.
 - Autonomy Gate ganhou criterios futuros para recomendar Level 4: 70 scenarios PASS, 35 WhatsApp reais PASS, gates criticos PASS e docs obrigatorios de rollback/staging e politica de loop Level 4.
 - Context/Tenant Manager ganhou observabilidade propria em `agent_turn_logs.context_metadata`: HTTP radar e WhatsApp real definitivo passaram exigindo `tenant_context_layer=tenant_context_manager`, `tenant_context_state=tattoo` e `tenant_context_portfolio_disponivel=true`.
+- Context/Tenant Manager passou a derivar regras operacionais do tenant (`aceita_cobertura`, gatilhos de handoff) e expor essas regras tambem na telemetria do `ConversationRouter`, cobrindo intents que sao resolvidos antes do Agent operacional.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T200943Z-1465
+run_id: scenario-whatsapp-real-tattoo-cobertura-handoff-humano-20260525T202003Z-17804
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: coletando_tattoo
+expected_state: aguardando_tatuador
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T200943Z-1465/
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-cobertura-handoff-humano-20260525T202003Z-17804/
 ```
 
 Mensagem:
 
 ```text
-tem exemplos de fineline?
+quero cobrir uma tattoo antiga
 ```
 
 Resultado:
 
 ```text
-estado_agente: coletando_tattoo
+estado_agente: aguardando_tatuador
 resposta_ai_posterior_ao_humano: true
 orcid: none
 copy_risk: baixo
-copy: oferece envio de exemplos sem URL manual, preco, agendamento, sinal ou pagamento
-context: tenant_context_manager injeta portfolio_disponivel=true antes do agent
-observability: agent_turn_logs.context_metadata confirmou tenant_context_layer/state/portfolio_disponivel
-tool: tail confirmou enviar-portfolio / portfolio
+copy: aciona tatuador para avaliar cobertura com seguranca, sem preco, agenda, sinal ou pagamento
+context: tenant_context_manager deriva aceita_cobertura=true e gatilhos de handoff
+observability: agent_turn_logs confirmou tenant_context no ConversationRouter e escalation_manager cover_up
+tool: tail confirmou ausencia de enviar-orcamento-tatuador / erros
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
 
