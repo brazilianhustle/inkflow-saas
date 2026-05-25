@@ -65,6 +65,7 @@ Handoff Package / Telegram Premium foi iniciado como nova familia Level 3: Escal
 Handoff Package / Telegram Premium tambem cobre o handoff de orcamento: o texto do Telegram inclui `Pacote: handoff_package_v1` e o Workflow Manager registra `workflow_handoff_package_required=true`/`workflow_handoff_package_version="handoff_package_v1"` quando cadastro e tattoo estao completos. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-handoff`.
 Handoff Package / Telegram Premium agora tem trace id operacional: Telegram de escalation/orcamento inclui `Trace: hp_*`, Escalation Manager grava `handoff_package_trace_id` e Workflow Manager grava `workflow_handoff_package_trace_id`; HTTP radar e WhatsApp real `central -> bot` passaram exigindo o trace no fluxo `cadastro-handoff`.
 Handoff Package / Telegram Premium fechou a mini-campanha Level 3 com Decision Observability nos artefatos legiveis: quando `agent-turn-logs.json` existe, `summary.md`, `transcript.md` e `judgment.md` exibem `trace`, pacote e razão decisoria. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-handoff`.
+Level 4 foi preparado, nao promovido: `18-rollback-staging-protocol.md` e `19-level-4-loop-policy.md` definem rollback, staging, zonas de risco, janela 4A/4B/4C, stop conditions, criterios de regressao e primeira onda recomendada. Promocao continua exigindo commit deliberado alterando `autonomy-gate.env`.
 Workflow Manager entrou como proxima familia Level 3: cadastro completo com recusa de email agora registra row propria em `agent_turn_logs` via `agent_name=workflow_manager`, com `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real `central -> bot` passaram exigindo essa observabilidade.
 Workflow Manager tambem virou autoridade de nao-mutacao para intents laterais do Router: quando `can_mutate_state=false`, preserva o estado atual e registra `workflow_reason=state_preserved_by_router_policy` ou `mutation_blocked_by_router_policy`. O fluxo de preco generico passou em HTTP radar e WhatsApp real exigindo `conversation_router` + `workflow_manager` no mesmo turno.
 Workflow Manager tambem passou a explicar bloqueios de cadastro incompleto com faltantes exatos: idade isolada preserva `estado=coletando_cadastro`, nao persiste `data_nascimento`, nao cria `orcid` e registra `workflow_reason=requirements_missing`, `workflow_missing_cadastro_count=2` e `workflow_missing_tattoo_count=0`. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-data-idade-nao-persiste`.
@@ -430,7 +431,7 @@ http radar: scenario-cadastro-handoff-email-recusado-20260525T224057Z-18296 PASS
 whatsapp real: scenario-whatsapp-real-cadastro-handoff-20260525T224152Z-27460 PASS
 prova real: Cliente "pode seguir sem email / quanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia. Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
 telemetria: summary/transcript/judgment exibem trace=hp_6785a917d9 package=handoff_package_v1 workflow_reason=cadastro_and_tattoo_complete.
-rodada: Level 3 familia Handoff Package / Telegram Premium concluida em 4/4; manter Level 3 porque Level 4 ainda exige docs 18 e 19.
+rodada: Level 3 familia Handoff Package / Telegram Premium concluida em 4/4; manter Level 3 ate decisao deliberada de promocao, mesmo com gate podendo recomendar Level 4.
 ```
 
 ## Próxima Ação Recomendada
@@ -439,9 +440,9 @@ Antes de codar nova frente:
 
 1. Confirmar worktree.
 2. Rodar `bash scripts/smoke/continuity-bundle.sh --force` se o contexto estiver abaixo de 20% ou a sessao tiver sido compactada.
-3. Confirmar Autonomy Gate Level 3 e gate do slice relacionado.
-4. Atacar no maximo 4 micro-slices da mesma familia por rodada; a rodada Handoff Package / Telegram Premium fechou em 4/4.
-5. Registrar smoke em `smoke-runs.md` e atualizar o gate do slice antes de ampliar autonomia.
+3. Rodar `bash scripts/smoke/check-autonomy-gate.sh`.
+4. Se o gate recomendar `promote_available`, registrar como recomendacao, mas nao alterar `CURRENT_LEVEL` sem decisao deliberada.
+5. Escolher proxima onda ainda em Level 3 ou abrir uma rodada especifica de promocao Level 4.
 
 Minha recomendação estratégica:
 

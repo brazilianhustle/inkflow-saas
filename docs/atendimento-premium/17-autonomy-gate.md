@@ -89,6 +89,13 @@ O script pode recomendar `promote_available` para Level 4 quando todos os pontos
 
 Level 4 exige infraestrutura operacional madura. Sem rollback documentado, staging/sandbox confiavel e politica de parada supervisionada, o gate nao deve recomendar Level 4 mesmo que o volume de PASS seja alto.
 
+Documentos de comando:
+
+- [18-rollback-staging-protocol.md](./18-rollback-staging-protocol.md)
+- [19-level-4-loop-policy.md](./19-level-4-loop-policy.md)
+
+Esses documentos removem o bloqueio estrutural para discutir Level 4, mas nao promovem o nivel. A promocao continua exigindo commit deliberado em `autonomy-gate.env`.
+
 ## Bloqueadores Absolutos
 
 Mesmo com pontuacao suficiente, nao aumentar autonomia se houver:

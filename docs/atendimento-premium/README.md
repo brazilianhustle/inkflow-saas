@@ -51,6 +51,8 @@ Depois disso o sistema decide se deve:
 - [15-smoke-plan-review-protocol.md](./15-smoke-plan-review-protocol.md): reanalise automatica de plano para falhas de contrato.
 - [16-slice-completion-gate.md](./16-slice-completion-gate.md): gate formal de conclusao de slice por cenarios obrigatorios.
 - [17-autonomy-gate.md](./17-autonomy-gate.md): controle objetivo da janela maxima de execucao autonoma.
+- [18-rollback-staging-protocol.md](./18-rollback-staging-protocol.md): protocolo de rollback, staging e zonas de risco para ondas maiores.
+- [19-level-4-loop-policy.md](./19-level-4-loop-policy.md): politica de loop supervisionado, promocao e regressao de Level 4.
 - [current-objective.md](./current-objective.md): estado vivo, proximo ataque e comandos de retomada.
 - [smoke-runs.md](./smoke-runs.md): indice versionado dos smokes relevantes.
 - [templates/intent-card.md](./templates/intent-card.md): template para cadastrar novas intents.

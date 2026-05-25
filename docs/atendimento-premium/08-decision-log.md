@@ -479,6 +479,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** HTTP radar `cadastro-handoff-email-recusado` e WhatsApp real `whatsapp-real-cadastro-handoff` passaram com `Decision Observability` em `summary.md`, `transcript.md` e `judgment.md`, exibindo `trace=hp_6785a917d9`, pacote `handoff_package_v1` e `workflow_reason=cadastro_and_tattoo_complete`.
 
+## 2026-05-25 - Level 4 exige protocolo antes de promocao
+
+**Status:** decidido.
+
+**Decisão:** preparar Level 4 agora com dois protocolos formais: rollback/staging e politica de loop supervisionado. A existencia dos docs permite o Autonomy Gate recomendar `promote_available`, mas nao promove autonomia por si so. `CURRENT_LEVEL` permanece 3 ate commit deliberado em `autonomy-gate.env`.
+
+**Motivo:** o projeto ja atingiu volume de evidencia suficiente para discutir Level 4, mas autonomia maior sem regra de rollback, staging, parada e regressao vira risco operacional. A ordem correta e preparar comando antes de aumentar janela.
+
+**Alternativas rejeitadas:**
+
+- promover Level 4 apenas porque os contadores passaram;
+- continuar criando familias funcionais sem doutrina de rollback;
+- bloquear a discussao de Level 4 indefinidamente mesmo com evidencias suficientes.
+
+**Camada responsável:** Autonomy Gate, smoke monitoring process, rollback/staging protocol e Level 4 loop policy.
+
+**Impacto:** `18-rollback-staging-protocol.md` e `19-level-4-loop-policy.md` definem zonas de risco, ambiente inicial, rollback, stop conditions, regressao de autonomia, janelas 4A/4B/4C e primeira onda recomendada. `check-autonomy-gate.sh` agora encontra os docs e pode recomendar Level 4, mantendo a promocao manual e versionada.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
