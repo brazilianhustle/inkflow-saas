@@ -15,6 +15,8 @@ Ao fim de smoke monitorado:
 
 | Data UTC | Run ID | Tipo | Alvo | Telefone | Resultado | Evidencia | Decisao |
 |---|---|---|---|---|---|---|---|
+| 2026-05-25 21:58 | `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215823Z-18564` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215823Z-18564/` | Observabilidade do gatilho tenant validada em cadeia real: Evolution `central` enviou `quero tatuar no rosto quanto fica?`, `estado=aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`; agent-log gate confirmou `router_has_matched_tenant_trigger=true` e `router_matched_tenant_trigger="rosto"` junto de Workflow Manager e Escalation Manager. |
+| 2026-05-25 21:57 | `scenario-tattoo-gatilho-tenant-handoff-20260525T215752Z-31633` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-gatilho-tenant-handoff-20260525T215752Z-31633/` | Radar HTTP da observabilidade do gatilho tenant: confirmou `router_matched_tenant_trigger="rosto"` no `context_metadata` do `conversation_router`, mantendo `estado=aguardando_tatuador`, `orcid=null`, sem preço/formulário/sinal. |
 | 2026-05-25 21:50 | `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215001Z-5162` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215001Z-5162/` | Gatilho de handoff do tenant validado em cadeia real: Evolution `central` enviou `quero tatuar no rosto quanto fica?`, webhook registrou humano exato, `estado=aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`, resposta acionou pessoa do estúdio sem preço/formulário; agent-log gate confirmou `conversation_router intent=tenant_handoff_trigger`, `workflow_manager reason=escalation_required` e `escalation_manager reason_code=tenant_handoff_trigger`, `source=tenant_rules`. |
 | 2026-05-25 21:48 | `scenario-tattoo-gatilho-tenant-handoff-20260525T214851Z-22406` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-gatilho-tenant-handoff-20260525T214851Z-22406/` | Radar HTTP do gatilho de handoff do tenant: `quero tatuar no rosto quanto fica?` saiu para `aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`, sem valor, coleta, agenda ou sinal; agent-log gate confirmou Router, Workflow Manager e Escalation Manager no mesmo turno. |
 | 2026-05-25 21:36 | `scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T213654Z-22751` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T213654Z-22751/` | Tenant Rules Snapshot v1 validado em cadeia real: Evolution `central` enviou `tem exemplos de fineline?`, webhook registrou humano exato, `estado=coletando_tattoo`, `orcid=null`, `copy_risk=baixo`, tail confirmou portfolio e agent-log gate confirmou snapshot `v1`, origem `custom` dos gatilhos, catalogo de estilos presente, estilos aceitos e assets sem vazar listas/URLs. |
@@ -89,7 +91,7 @@ Ao fim de smoke monitorado:
 
 ## Run De Referencia Atual
 
-### `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215001Z-5162`
+### `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215823Z-18564`
 
 Mensagem:
 
@@ -119,6 +121,7 @@ Leitura estrategica:
 - PASS definitivo via WhatsApp real `central -> bot`.
 - Gatilho operacional do tenant (`rosto`) nao entra em coleta normal e nao cria orcamento.
 - Router classifica `tenant_handoff_trigger` antes de responder preco lateral.
+- Router registra `router_matched_tenant_trigger="rosto"` para diagnostico direto.
 - Workflow Manager oficializa `workflow_reason=escalation_required` para `aguardando_tatuador`.
 - Escalation Manager classifica o motivo como `tenant_handoff_trigger`, com fonte `tenant_rules`, severidade alta e sem `orcid`.
 - Observabilidade confirmou rows em `agent_turn_logs` para `conversation_router`, `workflow_manager` e `escalation_manager`.
