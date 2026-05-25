@@ -53,6 +53,10 @@ function answerForIntent(intent, context = {}) {
     return 'Entendi. Dá pra pensar em algo simbólico e delicado com essa ideia.';
   }
 
+  if (intent === 'pergunta_imagem') {
+    return 'Consigo te ajudar, mas não estou vendo uma imagem clara aqui.\n\nPode mandar a foto de novo?';
+  }
+
   return null;
 }
 
@@ -71,6 +75,7 @@ function resumeForState({ estado, resume, nextField, context = {} }) {
   const awaitingFormAnswer = estado === 'tattoo' && pendingResolution.pending && !pendingResolution.answered;
   const displayPrefix = pendingResolution.displayName ? `Boa, ${pendingResolution.displayName}. ` : '';
 
+  if (intent === 'pergunta_imagem') return null;
   if (isFirstContact && estado === 'tattoo' && intent !== 'historia_vida') return firstContactResumeQuestion();
   if (estado === 'tattoo' && pendingResolution.field === 'foto_local' && pendingResolution.deferred) {
     return 'Sem problema, pode mandar a foto depois. Quando conseguir, me manda a foto do local pra eu seguir.';

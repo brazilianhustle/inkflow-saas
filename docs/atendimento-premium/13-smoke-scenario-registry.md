@@ -21,6 +21,7 @@ SMOKE_SCENARIO_DRY_RUN=1 \
 docs/atendimento-premium/smoke-scenarios/
   cadastro-handoff-email-recusado.env
   lateral-historia-vida-homenagem.env
+  lateral-pergunta-imagem-sem-midia.env
   lateral-portfolio-disponivel.env
   lateral-preco-generico.env
   lateral-processo-tatuagem.env
@@ -127,6 +128,22 @@ Contrato:
 ```text
 resposta deve citar dependencia/avaliacao/tatuador
 resposta nao pode conter preco ou fechamento de valor
+```
+
+`lateral-pergunta-imagem-sem-midia`
+
+Objetivo:
+
+```text
+Validar que pergunta sobre imagem sem midia disponivel pede reenvio e nao volta ao formulario desconectado.
+```
+
+Contrato:
+
+```text
+estado final deve continuar coletando_tattoo
+resposta deve dizer que nao esta vendo imagem clara e pedir reenvio
+resposta nao pode perguntar local/altura/estilo, falar de preco, agendar, sinal ou fechar proposta
 ```
 
 `whatsapp-real-lateral-preco-generico`

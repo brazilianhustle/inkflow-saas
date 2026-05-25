@@ -37,6 +37,13 @@ test('ConversationRouter: classifica história de vida', () => {
   assert.equal(_test.detectIntent('é minha primeira tattoo e tô com medo')?.intent, 'historia_vida');
 });
 
+test('ConversationRouter: classifica pergunta sobre imagem', () => {
+  assert.equal(_test.detectIntent('o que você viu na imagem?')?.intent, 'pergunta_imagem');
+  assert.equal(_test.detectIntent('o que aparece nessa foto?')?.intent, 'pergunta_imagem');
+  assert.equal(_test.detectIntent('você entendeu a foto?')?.intent, 'pergunta_imagem');
+  assert.equal(_test.detectIntent('dá pra ver a tattoo?')?.intent, 'pergunta_imagem');
+});
+
 test('ConversationRouter: preço genérico responde e preserva estado', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',
@@ -170,6 +177,36 @@ test('ConversationRouter: história de vida em primeiro contato não ignora brie
   assert.match(out.resposta_cliente, /Dá pra pensar em algo simbólico/);
   assert.match(out.resposta_cliente, /parte do corpo\?/);
   assert.doesNotMatch(out.resposta_cliente, /como posso te chamar/i);
+});
+
+test('ConversationRouter: pergunta de imagem sem mídia pede reenvio e não volta ao formulário', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'o que você viu na imagem?',
+    conversa: { dados_coletados: { descricao_curta: 'rosa' }, dados_cadastro: {} },
+  });
+  assert.equal(out.intent, 'pergunta_imagem');
+  assert.equal(out.estado_novo, 'tattoo');
+  assert.deepEqual(out.dados_persistidos, {});
+  assert.match(out.resposta_cliente, /não estou vendo uma imagem clara/i);
+  assert.match(out.resposta_cliente, /mandar a foto de novo/i);
+  assert.doesNotMatch(out.resposta_cliente, /Pra montar tua proposta/);
+  assert.doesNotMatch(out.resposta_cliente, /parte do corpo|altura|estilo/i);
+});
+
+test('ConversationRouter: pergunta de imagem em primeiro contato não troca fallback por pedido de nome', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'o que você viu na imagem?',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    tenant: { nome_agente: 'Assistente' },
+    clientContext: { is_first_contact: true },
+  });
+  assert.equal(out.intent, 'pergunta_imagem');
+  assert.match(out.resposta_cliente, /^Oii, tudo bem\? Me chamo Assistente/);
+  assert.match(out.resposta_cliente, /não estou vendo uma imagem clara/i);
+  assert.doesNotMatch(out.resposta_cliente, /como posso te chamar/i);
+  assert.doesNotMatch(out.resposta_cliente, /parte do corpo|altura|estilo/i);
 });
 
 test('ConversationRouter: se pergunta de formulário está pendente, responde objeção sem continuar formulário', () => {

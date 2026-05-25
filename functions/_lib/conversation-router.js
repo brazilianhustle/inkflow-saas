@@ -5,6 +5,7 @@
 // - preco_generico
 // - tempo_sessao
 // - processo_tatuagem
+// - pergunta_imagem
 //
 // O contrato retorna um output compatível com runAgent para o pipeline poder
 // persistir/enviar sem criar um segundo caminho de side effects.
@@ -146,6 +147,14 @@ function isNonPriceValueContext(text) {
 function detectIntent(text) {
   const s = normalize(text);
   if (!s) return null;
+
+  const perguntaImagem =
+    /\b(o que|que)\s+(voce|vc|tu)\s+(viu|ve|consegue ver|entendeu|achou)\b.*\b(imagem|foto|referencia|desenho)\b/.test(s)
+    || /\b(voce|vc|tu)\s+(viu|ve|consegue ver|entendeu|achou)\b.*\b(imagem|foto|referencia|desenho)\b/.test(s)
+    || /\b(o que|que)\s+(aparece|tem)\b.*\b(nessa|na|nessa foto|imagem|foto)\b/.test(s)
+    || /\b(essa|a)\s+(imagem|foto|referencia)\s+(serve|da pra ver|d[aá] pra ver)\b/.test(s)
+    || /\b(da pra ver|d[aá] pra ver|consegue ver)\b.*\b(tattoo|desenho|imagem|foto|referencia)\b/.test(s);
+  if (perguntaImagem) return { intent: 'pergunta_imagem', confidence: 0.82, risk: 'medium' };
 
   const historiaVida =
     (/\b(homenagem|faleceu|falecido|superacao|supera[cç]ao|primeira tattoo|primeira tatuagem|medo|receio)\b/.test(s)
