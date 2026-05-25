@@ -109,7 +109,7 @@ Se qualquer uma dessas provas estiver ausente, o smoke real pode ter sido execut
 
 ## Resumo Para O Usuario
 
-Ao fechar um slice validado por WhatsApp real, nao despejar todas as evidencias na resposta final. Usar formato curto:
+Ao fechar um slice validado por WhatsApp real, manter o resumo normal do trabalho e acrescentar o bloco curto abaixo para identificacao rapida:
 
 ```text
 Provas conclusivas reais:
@@ -118,7 +118,9 @@ Bot: "O valor depende do tamanho, detalhe e local do corpo..."
 Resultado: WhatsApp real PASS, estado=coletando_tattoo, copy_risk=baixo.
 ```
 
-Os arquivos de evidencia continuam obrigatorios no repo, mas so devem ser listados para o usuario quando ele pedir prova detalhada, auditoria ou investigacao de falha.
+Esse bloco nao substitui o restante do fechamento. A resposta ainda deve mencionar mudancas, validacoes, gates, commit e estado do worktree quando aplicavel.
+
+Os arquivos de evidencia continuam obrigatorios no repo. Listar os arquivos completos quando o usuario pedir prova detalhada, auditoria ou investigacao de falha; em fechamento normal, preferir citar apenas run id/evidencia essencial para rastreabilidade.
 
 ## Criterio De PASS
 

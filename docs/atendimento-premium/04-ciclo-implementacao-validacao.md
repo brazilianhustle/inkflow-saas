@@ -172,7 +172,7 @@ Depois do smoke:
 
 ## 8.1 Mensagem De Fechamento
 
-Quando um slice ou micro-slice for concluido, a resposta final para o usuario deve ser curta e incluir um bloco de leitura rapida:
+Quando um slice ou micro-slice for concluido, a resposta final para o usuario deve manter o resumo normal do que foi feito, validado e commitado, e tambem incluir um bloco de leitura rapida:
 
 ```text
 Provas conclusivas reais:
@@ -183,11 +183,14 @@ Resultado: WhatsApp real PASS, estado=coletando_tattoo, copy_risk=baixo.
 
 Regra:
 
+- manter o resumo tecnico essencial que ja seria enviado: mudancas, validacoes, gates, commit e estado do worktree;
 - mostrar a mensagem real do cliente;
 - mostrar a resposta real do bot, encurtada se for longa;
 - mostrar o veredito essencial em uma linha;
-- nao despejar lista longa de arquivos, run ids e logs por padrao;
-- citar links/evidencias apenas se o usuario pedir prova detalhada ou se houver risco/erro relevante.
+- nao substituir o resumo normal pelo bloco de prova rapida;
+- nao despejar lista longa de arquivos, logs brutos e detalhes repetitivos por padrao;
+- citar run id, commit e evidencias essenciais quando forem relevantes para rastreabilidade;
+- listar arquivos/logs completos quando o usuario pedir prova detalhada, auditoria ou quando houver risco/erro relevante.
 
 ## 9. Gate Formal Do Slice
 
