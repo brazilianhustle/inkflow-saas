@@ -116,6 +116,55 @@ function isGreetingOnly(text) {
   return /^(oi|oii|oiii|ola|olaa|opa|bom dia|boa tarde|boa noite|e ai|salve)$/.test(s);
 }
 
+function normalizeText(text) {
+  return String(text || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\p{L}\p{N}\s?]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isImageQuestion(text) {
+  const s = normalizeText(text);
+  return /\b(o que|que)\s+(voce|vc|tu)\s+(viu|ve|consegue ver|entendeu|achou)\b.*\b(imagem|foto|referencia|desenho)\b/.test(s)
+    || /\b(voce|vc|tu)\s+(viu|ve|consegue ver|entendeu|achou)\b.*\b(imagem|foto|referencia|desenho)\b/.test(s)
+    || /\b(o que|que)\s+(aparece|tem)\b.*\b(nessa|na|imagem|foto)\b/.test(s);
+}
+
+function isWeakVisualLimitationReply(text) {
+  const s = normalizeText(text);
+  return /\bdesculpe\b/.test(s)
+    || /\bnao consigo (identificar|ver|entender)\b/.test(s)
+    || /\bnao consegui (identificar|ver|entender)\b/.test(s)
+    || /\bnao deu para (identificar|ver|entender)\b/.test(s);
+}
+
+function shouldForceAmbiguousImageQuestion(out, mensagem, imagens) {
+  return Array.isArray(imagens)
+    && imagens.length > 0
+    && isImageQuestion(mensagem)
+    && isWeakVisualLimitationReply(out?.resposta_cliente || '');
+}
+
+function forceAmbiguousImageQuestion(out, tenant, clientContext = {}) {
+  const nomeAgente = tenant?.nome_agente || 'atendente';
+  const intro = clientContext?.is_first_contact
+    ? `Oii, tudo bem?\n\nMe chamo ${nomeAgente}, muito prazer!\n\n`
+    : '';
+  return {
+    ...out,
+    proxima_acao: 'pergunta',
+    resposta_cliente: `${intro}Vi a imagem, mas fiquei em dúvida se ela é referência do desenho ou o local do corpo.\n\nQual dos dois fica valendo?`,
+    dados_completos: false,
+    campos_faltando: Array.from(new Set([...(out.campos_faltando || []), 'tipo_foto'])),
+    campos_conflitantes: [],
+    analise_imagens: Array.isArray(out.analise_imagens) && out.analise_imagens.length
+      ? out.analise_imagens
+      : [{ tipo: 'incerto', descricao: 'imagem ambigua', corpo_tem_tattoo: false, corpo_tem_marcacao: false }],
+  };
+}
+
 function forceFirstContactGreeting(out, tenant) {
   const nomeAgente = tenant?.nome_agente || 'atendente';
   return {
@@ -567,6 +616,9 @@ export async function runAgent({
     out = regionMismatch.out;
     if (hasAmbiguousTattooBodyPhoto(out, imagens)) {
       out = forceAmbiguousTattooPhotoQuestion(out, dadosApos, conversa);
+    }
+    if (shouldForceAmbiguousImageQuestion(out, mensagem, imagens)) {
+      out = forceAmbiguousImageQuestion(out, tenant, mergedClientContext);
     }
     const promotedPhoto = promoteClarifiedLocalPhoto(out, dadosApos, mensagem, conversa);
     out = promotedPhoto.out;

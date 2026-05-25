@@ -20,6 +20,7 @@ SMOKE_SCENARIO_DRY_RUN=1 \
 ```text
 docs/atendimento-premium/smoke-scenarios/
   cadastro-handoff-email-recusado.env
+  lateral-pergunta-imagem-com-midia.env
   lateral-historia-vida-homenagem.env
   lateral-pergunta-imagem-sem-midia.env
   lateral-portfolio-disponivel.env
@@ -57,6 +58,9 @@ EXPECTED_BOT_REGEX
 FORBIDDEN_BOT_REGEX
 EXPECTED_TAIL_REGEX
 FORBIDDEN_TAIL_REGEX
+SMOKE_MEDIA_BASE64     somente HTTP; inline base64 curto para midia sintetica
+SMOKE_MEDIA_FILE       somente HTTP; caminho local para midia sintetica
+SMOKE_MEDIA_MIMETYPE   somente HTTP; ex: image/png, image/jpeg
 SMOKE_BOT_NUMBER      somente via ambiente local/secret manager para whatsapp_real
 ```
 
@@ -144,6 +148,22 @@ Contrato:
 estado final deve continuar coletando_tattoo
 resposta deve dizer que nao esta vendo imagem clara e pedir reenvio
 resposta nao pode perguntar local/altura/estilo, falar de preco, agendar, sinal ou fechar proposta
+```
+
+`lateral-pergunta-imagem-com-midia`
+
+Objetivo:
+
+```text
+Validar que pergunta sobre imagem com midia presente entra no caminho de visao/TattooAgent e nao cai no fallback sem midia.
+```
+
+Contrato:
+
+```text
+estado final deve continuar coletando_tattoo
+resposta deve reconhecer imagem/foto/referencia/desenho/local ou mencionar ambiguidade visual
+resposta nao pode pedir reenvio por ausencia de imagem, falar de preco, agendar, sinal ou fechar proposta
 ```
 
 `whatsapp-real-lateral-preco-generico`

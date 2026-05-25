@@ -44,6 +44,7 @@ write_summary() {
 - expected_state: ${EXPECTED_STATE:-"(none)"}
 - require_orcid: ${SMOKE_REQUIRE_ORCID:-0}
 - require_ai_response: ${SMOKE_REQUIRE_AI_RESPONSE:-1}
+- media: ${SMOKE_MEDIA_MIMETYPE:-"(none)"}
 
 ## Message
 
@@ -90,13 +91,19 @@ jq -nc \
   --arg text "$TEXT" \
   --arg since "$SINCE_ISO" \
   --arg expected_state "$EXPECTED_STATE" \
-  '{run_id:$run_id,base_url:$base_url,phone:$phone,text:$text,since:$since,expected_state:$expected_state}' \
+  --arg media_mimetype "${SMOKE_MEDIA_MIMETYPE:-}" \
+  --arg media_file "${SMOKE_MEDIA_FILE:-}" \
+  --arg has_media_base64 "$([ -n "${SMOKE_MEDIA_BASE64:-}" ] && echo true || echo false)" \
+  '{run_id:$run_id,base_url:$base_url,phone:$phone,text:$text,since:$since,expected_state:$expected_state,media:{mimetype:$media_mimetype,file:$media_file,has_inline_base64:($has_media_base64=="true")}}' \
   > "$EVIDENCE_DIR/request.json"
 
 echo "=== Smoke inbound padrao ==="
 echo "run_id       : $RUN_ID"
 echo "base_url     : $BASE_URL"
 echo "phone        : $PHONE"
+if [ -n "${SMOKE_MEDIA_FILE:-}" ] || [ -n "${SMOKE_MEDIA_BASE64:-}" ]; then
+  echo "media        : ${SMOKE_MEDIA_MIMETYPE:-image/png}"
+fi
 echo "evidence_dir : $EVIDENCE_DIR"
 echo ""
 

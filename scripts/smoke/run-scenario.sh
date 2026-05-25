@@ -29,6 +29,9 @@ EXPECTED_BOT_REGEX=""
 FORBIDDEN_BOT_REGEX=""
 EXPECTED_TAIL_REGEX=""
 FORBIDDEN_TAIL_REGEX=""
+SMOKE_MEDIA_BASE64="${SMOKE_MEDIA_BASE64:-}"
+SMOKE_MEDIA_FILE="${SMOKE_MEDIA_FILE:-}"
+SMOKE_MEDIA_MIMETYPE="${SMOKE_MEDIA_MIMETYPE:-}"
 
 # shellcheck source=/dev/null
 source "$SCENARIO_FILE"
@@ -62,6 +65,7 @@ require_orcid : ${SMOKE_REQUIRE_ORCID:-0}
 bot_regex     : ${EXPECTED_BOT_REGEX:-"(none)"}
 forbid_regex  : ${FORBIDDEN_BOT_REGEX:-"(none)"}
 tail_regex    : ${EXPECTED_TAIL_REGEX:-"(none)"}
+media         : ${SMOKE_MEDIA_MIMETYPE:-"(none)"}
 run_id        : $RUN_ID
 evidence_dir  : $EVIDENCE_DIR
 
@@ -193,6 +197,9 @@ run_scenario() {
       SMOKE_EXPECT_HUMAN_TEXT="${EXPECTED_HUMAN_TEXT:-}" \
       BASE_URL="$BASE_URL" \
       INSTANCE="${INSTANCE:-}" \
+      SMOKE_MEDIA_BASE64="${SMOKE_MEDIA_BASE64:-}" \
+      SMOKE_MEDIA_FILE="${SMOKE_MEDIA_FILE:-}" \
+      SMOKE_MEDIA_MIMETYPE="${SMOKE_MEDIA_MIMETYPE:-}" \
       EXPECTED_STATE="$EXPECTED_STATE" \
         bash scripts/smoke/run-inbound.sh "$MESSAGE" "$PHONE"
       ;;

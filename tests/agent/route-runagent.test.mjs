@@ -63,6 +63,18 @@ function fakeOpenAI(captureRef) {
 const TENANT_STUB = { id: 't', nome_estudio: 'Stub', config_agente: {}, gatilhos_handoff: [], faqs: [], fewshots: [], portfolio_urls: [] };
 const CONVERSA_STUB = { id: 'c', telefone: '5511', estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} };
 
+function fakeOpenAIOutput(output) {
+  return {
+    responses: {
+      parse: async () => ({
+        status: 'completed',
+        id: 'resp_fake',
+        output_parsed: { output },
+      }),
+    },
+  };
+}
+
 test('runAgent (tattoo): repassa imagens como content multimodal ao TattooAgent', async () => {
   const { runAgent } = await import('../../functions/api/agent/route.js');
   const cap = {};
@@ -92,6 +104,37 @@ test('runAgent (tattoo): surfacia analise_imagens no retorno', async () => {
   assert.equal(r.ok, true);
   assert.equal(r.analise_imagens[0].tipo, 'referencia');
   assert.equal(r.cobertura_suspeita, null);
+});
+
+test('runAgent (tattoo): pergunta de imagem com midia nao expõe limitação visual seca', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511',
+    mensagem: 'o que você viu na imagem?',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: { ...TENANT_STUB, nome_agente: 'Assistente' },
+    conversa: CONVERSA_STUB,
+    clientContext: { is_first_contact: true },
+    imagens: [{ base64: 'ZZ', mimetype: 'image/png', msgRowId: 1 }],
+    openaiClient: fakeOpenAIOutput({
+      proxima_acao: 'pergunta',
+      resposta_cliente: 'Desculpe, mas não consigo identificar o que tem na imagem.',
+      dados_persistidos: { estilo: null, tamanho_cm: null, altura_cm: null, local_corpo: null, cor_preferencia: null, descricao_curta: null, foto_local: null },
+      dados_completos: false,
+      campos_faltando: ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo'],
+      campos_conflitantes: [],
+      payload_portfolio: null,
+      analise_imagens: null,
+      cobertura_suspeita: null,
+    }),
+  });
+  assert.equal(r.ok, true);
+  assert.match(r.resposta_cliente, /Vi a imagem/i);
+  assert.match(r.resposta_cliente, /referência do desenho|referencia do desenho/i);
+  assert.match(r.resposta_cliente, /local do corpo/i);
+  assert.doesNotMatch(r.resposta_cliente, /desculpe|não consigo|nao consigo/i);
+  assert.equal(r.campos_faltando.includes('tipo_foto'), true);
+  assert.equal(r.analise_imagens[0].tipo, 'incerto');
 });
 
 test('runAgent (tattoo): primeiro contato com saudacao pura força 2 baloes canonicos', async () => {
