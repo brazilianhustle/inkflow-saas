@@ -352,6 +352,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `cadastro-handoff-email-recusado` e `whatsapp-real-cadastro-handoff` agora exigem `agent_name=workflow_manager`, `workflow_layer=workflow_manager`, `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real passaram em 2026-05-25.
 
+## 2026-05-25 - Workflow Manager e autoridade de nao-mutacao do Router
+
+**Status:** decidido.
+
+**Decisão:** quando o `ConversationRouter` responder com `can_mutate_state=false`, o `WorkflowManager` deve preservar `estado_atual` e registrar a decisao como `state_preserved_by_router_policy` ou `mutation_blocked_by_router_policy`.
+
+**Motivo:** `can_mutate_state=false` nao pode ser apenas uma declaracao do Router. A camada de workflow precisa ser a autoridade que impede regressao futura em que uma pergunta lateral altere fase, crie handoff ou avance cadastro por acidente.
+
+**Alternativas rejeitadas:**
+
+- confiar somente no `estado_novo` retornado pelo Router;
+- validar nao-mutacao apenas por testes unitarios;
+- deixar a regra implícita no pipeline sem log decisorio.
+
+**Camada responsável:** `WorkflowManager`, `ConversationRouter`, `whatsapp-pipeline` e smoke scenario registry.
+
+**Impacto:** `lateral-preco-generico` e `whatsapp-real-lateral-preco-generico` agora exigem, no mesmo smoke, log do `conversation_router` com `router_can_mutate_state=false` e log do `workflow_manager` com `workflow_transition_allowed=false`, `workflow_reason=state_preserved_by_router_policy` e `workflow_to_state=tattoo`. HTTP radar e WhatsApp real passaram em 2026-05-25.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

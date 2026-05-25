@@ -58,6 +58,7 @@ O smoke registry agora consegue transformar essa observabilidade em gate automat
 O Router tambem comecou a expor explicabilidade: `ConversationRouter` retorna `reason` e `can_mutate_state`, e o pipeline registra `router_reason`/`router_can_mutate_state` em `agent_turn_logs`. Os scenarios HTTP e WhatsApp real de preco generico, tempo de sessao, processo de tatuagem, pergunta de imagem sem midia e historia de vida passaram exigindo esses campos.
 Context/Tenant Manager foi iniciado: `runAgent` agora usa `tenant-context-manager.js` para montar o `clientContext` efetivo com portfolio, regras operacionais do tenant e contexto de proposta antes dos agents operacionais. O comportamento foi validado por teste local e pelo fluxo `portfolio_disponivel` em HTTP e WhatsApp real, com tail confirmando `enviar-portfolio`. A camada tambem ficou observavel em `agent_turn_logs.context_metadata`, com gate exigindo `tenant_context_layer=tenant_context_manager`, `tenant_context_state=tattoo` e `tenant_context_portfolio_disponivel=true`. Em seguida, regras de tenant (`aceita_cobertura`, gatilhos de handoff) foram expostas tambem no `ConversationRouter`, cobrindo intents interceptados antes do Agent operacional; cobertura passou em HTTP e WhatsApp real exigindo contexto de tenant no router e `cover_up` no Escalation Manager.
 Workflow Manager entrou como proxima familia Level 3: cadastro completo com recusa de email agora registra row propria em `agent_turn_logs` via `agent_name=workflow_manager`, com `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real `central -> bot` passaram exigindo essa observabilidade.
+Workflow Manager tambem virou autoridade de nao-mutacao para intents laterais do Router: quando `can_mutate_state=false`, preserva o estado atual e registra `workflow_reason=state_preserved_by_router_policy` ou `mutation_blocked_by_router_policy`. O fluxo de preco generico passou em HTTP radar e WhatsApp real exigindo `conversation_router` + `workflow_manager` no mesmo turno.
 Politica corrigida: HTTP production smoke e radar inicial; WhatsApp real e validacao definitiva por micro-slice conversacional. Nao declarar slice fechado sem scenario `whatsapp_real` correspondente ou rehearsal real equivalente no gate.
 O compact integrado foi corrigido na arquitetura: existe hook Claude Code, mas a retomada oficial agora e portavel via `bash scripts/smoke/continuity-bundle.sh --force`, adequado para Codex/API.
 Achado de linguagem da idade isolada foi corrigido para pedir data completa com seguranca e registro de maioridade.
@@ -387,15 +388,15 @@ GitHub Actions Deploy to Cloudflare Pages PASS
 Ultimo micro-slice validado em Level 3:
 
 ```text
-Workflow Manager - observabilidade de transicao de cadastro
-commit: 55c98d8 feat: log workflow transition decisions
-local: node --test tests/**/*.test.mjs PASS (1157)
+Workflow Manager - nao-mutacao de intents laterais
+commit: 10295f5 feat: enforce workflow non mutation
+local: node --test tests/**/*.test.mjs PASS (1160)
 ci: Tests e Deploy PASS
-http radar: scenario-cadastro-handoff-email-recusado-20260525T205709Z-8176 PASS
-whatsapp real: scenario-whatsapp-real-cadastro-handoff-20260525T205803Z-3652 PASS
-prova real: Cliente "pode seguir sem email / quanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo... Fechado, Joao! O tatuador vai avaliar com calma..."
-telemetria: workflow_layer=workflow_manager, workflow_from_state=cadastro, workflow_to_state=aguardando_tatuador, workflow_transition_allowed=true, workflow_reason=cadastro_and_tattoo_complete
-rodada: Level 3 iniciou familia Workflow Manager; 1 de ate 4 micro-slices concluido, parar em qualquer falha.
+http radar: scenario-lateral-preco-generico-20260525T210607Z-3522 PASS
+whatsapp real: scenario-whatsapp-real-lateral-preco-generico-20260525T210632Z-21888 PASS
+prova real: Cliente "quanto fica uma rosa fineline no braco?" -> Bot "Oii, tudo bem?... O valor depende do tamanho, detalhe e local do corpo..."
+telemetria: conversation_router router_can_mutate_state=false; workflow_manager workflow_from_state=tattoo, workflow_to_state=tattoo, workflow_transition_allowed=false, workflow_reason=state_preserved_by_router_policy
+rodada: Level 3 familia Workflow Manager; 2 de ate 4 micro-slices concluidos, parar em qualquer falha.
 ```
 
 ## Próxima Ação Recomendada
@@ -417,10 +418,10 @@ Nao avançar para IntentPolicy ampla antes de consolidar os proximos micro-slice
 Depois disso, o próximo melhor ataque é:
 
 ```text
-Proximo micro-slice da familia Workflow Manager: gate de nao-mutacao para intents laterais ou criterio formal de bloqueio para cadastro incompleto.
+Proximo micro-slice da familia Workflow Manager: criterio formal de bloqueio para cadastro incompleto ou transicao de escalation oficializada pelo Workflow Manager.
 ```
 
-Motivo: a transição de cadastro já foi protegida por gate, mas a próxima expansão deve continuar pequena e verificável. O gap atual mais claro é de linguagem premium em maioridade/data de nascimento, não de arquitetura central.
+Motivo: a transição de cadastro e a nao-mutacao lateral ja foram protegidas por gate; a proxima expansao deve continuar pequena, observavel e validada por WhatsApp real.
 
 ## Checklist De Fechamento De Sessão
 
