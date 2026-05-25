@@ -1,6 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildTenantContext, deriveTenantRules, isPropostaSubstate, summarizeTenantContext } from '../../../functions/api/agent/_lib/tenant-context-manager.js';
+import {
+  buildTenantContext,
+  deriveTenantProfile,
+  deriveTenantRules,
+  isPropostaSubstate,
+  summarizeTenantContext,
+} from '../../../functions/api/agent/_lib/tenant-context-manager.js';
 
 test('TenantContextManager: identifica substates de proposta', () => {
   assert.equal(isPropostaSubstate('propondo_valor'), true);
@@ -32,6 +38,11 @@ test('TenantContextManager: injeta portfolio sem mutar clientContext original', 
       uses_legacy_style_catalog: false,
       modo_atendimento: null,
     },
+    tenant_profile: {
+      has_agent_name: false,
+      has_studio_name: false,
+      has_persona: false,
+    },
     portfolio_disponivel: true,
   });
 });
@@ -53,6 +64,11 @@ test('TenantContextManager: contexto derivado sobrescreve flags transversais ant
       estilos_recusados: [],
       uses_legacy_style_catalog: false,
       modo_atendimento: null,
+    },
+    tenant_profile: {
+      has_agent_name: false,
+      has_studio_name: false,
+      has_persona: false,
     },
     portfolio_disponivel: false,
     eh_recorrente: true,
@@ -92,6 +108,11 @@ test('TenantContextManager: injeta contexto de proposta somente em substate de p
       uses_legacy_style_catalog: false,
       modo_atendimento: null,
     },
+    tenant_profile: {
+      has_agent_name: false,
+      has_studio_name: false,
+      has_persona: false,
+    },
     portfolio_disponivel: true,
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
   });
@@ -119,6 +140,11 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
       uses_legacy_style_catalog: false,
       modo_atendimento: 'individual',
     },
+    tenant_profile: {
+      has_agent_name: true,
+      has_studio_name: true,
+      has_persona: true,
+    },
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
     nome_cliente: 'Joao Silva',
   }, 'propondo_valor');
@@ -137,8 +163,13 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
     tenant_context_estilos_recusados_count: 1,
     tenant_context_uses_legacy_style_catalog: false,
     tenant_context_modo_atendimento: 'individual',
+    tenant_context_has_agent_name: true,
+    tenant_context_has_studio_name: true,
+    tenant_context_has_persona: true,
   });
   assert.equal(Object.hasOwn(summary, 'nome_cliente'), false);
+  assert.equal(Object.hasOwn(summary, 'nome_agente'), false);
+  assert.equal(Object.hasOwn(summary, 'nome_estudio'), false);
 });
 
 test('TenantContextManager: deriva regras operacionais do tenant com fallback seguro', () => {
@@ -193,5 +224,27 @@ test('TenantContextManager: normaliza catalogo de estilos explicito e legado', (
     estilos_recusados: [],
     uses_legacy_style_catalog: true,
     modo_atendimento: null,
+  });
+});
+
+test('TenantContextManager: resume identidade do tenant sem vazar nomes', () => {
+  assert.deepEqual(deriveTenantProfile({
+    nome_agente: ' Assistente ',
+    nome_estudio: ' InkFlow Studio ',
+    config_agente: { persona_livre: 'fala direta' },
+  }), {
+    has_agent_name: true,
+    has_studio_name: true,
+    has_persona: true,
+  });
+
+  assert.deepEqual(deriveTenantProfile({
+    nome_agente: ' ',
+    nome_estudio: null,
+    config_agente: {},
+  }), {
+    has_agent_name: false,
+    has_studio_name: false,
+    has_persona: false,
   });
 });

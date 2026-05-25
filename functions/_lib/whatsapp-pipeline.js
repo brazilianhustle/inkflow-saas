@@ -9,7 +9,7 @@ import { evoSend, splitBaloes } from './evolution-send.js';
 import { sendTelegramTo, sendTelegramAlert } from './telegram.js';
 import { runAgent } from '../api/agent/route.js';
 import { callTool } from '../api/agent/_lib/call-tool.js';
-import { deriveTenantRules, summarizeTenantContext } from '../api/agent/_lib/tenant-context-manager.js';
+import { deriveTenantProfile, deriveTenantRules, summarizeTenantContext } from '../api/agent/_lib/tenant-context-manager.js';
 import { classificarFoto } from './foto-classifier.js';
 import { enviarMidia } from './telegram-media.js';
 import { routeConversationTurn } from './conversation-router.js';
@@ -251,6 +251,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
       batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
       batch_joined_by: 'newline',
       tenant_rules: deriveTenantRules(tenant),
+      tenant_profile: deriveTenantProfile(tenant),
     };
     const routerDisabled = String(env?.DISABLE_CONVERSATION_ROUTER || '').toLowerCase() === 'true';
     const routerEligible = !routerDisabled && !isFirstContactGreetingOnly && imagens.length === 0;
