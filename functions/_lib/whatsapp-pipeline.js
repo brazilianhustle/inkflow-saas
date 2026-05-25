@@ -298,7 +298,9 @@ export async function processBatch(env, batch, depsOverride = {}) {
           context_metadata: {
             router_intent: agentOut.intent,
             router_confidence: agentOut.confidence,
+            router_reason: agentOut.reason,
             router_risk: agentOut.risk,
+            router_can_mutate_state: agentOut.can_mutate_state === true,
             history_turns_n: historico.length,
           },
           llm_output_parsed: agentOut,

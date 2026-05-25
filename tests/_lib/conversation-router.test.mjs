@@ -9,7 +9,11 @@ const CONVERSA_TATTOO = {
 };
 
 test('ConversationRouter: classifica preço genérico sem tratar negociação', () => {
-  assert.equal(_test.detectIntent('quanto fica uma rosa no braço?')?.intent, 'preco_generico');
+  const detected = _test.detectIntent('quanto fica uma rosa no braço?');
+  assert.equal(detected?.intent, 'preco_generico');
+  assert.equal(detected?.reason, 'generic_price_question_without_negotiation');
+  assert.equal(detected?.can_mutate_state, false);
+  assert.equal(typeof detected?.confidence, 'number');
   assert.equal(_test.detectIntent('qual valor dessa tattoo?')?.intent, 'preco_generico');
   assert.equal(_test.detectIntent('quanto que é?')?.intent, 'preco_generico');
   assert.equal(_test.detectIntent('consegue por 500?'), null);
@@ -55,6 +59,8 @@ test('ConversationRouter: pedido explícito de humano aciona escalonamento sem c
   });
   assert.equal(out.ok, true);
   assert.equal(out.intent, 'human_requested');
+  assert.equal(out.reason, 'explicit_human_or_tattoo_artist_request');
+  assert.equal(out.can_mutate_state, true);
   assert.equal(out.proxima_acao, 'erro');
   assert.equal(out.estado_novo, 'aguardando_tatuador');
   assert.equal(out.escalation.reason_code, 'human_requested');
@@ -109,6 +115,8 @@ test('ConversationRouter: preço genérico responde e preserva estado', () => {
   });
   assert.equal(out.ok, true);
   assert.equal(out.intent, 'preco_generico');
+  assert.equal(out.reason, 'generic_price_question_without_negotiation');
+  assert.equal(out.can_mutate_state, false);
   assert.equal(out.estado_novo, 'tattoo');
   assert.equal(out.agent_usado, 'conversation_router');
   assert.deepEqual(out.dados_persistidos, {});

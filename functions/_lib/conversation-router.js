@@ -144,6 +144,10 @@ function isNonPriceValueContext(text) {
     || /\bvalor afetivo\b/.test(text);
 }
 
+function intentDecision(intent, { confidence, risk, reason, can_mutate_state = false }) {
+  return { intent, confidence, risk, reason, can_mutate_state };
+}
+
 function detectIntent(text) {
   const s = normalize(text);
   if (!s) return null;
@@ -152,17 +156,32 @@ function detectIntent(text) {
     /\b(quero|queria|preciso|posso|pode|consegue|tem como|da pra|d[aá] pra)\b.{0,40}\b(falar|conversar|chamar|atender|passar|encaminhar)\b.{0,40}\b(tatuador|humano|atendente|pessoa|responsavel|responsável)\b/.test(s)
     || /\b(falar|conversar)\b.{0,30}\b(com|com o|com a)\b.{0,20}\b(tatuador|humano|atendente|responsavel|responsável)\b/.test(s)
     || /\bme\s+(passa|encaminha|chama|bota)\b.{0,30}\b(tatuador|humano|atendente|responsavel|responsável)\b/.test(s);
-  if (pedidoHumano) return { intent: 'human_requested', confidence: 0.9, risk: 'high' };
+  if (pedidoHumano) return intentDecision('human_requested', {
+    confidence: 0.9,
+    risk: 'high',
+    reason: 'explicit_human_or_tattoo_artist_request',
+    can_mutate_state: true,
+  });
 
   const clienteIrritado =
     /\b(voces|vocês|atendimento|ninguem|ninguém|bot|robo|robô)\b.{0,60}\b(demoram|demora|demorando|nao respondem|não respondem|nao responde|não responde|ruim|horrivel|horrível|pessimo|péssimo|irritado|irritada|chateado|chateada|cansado|cansada)\b/.test(s)
     || /\b(estou|to|tô|fiquei)\b.{0,30}\b(irritado|irritada|chateado|chateada|cansado|cansada)\b/.test(s);
-  if (clienteIrritado) return { intent: 'client_upset', confidence: 0.86, risk: 'high' };
+  if (clienteIrritado) return intentDecision('client_upset', {
+    confidence: 0.86,
+    risk: 'high',
+    reason: 'complaint_or_frustration_about_service',
+    can_mutate_state: true,
+  });
 
   const cobertura =
     /\b(cobrir|cobertura|cover up|coverup|tapar|disfarcar|disfarçar)\b/.test(s)
     && /\b(tattoo|tatuagem|desenho|nome|frase|antiga|velha|ja tenho|já tenho|tenho uma)\b/.test(s);
-  if (cobertura) return { intent: 'cobertura', confidence: 0.9, risk: 'high' };
+  if (cobertura) return intentDecision('cobertura', {
+    confidence: 0.9,
+    risk: 'high',
+    reason: 'cover_up_or_existing_tattoo_detected',
+    can_mutate_state: true,
+  });
 
   const perguntaImagem =
     /\b(o que|que)\s+(voce|vc|tu)\s+(viu|ve|consegue ver|entendeu|achou)\b.*\b(imagem|foto|referencia|desenho)\b/.test(s)
@@ -170,24 +189,40 @@ function detectIntent(text) {
     || /\b(o que|que)\s+(aparece|tem)\b.*\b(nessa|na|nessa foto|imagem|foto)\b/.test(s)
     || /\b(essa|a)\s+(imagem|foto|referencia)\s+(serve|da pra ver|d[aá] pra ver)\b/.test(s)
     || /\b(da pra ver|d[aá] pra ver|consegue ver)\b.*\b(tattoo|desenho|imagem|foto|referencia)\b/.test(s);
-  if (perguntaImagem) return { intent: 'pergunta_imagem', confidence: 0.82, risk: 'medium' };
+  if (perguntaImagem) return intentDecision('pergunta_imagem', {
+    confidence: 0.82,
+    risk: 'medium',
+    reason: 'image_interpretation_question_without_media_context',
+  });
 
   const historiaVida =
     (/\b(homenagem|faleceu|falecido|superacao|supera[cç]ao|primeira tattoo|primeira tatuagem|medo|receio)\b/.test(s)
       || /\bsignificado\b.{0,40}\bimportante\b/.test(s))
     && !isNegotiation(s);
-  if (historiaVida) return { intent: 'historia_vida', confidence: 0.84, risk: 'medium' };
+  if (historiaVida) return intentDecision('historia_vida', {
+    confidence: 0.84,
+    risk: 'medium',
+    reason: 'emotional_context_or_life_story_detected',
+  });
 
   const processo =
     /\b(como funciona|qual o processo|quais os passos|como faco para marcar|como faço para marcar|como marca|como agendar|primeiro eu mando|preciso pagar antes)\b/.test(s)
     || /\bcomo e para fazer uma tattoo\b/.test(s)
     || /\bcomo e pra fazer uma tattoo\b/.test(s);
-  if (processo) return { intent: 'processo_tatuagem', confidence: 0.9, risk: 'medium' };
+  if (processo) return intentDecision('processo_tatuagem', {
+    confidence: 0.9,
+    risk: 'medium',
+    reason: 'tattoo_process_or_booking_flow_question',
+  });
 
   const tempo =
     /\b((quanto|quantop|qnto) tempo|quantas horas|demora muito|demora quanto|faz em uma sessao|faz em 1 sessao|uma sessao|precisa de mais de uma sessao|mesmo dia|quantas sessoes|em quantas sessoes|seria em quantas sessoes)\b/.test(s)
     && /\b(demora|tempo|horas|sessao|sessoes|dia)\b/.test(s);
-  if (tempo) return { intent: 'tempo_sessao', confidence: 0.88, risk: 'medium' };
+  if (tempo) return intentDecision('tempo_sessao', {
+    confidence: 0.88,
+    risk: 'medium',
+    reason: 'session_duration_or_number_of_sessions_question',
+  });
 
   const preco =
     !isNegotiation(s)
@@ -197,7 +232,11 @@ function detectIntent(text) {
       || /\bquanto e\b/.test(s)
       || /\bquanto (que|q) e\b/.test(s)
     );
-  if (preco) return { intent: 'preco_generico', confidence: 0.86, risk: 'high' };
+  if (preco) return intentDecision('preco_generico', {
+    confidence: 0.86,
+    risk: 'high',
+    reason: 'generic_price_question_without_negotiation',
+  });
 
   return null;
 }
@@ -217,6 +256,8 @@ function escalationOutput({ detected, estado_atual, intent }) {
       intent,
       confidence: detected.confidence,
       risk: detected.risk,
+      reason: detected.reason,
+      can_mutate_state: detected.can_mutate_state,
       resposta_cliente: 'Claro. Vou acionar o tatuador para assumir por aqui e te orientar direto.',
       estado_novo: 'aguardando_tatuador',
       dados_persistidos: {},
@@ -247,6 +288,8 @@ function escalationOutput({ detected, estado_atual, intent }) {
       intent,
       confidence: detected.confidence,
       risk: detected.risk,
+      reason: detected.reason,
+      can_mutate_state: detected.can_mutate_state,
       resposta_cliente: 'Entendi, desculpa pela frustração. Vou acionar uma pessoa do estúdio para assumir por aqui e te ajudar direto.',
       estado_novo: 'aguardando_tatuador',
       dados_persistidos: {},
@@ -276,6 +319,8 @@ function escalationOutput({ detected, estado_atual, intent }) {
     intent,
     confidence: detected.confidence,
     risk: detected.risk,
+    reason: detected.reason,
+    can_mutate_state: detected.can_mutate_state,
     resposta_cliente: 'Pra cobertura, o tatuador precisa avaliar direto com segurança antes de seguir. Vou acionar ele para olhar teu caso e te orientar pelos próximos passos.',
     estado_novo: 'aguardando_tatuador',
     dados_persistidos: {},
@@ -341,6 +386,8 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
     intent: detected.intent,
     confidence: detected.confidence,
     risk: detected.risk,
+    reason: detected.reason,
+    can_mutate_state: detected.can_mutate_state,
     resposta_cliente: resposta,
     estado_novo: estado_atual,
     dados_persistidos: extracted,
