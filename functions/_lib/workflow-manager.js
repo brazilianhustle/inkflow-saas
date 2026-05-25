@@ -41,6 +41,23 @@ export function isCadastroComplete(dados = {}) {
   );
 }
 
+export function missingTattooRequirements(dados = {}) {
+  const missing = [];
+  if (!hasValue(dados.descricao_tattoo) && !hasValue(dados.descricao_curta)) missing.push('descricao');
+  if (!hasValue(dados.local_corpo)) missing.push('local_corpo');
+  if (!hasValue(dados.altura_cm)) missing.push('altura_cm');
+  if (!hasValue(dados.estilo)) missing.push('estilo');
+  return missing;
+}
+
+export function missingCadastroRequirements(dados = {}) {
+  const missing = [];
+  if (!hasValue(dados.nome)) missing.push('nome');
+  if (!hasValue(dados.data_nascimento)) missing.push('data_nascimento');
+  if (!hasValue(dados.email) && dados.email_recusado !== true) missing.push('email_or_refusal');
+  return missing;
+}
+
 export function evaluateWorkflowTransition({
   estado_atual,
   agentOut,
@@ -72,8 +89,8 @@ export function evaluateWorkflowTransition({
   const cadastroComplete = isCadastroComplete(dados_cadastro);
   const tattooComplete = isTattooBriefComplete(dados_coletados);
   const missingRequirements = {
-    cadastro: cadastroComplete ? [] : ['nome', 'data_nascimento', 'email_or_refusal'],
-    tattoo: tattooComplete ? [] : ['descricao', 'local_corpo', 'altura_cm', 'estilo'],
+    cadastro: missingCadastroRequirements(dados_cadastro),
+    tattoo: missingTattooRequirements(dados_coletados),
   };
 
   if (cadastroComplete && tattooComplete) {

@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   applyWorkflowTransition,
   evaluateWorkflowTransition,
+  missingCadastroRequirements,
+  missingTattooRequirements,
   summarizeWorkflowDecision,
 } from '../../functions/_lib/workflow-manager.js';
 
@@ -43,8 +45,15 @@ test('Workflow Manager: cadastro incompleto bloqueia transicao e resume faltante
 
   assert.equal(decision.shouldTransition, false);
   assert.equal(decision.reason, 'requirements_missing');
-  assert.deepEqual(decision.missingRequirements.cadastro, ['nome', 'data_nascimento', 'email_or_refusal']);
-  assert.deepEqual(decision.missingRequirements.tattoo, ['descricao', 'local_corpo', 'altura_cm', 'estilo']);
+  assert.deepEqual(decision.missingRequirements.cadastro, ['data_nascimento', 'email_or_refusal']);
+  assert.deepEqual(decision.missingRequirements.tattoo, ['local_corpo', 'altura_cm', 'estilo']);
+});
+
+test('Workflow Manager: calcula faltantes exatos por fase', () => {
+  assert.deepEqual(missingCadastroRequirements({ nome: 'Joao' }), ['data_nascimento', 'email_or_refusal']);
+  assert.deepEqual(missingCadastroRequirements({ nome: 'Joao', data_nascimento: '1995-03-12', email_recusado: true }), []);
+  assert.deepEqual(missingTattooRequirements({ descricao_curta: 'leao' }), ['local_corpo', 'altura_cm', 'estilo']);
+  assert.deepEqual(missingTattooRequirements(tattooComplete), []);
 });
 
 test('Workflow Manager: applyWorkflowTransition força payload seguro quando permitido', () => {
