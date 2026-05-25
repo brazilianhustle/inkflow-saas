@@ -386,14 +386,15 @@ GitHub Actions Deploy to Cloudflare Pages PASS
 Ultimo micro-slice validado em Level 3:
 
 ```text
-Context/Tenant Manager - perfil de identidade
-commit: 7b52927 test: expose tenant identity profile
-local: node --test tests/**/*.test.mjs PASS (1151)
+Context/Tenant Manager - resumo de ativos
+commit: 3d518a5 test: expose tenant asset summary
+local: node --test tests/**/*.test.mjs PASS (1153)
 ci: Tests, Prompts CI, InkFlow Agent eval gate e Deploy PASS
-http radar: scenario-lateral-portfolio-disponivel-20260525T204041Z-17948 PASS
-whatsapp real: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T204113Z-18509 PASS
-prova real: Cliente "tem exemplos de fineline?" -> Bot "Oii, tudo bem?... Beleza, te mando uns exemplos de fineline!"
-telemetria: tenant_context_estilos_aceitos_count=2, tenant_context_uses_legacy_style_catalog=true, tenant_context_modo_atendimento=individual, tenant_context_has_agent_name=true, tenant_context_has_studio_name=true
+http radar: scenario-lateral-portfolio-disponivel-20260525T204533Z-999 PASS
+whatsapp real: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T204606Z-651 PASS
+prova real: Cliente "tem exemplos de fineline?" -> Bot "Oii, tudo bem?... Claro! Te mando alguns exemplos de fineline."
+telemetria: tenant_context_estilos_aceitos_count=2, tenant_context_uses_legacy_style_catalog=true, tenant_context_modo_atendimento=individual, tenant_context_has_agent_name=true, tenant_context_has_studio_name=true, tenant_context_portfolio_urls_count=3
+rodada: Level 3 completa com 4 micro-slices da familia Context/Tenant Manager; parar antes de abrir novo escopo.
 ```
 
 ## Próxima Ação Recomendada
