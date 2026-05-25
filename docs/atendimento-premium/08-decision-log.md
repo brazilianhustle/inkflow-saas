@@ -352,6 +352,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `cadastro-handoff-email-recusado` e `whatsapp-real-cadastro-handoff` agora exigem `agent_name=workflow_manager`, `workflow_layer=workflow_manager`, `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real passaram em 2026-05-25.
 
+## 2026-05-25 - Workflow Manager e requisitos faltantes exatos
+
+**Status:** decidido.
+
+**Decisão:** o `WorkflowManager` deve calcular os requisitos faltantes reais de cadastro e briefing de tattoo, em vez de registrar listas estáticas quando uma transição é bloqueada por cadastro incompleto.
+
+**Motivo:** a camada de workflow precisa explicar por que manteve a fase atual. Sem faltantes exatos, o monitoramento sabe que houve bloqueio, mas nao sabe se o problema foi nome, data, email/recusa ou briefing incompleto.
+
+**Alternativas rejeitadas:**
+
+- manter apenas `workflow_reason=requirements_missing` sem contagem operacional;
+- registrar sempre todos os campos obrigatorios da fase, mesmo quando parte deles ja esta preenchida;
+- deixar essa explicacao somente nos testes unitarios.
+
+**Camada responsável:** `WorkflowManager`, `whatsapp-pipeline` e smoke scenario registry.
+
+**Impacto:** `cadastro-data-idade-nao-persiste` e `whatsapp-real-cadastro-data-idade-nao-persiste` agora exigem log `agent_name=workflow_manager` com `workflow_transition_allowed=false`, `workflow_reason=requirements_missing`, `workflow_missing_cadastro_count=2` e `workflow_missing_tattoo_count=0`. HTTP radar e WhatsApp real passaram em 2026-05-25.
+
 ## 2026-05-25 - Workflow Manager e autoridade de nao-mutacao do Router
 
 **Status:** decidido.

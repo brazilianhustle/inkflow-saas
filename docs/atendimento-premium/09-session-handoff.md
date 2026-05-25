@@ -59,6 +59,7 @@ O Router tambem comecou a expor explicabilidade: `ConversationRouter` retorna `r
 Context/Tenant Manager foi iniciado: `runAgent` agora usa `tenant-context-manager.js` para montar o `clientContext` efetivo com portfolio, regras operacionais do tenant e contexto de proposta antes dos agents operacionais. O comportamento foi validado por teste local e pelo fluxo `portfolio_disponivel` em HTTP e WhatsApp real, com tail confirmando `enviar-portfolio`. A camada tambem ficou observavel em `agent_turn_logs.context_metadata`, com gate exigindo `tenant_context_layer=tenant_context_manager`, `tenant_context_state=tattoo` e `tenant_context_portfolio_disponivel=true`. Em seguida, regras de tenant (`aceita_cobertura`, gatilhos de handoff) foram expostas tambem no `ConversationRouter`, cobrindo intents interceptados antes do Agent operacional; cobertura passou em HTTP e WhatsApp real exigindo contexto de tenant no router e `cover_up` no Escalation Manager.
 Workflow Manager entrou como proxima familia Level 3: cadastro completo com recusa de email agora registra row propria em `agent_turn_logs` via `agent_name=workflow_manager`, com `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real `central -> bot` passaram exigindo essa observabilidade.
 Workflow Manager tambem virou autoridade de nao-mutacao para intents laterais do Router: quando `can_mutate_state=false`, preserva o estado atual e registra `workflow_reason=state_preserved_by_router_policy` ou `mutation_blocked_by_router_policy`. O fluxo de preco generico passou em HTTP radar e WhatsApp real exigindo `conversation_router` + `workflow_manager` no mesmo turno.
+Workflow Manager tambem passou a explicar bloqueios de cadastro incompleto com faltantes exatos: idade isolada preserva `estado=coletando_cadastro`, nao persiste `data_nascimento`, nao cria `orcid` e registra `workflow_reason=requirements_missing`, `workflow_missing_cadastro_count=2` e `workflow_missing_tattoo_count=0`. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-data-idade-nao-persiste`.
 Politica corrigida: HTTP production smoke e radar inicial; WhatsApp real e validacao definitiva por micro-slice conversacional. Nao declarar slice fechado sem scenario `whatsapp_real` correspondente ou rehearsal real equivalente no gate.
 O compact integrado foi corrigido na arquitetura: existe hook Claude Code, mas a retomada oficial agora e portavel via `bash scripts/smoke/continuity-bundle.sh --force`, adequado para Codex/API.
 Achado de linguagem da idade isolada foi corrigido para pedir data completa com seguranca e registro de maioridade.
@@ -167,7 +168,7 @@ Antes de continuar, conferir `git status --short`. A expectativa após este chec
 Run de referência:
 
 ```text
-scenario-whatsapp-real-lateral-preco-generico-20260525T191651Z-20855
+scenario-whatsapp-real-cadastro-data-idade-nao-persiste-20260525T211554Z-16093
 ```
 
 Alvo:
@@ -180,12 +181,13 @@ Resultado:
 
 ```text
 PASS
-estado_agente: coletando_tattoo
+estado_agente: coletando_cadastro
 orcid: null
+data_nascimento: null
 copy_risk: baixo
-copy: explica que valor depende de tamanho/detalhe/local e tatuador confirma apos avaliar, sem inventar preco
-router: preco_generico / risk=high / reason=generic_price_question_without_negotiation / can_mutate_state=false
-observability: agent_turn_logs agent_name=conversation_router router_reason=generic_price_question_without_negotiation
+copy: pede data de nascimento completa por seguranca e registro de maioridade, sem liberar orcamento
+workflow: cadastro incompleto bloqueado com faltantes exatos
+observability: agent_turn_logs agent_name=workflow_manager workflow_reason=requirements_missing workflow_missing_cadastro_count=2 workflow_missing_tattoo_count=0
 observability_gate: EXPECTED_AGENT_LOG_JQ_TRUE PASS
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
@@ -193,8 +195,8 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 Decisão:
 
 ```text
-O Router agora nao so responde a pergunta de preco sem inventar valor; ele tambem explica a decisao no log decisorio.
-O monitoramento consegue validar intent, confidence, risk, reason e permissao de mutacao de estado sem ler o codigo.
+O Workflow Manager agora nao apenas bloqueia transicao insegura; ele explica quais requisitos ainda impedem a saida segura da fase.
+O monitoramento consegue validar bloqueio de cadastro incompleto sem ler o codigo nem inferir pelo texto do bot.
 ```
 
 ### Correções de smoke - 2026-05-25
