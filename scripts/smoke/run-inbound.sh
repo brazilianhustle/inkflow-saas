@@ -16,6 +16,9 @@ TEXT="${1:?uso: run-inbound.sh \"mensagem\" [telefone]}"
 PHONE="${2:-5521970789797}"
 BASE_URL="${BASE_URL:-http://localhost:8788}"
 EXPECTED_STATE="${EXPECTED_STATE:-}"
+if [[ ",${EXPECTED_STATE}," == *",aguardando_tatuador,"* ]] && [ -z "${SMOKE_REQUIRE_ORCID:-}" ]; then
+  export SMOKE_REQUIRE_ORCID=1
+fi
 RUN_ID="${SMOKE_RUN_ID:-smoke-$(date -u +%Y%m%dT%H%M%SZ)-$RANDOM}"
 EVIDENCE_ROOT="${SMOKE_EVIDENCE_ROOT:-.smoke-evidence}"
 EVIDENCE_DIR="${EVIDENCE_ROOT}/${RUN_ID}"
@@ -39,6 +42,7 @@ write_summary() {
 - phone: ${PHONE}
 - since: ${SINCE_ISO}
 - expected_state: ${EXPECTED_STATE:-"(none)"}
+- require_orcid: ${SMOKE_REQUIRE_ORCID:-0}
 
 ## Message
 

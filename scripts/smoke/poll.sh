@@ -14,6 +14,7 @@ SINCE_ISO="${2:?uso: poll.sh <telefone> <since_iso> [expected_state_csv]}"
 EXPECTED_STATES="${3:-}"
 TIMEOUT_SECONDS="${SMOKE_POLL_TIMEOUT_SECONDS:-60}"
 INTERVAL_SECONDS="${SMOKE_POLL_INTERVAL_SECONDS:-3}"
+REQUIRE_ORCID="${SMOKE_REQUIRE_ORCID:-0}"
 SID="${TENANT}_${PHONE}"
 
 DEVVARS=".dev.vars"
@@ -59,6 +60,7 @@ while [ "$SECONDS" -lt "$deadline" ]; do
   last_snapshot="$(jq -nc --argjson conv "$conv" --argjson msgs "$msgs" '{conversas:$conv,mensagens:$msgs}')"
 
   state="$(printf '%s' "$conv" | jq -r '.[0].estado_agente // ""')"
+  orcid="$(printf '%s' "$conv" | jq -r '.[0].orcid // ""')"
   ai_count="$(printf '%s' "$msgs" | jq '[.[] | select(.message.type=="ai")] | length')"
   failed_count="$(printf '%s' "$msgs" | jq '[.[] | select(.status=="failed")] | length')"
 
@@ -69,6 +71,10 @@ while [ "$SECONDS" -lt "$deadline" ]; do
   fi
 
   if expected_state_hit "$state"; then
+    if [ "$REQUIRE_ORCID" = "1" ] && [ -z "$orcid" ]; then
+      sleep "$INTERVAL_SECONDS"
+      continue
+    fi
     echo "poll: estado esperado atingido: $state" >&2
     printf '%s\n' "$last_snapshot" | jq .
     exit 0

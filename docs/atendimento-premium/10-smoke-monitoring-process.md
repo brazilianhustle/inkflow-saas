@@ -36,6 +36,7 @@ BASE_URL=http://localhost:8788 \
 3. Salva snapshot Supabase antes.
 4. Envia inbound com correlation id no `msg_id` e `pushName`.
 5. Faz polling ate resposta AI, estado esperado ou timeout.
+   - Para `EXPECTED_STATE=aguardando_tatuador`, tambem exige `orcid` por padrao.
 6. Salva snapshot Supabase depois.
 7. Salva trecho da tail.
 8. Gera pacote de evidencia em `.smoke-evidence/<run_id>/`.
@@ -70,6 +71,7 @@ EXPECTED_STATE           estado esperado para polling, ex: aguardando_tatuador
 SMOKE_RUN_ID             correlation id manual opcional
 SMOKE_POLL_TIMEOUT_SECONDS default 60
 SMOKE_POLL_INTERVAL_SECONDS default 3
+SMOKE_REQUIRE_ORCID       default 1 quando EXPECTED_STATE inclui aguardando_tatuador
 SMOKE_TAIL_ENVIRONMENT   production ou preview
 SMOKE_TAIL_LOG           default /tmp/inkflow-smoke-tail.log
 SMOKE_TAIL_DISABLED=1    desativa tail apenas em debug
