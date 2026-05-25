@@ -334,6 +334,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** o gate so pode recomendar Level 4 quando houver pelo menos 70 scenarios PASS, 35 WhatsApp reais PASS, gates criticos PASS, docs obrigatorios de rollback/staging e loop Level 4, alem de zero bloqueadores.
 
+## 2026-05-25 - Workflow Manager registra a propria decisao de transicao
+
+**Status:** decidido.
+
+**Decisão:** o `WorkflowManager` deve registrar turn proprio em `agent_turn_logs` quando avaliar estados suportados, começando pelo fechamento de cadastro para `aguardando_tatuador`.
+
+**Motivo:** transicao de fase nao pode ficar implicita no patch de `estado_agente`. Para diagnosticar erro premium, precisamos saber por que o estado mudou, de onde saiu, para onde foi e se a transicao foi permitida pela camada de workflow.
+
+**Alternativas rejeitadas:**
+
+- inferir workflow lendo apenas `estado_agente` final;
+- misturar decisao de workflow dentro do log do `ConversationRouter`;
+- depender somente do `orcid` como prova indireta de handoff.
+
+**Camada responsável:** `WorkflowManager`, `whatsapp-pipeline`, `agent_turn_logs` e smoke scenario registry.
+
+**Impacto:** `cadastro-handoff-email-recusado` e `whatsapp-real-cadastro-handoff` agora exigem `agent_name=workflow_manager`, `workflow_layer=workflow_manager`, `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real passaram em 2026-05-25.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

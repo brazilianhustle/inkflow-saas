@@ -75,51 +75,51 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - Context/Tenant Manager passou a expor `modo_atendimento` do tenant como metadado operacional seguro; HTTP radar e WhatsApp real definitivo passaram exigindo `tenant_context_modo_atendimento="individual"`.
 - Context/Tenant Manager passou a expor perfil de identidade do tenant sem vazar nomes literais: `tenant_profile` registra apenas se agente, estudio e persona estao configurados; HTTP radar e WhatsApp real definitivo passaram exigindo `tenant_context_has_agent_name=true` e `tenant_context_has_studio_name=true`.
 - Context/Tenant Manager passou a expor resumo de ativos do tenant sem vazar URLs: `tenant_assets` registra `portfolio_urls_count`; HTTP radar e WhatsApp real definitivo passaram exigindo `tenant_context_portfolio_urls_count=3`.
+- Workflow Manager passou a registrar decisao propria em `agent_turn_logs`: cadastro completo com recusa de email agora confirma `workflow_layer=workflow_manager`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T204606Z-651
+run_id: scenario-whatsapp-real-cadastro-handoff-20260525T205803Z-3652
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: coletando_tattoo
-orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T204606Z-651/
+expected_state: aguardando_tatuador
+orcid: orc_k3c961
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260525T205803Z-3652/
 ```
 
 Mensagem:
 
 ```text
-tem exemplos de fineline?
+pode seguir sem email
+quanto tempo demora?
 ```
 
 Resultado:
 
 ```text
-estado_agente: coletando_tattoo
+estado_agente: aguardando_tatuador
 resposta_ai_posterior_ao_humano: true
-orcid: none
+orcid: orc_k3c961
 copy_risk: baixo
-copy: envia exemplos de fineline sem URL manual, preco, agenda, sinal ou pagamento
-context: tenant_context_manager normaliza catalogo legado `config_agente.estilo`
-observability: agent_turn_logs confirmou tenant_context_estilos_aceitos_count=2, tenant_context_uses_legacy_style_catalog=true, tenant_context_modo_atendimento=individual, tenant_context_has_agent_name=true, tenant_context_has_studio_name=true e tenant_context_portfolio_urls_count=3
-tool: tail confirmou portfolio/enviar-portfolio sem erros
-chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
+copy: responde lateral de tempo de forma segura e fecha handoff para tatuador sem inventar preco, agenda ou sinal
+workflow: agent_turn_logs confirmou workflow_layer=workflow_manager, workflow_from_state=cadastro, workflow_to_state=aguardando_tatuador, workflow_transition_allowed=true e workflow_reason=cadastro_and_tattoo_complete
+chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> handoff de orcamento
 ```
 
 ## Proximo Ataque
 
 ```text
-Escolher o proximo bloco da Onda 1 em Level 3, com no maximo 4 micro-slices da mesma familia por rodada.
+Continuar a rodada Workflow Manager em Level 3, com no maximo 3 micro-slices restantes nesta familia antes de nova parada deliberada.
 ```
 
 Escopo recomendado:
 
 - rodar `check-autonomy-gate.sh` antes de iniciar a rodada;
-- escolher uma familia de cenarios e limitar a rodada a ate 4 micro-slices;
+- manter a familia `Workflow Manager` e limitar a rodada a ate 4 micro-slices no total;
 - depois de cada micro-slice, rodar HTTP como radar e WhatsApp real como validacao definitiva antes de registrar smoke/gate/commit saudavel;
-- candidatos: expandir `IntentPolicy` para outros intents com `reason/can_mutate_state` em gates reais, consolidar proximo slice de cadastro premium, ou formalizar Context/Tenant Manager.
+- candidatos: gate de nao-mutacao para intents laterais, criterio formal de saida de cadastro incompleto, ou transicao de escalation oficializada pelo Workflow Manager.
 
 ## Comando De Retomada
 
