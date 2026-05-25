@@ -25,6 +25,8 @@ MESSAGE=""
 EXPECTED_STATE=""
 EXPECTED_HUMAN_TEXT=""
 EXPECTED_COPY_RISK_MAX=""
+EXPECTED_BOT_REGEX=""
+FORBIDDEN_BOT_REGEX=""
 
 # shellcheck source=/dev/null
 source "$SCENARIO_FILE"
@@ -55,6 +57,8 @@ setup         : $SETUP
 cleanup_before: $CLEANUP_BEFORE
 expected_state: ${EXPECTED_STATE:-"(none)"}
 require_orcid : ${SMOKE_REQUIRE_ORCID:-0}
+bot_regex     : ${EXPECTED_BOT_REGEX:-"(none)"}
+forbid_regex  : ${FORBIDDEN_BOT_REGEX:-"(none)"}
 run_id        : $RUN_ID
 evidence_dir  : $EVIDENCE_DIR
 
@@ -221,6 +225,28 @@ run_scenario() {
       exit 1
     fi
     echo "copy_risk ok: actual=$actual_risk max=$EXPECTED_COPY_RISK_MAX" | tee "$EVIDENCE_DIR/scenario-copy-risk.txt"
+  fi
+
+  if [ -n "${EXPECTED_BOT_REGEX:-}" ] || [ -n "${FORBIDDEN_BOT_REGEX:-}" ]; then
+    echo ""
+    echo "[scenario] bot text gate"
+    [ -f "$EVIDENCE_DIR/poll.json" ] || { echo "ERRO: poll.json ausente." >&2; exit 1; }
+    last_ai="$(jq -r '[.mensagens[]? | select(.message.type=="ai")][-1].message.content // ""' "$EVIDENCE_DIR/poll.json")"
+    if [ -n "${EXPECTED_BOT_REGEX:-}" ] && ! printf '%s' "$last_ai" | grep -Eiq "$EXPECTED_BOT_REGEX"; then
+      echo "ERRO: resposta AI nao contem padrao esperado: $EXPECTED_BOT_REGEX" >&2
+      printf '%s\n' "$last_ai" >&2
+      exit 1
+    fi
+    if [ -n "${FORBIDDEN_BOT_REGEX:-}" ] && printf '%s' "$last_ai" | grep -Eiq "$FORBIDDEN_BOT_REGEX"; then
+      echo "ERRO: resposta AI contem padrao proibido: $FORBIDDEN_BOT_REGEX" >&2
+      printf '%s\n' "$last_ai" >&2
+      exit 1
+    fi
+    {
+      printf 'expected_bot_regex: %s\n' "${EXPECTED_BOT_REGEX:-"(none)"}"
+      printf 'forbidden_bot_regex: %s\n' "${FORBIDDEN_BOT_REGEX:-"(none)"}"
+      printf 'status: ok\n'
+    } | tee "$EVIDENCE_DIR/scenario-bot-text.txt"
   fi
 }
 

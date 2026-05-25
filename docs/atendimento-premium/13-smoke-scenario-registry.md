@@ -20,6 +20,9 @@ SMOKE_SCENARIO_DRY_RUN=1 \
 ```text
 docs/atendimento-premium/smoke-scenarios/
   cadastro-handoff-email-recusado.env
+  lateral-preco-generico.env
+  lateral-processo-tatuagem.env
+  lateral-tempo-sessao.env
   whatsapp-real-cadastro-handoff.env
 ```
 
@@ -44,6 +47,8 @@ EXPECTED_STATE
 SMOKE_REQUIRE_ORCID
 EXPECTED_HUMAN_TEXT
 EXPECTED_COPY_RISK_MAX
+EXPECTED_BOT_REGEX
+FORBIDDEN_BOT_REGEX
 SMOKE_BOT_NUMBER      somente via ambiente local/secret manager para whatsapp_real
 ```
 
@@ -102,6 +107,51 @@ SMOKE_BOT_NUMBER
 
 Nao hardcodar `SMOKE_BOT_NUMBER` nem API key no scenario versionado. O runner carrega esses valores de `.dev.vars`/ambiente antes de executar o smoke real.
 
+`lateral-preco-generico`
+
+Objetivo:
+
+```text
+Validar que pergunta de preco recebe resposta sem valor inventado e com encaminhamento para avaliacao.
+```
+
+Contrato:
+
+```text
+resposta deve citar dependencia/avaliacao/tatuador
+resposta nao pode conter preco ou fechamento de valor
+```
+
+`lateral-tempo-sessao`
+
+Objetivo:
+
+```text
+Validar que pergunta de tempo recebe resposta consultiva sem prometer duracao exata.
+```
+
+Contrato:
+
+```text
+resposta deve citar fatores como tamanho/detalhe/local/avaliacao
+resposta nao pode prometer horas ou garantia
+```
+
+`lateral-processo-tatuagem`
+
+Objetivo:
+
+```text
+Validar que pergunta "como funciona" recebe explicacao curta e retoma coleta.
+```
+
+Contrato:
+
+```text
+resposta deve falar de ideia/referencia/avaliacao/orcamento
+resposta nao pode expor erro, sistema ou prompt
+```
+
 ## Criterio De PASS Do Registry
 
 Um cenario so serve como checkpoint quando:
@@ -111,6 +161,8 @@ Um cenario so serve como checkpoint quando:
 - `EXPECTED_STATE` foi atingido quando definido;
 - `SMOKE_REQUIRE_ORCID=1` foi respeitado quando definido;
 - `EXPECTED_COPY_RISK_MAX` nao foi excedido quando definido;
+- `EXPECTED_BOT_REGEX` apareceu na ultima resposta AI quando definido;
+- `FORBIDDEN_BOT_REGEX` nao apareceu na ultima resposta AI quando definido;
 - `judgment.md` permite leitura rapida do risco de copy.
 
 Regra critica: quando `EXPECTED_STATE` existe, o polling nao pode aprovar por resposta AI isolada. O estado esperado e o contrato do cenario; resposta AI serve apenas como fallback para smokes sem estado-alvo.

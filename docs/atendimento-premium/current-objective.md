@@ -35,6 +35,7 @@ worktree_esperado: limpo
 - Naturalidade do fechamento de cadastro melhorada; HTTP e WhatsApp real passaram com `copy_risk=baixo`.
 - Reanalise automatica de plano criada com `plan-review.md` para falhas `contract_*`.
 - Gate formal de conclusao de slice criado com cenarios obrigatorios e PASS recente registrado em `smoke-runs.md`.
+- Slice `atendimento-lateral` ganhou cenarios HTTP obrigatorios para preco generico, tempo de sessao e processo; os tres passaram e o gate retornou `slice_completion: pass`.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -69,14 +70,15 @@ chain: central -> WhatsApp real -> bot -> webhook -> pipeline -> handoff
 ## Proximo Ataque
 
 ```text
-Usar o gate como padrao e expandir cenarios obrigatorios para os proximos slices premium.
+Decidir e adicionar ensaio WhatsApp real para o comportamento lateral mais critico antes de ampliar a Onda 1.
 ```
 
 Escopo recomendado:
 
-- adicionar novos scenarios por intent/slice;
-- manter um radar HTTP e um ensaio final WhatsApp real por comportamento critico;
-- rodar `bash scripts/smoke/check-slice-gate.sh <slice>` antes de declarar slice concluido.
+- criar scenario WhatsApp real para `lateral-preco-generico`, por tocar expectativa financeira;
+- rodar envio real `central -> bot`;
+- registrar em `smoke-runs.md`;
+- decidir se `FINAL_REHEARSAL_SCENARIO` do gate `atendimento-lateral` deve passar a exigir esse scenario.
 
 ## Comando De Retomada
 
