@@ -1,0 +1,76 @@
+# Slice Completion Gate
+
+Este protocolo define quando um slice pode ser considerado fechado. A decisao nao depende de memoria do chat: ela vem de cenarios obrigatorios, PASS registrado em `smoke-runs.md` e artefatos locais completos.
+
+## Comando
+
+```bash
+bash scripts/smoke/check-slice-gate.sh cadastro-handoff
+```
+
+## Arquivo Do Gate
+
+```text
+docs/atendimento-premium/slice-gates/<slice>.env
+```
+
+O gate declara:
+
+- `SLICE_ID`;
+- `MIN_PASS_UTC`;
+- `REQUIRED_SCENARIOS`;
+- `FINAL_REHEARSAL_SCENARIO`;
+- `REQUIRED_ARTIFACTS`.
+
+## Gate Atual
+
+```text
+docs/atendimento-premium/slice-gates/cadastro-handoff.env
+```
+
+Exige PASS recente para:
+
+```text
+cadastro-handoff-email-recusado
+whatsapp-real-cadastro-handoff
+```
+
+O primeiro e o radar HTTP. O segundo e o ensaio final com envio real via Evolution `central` para o numero oficial do bot.
+
+## Criterio De PASS
+
+O script aprova somente se cada scenario obrigatorio tiver:
+
+- linha `PASS` em `smoke-runs.md`;
+- `run_id` compatível com `scenario-<scenario-id>-...`;
+- data UTC igual ou posterior a `MIN_PASS_UTC`, quando definido;
+- evidence dir existente;
+- artefatos obrigatorios presentes.
+
+Artefatos obrigatorios padrao:
+
+```text
+summary.md
+poll.json
+transcript.md
+judgment.md
+```
+
+## Criterio De Bloqueio
+
+O slice fica bloqueado quando:
+
+- nao existe PASS registrado para algum scenario obrigatorio;
+- o PASS e anterior ao corte definido;
+- a evidencia local esta ausente;
+- falta artefato obrigatorio;
+- o ensaio final ainda nao passou.
+
+## Ordem De Uso
+
+1. Implementar mini-passo.
+2. Rodar scenario HTTP rapido.
+3. Rodar scenario WhatsApp real quando o HTTP passar.
+4. Atualizar `smoke-runs.md`.
+5. Rodar `check-slice-gate.sh`.
+6. So considerar o slice fechado se o gate retornar PASS.

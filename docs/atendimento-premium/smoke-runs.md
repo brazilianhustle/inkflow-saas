@@ -63,4 +63,4 @@ Leitura estrategica:
 - Scenario registry esta operacional como checkpoint reproduzivel.
 - Polling corrigido: com `EXPECTED_STATE`, resposta AI isolada nao aprova o smoke.
 - Copy de encerramento saiu do risco medio para baixo sem prometer preco, prazo especifico ou alterar estado.
-- Proximo upgrade operacional deve adicionar `plan-review.md` quando um scenario contradiz a hipotese do slice e depois criar gate formal de conclusao de slice.
+- Proximo upgrade operacional deve expandir cenarios obrigatorios por intent/slice e usar `check-slice-gate.sh` antes de declarar conclusao.

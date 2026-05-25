@@ -137,6 +137,6 @@ Esse arquivo reabre o plano do slice, aponta a camada provavel e bloqueia conclu
 
 Depois dos dois cenarios base:
 
-1. criar gate de conclusao de slice lendo os cenarios obrigatorios;
-2. adicionar novos cenarios obrigatorios por intent/slice;
+1. adicionar novos cenarios obrigatorios por intent/slice;
+2. rodar `check-slice-gate.sh` antes de fechar qualquer slice;
 3. manter HTTP como radar rapido e WhatsApp real como ensaio final.

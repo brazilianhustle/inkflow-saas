@@ -34,6 +34,7 @@ worktree_esperado: limpo
 - Triage automatica de falhas de scenario criada com `triage.md` e classes operacionais.
 - Naturalidade do fechamento de cadastro melhorada; HTTP e WhatsApp real passaram com `copy_risk=baixo`.
 - Reanalise automatica de plano criada com `plan-review.md` para falhas `contract_*`.
+- Gate formal de conclusao de slice criado com cenarios obrigatorios e PASS recente registrado em `smoke-runs.md`.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -68,14 +69,14 @@ chain: central -> WhatsApp real -> bot -> webhook -> pipeline -> handoff
 ## Proximo Ataque
 
 ```text
-Criar gate formal de conclusao de slice baseado em cenarios obrigatorios.
+Usar o gate como padrao e expandir cenarios obrigatorios para os proximos slices premium.
 ```
 
 Escopo recomendado:
 
-- definir arquivo/lista de scenarios obrigatorios por slice;
-- bloquear conclusao de slice se scenario obrigatorio nao tiver PASS recente;
-- manter HTTP scenario como radar rapido e WhatsApp real como ensaio final.
+- adicionar novos scenarios por intent/slice;
+- manter um radar HTTP e um ensaio final WhatsApp real por comportamento critico;
+- rodar `bash scripts/smoke/check-slice-gate.sh <slice>` antes de declarar slice concluido.
 
 ## Comando De Retomada
 
