@@ -497,6 +497,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `18-rollback-staging-protocol.md` e `19-level-4-loop-policy.md` definem zonas de risco, ambiente inicial, rollback, stop conditions, regressao de autonomia, janelas 4A/4B/4C e primeira onda recomendada. `check-autonomy-gate.sh` agora encontra os docs e pode recomendar Level 4, mantendo a promocao manual e versionada.
 
+## 2026-05-25 - Promocao Level 4 deve ser precedida por ensaio em Level 3
+
+**Status:** decidido.
+
+**Decisão:** mesmo com Autonomy Gate retornando `promote_available`, a proxima acao nao e promover. A proxima acao e executar uma rodada `level4-rehearsal-1-dry-run` usando os protocolos Level 4, mas com `CURRENT_LEVEL=3`, limite de 4 micro-slices e promocao proibida durante a onda.
+
+**Motivo:** a evidencia numerica mostra maturidade, mas a disciplina operacional dos novos protocolos precisa ser testada antes de aumentar a janela real de automacao.
+
+**Alternativas rejeitadas:**
+
+- alterar `CURRENT_LEVEL=4` imediatamente;
+- ignorar a recomendacao do gate e seguir como se Level 4 nao estivesse pronto para discussao;
+- abrir uma nova familia funcional grande antes de ensaiar o comando operacional.
+
+**Camada responsável:** Autonomy Gate, Level 4 rehearsal plan, smoke monitoring process e session handoff.
+
+**Impacto:** `20-level-4-rehearsal-plan.md` declara a onda dry-run, limita escopo a risco verde/amarelo, bloqueia zona vermelha e define criterios de pronto/stop conditions antes de qualquer promocao.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

@@ -84,6 +84,7 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - Handoff Package / Telegram Premium ganhou trace id operacional: Telegram de escalation/orçamento inclui `Trace: hp_*` e `agent_turn_logs` registra `handoff_package_trace_id`/`workflow_handoff_package_trace_id`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Handoff Package / Telegram Premium fechou a mini-campanha Level 3 com Decision Observability nos relatórios: `summary.md`, `transcript.md` e `judgment.md` promovem `trace`, pacote e razão decisória vindos de `agent-turn-logs.json`; HTTP radar e WhatsApp real definitivo passaram.
 - Protocolos formais de Level 4 foram preparados sem promover autonomia: rollback/staging e loop supervisionado agora definem zonas de risco, stop conditions, criterios de promocao, regressao e primeira onda recomendada.
+- O proximo caminho estrategico foi definido como ensaio Level 4 ainda em Level 3: `20-level-4-rehearsal-plan.md` declara uma rodada dry-run com `CURRENT_LEVEL=3`, limite 4, sem promocao e sem zona vermelha.
 - Workflow Manager passou a registrar decisao propria em `agent_turn_logs`: cadastro completo com recusa de email agora confirma `workflow_layer=workflow_manager`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a impor nao-mutacao para intents laterais do Router com `can_mutate_state=false`: preco generico preservou `estado=coletando_tattoo` e registrou `workflow_reason=state_preserved_by_router_policy`; HTTP radar e WhatsApp real definitivo passaram exigindo Router + Workflow Manager no mesmo turno.
 - Workflow Manager passou a calcular requisitos faltantes exatos por fase e expor bloqueio formal de cadastro incompleto: idade isolada preservou `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null` e registrou `workflow_reason=requirements_missing` com contagens de faltantes; HTTP radar e WhatsApp real definitivo passaram.
@@ -125,15 +126,17 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: rodar Autonomy Gate apos os docs 18/19; se retornar `promote_available`, registrar a recomendacao, mas manter Level 3 ate uma decisao deliberada de promocao.
+Proximo passo recomendado: executar `level4-rehearsal-1-dry-run` ainda em Level 3, usando os protocolos 18/19/20 como filtro de comando. Nao alterar `autonomy-gate.env` nesta rodada.
 ```
 
 Escopo recomendado:
 
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
-- manter a familia `Handoff Package / Telegram Premium` nesta rodada;
-- proximo slice recomendado: adicionar trace/id de pacote para cruzar Telegram, agent logs e smoke evidence sem depender de leitura manual do chat;
-- manter Level 3 ate bater criterios de Level 4: 70 scenarios PASS, 35 WhatsApp reais PASS, docs de rollback/staging e politica Level 4.
+- manter `CURRENT_LEVEL=3`;
+- respeitar limite de ate 4 micro-slices;
+- escolher apenas zona verde/amarela;
+- nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
+- se o ensaio fechar sem stop condition, abrir uma rodada separada para decisao deliberada de Level 4.
 
 ## Comando De Retomada
 

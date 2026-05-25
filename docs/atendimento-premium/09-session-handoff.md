@@ -66,6 +66,7 @@ Handoff Package / Telegram Premium tambem cobre o handoff de orcamento: o texto 
 Handoff Package / Telegram Premium agora tem trace id operacional: Telegram de escalation/orcamento inclui `Trace: hp_*`, Escalation Manager grava `handoff_package_trace_id` e Workflow Manager grava `workflow_handoff_package_trace_id`; HTTP radar e WhatsApp real `central -> bot` passaram exigindo o trace no fluxo `cadastro-handoff`.
 Handoff Package / Telegram Premium fechou a mini-campanha Level 3 com Decision Observability nos artefatos legiveis: quando `agent-turn-logs.json` existe, `summary.md`, `transcript.md` e `judgment.md` exibem `trace`, pacote e razão decisoria. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-handoff`.
 Level 4 foi preparado, nao promovido: `18-rollback-staging-protocol.md` e `19-level-4-loop-policy.md` definem rollback, staging, zonas de risco, janela 4A/4B/4C, stop conditions, criterios de regressao e primeira onda recomendada. Promocao continua exigindo commit deliberado alterando `autonomy-gate.env`.
+O caminho escolhido antes de qualquer promocao e um ensaio Level 4 ainda em Level 3: `20-level-4-rehearsal-plan.md` declara `level4-rehearsal-1-dry-run`, com `CURRENT_LEVEL=3`, limite 4, risco verde/amarelo e promocao proibida durante a onda.
 Workflow Manager entrou como proxima familia Level 3: cadastro completo com recusa de email agora registra row propria em `agent_turn_logs` via `agent_name=workflow_manager`, com `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real `central -> bot` passaram exigindo essa observabilidade.
 Workflow Manager tambem virou autoridade de nao-mutacao para intents laterais do Router: quando `can_mutate_state=false`, preserva o estado atual e registra `workflow_reason=state_preserved_by_router_policy` ou `mutation_blocked_by_router_policy`. O fluxo de preco generico passou em HTTP radar e WhatsApp real exigindo `conversation_router` + `workflow_manager` no mesmo turno.
 Workflow Manager tambem passou a explicar bloqueios de cadastro incompleto com faltantes exatos: idade isolada preserva `estado=coletando_cadastro`, nao persiste `data_nascimento`, nao cria `orcid` e registra `workflow_reason=requirements_missing`, `workflow_missing_cadastro_count=2` e `workflow_missing_tattoo_count=0`. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-data-idade-nao-persiste`.
@@ -441,8 +442,8 @@ Antes de codar nova frente:
 1. Confirmar worktree.
 2. Rodar `bash scripts/smoke/continuity-bundle.sh --force` se o contexto estiver abaixo de 20% ou a sessao tiver sido compactada.
 3. Rodar `bash scripts/smoke/check-autonomy-gate.sh`.
-4. Se o gate recomendar `promote_available`, registrar como recomendacao, mas nao alterar `CURRENT_LEVEL` sem decisao deliberada.
-5. Escolher proxima onda ainda em Level 3 ou abrir uma rodada especifica de promocao Level 4.
+4. Executar o ensaio `level4-rehearsal-1-dry-run` em Level 3 antes de qualquer promocao.
+5. Se o ensaio fechar sem stop condition e o gate continuar `promote_available`, abrir rodada separada para decidir promocao Level 4.
 
 Minha recomendação estratégica:
 
