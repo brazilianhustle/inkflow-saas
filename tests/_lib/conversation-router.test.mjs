@@ -22,7 +22,10 @@ test('ConversationRouter: classifica preço genérico sem tratar negociação', 
 });
 
 test('ConversationRouter: classifica tempo de sessão', () => {
-  assert.equal(_test.detectIntent('quanto tempo demora?')?.intent, 'tempo_sessao');
+  const detected = _test.detectIntent('quanto tempo demora?');
+  assert.equal(detected?.intent, 'tempo_sessao');
+  assert.equal(detected?.reason, 'session_duration_or_number_of_sessions_question');
+  assert.equal(detected?.can_mutate_state, false);
   assert.equal(_test.detectIntent('quantop tempo demora?')?.intent, 'tempo_sessao');
   assert.equal(_test.detectIntent('qnto tempo demora?')?.intent, 'tempo_sessao');
   assert.equal(_test.detectIntent('faz em uma sessão?')?.intent, 'tempo_sessao');
@@ -30,7 +33,10 @@ test('ConversationRouter: classifica tempo de sessão', () => {
 });
 
 test('ConversationRouter: classifica processo de tatuagem', () => {
-  assert.equal(_test.detectIntent('como funciona pra fazer uma tattoo?')?.intent, 'processo_tatuagem');
+  const detected = _test.detectIntent('como funciona pra fazer uma tattoo?');
+  assert.equal(detected?.intent, 'processo_tatuagem');
+  assert.equal(detected?.reason, 'tattoo_process_or_booking_flow_question');
+  assert.equal(detected?.can_mutate_state, false);
   assert.equal(_test.detectIntent('qual o processo para marcar?')?.intent, 'processo_tatuagem');
   assert.equal(_test.detectIntent('primeiro eu mando a ideia?')?.intent, 'processo_tatuagem');
 });

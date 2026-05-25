@@ -18,7 +18,7 @@ deploy: GitHub Actions Deploy to Cloudflare Pages passou em 2026-05-25
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: feat: log router decision reasons
+ultimo_commit_validado: conferir `git log --oneline -1`
 ```
 
 ## Ultimos Marcos
@@ -64,23 +64,24 @@ ultimo_commit_validado: feat: log router decision reasons
 - Politica corrigida: HTTP production smoke e radar inicial; WhatsApp real e validacao definitiva por micro-slice conversacional. Foram criados scenarios WhatsApp real para idade isolada, menoridade, cobertura, pedido humano e cliente irritado.
 - WhatsApp real retrospectivo passou para os gaps recentes: idade isolada nao persistiu data inventada; menoridade, cobertura, pedido humano e cliente irritado sairam para humano com `orcid=null`, tail limpo e agent-log gate quando aplicavel.
 - IntentPolicy/observabilidade do Router iniciado: `ConversationRouter` agora retorna `reason` e `can_mutate_state` junto de `intent`, `confidence` e `risk`; `whatsapp-pipeline` grava esses campos em `agent_turn_logs`; HTTP e WhatsApp real de preco generico passaram exigindo `router_reason=generic_price_question_without_negotiation`.
+- IntentPolicy/observabilidade do Router expandido para `tempo_sessao` e `processo_tatuagem`: testes locais, HTTP radar e WhatsApp real passaram exigindo `router_reason`, `router_risk=medium` e `router_can_mutate_state=false`.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-lateral-preco-generico-20260525T191651Z-20855
+run_id: scenario-whatsapp-real-lateral-processo-tatuagem-20260525T193747Z-10247
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_tattoo
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-lateral-preco-generico-20260525T191651Z-20855/
+evidence: .smoke-evidence/scenario-whatsapp-real-lateral-processo-tatuagem-20260525T193747Z-10247/
 ```
 
 Mensagem:
 
 ```text
-quanto fica uma rosa fineline no braco?
+como funciona pra fazer uma tattoo?
 ```
 
 Resultado:
@@ -90,9 +91,9 @@ estado_agente: coletando_tattoo
 resposta_ai_posterior_ao_humano: true
 orcid: none
 copy_risk: baixo
-copy: explica que valor depende de tamanho/detalhe/local e que tatuador confirma apos avaliar, sem inventar preco
-router: preco_generico / confidence>=0.8 / risk=high / can_mutate_state=false
-observability: agent_turn_logs agent_name=conversation_router router_reason=generic_price_question_without_negotiation
+copy: explica fluxo de ideia, infos principais e avaliacao do tatuador, sem expor sistema nem fechar preco/agendamento/sinal
+router: processo_tatuagem / confidence>=0.8 / risk=medium / can_mutate_state=false
+observability: agent_turn_logs agent_name=conversation_router router_reason=tattoo_process_or_booking_flow_question
 observability_gate: EXPECTED_AGENT_LOG_JQ_TRUE PASS
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```

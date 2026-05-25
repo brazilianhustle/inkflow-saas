@@ -260,7 +260,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Camada responsável:** `ConversationRouter`, `whatsapp-pipeline`, `agent_turn_logs` e `Smoke Scenario Registry`.
 
-**Impacto:** `lateral-preco-generico` e `whatsapp-real-lateral-preco-generico` agora falham se nao existir row `agent_name=conversation_router` com `router_reason=generic_price_question_without_negotiation`, confidence minima, risco e permissao de mutacao de estado esperados. HTTP production smoke e WhatsApp real passaram em 2026-05-25.
+**Impacto:** `lateral-preco-generico` e `whatsapp-real-lateral-preco-generico` agora falham se nao existir row `agent_name=conversation_router` com `router_reason=generic_price_question_without_negotiation`, confidence minima, risco e permissao de mutacao de estado esperados. O mesmo padrao foi expandido para `tempo_sessao` (`router_reason=session_duration_or_number_of_sessions_question`) e `processo_tatuagem` (`router_reason=tattoo_process_or_booking_flow_question`). HTTP production smoke e WhatsApp real passaram em 2026-05-25.
 
 ## Decisões Em Aberto
 

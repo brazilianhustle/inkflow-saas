@@ -38,7 +38,7 @@ main
 Último commit observado após checkpoint:
 
 ```text
-feat: log router decision reasons
+conferir `git log --oneline -1`
 ```
 
 Último deploy de referência da frente:
@@ -54,7 +54,7 @@ Atendimento premium esta em Autonomy Gate Level 2, com smoke loop real/HTTP moni
 O cadastro-handoff esta funcionalmente protegido: cadastro completo promove para aguardando_tatuador, handoff exige orcid nos smokes de orcamento, idade isolada nao persiste data/email vazios e menoridade explicita aciona handoff humano sem criar orcamento.
 Escalation Manager existe como primeira camada formal para handoff humano: menoridade gera `reason_code=minor_age`, cobertura textual gera `reason_code=cover_up`, pedido humano gera `reason_code=human_requested` e cliente irritado gera `reason_code=client_upset`; todos com `requires_orcid=false`, texto Telegram rastreavel e row propria em `agent_turn_logs` via `agent_name=escalation_manager`.
 O smoke registry agora consegue transformar essa observabilidade em gate automatico com `EXPECTED_AGENT_LOG_JQ_TRUE`.
-O Router tambem comecou a expor explicabilidade: `ConversationRouter` retorna `reason` e `can_mutate_state`, e o pipeline registra `router_reason`/`router_can_mutate_state` em `agent_turn_logs`. O scenario HTTP e o WhatsApp real de preco generico passaram exigindo esses campos.
+O Router tambem comecou a expor explicabilidade: `ConversationRouter` retorna `reason` e `can_mutate_state`, e o pipeline registra `router_reason`/`router_can_mutate_state` em `agent_turn_logs`. Os scenarios HTTP e WhatsApp real de preco generico, tempo de sessao e processo de tatuagem passaram exigindo esses campos.
 Politica corrigida: HTTP production smoke e radar inicial; WhatsApp real e validacao definitiva por micro-slice conversacional. Nao declarar slice fechado sem scenario `whatsapp_real` correspondente ou rehearsal real equivalente no gate.
 O compact integrado foi corrigido na arquitetura: existe hook Claude Code, mas a retomada oficial agora e portavel via `bash scripts/smoke/continuity-bundle.sh --force`, adequado para Codex/API.
 Achado de linguagem da idade isolada foi corrigido para pedir data completa com seguranca e registro de maioridade.
