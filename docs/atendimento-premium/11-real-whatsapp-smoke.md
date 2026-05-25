@@ -77,6 +77,9 @@ SMOKE_EXPECT_HUMAN_TEXT       setado automaticamente pelo runner para amarrar o 
   evolution-send.json
   poll.json
   verify-after.txt
+  transcript.md
+  judgment.md
+  report-render.txt
   tail-excerpt.log
   summary.md
 ```
@@ -91,6 +94,8 @@ O smoke WhatsApp real so passa quando:
 - o polling detecta resposta AI ou estado esperado;
 - se o estado esperado for `aguardando_tatuador`, existe `orcid`;
 - `verify-after.txt` confirma estado/dados esperados;
+- `transcript.md` mostra a conversa real em formato legivel;
+- `judgment.md` confirma checks tecnicos e aponta risco de copy;
 - `tail-excerpt.log` nao mostra erro runtime relevante.
 
 ## Limite Estrategico

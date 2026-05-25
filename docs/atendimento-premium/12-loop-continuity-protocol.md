@@ -95,8 +95,8 @@ Se uma informacao sera necessaria depois da compactacao, ela nao deve viver so n
 O proximo upgrade deve seguir este protocolo:
 
 ```text
-Objetivo: gerar transcript.md + judgment.md no smoke real.
-Arquivos provaveis: scripts/smoke/run-real-whatsapp.sh, scripts/smoke/run-inbound.sh, scripts/smoke/render-transcript.sh, docs/atendimento-premium/11-real-whatsapp-smoke.md.
-Verificacao: bash -n scripts/smoke/*.sh, smoke HTTP controlado, depois smoke WhatsApp real com central.
-Registro: atualizar smoke-runs.md com o primeiro run que tiver transcript + julgamento.
+Objetivo: rodar o primeiro smoke WhatsApp real com transcript.md + judgment.md.
+Arquivos provaveis: .smoke-evidence/<run_id>/summary.md, transcript.md, judgment.md.
+Verificacao: smoke WhatsApp real com central.
+Registro: atualizar smoke-runs.md com o primeiro run real que tiver transcript + julgamento.
 ```

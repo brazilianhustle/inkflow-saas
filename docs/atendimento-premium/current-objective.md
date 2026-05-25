@@ -13,7 +13,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ```text
 status: em-andamento
 branch: main
-ultimo_commit: 1fcc1b0 test: stabilize prompt contract checks
+ultimo_commit: conferir `git log --oneline -1`
 deploy: GitHub Actions Deploy to Cloudflare Pages passou em 2026-05-25
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
@@ -27,6 +27,8 @@ worktree_esperado: limpo
 - Smoke WhatsApp real criado usando Evolution `central` como instancia remetente.
 - Polling agora pode exigir a mensagem humana exata via `SMOKE_EXPECT_HUMAN_TEXT`.
 - CI estabilizado apos duas falhas de contrato: regex com `braço` acentuado e limite real do prompt `coleta-tattoo`.
+- Loop Continuity Protocol criado para retomada apos compactacao.
+- `transcript.md` e `judgment.md` integrados aos runners de smoke HTTP e WhatsApp real.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -59,15 +61,15 @@ orcid: orc_2x6t5l
 ## Proximo Ataque
 
 ```text
-Implementar transcript.md + relatorio de julgamento da resposta dentro do smoke WhatsApp real.
+Rodar o primeiro smoke WhatsApp real usando `central` com transcript.md + judgment.md nativos.
 ```
 
 Escopo recomendado:
 
-- gerar `transcript.md` a partir de `poll.json`;
-- gerar `judgment.md` com avaliacao tecnica e conversacional;
-- registrar criterios minimos de PASS perceptivo;
-- integrar no runner HTTP e no runner WhatsApp real, sem chamar LLM ainda;
+- informar `SMOKE_BOT_NUMBER`;
+- limpar/preparar o estado da conversa de teste quando necessario;
+- executar `scripts/smoke/run-real-whatsapp.sh`;
+- atualizar `smoke-runs.md` com o primeiro run real que sair com transcript + julgamento;
 - depois avaliar se vale adicionar judge LLM opcional.
 
 ## Comando De Retomada

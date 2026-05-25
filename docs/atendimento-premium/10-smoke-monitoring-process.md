@@ -38,8 +38,9 @@ BASE_URL=http://localhost:8788 \
 5. Faz polling ate resposta AI, estado esperado ou timeout.
    - Para `EXPECTED_STATE=aguardando_tatuador`, tambem exige `orcid` por padrao.
 6. Salva snapshot Supabase depois.
-7. Salva trecho da tail.
-8. Gera pacote de evidencia em `.smoke-evidence/<run_id>/`.
+7. Gera `transcript.md` e `judgment.md`.
+8. Salva trecho da tail.
+9. Gera pacote de evidencia em `.smoke-evidence/<run_id>/`.
 
 ## Arquivos De Evidencia
 
@@ -51,6 +52,9 @@ BASE_URL=http://localhost:8788 \
   inbound-response.txt
   poll.json
   verify-after.txt
+  transcript.md
+  judgment.md
+  report-render.txt
   tail-excerpt.log
   summary.md
 ```
@@ -86,5 +90,7 @@ O smoke so deve ser considerado PASS quando:
 - inbound HTTP respondeu sem erro;
 - polling detectou resposta AI ou `EXPECTED_STATE`;
 - `verify-after.txt` confirma estado/dados esperados;
+- `transcript.md` permite leitura direta da conversa;
+- `judgment.md` confirma checks tecnicos e aponta risco de copy;
 - `tail-excerpt.log` nao mostra erro runtime relevante;
 - o pacote de evidencia ficou salvo.

@@ -55,5 +55,6 @@ Leitura estrategica:
 
 - PASS tecnico.
 - Handoff esta operacional.
-- Existe risco de copy: a frase final funciona, mas ainda pode soar seca para padrao premium.
-- Proximo upgrade deve gerar transcript e julgamento conversacional no proprio pacote de evidencia.
+- Transcript e julgamento deterministico foram gerados retroativamente para este run.
+- Existe risco medio de copy: a frase final funciona, mas ainda pode soar seca para padrao premium.
+- Proximo upgrade operacional deve rodar smoke WhatsApp real com `central` e registrar o primeiro evidence nativo com transcript + julgamento.

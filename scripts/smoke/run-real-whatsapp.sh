@@ -113,8 +113,12 @@ SMOKE_EXPECT_HUMAN_TEXT="$TEXT" bash scripts/smoke/poll.sh "$SENDER_PHONE" "$SIN
   | tee "$EVIDENCE_DIR/poll.json"
 
 echo ""
-echo "[4/4] Snapshot after"
+echo "[4/5] Snapshot after"
 bash scripts/smoke-verify.sh "$SENDER_PHONE" 30 | tee "$EVIDENCE_DIR/verify-after.txt"
+
+echo ""
+echo "[5/5] Transcript e julgamento"
+bash scripts/smoke/render-report.sh "$EVIDENCE_DIR" | tee "$EVIDENCE_DIR/report-render.txt"
 
 capture_tail_excerpt
 write_summary "pass"
