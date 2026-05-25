@@ -533,6 +533,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** a promocao futura para Level 4 passa a exigir PASS recente em HTTP radar e WhatsApp real para cinco superficies: cadastro completo, nao-mutacao de pergunta lateral, cadastro incompleto, cliente irritado e gatilho tenant. `CURRENT_LEVEL` continua 3 e a promocao continua exigindo alteracao deliberada do gate.
 
+## 2026-05-25 - Promocao deliberada para Level 4A
+
+**Status:** decidido.
+
+**Decisão:** promover `CURRENT_LEVEL` para 4 com label de Level 4A e `MAX_BATCH_SIZE=6`.
+
+**Motivo:** o gate atingiu evidencia suficiente para Level 4: 76 scenarios PASS, 36 WhatsApp reais PASS, `atendimento-lateral`, `cadastro-handoff`, `escalation-manager` e `workflow-manager` PASS, docs 18/19 PASS e zero bloqueadores. A promocao fica limitada ao primeiro degrau 4A para preservar controle operacional.
+
+**Alternativas rejeitadas:**
+
+- permanecer em Level 3 apesar do gate e do ensaio ja estarem saudaveis;
+- promover direto para janela 4B/4C;
+- abrir Level 4 para zona vermelha, dinheiro, agenda, pagamento, secrets ou tenant real amplo.
+
+**Camada responsável:** Autonomy Gate, Level 4 Loop Policy, Rollback/Staging Protocol e Slice Completion Gates.
+
+**Impacto:** a primeira onda Level 4A pode executar ate 6 micro-slices da mesma onda declarada, somente zona verde/amarela, com HTTP radar e WhatsApp real definitivo quando conversacional. Qualquer falha de CI, deploy, smoke, cleanup, estado, copy risk alto ou gate interrompe a onda e volta para triage.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

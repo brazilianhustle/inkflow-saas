@@ -102,6 +102,30 @@ done <<< "${LEVEL_4_REQUIRED_DOCS:-}"
 pass_count="$(count_pass_scenarios)"
 real_whatsapp_count="$(count_real_whatsapp_pass)"
 
+required_scenarios_for_current_promotion() {
+  if [ "$CURRENT_LEVEL" = "3" ] && [ -n "${LEVEL_4_MIN_PASS_SCENARIOS:-}" ]; then
+    echo "$LEVEL_4_MIN_PASS_SCENARIOS"
+  elif [ "$CURRENT_LEVEL" = "2" ] && [ -n "${LEVEL_3_MIN_PASS_SCENARIOS:-}" ]; then
+    echo "$LEVEL_3_MIN_PASS_SCENARIOS"
+  elif [ "$CURRENT_LEVEL" = "1" ]; then
+    echo "$LEVEL_2_MIN_PASS_SCENARIOS"
+  else
+    echo "n/a"
+  fi
+}
+
+required_real_whatsapp_for_current_promotion() {
+  if [ "$CURRENT_LEVEL" = "3" ] && [ -n "${LEVEL_4_MIN_REAL_WHATSAPP_PASS:-}" ]; then
+    echo "$LEVEL_4_MIN_REAL_WHATSAPP_PASS"
+  elif [ "$CURRENT_LEVEL" = "2" ] && [ -n "${LEVEL_3_MIN_REAL_WHATSAPP_PASS:-}" ]; then
+    echo "$LEVEL_3_MIN_REAL_WHATSAPP_PASS"
+  elif [ "$CURRENT_LEVEL" = "1" ]; then
+    echo "$LEVEL_2_MIN_REAL_WHATSAPP_PASS"
+  else
+    echo "n/a"
+  fi
+}
+
 decision="keep"
 reason="nivel atual mantido"
 allowed_batch_size="$MAX_BATCH_SIZE"
@@ -121,6 +145,16 @@ elif [ "${#slice_gate_failures[@]}" -gt 0 ]; then
   status="BLOCKED"
   decision="blocked"
   reason="um ou mais slice gates obrigatorios falharam"
+  allowed_batch_size="0"
+elif [ "$CURRENT_LEVEL" = "4" ] && [ "${#level_4_slice_gate_failures[@]}" -gt 0 ]; then
+  status="BLOCKED"
+  decision="blocked"
+  reason="um ou mais slice gates ativos de Level 4 falharam"
+  allowed_batch_size="0"
+elif [ "$CURRENT_LEVEL" = "4" ] && [ "${#level_4_missing_docs[@]}" -gt 0 ]; then
+  status="BLOCKED"
+  decision="blocked"
+  reason="faltam documentos ativos de Level 4"
   allowed_batch_size="0"
 elif [ "$CURRENT_LEVEL" = "1" ] &&
   [ "$pass_count" -ge "$LEVEL_2_MIN_PASS_SCENARIOS" ] &&
@@ -161,8 +195,8 @@ cat <<REPORT
 
 | Metric | Actual | Required For Current Promotion |
 |---|---:|---:|
-| scenario_pass_count | ${pass_count} | $(if [ "$CURRENT_LEVEL" = "3" ] && [ -n "${LEVEL_4_MIN_PASS_SCENARIOS:-}" ]; then echo "$LEVEL_4_MIN_PASS_SCENARIOS"; elif [ "$CURRENT_LEVEL" = "2" ] && [ -n "${LEVEL_3_MIN_PASS_SCENARIOS:-}" ]; then echo "$LEVEL_3_MIN_PASS_SCENARIOS"; else echo "$LEVEL_2_MIN_PASS_SCENARIOS"; fi) |
-| real_whatsapp_pass_count | ${real_whatsapp_count} | $(if [ "$CURRENT_LEVEL" = "3" ] && [ -n "${LEVEL_4_MIN_REAL_WHATSAPP_PASS:-}" ]; then echo "$LEVEL_4_MIN_REAL_WHATSAPP_PASS"; elif [ "$CURRENT_LEVEL" = "2" ] && [ -n "${LEVEL_3_MIN_REAL_WHATSAPP_PASS:-}" ]; then echo "$LEVEL_3_MIN_REAL_WHATSAPP_PASS"; else echo "$LEVEL_2_MIN_REAL_WHATSAPP_PASS"; fi) |
+| scenario_pass_count | ${pass_count} | $(required_scenarios_for_current_promotion) |
+| real_whatsapp_pass_count | ${real_whatsapp_count} | $(required_real_whatsapp_for_current_promotion) |
 
 ## Required Slice Gates
 
@@ -207,9 +241,37 @@ $(if [ "$CURRENT_LEVEL" = "3" ] && [ -n "${LEVEL_4_REQUIRED_SLICE_GATES:-}" ]; t
   done <<< "$LEVEL_4_REQUIRED_SLICE_GATES"
 fi)
 
+$(if [ "$CURRENT_LEVEL" = "4" ] && [ -n "${LEVEL_4_REQUIRED_SLICE_GATES:-}" ]; then
+  echo
+  echo "## Active Level 4 Slice Gates"
+  echo
+  while IFS= read -r slice_gate; do
+    [ -n "$slice_gate" ] || continue
+    if printf '%s\n' "${level_4_slice_gate_failures[@]:-}" | grep -qx "$slice_gate"; then
+      echo "- ${slice_gate}: FAIL"
+    else
+      echo "- ${slice_gate}: PASS"
+    fi
+  done <<< "$LEVEL_4_REQUIRED_SLICE_GATES"
+fi)
+
 $(if [ "$CURRENT_LEVEL" = "3" ] && [ -n "${LEVEL_4_REQUIRED_DOCS:-}" ]; then
   echo
   echo "## Level 4 Candidate Docs"
+  echo
+  while IFS= read -r doc; do
+    [ -n "$doc" ] || continue
+    if printf '%s\n' "${level_4_missing_docs[@]:-}" | grep -qx "$doc"; then
+      echo "- ${doc}: MISSING"
+    else
+      echo "- ${doc}: PASS"
+    fi
+  done <<< "$LEVEL_4_REQUIRED_DOCS"
+fi)
+
+$(if [ "$CURRENT_LEVEL" = "4" ] && [ -n "${LEVEL_4_REQUIRED_DOCS:-}" ]; then
+  echo
+  echo "## Active Level 4 Docs"
   echo
   while IFS= read -r doc; do
     [ -n "$doc" ] || continue
@@ -229,6 +291,10 @@ elif [ "${#missing_docs[@]}" -gt 0 ]; then
   printf '%s\n' "${missing_docs[@]}" | sed 's/^/- missing_doc: /'
 elif [ "${#slice_gate_failures[@]}" -gt 0 ]; then
   printf '%s\n' "${slice_gate_failures[@]}" | sed 's/^/- slice_gate_failed: /'
+elif [ "$CURRENT_LEVEL" = "4" ] && [ "${#level_4_slice_gate_failures[@]}" -gt 0 ]; then
+  printf '%s\n' "${level_4_slice_gate_failures[@]}" | sed 's/^/- level_4_slice_gate_failed: /'
+elif [ "$CURRENT_LEVEL" = "4" ] && [ "${#level_4_missing_docs[@]}" -gt 0 ]; then
+  printf '%s\n' "${level_4_missing_docs[@]}" | sed 's/^/- level_4_missing_doc: /'
 else
   echo "- none"
 fi)

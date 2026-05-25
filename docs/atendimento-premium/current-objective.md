@@ -19,6 +19,8 @@ tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo
 ultimo_commit_validado: conferir `git log --oneline -1`
+autonomy_level: 4A
+autonomy_limit: ate 6 micro-slices da mesma onda declarada
 ```
 
 ## Ultimos Marcos
@@ -84,8 +86,9 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - Handoff Package / Telegram Premium ganhou trace id operacional: Telegram de escalation/orçamento inclui `Trace: hp_*` e `agent_turn_logs` registra `handoff_package_trace_id`/`workflow_handoff_package_trace_id`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Handoff Package / Telegram Premium fechou a mini-campanha Level 3 com Decision Observability nos relatórios: `summary.md`, `transcript.md` e `judgment.md` promovem `trace`, pacote e razão decisória vindos de `agent-turn-logs.json`; HTTP radar e WhatsApp real definitivo passaram.
 - Protocolos formais de Level 4 foram preparados sem promover autonomia: rollback/staging e loop supervisionado agora definem zonas de risco, stop conditions, criterios de promocao, regressao e primeira onda recomendada.
-- O proximo caminho estrategico foi definido como ensaio Level 4 ainda em Level 3: `20-level-4-rehearsal-plan.md` declara uma rodada dry-run com `CURRENT_LEVEL=3`, limite 4, sem promocao e sem zona vermelha.
+- O ensaio Level 4 em Level 3 foi concluido e usado como base para promocao deliberada a Level 4A.
 - O Workflow Manager ganhou slice gate formal para futuras promocoes: `workflow-manager` exige HTTP radar e WhatsApp real em cadastro completo, nao-mutacao lateral, cadastro incompleto, cliente irritado e gatilho tenant.
+- Autonomy Gate foi promovido deliberadamente para Level 4A: janela inicial de ate 6 micro-slices da mesma onda declarada, sem zona vermelha e com parada em qualquer falha.
 - Workflow Manager passou a registrar decisao propria em `agent_turn_logs`: cadastro completo com recusa de email agora confirma `workflow_layer=workflow_manager`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a impor nao-mutacao para intents laterais do Router com `can_mutate_state=false`: preco generico preservou `estado=coletando_tattoo` e registrou `workflow_reason=state_preserved_by_router_policy`; HTTP radar e WhatsApp real definitivo passaram exigindo Router + Workflow Manager no mesmo turno.
 - Workflow Manager passou a calcular requisitos faltantes exatos por fase e expor bloqueio formal de cadastro incompleto: idade isolada preservou `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null` e registrou `workflow_reason=requirements_missing` com contagens de faltantes; HTTP radar e WhatsApp real definitivo passaram.
@@ -127,18 +130,18 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar `level4-rehearsal-1-dry-run` ainda em Level 3, usando os protocolos 18/19/20 como filtro de comando. Nao alterar `autonomy-gate.env` nesta rodada.
+Proximo passo recomendado: declarar a primeira onda Level 4A de risco verde/amarelo e executar ate 6 micro-slices no maximo, parando em qualquer falha.
 ```
 
 Escopo recomendado:
 
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
-- manter `CURRENT_LEVEL=3`;
-- respeitar limite de ate 4 micro-slices;
+- manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=6`;
+- respeitar limite de ate 6 micro-slices;
 - escolher apenas zona verde/amarela;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
-- se o ensaio fechar sem stop condition, abrir uma rodada separada para decisao deliberada de Level 4.
+- nao subir para 4B/4C sem duas ondas 4A saudaveis e commit deliberado.
 
 ## Comando De Retomada
 

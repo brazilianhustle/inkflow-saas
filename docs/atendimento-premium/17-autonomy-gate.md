@@ -46,9 +46,9 @@ Pode continuar ate falha, risco alto ou fim da onda. Requer staging/sandbox e ro
 ## Nivel Atual
 
 ```text
-current_level: 3
-max_batch_size: 4 micro-slices da mesma familia
-politica: mini-campanha de uma familia de cenarios, com HTTP radar e WhatsApp real definitivo por micro-slice conversacional
+current_level: 4
+max_batch_size: 6 micro-slices da mesma onda declarada
+politica: Level 4A, loop supervisionado com HTTP radar e WhatsApp real definitivo por micro-slice conversacional
 ```
 
 ## Requisitos Para Promover Ao Nivel 2
@@ -170,11 +170,17 @@ Ainda nao permitido:
 
 Reservado para quando a Onda 1 tiver cobertura ampla, WhatsApp real estavel, staging/sandbox confiavel e rollback claro.
 
-Permitido apenas depois de promocao deliberada:
+Permitido depois de promocao deliberada:
 
 - continuar ate fim de uma onda planejada ou ate qualquer falha;
 - executar familias completas de cenarios com supervisao por gates;
 - depender de rollback/staging documentado antes de tocar risco alto.
+
+Janela inicial aprovada:
+
+```text
+Level 4A: ate 6 micro-slices da mesma onda declarada.
+```
 
 Nao permitido:
 
@@ -195,10 +201,10 @@ Nao permitido:
 
 ## Veredito Operacional
 
-Enquanto o projeto estiver em Nivel 3, a maior janela segura continua sendo:
+Enquanto o projeto estiver em Nivel 4A, a maior janela segura continua sendo:
 
 ```text
-ate 4 micro-slices da mesma familia por rodada autonoma.
+ate 6 micro-slices da mesma onda declarada.
 ```
 
-O proprio gate informa quando ha evidencia suficiente para discutir promocao, mas a promocao exige commit deliberado alterando `autonomy-gate.env`.
+Qualquer aumento para 4B/4C exige nova evidencia, rodada 4A sem stop condition e commit deliberado alterando `MAX_BATCH_SIZE`.

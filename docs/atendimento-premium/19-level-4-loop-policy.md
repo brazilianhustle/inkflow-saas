@@ -11,9 +11,9 @@ Permitir que Codex execute uma onda completa planejada com checkpoints automatic
 ## Estado Atual
 
 ```text
-current_level: 3
-level_4_status: preparado, nao promovido
-promocao: exige decisao deliberada e commit em docs/atendimento-premium/autonomy-gate.env
+current_level: 4
+level_4_status: Level 4A promovido deliberadamente
+promocao: 4B/4C exige nova decisao deliberada e commit em docs/atendimento-premium/autonomy-gate.env
 ```
 
 ## Definicao De Level 4
@@ -41,6 +41,7 @@ O Level 4 so pode ser discutido quando todos os itens abaixo forem verdadeiros:
   - `atendimento-lateral`;
   - `cadastro-handoff`;
   - `escalation-manager`;
+  - `workflow-manager`;
 - `18-rollback-staging-protocol.md` existe;
 - `19-level-4-loop-policy.md` existe;
 - `BLOCKED_REASONS` vazio;
@@ -57,8 +58,8 @@ Promocao exige commit proprio alterando:
 
 ```text
 CURRENT_LEVEL="4"
-CURRENT_LEVEL_LABEL="loop continuo supervisionado por onda planejada"
-MAX_BATCH_SIZE="<tamanho aprovado>"
+CURRENT_LEVEL_LABEL="Level 4A: loop supervisionado de ate 6 micro-slices da mesma onda"
+MAX_BATCH_SIZE="6"
 ```
 
 Esse commit deve citar:
@@ -69,7 +70,7 @@ Esse commit deve citar:
 - limite de batch aprovado;
 - criterio de rollback.
 
-Sem esse commit, o projeto permanece em Level 3 mesmo que o gate recomende promocao.
+Sem esse commit, o projeto permanece no nivel anterior mesmo que o gate recomende promocao.
 
 ## Tamanho Da Janela Level 4
 
@@ -102,7 +103,7 @@ rollback:
 criterio_de_pronto:
 ```
 
-Sem essa declaracao, nao existe onda Level 4. Existe apenas rodada Level 3.
+Sem essa declaracao, nao existe onda Level 4A valida. Existe apenas trabalho fora do protocolo.
 
 ## Loop Operacional
 
@@ -186,7 +187,7 @@ Uma rodada Level 4 so pode ser considerada saudavel quando:
 
 ## Primeira Onda Recomendada
 
-Primeira onda Level 4, quando for promovida:
+Primeira onda Level 4A:
 
 ```text
 onda_id: level4-rehearsal-1
@@ -199,4 +200,4 @@ criterio_de_pronto: CI PASS, deploy PASS, HTTP radar PASS, WhatsApp real PASS qu
 
 ## Veredito
 
-Level 4 e permitido apenas como loop supervisionado por onda declarada. A promocao deve ser manual, versionada e reversivel. Enquanto isso nao acontecer, manter Level 3 mesmo que a evidencia numerica ja seja suficiente.
+Level 4A esta permitido apenas como loop supervisionado por onda declarada. A promocao foi manual, versionada e reversivel. Qualquer aumento para 4B/4C exige nova evidencia, duas ondas saudaveis no nivel anterior e commit deliberado.

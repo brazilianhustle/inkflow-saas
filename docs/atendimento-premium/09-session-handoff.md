@@ -50,8 +50,8 @@ https://inkflowbrasil.com
 Status estratégico:
 
 ```text
-Atendimento premium esta em Autonomy Gate Level 3, com smoke loop real/HTTP monitorado, transcript, julgamento, tail e gates por slice.
-Level 3 foi promovido deliberadamente apos recomendacao objetiva do gate (40 scenarios PASS, 18 WhatsApp reais PASS, gates criticos PASS). A janela atual permite mini-campanha de ate 4 micro-slices da mesma familia, com parada obrigatoria em qualquer falha. O gate tambem ja define criterios futuros para recomendar Level 4: 70 scenarios PASS, 35 WhatsApp reais PASS, gates criticos PASS e docs de rollback/staging + politica de loop Level 4.
+Atendimento premium esta em Autonomy Gate Level 4A, com smoke loop real/HTTP monitorado, transcript, julgamento, tail, rollback/staging documentado e gates por slice.
+Level 4A foi promovido deliberadamente apos recomendacao objetiva do gate e ensaio de comando: 76 scenarios PASS, 36 WhatsApp reais PASS, gates criticos PASS, `workflow-manager` PASS e docs de rollback/staging + politica de loop PASS. A janela atual permite ate 6 micro-slices da mesma onda declarada, com parada obrigatoria em qualquer falha.
 O cadastro-handoff esta funcionalmente protegido: cadastro completo promove para aguardando_tatuador, handoff exige orcid nos smokes de orcamento, idade isolada nao persiste data/email vazios e menoridade explicita aciona handoff humano sem criar orcamento.
 Escalation Manager existe como primeira camada formal para handoff humano: menoridade gera `reason_code=minor_age`, cobertura textual gera `reason_code=cover_up`, pedido humano gera `reason_code=human_requested` e cliente irritado gera `reason_code=client_upset`; todos com `requires_orcid=false`, texto Telegram rastreavel e row propria em `agent_turn_logs` via `agent_name=escalation_manager`.
 O smoke registry agora consegue transformar essa observabilidade em gate automatico com `EXPECTED_AGENT_LOG_JQ_TRUE`.
@@ -65,9 +65,9 @@ Handoff Package / Telegram Premium foi iniciado como nova familia Level 3: Escal
 Handoff Package / Telegram Premium tambem cobre o handoff de orcamento: o texto do Telegram inclui `Pacote: handoff_package_v1` e o Workflow Manager registra `workflow_handoff_package_required=true`/`workflow_handoff_package_version="handoff_package_v1"` quando cadastro e tattoo estao completos. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-handoff`.
 Handoff Package / Telegram Premium agora tem trace id operacional: Telegram de escalation/orcamento inclui `Trace: hp_*`, Escalation Manager grava `handoff_package_trace_id` e Workflow Manager grava `workflow_handoff_package_trace_id`; HTTP radar e WhatsApp real `central -> bot` passaram exigindo o trace no fluxo `cadastro-handoff`.
 Handoff Package / Telegram Premium fechou a mini-campanha Level 3 com Decision Observability nos artefatos legiveis: quando `agent-turn-logs.json` existe, `summary.md`, `transcript.md` e `judgment.md` exibem `trace`, pacote e razão decisoria. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-handoff`.
-Level 4 foi preparado, nao promovido: `18-rollback-staging-protocol.md` e `19-level-4-loop-policy.md` definem rollback, staging, zonas de risco, janela 4A/4B/4C, stop conditions, criterios de regressao e primeira onda recomendada. Promocao continua exigindo commit deliberado alterando `autonomy-gate.env`.
-O caminho escolhido antes de qualquer promocao e um ensaio Level 4 ainda em Level 3: `20-level-4-rehearsal-plan.md` declara `level4-rehearsal-1-dry-run`, com `CURRENT_LEVEL=3`, limite 4, risco verde/amarelo e promocao proibida durante a onda.
-O Workflow Manager agora tambem tem slice gate formal para futura promocao: `workflow-manager` exige HTTP radar e WhatsApp real cobrindo cadastro completo, nao-mutacao lateral, cadastro incompleto, cliente irritado e gatilho tenant. Esse gate foi adicionado aos requisitos candidatos de Level 4, sem alterar `CURRENT_LEVEL=3`.
+Level 4A foi promovido: `18-rollback-staging-protocol.md` e `19-level-4-loop-policy.md` definem rollback, staging, zonas de risco, janela 4A/4B/4C, stop conditions, criterios de regressao e primeira onda recomendada. A promocao para 4B/4C continua exigindo commit deliberado alterando `MAX_BATCH_SIZE`.
+O ensaio Level 4 em Level 3 foi concluido como preparacao de comando. Agora o limite real e `CURRENT_LEVEL=4`, `MAX_BATCH_SIZE=6`, somente zona verde/amarela na primeira onda.
+O Workflow Manager agora tambem tem slice gate formal para futura promocao: `workflow-manager` exige HTTP radar e WhatsApp real cobrindo cadastro completo, nao-mutacao lateral, cadastro incompleto, cliente irritado e gatilho tenant. Esse gate foi adicionado aos requisitos de Level 4.
 Workflow Manager entrou como proxima familia Level 3: cadastro completo com recusa de email agora registra row propria em `agent_turn_logs` via `agent_name=workflow_manager`, com `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real `central -> bot` passaram exigindo essa observabilidade.
 Workflow Manager tambem virou autoridade de nao-mutacao para intents laterais do Router: quando `can_mutate_state=false`, preserva o estado atual e registra `workflow_reason=state_preserved_by_router_policy` ou `mutation_blocked_by_router_policy`. O fluxo de preco generico passou em HTTP radar e WhatsApp real exigindo `conversation_router` + `workflow_manager` no mesmo turno.
 Workflow Manager tambem passou a explicar bloqueios de cadastro incompleto com faltantes exatos: idade isolada preserva `estado=coletando_cadastro`, nao persiste `data_nascimento`, nao cria `orcid` e registra `workflow_reason=requirements_missing`, `workflow_missing_cadastro_count=2` e `workflow_missing_tattoo_count=0`. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-data-idade-nao-persiste`.
@@ -434,6 +434,7 @@ whatsapp real: scenario-whatsapp-real-cadastro-handoff-20260525T224152Z-27460 PA
 prova real: Cliente "pode seguir sem email / quanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia. Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
 telemetria: summary/transcript/judgment exibem trace=hp_6785a917d9 package=handoff_package_v1 workflow_reason=cadastro_and_tattoo_complete.
 rodada: Level 3 familia Handoff Package / Telegram Premium concluida em 4/4; manter Level 3 ate decisao deliberada de promocao, mesmo com gate podendo recomendar Level 4.
+status posterior: promocao deliberada para Level 4A ja realizada.
 ```
 
 ## Próxima Ação Recomendada
@@ -443,8 +444,8 @@ Antes de codar nova frente:
 1. Confirmar worktree.
 2. Rodar `bash scripts/smoke/continuity-bundle.sh --force` se o contexto estiver abaixo de 20% ou a sessao tiver sido compactada.
 3. Rodar `bash scripts/smoke/check-autonomy-gate.sh`.
-4. Executar o ensaio `level4-rehearsal-1-dry-run` em Level 3 antes de qualquer promocao.
-5. Se o ensaio fechar sem stop condition e o gate continuar `promote_available`, abrir rodada separada para decidir promocao Level 4.
+4. Declarar a primeira onda Level 4A antes de codar.
+5. Respeitar `MAX_BATCH_SIZE=6`, zona verde/amarela e parada em qualquer falha.
 
 Minha recomendação estratégica:
 

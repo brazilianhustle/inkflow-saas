@@ -9,6 +9,15 @@ Nao promover Level 4 agora.
 Executar uma rodada de ensaio usando a doutrina Level 4, mas mantendo CURRENT_LEVEL=3 e MAX_BATCH_SIZE=4.
 ```
 
+## Resultado
+
+```text
+status: concluido
+decisao_posterior: promocao deliberada para Level 4A
+current_level_apos_promocao: 4
+max_batch_size_apos_promocao: 6
+```
+
 ## Motivo
 
 O Autonomy Gate ja retorna:
@@ -95,4 +104,4 @@ Somente depois desta onda, considerar uma rodada especifica de promocao se:
 
 ## Proxima Acao Recomendada
 
-Executar uma rodada Level 3 curta, usando este plano como filtro de comando, antes de qualquer promocao. A primeira frente recomendada continua sendo baixo risco: governanca de smoke/monitoramento ou atendimento lateral sem dinheiro/agenda.
+Declarar a primeira onda Level 4A usando os aprendizados deste ensaio. A primeira frente recomendada continua sendo baixo risco: governanca de smoke/monitoramento ou atendimento lateral sem dinheiro/agenda.
