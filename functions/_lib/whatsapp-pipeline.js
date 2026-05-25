@@ -21,6 +21,7 @@ import { routeConversationTurn } from './conversation-router.js';
 import { logAgentTurn } from './telemetry/agent-turn-logger.js';
 import { applyWorkflowTransition, summarizeWorkflowDecision } from './workflow-manager.js';
 import { buildEscalationHandoffPackage, composeEscalationTelegram, evaluateEscalation } from './escalation-manager.js';
+import { buildHandoffPackageTraceId } from './handoff-package.js';
 
 export const TERMINAL_STATES = new Set([
   'aguardando_tatuador',
@@ -360,6 +361,10 @@ export async function processBatch(env, batch, depsOverride = {}) {
     });
     agentOut = workflow.agentOut;
     if (workflow.decision?.reason !== 'unsupported_state') {
+      const workflowSummary = summarizeWorkflowDecision(workflow.decision);
+      const workflowHandoffTraceId = workflowSummary.workflow_handoff_package_required
+        ? buildHandoffPackageTraceId({ conversa })
+        : null;
       try {
         deps.logAgentTurn?.({
           conversa_id: conversa.id,
@@ -373,7 +378,8 @@ export async function processBatch(env, batch, depsOverride = {}) {
           client_input_type: imagens.length > 0 ? 'text+image' : 'text',
           prompt_full: null,
           context_metadata: {
-            ...summarizeWorkflowDecision(workflow.decision),
+            ...workflowSummary,
+            workflow_handoff_package_trace_id: workflowHandoffTraceId,
             agent_used: agentOut.agent_usado || null,
             agent_action: agentOut.proxima_acao || null,
             msg_row_ids: msgRowIds,
@@ -516,6 +522,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
             escalation_requires_orcid: escalation.requires_orcid === true,
             escalation_matched_tenant_trigger: escalation.matched_tenant_trigger || null,
             handoff_package_version: handoffPackage.version,
+            handoff_package_trace_id: handoffPackage.trace_id,
             handoff_package_has_summary: handoffPackage.has_summary,
             handoff_package_tattoo_fields_count: handoffPackage.tattoo_fields_count,
             handoff_package_cadastro_fields_count: handoffPackage.cadastro_fields_count,

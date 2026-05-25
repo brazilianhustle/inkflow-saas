@@ -155,6 +155,7 @@ test('composeEscalationTelegram: inclui gatilho tenant quando presente', () => {
 test('buildEscalationHandoffPackage: resume dados operacionais sem campos vazios', () => {
   const pkg = buildEscalationHandoffPackage({
     conversa: {
+      id: 'conv-trace-123456',
       dados_coletados: {
         descricao_curta: 'rosa pequena',
         local_corpo: 'braco',
@@ -171,6 +172,7 @@ test('buildEscalationHandoffPackage: resume dados operacionais sem campos vazios
   });
 
   assert.equal(pkg.version, 'handoff_package_v1');
+  assert.equal(pkg.trace_id, 'hp_convtrace1');
   assert.equal(pkg.has_summary, true);
   assert.equal(pkg.tattoo_fields_count, 2);
   assert.equal(pkg.cadastro_fields_count, 1);
@@ -185,6 +187,7 @@ test('buildEscalationHandoffPackage: resume dados operacionais sem campos vazios
 test('composeEscalationTelegram: inclui pacote operacional quando fornecido', () => {
   const handoffPackage = buildEscalationHandoffPackage({
     conversa: {
+      id: 'conv-trace-987654',
       dados_coletados: { descricao_curta: 'rosa pequena', local_corpo: 'braco' },
       dados_cadastro: { nome: 'Leandro' },
     },
@@ -206,6 +209,7 @@ test('composeEscalationTelegram: inclui pacote operacional quando fornecido', ()
   });
 
   assert.match(text, /Pacote: handoff_package_v1/);
+  assert.match(text, /Trace: hp_convtrace9/);
   assert.match(text, /Resumo operacional:/);
   assert.match(text, /Tattoo: descricao_curta=rosa pequena; local_corpo=braco/);
   assert.match(text, /Cadastro: nome=Leandro/);

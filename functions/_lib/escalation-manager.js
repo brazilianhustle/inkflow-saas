@@ -1,5 +1,6 @@
 // Escalation Manager: centraliza quando e por que a IA deve sair de cena.
 // Coberturas formais iniciais: menoridade, cobertura/cover-up, pedido humano e cliente irritado.
+import { buildHandoffPackageTraceId } from './handoff-package.js';
 
 function preview(value, max = 500) {
   return String(value || '').slice(0, max);
@@ -30,6 +31,7 @@ export function buildEscalationHandoffPackage({ conversa, agentOut } = {}) {
   const missingFields = fields(agentOut);
   return {
     version: 'handoff_package_v1',
+    trace_id: buildHandoffPackageTraceId({ conversa }),
     has_summary: Object.keys(tattoo).length > 0 || Object.keys(cadastro).length > 0 || missingFields.length > 0,
     tattoo_fields_count: Object.keys(tattoo).length,
     cadastro_fields_count: Object.keys(cadastro).length,
@@ -139,6 +141,7 @@ export function composeEscalationTelegram({ decision, tenant, telefone, estado_a
     d.matched_tenant_trigger ? `Gatilho tenant: ${d.matched_tenant_trigger}` : null,
     '',
     `Pacote: ${pkg.version}`,
+    `Trace: ${pkg.trace_id}`,
     pkg.lines.length > 0 ? 'Resumo operacional:' : null,
     ...pkg.lines,
     '',

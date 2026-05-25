@@ -336,6 +336,7 @@ test('montarBriefing: sem foto_local → omite mencao', () => {
 
 test('montarTextoOrcamento: SEM orcid visivel + linha idade + briefing', () => {
   const conv = {
+    id: 'conv-orcamento-123',
     dados_coletados: { descricao_curta: 'borboleta', local_corpo: 'pulso', altura_cm: 8, estilo: 'fineline', foto_local: 'presente' },
     dados_cadastro: { nome: 'Maria', data_nascimento: '2001-03-15', email: 'maria@x.com' },
     orcid: 'orc_xyz123',
@@ -348,6 +349,7 @@ test('montarTextoOrcamento: SEM orcid visivel + linha idade + briefing', () => {
   assert.match(txt, /maria@x\.com/);
   assert.match(txt, /borboleta/);
   assert.match(txt, /Pacote: handoff_package_v1/);
+  assert.match(txt, /Trace: hp_convorcame/);
 });
 
 test('montarTextoOrcamento: append nota se resultadoFotos.falhas > 0', () => {

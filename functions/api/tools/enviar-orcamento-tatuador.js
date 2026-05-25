@@ -20,6 +20,7 @@
 // agente em propondo_valor nao re-chama esta tool).
 import { withTool, supaFetch } from './_tool-helpers.js';
 import { sendTelegramPhoto, sendTelegramDocument, sendTelegramMediaGroup } from '../../_lib/telegram-media.js';
+import { buildHandoffPackageTraceId } from '../../_lib/handoff-package.js';
 
 const TENANT_FIELDS = [
   'id', 'nome_estudio', 'tatuador_telegram_chat_id', 'tatuador_telegram_username',
@@ -109,6 +110,7 @@ export function montarTextoOrcamento(conv, resultadoFotos = null, today = new Da
   if (email) linhas.push(`📧 ${email}`);
   linhas.push('', montarBriefing(conv));
   linhas.push('', 'Pacote: handoff_package_v1');
+  linhas.push(`Trace: ${buildHandoffPackageTraceId({ conversa: conv })}`);
 
   if (resultadoFotos?.falhas_total) {
     linhas.push('', '📸 ⚠️ Não foi possível anexar as fotos do briefing. Abra a conversa pra ver.');

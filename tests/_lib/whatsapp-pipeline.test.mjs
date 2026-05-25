@@ -1152,6 +1152,7 @@ test('4e. tattoo cliente irritado aciona humano com marcador rastreavel', async 
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /\[escalation:client_upset\]/);
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /cliente irritado/i);
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Pacote: handoff_package_v1/);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Trace: hp_1111111111/);
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Tattoo: descricao_curta=rosa/);
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Campos\/flags: client_upset_trigger/);
   assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
@@ -1163,6 +1164,7 @@ test('4e. tattoo cliente irritado aciona humano com marcador rastreavel', async 
   assert.equal(escalationLog.context_metadata.escalation_severity, 'high');
   assert.equal(escalationLog.context_metadata.escalation_requires_orcid, false);
   assert.equal(escalationLog.context_metadata.handoff_package_version, 'handoff_package_v1');
+  assert.equal(escalationLog.context_metadata.handoff_package_trace_id, 'hp_1111111111');
   assert.equal(escalationLog.context_metadata.handoff_package_has_summary, true);
   assert.equal(escalationLog.context_metadata.handoff_package_tattoo_fields_count, 1);
   assert.equal(escalationLog.context_metadata.handoff_package_cadastro_fields_count, 0);
@@ -1247,6 +1249,7 @@ test('4f. tattoo gatilho de handoff do tenant aciona humano com observabilidade 
   assert.equal(escalationLog.context_metadata.escalation_requires_orcid, false);
   assert.equal(escalationLog.context_metadata.escalation_matched_tenant_trigger, 'rosto');
   assert.equal(escalationLog.context_metadata.handoff_package_version, 'handoff_package_v1');
+  assert.equal(escalationLog.context_metadata.handoff_package_trace_id, 'hp_1111111111');
   assert.equal(escalationLog.context_metadata.handoff_package_has_summary, true);
   assert.equal(escalationLog.context_metadata.handoff_package_tattoo_fields_count, 0);
   assert.equal(escalationLog.context_metadata.handoff_package_cadastro_fields_count, 0);
@@ -1615,6 +1618,7 @@ test('Workflow: ConversationRouter completa cadastro com recusa de email e dispa
   assert.equal(workflowLog.context_metadata.workflow_to_state, 'aguardando_tatuador');
   assert.equal(workflowLog.context_metadata.workflow_transition_allowed, true);
   assert.equal(workflowLog.context_metadata.workflow_reason, 'cadastro_and_tattoo_complete');
+  assert.equal(workflowLog.context_metadata.workflow_handoff_package_trace_id, 'hp_1111111111');
 });
 
 test('15. multi-message: resposta com \\n\\n envia 2 balões com typing delay antes de cada', async () => {
