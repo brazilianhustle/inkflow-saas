@@ -9,6 +9,9 @@
 // O contrato retorna um output compatível com runAgent para o pipeline poder
 // persistir/enviar sem criar um segundo caminho de side effects.
 
+import { extractLocalAnswer, extractStyleAnswer, resolvePendingFormQuestion } from './conversation-policy.js';
+import { composeRouterResponse } from './conversation-response-composer.js';
+
 const HANDLED_STATES = new Set(['tattoo', 'cadastro']);
 
 function stripAccents(text) {
@@ -33,36 +36,10 @@ function missingTattooFields(dados = {}) {
   return ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo'].filter(k => !hasValue(dados[k]));
 }
 
-const LOCAL_PATTERNS = [
-  ['braço', /\bbraco\b/],
-  ['antebraço', /\bantebraco\b/],
-  ['perna', /\bperna\b/],
-  ['costas', /\bcostas\b/],
-  ['peito', /\bpeito\b/],
-  ['ombro', /\bombro\b/],
-  ['pulso', /\bpulso\b/],
-  ['mão', /\bmao\b/],
-  ['pescoço', /\bpescoco\b/],
-  ['panturrilha', /\bpanturrilha\b/],
-  ['coxa', /\bcoxa\b/],
-  ['canela', /\bcanela\b/],
-  ['barriga', /\bbarriga\b/],
-  ['costela', /\bcostela\b/],
-];
-
-const ESTILO_PATTERNS = [
-  ['realista', /\brealismo\b|\brealista\b/],
-  ['fineline', /\bfineline\b|\bfine line\b|\btraco fino\b|\btraço fino\b/],
-  ['blackwork', /\bblackwork\b/],
-  ['old school', /\bold school\b/],
-  ['minimalista', /\bminimalista\b/],
-  ['colorida', /\bcolorida\b|\bcolorido\b/],
-  ['preto e cinza', /\bpreto e cinza\b|\bpreto e branco\b/],
-];
-
-function firstPatternValue(patterns, text) {
-  const hit = patterns.find(([, re]) => re.test(text));
-  return hit ? hit[0] : null;
+function nextTattooField(conversa = {}) {
+  const dados = conversa.dados_coletados || {};
+  const missing = missingTattooFields(dados);
+  return missing[0] || 'foto_local';
 }
 
 function cleanDescricao(raw) {
@@ -71,7 +48,7 @@ function cleanDescricao(raw) {
     .replace(/\bquanto\s+(fica|custa|e).*$/i, '')
     .replace(/\bqual\s+valor.*$/i, '')
     .replace(/\bme\s+passa\s+(o\s+)?preco.*$/i, '')
-    .replace(/\b(no|na|em)\s+(braco|antebraco|perna|costas|peito|ombro|pulso|mao|pescoco|panturrilha|coxa|canela|barriga|costela)\b.*$/i, '')
+    .replace(/\b(no|na|em)\s+(braco|antebraco|perna|costas|peito|ombro|pulso|mao|pescoco|panturrilha|coxa|canela|barriga|costela|virilha|bunda|gluteo|gluteos|nadega|nadegas)\b.*$/i, '')
     .replace(/\b(realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto e cinza|preto e branco)\b/gi, '')
     .replace(/\b(uma?|uns|umas|de|do|da|tatuagem|tattoo|tauagem)\b/gi, ' ')
     .replace(/\s+/g, ' ')
@@ -83,12 +60,12 @@ function extractTattooHints(message, dados = {}) {
   const extracted = {};
 
   if (!hasValue(dados.local_corpo)) {
-    const local = firstPatternValue(LOCAL_PATTERNS, s);
+    const local = extractLocalAnswer(s);
     if (local) extracted.local_corpo = local;
   }
 
   if (!hasValue(dados.estilo)) {
-    const estilo = firstPatternValue(ESTILO_PATTERNS, s);
+    const estilo = extractStyleAnswer(s);
     if (estilo) extracted.estilo = estilo;
   }
 
@@ -112,9 +89,7 @@ function extractTattooHints(message, dados = {}) {
 }
 
 function tattooResumeQuestion(conversa = {}) {
-  const dados = conversa.dados_coletados || {};
-  const missing = missingTattooFields(dados);
-  const next = missing[0] || 'foto_local';
+  const next = nextTattooField(conversa);
   if (next === 'descricao_curta') return 'Me conta o que tu pensa em tatuar?';
   if (next === 'local_corpo') return 'Tu imagina fazer em qual parte do corpo?';
   if (next === 'altura_cm') return 'Qual tua altura?';
@@ -160,8 +135,8 @@ function detectIntent(text) {
   if (processo) return { intent: 'processo_tatuagem', confidence: 0.9, risk: 'medium' };
 
   const tempo =
-    /\b((quanto|quantop|qnto) tempo|quantas horas|demora muito|demora quanto|faz em uma sessao|faz em 1 sessao|uma sessao|precisa de mais de uma sessao|mesmo dia)\b/.test(s)
-    && /\b(demora|tempo|horas|sessao|dia)\b/.test(s);
+    /\b((quanto|quantop|qnto) tempo|quantas horas|demora muito|demora quanto|faz em uma sessao|faz em 1 sessao|uma sessao|precisa de mais de uma sessao|mesmo dia|quantas sessoes|em quantas sessoes|seria em quantas sessoes)\b/.test(s)
+    && /\b(demora|tempo|horas|sessao|sessoes|dia)\b/.test(s);
   if (tempo) return { intent: 'tempo_sessao', confidence: 0.88, risk: 'medium' };
 
   const preco =
@@ -170,38 +145,34 @@ function detectIntent(text) {
     && (
       /\b(quanto fica|qual valor|me passa preco|me passa o preco|preco|valor|quanto custa|fica caro|tem uma media)\b/.test(s)
       || /\bquanto e\b/.test(s)
+      || /\bquanto (que|q) e\b/.test(s)
     );
   if (preco) return { intent: 'preco_generico', confidence: 0.86, risk: 'high' };
 
   return null;
 }
 
-function responseForIntent(intent, estado, conversa) {
+function responseForIntent(intent, estado, conversa, context = {}) {
   const resume = resumeQuestionForState(estado, conversa);
-  const resumed = estado === 'tattoo'
-    ? `Pra montar tua proposta certinho, preciso só de algumas infos. ${resume}`
-    : resume;
-  if (intent === 'preco_generico') {
-    return `O valor depende do tamanho, detalhe e local do corpo. O tatuador confirma certinho depois de avaliar tua ideia.\n\n${resumed}`;
-  }
-  if (intent === 'tempo_sessao') {
-    return `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\n${resumed}`;
-  }
-  if (intent === 'processo_tatuagem') {
-    return `Funciona assim: eu entendo tua ideia, junto as infos principais e o tatuador avalia pra passar valor e horário.\n\n${resumed}`;
-  }
-  return null;
+  const nextField = estado === 'tattoo' ? nextTattooField(conversa) : null;
+  return composeRouterResponse({ intent, estado, resume, nextField, context });
 }
 
-export function routeConversationTurn({ estado_atual, mensagem, conversa, disabled = false }) {
+export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant, clientContext, historico, disabled = false }) {
   if (disabled) return null;
   if (!HANDLED_STATES.has(estado_atual)) return null;
 
   const detected = detectIntent(mensagem);
   if (!detected) return null;
 
+  const pendingResolution = estado_atual === 'tattoo'
+    ? resolvePendingFormQuestion({ historico, mensagem })
+    : { pending: false, answered: false, extracted: {}, displayName: null };
   const extracted = estado_atual === 'tattoo'
-    ? extractTattooHints(mensagem, conversa?.dados_coletados || {})
+    ? {
+        ...extractTattooHints(mensagem, conversa?.dados_coletados || {}),
+        ...pendingResolution.extracted,
+      }
     : {};
   const conversaParaRetomada = estado_atual === 'tattoo'
     ? {
@@ -213,7 +184,7 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, disabl
       }
     : conversa;
 
-  const resposta = responseForIntent(detected.intent, estado_atual, conversaParaRetomada);
+  const resposta = responseForIntent(detected.intent, estado_atual, conversaParaRetomada, { tenant, clientContext, historico, pendingResolution });
   if (!resposta) return null;
 
   return {
@@ -243,5 +214,6 @@ export const _test = {
   detectIntent,
   normalize,
   resumeQuestionForState,
+  nextTattooField,
   extractTattooHints,
 };

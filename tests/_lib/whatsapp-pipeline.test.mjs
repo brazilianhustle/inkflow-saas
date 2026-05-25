@@ -43,7 +43,7 @@ function baseBatch(overrides = {}) {
 
 // mockDeps já existente ganha resposta da Etapa 0 (tenant + rows) configurável.
 // Helper que monta um supaFetch cobrindo tenant lookup, SELECT do lote, conversa, histórico.
-function batchSupaFetch({ conversa, rows, onPatch, onPost, hist = [] }) {
+function batchSupaFetch({ conversa, rows, onPatch, onPost, hist = [], newerReceived = [] }) {
   return async (path, init) => {
     // Etapa 0a: tenant lookup por id
     if (path.startsWith('/rest/v1/tenants?id=eq.') && !init?.method) {
@@ -58,6 +58,9 @@ function batchSupaFetch({ conversa, rows, onPatch, onPost, hist = [] }) {
       return new Response(JSON.stringify(conversa ? [conversa] : []), { status: 200 });
     }
     // Etapa 3: histórico
+    if (path.startsWith('/rest/v1/conversa_mensagens?session_id=') && path.includes('status=eq.received') && !init?.method) {
+      return new Response(JSON.stringify(newerReceived), { status: 200 });
+    }
     if (path.startsWith('/rest/v1/conversa_mensagens?session_id=') && !init?.method) {
       return new Response(JSON.stringify(hist), { status: 200 });
     }
@@ -381,10 +384,51 @@ test('ConversationRouter Slice 1: primeiro contato misto com preço usa router e
   assert.equal(runAgentSpy.mock.callCount(), 0);
   assert.equal(conversaPatch.dados_coletados.descricao_curta, 'anjo');
   assert.equal(conversaPatch.dados_coletados.local_corpo, 'perna');
+  assert.match(aiInsert.message.content, /^Oii, tudo bem\? Me chamo atendente/);
   assert.match(aiInsert.message.content, /O valor depende/);
   assert.match(aiInsert.message.content, /Pra montar tua proposta certinho/);
-  assert.match(aiInsert.message.content, /Qual tua altura\?/);
+  assert.match(aiInsert.message.content, /como posso te chamar\?$/i);
+  assert.doesNotMatch(aiInsert.message.content, /Qual tua altura\?/);
   assert.doesNotMatch(aiInsert.message.content, /^Oii, tudo bem\??$/);
+});
+
+test('ConversationRouter Slice 1: primeiro contato misto com "quanto que é" não cai no agent seco', async () => {
+  const runAgentSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: {},
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 101, content: 'opa' },
+        { id: 102, content: 'quero fazer um foguinho na virilha' },
+        { id: 103, content: 'quanto que é' },
+      ]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101, 102, 103] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.dados_coletados.descricao_curta, 'foguinho');
+  assert.equal(conversaPatch.dados_coletados.local_corpo, 'virilha');
+  assert.match(aiInsert.message.content, /^Oii, tudo bem\? Me chamo atendente/);
+  assert.match(aiInsert.message.content, /O valor depende/);
+  assert.match(aiInsert.message.content, /como posso te chamar\?$/i);
+  assert.doesNotMatch(aiInsert.message.content, /Qual a sua altura\?|Qual tua altura\?|sua altura/i);
 });
 
 test('ConversationRouter Slice 1.1: preço em lote misto persiste dados explícitos e retoma próximo campo', async () => {
@@ -422,6 +466,434 @@ test('ConversationRouter Slice 1.1: preço em lote misto persiste dados explíci
   assert.equal(conversaPatch.dados_coletados.local_corpo, 'braço');
   assert.match(aiInsert.message.content, /Qual tua altura\?/);
   assert.doesNotMatch(aiInsert.message.content, /Me conta o que tu pensa em tatuar\?/);
+});
+
+test('ConversationRouter Slice 1.1: se nome foi perguntado, não continua formulário técnico', async () => {
+  const runAgentSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: {},
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 101, content: 'quero fazer uma baleia na barriga' },
+        { id: 102, content: 'quanto fica' },
+      ]),
+      hist: [
+        { id: 1, message: { type: 'human', content: 'opa' } },
+        { id: 2, message: { type: 'ai', content: 'Oii, tudo bem?\n\nMe chamo Assistente, muito prazer! Como posso te chamar?' } },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101, 102] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.dados_coletados.descricao_curta, 'baleia');
+  assert.equal(conversaPatch.dados_coletados.local_corpo, 'barriga');
+  assert.equal(aiInsert.message.content, 'O valor depende do tamanho, detalhe e local do corpo. O tatuador confirma certinho depois de avaliar tua ideia.');
+  assert.doesNotMatch(aiInsert.message.content, /Qual tua altura\?/);
+  assert.doesNotMatch(aiInsert.message.content, /como posso te chamar/i);
+});
+
+test('ConversationRouter Slice 1.1: pergunta pendente de altura bloqueia próxima pergunta de coleta', async () => {
+  const runAgentSpy = mock.fn();
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'baleia', local_corpo: 'barriga' },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: 101, content: 'quanto tempo demora?' }]),
+      hist: [
+        { id: 1, message: { type: 'ai', content: 'Pra montar tua proposta certinho, preciso só de algumas infos. Qual tua altura?' } },
+      ],
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.match(aiInsert.message.content, /O tempo de sessão depende/);
+  assert.doesNotMatch(aiInsert.message.content, /estilo/i);
+  assert.doesNotMatch(aiInsert.message.content, /Pra montar tua proposta/);
+});
+
+test('ConversationRouter Slice 1.2: resposta ao nome + lateral retoma coleta', async () => {
+  const runAgentSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'aguia', local_corpo: 'costas' },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 101, content: 'sou Leandro' },
+        { id: 102, content: 'como funciona o orçamento' },
+      ]),
+      hist: [
+        { id: 1, message: { type: 'ai', content: 'Pra montar tua proposta certinho, como posso te chamar?' } },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101, 102] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.dados_coletados.descricao_curta, 'aguia');
+  assert.equal(conversaPatch.dados_coletados.local_corpo, 'costas');
+  assert.match(aiInsert.message.content, /Funciona assim/);
+  assert.match(aiInsert.message.content, /Boa, Leandro\. Me diz tua altura\?/);
+  assert.doesNotMatch(aiInsert.message.content, /Boa, Leandro\. Pra montar tua proposta certinho/);
+});
+
+test('ConversationRouter Slice 1.2: nome puro + lateral retoma coleta', async () => {
+  const runAgentSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'batman', local_corpo: 'braço' },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 101, content: 'Joao' },
+        { id: 102, content: 'como funciona o orçamento?' },
+      ]),
+      hist: [
+        { id: 1, message: { type: 'ai', content: 'Pra montar tua proposta certinho, como posso te chamar?' } },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101, 102] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.dados_coletados.descricao_curta, 'batman');
+  assert.equal(conversaPatch.dados_coletados.local_corpo, 'braço');
+  assert.match(aiInsert.message.content, /Funciona assim/);
+  assert.match(aiInsert.message.content, /Boa, Joao\. Me diz tua altura\?/);
+});
+
+test('ConversationRouter Slice 1.2: me chama de + lateral retoma coleta', async () => {
+  const runAgentSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'foguinho', local_corpo: 'virilha' },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 101, content: 'me chama de Paola' },
+        { id: 102, content: 'como funciona o orçamento' },
+      ]),
+      hist: [
+        { id: 1, message: { type: 'ai', content: 'Pra montar tua proposta certinho, como posso te chamar?' } },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101, 102] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.dados_coletados.local_corpo, 'virilha');
+  assert.match(aiInsert.message.content, /Funciona assim/);
+  assert.match(aiInsert.message.content, /Boa, Paola\. Me diz tua altura\?/);
+});
+
+test('ConversationRouter Slice 1.2: resposta à altura + lateral persiste altura e avança', async () => {
+  const runAgentSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'baleia', local_corpo: 'barriga' },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 101, content: 'tenho 1.70' },
+        { id: 102, content: 'quanto tempo demora?' },
+      ]),
+      hist: [
+        { id: 1, message: { type: 'ai', content: 'Pra montar tua proposta certinho, preciso só de algumas infos. Qual tua altura?' } },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101, 102] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.dados_coletados.altura_cm, 170);
+  assert.match(aiInsert.message.content, /O tempo de sessão depende/);
+  assert.match(aiInsert.message.content, /Tu prefere qual estilo/);
+});
+
+test('ConversationRouter Slice 1.2: altura após retomada compacta persiste e avança', async () => {
+  const runAgentSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'rosa', local_corpo: 'braço' },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 101, content: 'tenho 160' },
+        { id: 102, content: 'quantas sessoes seria?' },
+      ]),
+      hist: [
+        { id: 1, message: { type: 'ai', content: 'O valor depende do tamanho, detalhe e local do corpo. O tatuador confirma certinho depois de avaliar tua ideia.\n\nBoa, Joane. Me diz tua altura?' } },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101, 102] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.dados_coletados.altura_cm, 160);
+  assert.match(aiInsert.message.content, /O tempo de sessão depende/);
+  assert.match(aiInsert.message.content, /Tu prefere qual estilo/);
+  assert.doesNotMatch(aiInsert.message.content, /Me diz tua altura\?/);
+});
+
+test('ConversationRouter Slice 1.2: resposta ao estilo + lateral persiste estilo e pede foto', async () => {
+  const runAgentSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'hiena', local_corpo: 'panturrilha', altura_cm: 170 },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 101, content: 'realismo' },
+        { id: 102, content: 'em quantas sessoes seria' },
+      ]),
+      hist: [
+        { id: 1, message: { type: 'ai', content: 'Me diz o estilo que tu prefere?' } },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101, 102] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.dados_coletados.estilo, 'realismo');
+  assert.match(aiInsert.message.content, /O tempo de sessão depende/);
+  assert.match(aiInsert.message.content, /foto do local/);
+});
+
+test('ConversationRouter Slice 1.3: preço repetido usa resposta curta e preserva coleta', async () => {
+  const runAgentSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'hiena', local_corpo: 'perna', altura_cm: 180 },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: 101, content: 'quanto é?' }]),
+      hist: [
+        { id: 1, message: { type: 'ai', content: 'O valor depende do tamanho, detalhe e local do corpo. O tatuador confirma certinho depois de avaliar tua ideia.' } },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.dados_coletados.altura_cm, 180);
+  assert.match(aiInsert.message.content, /^Isso, o valor fecha depois da avaliação do tatuador\./);
+  assert.doesNotMatch(aiInsert.message.content, /O valor depende do tamanho/);
+});
+
+test('ConversationRouter Slice 1.3: resposta ao estilo + lateral não repete retomada longa', async () => {
+  const runAgentSpy = mock.fn();
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'hiena', local_corpo: 'perna', altura_cm: 180 },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 101, content: 'realismo' },
+        { id: 102, content: 'quanto é?' },
+      ]),
+      hist: [
+        { id: 1, message: { type: 'ai', content: 'Pra montar tua proposta certinho, preciso só de algumas infos. Me diz o estilo que tu prefere?' } },
+      ],
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101, 102] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.doesNotMatch(aiInsert.message.content, /Pra montar tua proposta certinho, preciso só de algumas infos/);
+  assert.match(aiInsert.message.content, /Com isso já ajuda bastante\. Consegue mandar uma foto do local\?/);
+});
+
+test('Pipeline: se chega mensagem humana mais nova durante processamento, difere resposta stale', async () => {
+  const runAgentSpy = mock.fn(async () => ({
+    ok: true,
+    resposta_cliente: 'Fechou, Joane! E qual a sua altura?',
+    estado_novo: 'tattoo',
+    dados_persistidos: {},
+    proxima_acao: 'pergunta',
+    agent_usado: 'tattoo',
+  }));
+  let conversaPatch = null;
+  let aiInsert = null;
+  let processedPatch = null;
+  const evoCalls = [];
+  const adminCalls = [];
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'foguinho', local_corpo: 'bunda' },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: 101, content: 'Joane' }]),
+      hist: [
+        { id: 1, message: { type: 'ai', content: 'Pra montar tua proposta certinho, como posso te chamar?' } },
+      ],
+      newerReceived: [
+        { id: 102, message: { type: 'human', content: 'como funciona o orçamento' } },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+        if (path.startsWith('/rest/v1/conversa_mensagens?id=in.')) processedPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+    evoSend: async (_tenant, payload) => { evoCalls.push(payload); return { ok: true }; },
+    sendTelegramAdmin: async (text) => { adminCalls.push(text); return { ok: true }; },
+  });
+
+  await assert.rejects(
+    () => processBatch({}, baseBatch({ msgRowIds: [101] }), deps),
+    /stale-batch/,
+  );
+
+  assert.equal(runAgentSpy.mock.callCount(), 1);
+  assert.equal(conversaPatch, null, 'não deve atualizar conversa com resposta stale');
+  assert.equal(aiInsert, null, 'não deve inserir AI que não foi enviada');
+  assert.equal(processedPatch, null, 'não deve marcar o lote como processed/failed');
+  assert.equal(evoCalls.length, 0, 'não deve enviar pergunta antiga no WhatsApp');
+  assert.equal(adminCalls.length, 0, 'stale batch é retry controlado, sem alerta de falha');
 });
 
 test('2. terminal aguardando_tatuador — Task 8 implementa', async () => {
@@ -673,7 +1145,7 @@ test('12. typing delay aplicado antes do evoSend (UX: bot nao parece robo)', asy
 });
 
 test('14. historico query usa whitelist status=eq.processed (anti history poisoning)', async () => {
-  let histQuery = null;
+  const histQueries = [];
   const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
   const deps = mockDeps({
     supaFetch: async (path, init) => {
@@ -687,7 +1159,7 @@ test('14. historico query usa whitelist status=eq.processed (anti history poison
         return new Response(JSON.stringify([conversa]), { status: 200 });
       }
       if (path.startsWith('/rest/v1/conversa_mensagens?session_id=')) {
-        histQuery = path;
+        histQueries.push(path);
         return new Response('[]', { status: 200 });
       }
       return new Response('[]', { status: 200 });
@@ -695,6 +1167,8 @@ test('14. historico query usa whitelist status=eq.processed (anti history poison
     runAgent: async () => ({ ok: true, resposta_cliente: 'r', estado_novo: 'tattoo', dados_persistidos: {}, proxima_acao: 'pergunta', agent_usado: 'tattoo' }),
   });
   await processBatch({}, baseBatch(), deps);
+  const histQuery = histQueries.find(path => path.includes('status=eq.processed'));
+  assert.ok(histQuery, `deve consultar historico processed (queries: ${histQueries.join(' | ')})`);
   assert.match(histQuery, /status=eq\.processed/, 'whitelist (only processed)');
   assert.doesNotMatch(histQuery, /status=neq\.failed/, 'nao usa mais blacklist');
 });

@@ -23,6 +23,7 @@ import { callTool } from './_lib/call-tool.js';
 import { calcularValorSinal } from './_lib/calcular-sinal.js';
 import { formatLinkSinalMessage, formatPixSinalMessage } from './_lib/format-link-sinal-msg.js';
 import { logAgentTurn } from '../../_lib/telemetry/agent-turn-logger.js';
+import { detectBodyLocation } from '../../_lib/conversation-policy.js';
 
 const HEADERS = {
   'Content-Type': 'application/json',
@@ -317,18 +318,8 @@ function forceAmbiguousTattooPhotoQuestion(out, dadosApos, conversa) {
   };
 }
 
-const BODY_REGION_ALIASES = [
-  { key: 'braco', label: 'braco', re: /\b(braco|braço|antebraco|antebraço|biceps|bíceps|pulso)\b/i },
-  { key: 'perna', label: 'perna', re: /\b(perna|coxa|panturrilha|canela|joelho|tornozelo)\b/i },
-  { key: 'costas', label: 'costas', re: /\b(costas|nuca)\b/i },
-  { key: 'peito', label: 'peito', re: /\b(peito|torax|tórax)\b/i },
-  { key: 'ombro', label: 'ombro', re: /\b(ombro)\b/i },
-  { key: 'costela', label: 'costela', re: /\b(costela|lateral)\b/i },
-];
-
 function detectBodyRegion(text) {
-  const s = normalizeTokenText(text);
-  return BODY_REGION_ALIASES.find(r => r.re.test(s)) || null;
+  return detectBodyLocation(text);
 }
 
 function findVisualBodyRegion(out) {
@@ -359,6 +350,22 @@ function forceBodyRegionMismatchQuestion(out, dadosApos) {
       campos_conflitantes: ['local_corpo'],
       payload_portfolio: null,
     },
+    changed: true,
+  };
+}
+
+function applyTextLocalHint(out, dadosApos, mensagem) {
+  if (hasValue(dadosApos?.local_corpo)) return { out, dadosApos, changed: false };
+  const region = detectBodyRegion(mensagem);
+  if (!region) return { out, dadosApos, changed: false };
+  const nextDados = { ...dadosApos, local_corpo: region.label };
+  return {
+    out: {
+      ...out,
+      dados_persistidos: { ...(out.dados_persistidos || {}), local_corpo: region.label },
+      campos_faltando: (out.campos_faltando || []).filter(c => c !== 'local_corpo'),
+    },
+    dadosApos: nextDados,
     changed: true,
   };
 }
@@ -522,6 +529,9 @@ export async function runAgent({
     // foto (a foto continua OPCIONAL — basta ter sido pedida 1x).
     let dadosApos = mergePreservingExisting(conversa?.dados_coletados || {}, out.dados_persistidos || {});
     out = { ...out, dados_persistidos: mergePreservingExisting(out.dados_persistidos || {}, dadosApos) };
+    const localPatch = applyTextLocalHint(out, dadosApos, mensagem);
+    out = localPatch.out;
+    dadosApos = localPatch.dadosApos;
     const stylePatch = applyShortStyleAnswer(out, dadosApos, mensagem);
     out = stylePatch.out;
     dadosApos = stylePatch.dadosApos;

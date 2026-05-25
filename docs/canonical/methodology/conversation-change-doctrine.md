@@ -169,6 +169,18 @@ Para cada slice:
 5. Se a mesma família falhar de novo, abrir plano de redesenho.
 6. Só avançar para o próximo slice quando o slice atual estiver estável em teste e smoke.
 
+## Checkpoint Operacional
+
+Antes de iniciar outro slice conversacional, fechar o estado atual:
+
+1. `git status --short` revisado.
+2. Arquivos novos/modificados entendidos.
+3. Testes relevantes rodados ou exceção registrada.
+4. Handoff/decision log atualizado quando houver mudança de direção.
+5. Commit feito, ou WIP explicitamente assumido como tal.
+
+Não iniciar nova frente sobre mudanças fundacionais soltas no worktree. Se a mudança passa a ser base para próximos prompts, router, policy, composer ou guardrails, ela deve virar checkpoint no git antes do próximo ataque.
+
 ## Frase De Controle
 
 Antes de mergear qualquer mudança conversacional:

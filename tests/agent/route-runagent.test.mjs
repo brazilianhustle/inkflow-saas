@@ -305,6 +305,53 @@ test('runAgent (tattoo): resposta curta de estilo nao confirma altura antiga', a
   assert.doesNotMatch(r.resposta_cliente, /170cm/);
 });
 
+test('runAgent (tattoo): recupera local glúteo do texto quando agent nao persistiu', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = {
+    ...CONVERSA_STUB,
+    dados_coletados: {},
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511',
+    mensagem: 'quero fazer uma borboleta na bunda',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB,
+    conversa,
+    clientContext: {},
+    openaiClient: {
+      responses: {
+        parse: async () => ({
+          status: 'completed',
+          id: 'r',
+          output_parsed: { output: {
+            proxima_acao: 'pergunta',
+            resposta_cliente: 'Qual parte do corpo?',
+            dados_persistidos: {
+              descricao_curta: 'borboleta',
+              local_corpo: null,
+              altura_cm: null,
+              estilo: null,
+              tamanho_cm: null,
+              cor_preferencia: null,
+              foto_local: null,
+            },
+            dados_completos: false,
+            campos_faltando: ['local_corpo', 'altura_cm', 'estilo'],
+            campos_conflitantes: [],
+            payload_portfolio: null,
+            analise_imagens: null,
+            cobertura_suspeita: null,
+          } },
+        }),
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.dados_persistidos.local_corpo, 'glúteo');
+  assert.deepEqual(r.campos_faltando, ['altura_cm', 'estilo']);
+  assert.doesNotMatch(r.resposta_cliente, /parte do corpo/i);
+});
+
 test('runAgent (tattoo): foto de corpo ja tatuado no turno atual vira pergunta de ambiguidade', async () => {
   const { runAgent } = await import('../../functions/api/agent/route.js');
   const conversa = {

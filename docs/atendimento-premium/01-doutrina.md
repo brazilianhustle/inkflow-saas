@@ -165,3 +165,23 @@ Sinais para parar e repensar:
 - regex longa sem teste de falso positivo;
 - resposta tecnicamente correta mas desatenta ao que o cliente já disse;
 - necessidade de explicar ao humano por que a resposta "faz sentido" mesmo soando ruim.
+
+## Disciplina Operacional
+
+Nenhuma frente nova deve começar em cima de WIP ambíguo.
+
+Antes de avançar para outro slice:
+
+1. Rodar `git status --short`.
+2. Entender todo arquivo modificado ou não rastreado.
+3. Rodar os testes relevantes da frente.
+4. Atualizar handoff/decision log quando a direção mudou.
+5. Fazer um commit coerente ou registrar explicitamente que o trabalho continuará como WIP.
+
+Regra prática:
+
+```text
+Se a mudança virou fundação para próximos passos, ela precisa estar commitada antes do próximo ataque.
+```
+
+Isso evita que a próxima sessão dependa de memória de chat, arquivos soltos ou estado local não compartilhado.

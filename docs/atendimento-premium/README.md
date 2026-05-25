@@ -40,6 +40,9 @@ Depois disso o sistema decide se deve:
 - [04-ciclo-implementacao-validacao.md](./04-ciclo-implementacao-validacao.md): loop de mapear, implementar, testar, ajustar.
 - [05-arquitetura-alvo.md](./05-arquitetura-alvo.md): arquitetura desejada em camadas.
 - [06-plano-tecnico-slice-1.md](./06-plano-tecnico-slice-1.md): plano técnico do primeiro slice do ConversationRouter.
+- [07-arquitetura-prompt-premium.md](./07-arquitetura-prompt-premium.md): visão de general da arquitetura de prompt, policy, router, composer, guardrails e próximos slices para bot premium.
+- [08-decision-log.md](./08-decision-log.md): decisões técnicas e estratégicas da frente de atendimento premium.
+- [09-session-handoff.md](./09-session-handoff.md): ponto de retomada para próximas sessões em Claude Code, Codex e NotebookLM.
 - [templates/intent-card.md](./templates/intent-card.md): template para cadastrar novas intents.
 - [templates/smoke-card.md](./templates/smoke-card.md): template para validar no WhatsApp real.
 

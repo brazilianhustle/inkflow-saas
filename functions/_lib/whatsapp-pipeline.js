@@ -27,6 +27,15 @@ export const TYPING_DELAY_MS = 1500;
 // Cap de imagens enviadas ao LLM por turno (custo). A Etapa 4.5 usa fotos[] (sem cap).
 const MAX_IMAGENS_VISAO = 4;
 
+export class StaleBatchError extends Error {
+  constructor(message, pendingMsgRowIds = []) {
+    super(message);
+    this.name = 'StaleBatchError';
+    this.pendingMsgRowIds = pendingMsgRowIds;
+    this.retryable = true;
+  }
+}
+
 // DB usa nomes legacy (coletando_tattoo/cadastro) por causa do CHECK constraint
 // herdado do n8n. Agent SDK usa nomes curtos (tattoo/cadastro). Mapeamos nas
 // fronteiras: ler do DB -> dbToAgent, escrever no DB -> agentToDb.
@@ -82,6 +91,23 @@ async function markStatus(deps, msgRowIds, status) {
   await deps.supaFetch(`/rest/v1/conversa_mensagens?id=in.(${msgRowIds.join(',')})`, {
     method: 'PATCH', body: JSON.stringify({ status }),
   });
+}
+
+async function assertNoNewerReceivedMessages(deps, session_id, msgRowIds) {
+  const maxId = Math.max(...msgRowIds.map(Number).filter(Number.isFinite));
+  if (!Number.isFinite(maxId)) return;
+  const res = await deps.supaFetch(
+    `/rest/v1/conversa_mensagens?session_id=eq.${encodeURIComponent(session_id)}` +
+    `&status=eq.received&id=gt.${maxId}&order=id.asc&select=id,message`,
+  );
+  const rows = await res.json();
+  if (!res.ok || !Array.isArray(rows) || rows.length === 0) return;
+  const humanRows = rows.filter(r => r?.message?.type === 'human');
+  if (humanRows.length === 0) return;
+  throw new StaleBatchError(
+    `stale-batch: novas mensagens humanas chegaram durante o processamento (${humanRows.map(r => r.id).join(',')})`,
+    humanRows.map(r => r.id),
+  );
 }
 
 export async function processBatch(env, batch, depsOverride = {}) {
@@ -228,7 +254,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
         tenant,
         conversa: { ...conversa, estado_agente: estadoAgente },
         clientContext: {
-          is_first_contact: isFirstContactGreetingOnly,
+          is_first_contact: isFirstContact,
           batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
           batch_joined_by: 'newline',
         },
@@ -281,6 +307,12 @@ export async function processBatch(env, batch, depsOverride = {}) {
         console.warn('[pipeline] router telemetry failed:', e?.message || e);
       }
     }
+
+    // Guarda anti-resposta stale: se o cliente mandou nova mensagem enquanto o
+    // agent/router calculava a resposta, nao envie uma pergunta antiga por cima.
+    // O DO ainda guarda o lote atual + o novo id; ao receber 5xx ele re-tenta
+    // depois e os baloes entram em um unico turno.
+    await assertNoNewerReceivedMessages(deps, session_id, msgRowIds);
 
     // Etapa 5: UPDATE conversa
     const isCadastro = agentOut.agent_usado === 'cadastro';
@@ -399,6 +431,12 @@ export async function processBatch(env, batch, depsOverride = {}) {
     // Marca TODAS as msgs do lote processed (depois das Etapas 7-8).
     await markStatus(deps, msgRowIds, 'processed');
   } catch (e) {
+    if (e instanceof StaleBatchError || e?.name === 'StaleBatchError') {
+      console.warn('[pipeline] stale batch deferred:', {
+        session_id, msgRowIds, pendingMsgRowIds: e.pendingMsgRowIds || [], error: e.message,
+      });
+      throw e;
+    }
     console.error('[pipeline] batch failed:', { session_id, msgRowIds, error: e.message, stack: e.stack });
     await markStatus(deps, msgRowIds, 'failed').catch(() => {});
     await deps.sendTelegramAdmin(`🚨 pipeline batch failed (sessao ${session_id}): ${e.message}\n${preview(e.stack, 500)}`);

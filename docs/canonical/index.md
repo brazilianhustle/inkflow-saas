@@ -27,6 +27,7 @@ related: [stack.md, flows.md, ids.md, secrets.md, limits.md, runbooks/README.md,
 | `limits.md` | Quotas de Vultr / CF Workers / CF Pages / Supabase / MP / MailerLite / Telegram / n8n / LLM providers + thresholds warn/critical. Alimenta auditores #3 (VPS limits) e #5 (billing health) do Sub-projeto 3. |
 | `runbooks/` | Procedimentos operacionais. Ver `runbooks/README.md` pro índice completo + `runbooks/<incidente>.md` por procedimento. |
 | `methodology/index.md` | Doutrina de operação: matriz principal-subagent, incident-response, release-protocol, eval comparativo e doutrina para mudanças conversacionais. Ver `methodology/` pro índice completo. |
+| `decisions/2026-05-24-atendimento-premium-hybrid-architecture.md` | Decisão canônica de arquitetura híbrida para atendimento premium: router, policy, composer, prompt, guardrails e handoff de continuidade. |
 
 ## Runbooks disponíveis
 
