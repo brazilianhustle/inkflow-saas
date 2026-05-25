@@ -151,6 +151,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** cada rodada pode executar até 2 micro-slices relacionados, mas cada micro-slice ainda precisa ter validação, registro e checkpoint saudável. Qualquer falha de smoke real, deploy, cleanup ou gate interrompe a rodada e volta para triage.
 
+## 2026-05-25 - Compactação precisa ser bundle portátil, não só hook local
+
+**Status:** decidido.
+
+**Decisão:** a retomada após compactação deve usar um bundle versionado e executável por comando explícito: `bash scripts/smoke/continuity-bundle.sh --force`.
+
+**Motivo:** o hook `SessionStart` em `.claude/settings.json` é útil no Claude Code, mas não dispara em Codex/API. O loop estava documentado, mas a continuidade ainda dependia do chat lembrar de comandos quando o contexto já estava baixo.
+
+**Alternativas rejeitadas:**
+
+- depender somente do hook Claude Code;
+- tentar controlar a compactação interna do cliente;
+- manter a retomada apenas como lista manual de arquivos;
+- deixar script local sem versionamento.
+
+**Camada responsável:** processo de smoke/continuidade, documentado em `12-loop-continuity-protocol.md` e `17-context-compact-architecture.md`.
+
+**Impacto:** abaixo de 20% de contexto, a operação padrão é gerar o bundle portátil, confirmar gates e seguir pelo repo como fonte de verdade. Nenhum script local promete forçar a compactação interna do Codex; ele torna a retomada determinística.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
@@ -162,6 +181,14 @@ Ainda falta decidir e implementar a extensão da `QuestionPolicy` para:
 - email;
 - recusa de email;
 - dúvidas laterais durante cadastro.
+
+### Copy premium de maioridade
+
+Ainda falta refinar a linguagem para idade isolada/data de nascimento:
+
+- evitar frase fria como "idade nao e suficiente";
+- explicar que a data completa e exigida por seguranca e registro de maioridade;
+- manter bloqueio funcional para menoridade sem soar acusatorio.
 
 ### IntentPolicy
 

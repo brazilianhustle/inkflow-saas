@@ -38,22 +38,22 @@ main
 Último commit observado após checkpoint:
 
 ```text
-987646e fix: ensure first contact intro in tattoo flow
+b4710e2 chore: add portable context continuity bundle
 ```
 
 Último deploy de referência da frente:
 
 ```text
-https://3ff8fcec.inkflow-saas.pages.dev
+https://inkflowbrasil.com
 ```
 
 Status estratégico:
 
 ```text
-Atendimento premium avançou para correção de regressões encontradas em smoke real manual.
-O eixo estratégico é híbrido: orientar o modelo no prompt e usar guardrails pequenos fora do prompt apenas onde o comportamento precisa ser garantido.
-Foram corrigidos: cadastro pendente via router, estilo "old school" virando nome, adiamento da foto do local e primeiro contato misto pulando apresentação.
-Achado residual ainda válido: ao completar cadastro via router com recusa de email + dúvida lateral, o bot diz que segue com o orçamento, mas o estado permanece em coletando_cadastro. Próximo slice deve fechar a transição/handoff de cadastro completo depois dos smokes manuais atuais.
+Atendimento premium esta em Autonomy Gate Level 2, com smoke loop real/HTTP monitorado, transcript, julgamento, tail e gates por slice.
+O cadastro-handoff esta funcionalmente protegido: cadastro completo promove para aguardando_tatuador, handoff exige orcid nos smokes relevantes e idade isolada nao persiste data/email vazios.
+O compact integrado foi corrigido na arquitetura: existe hook Claude Code, mas a retomada oficial agora e portavel via `bash scripts/smoke/continuity-bundle.sh --force`, adequado para Codex/API.
+Achado de linguagem registrado: resposta para idade isolada ("idade nao e suficiente") esta funcionalmente correta, mas fria; deve entrar em ajuste futuro de copy/ResponseComposer, sem bloquear a fundacao.
 ```
 
 ## Mudanças Funcionais Do Checkpoint
@@ -117,6 +117,19 @@ docs/canonical/methodology/conversation-change-doctrine.md
 docs/atendimento-premium/01-doutrina.md
 ```
 
+Arquivos de processo/smoke adicionados ou alterados nesta sessão:
+
+```text
+.claude/settings.json
+scripts/smoke/continuity-bundle.sh
+docs/atendimento-premium/12-loop-continuity-protocol.md
+docs/atendimento-premium/17-context-compact-architecture.md
+docs/atendimento-premium/current-objective.md
+docs/atendimento-premium/smoke-runs.md
+docs/atendimento-premium/autonomy-gate.env
+docs/atendimento-premium/slice-gates/cadastro-handoff.env
+```
+
 Skills de continuidade ajustadas fora do repo ativo:
 
 ```text
@@ -134,6 +147,36 @@ Contrato atual:
 Antes de continuar, conferir `git status --short`. A expectativa após este checkpoint é worktree limpo.
 
 ## Último Smoke Considerado PASS Nesta Frente
+
+### Smoke monitorado atual - 2026-05-25
+
+Run de referência:
+
+```text
+scenario-cadastro-data-idade-nao-persiste-20260525T090055Z-20793
+```
+
+Alvo:
+
+```text
+https://inkflowbrasil.com
+```
+
+Resultado:
+
+```text
+PASS
+estado_agente: coletando_cadastro
+data_nascimento_persistida: false
+email_vazio_persistido: false
+copy_risk: baixo
+```
+
+Decisão:
+
+```text
+O sistema nao aceita idade isolada como data de nascimento registravel e nao persiste campos vazios. Linguagem ainda deve ser refinada em etapa futura de copy premium.
+```
 
 ### Correções de smoke - 2026-05-25
 
@@ -299,29 +342,41 @@ Ultima execucao local registrada em 2026-05-25:
 26 testes prompt/snapshot PASS
 ```
 
+Ultima execucao de processo registrada em 2026-05-25:
+
+```text
+bash -n scripts/smoke/continuity-bundle.sh PASS
+bash scripts/smoke/continuity-bundle.sh --force PASS
+hook SessionStart simulado PASS
+bash scripts/smoke/check-autonomy-gate.sh PASS
+bash scripts/smoke/check-slice-gate.sh cadastro-handoff PASS
+GitHub Actions Tests PASS
+GitHub Actions Deploy to Cloudflare Pages PASS
+```
+
 ## Próxima Ação Recomendada
 
 Antes de codar nova frente:
 
 1. Confirmar worktree.
-2. Rodar testes relevantes.
-3. Rodar smoke manual do primeiro contato misto no WhatsApp.
-4. Validar tambem os casos `old school`, `agora nao consigo` e cadastro com recusa de email.
-5. Confirmar o achado residual do smoke de cadastro.
+2. Rodar `bash scripts/smoke/continuity-bundle.sh --force` se o contexto estiver abaixo de 20% ou a sessao tiver sido compactada.
+3. Confirmar Autonomy Gate Level 2 e gate do slice relacionado.
+4. Atacar no maximo 2 micro-slices relacionados por rodada.
+5. Registrar smoke em `smoke-runs.md` e atualizar o gate do slice antes de ampliar autonomia.
 
 Minha recomendação estratégica:
 
 ```text
-Se os smokes manuais passarem, nao avançar para IntentPolicy antes de fechar a transição de cadastro completo quando a completude veio pelo router.
+Nao avançar para IntentPolicy ampla antes de consolidar os proximos micro-slices de fundacao com smoke real/HTTP e gate por slice.
 ```
 
 Depois disso, o próximo melhor ataque é:
 
 ```text
-CadastroCompletePolicy / handoff seguro após router completar cadastro
+Ajuste pequeno de copy premium para respostas de maioridade/data de nascimento ou proximo micro-slice de fundacao definido pelo current-objective.md.
 ```
 
-Motivo: o smoke real provou coleta e recusa de email, mas revelou que a fala de "sigo com teu orçamento" ainda não corresponde a uma transição operacional. Antes de ampliar intents, fechar essa fronteira evita conversa travada em cadastro completo.
+Motivo: a transição de cadastro já foi protegida por gate, mas a próxima expansão deve continuar pequena e verificável. O gap atual mais claro é de linguagem premium em maioridade/data de nascimento, não de arquitetura central.
 
 ## Checklist De Fechamento De Sessão
 
