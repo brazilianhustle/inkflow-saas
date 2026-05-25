@@ -30,6 +30,7 @@ docs/atendimento-premium/smoke-scenarios/
   whatsapp-real-cadastro-handoff.env
   whatsapp-real-lateral-historia-vida-homenagem.env
   whatsapp-real-lateral-pergunta-imagem-com-midia.env
+  whatsapp-real-lateral-portfolio-disponivel.env
   whatsapp-real-lateral-preco-generico.env
   whatsapp-real-lateral-processo-tatuagem.env
   whatsapp-real-lateral-tempo-sessao.env
@@ -247,6 +248,23 @@ estado final deve continuar coletando_tattoo
 resposta deve mencionar envio/exemplos/trabalhos/referencias
 resposta nao pode escrever URL manual, preco ou fechamento de valor
 tail deve mostrar acionamento de portfolio
+```
+
+`whatsapp-real-lateral-portfolio-disponivel`
+
+Objetivo:
+
+```text
+Validar a mesma entrega de portfolio em cadeia real central -> WhatsApp -> bot -> webhook -> pipeline.
+```
+
+Contrato:
+
+```text
+estado final deve continuar coletando_tattoo
+resposta deve mencionar envio/exemplos/trabalhos/referencias
+resposta nao pode escrever URL manual, preco, agendamento, sinal ou fechamento de valor
+tail deve mostrar acionamento de portfolio e nao pode mostrar falha de envio
 ```
 
 `lateral-historia-vida-homenagem`
