@@ -232,6 +232,18 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `tattoo-cliente-irritado-handoff` agora valida conversa, tail, estado, copy e row `agent_name=escalation_manager` no mesmo processo.
 
+## 2026-05-25 - WhatsApp real e o critério definitivo por micro-slice
+
+**Status:** decidido.
+
+**Decisão:** para mudanças conversacionais, HTTP production smoke passa a ser somente radar inicial. O criterio definitivo e um scenario `whatsapp_real` rodando pela instancia `central` para o numero oficial do bot, com webhook real, resposta real, transcript, julgamento e gates do scenario.
+
+**Motivo:** HTTP valida muito do servidor, mas nao valida a cadeia completa Evolution/WhatsApp/webhook/resposta visivel. O risco aparece tarde demais se o WhatsApp real ficar apenas para o fim de um bloco grande.
+
+**Regra:** rodar WhatsApp real por micro-slice assim que o HTTP passar. No fim de um bloco, rodar gate/rehearsal consolidado, mas nao usar o fim do bloco como primeira validacao real.
+
+**Impacto:** foram criados e rodados scenarios WhatsApp real para os gaps recentes: idade isolada, menoridade, cobertura, pedido humano e cliente irritado. `cadastro-handoff` e `escalation-manager` agora exigem esses PASS reais em seus slice gates.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

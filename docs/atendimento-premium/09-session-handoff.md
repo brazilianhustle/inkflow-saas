@@ -38,7 +38,7 @@ main
 Último commit observado após checkpoint:
 
 ```text
-f9a5bd6 feat: gate smoke scenarios on agent logs
+docs: require real whatsapp validation per slice
 ```
 
 Último deploy de referência da frente:
@@ -54,6 +54,7 @@ Atendimento premium esta em Autonomy Gate Level 2, com smoke loop real/HTTP moni
 O cadastro-handoff esta funcionalmente protegido: cadastro completo promove para aguardando_tatuador, handoff exige orcid nos smokes de orcamento, idade isolada nao persiste data/email vazios e menoridade explicita aciona handoff humano sem criar orcamento.
 Escalation Manager existe como primeira camada formal para handoff humano: menoridade gera `reason_code=minor_age`, cobertura textual gera `reason_code=cover_up`, pedido humano gera `reason_code=human_requested` e cliente irritado gera `reason_code=client_upset`; todos com `requires_orcid=false`, texto Telegram rastreavel e row propria em `agent_turn_logs` via `agent_name=escalation_manager`.
 O smoke registry agora consegue transformar essa observabilidade em gate automatico com `EXPECTED_AGENT_LOG_JQ_TRUE`.
+Politica corrigida: HTTP production smoke e radar inicial; WhatsApp real e validacao definitiva por micro-slice conversacional. Nao declarar slice fechado sem scenario `whatsapp_real` correspondente ou rehearsal real equivalente no gate.
 O compact integrado foi corrigido na arquitetura: existe hook Claude Code, mas a retomada oficial agora e portavel via `bash scripts/smoke/continuity-bundle.sh --force`, adequado para Codex/API.
 Achado de linguagem da idade isolada foi corrigido para pedir data completa com seguranca e registro de maioridade.
 ```
@@ -161,7 +162,7 @@ Antes de continuar, conferir `git status --short`. A expectativa após este chec
 Run de referência:
 
 ```text
-scenario-tattoo-cliente-irritado-handoff-20260525T182425Z-29429
+scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T184724Z-19864
 ```
 
 Alvo:
@@ -182,6 +183,7 @@ tail_gate: sem enviar-orcamento-tatuador/pipeline batch failed/unhandled
 escalation: client_upset / high / requires_orcid=false
 observability: agent_turn_logs agent_name=escalation_manager reason_code=client_upset
 observability_gate: EXPECTED_AGENT_LOG_JQ_TRUE PASS
+chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
 
 Decisão:

@@ -15,6 +15,11 @@ Ao fim de smoke monitorado:
 
 | Data UTC | Run ID | Tipo | Alvo | Telefone | Resultado | Evidencia | Decisao |
 |---|---|---|---|---|---|---|---|
+| 2026-05-25 18:47 | `scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T184724Z-19864` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T184724Z-19864/` | Cliente irritado validado em cadeia real: Evolution `central` enviou mensagem real, webhook registrou humano exato, `estado=aguardando_tatuador`, `orcid=null`, copy de desescalada segura, bot/tail/poll/agent-log gates PASS com `reason_code=client_upset`. |
+| 2026-05-25 18:46 | `scenario-whatsapp-real-tattoo-pedido-humano-handoff-20260525T184623Z-2465` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-tattoo-pedido-humano-handoff-20260525T184623Z-2465/` | Pedido humano/tatuador validado em cadeia real: Evolution `central` enviou mensagem real, webhook registrou humano exato, `estado=aguardando_tatuador`, `orcid=null`, resposta acionou tatuador sem seguir coleta, tail limpo e agent-log gate PASS com `reason_code=human_requested`. |
+| 2026-05-25 18:44 | `scenario-whatsapp-real-tattoo-cobertura-handoff-humano-20260525T184418Z-30244` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-tattoo-cobertura-handoff-humano-20260525T184418Z-30244/` | Cobertura validada em cadeia real: Evolution `central` enviou mensagem real, webhook registrou humano exato, `estado=aguardando_tatuador`, `orcid=null`, resposta acionou avaliacao humana segura, tail limpo e agent-log gate PASS com `reason_code=cover_up`. |
+| 2026-05-25 18:43 | `scenario-whatsapp-real-cadastro-menoridade-handoff-humano-20260525T184312Z-15629` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-cadastro-menoridade-handoff-humano-20260525T184312Z-15629/` | Menoridade validada em cadeia real: setup cadastro aguardando data, Evolution `central` enviou `12/03/2015`, webhook registrou humano exato, `estado=aguardando_tatuador`, `data_nascimento=2015-03-12`, `orcid=null`, tail limpo e agent-log gate PASS com `reason_code=minor_age`. |
+| 2026-05-25 18:41 | `scenario-whatsapp-real-cadastro-data-idade-nao-persiste-20260525T184123Z-9732` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-cadastro-data-idade-nao-persiste-20260525T184123Z-9732/` | Idade isolada validada em cadeia real: setup cadastro aguardando data, Evolution `central` enviou `tenho 31 anos`, webhook registrou humano exato, `estado=coletando_cadastro`, `dados_cadastro` preservou apenas `nome`, `data_nascimento=null`, `orcid=null`, copy risk baixo e bot/poll gates PASS. |
 | 2026-05-25 18:24 | `scenario-tattoo-cliente-irritado-handoff-20260525T182425Z-29429` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-cliente-irritado-handoff-20260525T182425Z-29429/` | Gate automatico de observabilidade validado: comportamento permaneceu `estado=aguardando_tatuador`, `orcid=null`, copy risk baixo, bot/tail/poll gates PASS e `scenario-agent-log-jq.txt` confirmou `agent_turn_logs` com `agent_name=escalation_manager`, `reason_code=client_upset`, `severity=high`, `requires_orcid=false`. |
 | 2026-05-25 18:10 | `scenario-tattoo-cliente-irritado-handoff-20260525T181051Z-11526` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-cliente-irritado-handoff-20260525T181051Z-11526/` | Telemetria explicita do Escalation Manager validada em producao: comportamento permaneceu `estado=aguardando_tatuador`, `orcid=null`, copy de desescalada segura e Supabase `agent_turn_logs` registrou `agent_name=escalation_manager`, `reason_code=client_upset`, `severity=high`, `requires_orcid=false`. |
 | 2026-05-25 17:42 | `scenario-tattoo-cliente-irritado-handoff-20260525T174206Z-4099` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-cliente-irritado-handoff-20260525T174206Z-4099/` | Cliente irritado validado em producao: lead novo com "voces demoram demais, ninguem responde" virou `estado=aguardando_tatuador`, `orcid=null`, resposta pediu desculpa pela frustracao e acionou pessoa do estudio, sem formulario/preco/agendamento/sinal, bot text/tail/poll jq gates PASS. |
@@ -46,7 +51,7 @@ Ao fim de smoke monitorado:
 
 ## Run De Referencia Atual
 
-### `scenario-tattoo-cliente-irritado-handoff-20260525T182425Z-29429`
+### `scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T184724Z-19864`
 
 Mensagem:
 
@@ -73,6 +78,7 @@ Entendi, desculpa pela frustração. Vou acionar uma pessoa do estúdio para ass
 Leitura estrategica:
 
 - PASS tecnico.
+- PASS definitivo via WhatsApp real `central -> bot`.
 - Cliente claramente irritado nao entra em coleta normal e nao cria orcamento.
 - Escalation Manager classifica o motivo como `client_upset`, com severidade alta e sem `orcid`.
 - Observabilidade confirmou row em `agent_turn_logs` com `agent_name=escalation_manager`, `reason_code=client_upset`, `severity=high`, `requires_orcid=false`.

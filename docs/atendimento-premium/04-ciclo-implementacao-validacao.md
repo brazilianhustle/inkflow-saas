@@ -12,7 +12,7 @@ Este processo evita transformar o atendimento premium em uma coleção de prompt
 5. Implementar slice pequeno
 6. Rodar testes automatizados
 7. Rodar smoke HTTP de radar
-8. Rodar smoke real no WhatsApp quando o radar passar
+8. Rodar smoke real no WhatsApp como validacao definitiva do micro-slice
 9. Registrar achados e evidence
 10. Rodar gate formal do slice
 11. Ajustar ficha/plano

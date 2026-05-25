@@ -32,6 +32,8 @@ docs/atendimento-premium/smoke-scenarios/
   tattoo-cliente-irritado-handoff.env
   tattoo-pedido-humano-handoff.env
   whatsapp-real-cadastro-handoff.env
+  whatsapp-real-cadastro-data-idade-nao-persiste.env
+  whatsapp-real-cadastro-menoridade-handoff-humano.env
   whatsapp-real-lateral-historia-vida-homenagem.env
   whatsapp-real-lateral-pergunta-imagem-com-midia.env
   whatsapp-real-lateral-pergunta-imagem-sem-midia.env
@@ -39,9 +41,28 @@ docs/atendimento-premium/smoke-scenarios/
   whatsapp-real-lateral-preco-generico.env
   whatsapp-real-lateral-processo-tatuagem.env
   whatsapp-real-lateral-tempo-sessao.env
+  whatsapp-real-tattoo-cobertura-handoff-humano.env
+  whatsapp-real-tattoo-cliente-irritado-handoff.env
+  whatsapp-real-tattoo-pedido-humano-handoff.env
 ```
 
 O formato inicial e `.env` por ser simples, auditavel e nativo para shell. Evita parser Markdown/YAML fragil no primeiro passo.
+
+## Politica De Validação
+
+Para comportamento conversacional, HTTP production smoke e radar inicial. Ele valida pipeline, Supabase, estado, transcript e gates sem depender da cadeia WhatsApp.
+
+WhatsApp real e a validacao definitiva. Todo micro-slice que altera resposta, estado, persistencia, handoff, guardrail, workflow ou observabilidade de atendimento deve ter scenario `whatsapp_real` correspondente antes de ser declarado fechado.
+
+Regra operacional:
+
+```text
+HTTP production smoke PASS -> pode continuar investigando.
+WhatsApp real PASS -> pode registrar como validacao definitiva.
+Sem WhatsApp real PASS -> slice fica WIP validado parcialmente.
+```
+
+Em blocos grandes, nao esperar o fim do bloco para rodar WhatsApp real. Rodar por micro-slice assim que o HTTP passar; no fim do bloco, rodar apenas o rehearsal consolidado do gate.
 
 ## Contrato De Um Cenario
 

@@ -18,7 +18,7 @@ deploy: GitHub Actions Deploy to Cloudflare Pages passou em 2026-05-25
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: f9a5bd6 feat: gate smoke scenarios on agent logs
+ultimo_commit_validado: docs: require real whatsapp validation per slice
 ```
 
 ## Ultimos Marcos
@@ -61,17 +61,19 @@ ultimo_commit_validado: f9a5bd6 feat: gate smoke scenarios on agent logs
 - Escalation Manager expandido para cliente irritado: `client_upset` agora sai para humano em `aguardando_tatuador`, sem `orcid`, sem coleta normal e sem orcamento automatico; smoke HTTP em producao passou.
 - Observabilidade explicita do Escalation Manager validada: cada handoff humano agora registra um turn `agent_name=escalation_manager` em `agent_turn_logs` com `reason_code`, severidade, fonte, `requires_orcid`, estado final e resposta enviada; smoke HTTP em producao confirmou row `client_upset`.
 - Smoke Scenario Registry agora tem gate automatico `EXPECTED_AGENT_LOG_JQ_TRUE`, com polling curto para logs fire-and-forget; o scenario `tattoo-cliente-irritado-handoff` valida comportamento e observabilidade no mesmo run.
+- Politica corrigida: HTTP production smoke e radar inicial; WhatsApp real e validacao definitiva por micro-slice conversacional. Foram criados scenarios WhatsApp real para idade isolada, menoridade, cobertura, pedido humano e cliente irritado.
+- WhatsApp real retrospectivo passou para os gaps recentes: idade isolada nao persistiu data inventada; menoridade, cobertura, pedido humano e cliente irritado sairam para humano com `orcid=null`, tail limpo e agent-log gate quando aplicavel.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-tattoo-cliente-irritado-handoff-20260525T182425Z-29429
-tipo: Scenario HTTP monitorado
-base_url: https://inkflowbrasil.com
+run_id: scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T184724Z-19864
+tipo: Scenario WhatsApp real
+base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
 orcid: none
-evidence: .smoke-evidence/scenario-tattoo-cliente-irritado-handoff-20260525T182425Z-29429/
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T184724Z-19864/
 ```
 
 Mensagem:
@@ -91,7 +93,7 @@ copy: pede desculpa pela frustracao e aciona pessoa do estudio para assumir, sem
 escalation: client_upset / high / requires_orcid=false
 observability: agent_turn_logs agent_name=escalation_manager reason_code=client_upset
 observability_gate: EXPECTED_AGENT_LOG_JQ_TRUE PASS
-chain: HTTP smoke -> webhook -> pipeline -> resposta
+chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
 
 ## Proximo Ataque
@@ -104,7 +106,7 @@ Escopo recomendado:
 
 - rodar `check-autonomy-gate.sh` antes de iniciar a rodada;
 - escolher ate 2 micro-slices relacionados;
-- depois de cada micro-slice, registrar smoke/gate/commit saudavel antes de seguir;
+- depois de cada micro-slice, rodar HTTP como radar e WhatsApp real como validacao definitiva antes de registrar smoke/gate/commit saudavel;
 - candidatos: consolidar proximo slice de cadastro premium, refinamento de observabilidade ou escalation/handoff humano mais formal.
 
 ## Comando De Retomada

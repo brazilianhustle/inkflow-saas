@@ -90,7 +90,7 @@ Permitido:
 - commit pequeno;
 - push, CI e deploy;
 - smoke HTTP;
-- 1 smoke WhatsApp real quando necessario;
+- 1 smoke WhatsApp real obrigatorio quando o micro-slice altera comportamento de atendimento;
 - transcript, judgment, triage/plan-review se falhar;
 - atualizacao de registry, gate e objetivo vivo.
 
@@ -104,6 +104,7 @@ Permitido:
 - mesma familia de risco;
 - nenhum fluxo de dinheiro, agenda, Telegram real, secret ou tenant amplo;
 - gate parcial a cada comportamento;
+- WhatsApp real por micro-slice conversacional assim que o HTTP passar;
 - gate de pacote no fim.
 
 Parar se qualquer comportamento falhar 2 vezes ou se aparecer bloqueador absoluto.
@@ -116,7 +117,7 @@ Reservado para quando a Onda 1 tiver cobertura ampla, WhatsApp real estavel, sta
 
 1. Rodar `check-autonomy-gate.sh`.
 2. Respeitar `allowed_batch_size`.
-3. Executar ate o limite permitido.
+3. Executar ate o limite permitido, sempre na ordem HTTP radar -> WhatsApp real definitivo para cada micro-slice conversacional.
 4. Rodar slice gate.
 5. Atualizar `smoke-runs.md` e `current-objective.md`.
 6. Rodar `check-autonomy-gate.sh` novamente.

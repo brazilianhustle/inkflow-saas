@@ -17,7 +17,7 @@ instancia Evolution remetente
 
 ## Quando Usar
 
-Use este smoke antes de considerar uma mudanca conversacional pronta para validacao humana quando ela tocar:
+Use este smoke antes de considerar uma mudanca conversacional concluida quando ela tocar:
 
 - inbound WhatsApp;
 - Evolution;
@@ -26,6 +26,8 @@ Use este smoke antes de considerar uma mudanca conversacional pronta para valida
 - estado de conversa;
 - handoff para tatuador;
 - comportamento que precisa ser visto no WhatsApp real.
+
+Para micro-slices de atendimento premium, este smoke nao e opcional: HTTP production smoke e apenas validacao inicial; WhatsApp real e o criterio definitivo.
 
 Para iteracao rapida, use primeiro o processo HTTP:
 
@@ -106,6 +108,8 @@ Regra:
 
 ```text
 HTTP smoke = radar rapido
-WhatsApp real smoke = ensaio completo
+WhatsApp real smoke = validacao definitiva do micro-slice
 validacao humana = julgamento de experiencia
 ```
+
+Rodar WhatsApp real por micro-slice assim que o HTTP passar. Nao acumular ate o fim de um bloco grande, exceto quando o bloco for puramente documental ou refactor interno sem mudanca no comportamento do atendimento.
