@@ -1,6 +1,8 @@
 // Workflow Manager minimo: autoridade central para conclusao de fases.
 // Primeiro contrato suportado: cadastro completo -> handoff para tatuador.
 
+import { evaluateEscalation } from './escalation-manager.js';
+
 function hasValue(v) {
   return v !== null && v !== undefined && v !== '';
 }
@@ -64,6 +66,18 @@ export function evaluateWorkflowTransition({
   dados_coletados,
   dados_cadastro,
 } = {}) {
+  const escalation = evaluateEscalation({ estado_atual, agentOut });
+  if (escalation.required) {
+    return {
+      shouldTransition: true,
+      fromState: estado_atual,
+      toState: 'aguardando_tatuador',
+      requestedState: agentOut?.estado_novo || null,
+      reason: 'escalation_required',
+      escalation,
+    };
+  }
+
   if (estado_atual !== 'cadastro' && routerCannotMutate(agentOut)) {
     return preserveRouterStateDecision({ estado_atual, agentOut });
   }
@@ -136,6 +150,9 @@ export function summarizeWorkflowDecision(decision = {}) {
     workflow_blocked_mutation: decision.blockedMutation === true,
     workflow_missing_cadastro_count: missingCadastro,
     workflow_missing_tattoo_count: missingTattoo,
+    workflow_escalation_reason_code: decision?.escalation?.reason_code || null,
+    workflow_escalation_severity: decision?.escalation?.severity || null,
+    workflow_escalation_requires_orcid: decision?.escalation?.requires_orcid ?? null,
   };
 }
 
@@ -152,6 +169,17 @@ export function applyWorkflowTransition({ estado_atual, agentOut, dados_coletado
     };
   }
   if (!decision.shouldTransition) return { agentOut, decision };
+
+  if (decision.reason === 'escalation_required') {
+    return {
+      decision,
+      agentOut: {
+        ...agentOut,
+        estado_novo: decision.toState,
+        workflow_decision: decision,
+      },
+    };
+  }
 
   return {
     decision,

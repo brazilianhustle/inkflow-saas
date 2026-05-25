@@ -1159,6 +1159,16 @@ test('4e. tattoo cliente irritado aciona humano com marcador rastreavel', async 
   assert.equal(escalationLog.context_metadata.escalation_reason_code, 'client_upset');
   assert.equal(escalationLog.context_metadata.escalation_severity, 'high');
   assert.equal(escalationLog.context_metadata.escalation_requires_orcid, false);
+  const workflowLog = logAgentTurnSpy.mock.calls
+    .map(call => call.arguments[0])
+    .find(payload => payload.agent_name === 'workflow_manager');
+  assert.ok(workflowLog, 'Workflow Manager deve oficializar transicao de escalation');
+  assert.equal(workflowLog.context_metadata.workflow_reason, 'escalation_required');
+  assert.equal(workflowLog.context_metadata.workflow_from_state, 'tattoo');
+  assert.equal(workflowLog.context_metadata.workflow_to_state, 'aguardando_tatuador');
+  assert.equal(workflowLog.context_metadata.workflow_transition_allowed, true);
+  assert.equal(workflowLog.context_metadata.workflow_escalation_reason_code, 'client_upset');
+  assert.equal(workflowLog.context_metadata.workflow_escalation_requires_orcid, false);
 });
 
 test('5. portfolio intent — Task 10 implementa', async () => {

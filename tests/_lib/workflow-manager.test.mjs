@@ -97,7 +97,48 @@ test('Workflow Manager: resumo observavel nao vaza dados pessoais', () => {
     workflow_blocked_mutation: false,
     workflow_missing_cadastro_count: 0,
     workflow_missing_tattoo_count: 0,
+    workflow_escalation_reason_code: null,
+    workflow_escalation_severity: null,
+    workflow_escalation_requires_orcid: null,
   });
+});
+
+test('Workflow Manager: escalonamento humano vira transicao formal observavel', () => {
+  const result = applyWorkflowTransition({
+    estado_atual: 'tattoo',
+    agentOut: {
+      ok: true,
+      handled_by: 'conversation_router',
+      estado_novo: 'aguardando_tatuador',
+      resposta_cliente: 'vou acionar uma pessoa do estudio',
+      proxima_acao: 'erro',
+      campos_faltando: ['client_upset_trigger'],
+      escalation: {
+        required: true,
+        reason_code: 'client_upset',
+        reason_label: 'cliente irritado',
+        severity: 'high',
+        source: 'conversation_router',
+        requires_orcid: false,
+      },
+    },
+    dados_coletados: { descricao_curta: 'rosa' },
+    dados_cadastro: {},
+  });
+
+  assert.equal(result.agentOut.estado_novo, 'aguardando_tatuador');
+  assert.equal(result.agentOut.proxima_acao, 'erro');
+  assert.equal(result.agentOut.workflow_decision.reason, 'escalation_required');
+  assert.equal(result.agentOut.workflow_decision.escalation.reason_code, 'client_upset');
+
+  const metadata = summarizeWorkflowDecision(result.agentOut.workflow_decision);
+  assert.equal(metadata.workflow_from_state, 'tattoo');
+  assert.equal(metadata.workflow_to_state, 'aguardando_tatuador');
+  assert.equal(metadata.workflow_transition_allowed, true);
+  assert.equal(metadata.workflow_reason, 'escalation_required');
+  assert.equal(metadata.workflow_escalation_reason_code, 'client_upset');
+  assert.equal(metadata.workflow_escalation_severity, 'high');
+  assert.equal(metadata.workflow_escalation_requires_orcid, false);
 });
 
 test('Workflow Manager: Router sem permissao de mutacao preserva estado', () => {
