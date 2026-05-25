@@ -386,14 +386,14 @@ GitHub Actions Deploy to Cloudflare Pages PASS
 Ultimo micro-slice validado em Level 3:
 
 ```text
-Context/Tenant Manager - modo de atendimento
-commit: 88ceb67 test: expose tenant atendimento mode
+Context/Tenant Manager - perfil de identidade
+commit: 7b52927 test: expose tenant identity profile
 local: node --test tests/**/*.test.mjs PASS (1151)
 ci: Tests, Prompts CI, InkFlow Agent eval gate e Deploy PASS
-http radar: scenario-lateral-portfolio-disponivel-20260525T203426Z-1706 PASS
-whatsapp real: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T203502Z-9961 PASS
+http radar: scenario-lateral-portfolio-disponivel-20260525T204041Z-17948 PASS
+whatsapp real: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T204113Z-18509 PASS
 prova real: Cliente "tem exemplos de fineline?" -> Bot "Oii, tudo bem?... Beleza, te mando uns exemplos de fineline!"
-telemetria: tenant_context_estilos_aceitos_count=2, tenant_context_uses_legacy_style_catalog=true, tenant_context_modo_atendimento=individual
+telemetria: tenant_context_estilos_aceitos_count=2, tenant_context_uses_legacy_style_catalog=true, tenant_context_modo_atendimento=individual, tenant_context_has_agent_name=true, tenant_context_has_studio_name=true
 ```
 
 ## Próxima Ação Recomendada

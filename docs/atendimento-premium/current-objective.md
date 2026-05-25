@@ -73,17 +73,18 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - Context/Tenant Manager passou a derivar regras operacionais do tenant (`aceita_cobertura`, gatilhos de handoff) e expor essas regras tambem na telemetria do `ConversationRouter`, cobrindo intents que sao resolvidos antes do Agent operacional.
 - Context/Tenant Manager passou a normalizar catalogo de estilos do tenant: `config_agente.estilos_aceitos` tem prioridade, `config_agente.estilo` legado vira fallback rastreavel, prompt recebe estilos aceitos/recusados e a telemetria expõe contagens sem vazar listas completas; HTTP radar e WhatsApp real definitivo passaram no fluxo de portfolio.
 - Context/Tenant Manager passou a expor `modo_atendimento` do tenant como metadado operacional seguro; HTTP radar e WhatsApp real definitivo passaram exigindo `tenant_context_modo_atendimento="individual"`.
+- Context/Tenant Manager passou a expor perfil de identidade do tenant sem vazar nomes literais: `tenant_profile` registra apenas se agente, estudio e persona estao configurados; HTTP radar e WhatsApp real definitivo passaram exigindo `tenant_context_has_agent_name=true` e `tenant_context_has_studio_name=true`.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T203502Z-9961
+run_id: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T204113Z-18509
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_tattoo
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T203502Z-9961/
+evidence: .smoke-evidence/scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T204113Z-18509/
 ```
 
 Mensagem:
@@ -101,7 +102,7 @@ orcid: none
 copy_risk: baixo
 copy: envia exemplos de fineline sem URL manual, preco, agenda, sinal ou pagamento
 context: tenant_context_manager normaliza catalogo legado `config_agente.estilo`
-observability: agent_turn_logs confirmou tenant_context_estilos_aceitos_count=2, tenant_context_uses_legacy_style_catalog=true e tenant_context_modo_atendimento=individual
+observability: agent_turn_logs confirmou tenant_context_estilos_aceitos_count=2, tenant_context_uses_legacy_style_catalog=true, tenant_context_modo_atendimento=individual, tenant_context_has_agent_name=true e tenant_context_has_studio_name=true
 tool: tail confirmou portfolio/enviar-portfolio sem erros
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
