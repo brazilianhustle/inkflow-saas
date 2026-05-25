@@ -130,7 +130,7 @@ estado final deve continuar coletando_cadastro
 dados_cadastro.nome deve permanecer Joao Silva
 dados_cadastro.data_nascimento deve continuar null
 orcid deve continuar null
-resposta deve pedir data completa sem liberar orcamento, agendar, cobrar sinal ou falar de valor
+resposta deve pedir data completa com linguagem de seguranca/registro de maioridade, sem liberar orcamento, agendar, cobrar sinal ou falar de valor
 ```
 
 `whatsapp-real-cadastro-handoff`

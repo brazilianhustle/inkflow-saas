@@ -741,6 +741,9 @@ test('S1 cadastro: idade sem data explicita nao persiste data_nascimento inventa
   assert.equal(r.estado_novo, 'cadastro');
   assert.equal(r.dados_persistidos.data_nascimento, null);
   assert.ok(r.campos_faltando.includes('data_nascimento'));
+  assert.match(r.resposta_cliente, /seguran[cç]a/i);
+  assert.match(r.resposta_cliente, /registro de maioridade/i);
+  assert.doesNotMatch(r.resposta_cliente, /idade (nao|não) (vale|é suficiente)/i);
 });
 
 test('S1 cadastro: idade com data explicita permite data_nascimento', async () => {

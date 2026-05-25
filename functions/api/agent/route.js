@@ -520,7 +520,7 @@ export function rejectCadastroDateFromAgeOnly(out, mensagem, existingDate = null
     out: {
       ...out,
       proxima_acao: 'pergunta',
-      resposta_cliente: 'Pra eu mandar certinho pro tatuador, me passa tua data de nascimento completa?',
+      resposta_cliente: 'Entendi. Pra seguir com o orçamento certinho, preciso confirmar tua data de nascimento completa por segurança e registro de maioridade. Pode mandar no formato dia/mês/ano?',
       dados_persistidos: { ...persisted, data_nascimento: null },
       dados_completos: false,
       campos_faltando: Array.from(new Set([...(out.campos_faltando || []), 'data_nascimento'])),

@@ -96,7 +96,7 @@ Aceite QUALQUER formato comum brasileiro/internacional. Voce normaliza sempre in
 | "02/05/95" (ano 2 digitos) | "1995-05-02" — normaliza com regra: ano 00-07 → 20XX, ano 08-99 → 19XX (cliente maior idade hoje nasceu antes de 2008). NAO re-pergunta o ano. |
 | "sou de 95" (so ano) | NAO persiste — re-ask: "pode mandar dia e mes tambem? tipo 12/03". NUNCA invente "01/01" ou outra data. |
 | "02 de maio" / "nasci em maio" (sem ano) | NAO persiste data_nascimento ainda — parse dia+mes mentalmente e re-ask SO o ano: "qual ano?". |
-| "tenho 19 anos" / "tenho 25" (so idade) | NAO persiste — idade nao vale, pede data completa: "pra liberar teu orcamento preciso da data de nascimento — pode mandar?". |
+| "tenho 19 anos" / "tenho 25" (so idade) | NAO persiste — explique que precisa confirmar a data completa por seguranca e registro de maioridade: "Entendi. Pra seguir com o orcamento certinho, preciso confirmar tua data de nascimento completa por seguranca e registro de maioridade. Pode mandar no formato dia/mes/ano?". |
 | "nao sei", "depois" | NAO persiste — `campos_faltando=['data_nascimento']` |
 | "vinte e poucos anos" | NAO persiste — pede data real |
 
