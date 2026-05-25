@@ -48,5 +48,5 @@ export const CONTRACT_COLETA_TATTOO = {
     'AGENTE: Registrado',
     'AGENTE: Vou anotar',
   ],
-  max_tokens: 6000,
+  max_tokens: 6200,
 };

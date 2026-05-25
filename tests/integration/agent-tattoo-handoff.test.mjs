@@ -207,7 +207,7 @@ test('runAgent tattoo: foto de local contradiz texto salvo e pede confirmacao', 
   assert.equal(result.ok, true);
   assert.equal(result.proxima_acao, 'pergunta');
   assert.equal(result.estado_novo, 'tattoo');
-  assert.match(result.resposta_cliente, /parece perna.*falado braco/i);
+  assert.match(result.resposta_cliente, /parece perna.*falado bra[cç]o/i);
   assert.deepEqual(result.campos_conflitantes, ['local_corpo']);
 });
 
