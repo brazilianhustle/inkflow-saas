@@ -61,6 +61,7 @@ Context/Tenant Manager 2.0 foi iniciado como nova familia Level 3: Tenant Rules 
 Context/Tenant Manager 2.0 tambem passou a aplicar gatilhos de handoff do tenant no Router deterministico: mensagem real `quero tatuar no rosto quanto fica?` foi classificada como `tenant_handoff_trigger`, saiu para `aguardando_tatuador`, manteve `orcid=null`, nao respondeu preco, nao seguiu formulario e registrou cadeia `conversation_router -> workflow_manager -> escalation_manager` com `source=tenant_rules`. HTTP radar e WhatsApp real passaram.
 Context/Tenant Manager 2.0 tambem passou a registrar o gatilho exato que bateu no `context_metadata` do Router: `router_has_matched_tenant_trigger=true` e `router_matched_tenant_trigger="rosto"`. HTTP radar e WhatsApp real passaram exigindo esse traço.
 Context/Tenant Manager 2.0 fechou a rodada Level 3 propagando o gatilho exato ate o Escalation Manager: `escalation_matched_tenant_trigger="rosto"` aparece em `agent_turn_logs` e no Telegram interno como `Gatilho tenant: rosto`. HTTP radar e WhatsApp real `central -> bot` passaram.
+Handoff Package / Telegram Premium foi iniciado como nova familia Level 3: Escalation Manager agora monta `handoff_package_v1`, inclui resumo operacional/flags no Telegram ao humano e registra metadados do pacote em `agent_turn_logs`. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `tattoo-cliente-irritado-handoff`.
 Workflow Manager entrou como proxima familia Level 3: cadastro completo com recusa de email agora registra row propria em `agent_turn_logs` via `agent_name=workflow_manager`, com `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real `central -> bot` passaram exigindo essa observabilidade.
 Workflow Manager tambem virou autoridade de nao-mutacao para intents laterais do Router: quando `can_mutate_state=false`, preserva o estado atual e registra `workflow_reason=state_preserved_by_router_policy` ou `mutation_blocked_by_router_policy`. O fluxo de preco generico passou em HTTP radar e WhatsApp real exigindo `conversation_router` + `workflow_manager` no mesmo turno.
 Workflow Manager tambem passou a explicar bloqueios de cadastro incompleto com faltantes exatos: idade isolada preserva `estado=coletando_cadastro`, nao persiste `data_nascimento`, nao cria `orcid` e registra `workflow_reason=requirements_missing`, `workflow_missing_cadastro_count=2` e `workflow_missing_tattoo_count=0`. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-data-idade-nao-persiste`.
@@ -395,15 +396,15 @@ GitHub Actions Deploy to Cloudflare Pages PASS
 Ultimo micro-slice validado em Level 3:
 
 ```text
-Context/Tenant Manager 2.0 - Escalation Matched Trigger Trace
-commit: c1c4682 feat: trace escalation tenant trigger
-local: node --test tests/**/*.test.mjs PASS (1167)
+Handoff Package / Telegram Premium - Handoff Package v1
+commit: 2923620 feat: add escalation handoff package
+local: node --test tests/**/*.test.mjs PASS (1169)
 ci: Tests e Deploy PASS
-http radar: scenario-tattoo-gatilho-tenant-handoff-20260525T220520Z-26860 PASS
-whatsapp real: scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T220556Z-7432 PASS
-prova real: Cliente "quero tatuar no rosto quanto fica?" -> Bot "Pra essa região ou caso, o tatuador precisa avaliar direto com segurança. Vou acionar uma pessoa do estúdio para assumir por aqui."
-telemetria: conversation_router tenant_handoff_trigger com router_matched_tenant_trigger=rosto; workflow_manager escalation_required; escalation_manager tenant_handoff_trigger source=tenant_rules e escalation_matched_tenant_trigger=rosto; orcid=null.
-rodada: Level 3 familia Context/Tenant Manager 2.0; 4 de 4 micro-slices concluidos. Parar para reavaliacao estrategica antes de nova rodada.
+http radar: scenario-tattoo-cliente-irritado-handoff-20260525T221506Z-24583 PASS
+whatsapp real: scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T221534Z-612 PASS
+prova real: Cliente "voces demoram demais, ninguem responde" -> Bot "Entendi, desculpa pela frustração. Vou acionar uma pessoa do estúdio para assumir por aqui e te ajudar direto."
+telemetria: escalation_manager client_upset com handoff_package_version=handoff_package_v1, handoff_package_has_summary=true e handoff_package_missing_fields_count=1; workflow_manager escalation_required; orcid=null.
+rodada: Level 3 familia Handoff Package / Telegram Premium; 1 de ate 4 micro-slices concluidos, parar em qualquer falha.
 ```
 
 ## Próxima Ação Recomendada
@@ -413,7 +414,7 @@ Antes de codar nova frente:
 1. Confirmar worktree.
 2. Rodar `bash scripts/smoke/continuity-bundle.sh --force` se o contexto estiver abaixo de 20% ou a sessao tiver sido compactada.
 3. Confirmar Autonomy Gate Level 3 e gate do slice relacionado.
-4. Atacar no maximo 4 micro-slices da mesma familia por rodada; a rodada Context/Tenant Manager 2.0 fechou em 4/4 e exige reavaliacao antes da proxima mini-campanha.
+4. Atacar no maximo 4 micro-slices da mesma familia por rodada; a rodada atual e Handoff Package / Telegram Premium e esta em 1/4.
 5. Registrar smoke em `smoke-runs.md` e atualizar o gate do slice antes de ampliar autonomia.
 
 Minha recomendação estratégica:
@@ -425,7 +426,7 @@ Nao avançar para IntentPolicy ampla antes de consolidar os proximos micro-slice
 Depois disso, o próximo melhor ataque é:
 
 ```text
-Proxima decisao: escolher a proxima familia de ataque. Novas regras comerciais de estilo/local provavelmente exigem configuracao/politica humana do estudio antes de implementar; se nao houver regra objetiva existente, nao forcar micro-slice tecnico.
+Proximo micro-slice recomendado: aplicar pacote operacional ao handoff de cadastro completo/orcamento, garantindo briefing rico e rastreavel para o tatuador sem alterar decisao de cliente.
 ```
 
 Motivo: snapshot observavel ja existe; o proximo passo premium e fazer uma regra do tenant influenciar decisao de atendimento com HTTP radar e WhatsApp real.

@@ -15,6 +15,8 @@ Ao fim de smoke monitorado:
 
 | Data UTC | Run ID | Tipo | Alvo | Telefone | Resultado | Evidencia | Decisao |
 |---|---|---|---|---|---|---|---|
+| 2026-05-25 22:15 | `scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T221534Z-612` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T221534Z-612/` | Handoff Package v1 validado em cadeia real: Evolution `central` enviou `voces demoram demais, ninguem responde`, webhook registrou humano exato, `estado=aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`; agent-log gate confirmou `handoff_package_version="handoff_package_v1"`, `handoff_package_has_summary=true` e `handoff_package_missing_fields_count=1` no Escalation Manager. |
+| 2026-05-25 22:15 | `scenario-tattoo-cliente-irritado-handoff-20260525T221506Z-24583` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-cliente-irritado-handoff-20260525T221506Z-24583/` | Radar HTTP do Handoff Package v1: cliente irritado saiu para `aguardando_tatuador`, sem `orcid`, sem orçamento/sinal, e o gate confirmou pacote operacional no `escalation_manager` junto do Workflow Manager. |
 | 2026-05-25 22:05 | `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T220556Z-7432` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T220556Z-7432/` | Escalation Matched Trigger Trace validado em cadeia real: Evolution `central` enviou `quero tatuar no rosto quanto fica?`, webhook registrou humano exato, `estado=aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`; agent-log gate confirmou `router_matched_tenant_trigger="rosto"` e `escalation_matched_tenant_trigger="rosto"` no Escalation Manager. |
 | 2026-05-25 22:05 | `scenario-tattoo-gatilho-tenant-handoff-20260525T220520Z-26860` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-gatilho-tenant-handoff-20260525T220520Z-26860/` | Radar HTTP do trace do gatilho tenant no Escalation Manager: confirmou `escalation_matched_tenant_trigger="rosto"` junto de Router e Workflow Manager, mantendo `estado=aguardando_tatuador`, `orcid=null`, sem preço/formulário/sinal. |
 | 2026-05-25 21:58 | `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215823Z-18564` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215823Z-18564/` | Observabilidade do gatilho tenant validada em cadeia real: Evolution `central` enviou `quero tatuar no rosto quanto fica?`, `estado=aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`; agent-log gate confirmou `router_has_matched_tenant_trigger=true` e `router_matched_tenant_trigger="rosto"` junto de Workflow Manager e Escalation Manager. |
@@ -93,12 +95,12 @@ Ao fim de smoke monitorado:
 
 ## Run De Referencia Atual
 
-### `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T220556Z-7432`
+### `scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T221534Z-612`
 
 Mensagem:
 
 ```text
-quero tatuar no rosto quanto fica?
+voces demoram demais, ninguem responde
 ```
 
 Estado final:
@@ -114,18 +116,19 @@ Estado final:
 Resposta AI observada:
 
 ```text
-Pra essa região ou caso, o tatuador precisa avaliar direto com segurança. Vou acionar uma pessoa do estúdio para assumir por aqui.
+Entendi, desculpa pela frustração. Vou acionar uma pessoa do estúdio para assumir por aqui e te ajudar direto.
 ```
 
 Leitura estrategica:
 
 - PASS tecnico.
 - PASS definitivo via WhatsApp real `central -> bot`.
-- Gatilho operacional do tenant (`rosto`) nao entra em coleta normal e nao cria orcamento.
-- Router classifica `tenant_handoff_trigger` antes de responder preco lateral.
-- Router registra `router_matched_tenant_trigger="rosto"` para diagnostico direto.
+- Handoff Package v1 iniciou a familia `Handoff Package / Telegram Premium`.
+- Cliente irritado sai para humano sem orcamento, sem sinal e sem continuar formulario.
+- Escalation Manager registra `handoff_package_version="handoff_package_v1"`.
+- O pacote tem resumo operacional por flags: `handoff_package_has_summary=true` e `handoff_package_missing_fields_count=1`.
 - Workflow Manager oficializa `workflow_reason=escalation_required` para `aguardando_tatuador`.
-- Escalation Manager classifica o motivo como `tenant_handoff_trigger`, registra `escalation_matched_tenant_trigger="rosto"`, usa fonte `tenant_rules`, severidade alta e sem `orcid`.
+- Escalation Manager classifica o motivo como `client_upset`, severidade alta e sem `orcid`.
 - Observabilidade confirmou rows em `agent_turn_logs` para `conversation_router`, `workflow_manager` e `escalation_manager`.
 - O scenario agora falha automaticamente se essa cadeia de logs nao aparecer dentro da janela de polling do gate.
 - Tail gate confirmou ausencia de `enviar-orcamento-tatuador`, `pipeline batch failed` e `unhandled`.
