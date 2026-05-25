@@ -107,6 +107,19 @@ Checklist obrigatorio:
 
 Se qualquer uma dessas provas estiver ausente, o smoke real pode ter sido executado, mas nao pode ser usado como validacao definitiva do micro-slice.
 
+## Resumo Para O Usuario
+
+Ao fechar um slice validado por WhatsApp real, nao despejar todas as evidencias na resposta final. Usar formato curto:
+
+```text
+Provas conclusivas reais:
+Cliente: "quanto fica uma rosa fineline no braco?"
+Bot: "O valor depende do tamanho, detalhe e local do corpo..."
+Resultado: WhatsApp real PASS, estado=coletando_tattoo, copy_risk=baixo.
+```
+
+Os arquivos de evidencia continuam obrigatorios no repo, mas so devem ser listados para o usuario quando ele pedir prova detalhada, auditoria ou investigacao de falha.
+
 ## Criterio De PASS
 
 O smoke WhatsApp real so passa quando:

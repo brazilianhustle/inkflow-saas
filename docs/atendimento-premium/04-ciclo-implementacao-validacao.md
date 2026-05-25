@@ -170,6 +170,25 @@ Depois do smoke:
 - mover casos descobertos para backlog ou nova intent;
 - ajustar prioridade da onda se necessário.
 
+## 8.1 Mensagem De Fechamento
+
+Quando um slice ou micro-slice for concluido, a resposta final para o usuario deve ser curta e incluir um bloco de leitura rapida:
+
+```text
+Provas conclusivas reais:
+Cliente: "quanto fica uma rosa fineline no braco?"
+Bot: "O valor depende do tamanho, detalhe e local do corpo..."
+Resultado: WhatsApp real PASS, estado=coletando_tattoo, copy_risk=baixo.
+```
+
+Regra:
+
+- mostrar a mensagem real do cliente;
+- mostrar a resposta real do bot, encurtada se for longa;
+- mostrar o veredito essencial em uma linha;
+- nao despejar lista longa de arquivos, run ids e logs por padrao;
+- citar links/evidencias apenas se o usuario pedir prova detalhada ou se houver risco/erro relevante.
+
 ## 9. Gate Formal Do Slice
 
 Todo slice que vira fundação para próximos passos precisa declarar seus cenários obrigatórios em:
