@@ -46,9 +46,9 @@ Pode continuar ate falha, risco alto ou fim da onda. Requer staging/sandbox e ro
 ## Nivel Atual
 
 ```text
-current_level: 1
-max_batch_size: 1 micro-slice
-politica: parar ao fim do micro-slice e reportar decisao
+current_level: 2
+max_batch_size: 2 micro-slices relacionados
+politica: executar ate 2 micro-slices relacionados por rodada, com HTTP radar e WhatsApp real definitivo por micro-slice conversacional
 ```
 
 ## Requisitos Para Promover Ao Nivel 2
@@ -62,6 +62,19 @@ O script pode recomendar `promote_available` quando todos os pontos abaixo forem
 - `BLOCKED_REASONS` esta vazio.
 
 A promocao nao e automatica. Para promover, alterar `CURRENT_LEVEL`, `CURRENT_LEVEL_LABEL` e `MAX_BATCH_SIZE` em `autonomy-gate.env`, com commit proprio explicando a base de evidencia.
+
+## Requisitos Para Recomendar Promocao Ao Nivel 3
+
+O script pode recomendar `promote_available` para Level 3 quando todos os pontos abaixo forem verdadeiros:
+
+- o projeto ja esta em Level 2;
+- pelo menos 40 scenarios PASS desde `MIN_PASS_UTC`;
+- pelo menos 18 scenarios WhatsApp real PASS desde `MIN_PASS_UTC`;
+- todos os slice gates criticos passam;
+- nao ha bloqueadores manuais;
+- docs obrigatorios existem.
+
+Level 3 ainda nao significa loop infinito. Ele permite uma mini-campanha de uma familia de cenarios, com parada imediata em falha de WhatsApp real, deploy, cleanup, CI, gate ou risco alto.
 
 ## Bloqueadores Absolutos
 
@@ -109,7 +122,24 @@ Permitido:
 
 Parar se qualquer comportamento falhar 2 vezes ou se aparecer bloqueador absoluto.
 
-### Nivel 3+
+### Nivel 3
+
+Permitido:
+
+- finalizar uma familia de cenarios relacionados em mini-campanha;
+- manter HTTP radar e WhatsApp real definitivo por micro-slice conversacional;
+- rodar gate de pacote no fim;
+- parar em qualquer falha, risco financeiro, agendamento, pagamento, cleanup inseguro ou divergencia de estado.
+
+Ainda nao permitido:
+
+- mexer em secrets;
+- alterar tenant real amplo;
+- rodar cleanup fora do telefone de teste;
+- tocar dinheiro, agenda ou pagamento sem plano e gate especificos;
+- continuar apos falha sem triage.
+
+### Nivel 4+
 
 Reservado para quando a Onda 1 tiver cobertura ampla, WhatsApp real estavel, staging/sandbox confiavel e rollback claro.
 
@@ -125,10 +155,10 @@ Reservado para quando a Onda 1 tiver cobertura ampla, WhatsApp real estavel, sta
 
 ## Veredito Operacional
 
-Enquanto o projeto estiver em Nivel 1, a maior janela segura continua sendo:
+Enquanto o projeto estiver em Nivel 2, a maior janela segura continua sendo:
 
 ```text
-1 micro-slice completo por rodada autonoma.
+2 micro-slices relacionados por rodada autonoma.
 ```
 
-O proprio gate informa quando ha evidencia suficiente para discutir a promocao.
+O proprio gate informa quando ha evidencia suficiente para discutir promocao, mas a promocao exige commit deliberado alterando `autonomy-gate.env`.

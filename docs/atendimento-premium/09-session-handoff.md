@@ -51,6 +51,7 @@ Status estratégico:
 
 ```text
 Atendimento premium esta em Autonomy Gate Level 2, com smoke loop real/HTTP monitorado, transcript, julgamento, tail e gates por slice.
+O check atual do Autonomy Gate recomenda `promote_available` para Level 3 (40 scenarios PASS, 18 WhatsApp reais PASS, gates criticos PASS), mas `CURRENT_LEVEL` permanece 2 ate promocao deliberada em commit proprio.
 O cadastro-handoff esta funcionalmente protegido: cadastro completo promove para aguardando_tatuador, handoff exige orcid nos smokes de orcamento, idade isolada nao persiste data/email vazios e menoridade explicita aciona handoff humano sem criar orcamento.
 Escalation Manager existe como primeira camada formal para handoff humano: menoridade gera `reason_code=minor_age`, cobertura textual gera `reason_code=cover_up`, pedido humano gera `reason_code=human_requested` e cliente irritado gera `reason_code=client_upset`; todos com `requires_orcid=false`, texto Telegram rastreavel e row propria em `agent_turn_logs` via `agent_name=escalation_manager`.
 O smoke registry agora consegue transformar essa observabilidade em gate automatico com `EXPECTED_AGENT_LOG_JQ_TRUE`.

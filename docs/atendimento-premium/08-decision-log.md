@@ -280,6 +280,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** comportamento preservado. `portfolio_disponivel` continua sendo derivado de `tenant.portfolio_urls`, contexto de proposta continua entrando só em substates de proposta e os testes locais cobrem precedência/imutabilidade. HTTP production smoke e WhatsApp real de portfolio passaram em 2026-05-25.
 
+## 2026-05-25 - Level 3 deve ser recomendacao objetiva, nao promocao automatica
+
+**Status:** decidido.
+
+**Decisão:** o `check-autonomy-gate.sh` passa a calcular criterios de promocao para Level 3 quando o projeto estiver em Level 2, mas nao altera `CURRENT_LEVEL`.
+
+**Motivo:** a janela de execucao pode crescer, mas apenas quando ha evidencia versionada, WhatsApp real suficiente, gates criticos passando e zero bloqueadores. A promocao em si precisa continuar sendo uma decisao deliberada porque muda o risco operacional.
+
+**Alternativas rejeitadas:**
+
+- promover automaticamente assim que o volume minimo for atingido;
+- manter apenas criterio de Level 2 e decidir Level 3 por sensacao;
+- aumentar a janela sem explicitar bloqueadores e limites de parada.
+
+**Camada responsável:** `Autonomy Gate`, `smoke-runs.md`, slice gates e handoff operacional.
+
+**Impacto:** em 2026-05-25 o gate retornou `decision=promote_available` para Level 3 com 40 scenarios PASS, 18 WhatsApp reais PASS e gates `atendimento-lateral`, `cadastro-handoff` e `escalation-manager` PASS. `CURRENT_LEVEL` permanece 2 ate commit deliberado de promocao.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

@@ -67,6 +67,7 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - IntentPolicy/observabilidade do Router expandido para `tempo_sessao` e `processo_tatuagem`: testes locais, HTTP radar e WhatsApp real passaram exigindo `router_reason`, `router_risk=medium` e `router_can_mutate_state=false`.
 - IntentPolicy/observabilidade do Router expandido para `pergunta_imagem` e `historia_vida`: testes locais, HTTP radar e WhatsApp real passaram exigindo `router_reason`, `router_risk=medium` e `router_can_mutate_state=false`.
 - Context/Tenant Manager iniciado: montagem de `clientContext` efetivo saiu de `route.js` para `tenant-context-manager.js`; portfolio e contexto de proposta continuam equivalentes, com teste local e validação HTTP/WhatsApp real pelo fluxo `portfolio_disponivel`.
+- Autonomy Gate ganhou criterio objetivo de promocao para Level 3. O check atual recomenda `promote_available` para Level 3 com 40 scenarios PASS, 18 WhatsApp reais PASS e gates criticos PASS, mas `CURRENT_LEVEL` permanece 2 ate decisao deliberada.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -108,6 +109,7 @@ Escolher o proximo bloco da Onda 1 em Level 2, com no maximo 2 micro-slices rela
 Escopo recomendado:
 
 - rodar `check-autonomy-gate.sh` antes de iniciar a rodada;
+- se a proxima decisao for aumentar janela, promover deliberadamente para Level 3 em commit proprio e manter parada obrigatoria em qualquer falha;
 - escolher ate 2 micro-slices relacionados;
 - depois de cada micro-slice, rodar HTTP como radar e WhatsApp real como validacao definitiva antes de registrar smoke/gate/commit saudavel;
 - candidatos: expandir `IntentPolicy` para outros intents com `reason/can_mutate_state` em gates reais, consolidar proximo slice de cadastro premium, ou formalizar Context/Tenant Manager.

@@ -19,6 +19,9 @@ MIN_PASS_UTC=""
 LEVEL_2_MIN_PASS_SCENARIOS="5"
 LEVEL_2_MIN_REAL_WHATSAPP_PASS="2"
 LEVEL_2_REQUIRED_SLICE_GATES=""
+LEVEL_3_MIN_PASS_SCENARIOS=""
+LEVEL_3_MIN_REAL_WHATSAPP_PASS=""
+LEVEL_3_REQUIRED_SLICE_GATES=""
 REQUIRED_DOCS=""
 BLOCKED_REASONS=""
 
@@ -56,13 +59,29 @@ while IFS= read -r doc; do
   [ -f "$doc" ] || missing_docs+=("$doc")
 done <<< "$REQUIRED_DOCS"
 
-slice_gate_failures=()
-while IFS= read -r slice_gate; do
+check_slice_gate_list() {
+  local list="$1"
+  local failures=()
+  while IFS= read -r slice_gate; do
   [ -n "$slice_gate" ] || continue
   if ! bash scripts/smoke/check-slice-gate.sh "$slice_gate" >/tmp/inkflow-autonomy-slice-gate.log 2>&1; then
-    slice_gate_failures+=("$slice_gate")
+      failures+=("$slice_gate")
   fi
-done <<< "$LEVEL_2_REQUIRED_SLICE_GATES"
+  done <<< "$list"
+  printf '%s\n' "${failures[@]:-}"
+}
+
+slice_gate_failures=()
+while IFS= read -r failure; do
+  [ -n "$failure" ] || continue
+  slice_gate_failures+=("$failure")
+done < <(check_slice_gate_list "$LEVEL_2_REQUIRED_SLICE_GATES")
+
+level_3_slice_gate_failures=()
+while IFS= read -r failure; do
+  [ -n "$failure" ] || continue
+  level_3_slice_gate_failures+=("$failure")
+done < <(check_slice_gate_list "${LEVEL_3_REQUIRED_SLICE_GATES:-}")
 
 pass_count="$(count_pass_scenarios)"
 real_whatsapp_count="$(count_real_whatsapp_pass)"
@@ -92,6 +111,14 @@ elif [ "$CURRENT_LEVEL" = "1" ] &&
   [ "$real_whatsapp_count" -ge "$LEVEL_2_MIN_REAL_WHATSAPP_PASS" ]; then
   decision="promote_available"
   reason="evidencia minima para discutir Level 2 atingida; promocao exige alteracao deliberada do gate"
+elif [ "$CURRENT_LEVEL" = "2" ] &&
+  [ -n "${LEVEL_3_MIN_PASS_SCENARIOS:-}" ] &&
+  [ -n "${LEVEL_3_MIN_REAL_WHATSAPP_PASS:-}" ] &&
+  [ "$pass_count" -ge "$LEVEL_3_MIN_PASS_SCENARIOS" ] &&
+  [ "$real_whatsapp_count" -ge "$LEVEL_3_MIN_REAL_WHATSAPP_PASS" ] &&
+  [ "${#level_3_slice_gate_failures[@]}" -eq 0 ]; then
+  decision="promote_available"
+  reason="evidencia minima para discutir Level 3 atingida; promocao exige alteracao deliberada do gate"
 fi
 
 cat <<REPORT
@@ -107,10 +134,10 @@ cat <<REPORT
 
 ## Evidence
 
-| Metric | Actual | Required For Level 2 |
+| Metric | Actual | Required For Current Promotion |
 |---|---:|---:|
-| scenario_pass_count | ${pass_count} | ${LEVEL_2_MIN_PASS_SCENARIOS} |
-| real_whatsapp_pass_count | ${real_whatsapp_count} | ${LEVEL_2_MIN_REAL_WHATSAPP_PASS} |
+| scenario_pass_count | ${pass_count} | $(if [ "$CURRENT_LEVEL" = "2" ] && [ -n "${LEVEL_3_MIN_PASS_SCENARIOS:-}" ]; then echo "$LEVEL_3_MIN_PASS_SCENARIOS"; else echo "$LEVEL_2_MIN_PASS_SCENARIOS"; fi) |
+| real_whatsapp_pass_count | ${real_whatsapp_count} | $(if [ "$CURRENT_LEVEL" = "2" ] && [ -n "${LEVEL_3_MIN_REAL_WHATSAPP_PASS:-}" ]; then echo "$LEVEL_3_MIN_REAL_WHATSAPP_PASS"; else echo "$LEVEL_2_MIN_REAL_WHATSAPP_PASS"; fi) |
 
 ## Required Slice Gates
 
@@ -125,6 +152,20 @@ else
       echo "- ${slice_gate}: PASS"
     fi
   done <<< "$LEVEL_2_REQUIRED_SLICE_GATES"
+fi)
+
+$(if [ "$CURRENT_LEVEL" = "2" ] && [ -n "${LEVEL_3_REQUIRED_SLICE_GATES:-}" ]; then
+  echo
+  echo "## Level 3 Candidate Slice Gates"
+  echo
+  while IFS= read -r slice_gate; do
+    [ -n "$slice_gate" ] || continue
+    if printf '%s\n' "${level_3_slice_gate_failures[@]:-}" | grep -qx "$slice_gate"; then
+      echo "- ${slice_gate}: FAIL"
+    else
+      echo "- ${slice_gate}: PASS"
+    fi
+  done <<< "$LEVEL_3_REQUIRED_SLICE_GATES"
 fi)
 
 ## Blockers
