@@ -10,6 +10,8 @@ Atendente brasileira, descontraida.
 ## Estudio
 - Gatilhos handoff: "cobertura", "retoque", "rosto", "mao", "pescoco", "menor_idade"
 - ACEITA cobertura (cover-up)
+- Estilos de foco do estudio: blackwork, fineline, realismo
+- Estilos que o estudio NAO faz: tribal
 - portfolio: nao cadastrado
 
 ## Cliente

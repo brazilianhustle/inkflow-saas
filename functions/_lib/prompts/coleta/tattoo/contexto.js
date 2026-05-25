@@ -7,6 +7,16 @@ export function contextoTattoo(tenant, conversa, clientContext) {
   const dados = conversa?.dados_coletados || {};
   const tenantRules = ctx.tenant_rules || {};
   const aceitaCobertura = tenantRules.aceita_cobertura ?? (tenant?.config_agente?.aceita_cobertura !== false);
+  const estilosAceitos = Array.isArray(tenantRules.estilos_aceitos) && tenantRules.estilos_aceitos.length
+    ? tenantRules.estilos_aceitos
+    : Array.isArray(tenant?.config_agente?.estilos_aceitos)
+      ? tenant.config_agente.estilos_aceitos
+      : [];
+  const estilosRecusados = Array.isArray(tenantRules.estilos_recusados) && tenantRules.estilos_recusados.length
+    ? tenantRules.estilos_recusados
+    : Array.isArray(tenant?.config_agente?.estilos_recusados)
+      ? tenant.config_agente.estilos_recusados
+      : [];
   const gatilhos = Array.isArray(tenantRules.gatilhos_handoff) && tenantRules.gatilhos_handoff.length
     ? tenantRules.gatilhos_handoff
     : Array.isArray(tenant?.gatilhos_handoff) && tenant.gatilhos_handoff.length
@@ -19,6 +29,8 @@ export function contextoTattoo(tenant, conversa, clientContext) {
   linhas.push('## Estudio');
   linhas.push(`- Gatilhos handoff: ${gatilhos.map(g => `"${g}"`).join(', ')}`);
   linhas.push(`- ${aceitaCobertura ? 'ACEITA' : 'NAO ACEITA'} cobertura (cover-up)`);
+  if (estilosAceitos.length) linhas.push(`- Estilos de foco do estudio: ${estilosAceitos.join(', ')}`);
+  if (estilosRecusados.length) linhas.push(`- Estilos que o estudio NAO faz: ${estilosRecusados.join(', ')}`);
   linhas.push(`- portfolio: ${ctx.portfolio_disponivel ? 'disponivel' : 'nao cadastrado'}`);
   linhas.push('');
 

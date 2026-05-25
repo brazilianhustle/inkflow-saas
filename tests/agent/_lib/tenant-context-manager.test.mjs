@@ -27,6 +27,9 @@ test('TenantContextManager: injeta portfolio sem mutar clientContext original', 
       aceita_cobertura: true,
       gatilhos_handoff: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
       has_custom_handoff_triggers: false,
+      estilos_aceitos: [],
+      estilos_recusados: [],
+      uses_legacy_style_catalog: false,
     },
     portfolio_disponivel: true,
   });
@@ -45,6 +48,9 @@ test('TenantContextManager: contexto derivado sobrescreve flags transversais ant
       aceita_cobertura: true,
       gatilhos_handoff: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
       has_custom_handoff_triggers: false,
+      estilos_aceitos: [],
+      estilos_recusados: [],
+      uses_legacy_style_catalog: false,
     },
     portfolio_disponivel: false,
     eh_recorrente: true,
@@ -79,6 +85,9 @@ test('TenantContextManager: injeta contexto de proposta somente em substate de p
       aceita_cobertura: true,
       gatilhos_handoff: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
       has_custom_handoff_triggers: false,
+      estilos_aceitos: [],
+      estilos_recusados: [],
+      uses_legacy_style_catalog: false,
     },
     portfolio_disponivel: true,
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
@@ -102,6 +111,9 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
       aceita_cobertura: false,
       gatilhos_handoff: ['retoque', 'mao'],
       has_custom_handoff_triggers: true,
+      estilos_aceitos: ['fineline'],
+      estilos_recusados: ['tribal'],
+      uses_legacy_style_catalog: false,
     },
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
     nome_cliente: 'Joao Silva',
@@ -117,6 +129,9 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
     tenant_context_aceita_cobertura: false,
     tenant_context_gatilhos_handoff_count: 2,
     tenant_context_has_custom_handoff_triggers: true,
+    tenant_context_estilos_aceitos_count: 1,
+    tenant_context_estilos_recusados_count: 1,
+    tenant_context_uses_legacy_style_catalog: false,
   });
   assert.equal(Object.hasOwn(summary, 'nome_cliente'), false);
 });
@@ -126,11 +141,47 @@ test('TenantContextManager: deriva regras operacionais do tenant com fallback se
     aceita_cobertura: false,
     gatilhos_handoff: ['rosto'],
     has_custom_handoff_triggers: true,
+    estilos_aceitos: [],
+    estilos_recusados: [],
+    uses_legacy_style_catalog: false,
   });
 
   assert.deepEqual(deriveTenantRules({ config_agente: {} }), {
     aceita_cobertura: true,
     gatilhos_handoff: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
     has_custom_handoff_triggers: false,
+    estilos_aceitos: [],
+    estilos_recusados: [],
+    uses_legacy_style_catalog: false,
+  });
+});
+
+test('TenantContextManager: normaliza catalogo de estilos explicito e legado', () => {
+  assert.deepEqual(deriveTenantRules({
+    config_agente: {
+      estilos_aceitos: ['fineline', ' ', 'blackwork'],
+      estilo: ['realismo'],
+      estilos_recusados: ['tribal'],
+    },
+  }), {
+    aceita_cobertura: true,
+    gatilhos_handoff: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
+    has_custom_handoff_triggers: false,
+    estilos_aceitos: ['fineline', 'blackwork'],
+    estilos_recusados: ['tribal'],
+    uses_legacy_style_catalog: false,
+  });
+
+  assert.deepEqual(deriveTenantRules({
+    config_agente: {
+      estilo: ['fineline', 'blackwork'],
+    },
+  }), {
+    aceita_cobertura: true,
+    gatilhos_handoff: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
+    has_custom_handoff_triggers: false,
+    estilos_aceitos: ['fineline', 'blackwork'],
+    estilos_recusados: [],
+    uses_legacy_style_catalog: true,
   });
 });
