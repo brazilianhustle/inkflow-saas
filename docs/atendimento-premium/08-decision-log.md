@@ -206,7 +206,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Camada responsável:** `functions/_lib/escalation-manager.js`, `enforce-menor-idade`, retorno de `runAgent` e `whatsapp-pipeline`.
 
-**Impacto:** escalonamento por menoridade agora carrega `reason_code=minor_age`, `severity=high`, `requires_orcid=false` e mensagem Telegram com marcador `[escalation:minor_age]`. Proximos riscos podem entrar nessa camada sem crescer o pipeline.
+**Impacto:** escalonamento por menoridade agora carrega `reason_code=minor_age`, `severity=high`, `requires_orcid=false` e mensagem Telegram com marcador `[escalation:minor_age]`. Cobertura textual tambem entrou no contrato com `reason_code=cover_up`, validado pelo smoke `tattoo-cobertura-handoff-humano`.
 
 ## Decisões Em Aberto
 

@@ -38,7 +38,7 @@ main
 Último commit observado após checkpoint:
 
 ```text
-265bcad feat: add escalation manager for minor handoff
+0fdf8f2 feat: escalate tattoo cover up requests
 ```
 
 Último deploy de referência da frente:
@@ -52,7 +52,7 @@ Status estratégico:
 ```text
 Atendimento premium esta em Autonomy Gate Level 2, com smoke loop real/HTTP monitorado, transcript, julgamento, tail e gates por slice.
 O cadastro-handoff esta funcionalmente protegido: cadastro completo promove para aguardando_tatuador, handoff exige orcid nos smokes de orcamento, idade isolada nao persiste data/email vazios e menoridade explicita aciona handoff humano sem criar orcamento.
-Escalation Manager existe como primeira camada formal para handoff humano: menoridade gera `reason_code=minor_age`, `severity=high`, `requires_orcid=false` e texto Telegram rastreavel.
+Escalation Manager existe como primeira camada formal para handoff humano: menoridade gera `reason_code=minor_age`, cobertura textual gera `reason_code=cover_up`, ambos com `severity=high`, `requires_orcid=false` e texto Telegram rastreavel.
 O compact integrado foi corrigido na arquitetura: existe hook Claude Code, mas a retomada oficial agora e portavel via `bash scripts/smoke/continuity-bundle.sh --force`, adequado para Codex/API.
 Achado de linguagem da idade isolada foi corrigido para pedir data completa com seguranca e registro de maioridade.
 ```
@@ -160,7 +160,7 @@ Antes de continuar, conferir `git status --short`. A expectativa após este chec
 Run de referência:
 
 ```text
-scenario-cadastro-menoridade-handoff-humano-20260525T171756Z-19173
+scenario-tattoo-cobertura-handoff-humano-20260525T172531Z-30039
 ```
 
 Alvo:
@@ -174,18 +174,17 @@ Resultado:
 ```text
 PASS
 estado_agente: aguardando_tatuador
-data_nascimento_persistida: 2015-03-12
 orcid: null
 copy_risk: baixo
-copy: menor de 18, tatuador, seguranca e responsavel legal
+copy: cobertura, tatuador, avaliacao e seguranca
 tail_gate: sem enviar-orcamento-tatuador/pipeline batch failed/unhandled
-escalation: minor_age / high / requires_orcid=false
+escalation: cover_up / high / requires_orcid=false
 ```
 
 Decisão:
 
 ```text
-O sistema nao segue orcamento direto para menoridade explicita. Mesmo quando o LLM nao persistir a data, a defesa server-side extrai a data da mensagem, persiste `data_nascimento` e aciona handoff humano seguro sem `orcid`.
+O sistema nao segue orcamento direto para cobertura textual. O ConversationRouter detecta cobertura/cover-up, aciona handoff humano seguro sem `orcid`, e o Escalation Manager classifica o motivo como `cover_up`.
 ```
 
 ### Correções de smoke - 2026-05-25

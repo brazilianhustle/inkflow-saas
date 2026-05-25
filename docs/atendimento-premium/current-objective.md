@@ -18,7 +18,7 @@ deploy: GitHub Actions Deploy to Cloudflare Pages passou em 2026-05-25
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 265bcad feat: add escalation manager for minor handoff
+ultimo_commit_validado: 0fdf8f2 feat: escalate tattoo cover up requests
 ```
 
 ## Ultimos Marcos
@@ -56,23 +56,24 @@ ultimo_commit_validado: 265bcad feat: add escalation manager for minor handoff
 - Copy premium de maioridade ajustada: idade isolada agora pede data completa com seguranca e registro de maioridade, sem frase fria como "idade nao e suficiente"; smoke HTTP em producao passou.
 - Menoridade explicita em cadastro validada: `12/03/2015` agora aciona handoff humano seguro, persiste `data_nascimento=2015-03-12`, mantem `orcid=null`, nao chama envio de orcamento e passa bot/tail/poll gates em producao.
 - Escalation Manager iniciado: menoridade agora gera `reason_code=minor_age`, `severity=high`, `requires_orcid=false` e mensagem de Telegram rastreavel, com smoke de producao sem regressao.
+- Escalation Manager expandido para cobertura textual: `cover_up` agora sai para humano em `aguardando_tatuador`, sem `orcid`, sem coleta normal e sem orçamento automatico; smoke HTTP em producao passou.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-cadastro-menoridade-handoff-humano-20260525T171756Z-19173
+run_id: scenario-tattoo-cobertura-handoff-humano-20260525T172531Z-30039
 tipo: Scenario HTTP monitorado
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: aguardando_tatuador
 orcid: none
-evidence: .smoke-evidence/scenario-cadastro-menoridade-handoff-humano-20260525T171756Z-19173/
+evidence: .smoke-evidence/scenario-tattoo-cobertura-handoff-humano-20260525T172531Z-30039/
 ```
 
 Mensagem:
 
 ```text
-12/03/2015
+quero cobrir uma tattoo antiga no braco
 ```
 
 Resultado:
@@ -80,11 +81,10 @@ Resultado:
 ```text
 estado_agente: aguardando_tatuador
 resposta_ai_posterior_ao_humano: true
-data_nascimento_persistida: 2015-03-12
 orcid: none
 copy_risk: baixo
-copy: aciona tatuador com seguranca e responsavel legal, sem seguir orcamento direto
-escalation: minor_age / high / requires_orcid=false
+copy: aciona tatuador para avaliar cobertura com seguranca, sem seguir orcamento direto
+escalation: cover_up / high / requires_orcid=false
 chain: HTTP smoke -> webhook -> pipeline -> resposta
 ```
 
