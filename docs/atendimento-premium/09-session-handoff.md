@@ -58,6 +58,7 @@ O smoke registry agora consegue transformar essa observabilidade em gate automat
 O Router tambem comecou a expor explicabilidade: `ConversationRouter` retorna `reason` e `can_mutate_state`, e o pipeline registra `router_reason`/`router_can_mutate_state` em `agent_turn_logs`. Os scenarios HTTP e WhatsApp real de preco generico, tempo de sessao, processo de tatuagem, pergunta de imagem sem midia e historia de vida passaram exigindo esses campos.
 Context/Tenant Manager foi iniciado: `runAgent` agora usa `tenant-context-manager.js` para montar o `clientContext` efetivo com portfolio, regras operacionais do tenant e contexto de proposta antes dos agents operacionais. O comportamento foi validado por teste local e pelo fluxo `portfolio_disponivel` em HTTP e WhatsApp real, com tail confirmando `enviar-portfolio`. A camada tambem ficou observavel em `agent_turn_logs.context_metadata`, com gate exigindo `tenant_context_layer=tenant_context_manager`, `tenant_context_state=tattoo` e `tenant_context_portfolio_disponivel=true`. Em seguida, regras de tenant (`aceita_cobertura`, gatilhos de handoff) foram expostas tambem no `ConversationRouter`, cobrindo intents interceptados antes do Agent operacional; cobertura passou em HTTP e WhatsApp real exigindo contexto de tenant no router e `cover_up` no Escalation Manager.
 Context/Tenant Manager 2.0 foi iniciado como nova familia Level 3: Tenant Rules Snapshot v1 registra versao, origem dos gatilhos de handoff, presenca de gatilhos, catalogo de estilos, estilos aceitos/recusados e ativos sem vazar listas, URLs ou nomes literais. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `lateral-portfolio-disponivel`.
+Context/Tenant Manager 2.0 tambem passou a aplicar gatilhos de handoff do tenant no Router deterministico: mensagem real `quero tatuar no rosto quanto fica?` foi classificada como `tenant_handoff_trigger`, saiu para `aguardando_tatuador`, manteve `orcid=null`, nao respondeu preco, nao seguiu formulario e registrou cadeia `conversation_router -> workflow_manager -> escalation_manager` com `source=tenant_rules`. HTTP radar e WhatsApp real passaram.
 Workflow Manager entrou como proxima familia Level 3: cadastro completo com recusa de email agora registra row propria em `agent_turn_logs` via `agent_name=workflow_manager`, com `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real `central -> bot` passaram exigindo essa observabilidade.
 Workflow Manager tambem virou autoridade de nao-mutacao para intents laterais do Router: quando `can_mutate_state=false`, preserva o estado atual e registra `workflow_reason=state_preserved_by_router_policy` ou `mutation_blocked_by_router_policy`. O fluxo de preco generico passou em HTTP radar e WhatsApp real exigindo `conversation_router` + `workflow_manager` no mesmo turno.
 Workflow Manager tambem passou a explicar bloqueios de cadastro incompleto com faltantes exatos: idade isolada preserva `estado=coletando_cadastro`, nao persiste `data_nascimento`, nao cria `orcid` e registra `workflow_reason=requirements_missing`, `workflow_missing_cadastro_count=2` e `workflow_missing_tattoo_count=0`. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-data-idade-nao-persiste`.
@@ -392,16 +393,15 @@ GitHub Actions Deploy to Cloudflare Pages PASS
 Ultimo micro-slice validado em Level 3:
 
 ```text
-Context/Tenant Manager 2.0 - Tenant Rules Snapshot v1
-commit: b10cf4d feat: expose tenant rules snapshot
-local: node --test tests/**/*.test.mjs PASS (1162)
-ci: Tests, InkFlow Agent eval gate e Deploy PASS
-http radar: scenario-lateral-portfolio-disponivel-20260525T213624Z-4868 PASS
-whatsapp real: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T213654Z-22751 PASS
-falha util: scenario-lateral-portfolio-disponivel-20260525T213504Z-9450 FAIL por contrato errado; tenant teste usa gatilhos custom, nao default.
-prova real: Cliente "tem exemplos de fineline?" -> Bot "Oii, tudo bem?... Beleza, te mando alguns exemplos de fineline!"
-telemetria: tenant_context_rules_snapshot_version=v1; tenant_context_handoff_triggers_source=custom; tenant_context_has_style_catalog=true; tenant_context_has_accepted_styles=true; tenant_context_portfolio_urls_count=3
-rodada: Level 3 familia Context/Tenant Manager 2.0; 1 de ate 4 micro-slices concluido, parar em qualquer falha.
+Context/Tenant Manager 2.0 - Tenant Handoff Trigger Eligibility
+commit: 970f29c feat: route tenant handoff triggers
+local: node --test tests/**/*.test.mjs PASS (1165)
+ci: Tests e Deploy PASS
+http radar: scenario-tattoo-gatilho-tenant-handoff-20260525T214851Z-22406 PASS
+whatsapp real: scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215001Z-5162 PASS
+prova real: Cliente "quero tatuar no rosto quanto fica?" -> Bot "Pra essa região ou caso, o tatuador precisa avaliar direto com segurança. Vou acionar uma pessoa do estúdio para assumir por aqui."
+telemetria: conversation_router tenant_handoff_trigger; workflow_manager escalation_required; escalation_manager tenant_handoff_trigger source=tenant_rules; orcid=null.
+rodada: Level 3 familia Context/Tenant Manager 2.0; 2 de ate 4 micro-slices concluidos, parar em qualquer falha.
 ```
 
 ## Próxima Ação Recomendada
@@ -411,7 +411,7 @@ Antes de codar nova frente:
 1. Confirmar worktree.
 2. Rodar `bash scripts/smoke/continuity-bundle.sh --force` se o contexto estiver abaixo de 20% ou a sessao tiver sido compactada.
 3. Confirmar Autonomy Gate Level 3 e gate do slice relacionado.
-4. Atacar no maximo 4 micro-slices da mesma familia por rodada; a rodada atual e Context/Tenant Manager 2.0 e esta em 1/4.
+4. Atacar no maximo 4 micro-slices da mesma familia por rodada; a rodada atual e Context/Tenant Manager 2.0 e esta em 2/4.
 5. Registrar smoke em `smoke-runs.md` e atualizar o gate do slice antes de ampliar autonomia.
 
 Minha recomendação estratégica:
@@ -423,7 +423,7 @@ Nao avançar para IntentPolicy ampla antes de consolidar os proximos micro-slice
 Depois disso, o próximo melhor ataque é:
 
 ```text
-Proximo micro-slice da familia Context/Tenant Manager 2.0: Eligibility Rules com uma regra operacional pequena e observavel.
+Proximo micro-slice da familia Context/Tenant Manager 2.0: avaliar se ha outra regra objetiva ja existente para elegibilidade. Se depender de recusa comercial de estilo/local, sinalizar decisao humana antes de implementar.
 ```
 
 Motivo: snapshot observavel ja existe; o proximo passo premium e fazer uma regra do tenant influenciar decisao de atendimento com HTTP radar e WhatsApp real.

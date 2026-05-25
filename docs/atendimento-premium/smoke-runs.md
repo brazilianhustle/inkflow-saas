@@ -15,6 +15,8 @@ Ao fim de smoke monitorado:
 
 | Data UTC | Run ID | Tipo | Alvo | Telefone | Resultado | Evidencia | Decisao |
 |---|---|---|---|---|---|---|---|
+| 2026-05-25 21:50 | `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215001Z-5162` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215001Z-5162/` | Gatilho de handoff do tenant validado em cadeia real: Evolution `central` enviou `quero tatuar no rosto quanto fica?`, webhook registrou humano exato, `estado=aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`, resposta acionou pessoa do estúdio sem preço/formulário; agent-log gate confirmou `conversation_router intent=tenant_handoff_trigger`, `workflow_manager reason=escalation_required` e `escalation_manager reason_code=tenant_handoff_trigger`, `source=tenant_rules`. |
+| 2026-05-25 21:48 | `scenario-tattoo-gatilho-tenant-handoff-20260525T214851Z-22406` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-gatilho-tenant-handoff-20260525T214851Z-22406/` | Radar HTTP do gatilho de handoff do tenant: `quero tatuar no rosto quanto fica?` saiu para `aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`, sem valor, coleta, agenda ou sinal; agent-log gate confirmou Router, Workflow Manager e Escalation Manager no mesmo turno. |
 | 2026-05-25 21:36 | `scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T213654Z-22751` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T213654Z-22751/` | Tenant Rules Snapshot v1 validado em cadeia real: Evolution `central` enviou `tem exemplos de fineline?`, webhook registrou humano exato, `estado=coletando_tattoo`, `orcid=null`, `copy_risk=baixo`, tail confirmou portfolio e agent-log gate confirmou snapshot `v1`, origem `custom` dos gatilhos, catalogo de estilos presente, estilos aceitos e assets sem vazar listas/URLs. |
 | 2026-05-25 21:36 | `scenario-lateral-portfolio-disponivel-20260525T213624Z-4868` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-lateral-portfolio-disponivel-20260525T213624Z-4868/` | Radar HTTP do Tenant Rules Snapshot v1: portfolio preservado, `estado=coletando_tattoo`, `orcid=null`, `copy_risk=baixo`; agent-log gate confirmou snapshot operacional do tenant com `tenant_context_rules_snapshot_version=v1` e handoff triggers `custom`. |
 | 2026-05-25 21:35 | `scenario-lateral-portfolio-disponivel-20260525T213504Z-9450` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | FAIL | `.smoke-evidence/scenario-lateral-portfolio-disponivel-20260525T213504Z-9450/` | Falha util de contrato: comportamento estava correto e snapshot v1 apareceu, mas o smoke esperava `tenant_context_handoff_triggers_source="default"`; a evidencia mostrou que o tenant teste usa gatilhos `custom`. Contrato corrigido para `custom` e revalidado nos runs PASS seguintes. |
@@ -87,12 +89,12 @@ Ao fim de smoke monitorado:
 
 ## Run De Referencia Atual
 
-### `scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T184724Z-19864`
+### `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215001Z-5162`
 
 Mensagem:
 
 ```text
-voces demoram demais, ninguem responde
+quero tatuar no rosto quanto fica?
 ```
 
 Estado final:
@@ -108,16 +110,18 @@ Estado final:
 Resposta AI observada:
 
 ```text
-Entendi, desculpa pela frustração. Vou acionar uma pessoa do estúdio para assumir por aqui e te ajudar direto.
+Pra essa região ou caso, o tatuador precisa avaliar direto com segurança. Vou acionar uma pessoa do estúdio para assumir por aqui.
 ```
 
 Leitura estrategica:
 
 - PASS tecnico.
 - PASS definitivo via WhatsApp real `central -> bot`.
-- Cliente claramente irritado nao entra em coleta normal e nao cria orcamento.
-- Escalation Manager classifica o motivo como `client_upset`, com severidade alta e sem `orcid`.
-- Observabilidade confirmou row em `agent_turn_logs` com `agent_name=escalation_manager`, `reason_code=client_upset`, `severity=high`, `requires_orcid=false`.
-- O scenario agora falha automaticamente se essa row nao aparecer dentro da janela de polling do gate.
+- Gatilho operacional do tenant (`rosto`) nao entra em coleta normal e nao cria orcamento.
+- Router classifica `tenant_handoff_trigger` antes de responder preco lateral.
+- Workflow Manager oficializa `workflow_reason=escalation_required` para `aguardando_tatuador`.
+- Escalation Manager classifica o motivo como `tenant_handoff_trigger`, com fonte `tenant_rules`, severidade alta e sem `orcid`.
+- Observabilidade confirmou rows em `agent_turn_logs` para `conversation_router`, `workflow_manager` e `escalation_manager`.
+- O scenario agora falha automaticamente se essa cadeia de logs nao aparecer dentro da janela de polling do gate.
 - Tail gate confirmou ausencia de `enviar-orcamento-tatuador`, `pipeline batch failed` e `unhandled`.
-- O scenario fica como evidencia de expansao do Escalation Manager para risco de experiencia/atendimento na fase tattoo.
+- O scenario fica como evidencia de que regras do tenant ja influenciam decisao operacional antes do Agent LLM.

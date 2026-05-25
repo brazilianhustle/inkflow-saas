@@ -424,6 +424,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `lateral-preco-generico` e `whatsapp-real-lateral-preco-generico` agora exigem, no mesmo smoke, log do `conversation_router` com `router_can_mutate_state=false` e log do `workflow_manager` com `workflow_transition_allowed=false`, `workflow_reason=state_preserved_by_router_policy` e `workflow_to_state=tattoo`. HTTP radar e WhatsApp real passaram em 2026-05-25.
 
+## 2026-05-25 - Gatilhos de handoff do tenant pertencem ao Router deterministico
+
+**Status:** decidido.
+
+**Decisão:** gatilhos configurados no tenant, como `rosto`, `mao`, `pescoco` e `retoque`, devem ser avaliados pelo `ConversationRouter` antes do Agent LLM quando a conversa esta em `tattoo`. Se um gatilho aparecer, o sistema deve parar a coleta, nao responder preco e acionar handoff humano com `reason_code=tenant_handoff_trigger`.
+
+**Motivo:** os prompts ja declaravam que gatilhos do estudio deveriam parar a coleta, mas essa regra ficava dependente do Agent operacional. Para padrao premium, regra de elegibilidade do tenant precisa ser deterministica, observavel e validada por smoke real.
+
+**Alternativas rejeitadas:**
+
+- deixar apenas no prompt de tattoo;
+- tratar `rosto` como pergunta lateral de preco quando vier junto de "quanto fica";
+- implementar recusa comercial de estilos sem decisao humana do estudio;
+- misturar essa regra com cobertura, que ja tem fluxo proprio.
+
+**Camada responsável:** `Context/Tenant Manager`, `ConversationRouter`, `WorkflowManager`, `EscalationManager` e smoke scenario registry.
+
+**Impacto:** `tattoo-gatilho-tenant-handoff` e `whatsapp-real-tattoo-gatilho-tenant-handoff` passaram exigindo Router `tenant_handoff_trigger`, Workflow Manager `escalation_required` e Escalation Manager `source=tenant_rules`, com `estado=aguardando_tatuador`, `orcid=null` e sem preco/formulario.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
