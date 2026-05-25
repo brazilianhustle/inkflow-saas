@@ -43,17 +43,18 @@ worktree_esperado: limpo
 - Autonomy Gate oficializado para controlar a janela maxima de execucao autonoma por evidencia, slice gates e bloqueadores.
 - Primeiro check do Autonomy Gate retornou `decision=promote_available` para Level 2 com 7 scenario PASS, 2 WhatsApp real PASS e `atendimento-lateral` PASS; nivel permanece 1 ate promocao deliberada.
 - Micro-slice `pergunta_imagem` iniciado pelo fallback sem midia: scenario HTTP `lateral-pergunta-imagem-sem-midia` passou com reenvio de foto e sem retorno ao formulario.
+- Micro-slice `pergunta_imagem` com midia HTTP passou apos suporte de media no runner e guardrail anti-resposta apologetica: imagem persistida, resposta pergunta referencia vs local, `copy_risk=baixo`.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-lateral-pergunta-imagem-sem-midia-20260525T080724Z-23217
+run_id: scenario-lateral-pergunta-imagem-com-midia-20260525T082057Z-32499
 tipo: Scenario HTTP monitorado
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: coletando_tattoo
 orcid: none
-evidence: .smoke-evidence/scenario-lateral-pergunta-imagem-sem-midia-20260525T080724Z-23217/
+evidence: .smoke-evidence/scenario-lateral-pergunta-imagem-com-midia-20260525T082057Z-32499/
 ```
 
 Mensagem:
@@ -66,8 +67,9 @@ Resultado:
 
 ```text
 estado_agente: coletando_tattoo
-bot_pediu_reenvio_foto: true
-formulario_nao_retomado: true
+media_persistida: image/png
+bot_perguntou_referencia_ou_local: true
+fallback_sem_midia_nao_acionado: true
 copy_risk: baixo
 chain: HTTP inbound -> pipeline -> resposta
 ```
@@ -75,15 +77,15 @@ chain: HTTP inbound -> pipeline -> resposta
 ## Proximo Ataque
 
 ```text
-Completar `pergunta_imagem` com midia real/visao de forma controlada.
+Levar `pergunta_imagem` com midia para cadeia WhatsApp real via instancia `central`.
 ```
 
 Escopo recomendado:
 
-- criar scenario com imagem/caption quando o runner suportar midia;
-- validar que foto real nao cai no fallback sem midia;
-- exigir pergunta referencia/local quando a visao ficar incerta;
-- so depois considerar WhatsApp real com imagem enviada pela instancia `central`.
+- adicionar suporte de midia ao runner WhatsApp real se a Evolution aceitar `/message/sendMedia`;
+- criar scenario `whatsapp-real-lateral-pergunta-imagem-com-midia`;
+- validar envio real `central -> bot`, transcript, julgamento e bot text gate;
+- so promover autonomia se o gate do slice e o Autonomy Gate continuarem verdes.
 
 ## Comando De Retomada
 
