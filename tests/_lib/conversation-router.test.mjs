@@ -301,6 +301,25 @@ test('ConversationRouter: se estilo pendente foi respondido, persiste estilo e r
   assert.match(out.resposta_cliente, /foto do local/);
 });
 
+test('ConversationRouter: estilo old school após nome não vira displayName old', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'old school\nquanto fica',
+    conversa: { dados_coletados: { descricao_curta: 'rosa', local_corpo: 'braço' }, dados_cadastro: {} },
+    historico: [
+      { role: 'assistant', content: 'Oii, tudo bem?\n\nMe chamo Assistente, muito prazer! Como posso te chamar?' },
+      { role: 'user', content: 'quero fazer uma rosa no braço' },
+      { role: 'user', content: 'Mario' },
+      { role: 'assistant', content: 'Massa, Mario! E de estilo, tu curte mais fineline, realismo, blackwork ou tradicional?' },
+    ],
+  });
+  assert.equal(out.intent, 'preco_generico');
+  assert.deepEqual(out.dados_persistidos, { estilo: 'old school' });
+  assert.match(out.resposta_cliente, /O valor depende/);
+  assert.match(out.resposta_cliente, /Me diz tua altura\?/);
+  assert.doesNotMatch(out.resposta_cliente, /Boa, old/i);
+});
+
 test('ConversationRouter: preço repetido usa resposta curta sem repetir texto inteiro', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',

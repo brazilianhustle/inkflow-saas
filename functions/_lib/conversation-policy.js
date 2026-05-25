@@ -43,7 +43,13 @@ export function detectPendingFormQuestion(text) {
   const s = stripAccents(text || '');
   if (/como posso te chamar\?*\s*$/i.test(s)) return 'nome_curto';
   if (/(qual (a )?tua altura|me diz tua altura|me fala tua altura|qual (a )?sua altura)\?*\s*$/i.test(s)) return 'altura_cm';
-  if (/qual (o )?seu estilo\?*\s*$/i.test(s) || /qual estilo/i.test(s) || /estilo que (tu|voce|voces?) prefere/i.test(s)) return 'estilo';
+  if (
+    /qual (o )?seu estilo\?*\s*$/i.test(s)
+    || /qual estilo/i.test(s)
+    || /estilo que (tu|voce|voces?) prefere/i.test(s)
+    || /\bde estilo\b/i.test(s)
+    || /\btu curte mais\b.*\b(fineline|realismo|blackwork|tradicional|old school)\b/i.test(s)
+  ) return 'estilo';
   if (/em qual parte do corpo\?*\s*$/i.test(s) || /qual parte do corpo\?*\s*$/i.test(s)) return 'local_corpo';
   if (/foto do local/i.test(s) || /foto.*onde.*quer tatuar/i.test(s)) return 'foto_local';
   if (/nome completo.*data de nascimento|data de nascimento.*nome completo/i.test(s)) return 'cadastro_nome_data';
@@ -83,7 +89,7 @@ export function resolveShortName(message) {
 
   const candidate = raw.replace(/[.,!?;:]+$/g, '').trim();
   const normalized = normalize(candidate);
-  const blocked = /^(oi|ola|opa|bom dia|boa tarde|boa noite|quanto|qual|como|funciona|orcamento|orçamento|preco|preço|valor|tenho|quero|queria|fazer|tatuar|tattoo|tatuagem)\b/;
+  const blocked = /^(oi|ola|opa|bom dia|boa tarde|boa noite|quanto|qual|como|funciona|orcamento|orçamento|preco|preço|valor|tenho|quero|queria|fazer|tatuar|tattoo|tatuagem|old|old school|fineline|fine line|realismo|realista|blackwork|tradicional|minimalista|colorida|colorido|preto e cinza|preto e branco)\b/;
   if (
     candidate.length < 2
     || candidate.length > 30
