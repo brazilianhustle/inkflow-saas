@@ -133,6 +133,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Motivo:** um fluxo pode estar tecnicamente correto e ainda parecer ruim para o cliente.
 
+## 2026-05-25 - Autonomia Level 2 exige evidência e checkpoints por micro-slice
+
+**Status:** decidido.
+
+**Decisão:** promover o Autonomy Gate de Level 1 para Level 2, permitindo até 2 micro-slices relacionados por rodada.
+
+**Motivo:** a frente atingiu evidência operacional suficiente: `cadastro-handoff` e `atendimento-lateral` passaram nos slice gates, com 14 cenários recentes e 7 smokes WhatsApp reais. Manter Level 1 nesse ponto reduz velocidade sem aumentar segurança de forma proporcional.
+
+**Alternativas rejeitadas:**
+
+- manter Level 1 apesar de `promote_available`;
+- liberar batch amplo sem limite;
+- promover automaticamente sem commit deliberado.
+
+**Camada responsável:** processo de smoke/autonomia, documentado em `autonomy-gate.env`, `current-objective.md` e `smoke-runs.md`.
+
+**Impacto:** cada rodada pode executar até 2 micro-slices relacionados, mas cada micro-slice ainda precisa ter validação, registro e checkpoint saudável. Qualquer falha de smoke real, deploy, cleanup ou gate interrompe a rodada e volta para triage.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

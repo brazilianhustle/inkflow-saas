@@ -49,6 +49,7 @@ worktree_esperado: limpo
 - Scenario WhatsApp real `whatsapp-real-lateral-processo-tatuagem` passou: Evolution `central` enviou pergunta de processo para o bot, webhook registrou humano real e a resposta explicou o fluxo sem expor sistema, erro, preco fechado, agendamento ou sinal.
 - Scenario WhatsApp real `whatsapp-real-lateral-portfolio-disponivel` passou: Evolution `central` enviou pedido de portfolio, webhook registrou humano real, resposta nao escreveu URL manual e tail confirmou `/api/tools/enviar-portfolio` HTTP 200.
 - Scenario WhatsApp real `whatsapp-real-lateral-pergunta-imagem-sem-midia` passou: Evolution `central` enviou pergunta sobre imagem sem arquivo, webhook registrou humano real sem midia e a resposta pediu reenvio sem voltar ao formulario.
+- Autonomy Gate promovido deliberadamente para Level 2 apos `atendimento-lateral` e `cadastro-handoff` passarem, com 14 cenarios recentes e 7 WhatsApp reais; janela maxima agora e 2 micro-slices relacionados por rodada.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -83,15 +84,15 @@ chain: central -> WhatsApp -> bot -> webhook -> pipeline -> resposta
 ## Proximo Ataque
 
 ```text
-Escolher o proximo micro-slice da Onda 1 ou promover Autonomy Gate para Level 2 de forma deliberada.
+Escolher o proximo bloco da Onda 1 em Level 2, com no maximo 2 micro-slices relacionados por rodada.
 ```
 
 Escopo recomendado:
 
-- rodar `check-slice-gate.sh atendimento-lateral` e `check-autonomy-gate.sh`;
-- se mantiver Level 1, atacar um unico proximo micro-slice;
-- se promover Level 2, atualizar `autonomy-gate.env` antes de executar batch maior;
-- candidatos: novas intents laterais restantes, refinamento de observabilidade do media path, ou proximo bloco da Onda 1.
+- rodar `check-autonomy-gate.sh` antes de iniciar a rodada;
+- escolher ate 2 micro-slices relacionados;
+- depois de cada micro-slice, registrar smoke/gate/commit saudavel antes de seguir;
+- candidatos: proximo slice de cadastro premium, refinamento de observabilidade ou escalation/handoff humano.
 
 ## Comando De Retomada
 
