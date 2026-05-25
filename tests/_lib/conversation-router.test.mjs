@@ -44,6 +44,25 @@ test('ConversationRouter: classifica pergunta sobre imagem', () => {
   assert.equal(_test.detectIntent('dá pra ver a tattoo?')?.intent, 'pergunta_imagem');
 });
 
+test('ConversationRouter: cobertura textual aciona escalonamento humano sem coleta', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quero cobrir uma tattoo antiga no braço',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+  });
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'cobertura');
+  assert.equal(out.proxima_acao, 'erro');
+  assert.equal(out.estado_novo, 'aguardando_tatuador');
+  assert.equal(out.cobertura_suspeita, true);
+  assert.equal(out.escalation.reason_code, 'cover_up');
+  assert.equal(out.escalation.requires_orcid, false);
+  assert.deepEqual(out.dados_persistidos, {});
+  assert.match(out.resposta_cliente, /cobertura/i);
+  assert.match(out.resposta_cliente, /tatuador/i);
+  assert.doesNotMatch(out.resposta_cliente, /Qual tua altura|parte do corpo|estilo/i);
+});
+
 test('ConversationRouter: preço genérico responde e preserva estado', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',

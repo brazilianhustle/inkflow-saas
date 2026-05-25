@@ -148,6 +148,11 @@ function detectIntent(text) {
   const s = normalize(text);
   if (!s) return null;
 
+  const cobertura =
+    /\b(cobrir|cobertura|cover up|coverup|tapar|disfarcar|disfarçar)\b/.test(s)
+    && /\b(tattoo|tatuagem|desenho|nome|frase|antiga|velha|ja tenho|já tenho|tenho uma)\b/.test(s);
+  if (cobertura) return { intent: 'cobertura', confidence: 0.9, risk: 'high' };
+
   const perguntaImagem =
     /\b(o que|que)\s+(voce|vc|tu)\s+(viu|ve|consegue ver|entendeu|achou)\b.*\b(imagem|foto|referencia|desenho)\b/.test(s)
     || /\b(voce|vc|tu)\s+(viu|ve|consegue ver|entendeu|achou)\b.*\b(imagem|foto|referencia|desenho)\b/.test(s)
@@ -192,12 +197,46 @@ function responseForIntent(intent, estado, conversa, context = {}) {
   return composeRouterResponse({ intent, estado, resume, nextField, context });
 }
 
+function escalationOutput({ detected, estado_atual, intent }) {
+  if (intent !== 'cobertura') return null;
+  return {
+    ok: true,
+    handled_by: 'conversation_router',
+    intent,
+    confidence: detected.confidence,
+    risk: detected.risk,
+    resposta_cliente: 'Pra cobertura, o tatuador precisa avaliar direto com segurança antes de seguir. Vou acionar ele para olhar teu caso e te orientar pelos próximos passos.',
+    estado_novo: 'aguardando_tatuador',
+    dados_persistidos: {},
+    dados_completos: false,
+    campos_faltando: ['cover_up_trigger'],
+    campos_conflitantes: [],
+    proxima_acao: 'erro',
+    agent_usado: estado_atual === 'cadastro' ? 'cadastro' : 'conversation_router',
+    side_effects: [],
+    urls_portfolio: [],
+    analise_imagens: null,
+    cobertura_suspeita: true,
+    escalation: {
+      required: true,
+      reason_code: 'cover_up',
+      reason_label: 'cobertura / cover-up',
+      severity: 'high',
+      source: 'conversation_router',
+      requires_orcid: false,
+    },
+  };
+}
+
 export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant, clientContext, historico, disabled = false }) {
   if (disabled) return null;
   if (!HANDLED_STATES.has(estado_atual)) return null;
 
   const detected = detectIntent(mensagem);
   if (!detected) return null;
+
+  const escalation = escalationOutput({ detected, estado_atual, intent: detected.intent });
+  if (escalation) return escalation;
 
   const pendingResolution = resolvePendingFormQuestion({ historico, mensagem });
   const extracted = estado_atual === 'tattoo'

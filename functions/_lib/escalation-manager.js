@@ -1,5 +1,5 @@
 // Escalation Manager: centraliza quando e por que a IA deve sair de cena.
-// Primeira cobertura formal: cadastro com menoridade/handoff humano.
+// Coberturas formais iniciais: menoridade e cobertura/cover-up.
 
 function preview(value, max = 500) {
   return String(value || '').slice(0, max);
@@ -42,6 +42,19 @@ export function evaluateEscalation({ estado_atual, agentOut } = {}) {
       source: 'agent_error',
       requires_orcid: false,
     };
+  }
+
+  if (estado_atual === 'tattoo' && agentOut?.proxima_acao === 'erro') {
+    if (agentOut?.cobertura_suspeita === true || fields(agentOut).includes('cover_up_trigger')) {
+      return {
+        required: true,
+        reason_code: 'cover_up',
+        reason_label: 'cobertura / cover-up',
+        severity: 'high',
+        source: agentOut?.cobertura_suspeita === true ? 'cobertura_suspeita' : 'campos_faltando',
+        requires_orcid: false,
+      };
+    }
   }
 
   return {

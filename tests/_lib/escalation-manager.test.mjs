@@ -38,6 +38,22 @@ test('evaluateEscalation: respeita escalation explicita do agent/guardrail', () 
   assert.equal(decision.source, 'mensagem');
 });
 
+test('evaluateEscalation: cobertura em tattoo vira escalonamento high sem orcid', () => {
+  const decision = evaluateEscalation({
+    estado_atual: 'tattoo',
+    agentOut: {
+      proxima_acao: 'erro',
+      cobertura_suspeita: true,
+      campos_faltando: ['cover_up_trigger'],
+    },
+  });
+
+  assert.equal(decision.required, true);
+  assert.equal(decision.reason_code, 'cover_up');
+  assert.equal(decision.severity, 'high');
+  assert.equal(decision.requires_orcid, false);
+});
+
 test('composeEscalationTelegram: inclui codigo rastreavel e resumo do cliente', () => {
   const text = composeEscalationTelegram({
     decision: {

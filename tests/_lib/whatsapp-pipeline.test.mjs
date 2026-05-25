@@ -1053,6 +1053,33 @@ test('4b. cadastro erro por menoridade aciona humano sem criar orçamento', asyn
   assert.equal(conversaPatch.dados_cadastro.data_nascimento, '2010-03-12');
 });
 
+test('4c. tattoo cobertura aciona humano sem orçamento e sai para aguardando_tatuador', async () => {
+  const callToolSpy = mock.fn(async () => ({ ok: true }));
+  const sendTelegramSpy = mock.fn(async () => ({ ok: true }));
+  let conversaPatch = null;
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'quero cobrir uma tattoo antiga no braço' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+    }),
+    runAgent: async () => {
+      throw new Error('router deveria interceptar cobertura textual');
+    },
+    callTool: callToolSpy,
+    sendTelegram: sendTelegramSpy,
+  });
+  await processBatch({}, baseBatch(), deps);
+  assert.equal(callToolSpy.mock.callCount(), 0);
+  assert.equal(sendTelegramSpy.mock.callCount(), 1);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /\[escalation:cover_up\]/);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /cobertura|cover-up/i);
+  assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
+});
+
 test('5. portfolio intent — Task 10 implementa', async () => {
   const evoSpy = mock.fn(async () => ({ ok: true }));
   const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };

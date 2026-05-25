@@ -28,6 +28,7 @@ docs/atendimento-premium/smoke-scenarios/
   lateral-preco-generico.env
   lateral-processo-tatuagem.env
   lateral-tempo-sessao.env
+  tattoo-cobertura-handoff-humano.env
   whatsapp-real-cadastro-handoff.env
   whatsapp-real-lateral-historia-vida-homenagem.env
   whatsapp-real-lateral-pergunta-imagem-com-midia.env
@@ -217,6 +218,24 @@ Objetivo:
 
 ```text
 Validar o mesmo fallback seguro de ausencia de imagem em cadeia real central -> WhatsApp -> bot -> webhook -> pipeline.
+```
+
+`tattoo-cobertura-handoff-humano`
+
+Objetivo:
+
+```text
+Validar que cobertura/cover-up textual aciona humano sem continuar coleta ou criar orcamento automatico.
+```
+
+Contrato:
+
+```text
+estado final deve virar aguardando_tatuador
+orcid deve continuar null
+resposta deve citar cobertura/tatuador/avaliacao/seguranca
+resposta nao pode perguntar altura/local/estilo nem falar de preco, agendamento ou sinal
+tail nao deve chamar enviar-orcamento-tatuador
 ```
 
 Contrato:
