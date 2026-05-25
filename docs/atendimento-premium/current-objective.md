@@ -71,36 +71,37 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - Autonomy Gate ganhou criterios futuros para recomendar Level 4: 70 scenarios PASS, 35 WhatsApp reais PASS, gates criticos PASS e docs obrigatorios de rollback/staging e politica de loop Level 4.
 - Context/Tenant Manager ganhou observabilidade propria em `agent_turn_logs.context_metadata`: HTTP radar e WhatsApp real definitivo passaram exigindo `tenant_context_layer=tenant_context_manager`, `tenant_context_state=tattoo` e `tenant_context_portfolio_disponivel=true`.
 - Context/Tenant Manager passou a derivar regras operacionais do tenant (`aceita_cobertura`, gatilhos de handoff) e expor essas regras tambem na telemetria do `ConversationRouter`, cobrindo intents que sao resolvidos antes do Agent operacional.
+- Context/Tenant Manager passou a normalizar catalogo de estilos do tenant: `config_agente.estilos_aceitos` tem prioridade, `config_agente.estilo` legado vira fallback rastreavel, prompt recebe estilos aceitos/recusados e a telemetria expõe contagens sem vazar listas completas; HTTP radar e WhatsApp real definitivo passaram no fluxo de portfolio.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-tattoo-cobertura-handoff-humano-20260525T202003Z-17804
+run_id: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T202920Z-18677
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: aguardando_tatuador
+expected_state: coletando_tattoo
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-cobertura-handoff-humano-20260525T202003Z-17804/
+evidence: .smoke-evidence/scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T202920Z-18677/
 ```
 
 Mensagem:
 
 ```text
-quero cobrir uma tattoo antiga
+tem exemplos de fineline?
 ```
 
 Resultado:
 
 ```text
-estado_agente: aguardando_tatuador
+estado_agente: coletando_tattoo
 resposta_ai_posterior_ao_humano: true
 orcid: none
 copy_risk: baixo
-copy: aciona tatuador para avaliar cobertura com seguranca, sem preco, agenda, sinal ou pagamento
-context: tenant_context_manager deriva aceita_cobertura=true e gatilhos de handoff
-observability: agent_turn_logs confirmou tenant_context no ConversationRouter e escalation_manager cover_up
-tool: tail confirmou ausencia de enviar-orcamento-tatuador / erros
+copy: envia exemplos de fineline sem URL manual, preco, agenda, sinal ou pagamento
+context: tenant_context_manager normaliza catalogo legado `config_agente.estilo`
+observability: agent_turn_logs confirmou tenant_context_estilos_aceitos_count=2 e tenant_context_uses_legacy_style_catalog=true
+tool: tail confirmou portfolio/enviar-portfolio sem erros
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
 

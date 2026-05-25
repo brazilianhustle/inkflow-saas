@@ -383,6 +383,19 @@ GitHub Actions Tests PASS
 GitHub Actions Deploy to Cloudflare Pages PASS
 ```
 
+Ultimo micro-slice validado em Level 3:
+
+```text
+Context/Tenant Manager - catalogo de estilos
+commit: 3d7ea1f test: normalize tenant style catalog
+local: node --test tests/**/*.test.mjs PASS (1151)
+ci: Tests, Prompts CI, InkFlow Agent eval gate e Deploy PASS
+http radar: scenario-lateral-portfolio-disponivel-20260525T202842Z-11331 PASS
+whatsapp real: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T202920Z-18677 PASS
+prova real: Cliente "tem exemplos de fineline?" -> Bot "Oii, tudo bem?... Show, te mando alguns exemplos de fineline!"
+telemetria: tenant_context_estilos_aceitos_count=2, tenant_context_uses_legacy_style_catalog=true
+```
+
 ## Próxima Ação Recomendada
 
 Antes de codar nova frente:
