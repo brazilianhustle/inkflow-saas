@@ -39,35 +39,34 @@ worktree_esperado: limpo
 - Ensaio WhatsApp real para `lateral-preco-generico` passou e virou `FINAL_REHEARSAL_SCENARIO` obrigatorio do gate `atendimento-lateral`.
 - Scenario `lateral-portfolio-disponivel` passou com bot text gate e tail gate confirmando acionamento de portfolio.
 - Scenario `lateral-historia-vida-homenagem` passou no contrato minimo: acolhimento breve, uma pergunta util e estado seguro.
+- Scenario WhatsApp real `whatsapp-real-lateral-historia-vida-homenagem` passou apos correcao do Router/Composer para nao ignorar briefing emocional em primeiro contato.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-cadastro-handoff-20260525T065321Z-13729
+run_id: scenario-whatsapp-real-lateral-historia-vida-homenagem-20260525T074931Z-6121
 tipo: Scenario WhatsApp real
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
-expected_state: aguardando_tatuador
-orcid: orc_nqk5ft
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260525T065321Z-13729/
+expected_state: coletando_tattoo
+orcid: none
+evidence: .smoke-evidence/scenario-whatsapp-real-lateral-historia-vida-homenagem-20260525T074931Z-6121/
 ```
 
 Mensagem:
 
 ```text
-pode seguir sem email
-quanto tempo demora?
+quero fazer uma homenagem pro meu pai que faleceu, pensei em passaros e uma frase
 ```
 
 Resultado:
 
 ```text
-estado_agente: aguardando_tatuador
-email_recusado: true
-data_nascimento: 1995-03-12
-orcid: orc_nqk5ft
+estado_agente: coletando_tattoo
+human_message_registered: true
+ai_response_present: true
 copy_risk: baixo
-chain: central -> WhatsApp real -> bot -> webhook -> pipeline -> handoff
+chain: central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
 
 ## Proximo Ataque
