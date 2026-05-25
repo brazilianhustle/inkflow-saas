@@ -1,0 +1,89 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  applyWorkflowTransition,
+  evaluateWorkflowTransition,
+  summarizeWorkflowDecision,
+} from '../../functions/_lib/workflow-manager.js';
+
+const tattooComplete = {
+  descricao_curta: 'leao',
+  local_corpo: 'antebraco',
+  altura_cm: 170,
+  estilo: 'fineline',
+};
+
+const cadastroComplete = {
+  nome: 'Joao Silva',
+  data_nascimento: '1995-03-12',
+  email_recusado: true,
+};
+
+test('Workflow Manager: cadastro completo promove para aguardando_tatuador', () => {
+  const decision = evaluateWorkflowTransition({
+    estado_atual: 'cadastro',
+    agentOut: { proxima_acao: 'pergunta', estado_novo: 'cadastro' },
+    dados_coletados: tattooComplete,
+    dados_cadastro: cadastroComplete,
+  });
+
+  assert.equal(decision.shouldTransition, true);
+  assert.equal(decision.fromState, 'cadastro');
+  assert.equal(decision.toState, 'aguardando_tatuador');
+  assert.equal(decision.reason, 'cadastro_and_tattoo_complete');
+});
+
+test('Workflow Manager: cadastro incompleto bloqueia transicao e resume faltantes', () => {
+  const decision = evaluateWorkflowTransition({
+    estado_atual: 'cadastro',
+    agentOut: { proxima_acao: 'pergunta', estado_novo: 'cadastro' },
+    dados_coletados: { descricao_curta: 'leao' },
+    dados_cadastro: { nome: 'Joao Silva' },
+  });
+
+  assert.equal(decision.shouldTransition, false);
+  assert.equal(decision.reason, 'requirements_missing');
+  assert.deepEqual(decision.missingRequirements.cadastro, ['nome', 'data_nascimento', 'email_or_refusal']);
+  assert.deepEqual(decision.missingRequirements.tattoo, ['descricao', 'local_corpo', 'altura_cm', 'estilo']);
+});
+
+test('Workflow Manager: applyWorkflowTransition força payload seguro quando permitido', () => {
+  const result = applyWorkflowTransition({
+    estado_atual: 'cadastro',
+    agentOut: {
+      ok: true,
+      resposta_cliente: 'vou enviar para o tatuador',
+      proxima_acao: 'pergunta',
+      estado_novo: 'cadastro',
+      dados_completos: false,
+      campos_faltando: ['email'],
+    },
+    dados_coletados: tattooComplete,
+    dados_cadastro: cadastroComplete,
+  });
+
+  assert.equal(result.agentOut.estado_novo, 'aguardando_tatuador');
+  assert.equal(result.agentOut.proxima_acao, 'handoff');
+  assert.equal(result.agentOut.dados_completos, true);
+  assert.deepEqual(result.agentOut.campos_faltando, []);
+  assert.equal(result.agentOut.workflow_decision.reason, 'cadastro_and_tattoo_complete');
+});
+
+test('Workflow Manager: resumo observavel nao vaza dados pessoais', () => {
+  const metadata = summarizeWorkflowDecision({
+    shouldTransition: true,
+    fromState: 'cadastro',
+    toState: 'aguardando_tatuador',
+    reason: 'cadastro_and_tattoo_complete',
+  });
+
+  assert.deepEqual(metadata, {
+    workflow_layer: 'workflow_manager',
+    workflow_from_state: 'cadastro',
+    workflow_to_state: 'aguardando_tatuador',
+    workflow_transition_allowed: true,
+    workflow_reason: 'cadastro_and_tattoo_complete',
+    workflow_missing_cadastro_count: 0,
+    workflow_missing_tattoo_count: 0,
+  });
+});

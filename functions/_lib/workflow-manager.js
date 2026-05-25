@@ -69,6 +69,25 @@ export function evaluateWorkflowTransition({
   };
 }
 
+export function summarizeWorkflowDecision(decision = {}) {
+  const missingCadastro = Array.isArray(decision?.missingRequirements?.cadastro)
+    ? decision.missingRequirements.cadastro.length
+    : 0;
+  const missingTattoo = Array.isArray(decision?.missingRequirements?.tattoo)
+    ? decision.missingRequirements.tattoo.length
+    : 0;
+
+  return {
+    workflow_layer: 'workflow_manager',
+    workflow_from_state: decision.fromState || null,
+    workflow_to_state: decision.toState || null,
+    workflow_transition_allowed: decision.shouldTransition === true,
+    workflow_reason: decision.reason || null,
+    workflow_missing_cadastro_count: missingCadastro,
+    workflow_missing_tattoo_count: missingTattoo,
+  };
+}
+
 export function applyWorkflowTransition({ estado_atual, agentOut, dados_coletados, dados_cadastro } = {}) {
   const decision = evaluateWorkflowTransition({ estado_atual, agentOut, dados_coletados, dados_cadastro });
   if (!decision.shouldTransition) return { agentOut, decision };

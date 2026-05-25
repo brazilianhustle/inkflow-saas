@@ -1446,6 +1446,7 @@ test('Workflow: ConversationRouter completa cadastro com recusa de email e dispa
     throw new Error('runAgent nao deveria ser chamado');
   });
   const callToolSpy = mock.fn(async () => ({ ok: true }));
+  const logAgentTurnSpy = mock.fn();
   let conversaPatch = null;
   const conversa = {
     id: CONVERSA_ID,
@@ -1482,6 +1483,7 @@ test('Workflow: ConversationRouter completa cadastro com recusa de email e dispa
     }),
     runAgent: runAgentSpy,
     callTool: callToolSpy,
+    logAgentTurn: logAgentTurnSpy,
   });
 
   await processBatch({}, baseBatch(), deps);
@@ -1498,6 +1500,15 @@ test('Workflow: ConversationRouter completa cadastro com recusa de email e dispa
   assert.equal(callToolSpy.mock.calls[0].arguments[0], 'enviar-orcamento-tatuador');
   assert.equal(callToolSpy.mock.calls[0].arguments[1].tenant_id, TENANT.id);
   assert.equal(callToolSpy.mock.calls[0].arguments[1].telefone, TELEFONE);
+  const workflowLog = logAgentTurnSpy.mock.calls
+    .map(call => call.arguments[0])
+    .find(entry => entry.agent_name === 'workflow_manager');
+  assert.ok(workflowLog, 'Workflow Manager deve registrar a decisao de transicao');
+  assert.equal(workflowLog.context_metadata.workflow_layer, 'workflow_manager');
+  assert.equal(workflowLog.context_metadata.workflow_from_state, 'cadastro');
+  assert.equal(workflowLog.context_metadata.workflow_to_state, 'aguardando_tatuador');
+  assert.equal(workflowLog.context_metadata.workflow_transition_allowed, true);
+  assert.equal(workflowLog.context_metadata.workflow_reason, 'cadastro_and_tattoo_complete');
 });
 
 test('15. multi-message: resposta com \\n\\n envia 2 balões com typing delay antes de cada', async () => {

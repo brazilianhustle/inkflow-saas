@@ -19,7 +19,7 @@ import { classificarFoto } from './foto-classifier.js';
 import { enviarMidia } from './telegram-media.js';
 import { routeConversationTurn } from './conversation-router.js';
 import { logAgentTurn } from './telemetry/agent-turn-logger.js';
-import { applyWorkflowTransition } from './workflow-manager.js';
+import { applyWorkflowTransition, summarizeWorkflowDecision } from './workflow-manager.js';
 import { composeEscalationTelegram, evaluateEscalation } from './escalation-manager.js';
 
 export const TERMINAL_STATES = new Set([
@@ -357,6 +357,40 @@ export async function processBatch(env, batch, depsOverride = {}) {
       dados_cadastro: novoDadosCadastro,
     });
     agentOut = workflow.agentOut;
+    if (workflow.decision?.reason !== 'unsupported_state') {
+      try {
+        deps.logAgentTurn?.({
+          conversa_id: conversa.id,
+          tenant_id: tenantId,
+          turn_index: historico.length + 1,
+          agent_name: 'workflow_manager',
+          agent_version: env.AGENT_VERSION || '2026-05-25-workflow-manager-v1',
+          estado_agente: estadoAgente,
+          model: 'rules',
+          client_input_text: texto,
+          client_input_type: imagens.length > 0 ? 'text+image' : 'text',
+          prompt_full: null,
+          context_metadata: {
+            ...summarizeWorkflowDecision(workflow.decision),
+            agent_used: agentOut.agent_usado || null,
+            agent_action: agentOut.proxima_acao || null,
+            msg_row_ids: msgRowIds,
+          },
+          llm_output_parsed: {
+            workflow_decision: workflow.decision,
+            resposta_cliente: agentOut.resposta_cliente || null,
+            estado_novo: agentOut.estado_novo || null,
+            proxima_acao: agentOut.proxima_acao || null,
+            dados_completos: agentOut.dados_completos === true,
+            campos_faltando: Array.isArray(agentOut.campos_faltando) ? agentOut.campos_faltando : [],
+          },
+          invariant_passed: true,
+          latency_total_ms: Date.now() - t0,
+        });
+      } catch (e) {
+        console.warn('[pipeline] workflow telemetry failed:', e?.message || e);
+      }
+    }
     await deps.supaFetch(`/rest/v1/conversas?id=eq.${conversa.id}`, {
       method: 'PATCH',
       body: JSON.stringify({
