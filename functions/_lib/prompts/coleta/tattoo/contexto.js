@@ -22,7 +22,8 @@ export function contextoTattoo(tenant, conversa, clientContext) {
   // Cliente
   linhas.push('## Cliente');
   if (ctx.is_first_contact) {
-    linhas.push('- PRIMEIRO CONTATO do cliente com o estudio (faca saudacao 2 baloes)');
+    linhas.push('- PRIMEIRO CONTATO do cliente com o estudio: apresentacao e obrigatoria antes da coleta, mesmo se o cliente ja trouxe a ideia da tattoo');
+    linhas.push('- Use 2 baloes: saudacao/apresentacao primeiro; depois aproveite os dados do cliente e pergunte o proximo campo faltante');
   } else if (ctx.eh_recorrente) {
     linhas.push(`- Cliente RECORRENTE (${ctx.total_sessoes || 1} sessao(oes) anterior(es))`);
     if (ctx.nome_cliente && ctx.nome_cliente.trim().length >= 2) {

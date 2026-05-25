@@ -159,6 +159,50 @@ test('runAgent (tattoo): primeiro contato com "opa" tambem força saudacao canon
   assert.equal(r.resposta_cliente, 'Oii, tudo bem?\n\nMe chamo Assistente, muito prazer! Como posso te chamar?');
 });
 
+test('runAgent (tattoo): primeiro contato misto preserva coleta mas garante apresentação', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511',
+    mensagem: 'oi\nquero fazer uma tatuagem no braço',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: { ...TENANT_STUB, nome_agente: 'Assistente' },
+    conversa: CONVERSA_STUB,
+    clientContext: { is_first_contact: true, batch_message_count: 2 },
+    openaiClient: {
+      responses: {
+        parse: async () => ({
+          status: 'completed',
+          id: 'r',
+          output_parsed: { output: {
+            proxima_acao: 'pergunta',
+            resposta_cliente: 'Oi, tudo bem? E qual o tema ou ideia da tatuagem?',
+            dados_persistidos: {
+              descricao_curta: null,
+              local_corpo: 'braço',
+              altura_cm: null,
+              estilo: null,
+              tamanho_cm: null,
+              cor_preferencia: null,
+              foto_local: null,
+            },
+            dados_completos: false,
+            campos_faltando: ['descricao_curta', 'altura_cm', 'estilo'],
+            campos_conflitantes: [],
+            payload_portfolio: null,
+            analise_imagens: null,
+            cobertura_suspeita: null,
+          } },
+        }),
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.match(r.resposta_cliente, /^Oii, tudo bem\?\n\nMe chamo Assistente, muito prazer!/);
+  assert.match(r.resposta_cliente, /qual o tema ou ideia da tatuagem\?/i);
+  assert.deepEqual(r.dados_persistidos.local_corpo, 'braço');
+  assert.equal(r.campos_faltando.includes('descricao_curta'), true);
+});
+
 test('runAgent (tattoo): nao deixa resposta pedir altura ja persistida no mesmo lote', async () => {
   const { runAgent } = await import('../../functions/api/agent/route.js');
   const r = await runAgent({

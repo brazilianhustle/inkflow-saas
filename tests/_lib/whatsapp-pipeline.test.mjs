@@ -115,7 +115,7 @@ test('RACE GUARD: 2 balões no mesmo lote → runAgent 1× e considera ambos os 
   assert.equal(runAgentSpy.mock.callCount(), 1, 'runAgent deve rodar 1× pro lote inteiro');
   assert.match(runAgentSpy.mock.calls[0].arguments[0].mensagem, /quero uma tattoo/);
   assert.match(runAgentSpy.mock.calls[0].arguments[0].mensagem, /no antebraço/);
-  assert.equal(runAgentSpy.mock.calls[0].arguments[0].clientContext.is_first_contact, false);
+  assert.equal(runAgentSpy.mock.calls[0].arguments[0].clientContext.is_first_contact, true);
   assert.equal(runAgentSpy.mock.calls[0].arguments[0].clientContext.batch_message_count, 2);
   assert.equal(runAgentSpy.mock.calls[0].arguments[0].clientContext.batch_joined_by, 'newline');
 });
@@ -349,6 +349,49 @@ test('ConversationRouter Slice 1: primeiro contato com saudacao pura cai no runA
 
   assert.equal(runAgentSpy.mock.callCount(), 1);
   assert.equal(aiInsert.message.content, 'Atendente:\nOi, eu te ajudo por aqui');
+});
+
+test('Pipeline: primeiro contato misto de coleta passa contexto de apresentação ao runAgent', async () => {
+  const runAgentSpy = mock.fn(async (args) => {
+    assert.equal(args.clientContext.is_first_contact, true);
+    assert.equal(args.clientContext.batch_message_count, 2);
+    assert.match(args.mensagem, /oi/);
+    assert.match(args.mensagem, /quero fazer uma tatuagem no braço/);
+    return {
+      ok: true,
+      resposta_cliente: 'Oii, tudo bem?\n\nMe chamo Assistente, muito prazer!\n\nE qual o tema ou ideia da tatuagem?',
+      estado_novo: 'tattoo',
+      dados_persistidos: { local_corpo: 'braço' },
+      proxima_acao: 'pergunta',
+      agent_usado: 'tattoo',
+    };
+  });
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: {},
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 101, content: 'oi' },
+        { id: 102, content: 'quero fazer uma tatuagem no braço' },
+      ]),
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [101, 102] }), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 1);
+  assert.match(aiInsert.message.content, /^Oii, tudo bem\?\n\nMe chamo Assistente/);
+  assert.match(aiInsert.message.content, /qual o tema ou ideia da tatuagem\?/i);
 });
 
 test('ConversationRouter Slice 1: primeiro contato misto com preço usa router e não fica só na saudação', async () => {

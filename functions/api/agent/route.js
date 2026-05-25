@@ -138,6 +138,30 @@ function forceFirstContactGreeting(out, tenant) {
   };
 }
 
+function hasFirstContactIntro(text) {
+  const s = String(text || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return /\bme chamo\b/.test(s) || /\bmeu nome e\b/.test(s);
+}
+
+function stripLeadingGenericGreeting(text) {
+  return String(text || '')
+    .replace(/^\s*(oii?|ol[aá]|opa),?\s*tudo bem\?\s*(?:e\s+)?/i, '')
+    .trim();
+}
+
+function ensureFirstContactIntro(out, tenant) {
+  if (!out?.resposta_cliente || hasFirstContactIntro(out.resposta_cliente)) return out;
+  const nomeAgente = tenant?.nome_agente || 'atendente';
+  const body = stripLeadingGenericGreeting(out.resposta_cliente);
+  const intro = `Oii, tudo bem?\n\nMe chamo ${nomeAgente}, muito prazer!`;
+  return {
+    ...out,
+    resposta_cliente: body ? `${intro}\n\n${body}` : `${intro} Como posso te chamar?`,
+  };
+}
+
 function hasValue(v) {
   return v !== null && v !== undefined && v !== '';
 }
@@ -519,8 +543,10 @@ export async function runAgent({
       });
       out = buildFallbackOutput('tattoo');
     }
-    if (mergedClientContext.is_first_contact && isGreetingOnly(mensagem)) {
-      out = forceFirstContactGreeting(out, tenant);
+    if (mergedClientContext.is_first_contact) {
+      out = isGreetingOnly(mensagem)
+        ? forceFirstContactGreeting(out, tenant)
+        : ensureFirstContactIntro(out, tenant);
     }
     // ─── Bug 1: trava leve foto do local pedida >=1x antes do handoff ───
     // Contador vive em dados_coletados.tentativas_foto_local (estado_extra
