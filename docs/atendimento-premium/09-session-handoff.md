@@ -50,8 +50,8 @@ https://inkflowbrasil.com
 Status estratégico:
 
 ```text
-Atendimento premium esta em Autonomy Gate Level 2, com smoke loop real/HTTP monitorado, transcript, julgamento, tail e gates por slice.
-O check atual do Autonomy Gate recomenda `promote_available` para Level 3 (40 scenarios PASS, 18 WhatsApp reais PASS, gates criticos PASS), mas `CURRENT_LEVEL` permanece 2 ate promocao deliberada em commit proprio.
+Atendimento premium esta em Autonomy Gate Level 3, com smoke loop real/HTTP monitorado, transcript, julgamento, tail e gates por slice.
+Level 3 foi promovido deliberadamente apos recomendacao objetiva do gate (40 scenarios PASS, 18 WhatsApp reais PASS, gates criticos PASS). A janela atual permite mini-campanha de ate 4 micro-slices da mesma familia, com parada obrigatoria em qualquer falha. O gate tambem ja define criterios futuros para recomendar Level 4: 70 scenarios PASS, 35 WhatsApp reais PASS, gates criticos PASS e docs de rollback/staging + politica de loop Level 4.
 O cadastro-handoff esta funcionalmente protegido: cadastro completo promove para aguardando_tatuador, handoff exige orcid nos smokes de orcamento, idade isolada nao persiste data/email vazios e menoridade explicita aciona handoff humano sem criar orcamento.
 Escalation Manager existe como primeira camada formal para handoff humano: menoridade gera `reason_code=minor_age`, cobertura textual gera `reason_code=cover_up`, pedido humano gera `reason_code=human_requested` e cliente irritado gera `reason_code=client_upset`; todos com `requires_orcid=false`, texto Telegram rastreavel e row propria em `agent_turn_logs` via `agent_name=escalation_manager`.
 O smoke registry agora consegue transformar essa observabilidade em gate automatico com `EXPECTED_AGENT_LOG_JQ_TRUE`.
@@ -389,8 +389,8 @@ Antes de codar nova frente:
 
 1. Confirmar worktree.
 2. Rodar `bash scripts/smoke/continuity-bundle.sh --force` se o contexto estiver abaixo de 20% ou a sessao tiver sido compactada.
-3. Confirmar Autonomy Gate Level 2 e gate do slice relacionado.
-4. Atacar no maximo 2 micro-slices relacionados por rodada.
+3. Confirmar Autonomy Gate Level 3 e gate do slice relacionado.
+4. Atacar no maximo 4 micro-slices da mesma familia por rodada.
 5. Registrar smoke em `smoke-runs.md` e atualizar o gate do slice antes de ampliar autonomia.
 
 Minha recomendação estratégica:

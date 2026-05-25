@@ -298,6 +298,42 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** em 2026-05-25 o gate retornou `decision=promote_available` para Level 3 com 40 scenarios PASS, 18 WhatsApp reais PASS e gates `atendimento-lateral`, `cadastro-handoff` e `escalation-manager` PASS. `CURRENT_LEVEL` permanece 2 ate commit deliberado de promocao.
 
+## 2026-05-25 - Promocao deliberada para Autonomy Level 3
+
+**Status:** decidido.
+
+**Decisão:** promover `CURRENT_LEVEL` para 3, com `MAX_BATCH_SIZE=4` e politica de mini-campanha limitada a uma familia de cenarios por rodada.
+
+**Motivo:** a recomendacao objetiva do gate foi atingida: 40 scenarios PASS, 18 WhatsApp reais PASS, gates criticos PASS e nenhum bloqueador. Level 3 aumenta eficiencia sem liberar loop infinito.
+
+**Alternativas rejeitadas:**
+
+- permanecer em Level 2 apesar da evidencia;
+- promover para Level 4 sem rollback/staging documentado;
+- aumentar batch sem limitar por familia de cenarios.
+
+**Camada responsável:** `Autonomy Gate`, metodologia de smoke, slice gates e handoff operacional.
+
+**Impacto:** proximas rodadas podem executar ate 4 micro-slices da mesma familia, mantendo HTTP radar e WhatsApp real definitivo por micro-slice conversacional. Qualquer falha de WhatsApp real, deploy, CI, cleanup, gate ou estado interrompe a campanha e volta para triage.
+
+## 2026-05-25 - Level 4 exige rollback/staging e politica de loop
+
+**Status:** decidido.
+
+**Decisão:** definir criterios de recomendacao futura para Level 4 sem promover agora.
+
+**Motivo:** Level 4 e loop continuo supervisionado; ele exige mais do que volume de PASS. Precisa de rollback/staging confiavel e politica explicita de parada.
+
+**Alternativas rejeitadas:**
+
+- deixar Level 4 sem parametros;
+- promover por volume bruto;
+- permitir loop continuo sem documentos operacionais.
+
+**Camada responsável:** `Autonomy Gate` e docs futuros `18-rollback-staging-protocol.md` e `19-level-4-loop-policy.md`.
+
+**Impacto:** o gate so pode recomendar Level 4 quando houver pelo menos 70 scenarios PASS, 35 WhatsApp reais PASS, gates criticos PASS, docs obrigatorios de rollback/staging e loop Level 4, alem de zero bloqueadores.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
