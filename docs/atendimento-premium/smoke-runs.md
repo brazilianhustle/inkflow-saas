@@ -15,13 +15,15 @@ Ao fim de smoke monitorado:
 
 | Data UTC | Run ID | Tipo | Alvo | Telefone | Resultado | Evidencia | Decisao |
 |---|---|---|---|---|---|---|---|
+| 2026-05-25 06:53 | `scenario-whatsapp-real-cadastro-handoff-20260525T065321Z-13729` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260525T065321Z-13729/` | Copy premium validada em cadeia real: `aguardando_tatuador`, `orcid=orc_nqk5ft`, `email_recusado=true`, `copy_risk=baixo`. |
+| 2026-05-25 06:52 | `scenario-cadastro-handoff-email-recusado-20260525T065248Z-24071` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-cadastro-handoff-email-recusado-20260525T065248Z-24071/` | Copy premium validada no radar HTTP: `aguardando_tatuador`, `orcid=orc_q7dj6h`, `email_recusado=true`, `copy_risk=baixo`. |
 | 2026-05-25 06:37 | `scenario-whatsapp-real-cadastro-handoff-20260525T063724Z-20686` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260525T063724Z-20686/` | Cadeia real validada: Evolution 201, webhook registrou humano exato, `aguardando_tatuador`, `orcid=orc_wus13k`, `email_recusado=true`, `copy_risk=medio`. |
 | 2026-05-25 06:22 | `scenario-cadastro-handoff-email-recusado-20260525T062239Z-3885` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-cadastro-handoff-email-recusado-20260525T062239Z-3885/` | Registry validado: `EXPECTED_STATE` autoritativo, `aguardando_tatuador`, `orcid=orc_hljd47`, `email_recusado=true`, `copy_risk=medio`. |
 | 2026-05-25 05:31 | `smoke-20260525T053147Z-23172` | HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/smoke-20260525T053147Z-23172/` | Workflow de cadastro completo validado: `aguardando_tatuador` + `orcid=orc_2x6t5l` + `email_recusado=true`. |
 
 ## Run De Referencia Atual
 
-### `scenario-whatsapp-real-cadastro-handoff-20260525T063724Z-20686`
+### `scenario-whatsapp-real-cadastro-handoff-20260525T065321Z-13729`
 
 Mensagem:
 
@@ -35,7 +37,7 @@ Estado final:
 ```json
 {
   "estado_agente": "aguardando_tatuador",
-  "orcid": "orc_wus13k",
+  "orcid": "orc_nqk5ft",
   "dados_cadastro": {
     "nome": "Joao Silva",
     "email": null,
@@ -50,7 +52,7 @@ Resposta AI observada:
 ```text
 O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
 
-Confirmo por aqui e sigo com teu orçamento
+Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.
 ```
 
 Leitura estrategica:
@@ -60,5 +62,5 @@ Leitura estrategica:
 - Handoff esta operacional.
 - Scenario registry esta operacional como checkpoint reproduzivel.
 - Polling corrigido: com `EXPECTED_STATE`, resposta AI isolada nao aprova o smoke.
-- Existe risco medio de copy: a frase final funciona, mas ainda pode soar seca para padrao premium.
-- Proximo upgrade operacional deve transformar falhas de scenario em triagem padronizada e depois atacar a naturalidade premium da frase final.
+- Copy de encerramento saiu do risco medio para baixo sem prometer preco, prazo especifico ou alterar estado.
+- Proximo upgrade operacional deve adicionar `plan-review.md` quando um scenario contradiz a hipotese do slice e depois criar gate formal de conclusao de slice.

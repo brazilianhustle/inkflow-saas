@@ -32,17 +32,18 @@ worktree_esperado: limpo
 - Scenario registry validado com `cadastro-handoff-email-recusado`; polling agora trata `EXPECTED_STATE` como criterio autoritativo.
 - Scenario WhatsApp real `whatsapp-real-cadastro-handoff` validado com Evolution `central` enviando mensagem real para o numero do bot.
 - Triage automatica de falhas de scenario criada com `triage.md` e classes operacionais.
+- Naturalidade do fechamento de cadastro melhorada; HTTP e WhatsApp real passaram com `copy_risk=baixo`.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-cadastro-handoff-20260525T063724Z-20686
+run_id: scenario-whatsapp-real-cadastro-handoff-20260525T065321Z-13729
 tipo: Scenario WhatsApp real
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: orc_wus13k
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260525T063724Z-20686/
+orcid: orc_nqk5ft
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260525T065321Z-13729/
 ```
 
 Mensagem:
@@ -58,23 +59,23 @@ Resultado:
 estado_agente: aguardando_tatuador
 email_recusado: true
 data_nascimento: 1995-03-12
-orcid: orc_wus13k
-copy_risk: medio
+orcid: orc_nqk5ft
+copy_risk: baixo
 chain: central -> WhatsApp real -> bot -> webhook -> pipeline -> handoff
 ```
 
 ## Proximo Ataque
 
 ```text
-Atacar naturalidade premium da resposta final marcada como `copy_risk=medio`.
+Adicionar reanalise de plano quando scenario falha por contrato e criar gate formal de conclusao de slice.
 ```
 
 Escopo recomendado:
 
-- localizar ResponseComposer/prompt responsavel por "Confirmo por aqui e sigo com teu orçamento";
-- substituir fechamento seco por copy mais humana sem prometer preco/prazo;
-- manter handoff e `orcid` intactos;
-- rerodar scenario HTTP e WhatsApp real quando a alteracao tocar resposta final.
+- criar `plan-review.md` ou gerador equivalente para falhas `contract_*`;
+- definir arquivo/lista de scenarios obrigatorios por slice;
+- bloquear conclusao de slice se scenario obrigatorio nao tiver PASS recente;
+- manter HTTP scenario como radar rapido e WhatsApp real como ensaio final.
 
 ## Comando De Retomada
 
