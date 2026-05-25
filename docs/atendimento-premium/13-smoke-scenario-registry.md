@@ -133,6 +133,34 @@ orcid deve continuar null
 resposta deve pedir data completa com linguagem de seguranca/registro de maioridade, sem liberar orcamento, agendar, cobrar sinal ou falar de valor
 ```
 
+`cadastro-menoridade-handoff-humano`
+
+Objetivo:
+
+```text
+Validar que data de nascimento menor de 18 anos nao segue para orcamento automatico.
+```
+
+Setup:
+
+```text
+estado_agente: coletando_cadastro
+dados_coletados: descricao_curta, local_corpo, altura_cm, estilo
+dados_cadastro: nome
+historico: pergunta AI pendente sobre data de nascimento completa
+```
+
+Esperado:
+
+```text
+estado final deve virar aguardando_tatuador
+dados_cadastro.nome deve permanecer Joao Silva
+dados_cadastro.data_nascimento deve persistir a data menor informada
+orcid deve continuar null
+resposta deve orientar com seguranca sobre menoridade/responsavel legal
+tail nao deve chamar enviar-orcamento-tatuador
+```
+
 `whatsapp-real-cadastro-handoff`
 
 Objetivo:

@@ -447,6 +447,19 @@ export async function processBatch(env, batch, depsOverride = {}) {
         if (!r.ok) await deps.sendTelegramAdmin(`enviar-orcamento-tatuador falhou: ${r.error || 'unknown'}`);
       }
     }
+    if (estadoAgente === 'cadastro' && agentOut.proxima_acao === 'erro') {
+      if (!tenant.tatuador_telegram_chat_id) {
+        await deps.sendTelegramAdmin(`handoff humano sem tatuador_telegram_chat_id em ${tenant.id}`);
+      } else {
+        const motivo = (agentOut.campos_faltando || []).includes('menor_idade_trigger')
+          ? 'menoridade / responsavel legal'
+          : 'cadastro precisa de humano';
+        await deps.sendTelegram(
+          tenant.tatuador_telegram_chat_id,
+          `⚠️ Atendimento precisa de humano\n\nCliente ${telefone}\nMotivo: ${motivo}\n\nResposta enviada ao cliente:\n${preview(agentOut.resposta_cliente, 500)}`
+        );
+      }
+    }
 
     // Marca TODAS as msgs do lote processed (depois das Etapas 7-8).
     await markStatus(deps, msgRowIds, 'processed');

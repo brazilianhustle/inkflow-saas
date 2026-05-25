@@ -43,7 +43,9 @@ test('enforceMenorIdade — menor de idade: forca proxima_acao=erro + resposta p
   };
   const result = enforceMenorIdade(out);
   assert.equal(result.proxima_acao, 'erro');
-  assert.match(result.resposta_cliente, /18 anos/);
+  assert.match(result.resposta_cliente, /menos de 18 anos/);
+  assert.match(result.resposta_cliente, /respons[aá]vel legal/);
+  assert.doesNotMatch(result.resposta_cliente, /ja sinalizei|já sinalizei/i);
   assert.ok(result.campos_faltando.includes('menor_idade_trigger'));
 });
 

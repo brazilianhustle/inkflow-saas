@@ -22,7 +22,7 @@ export function enforceMenorIdade(out) {
       ...out,
       proxima_acao: 'erro',
       resposta_cliente:
-        'Pra clientes com menos de 18 anos o tatuador conversa direto com o responsavel legal — ja sinalizei pra ele.',
+        'Como a pessoa que vai tatuar tem menos de 18 anos, eu nao consigo seguir com o orçamento direto por aqui. Vou acionar o tatuador para orientar com segurança sobre responsável legal e próximos passos.',
       campos_faltando: [...(out.campos_faltando || []), 'menor_idade_trigger'],
     };
   }

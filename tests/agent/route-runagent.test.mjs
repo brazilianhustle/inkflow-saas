@@ -760,6 +760,29 @@ test('S1 cadastro: idade com data explicita permite data_nascimento', async () =
   assert.equal(r.dados_persistidos.data_nascimento, '1993-10-19');
 });
 
+test('S1 cadastro: data de menoridade aciona handoff humano sem seguir orçamento direto', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const minorOut = {
+    ...CADASTRO_HANDOFF_OUT,
+    dados_persistidos: { nome: 'Junior', data_nascimento: '2010-03-12', email: null },
+  };
+  const conversa = { id: 'c', telefone: '5511', estado_agente: 'cadastro', dados_coletados: {}, dados_cadastro: {} };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'nasci em 12/03/2010',
+    estado_atual: 'cadastro', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: fakeCadastro(minorOut),
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'erro');
+  assert.equal(r.estado_novo, 'aguardando_tatuador');
+  assert.equal(r.dados_persistidos.data_nascimento, '2010-03-12');
+  assert.ok(r.campos_faltando.includes('menor_idade_trigger'));
+  assert.match(r.resposta_cliente, /menos de 18 anos/);
+  assert.match(r.resposta_cliente, /respons[aá]vel legal/);
+  assert.doesNotMatch(r.resposta_cliente, /orçamento liberado|valor certinho|agendar|pagar sinal/i);
+});
+
 test('S1 cadastro: idade sem data nao apaga data_nascimento ja existente no cadastro', async () => {
   const { runAgent } = await import('../../functions/api/agent/route.js');
   const conversa = {

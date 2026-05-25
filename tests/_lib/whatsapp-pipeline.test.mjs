@@ -1017,6 +1017,41 @@ test('4. handoff cadastro→orcamento — Task 10 implementa', async () => {
   assert.equal(callToolSpy.mock.calls[0].arguments[1].tenant_id, TENANT.id);
 });
 
+test('4b. cadastro erro por menoridade aciona humano sem criar orçamento', async () => {
+  const callToolSpy = mock.fn(async () => ({ ok: true }));
+  const sendTelegramSpy = mock.fn(async () => ({ ok: true }));
+  let conversaPatch = null;
+  const conversa = { id: CONVERSA_ID, estado_agente: 'cadastro', dados_coletados: {}, dados_cadastro: { nome: 'J' } };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'nasci em 12/03/2010' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+    }),
+    runAgent: async () => ({
+      ok: true,
+      resposta_cliente: 'Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador para orientar com segurança.',
+      estado_novo: 'aguardando_tatuador',
+      dados_persistidos: { data_nascimento: '2010-03-12' },
+      proxima_acao: 'erro',
+      campos_faltando: ['menor_idade_trigger'],
+      agent_usado: 'cadastro',
+    }),
+    callTool: callToolSpy,
+    sendTelegram: sendTelegramSpy,
+  });
+  await processBatch({}, baseBatch(), deps);
+  assert.equal(callToolSpy.mock.callCount(), 0);
+  assert.equal(sendTelegramSpy.mock.callCount(), 1);
+  assert.equal(sendTelegramSpy.mock.calls[0].arguments[0], '99999');
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /menoridade|responsavel legal/i);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /5511999998888/);
+  assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
+  assert.equal(conversaPatch.dados_cadastro.data_nascimento, '2010-03-12');
+});
+
 test('5. portfolio intent — Task 10 implementa', async () => {
   const evoSpy = mock.fn(async () => ({ ok: true }));
   const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
