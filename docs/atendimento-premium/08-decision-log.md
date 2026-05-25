@@ -334,6 +334,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** o gate so pode recomendar Level 4 quando houver pelo menos 70 scenarios PASS, 35 WhatsApp reais PASS, gates criticos PASS, docs obrigatorios de rollback/staging e loop Level 4, alem de zero bloqueadores.
 
+## 2026-05-25 - Context/Tenant Manager 2.0 com snapshot operacional versionado
+
+**Status:** decidido.
+
+**Decisão:** o `Context/TenantManager` deve expor um snapshot operacional versionado das regras do tenant em `agent_turn_logs.context_metadata`, sem vazar listas completas, URLs, nomes ou texto livre de persona.
+
+**Motivo:** atendimento premium precisa ser auditável por regra de estúdio. Saber que o contexto foi injetado nao basta; o monitoramento precisa provar qual superficie operacional estava ativa no turno, como origem dos gatilhos de handoff, existencia de catalogo de estilos e ativos disponíveis.
+
+**Alternativas rejeitadas:**
+
+- registrar listas completas de estilos, gatilhos ou URLs nos logs;
+- inferir regras do tenant apenas lendo prompt ou banco;
+- validar contexto premium apenas por copy do bot.
+
+**Camada responsável:** `Context/TenantManager`, `runAgent`, `whatsapp-pipeline`, `agent_turn_logs` e smoke scenario registry.
+
+**Impacto:** `lateral-portfolio-disponivel` e `whatsapp-real-lateral-portfolio-disponivel` agora exigem `tenant_context_rules_snapshot_version="v1"`, origem dos gatilhos (`custom` no tenant teste), presença de gatilhos, catalogo de estilos, estilos aceitos e resumo de ativos sem URLs. HTTP radar e WhatsApp real passaram em 2026-05-25.
+
 ## 2026-05-25 - Workflow Manager registra a propria decisao de transicao
 
 **Status:** decidido.
