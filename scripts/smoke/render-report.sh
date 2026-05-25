@@ -18,6 +18,7 @@ command -v jq >/dev/null 2>&1 || { echo "ERRO: jq nao instalado." >&2; exit 1; }
 
 run_id="$(jq -r '.run_id // "(unknown)"' "$REQUEST_JSON")"
 expected_state="$(jq -r '.expected_state // ""' "$REQUEST_JSON")"
+require_orcid="$(jq -r '.require_orcid // "0"' "$REQUEST_JSON")"
 target_phone="$(jq -r '.phone // .sender_phone // "(unknown)"' "$REQUEST_JSON")"
 base_url="$(jq -r '.base_url // "(unknown)"' "$REQUEST_JSON")"
 state="$(jq -r '.conversas[0].estado_agente // ""' "$POLL_JSON")"
@@ -57,7 +58,7 @@ if [ -z "$expected_state" ] || [ "$expected_state" = "$state" ]; then
 fi
 
 orcid_ok=true
-if [[ ",${expected_state}," == *",aguardando_tatuador,"* ]] && [ -z "$orcid" ]; then
+if [ "$require_orcid" = "1" ] && [[ ",${expected_state}," == *",aguardando_tatuador,"* ]] && [ -z "$orcid" ]; then
   orcid_ok=false
 fi
 

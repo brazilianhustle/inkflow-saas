@@ -15,14 +15,34 @@ export function calcIdade(isoDate) {
   return age;
 }
 
-export function enforceMenorIdade(out) {
-  const idade = calcIdade(out?.dados_persistidos?.data_nascimento);
+export function extractIsoDateFromText(text) {
+  const s = String(text || '');
+  let m = s.match(/\b(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})\b/);
+  if (m) {
+    const dd = String(Number(m[1])).padStart(2, '0');
+    const mm = String(Number(m[2])).padStart(2, '0');
+    return `${m[3]}-${mm}-${dd}`;
+  }
+  m = s.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  return null;
+}
+
+export function enforceMenorIdade(out, mensagem = '') {
+  const persistedDate = out?.dados_persistidos?.data_nascimento;
+  const messageDate = extractIsoDateFromText(mensagem);
+  const dateForCheck = persistedDate || messageDate;
+  const idade = calcIdade(dateForCheck);
   if (idade !== null && idade < 18) {
     return {
       ...out,
       proxima_acao: 'erro',
       resposta_cliente:
         'Como a pessoa que vai tatuar tem menos de 18 anos, eu nao consigo seguir com o orçamento direto por aqui. Vou acionar o tatuador para orientar com segurança sobre responsável legal e próximos passos.',
+      dados_persistidos: {
+        ...(out.dados_persistidos || {}),
+        data_nascimento: dateForCheck,
+      },
       campos_faltando: [...(out.campos_faltando || []), 'menor_idade_trigger'],
     };
   }

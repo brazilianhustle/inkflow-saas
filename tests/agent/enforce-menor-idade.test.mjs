@@ -2,7 +2,7 @@
 // Roda em CI via npm test (glob *.test.mjs).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { calcIdade, enforceMenorIdade } from '../../functions/api/agent/_lib/enforce-menor-idade.js';
+import { calcIdade, enforceMenorIdade, extractIsoDateFromText } from '../../functions/api/agent/_lib/enforce-menor-idade.js';
 
 test('calcIdade — data ISO valida retorna idade correta', () => {
   // Cliente nasceu em 2000-01-01, hoje 2026-05-08 → 26 anos.
@@ -14,6 +14,12 @@ test('calcIdade — data nao-ISO retorna null', () => {
   assert.equal(calcIdade(''), null);
   assert.equal(calcIdade(null), null);
   assert.equal(calcIdade(undefined), null);
+});
+
+test('extractIsoDateFromText — formatos comuns viram ISO', () => {
+  assert.equal(extractIsoDateFromText('nasci em 12/03/2015'), '2015-03-12');
+  assert.equal(extractIsoDateFromText('2015-03-12'), '2015-03-12');
+  assert.equal(extractIsoDateFromText('tenho 16 anos'), null);
 });
 
 test('enforceMenorIdade — maior de idade: out unchanged', () => {
@@ -46,6 +52,21 @@ test('enforceMenorIdade — menor de idade: forca proxima_acao=erro + resposta p
   assert.match(result.resposta_cliente, /menos de 18 anos/);
   assert.match(result.resposta_cliente, /respons[aá]vel legal/);
   assert.doesNotMatch(result.resposta_cliente, /ja sinalizei|já sinalizei/i);
+  assert.ok(result.campos_faltando.includes('menor_idade_trigger'));
+});
+
+test('enforceMenorIdade — menoridade explicita na mensagem corrige LLM que nao persistiu data', () => {
+  const out = {
+    resposta_cliente: 'Pode mandar a data em outro formato?',
+    dados_persistidos: { nome: 'Junior' },
+    dados_completos: false,
+    campos_faltando: ['data_nascimento'],
+    campos_conflitantes: [],
+    proxima_acao: 'pergunta',
+  };
+  const result = enforceMenorIdade(out, 'nasci em 12/03/2015');
+  assert.equal(result.proxima_acao, 'erro');
+  assert.equal(result.dados_persistidos.data_nascimento, '2015-03-12');
   assert.ok(result.campos_faltando.includes('menor_idade_trigger'));
 });
 

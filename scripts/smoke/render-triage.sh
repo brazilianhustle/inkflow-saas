@@ -28,6 +28,7 @@ run_id="$(printf '%s' "$request_json" | jq -r '.run_id // "(unknown)"')"
 scenario_id="$(awk -F': ' '/scenario_id/ {print $2; exit}' "$EVIDENCE_DIR/scenario-plan.txt" 2>/dev/null || true)"
 scenario_type="$(awk -F': ' '/type/ {print $2; exit}' "$EVIDENCE_DIR/scenario-plan.txt" 2>/dev/null || true)"
 expected_state="$(printf '%s' "$request_json" | jq -r '.expected_state // ""')"
+require_orcid="$(printf '%s' "$request_json" | jq -r '.require_orcid // "0"')"
 target_phone="$(printf '%s' "$request_json" | jq -r '.phone // .sender_phone // "(unknown)"')"
 base_url="$(printf '%s' "$request_json" | jq -r '.base_url // "(unknown)"')"
 final_state="$(printf '%s' "$poll_json" | jq -r '.conversas[0].estado_agente // ""')"
@@ -59,7 +60,7 @@ elif [ "$failed_count" != "0" ]; then
 elif [ -n "$expected_state" ] && [ "$final_state" != "$expected_state" ]; then
   failure_class="contract_state_not_reached"
   next_action="Reanalisar Workflow Manager, Policy e dados seedados; o contrato do scenario nao foi cumprido."
-elif [[ ",${expected_state}," == *",aguardando_tatuador,"* ]] && [ -z "$orcid" ]; then
+elif [ "$require_orcid" = "1" ] && [[ ",${expected_state}," == *",aguardando_tatuador,"* ]] && [ -z "$orcid" ]; then
   failure_class="contract_handoff_without_orcid"
   next_action="Inspecionar geracao de orcamento/handoff; estado final sem orcid nao e checkpoint valido."
 elif [ "$human_count" = "0" ]; then

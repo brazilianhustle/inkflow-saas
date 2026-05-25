@@ -764,11 +764,11 @@ test('S1 cadastro: data de menoridade aciona handoff humano sem seguir orçament
   const { runAgent } = await import('../../functions/api/agent/route.js');
   const minorOut = {
     ...CADASTRO_HANDOFF_OUT,
-    dados_persistidos: { nome: 'Junior', data_nascimento: '2010-03-12', email: null },
+    dados_persistidos: { nome: 'Junior', data_nascimento: '2015-03-12', email: null },
   };
   const conversa = { id: 'c', telefone: '5511', estado_agente: 'cadastro', dados_coletados: {}, dados_cadastro: {} };
   const r = await runAgent({
-    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'nasci em 12/03/2010',
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'nasci em 12/03/2015',
     estado_atual: 'cadastro', dados_acumulados: {}, historico: [],
     tenant: TENANT_STUB, conversa, clientContext: {},
     openaiClient: fakeCadastro(minorOut),
@@ -776,11 +776,36 @@ test('S1 cadastro: data de menoridade aciona handoff humano sem seguir orçament
   assert.equal(r.ok, true);
   assert.equal(r.proxima_acao, 'erro');
   assert.equal(r.estado_novo, 'aguardando_tatuador');
-  assert.equal(r.dados_persistidos.data_nascimento, '2010-03-12');
+  assert.equal(r.dados_persistidos.data_nascimento, '2015-03-12');
   assert.ok(r.campos_faltando.includes('menor_idade_trigger'));
   assert.match(r.resposta_cliente, /menos de 18 anos/);
   assert.match(r.resposta_cliente, /respons[aá]vel legal/);
   assert.doesNotMatch(r.resposta_cliente, /orçamento liberado|valor certinho|agendar|pagar sinal/i);
+});
+
+test('S1 cadastro: data de menoridade na mensagem aciona handoff humano mesmo se agent nao persistiu', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const confusedOut = {
+    proxima_acao: 'pergunta',
+    resposta_cliente: 'Pode mandar a data em outro formato?',
+    dados_persistidos: { nome: 'Junior' },
+    dados_completos: false,
+    campos_faltando: ['data_nascimento'],
+    campos_conflitantes: [],
+    payload_portfolio: null,
+  };
+  const conversa = { id: 'c', telefone: '5511', estado_agente: 'cadastro', dados_coletados: {}, dados_cadastro: {} };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: '12/03/2015',
+    estado_atual: 'cadastro', dados_acumulados: {}, historico: [],
+    tenant: TENANT_STUB, conversa, clientContext: {},
+    openaiClient: fakeCadastro(confusedOut),
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'erro');
+  assert.equal(r.estado_novo, 'aguardando_tatuador');
+  assert.equal(r.dados_persistidos.data_nascimento, '2015-03-12');
+  assert.match(r.resposta_cliente, /menos de 18 anos/);
 });
 
 test('S1 cadastro: idade sem data nao apaga data_nascimento ja existente no cadastro', async () => {

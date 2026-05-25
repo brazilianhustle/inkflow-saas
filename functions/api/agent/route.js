@@ -776,7 +776,7 @@ export async function runAgent({
 
   // Aplica enforceMenorIdade APOS invariante. So afeta cadastro (helper
   // checa data_nascimento; outros estados nao tem o campo, retorna out unchanged).
-  const enforced = estado_atual === 'cadastro' ? enforceMenorIdade(working) : working;
+  const enforced = estado_atual === 'cadastro' ? enforceMenorIdade(working, mensagem) : working;
 
   // Sub-3.2: orquestrator side-effects pra Proposta
   const sideEffects = [];
