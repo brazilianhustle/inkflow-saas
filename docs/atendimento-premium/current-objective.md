@@ -46,23 +46,24 @@ worktree_esperado: limpo
 - Micro-slice `pergunta_imagem` com midia HTTP passou apos suporte de media no runner e guardrail anti-resposta apologetica: imagem persistida, resposta pergunta referencia vs local, `copy_risk=baixo`.
 - Micro-slice `pergunta_imagem` com midia WhatsApp real passou: Evolution `central` usou `/message/sendMedia`, webhook registrou imagem/caption real e bot respondeu referencia vs local com `copy_risk=baixo`.
 - Scenario WhatsApp real `whatsapp-real-lateral-tempo-sessao` passou: Evolution `central` enviou pergunta de tempo para o bot, webhook registrou humano real e a resposta manteve expectativa segura sem prometer horas, mesmo dia ou sessao certa.
+- Scenario WhatsApp real `whatsapp-real-lateral-processo-tatuagem` passou: Evolution `central` enviou pergunta de processo para o bot, webhook registrou humano real e a resposta explicou o fluxo sem expor sistema, erro, preco fechado, agendamento ou sinal.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-lateral-tempo-sessao-20260525T083030Z-3522
+run_id: scenario-whatsapp-real-lateral-processo-tatuagem-20260525T083720Z-14678
 tipo: Scenario WhatsApp real
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: coletando_tattoo
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-lateral-tempo-sessao-20260525T083030Z-3522/
+evidence: .smoke-evidence/scenario-whatsapp-real-lateral-processo-tatuagem-20260525T083720Z-14678/
 ```
 
 Mensagem:
 
 ```text
-quanto tempo demora pra fazer uma tattoo no braço?
+como funciona pra fazer uma tattoo?
 ```
 
 Resultado:
@@ -71,7 +72,7 @@ Resultado:
 estado_agente: coletando_tattoo
 evolution_send: /message/sendText/central HTTP 201
 webhook_registrou_humano_real: true
-resposta_sem_promessa_exata_de_tempo: true
+resposta_consultiva_de_processo: true
 copy_risk: baixo
 chain: central -> WhatsApp -> bot -> webhook -> pipeline -> resposta
 ```
