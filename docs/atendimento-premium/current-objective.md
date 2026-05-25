@@ -50,35 +50,36 @@ worktree_esperado: limpo
 - Scenario WhatsApp real `whatsapp-real-lateral-portfolio-disponivel` passou: Evolution `central` enviou pedido de portfolio, webhook registrou humano real, resposta nao escreveu URL manual e tail confirmou `/api/tools/enviar-portfolio` HTTP 200.
 - Scenario WhatsApp real `whatsapp-real-lateral-pergunta-imagem-sem-midia` passou: Evolution `central` enviou pergunta sobre imagem sem arquivo, webhook registrou humano real sem midia e a resposta pediu reenvio sem voltar ao formulario.
 - Autonomy Gate promovido deliberadamente para Level 2 apos `atendimento-lateral` e `cadastro-handoff` passarem, com 14 cenarios recentes e 7 WhatsApp reais; janela maxima agora e 2 micro-slices relacionados por rodada.
+- Micro-slice de cadastro `cadastro-data-idade-nao-persiste` encontrou e corrigiu dois gaps: polling aceitava AI anterior ao humano esperado e pipeline persistia `data_nascimento/email` como string vazia. Apos deploy, smoke passou com `dados_cadastro` preservando apenas `nome`.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-lateral-pergunta-imagem-sem-midia-20260525T084449Z-30339
-tipo: Scenario WhatsApp real
+run_id: scenario-cadastro-data-idade-nao-persiste-20260525T090055Z-20793
+tipo: Scenario HTTP monitorado
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
-expected_state: coletando_tattoo
+expected_state: coletando_cadastro
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-lateral-pergunta-imagem-sem-midia-20260525T084449Z-30339/
+evidence: .smoke-evidence/scenario-cadastro-data-idade-nao-persiste-20260525T090055Z-20793/
 ```
 
 Mensagem:
 
 ```text
-o que você viu na imagem?
+tenho 30 anos
 ```
 
 Resultado:
 
 ```text
-estado_agente: coletando_tattoo
-evolution_send: /message/sendText/central HTTP 201
-webhook_registrou_humano_real: true
-media_recebida: none
-resposta_pediu_reenvio_de_foto: true
+estado_agente: coletando_cadastro
+resposta_ai_posterior_ao_humano: true
+data_nascimento_persistida: false
+email_vazio_persistido: false
+orcid: none
 copy_risk: baixo
-chain: central -> WhatsApp -> bot -> webhook -> pipeline -> resposta
+chain: HTTP smoke -> webhook -> pipeline -> resposta
 ```
 
 ## Proximo Ataque
