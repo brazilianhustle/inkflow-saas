@@ -9,6 +9,7 @@ import { evoSend, splitBaloes } from './evolution-send.js';
 import { sendTelegramTo, sendTelegramAlert } from './telegram.js';
 import { runAgent } from '../api/agent/route.js';
 import { callTool } from '../api/agent/_lib/call-tool.js';
+import { deriveTenantRules, summarizeTenantContext } from '../api/agent/_lib/tenant-context-manager.js';
 import { classificarFoto } from './foto-classifier.js';
 import { enviarMidia } from './telegram-media.js';
 import { routeConversationTurn } from './conversation-router.js';
@@ -245,6 +246,12 @@ export async function processBatch(env, batch, depsOverride = {}) {
       && Object.keys(conversa.dados_cadastro || {}).length === 0;
     const isFirstContactGreetingOnly = isFirstContact && isGreetingOnly(texto);
     let agentOut;
+    const baseClientContext = {
+      is_first_contact: isFirstContact,
+      batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
+      batch_joined_by: 'newline',
+      tenant_rules: deriveTenantRules(tenant),
+    };
     const routerDisabled = String(env?.DISABLE_CONVERSATION_ROUTER || '').toLowerCase() === 'true';
     const routerEligible = !routerDisabled && !isFirstContactGreetingOnly && imagens.length === 0;
     if (routerEligible) {
@@ -255,11 +262,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
         imagens,
         tenant,
         conversa: { ...conversa, estado_agente: estadoAgente },
-        clientContext: {
-          is_first_contact: isFirstContact,
-          batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
-          batch_joined_by: 'newline',
-        },
+        clientContext: baseClientContext,
         disabled: false,
       });
     } else {
@@ -272,11 +275,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
           tenant_id: tenantId, telefone, mensagem: texto,
           estado_atual: estadoAgente, dados_acumulados: conversa.dados_coletados || {},
           historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente },
-          clientContext: {
-            is_first_contact: isFirstContact,
-            batch_message_count: rows.filter(r => r.message?.content && r.message.content.trim()).length,
-            batch_joined_by: 'newline',
-          },
+          clientContext: baseClientContext,
           imagens,
         });
       }
@@ -302,6 +301,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
             router_risk: agentOut.risk,
             router_can_mutate_state: agentOut.can_mutate_state === true,
             history_turns_n: historico.length,
+            ...summarizeTenantContext(baseClientContext, estadoAgente),
           },
           llm_output_parsed: agentOut,
           invariant_passed: true,

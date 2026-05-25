@@ -243,6 +243,8 @@ test('ConversationRouter Slice 1: preço genérico responde sem chamar runAgent 
   assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].context_metadata.router_intent, 'preco_generico');
   assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].context_metadata.router_reason, 'generic_price_question_without_negotiation');
   assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].context_metadata.router_can_mutate_state, false);
+  assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].context_metadata.tenant_context_layer, 'tenant_context_manager');
+  assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].context_metadata.tenant_context_aceita_cobertura, true);
   assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
   assert.deepEqual(conversaPatch.dados_coletados, { descricao_curta: 'rosa' });
   assert.match(aiInsert.message.content, /O valor depende/);
