@@ -229,6 +229,9 @@ on_exit() {
   if [ "$status" -ne 0 ] && [ -d "$EVIDENCE_DIR" ] && [ "$TRIAGE_RENDERED" = "0" ]; then
     TRIAGE_RENDERED=1
     bash scripts/smoke/render-triage.sh "$EVIDENCE_DIR" "$status" || true
+    if [ -f "$EVIDENCE_DIR/triage.md" ] && grep -Eq '^- failure_class: contract_' "$EVIDENCE_DIR/triage.md"; then
+      bash scripts/smoke/render-plan-review.sh "$EVIDENCE_DIR" || true
+    fi
   fi
   exit "$status"
 }

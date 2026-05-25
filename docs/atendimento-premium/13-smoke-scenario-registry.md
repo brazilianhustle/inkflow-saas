@@ -125,10 +125,18 @@ Quando um scenario falha, `run-scenario.sh` gera automaticamente:
 
 Esse arquivo classifica a falha e aponta a proxima acao. O protocolo completo fica em [14-smoke-triage-protocol.md](./14-smoke-triage-protocol.md).
 
+Quando a falha e `contract_*`, o runner gera tambem:
+
+```text
+.smoke-evidence/<run_id>/plan-review.md
+```
+
+Esse arquivo reabre o plano do slice, aponta a camada provavel e bloqueia conclusao ate PASS posterior do mesmo scenario. O protocolo completo fica em [15-smoke-plan-review-protocol.md](./15-smoke-plan-review-protocol.md).
+
 ## Proximos Passos
 
 Depois dos dois cenarios base:
 
-1. adicionar `plan-review.md` quando um cenario contradiz a hipotese do slice;
-2. criar gate de conclusao de slice lendo os cenarios obrigatorios;
-3. atacar a naturalidade premium da frase final marcada como `copy_risk=medio`.
+1. criar gate de conclusao de slice lendo os cenarios obrigatorios;
+2. adicionar novos cenarios obrigatorios por intent/slice;
+3. manter HTTP como radar rapido e WhatsApp real como ensaio final.

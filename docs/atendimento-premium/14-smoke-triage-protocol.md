@@ -10,6 +10,8 @@ bash scripts/smoke/render-triage.sh .smoke-evidence/<run_id> <exit_code>
 
 O `run-scenario.sh` chama esse script automaticamente quando um scenario falha.
 
+Quando a falha e `contract_*`, o runner tambem gera automaticamente `plan-review.md` com a reanalise do plano do slice.
+
 ## Arquivo Gerado
 
 ```text
@@ -51,6 +53,8 @@ O `triage.md` registra:
 - `copy_risk_*`: manter fluxo tecnico e atacar linguagem, ResponseComposer ou prompt.
 - `agent_no_response`: investigar fila/session queue e logs do agent.
 - `pass_triage`: registrar baseline e seguir para o proximo scenario.
+
+Para `contract_*`, abrir tambem [15-smoke-plan-review-protocol.md](./15-smoke-plan-review-protocol.md). Essa classe bloqueia conclusao do slice ate PASS posterior do mesmo scenario.
 
 ## Padrao De Guerra
 

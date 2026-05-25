@@ -48,6 +48,7 @@ Depois disso o sistema decide se deve:
 - [12-loop-continuity-protocol.md](./12-loop-continuity-protocol.md): protocolo para continuar em loop apos compactacao de contexto.
 - [13-smoke-scenario-registry.md](./13-smoke-scenario-registry.md): registry de cenarios para smokes reproduziveis por comando unico.
 - [14-smoke-triage-protocol.md](./14-smoke-triage-protocol.md): triagem automatica de falhas de scenario.
+- [15-smoke-plan-review-protocol.md](./15-smoke-plan-review-protocol.md): reanalise automatica de plano para falhas de contrato.
 - [current-objective.md](./current-objective.md): estado vivo, proximo ataque e comandos de retomada.
 - [smoke-runs.md](./smoke-runs.md): indice versionado dos smokes relevantes.
 - [templates/intent-card.md](./templates/intent-card.md): template para cadastrar novas intents.

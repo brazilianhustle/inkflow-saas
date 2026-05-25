@@ -33,6 +33,7 @@ worktree_esperado: limpo
 - Scenario WhatsApp real `whatsapp-real-cadastro-handoff` validado com Evolution `central` enviando mensagem real para o numero do bot.
 - Triage automatica de falhas de scenario criada com `triage.md` e classes operacionais.
 - Naturalidade do fechamento de cadastro melhorada; HTTP e WhatsApp real passaram com `copy_risk=baixo`.
+- Reanalise automatica de plano criada com `plan-review.md` para falhas `contract_*`.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -67,12 +68,11 @@ chain: central -> WhatsApp real -> bot -> webhook -> pipeline -> handoff
 ## Proximo Ataque
 
 ```text
-Adicionar reanalise de plano quando scenario falha por contrato e criar gate formal de conclusao de slice.
+Criar gate formal de conclusao de slice baseado em cenarios obrigatorios.
 ```
 
 Escopo recomendado:
 
-- criar `plan-review.md` ou gerador equivalente para falhas `contract_*`;
 - definir arquivo/lista de scenarios obrigatorios por slice;
 - bloquear conclusao de slice se scenario obrigatorio nao tiver PASS recente;
 - manter HTTP scenario como radar rapido e WhatsApp real como ensaio final.
