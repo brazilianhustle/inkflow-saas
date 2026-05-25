@@ -115,10 +115,20 @@ Um cenario so serve como checkpoint quando:
 
 Regra critica: quando `EXPECTED_STATE` existe, o polling nao pode aprovar por resposta AI isolada. O estado esperado e o contrato do cenario; resposta AI serve apenas como fallback para smokes sem estado-alvo.
 
+## Triage Automatica
+
+Quando um scenario falha, `run-scenario.sh` gera automaticamente:
+
+```text
+.smoke-evidence/<run_id>/triage.md
+```
+
+Esse arquivo classifica a falha e aponta a proxima acao. O protocolo completo fica em [14-smoke-triage-protocol.md](./14-smoke-triage-protocol.md).
+
 ## Proximos Passos
 
 Depois dos dois cenarios base:
 
-1. adicionar `triage.md` para falhas;
-2. adicionar `plan-review.md` quando um cenario contradiz a hipotese do slice;
-3. criar gate de conclusao de slice lendo os cenarios obrigatorios.
+1. adicionar `plan-review.md` quando um cenario contradiz a hipotese do slice;
+2. criar gate de conclusao de slice lendo os cenarios obrigatorios;
+3. atacar a naturalidade premium da frase final marcada como `copy_risk=medio`.

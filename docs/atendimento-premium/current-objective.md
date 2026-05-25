@@ -31,6 +31,7 @@ worktree_esperado: limpo
 - `transcript.md` e `judgment.md` integrados aos runners de smoke HTTP e WhatsApp real.
 - Scenario registry validado com `cadastro-handoff-email-recusado`; polling agora trata `EXPECTED_STATE` como criterio autoritativo.
 - Scenario WhatsApp real `whatsapp-real-cadastro-handoff` validado com Evolution `central` enviando mensagem real para o numero do bot.
+- Triage automatica de falhas de scenario criada com `triage.md` e classes operacionais.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -65,15 +66,15 @@ chain: central -> WhatsApp real -> bot -> webhook -> pipeline -> handoff
 ## Proximo Ataque
 
 ```text
-Criar triagem padronizada para falhas de scenario e depois atacar naturalidade premium da resposta final.
+Atacar naturalidade premium da resposta final marcada como `copy_risk=medio`.
 ```
 
 Escopo recomendado:
 
-- adicionar template `triage.md` por failure class;
-- registrar sinais minimos: estado, ultima mensagem humana, ultima AI, tail runtime, copy risk;
-- criar regra de reanalise de plano quando scenario falha por contrato e nao por infra;
-- em seguida melhorar a frase final marcada como `copy_risk=medio`.
+- localizar ResponseComposer/prompt responsavel por "Confirmo por aqui e sigo com teu orçamento";
+- substituir fechamento seco por copy mais humana sem prometer preco/prazo;
+- manter handoff e `orcid` intactos;
+- rerodar scenario HTTP e WhatsApp real quando a alteracao tocar resposta final.
 
 ## Comando De Retomada
 

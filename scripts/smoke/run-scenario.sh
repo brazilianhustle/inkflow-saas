@@ -39,6 +39,7 @@ esac
 RUN_ID="${SMOKE_RUN_ID:-scenario-${SCENARIO_ID}-$(date -u +%Y%m%dT%H%M%SZ)-$RANDOM}"
 EVIDENCE_ROOT="${SMOKE_EVIDENCE_ROOT:-.smoke-evidence}"
 EVIDENCE_DIR="${EVIDENCE_ROOT}/${RUN_ID}"
+TRIAGE_RENDERED=0
 
 print_plan() {
   cat <<EOF
@@ -223,9 +224,19 @@ run_scenario() {
   fi
 }
 
+on_exit() {
+  local status=$?
+  if [ "$status" -ne 0 ] && [ -d "$EVIDENCE_DIR" ] && [ "$TRIAGE_RENDERED" = "0" ]; then
+    TRIAGE_RENDERED=1
+    bash scripts/smoke/render-triage.sh "$EVIDENCE_DIR" "$status" || true
+  fi
+  exit "$status"
+}
+
 if [ "${SMOKE_SCENARIO_DRY_RUN:-0}" = "1" ]; then
   print_plan
   exit 0
 fi
 
+trap on_exit EXIT
 run_scenario
