@@ -36,6 +36,12 @@ commit = checkpoint reversivel
 Quando o contexto estiver grande, antes de continuar:
 
 ```bash
+bash scripts/smoke/continuity-bundle.sh --force
+```
+
+Fallback manual:
+
+```bash
 git status --short
 git log --oneline -5
 sed -n '1,220p' docs/atendimento-premium/current-objective.md
@@ -90,13 +96,24 @@ Quando o contexto ficar ruidoso:
 Se uma informacao sera necessaria depois da compactacao, ela nao deve viver so no chat.
 ```
 
+## Diagnostico Do Hook
+
+O hook em `.claude/settings.json` e util no Claude Code, mas nao e portavel para
+Codex/API. Por isso o bundle tambem precisa existir como comando explicito:
+
+```bash
+bash scripts/smoke/continuity-bundle.sh --force
+```
+
+Detalhes da arquitetura ficam em [17-context-compact-architecture.md](./17-context-compact-architecture.md).
+
 ## Proximo Uso Planejado
 
 O proximo upgrade deve seguir este protocolo:
 
 ```text
-Objetivo: rodar o primeiro smoke WhatsApp real com transcript.md + judgment.md.
-Arquivos provaveis: .smoke-evidence/<run_id>/summary.md, transcript.md, judgment.md.
-Verificacao: smoke WhatsApp real com central.
-Registro: atualizar smoke-runs.md com o primeiro run real que tiver transcript + julgamento.
+Objetivo: antes de qualquer novo micro-slice, gerar o bundle portavel e confirmar gates.
+Comando: bash scripts/smoke/continuity-bundle.sh --force
+Verificacao: Autonomy Gate PASS e gate do slice relacionado PASS/atualizado.
+Registro: se o bundle/protocolo mudar, commit pequeno antes de continuar execucao.
 ```

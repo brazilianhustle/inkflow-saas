@@ -51,6 +51,7 @@ worktree_esperado: limpo
 - Scenario WhatsApp real `whatsapp-real-lateral-pergunta-imagem-sem-midia` passou: Evolution `central` enviou pergunta sobre imagem sem arquivo, webhook registrou humano real sem midia e a resposta pediu reenvio sem voltar ao formulario.
 - Autonomy Gate promovido deliberadamente para Level 2 apos `atendimento-lateral` e `cadastro-handoff` passarem, com 14 cenarios recentes e 7 WhatsApp reais; janela maxima agora e 2 micro-slices relacionados por rodada.
 - Micro-slice de cadastro `cadastro-data-idade-nao-persiste` encontrou e corrigiu dois gaps: polling aceitava AI anterior ao humano esperado e pipeline persistia `data_nascimento/email` como string vazia. Apos deploy, smoke passou com `dados_cadastro` preservando apenas `nome`.
+- Compactacao de contexto corrigida na arquitetura: o bundle de continuidade agora e comando portavel (`scripts/smoke/continuity-bundle.sh --force`) e nao depende apenas de hook Claude Code.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -102,6 +103,7 @@ Ao iniciar nova sessao ou apos compactacao:
 ```bash
 git status --short
 git log --oneline -5
+bash scripts/smoke/continuity-bundle.sh --force
 sed -n '1,220p' docs/atendimento-premium/current-objective.md
 sed -n '1,220p' docs/atendimento-premium/smoke-runs.md
 sed -n '1,220p' docs/atendimento-premium/12-loop-continuity-protocol.md
