@@ -24,6 +24,7 @@ docs/atendimento-premium/smoke-scenarios/
   lateral-processo-tatuagem.env
   lateral-tempo-sessao.env
   whatsapp-real-cadastro-handoff.env
+  whatsapp-real-lateral-preco-generico.env
 ```
 
 O formato inicial e `.env` por ser simples, auditavel e nativo para shell. Evita parser Markdown/YAML fragil no primeiro passo.
@@ -113,6 +114,21 @@ Objetivo:
 
 ```text
 Validar que pergunta de preco recebe resposta sem valor inventado e com encaminhamento para avaliacao.
+```
+
+Contrato:
+
+```text
+resposta deve citar dependencia/avaliacao/tatuador
+resposta nao pode conter preco ou fechamento de valor
+```
+
+`whatsapp-real-lateral-preco-generico`
+
+Objetivo:
+
+```text
+Validar a mesma protecao financeira em cadeia real central -> WhatsApp -> bot -> webhook -> pipeline.
 ```
 
 Contrato:

@@ -36,6 +36,7 @@ worktree_esperado: limpo
 - Reanalise automatica de plano criada com `plan-review.md` para falhas `contract_*`.
 - Gate formal de conclusao de slice criado com cenarios obrigatorios e PASS recente registrado em `smoke-runs.md`.
 - Slice `atendimento-lateral` ganhou cenarios HTTP obrigatorios para preco generico, tempo de sessao e processo; os tres passaram e o gate retornou `slice_completion: pass`.
+- Ensaio WhatsApp real para `lateral-preco-generico` passou e virou `FINAL_REHEARSAL_SCENARIO` obrigatorio do gate `atendimento-lateral`.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -70,15 +71,15 @@ chain: central -> WhatsApp real -> bot -> webhook -> pipeline -> handoff
 ## Proximo Ataque
 
 ```text
-Decidir e adicionar ensaio WhatsApp real para o comportamento lateral mais critico antes de ampliar a Onda 1.
+Ampliar a Onda 1 com o proximo comportamento lateral usando o loop completo.
 ```
 
 Escopo recomendado:
 
-- criar scenario WhatsApp real para `lateral-preco-generico`, por tocar expectativa financeira;
-- rodar envio real `central -> bot`;
-- registrar em `smoke-runs.md`;
-- decidir se `FINAL_REHEARSAL_SCENARIO` do gate `atendimento-lateral` deve passar a exigir esse scenario.
+- escolher entre `portfolio`, `historia_vida` ou `pergunta_imagem`;
+- criar contrato, scenarios HTTP e gate update;
+- rodar radar HTTP;
+- adicionar WhatsApp real se tocar expectativa operacional ou risco de promessa indevida.
 
 ## Comando De Retomada
 
