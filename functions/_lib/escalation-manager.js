@@ -9,6 +9,39 @@ function fields(agentOut) {
   return Array.isArray(agentOut?.campos_faltando) ? agentOut.campos_faltando : [];
 }
 
+function cleanObject(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([, v]) => v !== null && v !== undefined && v !== '')
+      .map(([k, v]) => [k, Array.isArray(v) ? `${v.length} item(ns)` : v])
+  );
+}
+
+function formatDataLine(label, data) {
+  const entries = Object.entries(cleanObject(data));
+  if (entries.length === 0) return null;
+  return `${label}: ${entries.map(([k, v]) => `${k}=${preview(v, 80)}`).join('; ')}`;
+}
+
+export function buildEscalationHandoffPackage({ conversa, agentOut } = {}) {
+  const tattoo = cleanObject(conversa?.dados_coletados);
+  const cadastro = cleanObject(conversa?.dados_cadastro);
+  const missingFields = fields(agentOut);
+  return {
+    version: 'handoff_package_v1',
+    has_summary: Object.keys(tattoo).length > 0 || Object.keys(cadastro).length > 0 || missingFields.length > 0,
+    tattoo_fields_count: Object.keys(tattoo).length,
+    cadastro_fields_count: Object.keys(cadastro).length,
+    missing_fields_count: missingFields.length,
+    lines: [
+      formatDataLine('Tattoo', tattoo),
+      formatDataLine('Cadastro', cadastro),
+      missingFields.length > 0 ? `Campos/flags: ${missingFields.join(', ')}` : null,
+    ].filter(Boolean),
+  };
+}
+
 export function evaluateEscalation({ estado_atual, agentOut } = {}) {
   const explicit = agentOut?.escalation || agentOut?.escalation_decision || null;
   if (explicit?.required === true) {
@@ -91,8 +124,9 @@ export function evaluateEscalation({ estado_atual, agentOut } = {}) {
   };
 }
 
-export function composeEscalationTelegram({ decision, tenant, telefone, estado_atual, agentOut } = {}) {
+export function composeEscalationTelegram({ decision, tenant, telefone, estado_atual, agentOut, handoffPackage } = {}) {
   const d = decision || evaluateEscalation({ estado_atual, agentOut });
+  const pkg = handoffPackage || buildEscalationHandoffPackage({ agentOut });
   return [
     `Atendimento precisa de humano [escalation:${d.reason_code || 'unknown'}]`,
     '',
@@ -103,6 +137,10 @@ export function composeEscalationTelegram({ decision, tenant, telefone, estado_a
     `Motivo: ${d.reason_label || d.reason_code || 'unknown'}`,
     `Fonte: ${d.source || 'unknown'}`,
     d.matched_tenant_trigger ? `Gatilho tenant: ${d.matched_tenant_trigger}` : null,
+    '',
+    `Pacote: ${pkg.version}`,
+    pkg.lines.length > 0 ? 'Resumo operacional:' : null,
+    ...pkg.lines,
     '',
     'Resposta enviada ao cliente:',
     preview(agentOut?.resposta_cliente, 500),

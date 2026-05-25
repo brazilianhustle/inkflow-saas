@@ -1151,6 +1151,9 @@ test('4e. tattoo cliente irritado aciona humano com marcador rastreavel', async 
   assert.equal(sendTelegramSpy.mock.callCount(), 1);
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /\[escalation:client_upset\]/);
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /cliente irritado/i);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Pacote: handoff_package_v1/);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Tattoo: descricao_curta=rosa/);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Campos\/flags: client_upset_trigger/);
   assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
   const escalationLog = logAgentTurnSpy.mock.calls
     .map(call => call.arguments[0])
@@ -1159,6 +1162,11 @@ test('4e. tattoo cliente irritado aciona humano com marcador rastreavel', async 
   assert.equal(escalationLog.context_metadata.escalation_reason_code, 'client_upset');
   assert.equal(escalationLog.context_metadata.escalation_severity, 'high');
   assert.equal(escalationLog.context_metadata.escalation_requires_orcid, false);
+  assert.equal(escalationLog.context_metadata.handoff_package_version, 'handoff_package_v1');
+  assert.equal(escalationLog.context_metadata.handoff_package_has_summary, true);
+  assert.equal(escalationLog.context_metadata.handoff_package_tattoo_fields_count, 1);
+  assert.equal(escalationLog.context_metadata.handoff_package_cadastro_fields_count, 0);
+  assert.equal(escalationLog.context_metadata.handoff_package_missing_fields_count, 1);
   const workflowLog = logAgentTurnSpy.mock.calls
     .map(call => call.arguments[0])
     .find(payload => payload.agent_name === 'workflow_manager');
@@ -1238,6 +1246,11 @@ test('4f. tattoo gatilho de handoff do tenant aciona humano com observabilidade 
   assert.equal(escalationLog.context_metadata.escalation_source, 'tenant_rules');
   assert.equal(escalationLog.context_metadata.escalation_requires_orcid, false);
   assert.equal(escalationLog.context_metadata.escalation_matched_tenant_trigger, 'rosto');
+  assert.equal(escalationLog.context_metadata.handoff_package_version, 'handoff_package_v1');
+  assert.equal(escalationLog.context_metadata.handoff_package_has_summary, true);
+  assert.equal(escalationLog.context_metadata.handoff_package_tattoo_fields_count, 0);
+  assert.equal(escalationLog.context_metadata.handoff_package_cadastro_fields_count, 0);
+  assert.equal(escalationLog.context_metadata.handoff_package_missing_fields_count, 1);
 });
 
 test('5. portfolio intent — Task 10 implementa', async () => {

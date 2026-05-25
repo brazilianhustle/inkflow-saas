@@ -1,6 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { composeEscalationTelegram, evaluateEscalation } from '../../functions/_lib/escalation-manager.js';
+import {
+  buildEscalationHandoffPackage,
+  composeEscalationTelegram,
+  evaluateEscalation,
+} from '../../functions/_lib/escalation-manager.js';
 
 test('evaluateEscalation: menoridade em cadastro vira escalonamento high sem orcid', () => {
   const decision = evaluateEscalation({
@@ -146,4 +150,64 @@ test('composeEscalationTelegram: inclui gatilho tenant quando presente', () => {
 
   assert.match(text, /\[escalation:tenant_handoff_trigger\]/);
   assert.match(text, /Gatilho tenant: rosto/);
+});
+
+test('buildEscalationHandoffPackage: resume dados operacionais sem campos vazios', () => {
+  const pkg = buildEscalationHandoffPackage({
+    conversa: {
+      dados_coletados: {
+        descricao_curta: 'rosa pequena',
+        local_corpo: 'braco',
+        foto_local_msg_id: '',
+      },
+      dados_cadastro: {
+        nome: 'Leandro',
+        email: null,
+      },
+    },
+    agentOut: {
+      campos_faltando: ['client_upset_trigger'],
+    },
+  });
+
+  assert.equal(pkg.version, 'handoff_package_v1');
+  assert.equal(pkg.has_summary, true);
+  assert.equal(pkg.tattoo_fields_count, 2);
+  assert.equal(pkg.cadastro_fields_count, 1);
+  assert.equal(pkg.missing_fields_count, 1);
+  assert.deepEqual(pkg.lines, [
+    'Tattoo: descricao_curta=rosa pequena; local_corpo=braco',
+    'Cadastro: nome=Leandro',
+    'Campos/flags: client_upset_trigger',
+  ]);
+});
+
+test('composeEscalationTelegram: inclui pacote operacional quando fornecido', () => {
+  const handoffPackage = buildEscalationHandoffPackage({
+    conversa: {
+      dados_coletados: { descricao_curta: 'rosa pequena', local_corpo: 'braco' },
+      dados_cadastro: { nome: 'Leandro' },
+    },
+    agentOut: { campos_faltando: ['human_requested_trigger'] },
+  });
+  const text = composeEscalationTelegram({
+    decision: {
+      required: true,
+      reason_code: 'human_requested',
+      reason_label: 'cliente pediu humano',
+      severity: 'medium',
+      source: 'campos_faltando',
+    },
+    tenant: { id: 'tenant-1' },
+    telefone: '5511999998888',
+    estado_atual: 'tattoo',
+    agentOut: { resposta_cliente: 'Vou chamar uma pessoa.', campos_faltando: ['human_requested_trigger'] },
+    handoffPackage,
+  });
+
+  assert.match(text, /Pacote: handoff_package_v1/);
+  assert.match(text, /Resumo operacional:/);
+  assert.match(text, /Tattoo: descricao_curta=rosa pequena; local_corpo=braco/);
+  assert.match(text, /Cadastro: nome=Leandro/);
+  assert.match(text, /Campos\/flags: human_requested_trigger/);
 });

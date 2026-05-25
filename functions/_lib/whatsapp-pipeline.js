@@ -20,7 +20,7 @@ import { enviarMidia } from './telegram-media.js';
 import { routeConversationTurn } from './conversation-router.js';
 import { logAgentTurn } from './telemetry/agent-turn-logger.js';
 import { applyWorkflowTransition, summarizeWorkflowDecision } from './workflow-manager.js';
-import { composeEscalationTelegram, evaluateEscalation } from './escalation-manager.js';
+import { buildEscalationHandoffPackage, composeEscalationTelegram, evaluateEscalation } from './escalation-manager.js';
 
 export const TERMINAL_STATES = new Set([
   'aguardando_tatuador',
@@ -495,6 +495,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
     }
     const escalation = evaluateEscalation({ estado_atual: estadoAgente, agentOut });
     if (escalation.required) {
+      const handoffPackage = buildEscalationHandoffPackage({ conversa, agentOut });
       try {
         deps.logAgentTurn?.({
           conversa_id: conversa.id,
@@ -514,6 +515,11 @@ export async function processBatch(env, batch, depsOverride = {}) {
             escalation_source: escalation.source,
             escalation_requires_orcid: escalation.requires_orcid === true,
             escalation_matched_tenant_trigger: escalation.matched_tenant_trigger || null,
+            handoff_package_version: handoffPackage.version,
+            handoff_package_has_summary: handoffPackage.has_summary,
+            handoff_package_tattoo_fields_count: handoffPackage.tattoo_fields_count,
+            handoff_package_cadastro_fields_count: handoffPackage.cadastro_fields_count,
+            handoff_package_missing_fields_count: handoffPackage.missing_fields_count,
             agent_used: agentOut.agent_usado || null,
             agent_action: agentOut.proxima_acao || null,
             final_state: agentOut.estado_novo || null,
@@ -521,6 +527,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
           },
           llm_output_parsed: {
             escalation,
+            handoff_package: handoffPackage,
             resposta_cliente: agentOut.resposta_cliente || null,
             estado_novo: agentOut.estado_novo || null,
             proxima_acao: agentOut.proxima_acao || null,
@@ -537,7 +544,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
       } else {
         await deps.sendTelegram(
           tenant.tatuador_telegram_chat_id,
-          composeEscalationTelegram({ decision: escalation, tenant, telefone, estado_atual: estadoAgente, agentOut })
+          composeEscalationTelegram({ decision: escalation, tenant, telefone, estado_atual: estadoAgente, agentOut, handoffPackage })
         );
       }
     }
