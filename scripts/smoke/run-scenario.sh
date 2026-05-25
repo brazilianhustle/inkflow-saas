@@ -189,6 +189,7 @@ run_scenario() {
         bash scripts/smoke/run-inbound.sh "$MESSAGE" "$PHONE"
       ;;
     whatsapp_real)
+      load_devvars
       SMOKE_RUN_ID="$RUN_ID" \
       SMOKE_EVIDENCE_ROOT="$EVIDENCE_ROOT" \
       SMOKE_TENANT_ID="$TENANT_ID" \

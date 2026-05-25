@@ -20,6 +20,7 @@ SMOKE_SCENARIO_DRY_RUN=1 \
 ```text
 docs/atendimento-premium/smoke-scenarios/
   cadastro-handoff-email-recusado.env
+  whatsapp-real-cadastro-handoff.env
 ```
 
 O formato inicial e `.env` por ser simples, auditavel e nativo para shell. Evita parser Markdown/YAML fragil no primeiro passo.
@@ -43,9 +44,10 @@ EXPECTED_STATE
 SMOKE_REQUIRE_ORCID
 EXPECTED_HUMAN_TEXT
 EXPECTED_COPY_RISK_MAX
+SMOKE_BOT_NUMBER      somente via ambiente local/secret manager para whatsapp_real
 ```
 
-## Primeiro Cenario
+## Cenarios Atuais
 
 `cadastro-handoff-email-recusado`
 
@@ -81,6 +83,25 @@ transcript.md: presente
 judgment.md: presente
 ```
 
+`whatsapp-real-cadastro-handoff`
+
+Objetivo:
+
+```text
+Validar a cadeia real central -> WhatsApp -> numero oficial do bot -> webhook -> pipeline -> handoff.
+```
+
+Pre-requisitos locais:
+
+```text
+EVO_CENTRAL_INSTANCE
+EVO_CENTRAL_APIKEY
+SMOKE_SENDER_PHONE
+SMOKE_BOT_NUMBER
+```
+
+Nao hardcodar `SMOKE_BOT_NUMBER` nem API key no scenario versionado. O runner carrega esses valores de `.dev.vars`/ambiente antes de executar o smoke real.
+
 ## Criterio De PASS Do Registry
 
 Um cenario so serve como checkpoint quando:
@@ -96,9 +117,8 @@ Regra critica: quando `EXPECTED_STATE` existe, o polling nao pode aprovar por re
 
 ## Proximos Passos
 
-Depois do primeiro cenario:
+Depois dos dois cenarios base:
 
-1. adicionar cenario `whatsapp-real-cadastro-handoff`;
-2. adicionar `triage.md` para falhas;
-3. adicionar `plan-review.md` quando um cenario contradiz a hipotese do slice;
-4. criar gate de conclusao de slice lendo os cenarios obrigatorios.
+1. adicionar `triage.md` para falhas;
+2. adicionar `plan-review.md` quando um cenario contradiz a hipotese do slice;
+3. criar gate de conclusao de slice lendo os cenarios obrigatorios.

@@ -91,7 +91,7 @@ O smoke WhatsApp real so passa quando:
 - a instancia remetente esta `open`;
 - Evolution `sendText` retorna 2xx;
 - o webhook real gera mensagem humana exata no Supabase para o telefone remetente;
-- o polling detecta resposta AI ou estado esperado;
+- o polling detecta resposta AI sem estado esperado, ou atinge o estado esperado quando definido;
 - se o estado esperado for `aguardando_tatuador`, existe `orcid`;
 - `verify-after.txt` confirma estado/dados esperados;
 - `transcript.md` mostra a conversa real em formato legivel;

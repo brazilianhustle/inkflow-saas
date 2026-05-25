@@ -30,17 +30,18 @@ worktree_esperado: limpo
 - Loop Continuity Protocol criado para retomada apos compactacao.
 - `transcript.md` e `judgment.md` integrados aos runners de smoke HTTP e WhatsApp real.
 - Scenario registry validado com `cadastro-handoff-email-recusado`; polling agora trata `EXPECTED_STATE` como criterio autoritativo.
+- Scenario WhatsApp real `whatsapp-real-cadastro-handoff` validado com Evolution `central` enviando mensagem real para o numero do bot.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-cadastro-handoff-email-recusado-20260525T062239Z-3885
-tipo: Scenario HTTP monitorado
+run_id: scenario-whatsapp-real-cadastro-handoff-20260525T063724Z-20686
+tipo: Scenario WhatsApp real
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: orc_hljd47
-evidence: .smoke-evidence/scenario-cadastro-handoff-email-recusado-20260525T062239Z-3885/
+orcid: orc_wus13k
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260525T063724Z-20686/
 ```
 
 Mensagem:
@@ -56,23 +57,23 @@ Resultado:
 estado_agente: aguardando_tatuador
 email_recusado: true
 data_nascimento: 1995-03-12
-orcid: orc_hljd47
+orcid: orc_wus13k
 copy_risk: medio
+chain: central -> WhatsApp real -> bot -> webhook -> pipeline -> handoff
 ```
 
 ## Proximo Ataque
 
 ```text
-Criar e validar o primeiro scenario WhatsApp real usando Evolution `central`.
+Criar triagem padronizada para falhas de scenario e depois atacar naturalidade premium da resposta final.
 ```
 
 Escopo recomendado:
 
-- adicionar `.env` de scenario `whatsapp-real-cadastro-handoff`;
-- reaproveitar o mesmo setup de cadastro completo;
-- enviar via Evolution `central` para o numero oficial do bot;
-- validar evidence com tail, `poll.json`, `transcript.md` e `judgment.md`;
-- atualizar `smoke-runs.md` com o primeiro run WhatsApp real versionado.
+- adicionar template `triage.md` por failure class;
+- registrar sinais minimos: estado, ultima mensagem humana, ultima AI, tail runtime, copy risk;
+- criar regra de reanalise de plano quando scenario falha por contrato e nao por infra;
+- em seguida melhorar a frase final marcada como `copy_risk=medio`.
 
 ## Comando De Retomada
 
