@@ -8,11 +8,14 @@ Ele não substitui o git status nem os testes. Ele registra o estado operacional
 
 Ler nesta ordem:
 
-1. `docs/canonical/decisions/2026-05-24-atendimento-premium-hybrid-architecture.md`
-2. `docs/atendimento-premium/07-arquitetura-prompt-premium.md`
-3. `docs/atendimento-premium/08-decision-log.md`
-4. este arquivo
-5. `docs/canonical/methodology/conversation-change-doctrine.md`
+1. `docs/atendimento-premium/current-objective.md`
+2. `docs/atendimento-premium/smoke-runs.md`
+3. `docs/atendimento-premium/12-loop-continuity-protocol.md`
+4. `docs/canonical/decisions/2026-05-24-atendimento-premium-hybrid-architecture.md`
+5. `docs/atendimento-premium/07-arquitetura-prompt-premium.md`
+6. `docs/atendimento-premium/08-decision-log.md`
+7. este arquivo
+8. `docs/canonical/methodology/conversation-change-doctrine.md`
 
 Depois rodar:
 
@@ -21,6 +24,8 @@ git status --short
 ```
 
 Se houver mudanças não commitadas, entender antes de editar.
+
+Para retomada rapida apos compactacao, os tres primeiros arquivos acima sao suficientes na maioria dos casos.
 
 ## Estado Atual Em 2026-05-25
 

@@ -200,6 +200,17 @@ Antes de iniciar outro slice conversacional, fechar o estado atual:
 
 Não iniciar nova frente sobre mudanças fundacionais soltas no worktree. Se a mudança passa a ser base para próximos prompts, router, policy, composer ou guardrails, ela deve virar checkpoint no git antes do próximo ataque.
 
+### Continuidade Apos Compactacao
+
+Quando a sessao ficar longa, tratar compactacao como parte normal do processo. O estado operacional deve estar nestes arquivos:
+
+- `docs/atendimento-premium/current-objective.md`;
+- `docs/atendimento-premium/smoke-runs.md`;
+- `docs/atendimento-premium/12-loop-continuity-protocol.md`;
+- `.smoke-evidence/<run_id>/summary.md` para smokes em andamento ou recem-finalizados.
+
+Se uma informacao sera necessaria depois da compactacao, ela deve ser registrada em um desses arquivos antes de continuar.
+
 ### Regra De Commit Automático
 
 Quando o agent fecha um slice coerente, deve commitar sem pedir confirmação extra se todos os critérios abaixo forem verdadeiros:
