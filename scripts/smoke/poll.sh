@@ -15,6 +15,7 @@ EXPECTED_STATES="${3:-}"
 TIMEOUT_SECONDS="${SMOKE_POLL_TIMEOUT_SECONDS:-60}"
 INTERVAL_SECONDS="${SMOKE_POLL_INTERVAL_SECONDS:-3}"
 REQUIRE_ORCID="${SMOKE_REQUIRE_ORCID:-0}"
+EXPECTED_HUMAN_TEXT="${SMOKE_EXPECT_HUMAN_TEXT:-}"
 SID="${TENANT}_${PHONE}"
 
 DEVVARS=".dev.vars"
@@ -63,6 +64,10 @@ while [ "$SECONDS" -lt "$deadline" ]; do
   orcid="$(printf '%s' "$conv" | jq -r '.[0].orcid // ""')"
   ai_count="$(printf '%s' "$msgs" | jq '[.[] | select(.message.type=="ai")] | length')"
   failed_count="$(printf '%s' "$msgs" | jq '[.[] | select(.status=="failed")] | length')"
+  human_match_count=0
+  if [ -n "$EXPECTED_HUMAN_TEXT" ]; then
+    human_match_count="$(printf '%s' "$msgs" | jq --arg text "$EXPECTED_HUMAN_TEXT" '[.[] | select(.message.type=="human" and .message.content==$text)] | length')"
+  fi
 
   if [ "$failed_count" != "0" ]; then
     echo "poll: falha detectada em conversa_mensagens" >&2
@@ -71,6 +76,10 @@ while [ "$SECONDS" -lt "$deadline" ]; do
   fi
 
   if expected_state_hit "$state"; then
+    if [ -n "$EXPECTED_HUMAN_TEXT" ] && [ "$human_match_count" -eq 0 ]; then
+      sleep "$INTERVAL_SECONDS"
+      continue
+    fi
     if [ "$REQUIRE_ORCID" = "1" ] && [ -z "$orcid" ]; then
       sleep "$INTERVAL_SECONDS"
       continue
@@ -81,6 +90,10 @@ while [ "$SECONDS" -lt "$deadline" ]; do
   fi
 
   if [ "$ai_count" -gt 0 ]; then
+    if [ -n "$EXPECTED_HUMAN_TEXT" ] && [ "$human_match_count" -eq 0 ]; then
+      sleep "$INTERVAL_SECONDS"
+      continue
+    fi
     echo "poll: resposta AI detectada" >&2
     printf '%s\n' "$last_snapshot" | jq .
     exit 0

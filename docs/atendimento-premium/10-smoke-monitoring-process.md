@@ -1,6 +1,6 @@
 # Processo Padrao De Smoke Monitorado
 
-Este e o caminho oficial para smoke real de atendimento premium.
+Este e o caminho oficial para smoke monitorado via webhook HTTP de atendimento premium.
 
 Objetivo:
 
@@ -62,6 +62,7 @@ BASE_URL=http://localhost:8788 \
 - Se o smoke tiver estado final esperado, passar `EXPECTED_STATE`.
 - Se falhar, olhar primeiro `summary.md`, `poll.json` e `tail-excerpt.log`.
 - `scripts/smoke-inbound.sh` continua existindo como primitiva, mas nao e o processo completo.
+- Para validar a cadeia completa WhatsApp -> Evolution -> webhook, use tambem [11-real-whatsapp-smoke.md](./11-real-whatsapp-smoke.md).
 
 ## Variaveis Uteis
 
@@ -72,6 +73,7 @@ SMOKE_RUN_ID             correlation id manual opcional
 SMOKE_POLL_TIMEOUT_SECONDS default 60
 SMOKE_POLL_INTERVAL_SECONDS default 3
 SMOKE_REQUIRE_ORCID       default 1 quando EXPECTED_STATE inclui aguardando_tatuador
+SMOKE_EXPECT_HUMAN_TEXT   exige uma mensagem humana exata no polling
 SMOKE_TAIL_ENVIRONMENT   production ou preview
 SMOKE_TAIL_LOG           default /tmp/inkflow-smoke-tail.log
 SMOKE_TAIL_DISABLED=1    desativa tail apenas em debug
