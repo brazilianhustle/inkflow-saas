@@ -30,6 +30,8 @@ FORBIDDEN_BOT_REGEX=""
 EXPECTED_TAIL_REGEX=""
 FORBIDDEN_TAIL_REGEX=""
 EXPECTED_POLL_JQ_TRUE=""
+EXPECTED_AGENT_LOG_JQ_TRUE=""
+EXPECTED_AGENT_LOG_TIMEOUT_SECONDS="${EXPECTED_AGENT_LOG_TIMEOUT_SECONDS:-20}"
 SMOKE_MEDIA_BASE64="${SMOKE_MEDIA_BASE64:-}"
 SMOKE_MEDIA_FILE="${SMOKE_MEDIA_FILE:-}"
 SMOKE_MEDIA_MIMETYPE="${SMOKE_MEDIA_MIMETYPE:-}"
@@ -45,6 +47,7 @@ case "$SCENARIO_TYPE" in
 esac
 
 RUN_ID="${SMOKE_RUN_ID:-scenario-${SCENARIO_ID}-$(date -u +%Y%m%dT%H%M%SZ)-$RANDOM}"
+RUN_STARTED_ISO="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 EVIDENCE_ROOT="${SMOKE_EVIDENCE_ROOT:-.smoke-evidence}"
 EVIDENCE_DIR="${EVIDENCE_ROOT}/${RUN_ID}"
 TRIAGE_RENDERED=0
@@ -66,6 +69,8 @@ require_orcid : ${SMOKE_REQUIRE_ORCID:-0}
 bot_regex     : ${EXPECTED_BOT_REGEX:-"(none)"}
 forbid_regex  : ${FORBIDDEN_BOT_REGEX:-"(none)"}
 tail_regex    : ${EXPECTED_TAIL_REGEX:-"(none)"}
+agent_log_jq  : ${EXPECTED_AGENT_LOG_JQ_TRUE:-"(none)"}
+agent_log_wait: ${EXPECTED_AGENT_LOG_TIMEOUT_SECONDS}s
 media         : ${SMOKE_MEDIA_MIMETYPE:-"(none)"}
 run_id        : $RUN_ID
 evidence_dir  : $EVIDENCE_DIR
@@ -114,6 +119,18 @@ supa_post() {
   fi
   cat "$tmp"
   rm -f "$tmp"
+}
+
+supa_get_agent_turn_logs_since_run() {
+  load_devvars
+  curl -sS --get "${SUPABASE_URL}/rest/v1/agent_turn_logs" \
+    --data-urlencode "tenant_id=eq.${TENANT_ID}" \
+    --data-urlencode "created_at=gte.${RUN_STARTED_ISO}" \
+    --data-urlencode "select=created_at,agent_name,client_input_text,context_metadata,llm_output_parsed" \
+    --data-urlencode "order=created_at.desc" \
+    --data-urlencode "limit=30" \
+    -H "apikey: $SUPA_KEY" \
+    -H "Authorization: Bearer $SUPA_KEY"
 }
 
 seed_cadastro_handoff_email_recusado() {
@@ -343,6 +360,32 @@ run_scenario() {
       printf 'expected_poll_jq_true: %s\n' "$EXPECTED_POLL_JQ_TRUE"
       printf 'status: ok\n'
     } | tee "$EVIDENCE_DIR/scenario-poll-jq.txt"
+  fi
+
+  if [ -n "${EXPECTED_AGENT_LOG_JQ_TRUE:-}" ]; then
+    echo ""
+    echo "[scenario] agent log jq gate"
+    deadline=$((SECONDS + EXPECTED_AGENT_LOG_TIMEOUT_SECONDS))
+    agent_log_ok=0
+    while true; do
+      supa_get_agent_turn_logs_since_run | tee "$EVIDENCE_DIR/agent-turn-logs.json" >/dev/null
+      if jq -e "$EXPECTED_AGENT_LOG_JQ_TRUE" "$EVIDENCE_DIR/agent-turn-logs.json" >/dev/null; then
+        agent_log_ok=1
+        break
+      fi
+      [ "$SECONDS" -ge "$deadline" ] && break
+      sleep 2
+    done
+    if [ "$agent_log_ok" != "1" ]; then
+      echo "ERRO: agent-turn-logs.json nao satisfaz EXPECTED_AGENT_LOG_JQ_TRUE" >&2
+      echo "$EXPECTED_AGENT_LOG_JQ_TRUE" >&2
+      jq . "$EVIDENCE_DIR/agent-turn-logs.json" >&2
+      exit 1
+    fi
+    {
+      printf 'expected_agent_log_jq_true: %s\n' "$EXPECTED_AGENT_LOG_JQ_TRUE"
+      printf 'status: ok\n'
+    } | tee "$EVIDENCE_DIR/scenario-agent-log-jq.txt"
   fi
 }
 

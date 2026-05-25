@@ -67,11 +67,15 @@ EXPECTED_BOT_REGEX
 FORBIDDEN_BOT_REGEX
 EXPECTED_TAIL_REGEX
 FORBIDDEN_TAIL_REGEX
+EXPECTED_AGENT_LOG_JQ_TRUE
+EXPECTED_AGENT_LOG_TIMEOUT_SECONDS
 SMOKE_MEDIA_BASE64     inline base64 curto para midia sintetica
 SMOKE_MEDIA_FILE       caminho local para midia sintetica
 SMOKE_MEDIA_MIMETYPE   ex: image/png, image/jpeg
 SMOKE_BOT_NUMBER      somente via ambiente local/secret manager para whatsapp_real
 ```
+
+`EXPECTED_AGENT_LOG_JQ_TRUE` consulta `agent_turn_logs` desde o inicio do scenario e exige que o filtro `jq` retorne pelo menos uma row. Use para gates de observabilidade, por exemplo confirmar `agent_name=escalation_manager` e `reason_code` apos handoff humano. O runner faz polling curto porque logs fire-and-forget podem chegar alguns segundos depois da resposta; ajuste com `EXPECTED_AGENT_LOG_TIMEOUT_SECONDS` quando necessario.
 
 ## Cenarios Atuais
 
