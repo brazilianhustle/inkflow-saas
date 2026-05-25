@@ -307,6 +307,8 @@ export async function processBatch(env, batch, depsOverride = {}) {
             router_reason: agentOut.reason,
             router_risk: agentOut.risk,
             router_can_mutate_state: agentOut.can_mutate_state === true,
+            router_has_matched_tenant_trigger: Boolean(agentOut.matched_trigger),
+            router_matched_tenant_trigger: agentOut.matched_trigger || null,
             history_turns_n: historico.length,
             ...summarizeTenantContext(baseClientContext, estadoAgente),
           },

@@ -1215,6 +1215,8 @@ test('4f. tattoo gatilho de handoff do tenant aciona humano com observabilidade 
   assert.equal(routerLog.context_metadata.router_intent, 'tenant_handoff_trigger');
   assert.equal(routerLog.context_metadata.router_reason, 'tenant_configured_handoff_trigger_detected');
   assert.equal(routerLog.context_metadata.router_can_mutate_state, true);
+  assert.equal(routerLog.context_metadata.router_has_matched_tenant_trigger, true);
+  assert.equal(routerLog.context_metadata.router_matched_tenant_trigger, 'rosto');
   assert.equal(routerLog.context_metadata.tenant_context_layer, 'tenant_context_manager');
   assert.equal(routerLog.context_metadata.tenant_context_handoff_triggers_source, 'custom');
   assert.equal(routerLog.context_metadata.tenant_context_has_handoff_triggers, true);
