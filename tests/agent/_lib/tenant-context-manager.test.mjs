@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildTenantContext, isPropostaSubstate, summarizeTenantContext } from '../../../functions/api/agent/_lib/tenant-context-manager.js';
+import { buildTenantContext, deriveTenantRules, isPropostaSubstate, summarizeTenantContext } from '../../../functions/api/agent/_lib/tenant-context-manager.js';
 
 test('TenantContextManager: identifica substates de proposta', () => {
   assert.equal(isPropostaSubstate('propondo_valor'), true);
@@ -23,6 +23,11 @@ test('TenantContextManager: injeta portfolio sem mutar clientContext original', 
   assert.deepEqual(clientContext, { is_first_contact: true });
   assert.deepEqual(ctx, {
     is_first_contact: true,
+    tenant_rules: {
+      aceita_cobertura: true,
+      gatilhos_handoff: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
+      has_custom_handoff_triggers: false,
+    },
     portfolio_disponivel: true,
   });
 });
@@ -36,6 +41,11 @@ test('TenantContextManager: contexto derivado sobrescreve flags transversais ant
   });
 
   assert.deepEqual(ctx, {
+    tenant_rules: {
+      aceita_cobertura: true,
+      gatilhos_handoff: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
+      has_custom_handoff_triggers: false,
+    },
     portfolio_disponivel: false,
     eh_recorrente: true,
   });
@@ -65,6 +75,11 @@ test('TenantContextManager: injeta contexto de proposta somente em substate de p
   assert.equal(calls[0].estado_atual, 'propondo_valor');
   assert.deepEqual(ctx, {
     nome_cliente: 'Joao',
+    tenant_rules: {
+      aceita_cobertura: true,
+      gatilhos_handoff: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
+      has_custom_handoff_triggers: false,
+    },
     portfolio_disponivel: true,
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
   });
@@ -83,6 +98,11 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
     portfolio_disponivel: true,
     is_first_contact: true,
     eh_recorrente: false,
+    tenant_rules: {
+      aceita_cobertura: false,
+      gatilhos_handoff: ['retoque', 'mao'],
+      has_custom_handoff_triggers: true,
+    },
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
     nome_cliente: 'Joao Silva',
   }, 'propondo_valor');
@@ -94,6 +114,23 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
     tenant_context_is_first_contact: true,
     tenant_context_eh_recorrente: false,
     tenant_context_has_proposta_context: true,
+    tenant_context_aceita_cobertura: false,
+    tenant_context_gatilhos_handoff_count: 2,
+    tenant_context_has_custom_handoff_triggers: true,
   });
   assert.equal(Object.hasOwn(summary, 'nome_cliente'), false);
+});
+
+test('TenantContextManager: deriva regras operacionais do tenant com fallback seguro', () => {
+  assert.deepEqual(deriveTenantRules({ config_agente: { aceita_cobertura: false }, gatilhos_handoff: ['rosto'] }), {
+    aceita_cobertura: false,
+    gatilhos_handoff: ['rosto'],
+    has_custom_handoff_triggers: true,
+  });
+
+  assert.deepEqual(deriveTenantRules({ config_agente: {} }), {
+    aceita_cobertura: true,
+    gatilhos_handoff: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
+    has_custom_handoff_triggers: false,
+  });
 });

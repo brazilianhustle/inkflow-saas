@@ -8,6 +8,7 @@ import { prefetchPortfolio } from './prefetch-portfolio.js';
 import { prefetchPropostaContext } from './prefetch-proposta.js';
 
 const PROPOSTA_SUBSTATES = new Set(['propondo_valor', 'escolhendo_horario', 'aguardando_sinal']);
+const DEFAULT_HANDOFF_TRIGGERS = ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'];
 
 export function isPropostaSubstate(estado) {
   return PROPOSTA_SUBSTATES.has(estado);
@@ -16,6 +17,8 @@ export function isPropostaSubstate(estado) {
 export function summarizeTenantContext(context = {}, estado_atual = '') {
   const hasHorariosLivres = Array.isArray(context.horarios_livres);
   const hasSlotsReservados = Array.isArray(context.slots_reservados);
+  const tenantRules = context.tenant_rules || {};
+  const gatilhosHandoff = Array.isArray(tenantRules.gatilhos_handoff) ? tenantRules.gatilhos_handoff : [];
   return {
     tenant_context_layer: 'tenant_context_manager',
     tenant_context_state: estado_atual || null,
@@ -23,6 +26,18 @@ export function summarizeTenantContext(context = {}, estado_atual = '') {
     tenant_context_is_first_contact: context.is_first_contact === true,
     tenant_context_eh_recorrente: context.eh_recorrente === true,
     tenant_context_has_proposta_context: hasHorariosLivres || hasSlotsReservados || Boolean(context.proposta_status),
+    tenant_context_aceita_cobertura: tenantRules.aceita_cobertura === true,
+    tenant_context_gatilhos_handoff_count: gatilhosHandoff.length,
+    tenant_context_has_custom_handoff_triggers: tenantRules.has_custom_handoff_triggers === true,
+  };
+}
+
+export function deriveTenantRules(tenant = {}) {
+  const customTriggers = Array.isArray(tenant.gatilhos_handoff) && tenant.gatilhos_handoff.length > 0;
+  return {
+    aceita_cobertura: tenant.config_agente?.aceita_cobertura !== false,
+    gatilhos_handoff: customTriggers ? tenant.gatilhos_handoff : DEFAULT_HANDOFF_TRIGGERS,
+    has_custom_handoff_triggers: customTriggers,
   };
 }
 
@@ -39,6 +54,7 @@ export async function buildTenantContext({
   const prefetchPropostaContextFn = deps.prefetchPropostaContext || prefetchPropostaContext;
 
   let context = { ...(clientContext || {}) };
+  context.tenant_rules = deriveTenantRules(tenant);
 
   const portfolioCtx = await prefetchPortfolioFn(env, tenant);
   context = { ...context, ...portfolioCtx };

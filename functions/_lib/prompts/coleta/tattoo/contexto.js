@@ -5,10 +5,13 @@
 export function contextoTattoo(tenant, conversa, clientContext) {
   const ctx = clientContext || {};
   const dados = conversa?.dados_coletados || {};
-  const aceitaCobertura = tenant.config_agente?.aceita_cobertura !== false;
-  const gatilhos = Array.isArray(tenant.gatilhos_handoff) && tenant.gatilhos_handoff.length
-    ? tenant.gatilhos_handoff
-    : ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'];
+  const tenantRules = ctx.tenant_rules || {};
+  const aceitaCobertura = tenantRules.aceita_cobertura ?? (tenant?.config_agente?.aceita_cobertura !== false);
+  const gatilhos = Array.isArray(tenantRules.gatilhos_handoff) && tenantRules.gatilhos_handoff.length
+    ? tenantRules.gatilhos_handoff
+    : Array.isArray(tenant?.gatilhos_handoff) && tenant.gatilhos_handoff.length
+      ? tenant.gatilhos_handoff
+      : ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'];
 
   const linhas = ['# §2 CONTEXTO'];
 
