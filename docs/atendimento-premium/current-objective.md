@@ -40,6 +40,8 @@ worktree_esperado: limpo
 - Scenario `lateral-portfolio-disponivel` passou com bot text gate e tail gate confirmando acionamento de portfolio.
 - Scenario `lateral-historia-vida-homenagem` passou no contrato minimo: acolhimento breve, uma pergunta util e estado seguro.
 - Scenario WhatsApp real `whatsapp-real-lateral-historia-vida-homenagem` passou apos correcao do Router/Composer para nao ignorar briefing emocional em primeiro contato.
+- Autonomy Gate oficializado para controlar a janela maxima de execucao autonoma por evidencia, slice gates e bloqueadores.
+- Primeiro check do Autonomy Gate retornou `decision=promote_available` para Level 2 com 7 scenario PASS, 2 WhatsApp real PASS e `atendimento-lateral` PASS; nivel permanece 1 ate promocao deliberada.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -92,6 +94,7 @@ git log --oneline -5
 sed -n '1,220p' docs/atendimento-premium/current-objective.md
 sed -n '1,220p' docs/atendimento-premium/smoke-runs.md
 sed -n '1,220p' docs/atendimento-premium/12-loop-continuity-protocol.md
+bash scripts/smoke/check-autonomy-gate.sh
 ```
 
 ## Regras De Atualizacao

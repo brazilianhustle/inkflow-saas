@@ -177,8 +177,9 @@ Antes de avançar para outro slice:
 3. Rodar os testes relevantes da frente.
 4. Declarar ou atualizar `docs/atendimento-premium/slice-gates/<slice>.env`.
 5. Rodar `bash scripts/smoke/check-slice-gate.sh <slice>` quando houver smoke obrigatório.
-6. Atualizar handoff/decision log quando a direção mudou.
-7. Fazer commit automático quando o slice estiver coerente, testado e reversível.
+6. Rodar `bash scripts/smoke/check-autonomy-gate.sh` antes de ampliar a janela de execucao autonoma.
+7. Atualizar handoff/decision log quando a direção mudou.
+8. Fazer commit automático quando o slice estiver coerente, testado e reversível.
 
 Regra prática:
 
@@ -190,6 +191,12 @@ Regra de gate:
 
 ```text
 Sem gate registrado e PASS, o slice nao esta fechado; esta apenas em WIP validado parcialmente.
+```
+
+Regra de autonomia:
+
+```text
+A autonomia maxima e definida por `docs/atendimento-premium/autonomy-gate.env`. O script pode recomendar promocao, mas a promocao exige decisao deliberada e commit proprio.
 ```
 
 Não commitar automaticamente quando teste relevante falhar, o trabalho estiver no meio de uma refatoração, o diff misturar assuntos independentes, houver mudanças do usuário no mesmo escopo, o estado local não rodar, ou a mudança exigir coordenação operacional de deploy/secret/migration/rollback.

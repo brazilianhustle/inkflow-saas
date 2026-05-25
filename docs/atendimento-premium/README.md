@@ -50,6 +50,7 @@ Depois disso o sistema decide se deve:
 - [14-smoke-triage-protocol.md](./14-smoke-triage-protocol.md): triagem automatica de falhas de scenario.
 - [15-smoke-plan-review-protocol.md](./15-smoke-plan-review-protocol.md): reanalise automatica de plano para falhas de contrato.
 - [16-slice-completion-gate.md](./16-slice-completion-gate.md): gate formal de conclusao de slice por cenarios obrigatorios.
+- [17-autonomy-gate.md](./17-autonomy-gate.md): controle objetivo da janela maxima de execucao autonoma.
 - [current-objective.md](./current-objective.md): estado vivo, proximo ataque e comandos de retomada.
 - [smoke-runs.md](./smoke-runs.md): indice versionado dos smokes relevantes.
 - [templates/intent-card.md](./templates/intent-card.md): template para cadastrar novas intents.
