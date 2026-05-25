@@ -42,47 +42,48 @@ worktree_esperado: limpo
 - Scenario WhatsApp real `whatsapp-real-lateral-historia-vida-homenagem` passou apos correcao do Router/Composer para nao ignorar briefing emocional em primeiro contato.
 - Autonomy Gate oficializado para controlar a janela maxima de execucao autonoma por evidencia, slice gates e bloqueadores.
 - Primeiro check do Autonomy Gate retornou `decision=promote_available` para Level 2 com 7 scenario PASS, 2 WhatsApp real PASS e `atendimento-lateral` PASS; nivel permanece 1 ate promocao deliberada.
+- Micro-slice `pergunta_imagem` iniciado pelo fallback sem midia: scenario HTTP `lateral-pergunta-imagem-sem-midia` passou com reenvio de foto e sem retorno ao formulario.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-lateral-historia-vida-homenagem-20260525T074931Z-6121
-tipo: Scenario WhatsApp real
+run_id: scenario-lateral-pergunta-imagem-sem-midia-20260525T080724Z-23217
+tipo: Scenario HTTP monitorado
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: coletando_tattoo
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-lateral-historia-vida-homenagem-20260525T074931Z-6121/
+evidence: .smoke-evidence/scenario-lateral-pergunta-imagem-sem-midia-20260525T080724Z-23217/
 ```
 
 Mensagem:
 
 ```text
-quero fazer uma homenagem pro meu pai que faleceu, pensei em passaros e uma frase
+o que você viu na imagem?
 ```
 
 Resultado:
 
 ```text
 estado_agente: coletando_tattoo
-human_message_registered: true
-ai_response_present: true
+bot_pediu_reenvio_foto: true
+formulario_nao_retomado: true
 copy_risk: baixo
-chain: central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
+chain: HTTP inbound -> pipeline -> resposta
 ```
 
 ## Proximo Ataque
 
 ```text
-Ampliar a Onda 1 com o proximo comportamento lateral usando o loop completo.
+Completar `pergunta_imagem` com midia real/visao de forma controlada.
 ```
 
 Escopo recomendado:
 
-- atacar `pergunta_imagem`, que depende de midia/visao e fecha a parte mais sensivel da Onda 1;
-- criar contrato, scenarios HTTP e gate update;
-- rodar radar HTTP;
-- adicionar WhatsApp real se tocar expectativa operacional ou risco de promessa indevida.
+- criar scenario com imagem/caption quando o runner suportar midia;
+- validar que foto real nao cai no fallback sem midia;
+- exigir pergunta referencia/local quando a visao ficar incerta;
+- so depois considerar WhatsApp real com imagem enviada pela instancia `central`.
 
 ## Comando De Retomada
 
