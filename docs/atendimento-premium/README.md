@@ -43,6 +43,7 @@ Depois disso o sistema decide se deve:
 - [07-arquitetura-prompt-premium.md](./07-arquitetura-prompt-premium.md): visão de general da arquitetura de prompt, policy, router, composer, guardrails e próximos slices para bot premium.
 - [08-decision-log.md](./08-decision-log.md): decisões técnicas e estratégicas da frente de atendimento premium.
 - [09-session-handoff.md](./09-session-handoff.md): ponto de retomada para próximas sessões em Claude Code, Codex e NotebookLM.
+- [10-smoke-monitoring-process.md](./10-smoke-monitoring-process.md): processo oficial de smoke monitorado com tail, correlation id, polling e evidencias.
 - [templates/intent-card.md](./templates/intent-card.md): template para cadastrar novas intents.
 - [templates/smoke-card.md](./templates/smoke-card.md): template para validar no WhatsApp real.
 

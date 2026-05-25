@@ -5,7 +5,8 @@
 # -> caller e servidor nunca desalinham.
 #
 # Pre-requisitos:
-#   - `npx wrangler pages dev` rodando (default http://localhost:8788)
+#   - tail CF ativa automaticamente para smoke remoto
+#   - `npx wrangler pages dev` rodando para smoke local (default http://localhost:8788)
 #   - WEBHOOK_SECRET em .dev.vars  (rode scripts/set-devvars-webhook-secret.sh)
 #   - jq instalado
 #
@@ -26,11 +27,16 @@ INSTANCE="${INSTANCE:-inkflow_test_sub4}"   # evo_instance do tenant "InkFlow Su
 command -v jq >/dev/null 2>&1 || { echo "ERRO: jq nao instalado." >&2; exit 1; }
 [ -f .dev.vars ] || { echo "ERRO: .dev.vars nao existe (rode da raiz do repo)." >&2; exit 1; }
 
+if ! [[ "$BASE_URL" =~ ^https?://(localhost|127\.0\.0\.1)(:|/|$) ]]; then
+  bash scripts/smoke/tail.sh
+fi
+
 # Le o secret do mesmo arquivo que o `wrangler pages dev` carrega.
 SECRET="$(grep -E '^WEBHOOK_SECRET=' .dev.vars | head -1 | cut -d= -f2- | tr -d '"\r')"
 [ -n "$SECRET" ] || { echo "ERRO: WEBHOOK_SECRET ausente no .dev.vars — rode scripts/set-devvars-webhook-secret.sh" >&2; exit 1; }
 
-MSG_ID="smoke-$(date +%s)-$RANDOM"
+RUN_ID="${SMOKE_RUN_ID:-smoke-$(date +%s)-$RANDOM}"
+MSG_ID="${RUN_ID}-${RANDOM}"
 
 # Body no shape Evolution v2 esperado por parseEvolutionPayload:
 #   event=messages.upsert, instance=<evo_instance>, data.key.{id,remoteJid,fromMe},
@@ -40,12 +46,13 @@ BODY="$(jq -nc \
   --arg id "$MSG_ID" \
   --arg jid "${PHONE}@s.whatsapp.net" \
   --arg txt "$TEXT" \
+  --arg run "$RUN_ID" \
   '{event:"messages.upsert", instance:$inst,
     data:{ key:{id:$id, remoteJid:$jid, fromMe:false},
-           pushName:"Smoke Test",
+           pushName:("Smoke Test " + $run),
            message:{conversation:$txt} }}')"
 
-echo "POST ${BASE_URL}/api/whatsapp/inbound  (instance=${INSTANCE} phone=${PHONE} msg_id=${MSG_ID})"
+echo "POST ${BASE_URL}/api/whatsapp/inbound  (instance=${INSTANCE} phone=${PHONE} run_id=${RUN_ID} msg_id=${MSG_ID})"
 curl -sS -X POST "${BASE_URL}/api/whatsapp/inbound" \
   -H "Content-Type: application/json" \
   -H "x-webhook-secret: ${SECRET}" \

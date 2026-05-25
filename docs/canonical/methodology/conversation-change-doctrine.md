@@ -53,7 +53,7 @@ Gate:
 
 - teste unitário do caso;
 - teste de integração se tocar pipeline;
-- smoke real depois do deploy.
+- smoke real monitorado depois do deploy.
 
 ### 2. Substituição
 
@@ -98,7 +98,7 @@ Gate:
 - contrato de input/output;
 - fallback e kill switch;
 - testes de invariantes;
-- smoke real antes de avançar de slice.
+- smoke real monitorado antes de avançar de slice.
 
 ## Sinais De Alerta
 
@@ -163,11 +163,30 @@ Não declarar vitória por impressão isolada. Usar:
 Para cada slice:
 
 1. Implementar pequeno.
-2. Smoke real.
+2. Smoke real monitorado.
 3. Se falhar, classificar a falha.
 4. Corrigir localmente só se for localizado.
 5. Se a mesma família falhar de novo, abrir plano de redesenho.
 6. Só avançar para o próximo slice quando o slice atual estiver estável em teste e smoke.
+
+## Smoke Monitorado Obrigatorio
+
+Smoke conversacional real deve usar o processo padrao:
+
+```bash
+BASE_URL=https://inkflowbrasil.com EXPECTED_STATE=<estado_esperado> \
+  bash scripts/smoke/run-inbound.sh "<mensagem>" 5521970789797
+```
+
+Esse runner e obrigatorio porque garante:
+
+- tail Cloudflare ativa antes do inbound remoto;
+- `SMOKE_RUN_ID` como correlation id;
+- snapshot Supabase antes/depois;
+- polling ate resposta AI, estado esperado ou timeout;
+- pacote de evidencia em `.smoke-evidence/<run_id>/`.
+
+Chamada manual direta para `scripts/smoke-inbound.sh` e permitida apenas para debug isolado. Para validar slice, regression fix ou deploy, usar o runner completo.
 
 ## Checkpoint Operacional
 
