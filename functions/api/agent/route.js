@@ -17,8 +17,7 @@ import { runPropostaAgent } from './agents/proposta.js';
 import { buildFallbackOutput } from '../../_lib/agent-runtime/fallbacks.js';
 import { validateEnv } from './_lib/sdk-init.js';
 import { enforceMenorIdade } from './_lib/enforce-menor-idade.js';
-import { prefetchPropostaContext } from './_lib/prefetch-proposta.js';
-import { prefetchPortfolio } from './_lib/prefetch-portfolio.js';
+import { buildTenantContext, isPropostaSubstate } from './_lib/tenant-context-manager.js';
 import { callTool } from './_lib/call-tool.js';
 import { calcularValorSinal } from './_lib/calcular-sinal.js';
 import { formatLinkSinalMessage, formatPixSinalMessage } from './_lib/format-link-sinal-msg.js';
@@ -31,10 +30,6 @@ const HEADERS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
-
-// Substates do Proposta agent (Sub-3.2) — definidos no module-level pra
-// reuso em runAgent + (futuro) outros call-sites.
-const PROPOSTA_SUBSTATES = new Set(['propondo_valor', 'escolhendo_horario', 'aguardando_sinal']);
 
 // Bug 1: copy canônica do pedido de foto do local (espelha §4.4 do prompt tattoo).
 // Usada como backstop quando o LLM tenta handoff sem nunca ter pedido a foto.
@@ -80,7 +75,7 @@ function normalizeHistoryItem(h) {
 function inferAgentName(estado) {
   if (estado === 'tattoo') return 'tattoo';
   if (estado === 'cadastro') return 'cadastro';
-  if (PROPOSTA_SUBSTATES.has(estado)) return 'proposta';
+  if (isPropostaSubstate(estado)) return 'proposta';
   return estado;
 }
 
@@ -557,16 +552,14 @@ export async function runAgent({
   // Set definido tambem mais abaixo no orchestrator — declarado em escopo
   // mais alto pra reuso. Subsumir o `const clientContext = body?.clientContext || {};`
   // existente.
-  let mergedClientContext = clientContext || {};
-  // Sub-3.3: pre-fetch portfolio_disponivel para QUALQUER agent (transversal)
-  const portfolioCtx = await prefetchPortfolio(env, tenant);
-  mergedClientContext = { ...mergedClientContext, ...portfolioCtx };
-  if (PROPOSTA_SUBSTATES.has(estado_atual)) {
-    const prefetched = await prefetchPropostaContext({
-      env, tenant, conversa, telefone, estado_atual,
-    });
-    mergedClientContext = { ...mergedClientContext, ...prefetched };
-  }
+  const mergedClientContext = await buildTenantContext({
+    env,
+    tenant,
+    conversa,
+    telefone,
+    estado_atual,
+    clientContext,
+  });
 
   let working;
   let invariantCheck = { valid: true };
@@ -720,7 +713,7 @@ export async function runAgent({
       }
     }
     working = out;
-  } else if (PROPOSTA_SUBSTATES.has(estado_atual)) {
+  } else if (isPropostaSubstate(estado_atual)) {
     // ─── Caminho C Fase 2B: PropostaAgent path novo (3 substates) ──────
     let out;
     try {
@@ -781,7 +774,7 @@ export async function runAgent({
   // Sub-3.2: orquestrator side-effects pra Proposta
   const sideEffects = [];
   let finalOut = enforced;
-  if (PROPOSTA_SUBSTATES.has(estado_atual)) {
+  if (isPropostaSubstate(estado_atual)) {
     finalOut = await executeOrchestration(enforced, {
       env, tenant, conversa, telefone, sideEffects, estado_atual,
       clientContext: mergedClientContext,
@@ -826,7 +819,7 @@ export async function runAgent({
     proxima_acao: finalOut.proxima_acao,
     escalation: finalOut.escalation || null,
     agent_usado: estado_atual,
-    side_effects: PROPOSTA_SUBSTATES.has(estado_atual) ? sideEffects : undefined,
+    side_effects: isPropostaSubstate(estado_atual) ? sideEffects : undefined,
     urls_portfolio,
     analise_imagens: finalOut.analise_imagens ?? null,
     cobertura_suspeita: finalOut.cobertura_suspeita ?? null,

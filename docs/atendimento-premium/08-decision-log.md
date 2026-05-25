@@ -262,6 +262,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `lateral-preco-generico` e `whatsapp-real-lateral-preco-generico` agora falham se nao existir row `agent_name=conversation_router` com `router_reason=generic_price_question_without_negotiation`, confidence minima, risco e permissao de mutacao de estado esperados. O mesmo padrao foi expandido para `tempo_sessao` (`router_reason=session_duration_or_number_of_sessions_question`), `processo_tatuagem` (`router_reason=tattoo_process_or_booking_flow_question`), `pergunta_imagem` (`router_reason=image_interpretation_question_without_media_context`) e `historia_vida` (`router_reason=emotional_context_or_life_story_detected`). HTTP production smoke e WhatsApp real passaram em 2026-05-25.
 
+## 2026-05-25 - Context/Tenant Manager passa a ser camada propria
+
+**Status:** decidido.
+
+**Decisão:** a montagem do `clientContext` efetivo do turno sai de `runAgent` e passa para `functions/api/agent/_lib/tenant-context-manager.js`.
+
+**Motivo:** contexto por tenant e contexto transversal estavam acoplados ao orquestrador do agent. Para evoluir regras por estúdio sem degradar o fluxo, a camada precisa ficar isolada, testável e reaproveitável.
+
+**Alternativas rejeitadas:**
+
+- manter prefetch de portfolio/proposta diretamente em `route.js`;
+- criar uma camada grande de domínio antes de ter contrato local;
+- alterar prompt/comportamento junto com a extração estrutural.
+
+**Camada responsável:** `TenantContextManager`, `runAgent`, contexto de portfolio e contexto de proposta.
+
+**Impacto:** comportamento preservado. `portfolio_disponivel` continua sendo derivado de `tenant.portfolio_urls`, contexto de proposta continua entrando só em substates de proposta e os testes locais cobrem precedência/imutabilidade. HTTP production smoke e WhatsApp real de portfolio passaram em 2026-05-25.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

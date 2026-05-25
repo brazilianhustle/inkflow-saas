@@ -66,23 +66,24 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - IntentPolicy/observabilidade do Router iniciado: `ConversationRouter` agora retorna `reason` e `can_mutate_state` junto de `intent`, `confidence` e `risk`; `whatsapp-pipeline` grava esses campos em `agent_turn_logs`; HTTP e WhatsApp real de preco generico passaram exigindo `router_reason=generic_price_question_without_negotiation`.
 - IntentPolicy/observabilidade do Router expandido para `tempo_sessao` e `processo_tatuagem`: testes locais, HTTP radar e WhatsApp real passaram exigindo `router_reason`, `router_risk=medium` e `router_can_mutate_state=false`.
 - IntentPolicy/observabilidade do Router expandido para `pergunta_imagem` e `historia_vida`: testes locais, HTTP radar e WhatsApp real passaram exigindo `router_reason`, `router_risk=medium` e `router_can_mutate_state=false`.
+- Context/Tenant Manager iniciado: montagem de `clientContext` efetivo saiu de `route.js` para `tenant-context-manager.js`; portfolio e contexto de proposta continuam equivalentes, com teste local e validação HTTP/WhatsApp real pelo fluxo `portfolio_disponivel`.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-lateral-historia-vida-homenagem-20260525T194619Z-18504
+run_id: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T195358Z-3969
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_tattoo
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-lateral-historia-vida-homenagem-20260525T194619Z-18504/
+evidence: .smoke-evidence/scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T195358Z-3969/
 ```
 
 Mensagem:
 
 ```text
-quero fazer uma homenagem pro meu pai que faleceu, pensei em passaros e uma frase
+tem exemplos de fineline?
 ```
 
 Resultado:
@@ -92,10 +93,9 @@ estado_agente: coletando_tattoo
 resposta_ai_posterior_ao_humano: true
 orcid: none
 copy_risk: baixo
-copy: acolhe breve, preserva briefing emocional e retoma pergunta util, sem terapia, preco, agendamento ou sinal
-router: historia_vida / confidence>=0.8 / risk=medium / can_mutate_state=false
-observability: agent_turn_logs agent_name=conversation_router router_reason=emotional_context_or_life_story_detected
-observability_gate: EXPECTED_AGENT_LOG_JQ_TRUE PASS
+copy: oferece envio de exemplos sem URL manual, preco, agendamento, sinal ou pagamento
+context: tenant_context_manager injeta portfolio_disponivel=true antes do agent
+tool: tail confirmou enviar-portfolio / portfolio
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
 
