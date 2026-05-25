@@ -60,6 +60,7 @@ Context/Tenant Manager foi iniciado: `runAgent` agora usa `tenant-context-manage
 Workflow Manager entrou como proxima familia Level 3: cadastro completo com recusa de email agora registra row propria em `agent_turn_logs` via `agent_name=workflow_manager`, com `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real `central -> bot` passaram exigindo essa observabilidade.
 Workflow Manager tambem virou autoridade de nao-mutacao para intents laterais do Router: quando `can_mutate_state=false`, preserva o estado atual e registra `workflow_reason=state_preserved_by_router_policy` ou `mutation_blocked_by_router_policy`. O fluxo de preco generico passou em HTTP radar e WhatsApp real exigindo `conversation_router` + `workflow_manager` no mesmo turno.
 Workflow Manager tambem passou a explicar bloqueios de cadastro incompleto com faltantes exatos: idade isolada preserva `estado=coletando_cadastro`, nao persiste `data_nascimento`, nao cria `orcid` e registra `workflow_reason=requirements_missing`, `workflow_missing_cadastro_count=2` e `workflow_missing_tattoo_count=0`. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `cadastro-data-idade-nao-persiste`.
+Workflow Manager tambem passou a oficializar transicoes de escalation/handoff humano: cliente irritado sai para `aguardando_tatuador`, sem `orcid`, sem orcamento automatico e com `workflow_reason=escalation_required` vinculado ao `EscalationManager`. HTTP radar e WhatsApp real `central -> bot` passaram no fluxo `tattoo-cliente-irritado-handoff`.
 Politica corrigida: HTTP production smoke e radar inicial; WhatsApp real e validacao definitiva por micro-slice conversacional. Nao declarar slice fechado sem scenario `whatsapp_real` correspondente ou rehearsal real equivalente no gate.
 O compact integrado foi corrigido na arquitetura: existe hook Claude Code, mas a retomada oficial agora e portavel via `bash scripts/smoke/continuity-bundle.sh --force`, adequado para Codex/API.
 Achado de linguagem da idade isolada foi corrigido para pedir data completa com seguranca e registro de maioridade.
@@ -168,7 +169,7 @@ Antes de continuar, conferir `git status --short`. A expectativa após este chec
 Run de referência:
 
 ```text
-scenario-whatsapp-real-cadastro-data-idade-nao-persiste-20260525T211554Z-16093
+scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T212423Z-21065
 ```
 
 Alvo:
@@ -181,13 +182,13 @@ Resultado:
 
 ```text
 PASS
-estado_agente: coletando_cadastro
+estado_agente: aguardando_tatuador
 orcid: null
-data_nascimento: null
 copy_risk: baixo
-copy: pede data de nascimento completa por seguranca e registro de maioridade, sem liberar orcamento
-workflow: cadastro incompleto bloqueado com faltantes exatos
-observability: agent_turn_logs agent_name=workflow_manager workflow_reason=requirements_missing workflow_missing_cadastro_count=2 workflow_missing_tattoo_count=0
+copy: pede desculpa pela frustracao e aciona pessoa do estudio, sem formulario, preco, agenda ou sinal
+escalation: client_upset high sem orcid
+workflow: escalation_required para aguardando_tatuador
+observability: agent_turn_logs agent_name=escalation_manager reason_code=client_upset + agent_name=workflow_manager workflow_reason=escalation_required
 observability_gate: EXPECTED_AGENT_LOG_JQ_TRUE PASS
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
@@ -195,8 +196,8 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 Decisão:
 
 ```text
-O Workflow Manager agora nao apenas bloqueia transicao insegura; ele explica quais requisitos ainda impedem a saida segura da fase.
-O monitoramento consegue validar bloqueio de cadastro incompleto sem ler o codigo nem inferir pelo texto do bot.
+O Workflow Manager agora tambem oficializa saidas para humano por escalation, sem transformar isso em orcamento automatico.
+O monitoramento consegue validar a decisao completa: Router detecta, Escalation Manager classifica, Workflow Manager muda a fase.
 ```
 
 ### Correções de smoke - 2026-05-25
@@ -390,15 +391,15 @@ GitHub Actions Deploy to Cloudflare Pages PASS
 Ultimo micro-slice validado em Level 3:
 
 ```text
-Workflow Manager - nao-mutacao de intents laterais
-commit: 10295f5 feat: enforce workflow non mutation
-local: node --test tests/**/*.test.mjs PASS (1160)
+Workflow Manager - transicao de escalation oficializada
+commit: d424d46 feat: formalize workflow escalation transitions
+local: node --test tests/**/*.test.mjs PASS (1162)
 ci: Tests e Deploy PASS
-http radar: scenario-lateral-preco-generico-20260525T210607Z-3522 PASS
-whatsapp real: scenario-whatsapp-real-lateral-preco-generico-20260525T210632Z-21888 PASS
-prova real: Cliente "quanto fica uma rosa fineline no braco?" -> Bot "Oii, tudo bem?... O valor depende do tamanho, detalhe e local do corpo..."
-telemetria: conversation_router router_can_mutate_state=false; workflow_manager workflow_from_state=tattoo, workflow_to_state=tattoo, workflow_transition_allowed=false, workflow_reason=state_preserved_by_router_policy
-rodada: Level 3 familia Workflow Manager; 2 de ate 4 micro-slices concluidos, parar em qualquer falha.
+http radar: scenario-tattoo-cliente-irritado-handoff-20260525T212354Z-28199 PASS
+whatsapp real: scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T212423Z-21065 PASS
+prova real: Cliente "voces demoram demais, ninguem responde" -> Bot "Entendi, desculpa pela frustração. Vou acionar uma pessoa do estúdio para assumir por aqui e te ajudar direto."
+telemetria: escalation_manager reason_code=client_upset severity=high requires_orcid=false; workflow_manager workflow_from_state=tattoo, workflow_to_state=aguardando_tatuador, workflow_transition_allowed=true, workflow_reason=escalation_required
+rodada: Level 3 familia Workflow Manager; 4 de 4 micro-slices concluidos. Pausar nova expansao desta familia ate reavaliacao deliberada.
 ```
 
 ## Próxima Ação Recomendada
@@ -408,7 +409,7 @@ Antes de codar nova frente:
 1. Confirmar worktree.
 2. Rodar `bash scripts/smoke/continuity-bundle.sh --force` se o contexto estiver abaixo de 20% ou a sessao tiver sido compactada.
 3. Confirmar Autonomy Gate Level 3 e gate do slice relacionado.
-4. Atacar no maximo 4 micro-slices da mesma familia por rodada.
+4. Atacar no maximo 4 micro-slices da mesma familia por rodada; a rodada Workflow Manager atual ja consumiu os 4.
 5. Registrar smoke em `smoke-runs.md` e atualizar o gate do slice antes de ampliar autonomia.
 
 Minha recomendação estratégica:
@@ -420,10 +421,10 @@ Nao avançar para IntentPolicy ampla antes de consolidar os proximos micro-slice
 Depois disso, o próximo melhor ataque é:
 
 ```text
-Proximo micro-slice da familia Workflow Manager: criterio formal de bloqueio para cadastro incompleto ou transicao de escalation oficializada pelo Workflow Manager.
+Reavaliar a proxima familia de arquitetura antes de codar: nao continuar Workflow Manager por inercia.
 ```
 
-Motivo: a transição de cadastro e a nao-mutacao lateral ja foram protegidas por gate; a proxima expansao deve continuar pequena, observavel e validada por WhatsApp real.
+Motivo: a rodada Workflow Manager fechou os quatro contratos centrais: conclusao de cadastro, nao-mutacao lateral, bloqueio de cadastro incompleto e escalation/handoff humano.
 
 ## Checklist De Fechamento De Sessão
 

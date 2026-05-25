@@ -352,6 +352,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `cadastro-handoff-email-recusado` e `whatsapp-real-cadastro-handoff` agora exigem `agent_name=workflow_manager`, `workflow_layer=workflow_manager`, `workflow_from_state=cadastro`, `workflow_to_state=aguardando_tatuador`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`. HTTP radar e WhatsApp real passaram em 2026-05-25.
 
+## 2026-05-25 - Workflow Manager oficializa transicoes de escalation
+
+**Status:** decidido.
+
+**Decisão:** quando o `EscalationManager` determinar que a IA deve sair de cena, o `WorkflowManager` deve registrar a transição formal para `aguardando_tatuador` com `workflow_reason=escalation_required`, preservando `requires_orcid=false` nos casos de risco humano.
+
+**Motivo:** escalation nao deve ser apenas side effect de Telegram ou estado novo vindo do Router. A camada de workflow precisa ser a autoridade que explica que a fase mudou porque houve risco operacional, pedido humano ou frustração do cliente.
+
+**Alternativas rejeitadas:**
+
+- manter escalation observavel apenas no `agent_name=escalation_manager`;
+- deixar `tattoo -> aguardando_tatuador` como `unsupported_state` no Workflow Manager;
+- transformar escalation em handoff de orçamento, o que poderia chamar `enviar-orcamento-tatuador` indevidamente.
+
+**Camada responsável:** `WorkflowManager`, `EscalationManager`, `ConversationRouter`, `whatsapp-pipeline` e smoke scenario registry.
+
+**Impacto:** `tattoo-cliente-irritado-handoff` e `whatsapp-real-tattoo-cliente-irritado-handoff` agora exigem, no mesmo turno, log do `escalation_manager` com `reason_code=client_upset` e log do `workflow_manager` com `workflow_transition_allowed=true`, `workflow_reason=escalation_required`, `workflow_to_state=aguardando_tatuador` e `workflow_escalation_requires_orcid=false`. HTTP radar e WhatsApp real passaram em 2026-05-25.
+
 ## 2026-05-25 - Workflow Manager e requisitos faltantes exatos
 
 **Status:** decidido.

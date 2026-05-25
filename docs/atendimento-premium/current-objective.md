@@ -78,50 +78,51 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - Workflow Manager passou a registrar decisao propria em `agent_turn_logs`: cadastro completo com recusa de email agora confirma `workflow_layer=workflow_manager`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a impor nao-mutacao para intents laterais do Router com `can_mutate_state=false`: preco generico preservou `estado=coletando_tattoo` e registrou `workflow_reason=state_preserved_by_router_policy`; HTTP radar e WhatsApp real definitivo passaram exigindo Router + Workflow Manager no mesmo turno.
 - Workflow Manager passou a calcular requisitos faltantes exatos por fase e expor bloqueio formal de cadastro incompleto: idade isolada preservou `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null` e registrou `workflow_reason=requirements_missing` com contagens de faltantes; HTTP radar e WhatsApp real definitivo passaram.
+- Workflow Manager passou a oficializar transicoes de escalation/handoff humano: cliente irritado saiu para `aguardando_tatuador` sem `orcid`, sem orçamento automatico e com `workflow_reason=escalation_required` ligado ao `EscalationManager`; HTTP radar e WhatsApp real definitivo passaram.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-cadastro-data-idade-nao-persiste-20260525T211554Z-16093
+run_id: scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T212423Z-21065
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: coletando_cadastro
+expected_state: aguardando_tatuador
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-data-idade-nao-persiste-20260525T211554Z-16093/
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T212423Z-21065/
 ```
 
 Mensagem:
 
 ```text
-tenho 31 anos
+voces demoram demais, ninguem responde
 ```
 
 Resultado:
 
 ```text
-estado_agente: coletando_cadastro
+estado_agente: aguardando_tatuador
 resposta_ai_posterior_ao_humano: true
 orcid: none
 copy_risk: baixo
-data_nascimento: null
-copy: pede data de nascimento completa por seguranca e registro de maioridade, sem frase fria e sem liberar orcamento
-workflow: agent_turn_logs confirmou workflow_manager com workflow_from_state=cadastro, workflow_to_state=cadastro, workflow_transition_allowed=false, workflow_reason=requirements_missing, workflow_missing_cadastro_count=2 e workflow_missing_tattoo_count=0
+copy: pede desculpa pela frustracao e aciona pessoa do estudio, sem formulario, preco, agenda ou sinal
+escalation: agent_turn_logs confirmou escalation_manager com reason_code=client_upset, severity=high e requires_orcid=false
+workflow: agent_turn_logs confirmou workflow_manager com workflow_from_state=tattoo, workflow_to_state=aguardando_tatuador, workflow_transition_allowed=true, workflow_reason=escalation_required e workflow_escalation_reason_code=client_upset
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
 
 ## Proximo Ataque
 
 ```text
-Continuar a rodada Workflow Manager em Level 3, com no maximo 1 micro-slice restante nesta familia antes de nova parada deliberada.
+Rodada Workflow Manager Level 3 concluida com 4 de 4 micro-slices. Antes de novo bloco, reavaliar arquitetura, gates e autonomia.
 ```
 
 Escopo recomendado:
 
 - rodar `check-autonomy-gate.sh` antes de iniciar a rodada;
-- manter a familia `Workflow Manager` e limitar a rodada a ate 4 micro-slices no total;
-- depois de cada micro-slice, rodar HTTP como radar e WhatsApp real como validacao definitiva antes de registrar smoke/gate/commit saudavel;
-- candidato principal: transicao de escalation oficializada pelo Workflow Manager.
+- rodar `check-slice-gate.sh escalation-manager`, `check-slice-gate.sh cadastro-handoff` e `check-autonomy-gate.sh`;
+- nao iniciar outro micro-slice da familia Workflow Manager sem nova decisao deliberada;
+- manter Level 3 ate bater criterios de Level 4: 70 scenarios PASS, 35 WhatsApp reais PASS, docs de rollback/staging e politica Level 4.
 
 ## Comando De Retomada
 
