@@ -38,6 +38,29 @@ test('evaluateEscalation: respeita escalation explicita do agent/guardrail', () 
   assert.equal(decision.source, 'mensagem');
 });
 
+test('evaluateEscalation: preserva gatilho tenant matched em escalation explicita', () => {
+  const decision = evaluateEscalation({
+    estado_atual: 'tattoo',
+    agentOut: {
+      proxima_acao: 'erro',
+      matched_trigger: 'rosto',
+      escalation: {
+        required: true,
+        reason_code: 'tenant_handoff_trigger',
+        reason_label: 'gatilho de handoff do estúdio',
+        severity: 'high',
+        source: 'tenant_rules',
+        requires_orcid: false,
+      },
+    },
+  });
+
+  assert.equal(decision.required, true);
+  assert.equal(decision.reason_code, 'tenant_handoff_trigger');
+  assert.equal(decision.source, 'tenant_rules');
+  assert.equal(decision.matched_tenant_trigger, 'rosto');
+});
+
 test('evaluateEscalation: cobertura em tattoo vira escalonamento high sem orcid', () => {
   const decision = evaluateEscalation({
     estado_atual: 'tattoo',
@@ -103,4 +126,24 @@ test('composeEscalationTelegram: inclui codigo rastreavel e resumo do cliente', 
   assert.match(text, /Cliente: 5511999998888/);
   assert.match(text, /Motivo: menoridade \/ responsavel legal/);
   assert.match(text, /Vou acionar o tatuador\./);
+});
+
+test('composeEscalationTelegram: inclui gatilho tenant quando presente', () => {
+  const text = composeEscalationTelegram({
+    decision: {
+      required: true,
+      reason_code: 'tenant_handoff_trigger',
+      reason_label: 'gatilho de handoff do estúdio',
+      severity: 'high',
+      source: 'tenant_rules',
+      matched_tenant_trigger: 'rosto',
+    },
+    tenant: { id: 'tenant-1' },
+    telefone: '5511999998888',
+    estado_atual: 'tattoo',
+    agentOut: { resposta_cliente: 'Vou acionar uma pessoa do estúdio.' },
+  });
+
+  assert.match(text, /\[escalation:tenant_handoff_trigger\]/);
+  assert.match(text, /Gatilho tenant: rosto/);
 });

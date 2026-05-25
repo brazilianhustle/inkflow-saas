@@ -396,6 +396,7 @@ function escalationOutput({ detected, estado_atual, intent }) {
         severity: 'high',
         source: 'tenant_rules',
         requires_orcid: false,
+        matched_tenant_trigger: detected.matched_trigger || null,
       },
     };
   }

@@ -1237,6 +1237,7 @@ test('4f. tattoo gatilho de handoff do tenant aciona humano com observabilidade 
   assert.equal(escalationLog.context_metadata.escalation_severity, 'high');
   assert.equal(escalationLog.context_metadata.escalation_source, 'tenant_rules');
   assert.equal(escalationLog.context_metadata.escalation_requires_orcid, false);
+  assert.equal(escalationLog.context_metadata.escalation_matched_tenant_trigger, 'rosto');
 });
 
 test('5. portfolio intent — Task 10 implementa', async () => {

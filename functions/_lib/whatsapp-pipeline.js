@@ -513,6 +513,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
             escalation_severity: escalation.severity,
             escalation_source: escalation.source,
             escalation_requires_orcid: escalation.requires_orcid === true,
+            escalation_matched_tenant_trigger: escalation.matched_tenant_trigger || null,
             agent_used: agentOut.agent_usado || null,
             agent_action: agentOut.proxima_acao || null,
             final_state: agentOut.estado_novo || null,

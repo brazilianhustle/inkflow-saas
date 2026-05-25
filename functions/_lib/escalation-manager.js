@@ -19,6 +19,7 @@ export function evaluateEscalation({ estado_atual, agentOut } = {}) {
       severity: explicit.severity || 'medium',
       source: explicit.source || 'agent_output',
       requires_orcid: explicit.requires_orcid === true,
+      matched_tenant_trigger: explicit.matched_tenant_trigger || agentOut?.matched_trigger || null,
     };
   }
 
@@ -86,6 +87,7 @@ export function evaluateEscalation({ estado_atual, agentOut } = {}) {
     severity: null,
     source: null,
     requires_orcid: false,
+    matched_tenant_trigger: null,
   };
 }
 
@@ -100,8 +102,9 @@ export function composeEscalationTelegram({ decision, tenant, telefone, estado_a
     `Severidade: ${d.severity || 'unknown'}`,
     `Motivo: ${d.reason_label || d.reason_code || 'unknown'}`,
     `Fonte: ${d.source || 'unknown'}`,
+    d.matched_tenant_trigger ? `Gatilho tenant: ${d.matched_tenant_trigger}` : null,
     '',
     'Resposta enviada ao cliente:',
     preview(agentOut?.resposta_cliente, 500),
-  ].join('\n');
+  ].filter(line => line !== null).join('\n');
 }
