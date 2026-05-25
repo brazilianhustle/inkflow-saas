@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildTenantContext, isPropostaSubstate } from '../../../functions/api/agent/_lib/tenant-context-manager.js';
+import { buildTenantContext, isPropostaSubstate, summarizeTenantContext } from '../../../functions/api/agent/_lib/tenant-context-manager.js';
 
 test('TenantContextManager: identifica substates de proposta', () => {
   assert.equal(isPropostaSubstate('propondo_valor'), true);
@@ -76,4 +76,24 @@ test('TenantContextManager: injeta contexto de proposta somente em substate de p
     deps,
   });
   assert.equal(calls.length, 1);
+});
+
+test('TenantContextManager: resume contexto para telemetria sem vazar dados sensiveis', () => {
+  const summary = summarizeTenantContext({
+    portfolio_disponivel: true,
+    is_first_contact: true,
+    eh_recorrente: false,
+    horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
+    nome_cliente: 'Joao Silva',
+  }, 'propondo_valor');
+
+  assert.deepEqual(summary, {
+    tenant_context_layer: 'tenant_context_manager',
+    tenant_context_state: 'propondo_valor',
+    tenant_context_portfolio_disponivel: true,
+    tenant_context_is_first_contact: true,
+    tenant_context_eh_recorrente: false,
+    tenant_context_has_proposta_context: true,
+  });
+  assert.equal(Object.hasOwn(summary, 'nome_cliente'), false);
 });

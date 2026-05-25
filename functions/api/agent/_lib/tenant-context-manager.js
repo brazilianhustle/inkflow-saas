@@ -13,6 +13,19 @@ export function isPropostaSubstate(estado) {
   return PROPOSTA_SUBSTATES.has(estado);
 }
 
+export function summarizeTenantContext(context = {}, estado_atual = '') {
+  const hasHorariosLivres = Array.isArray(context.horarios_livres);
+  const hasSlotsReservados = Array.isArray(context.slots_reservados);
+  return {
+    tenant_context_layer: 'tenant_context_manager',
+    tenant_context_state: estado_atual || null,
+    tenant_context_portfolio_disponivel: context.portfolio_disponivel === true,
+    tenant_context_is_first_contact: context.is_first_contact === true,
+    tenant_context_eh_recorrente: context.eh_recorrente === true,
+    tenant_context_has_proposta_context: hasHorariosLivres || hasSlotsReservados || Boolean(context.proposta_status),
+  };
+}
+
 export async function buildTenantContext({
   env,
   tenant,

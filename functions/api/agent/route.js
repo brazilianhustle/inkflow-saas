@@ -17,7 +17,7 @@ import { runPropostaAgent } from './agents/proposta.js';
 import { buildFallbackOutput } from '../../_lib/agent-runtime/fallbacks.js';
 import { validateEnv } from './_lib/sdk-init.js';
 import { enforceMenorIdade } from './_lib/enforce-menor-idade.js';
-import { buildTenantContext, isPropostaSubstate } from './_lib/tenant-context-manager.js';
+import { buildTenantContext, isPropostaSubstate, summarizeTenantContext } from './_lib/tenant-context-manager.js';
 import { callTool } from './_lib/call-tool.js';
 import { calcularValorSinal } from './_lib/calcular-sinal.js';
 import { formatLinkSinalMessage, formatPixSinalMessage } from './_lib/format-link-sinal-msg.js';
@@ -797,7 +797,11 @@ export async function runAgent({
       client_input_text: mensagem,
       client_input_type: 'text',
       prompt_full: null,
-      context_metadata: { dados_acumulados, history_turns_n: historico?.length || 0 },
+      context_metadata: {
+        dados_acumulados,
+        history_turns_n: historico?.length || 0,
+        ...summarizeTenantContext(mergedClientContext, estado_atual),
+      },
       llm_output_parsed: finalOut,
       invariant_passed: invariantCheck.valid,
       invariant_failure_reason: invariantCheck.valid ? null : invariantCheck.reason,
