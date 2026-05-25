@@ -238,13 +238,27 @@ test('ConversationRouter Slice 1: preço genérico responde sem chamar runAgent 
   await processBatch({}, baseBatch(), deps);
 
   assert.equal(runAgentSpy.mock.callCount(), 0);
-  assert.equal(logAgentTurnSpy.mock.callCount(), 1);
-  assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].agent_name, 'conversation_router');
-  assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].context_metadata.router_intent, 'preco_generico');
-  assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].context_metadata.router_reason, 'generic_price_question_without_negotiation');
-  assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].context_metadata.router_can_mutate_state, false);
-  assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].context_metadata.tenant_context_layer, 'tenant_context_manager');
-  assert.equal(logAgentTurnSpy.mock.calls[0].arguments[0].context_metadata.tenant_context_aceita_cobertura, true);
+  assert.equal(logAgentTurnSpy.mock.callCount(), 2);
+  const routerLog = logAgentTurnSpy.mock.calls
+    .map(call => call.arguments[0])
+    .find(entry => entry.agent_name === 'conversation_router');
+  assert.ok(routerLog, 'ConversationRouter deve registrar a decisao de intent');
+  assert.equal(routerLog.context_metadata.router_intent, 'preco_generico');
+  assert.equal(routerLog.context_metadata.router_reason, 'generic_price_question_without_negotiation');
+  assert.equal(routerLog.context_metadata.router_can_mutate_state, false);
+  assert.equal(routerLog.context_metadata.tenant_context_layer, 'tenant_context_manager');
+  assert.equal(routerLog.context_metadata.tenant_context_aceita_cobertura, true);
+  const workflowLog = logAgentTurnSpy.mock.calls
+    .map(call => call.arguments[0])
+    .find(entry => entry.agent_name === 'workflow_manager');
+  assert.ok(workflowLog, 'Workflow Manager deve registrar preservacao de estado');
+  assert.equal(workflowLog.context_metadata.workflow_layer, 'workflow_manager');
+  assert.equal(workflowLog.context_metadata.workflow_from_state, 'tattoo');
+  assert.equal(workflowLog.context_metadata.workflow_to_state, 'tattoo');
+  assert.equal(workflowLog.context_metadata.workflow_transition_allowed, false);
+  assert.equal(workflowLog.context_metadata.workflow_reason, 'state_preserved_by_router_policy');
+  assert.equal(workflowLog.context_metadata.workflow_can_mutate_state, false);
+  assert.equal(workflowLog.context_metadata.workflow_blocked_mutation, false);
   assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
   assert.deepEqual(conversaPatch.dados_coletados, { descricao_curta: 'rosa' });
   assert.match(aiInsert.message.content, /O valor depende/);

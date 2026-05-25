@@ -5,6 +5,25 @@ function hasValue(v) {
   return v !== null && v !== undefined && v !== '';
 }
 
+function routerCannotMutate(agentOut = {}) {
+  return agentOut?.handled_by === 'conversation_router' && agentOut?.can_mutate_state === false;
+}
+
+function preserveRouterStateDecision({ estado_atual, agentOut, missingRequirements } = {}) {
+  const requestedState = agentOut?.estado_novo || estado_atual;
+  const blocked = requestedState !== estado_atual;
+  return {
+    shouldTransition: false,
+    fromState: estado_atual,
+    toState: estado_atual,
+    requestedState,
+    reason: blocked ? 'mutation_blocked_by_router_policy' : 'state_preserved_by_router_policy',
+    canMutateState: false,
+    blockedMutation: blocked,
+    missingRequirements,
+  };
+}
+
 export function isTattooBriefComplete(dados = {}) {
   return Boolean(
     (hasValue(dados.descricao_tattoo) || hasValue(dados.descricao_curta))
@@ -28,6 +47,10 @@ export function evaluateWorkflowTransition({
   dados_coletados,
   dados_cadastro,
 } = {}) {
+  if (estado_atual !== 'cadastro' && routerCannotMutate(agentOut)) {
+    return preserveRouterStateDecision({ estado_atual, agentOut });
+  }
+
   if (estado_atual !== 'cadastro') {
     return {
       shouldTransition: false,
@@ -48,25 +71,33 @@ export function evaluateWorkflowTransition({
 
   const cadastroComplete = isCadastroComplete(dados_cadastro);
   const tattooComplete = isTattooBriefComplete(dados_coletados);
+  const missingRequirements = {
+    cadastro: cadastroComplete ? [] : ['nome', 'data_nascimento', 'email_or_refusal'],
+    tattoo: tattooComplete ? [] : ['descricao', 'local_corpo', 'altura_cm', 'estilo'],
+  };
+
+  if (cadastroComplete && tattooComplete) {
+    return {
+      shouldTransition: true,
+      fromState: 'cadastro',
+      toState: 'aguardando_tatuador',
+      reason: 'cadastro_and_tattoo_complete',
+    };
+  }
+
+  if (routerCannotMutate(agentOut)) {
+    return preserveRouterStateDecision({ estado_atual, agentOut, missingRequirements });
+  }
+
   if (!cadastroComplete || !tattooComplete) {
     return {
       shouldTransition: false,
       fromState: 'cadastro',
       toState: agentOut?.estado_novo || 'cadastro',
       reason: 'requirements_missing',
-      missingRequirements: {
-        cadastro: cadastroComplete ? [] : ['nome', 'data_nascimento', 'email_or_refusal'],
-        tattoo: tattooComplete ? [] : ['descricao', 'local_corpo', 'altura_cm', 'estilo'],
-      },
+      missingRequirements,
     };
   }
-
-  return {
-    shouldTransition: true,
-    fromState: 'cadastro',
-    toState: 'aguardando_tatuador',
-    reason: 'cadastro_and_tattoo_complete',
-  };
 }
 
 export function summarizeWorkflowDecision(decision = {}) {
@@ -83,6 +114,9 @@ export function summarizeWorkflowDecision(decision = {}) {
     workflow_to_state: decision.toState || null,
     workflow_transition_allowed: decision.shouldTransition === true,
     workflow_reason: decision.reason || null,
+    workflow_requested_state: decision.requestedState || null,
+    workflow_can_mutate_state: decision.canMutateState ?? null,
+    workflow_blocked_mutation: decision.blockedMutation === true,
     workflow_missing_cadastro_count: missingCadastro,
     workflow_missing_tattoo_count: missingTattoo,
   };
@@ -90,6 +124,16 @@ export function summarizeWorkflowDecision(decision = {}) {
 
 export function applyWorkflowTransition({ estado_atual, agentOut, dados_coletados, dados_cadastro } = {}) {
   const decision = evaluateWorkflowTransition({ estado_atual, agentOut, dados_coletados, dados_cadastro });
+  if (decision.reason === 'mutation_blocked_by_router_policy' || decision.reason === 'state_preserved_by_router_policy') {
+    return {
+      decision,
+      agentOut: {
+        ...agentOut,
+        estado_novo: decision.toState,
+        workflow_decision: decision,
+      },
+    };
+  }
   if (!decision.shouldTransition) return { agentOut, decision };
 
   return {

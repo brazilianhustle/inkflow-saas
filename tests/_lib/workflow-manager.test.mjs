@@ -83,7 +83,71 @@ test('Workflow Manager: resumo observavel nao vaza dados pessoais', () => {
     workflow_to_state: 'aguardando_tatuador',
     workflow_transition_allowed: true,
     workflow_reason: 'cadastro_and_tattoo_complete',
+    workflow_requested_state: null,
+    workflow_can_mutate_state: null,
+    workflow_blocked_mutation: false,
     workflow_missing_cadastro_count: 0,
     workflow_missing_tattoo_count: 0,
   });
+});
+
+test('Workflow Manager: Router sem permissao de mutacao preserva estado', () => {
+  const result = applyWorkflowTransition({
+    estado_atual: 'tattoo',
+    agentOut: {
+      ok: true,
+      handled_by: 'conversation_router',
+      can_mutate_state: false,
+      estado_novo: 'aguardando_tatuador',
+      resposta_cliente: 'resposta lateral',
+      proxima_acao: 'pergunta',
+    },
+    dados_coletados: {},
+    dados_cadastro: {},
+  });
+
+  assert.equal(result.agentOut.estado_novo, 'tattoo');
+  assert.equal(result.agentOut.workflow_decision.reason, 'mutation_blocked_by_router_policy');
+  assert.equal(result.agentOut.workflow_decision.requestedState, 'aguardando_tatuador');
+  assert.equal(result.agentOut.workflow_decision.blockedMutation, true);
+});
+
+test('Workflow Manager: Router lateral que ja preserva estado tambem fica observavel', () => {
+  const result = applyWorkflowTransition({
+    estado_atual: 'tattoo',
+    agentOut: {
+      ok: true,
+      handled_by: 'conversation_router',
+      can_mutate_state: false,
+      estado_novo: 'tattoo',
+      resposta_cliente: 'resposta lateral',
+      proxima_acao: 'pergunta',
+    },
+    dados_coletados: {},
+    dados_cadastro: {},
+  });
+
+  assert.equal(result.agentOut.estado_novo, 'tattoo');
+  assert.equal(result.agentOut.workflow_decision.reason, 'state_preserved_by_router_policy');
+  assert.equal(result.agentOut.workflow_decision.blockedMutation, false);
+});
+
+test('Workflow Manager: cadastro completo vence Router lateral sem mutacao', () => {
+  const result = applyWorkflowTransition({
+    estado_atual: 'cadastro',
+    agentOut: {
+      ok: true,
+      handled_by: 'conversation_router',
+      can_mutate_state: false,
+      estado_novo: 'cadastro',
+      resposta_cliente: 'resposta lateral e fechamento',
+      proxima_acao: 'pergunta',
+    },
+    dados_coletados: tattooComplete,
+    dados_cadastro: cadastroComplete,
+  });
+
+  assert.equal(result.agentOut.estado_novo, 'aguardando_tatuador');
+  assert.equal(result.agentOut.proxima_acao, 'handoff');
+  assert.equal(result.agentOut.workflow_decision.reason, 'cadastro_and_tattoo_complete');
 });
