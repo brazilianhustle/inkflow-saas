@@ -35,16 +35,23 @@ export function summarizeTenantContext(context = {}, estado_atual = '') {
   const gatilhosHandoff = Array.isArray(tenantRules.gatilhos_handoff) ? tenantRules.gatilhos_handoff : [];
   const estilosAceitos = Array.isArray(tenantRules.estilos_aceitos) ? tenantRules.estilos_aceitos : [];
   const estilosRecusados = Array.isArray(tenantRules.estilos_recusados) ? tenantRules.estilos_recusados : [];
+  const hasStyleCatalog = estilosAceitos.length > 0 || estilosRecusados.length > 0;
   return {
     tenant_context_layer: 'tenant_context_manager',
+    tenant_context_rules_snapshot_version: 'v1',
     tenant_context_state: estado_atual || null,
     tenant_context_portfolio_disponivel: context.portfolio_disponivel === true,
     tenant_context_is_first_contact: context.is_first_contact === true,
     tenant_context_eh_recorrente: context.eh_recorrente === true,
     tenant_context_has_proposta_context: hasHorariosLivres || hasSlotsReservados || Boolean(context.proposta_status),
     tenant_context_aceita_cobertura: tenantRules.aceita_cobertura === true,
+    tenant_context_handoff_triggers_source: tenantRules.has_custom_handoff_triggers === true ? 'custom' : 'default',
     tenant_context_gatilhos_handoff_count: gatilhosHandoff.length,
+    tenant_context_has_handoff_triggers: gatilhosHandoff.length > 0,
     tenant_context_has_custom_handoff_triggers: tenantRules.has_custom_handoff_triggers === true,
+    tenant_context_has_style_catalog: hasStyleCatalog,
+    tenant_context_has_accepted_styles: estilosAceitos.length > 0,
+    tenant_context_has_rejected_styles: estilosRecusados.length > 0,
     tenant_context_estilos_aceitos_count: estilosAceitos.length,
     tenant_context_estilos_recusados_count: estilosRecusados.length,
     tenant_context_uses_legacy_style_catalog: tenantRules.uses_legacy_style_catalog === true,
