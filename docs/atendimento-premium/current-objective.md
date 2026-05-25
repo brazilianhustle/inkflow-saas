@@ -80,6 +80,7 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - Context/Tenant Manager 2.0 ganhou traço observavel do gatilho que bateu: `conversation_router.context_metadata` agora registra `router_has_matched_tenant_trigger` e `router_matched_tenant_trigger`, com HTTP radar e WhatsApp real definitivo exigindo `rosto`.
 - Context/Tenant Manager 2.0 propagou o gatilho tenant exato ate o Escalation Manager: `escalation_manager.context_metadata.escalation_matched_tenant_trigger="rosto"` e Telegram interno inclui `Gatilho tenant: rosto`; HTTP radar e WhatsApp real definitivo passaram.
 - Handoff Package / Telegram Premium iniciado: Escalation Manager agora monta `handoff_package_v1` com resumo operacional/flags para humano e registra metadados do pacote em `agent_turn_logs`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cliente_irritado`.
+- Handoff Package / Telegram Premium expandido para orçamento: texto de Telegram do orçamento inclui `Pacote: handoff_package_v1` e Workflow Manager registra `workflow_handoff_package_required=true`/`workflow_handoff_package_version="handoff_package_v1"`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a registrar decisao propria em `agent_turn_logs`: cadastro completo com recusa de email agora confirma `workflow_layer=workflow_manager`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a impor nao-mutacao para intents laterais do Router com `can_mutate_state=false`: preco generico preservou `estado=coletando_tattoo` e registrou `workflow_reason=state_preserved_by_router_policy`; HTTP radar e WhatsApp real definitivo passaram exigindo Router + Workflow Manager no mesmo turno.
 - Workflow Manager passou a calcular requisitos faltantes exatos por fase e expor bloqueio formal de cadastro incompleto: idade isolada preservou `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null` e registrou `workflow_reason=requirements_missing` com contagens de faltantes; HTTP radar e WhatsApp real definitivo passaram.
@@ -88,19 +89,20 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T221534Z-612
+run_id: scenario-whatsapp-real-cadastro-handoff-20260525T222253Z-9952
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-cliente-irritado-handoff-20260525T221534Z-612/
+orcid: orc_eljsdn
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260525T222253Z-9952/
 ```
 
 Mensagem:
 
 ```text
-voces demoram demais, ninguem responde
+pode seguir sem email
+quanto tempo demora?
 ```
 
 Resultado:
@@ -108,25 +110,25 @@ Resultado:
 ```text
 estado_agente: aguardando_tatuador
 resposta_ai_posterior_ao_humano: true
-orcid: none
+orcid: orc_eljsdn
 copy_risk: baixo
-copy: pede desculpa pela frustracao e aciona pessoa do estudio, sem formulario, preco, agenda ou sinal
-handoff_package: agent_turn_logs confirmou handoff_package_v1, has_summary=true e missing_fields_count=1
-decision_chain: conversation_router client_upset -> workflow_manager escalation_required -> escalation_manager client_upset handoff_package_v1
+copy: responde lateral de tempo e fecha envio ao tatuador sem prometer prazo fechado
+handoff_package: agent_turn_logs confirmou workflow_handoff_package_required=true e workflow_handoff_package_version=handoff_package_v1
+decision_chain: cadastro completo -> workflow_manager cadastro_and_tattoo_complete -> enviar-orcamento-tatuador com pacote handoff_package_v1
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
 
 ## Proximo Ataque
 
 ```text
-Rodada Handoff Package / Telegram Premium em Level 3 iniciada. Slice 1 de ate 4 concluido: Handoff Package v1 para escalation humano.
+Rodada Handoff Package / Telegram Premium em Level 3. Slices 1 e 2 de ate 4 concluidos: Handoff Package v1 para escalation humano e pacote de orçamento.
 ```
 
 Escopo recomendado:
 
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - manter a familia `Handoff Package / Telegram Premium` nesta rodada;
-- proximo slice recomendado: aplicar pacote operacional no handoff de cadastro completo/orcamento para garantir briefing rico ao tatuador;
+- proximo slice recomendado: adicionar trace/id de pacote para cruzar Telegram, agent logs e smoke evidence sem depender de leitura manual do chat;
 - manter Level 3 ate bater criterios de Level 4: 70 scenarios PASS, 35 WhatsApp reais PASS, docs de rollback/staging e politica Level 4.
 
 ## Comando De Retomada
