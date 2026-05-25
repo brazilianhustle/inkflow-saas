@@ -431,7 +431,11 @@ test('ConversationRouter: cadastro persiste recusa de email e não insiste no em
   assert.equal(out.agent_usado, 'cadastro');
   assert.deepEqual(out.dados_persistidos, { email: null, email_recusado: true });
   assert.match(out.resposta_cliente, /tempo de sessão/);
+  assert.match(out.resposta_cliente, /Fechado, Maria!/);
+  assert.match(out.resposta_cliente, /O tatuador vai avaliar com calma/);
+  assert.match(out.resposta_cliente, /te retorno em breve com o valor certinho/);
   assert.doesNotMatch(out.resposta_cliente, /e-mail/i);
+  assert.doesNotMatch(out.resposta_cliente, /sigo com teu orçamento/i);
 });
 
 test('ConversationRouter: tempo de sessão responde sobre duração, não preço', () => {

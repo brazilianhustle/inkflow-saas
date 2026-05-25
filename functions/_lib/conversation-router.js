@@ -32,6 +32,10 @@ function hasValue(v) {
   return v !== null && v !== undefined && v !== '';
 }
 
+function firstName(name) {
+  return String(name || '').trim().split(/\s+/)[0] || '';
+}
+
 function missingTattooFields(dados = {}) {
   return ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo'].filter(k => !hasValue(dados[k]));
 }
@@ -105,7 +109,9 @@ function cadastroResumeQuestion(conversa = {}) {
   if (!hasValue(dados.nome)) return 'Me passa teu nome completo?';
   if (!hasValue(dados.data_nascimento)) return 'Me passa tua data de nascimento completa?';
   if (!hasValue(dados.email) && dados.email_recusado !== true) return 'E o e-mail? Se preferir seguir sem, me avisa';
-  return 'Confirmo por aqui e sigo com teu orçamento';
+  const nome = firstName(dados.nome);
+  const prefix = nome ? `Fechado, ${nome}! ` : 'Fechado! ';
+  return `${prefix}O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.`;
 }
 
 function resumeQuestionForState(estado, conversa) {

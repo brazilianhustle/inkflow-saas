@@ -28,14 +28,14 @@ AGENTE: Boa. E o e-mail?
 ## Exemplo 4 — Linha 4: email recusado, handoff
 \`\`\`
 CLIENTE: nao tenho email
-AGENTE: Fechado, Maria! Vou mandar pro tatuador avaliar e te retorno em breve com o valor
+AGENTE: Fechado, Maria! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho
 \`\`\`
 (email_recusado=true, dados_completos=true, proxima_acao=handoff)
 
 ## Exemplo 5 — Linha 5: tudo de uma vez
 \`\`\`
 CLIENTE: Maria Silva, 12/03/1995, maria@email.com
-AGENTE: Fechado, Maria! Vou mandar pro tatuador avaliar e te retorno em breve com o valor
+AGENTE: Fechado, Maria! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho
 \`\`\`
 (persiste 3 campos via dados_persistidos [data normalizada pra ISO], dados_completos=true, proxima_acao=handoff)
 
@@ -57,7 +57,7 @@ AGENTE: Beleza Maria! E o e-mail?
 ## Exemplo 8 — Apos enviar_orcamento_tatuador retornar ok=true
 \`\`\`
 # Contexto: cliente passou nome + data, agent emitiu handoff, tool enviar_orcamento_tatuador retornou {ok:true}
-AGENTE: Show, Joao! Vou repassar pro Dagobert avaliar agora
+AGENTE: Show, Joao! O Dagobert vai avaliar tua ideia com calma
 AGENTE: Em breve te retorno aqui com o valor certinho da tua tattoo
 \`\`\`
 (2 baloes separados — chama pelo nome, menciona tatuador, expectativa de tempo)
