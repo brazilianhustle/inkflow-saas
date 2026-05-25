@@ -52,6 +52,8 @@ test('enforceMenorIdade — menor de idade: forca proxima_acao=erro + resposta p
   assert.match(result.resposta_cliente, /menos de 18 anos/);
   assert.match(result.resposta_cliente, /respons[aá]vel legal/);
   assert.doesNotMatch(result.resposta_cliente, /ja sinalizei|já sinalizei/i);
+  assert.equal(result.escalation.reason_code, 'minor_age');
+  assert.equal(result.escalation.requires_orcid, false);
   assert.ok(result.campos_faltando.includes('menor_idade_trigger'));
 });
 
@@ -67,6 +69,7 @@ test('enforceMenorIdade — menoridade explicita na mensagem corrige LLM que nao
   const result = enforceMenorIdade(out, 'nasci em 12/03/2015');
   assert.equal(result.proxima_acao, 'erro');
   assert.equal(result.dados_persistidos.data_nascimento, '2015-03-12');
+  assert.equal(result.escalation.source, 'mensagem');
   assert.ok(result.campos_faltando.includes('menor_idade_trigger'));
 });
 

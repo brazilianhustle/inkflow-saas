@@ -1046,6 +1046,7 @@ test('4b. cadastro erro por menoridade aciona humano sem criar orçamento', asyn
   assert.equal(callToolSpy.mock.callCount(), 0);
   assert.equal(sendTelegramSpy.mock.callCount(), 1);
   assert.equal(sendTelegramSpy.mock.calls[0].arguments[0], '99999');
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /\[escalation:minor_age\]/);
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /menoridade|responsavel legal/i);
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /5511999998888/);
   assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');

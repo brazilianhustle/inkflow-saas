@@ -189,6 +189,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** o scenario `cadastro-menoridade-handoff-humano` passou em produção (`scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596`) com `estado=aguardando_tatuador`, `orcid=null`, `data_nascimento=2015-03-12`, copy segura e tail gate sem envio de orçamento.
 
+## 2026-05-25 - Escalation Manager começa como contrato rastreável
+
+**Status:** decidido.
+
+**Decisão:** criar `EscalationManager` como camada propria para classificar handoff humano, gerar `reason_code`, severidade, fonte da decisão e texto padronizado para Telegram. A primeira cobertura formal e `minor_age`.
+
+**Motivo:** menoridade nao pode depender de inferencia espalhada no pipeline. O monitoramento precisa enxergar o motivo operacional (`[escalation:minor_age]`) sem ler toda a conversa ou deduzir por estado.
+
+**Alternativas rejeitadas:**
+
+- continuar montando o texto de Telegram diretamente no pipeline;
+- usar apenas `campos_faltando=menor_idade_trigger` como contrato externo;
+- misturar escalation humano com handoff de orçamento;
+- criar tabela nova antes de consolidar o contrato mínimo.
+
+**Camada responsável:** `functions/_lib/escalation-manager.js`, `enforce-menor-idade`, retorno de `runAgent` e `whatsapp-pipeline`.
+
+**Impacto:** escalonamento por menoridade agora carrega `reason_code=minor_age`, `severity=high`, `requires_orcid=false` e mensagem Telegram com marcador `[escalation:minor_age]`. Proximos riscos podem entrar nessa camada sem crescer o pipeline.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
@@ -216,7 +235,7 @@ Resolvido para menoridade explicita em 2026-05-25:
 - `orcid` permanece `null`;
 - smoke `cadastro-menoridade-handoff-humano` passou em producao.
 
-Ainda falta, em slice futuro, ampliar variações conversacionais de menoridade e oficializar `EscalationManager` como camada dedicada.
+Ainda falta, em slice futuro, ampliar variações conversacionais de menoridade e expandir `EscalationManager` para outros riscos.
 
 ### IntentPolicy
 

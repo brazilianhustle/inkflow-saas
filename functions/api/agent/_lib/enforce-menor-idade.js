@@ -43,6 +43,14 @@ export function enforceMenorIdade(out, mensagem = '') {
         ...(out.dados_persistidos || {}),
         data_nascimento: dateForCheck,
       },
+      escalation: {
+        required: true,
+        reason_code: 'minor_age',
+        reason_label: 'menoridade / responsavel legal',
+        severity: 'high',
+        source: persistedDate ? 'dados_persistidos.data_nascimento' : 'mensagem',
+        requires_orcid: false,
+      },
       campos_faltando: [...(out.campos_faltando || []), 'menor_idade_trigger'],
     };
   }

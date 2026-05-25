@@ -778,6 +778,7 @@ test('S1 cadastro: data de menoridade aciona handoff humano sem seguir orçament
   assert.equal(r.estado_novo, 'aguardando_tatuador');
   assert.equal(r.dados_persistidos.data_nascimento, '2015-03-12');
   assert.ok(r.campos_faltando.includes('menor_idade_trigger'));
+  assert.equal(r.escalation.reason_code, 'minor_age');
   assert.match(r.resposta_cliente, /menos de 18 anos/);
   assert.match(r.resposta_cliente, /respons[aá]vel legal/);
   assert.doesNotMatch(r.resposta_cliente, /orçamento liberado|valor certinho|agendar|pagar sinal/i);
@@ -805,6 +806,7 @@ test('S1 cadastro: data de menoridade na mensagem aciona handoff humano mesmo se
   assert.equal(r.proxima_acao, 'erro');
   assert.equal(r.estado_novo, 'aguardando_tatuador');
   assert.equal(r.dados_persistidos.data_nascimento, '2015-03-12');
+  assert.equal(r.escalation.source, 'mensagem');
   assert.match(r.resposta_cliente, /menos de 18 anos/);
 });
 

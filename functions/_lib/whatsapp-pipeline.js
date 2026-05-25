@@ -14,6 +14,7 @@ import { enviarMidia } from './telegram-media.js';
 import { routeConversationTurn } from './conversation-router.js';
 import { logAgentTurn } from './telemetry/agent-turn-logger.js';
 import { applyWorkflowTransition } from './workflow-manager.js';
+import { composeEscalationTelegram, evaluateEscalation } from './escalation-manager.js';
 
 export const TERMINAL_STATES = new Set([
   'aguardando_tatuador',
@@ -447,16 +448,14 @@ export async function processBatch(env, batch, depsOverride = {}) {
         if (!r.ok) await deps.sendTelegramAdmin(`enviar-orcamento-tatuador falhou: ${r.error || 'unknown'}`);
       }
     }
-    if (estadoAgente === 'cadastro' && agentOut.proxima_acao === 'erro') {
+    const escalation = evaluateEscalation({ estado_atual: estadoAgente, agentOut });
+    if (escalation.required) {
       if (!tenant.tatuador_telegram_chat_id) {
-        await deps.sendTelegramAdmin(`handoff humano sem tatuador_telegram_chat_id em ${tenant.id}`);
+        await deps.sendTelegramAdmin(`handoff humano sem tatuador_telegram_chat_id em ${tenant.id} (${escalation.reason_code})`);
       } else {
-        const motivo = (agentOut.campos_faltando || []).includes('menor_idade_trigger')
-          ? 'menoridade / responsavel legal'
-          : 'cadastro precisa de humano';
         await deps.sendTelegram(
           tenant.tatuador_telegram_chat_id,
-          `⚠️ Atendimento precisa de humano\n\nCliente ${telefone}\nMotivo: ${motivo}\n\nResposta enviada ao cliente:\n${preview(agentOut.resposta_cliente, 500)}`
+          composeEscalationTelegram({ decision: escalation, tenant, telefone, estado_atual: estadoAgente, agentOut })
         );
       }
     }

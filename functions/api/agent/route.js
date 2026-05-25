@@ -824,6 +824,7 @@ export async function runAgent({
     campos_faltando: finalOut.campos_faltando,
     campos_conflitantes: finalOut.campos_conflitantes,
     proxima_acao: finalOut.proxima_acao,
+    escalation: finalOut.escalation || null,
     agent_usado: estado_atual,
     side_effects: PROPOSTA_SUBSTATES.has(estado_atual) ? sideEffects : undefined,
     urls_portfolio,
