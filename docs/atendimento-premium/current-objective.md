@@ -52,17 +52,18 @@ worktree_esperado: limpo
 - Autonomy Gate promovido deliberadamente para Level 2 apos `atendimento-lateral` e `cadastro-handoff` passarem, com 14 cenarios recentes e 7 WhatsApp reais; janela maxima agora e 2 micro-slices relacionados por rodada.
 - Micro-slice de cadastro `cadastro-data-idade-nao-persiste` encontrou e corrigiu dois gaps: polling aceitava AI anterior ao humano esperado e pipeline persistia `data_nascimento/email` como string vazia. Apos deploy, smoke passou com `dados_cadastro` preservando apenas `nome`.
 - Compactacao de contexto corrigida na arquitetura: o bundle de continuidade agora e comando portavel (`scripts/smoke/continuity-bundle.sh --force`) e nao depende apenas de hook Claude Code.
+- Copy premium de maioridade ajustada: idade isolada agora pede data completa com seguranca e registro de maioridade, sem frase fria como "idade nao e suficiente"; smoke HTTP em producao passou.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-cadastro-data-idade-nao-persiste-20260525T090055Z-20793
+run_id: scenario-cadastro-data-idade-nao-persiste-20260525T165404Z-8303
 tipo: Scenario HTTP monitorado
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: coletando_cadastro
 orcid: none
-evidence: .smoke-evidence/scenario-cadastro-data-idade-nao-persiste-20260525T090055Z-20793/
+evidence: .smoke-evidence/scenario-cadastro-data-idade-nao-persiste-20260525T165404Z-8303/
 ```
 
 Mensagem:
@@ -80,6 +81,7 @@ data_nascimento_persistida: false
 email_vazio_persistido: false
 orcid: none
 copy_risk: baixo
+copy: pede data completa com seguranca e registro de maioridade
 chain: HTTP smoke -> webhook -> pipeline -> resposta
 ```
 

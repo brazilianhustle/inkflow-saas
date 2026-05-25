@@ -184,11 +184,13 @@ Ainda falta decidir e implementar a extensão da `QuestionPolicy` para:
 
 ### Copy premium de maioridade
 
-Ainda falta refinar a linguagem para idade isolada/data de nascimento:
+Resolvido para idade isolada em 2026-05-25:
 
-- evitar frase fria como "idade nao e suficiente";
-- explicar que a data completa e exigida por seguranca e registro de maioridade;
-- manter bloqueio funcional para menoridade sem soar acusatorio.
+- frase fria evitada;
+- data completa explicada como seguranca e registro de maioridade;
+- smoke `cadastro-data-idade-nao-persiste` passou em producao.
+
+Ainda falta, em slice futuro, validar variações explicitas de menoridade e handoff humano quando aplicável.
 
 ### IntentPolicy
 

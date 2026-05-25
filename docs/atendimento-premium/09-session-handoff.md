@@ -153,7 +153,7 @@ Antes de continuar, conferir `git status --short`. A expectativa após este chec
 Run de referência:
 
 ```text
-scenario-cadastro-data-idade-nao-persiste-20260525T090055Z-20793
+scenario-cadastro-data-idade-nao-persiste-20260525T165404Z-8303
 ```
 
 Alvo:
@@ -170,12 +170,13 @@ estado_agente: coletando_cadastro
 data_nascimento_persistida: false
 email_vazio_persistido: false
 copy_risk: baixo
+copy: pede data completa com seguranca e registro de maioridade
 ```
 
 Decisão:
 
 ```text
-O sistema nao aceita idade isolada como data de nascimento registravel e nao persiste campos vazios. Linguagem ainda deve ser refinada em etapa futura de copy premium.
+O sistema nao aceita idade isolada como data de nascimento registravel, nao persiste campos vazios e usa linguagem de seguranca/registro de maioridade. Gap de copy fria resolvido para este caso.
 ```
 
 ### Correções de smoke - 2026-05-25
