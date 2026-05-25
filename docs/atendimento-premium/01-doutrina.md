@@ -176,12 +176,14 @@ Antes de avançar para outro slice:
 2. Entender todo arquivo modificado ou não rastreado.
 3. Rodar os testes relevantes da frente.
 4. Atualizar handoff/decision log quando a direção mudou.
-5. Fazer um commit coerente ou registrar explicitamente que o trabalho continuará como WIP.
+5. Fazer commit automático quando o slice estiver coerente, testado e reversível.
 
 Regra prática:
 
 ```text
 Se a mudança virou fundação para próximos passos, ela precisa estar commitada antes do próximo ataque.
 ```
+
+Não commitar automaticamente quando teste relevante falhar, o trabalho estiver no meio de uma refatoração, o diff misturar assuntos independentes, houver mudanças do usuário no mesmo escopo, o estado local não rodar, ou a mudança exigir coordenação operacional de deploy/secret/migration/rollback.
 
 Isso evita que a próxima sessão dependa de memória de chat, arquivos soltos ou estado local não compartilhado.

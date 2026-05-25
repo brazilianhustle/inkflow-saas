@@ -1224,6 +1224,50 @@ test('11. agent_usado=cadastro merge dados_cadastro — Task 9 implementa', asyn
   assert.deepEqual(conversaPatch.dados_coletados, { ideia: 'rosa' });
 });
 
+test('ConversationRouter cadastro: lateral com nome/data pendentes grava em dados_cadastro', async () => {
+  const runAgentSpy = mock.fn(async () => {
+    throw new Error('runAgent nao deveria ser chamado');
+  });
+  let conversaPatch = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_cadastro',
+    dados_coletados: { descricao_curta: 'rosa' },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'Joao Silva\n12/03/1995\ncomo funciona o orçamento?' }]),
+      hist: [
+        {
+          id: 1,
+          message: {
+            type: 'ai',
+            content: 'Pra liberar teu orçamento, me passa nome completo e data de nascimento?',
+          },
+        },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.estado_agente) {
+          conversaPatch = body;
+        }
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.estado_agente, 'coletando_cadastro');
+  assert.deepEqual(conversaPatch.dados_coletados, { descricao_curta: 'rosa' });
+  assert.deepEqual(conversaPatch.dados_cadastro, {
+    nome: 'Joao Silva',
+    data_nascimento: '1995-03-12',
+  });
+});
+
 test('15. multi-message: resposta com \\n\\n envia 2 balões com typing delay antes de cada', async () => {
   let evoCalls = [];
   let sleepCalls = 0;

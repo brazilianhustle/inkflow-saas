@@ -1,7 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  resolveBirthDate,
   resolveBodyLocation,
+  resolveEmail,
+  resolveFullName,
   resolveHeightCm,
   resolvePendingFormQuestion,
   resolveShortName,
@@ -40,4 +43,29 @@ test('ConversationPolicy: resolve pergunta pendente usando resolver tipado', () 
   assert.equal(out.displayName, 'Paola');
   assert.equal(out.confidence > 0.9, true);
   assert.equal(out.reason, 'explicit_name_prefix');
+});
+
+test('ConversationPolicy: resolve cadastro por pergunta pendente tipada', () => {
+  assert.equal(resolveFullName('Joao Silva').value, 'Joao Silva');
+  assert.deepEqual(resolveBirthDate('nasci em 12/03/1995'), {
+    answered: true,
+    value: '1995-03-12',
+    confidence: 0.9,
+    reason: 'birthdate_br_numeric',
+  });
+  assert.equal(resolveEmail('meu email é JOAO@EXAMPLE.COM').value, 'joao@example.com');
+  assert.deepEqual(resolveEmail('pode seguir sem email').extracted, { email: null, email_recusado: true });
+
+  const out = resolvePendingFormQuestion({
+    mensagem: 'Joao Silva\n12/03/1995\ncomo funciona o orçamento?',
+    historico: [
+      { role: 'assistant', content: 'Pra liberar teu orçamento, me passa nome completo e data de nascimento?' },
+    ],
+  });
+  assert.equal(out.pending, true);
+  assert.equal(out.answered, true);
+  assert.deepEqual(out.extracted, {
+    nome: 'Joao Silva',
+    data_nascimento: '1995-03-12',
+  });
 });

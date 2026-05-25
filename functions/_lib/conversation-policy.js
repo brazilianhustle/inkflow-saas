@@ -46,6 +46,7 @@ export function detectPendingFormQuestion(text) {
   if (/qual (o )?seu estilo\?*\s*$/i.test(s) || /qual estilo/i.test(s) || /estilo que (tu|voce|voces?) prefere/i.test(s)) return 'estilo';
   if (/em qual parte do corpo\?*\s*$/i.test(s) || /qual parte do corpo\?*\s*$/i.test(s)) return 'local_corpo';
   if (/foto do local/i.test(s) || /foto.*onde.*quer tatuar/i.test(s)) return 'foto_local';
+  if (/nome completo.*data de nascimento|data de nascimento.*nome completo/i.test(s)) return 'cadastro_nome_data';
   if (/nome completo/i.test(s)) return 'nome_completo';
   if (/data de nascimento/i.test(s)) return 'data_nascimento';
   if (/e-?mail/i.test(s)) return 'email';
@@ -152,19 +153,119 @@ export function resolveBodyLocation(message) {
     : { answered: false, value: null, confidence: 0, reason: 'no_body_location', match: null };
 }
 
+function cleanCadastroLine(message) {
+  return String(message || '')
+    .split(/\n+/)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .find(line => !/[?]/.test(line)) || '';
+}
+
+export function resolveFullName(message) {
+  const raw = cleanCadastroLine(message)
+    .replace(/\b(?:sou|me chamo|meu nome (?:e|é)|nome completo(?: e| é|:)?|pode colocar|coloca)\b/ig, ' ')
+    .replace(/\b\d{1,2}[\/.-]\d{1,2}(?:[\/.-]\d{2,4})?\b/g, ' ')
+    .replace(/\b\d{4}-\d{2}-\d{2}\b/g, ' ')
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/ig, ' ')
+    .replace(/[.,;:]+$/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const normalized = normalize(raw);
+  const blocked = /^(oi|ola|opa|bom dia|boa tarde|boa noite|quanto|qual|como|funciona|orcamento|orçamento|preco|preço|valor|nao|não|pula|depois|sem email)\b/;
+  if (
+    raw.length < 2
+    || raw.length > 80
+    || !/^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(raw)
+    || raw.split(/\s+/).length > 6
+    || blocked.test(normalized)
+  ) {
+    return { answered: false, value: null, confidence: 0, reason: 'not_a_full_name' };
+  }
+  return { answered: true, value: raw, confidence: raw.split(/\s+/).length >= 2 ? 0.92 : 0.78, reason: 'full_name_text' };
+}
+
+export function resolveBirthDate(message) {
+  const s = stripAccents(message || '');
+  const iso = s.match(/\b(19\d{2}|20[0-2]\d)-([01]\d)-([0-3]\d)\b/);
+  if (iso) {
+    return { answered: true, value: `${iso[1]}-${iso[2]}-${iso[3]}`, confidence: 0.96, reason: 'birthdate_iso' };
+  }
+
+  const numeric = s.match(/\b([0-3]?\d)[\/.-]([01]?\d)[\/.-]((?:19|20)?\d{2})\b/);
+  if (numeric) {
+    const day = Number(numeric[1]);
+    const month = Number(numeric[2]);
+    const yearRaw = Number(numeric[3]);
+    const year = yearRaw < 100 ? (yearRaw >= 30 ? 1900 + yearRaw : 2000 + yearRaw) : yearRaw;
+    if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= 2029) {
+      return {
+        answered: true,
+        value: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+        confidence: 0.9,
+        reason: 'birthdate_br_numeric',
+      };
+    }
+  }
+
+  return { answered: false, value: null, confidence: 0, reason: 'no_birthdate' };
+}
+
+export function resolveEmail(message) {
+  const raw = String(message || '');
+  if (/\b(nao tenho|não tenho|sem e-?mail|pode seguir sem|prefiro sem|pula|depois|nao quero passar|não quero passar)\b/i.test(raw)) {
+    return {
+      answered: true,
+      value: null,
+      extracted: { email: null, email_recusado: true },
+      confidence: 0.9,
+      reason: 'email_refused',
+    };
+  }
+
+  const hit = raw.match(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i);
+  return hit
+    ? { answered: true, value: hit[0].toLowerCase(), confidence: 0.95, reason: 'email_address' }
+    : { answered: false, value: null, confidence: 0, reason: 'no_email' };
+}
+
+export function resolveCadastroNameAndBirthDate(message) {
+  const nome = resolveFullName(message);
+  const data = resolveBirthDate(message);
+  const extracted = {};
+  if (nome.answered) extracted.nome = nome.value;
+  if (data.answered) extracted.data_nascimento = data.value;
+  return {
+    answered: Object.keys(extracted).length > 0,
+    value: extracted,
+    extracted,
+    confidence: Math.min(
+      nome.answered ? nome.confidence : 1,
+      data.answered ? data.confidence : 1,
+    ),
+    reason: [nome.answered ? nome.reason : null, data.answered ? data.reason : null].filter(Boolean).join('+') || 'no_cadastro_data',
+  };
+}
+
 const FIELD_RESOLVERS = {
   nome_curto: resolveShortName,
   altura_cm: resolveHeightCm,
   estilo: resolveTattooStyle,
   local_corpo: resolveBodyLocation,
+  nome_completo: resolveFullName,
+  data_nascimento: resolveBirthDate,
+  email: resolveEmail,
+  cadastro_nome_data: resolveCadastroNameAndBirthDate,
 };
 
 function resultForResolvedField(field, resolved) {
   const value = resolved.value;
-  const extracted = {};
+  const extracted = { ...(resolved.extracted || {}) };
   if (field === 'altura_cm' && value) extracted.altura_cm = value;
   if (field === 'estilo' && value) extracted.estilo = value;
   if (field === 'local_corpo' && value) extracted.local_corpo = value;
+  if (field === 'nome_completo' && value) extracted.nome = value;
+  if (field === 'data_nascimento' && value) extracted.data_nascimento = value;
+  if (field === 'email' && value) extracted.email = value;
   return {
     pending: true,
     answered: Boolean(resolved.answered),

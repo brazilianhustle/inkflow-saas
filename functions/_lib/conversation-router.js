@@ -165,15 +165,13 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
   const detected = detectIntent(mensagem);
   if (!detected) return null;
 
-  const pendingResolution = estado_atual === 'tattoo'
-    ? resolvePendingFormQuestion({ historico, mensagem })
-    : { pending: false, answered: false, extracted: {}, displayName: null };
+  const pendingResolution = resolvePendingFormQuestion({ historico, mensagem });
   const extracted = estado_atual === 'tattoo'
     ? {
         ...extractTattooHints(mensagem, conversa?.dados_coletados || {}),
         ...pendingResolution.extracted,
       }
-    : {};
+    : { ...pendingResolution.extracted };
   const conversaParaRetomada = estado_atual === 'tattoo'
     ? {
         ...conversa,
@@ -182,7 +180,13 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
           ...extracted,
         },
       }
-    : conversa;
+    : {
+        ...conversa,
+        dados_cadastro: {
+          ...(conversa?.dados_cadastro || {}),
+          ...extracted,
+        },
+      };
 
   const resposta = responseForIntent(detected.intent, estado_atual, conversaParaRetomada, { tenant, clientContext, historico, pendingResolution });
   if (!resposta) return null;
@@ -202,7 +206,7 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
       : [],
     campos_conflitantes: [],
     proxima_acao: 'pergunta',
-    agent_usado: 'conversation_router',
+    agent_usado: estado_atual === 'cadastro' ? 'cadastro' : 'conversation_router',
     side_effects: [],
     urls_portfolio: [],
     analise_imagens: null,

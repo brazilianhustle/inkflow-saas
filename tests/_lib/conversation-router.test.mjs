@@ -354,6 +354,43 @@ test('ConversationRouter: cadastro retoma cadastro, não coleta tattoo', () => {
   assert.match(out.resposta_cliente, /data de nascimento/);
 });
 
+test('ConversationRouter: cadastro persiste nome e data pendentes antes de responder lateral', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'Joao Silva\n12/03/1995\ncomo funciona o orçamento?',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    historico: [
+      { role: 'assistant', content: 'Pra liberar teu orçamento, me passa nome completo e data de nascimento?' },
+    ],
+  });
+  assert.equal(out.intent, 'processo_tatuagem');
+  assert.equal(out.estado_novo, 'cadastro');
+  assert.equal(out.agent_usado, 'cadastro');
+  assert.deepEqual(out.dados_persistidos, {
+    nome: 'Joao Silva',
+    data_nascimento: '1995-03-12',
+  });
+  assert.match(out.resposta_cliente, /Funciona assim/);
+  assert.match(out.resposta_cliente, /e-mail/i);
+  assert.doesNotMatch(out.resposta_cliente, /nome completo e data de nascimento/);
+});
+
+test('ConversationRouter: cadastro persiste recusa de email e não insiste no email', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'pode seguir sem email\nquanto tempo demora?',
+    conversa: { dados_coletados: {}, dados_cadastro: { nome: 'Maria Silva', data_nascimento: '1990-05-20' } },
+    historico: [
+      { role: 'assistant', content: 'E o e-mail? Se preferir seguir sem, me avisa' },
+    ],
+  });
+  assert.equal(out.intent, 'tempo_sessao');
+  assert.equal(out.agent_usado, 'cadastro');
+  assert.deepEqual(out.dados_persistidos, { email: null, email_recusado: true });
+  assert.match(out.resposta_cliente, /tempo de sessão/);
+  assert.doesNotMatch(out.resposta_cliente, /e-mail/i);
+});
+
 test('ConversationRouter: tempo de sessão responde sobre duração, não preço', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',

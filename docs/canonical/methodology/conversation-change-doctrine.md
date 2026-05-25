@@ -177,9 +177,32 @@ Antes de iniciar outro slice conversacional, fechar o estado atual:
 2. Arquivos novos/modificados entendidos.
 3. Testes relevantes rodados ou exceção registrada.
 4. Handoff/decision log atualizado quando houver mudança de direção.
-5. Commit feito, ou WIP explicitamente assumido como tal.
+5. Commit feito automaticamente quando o checkpoint estiver saudável.
 
 Não iniciar nova frente sobre mudanças fundacionais soltas no worktree. Se a mudança passa a ser base para próximos prompts, router, policy, composer ou guardrails, ela deve virar checkpoint no git antes do próximo ataque.
+
+### Regra De Commit Automático
+
+Quando o agent fecha um slice coerente, deve commitar sem pedir confirmação extra se todos os critérios abaixo forem verdadeiros:
+
+- a mudança resolve uma ideia inteira e explicável em uma frase;
+- os testes relevantes passaram, ou a exceção foi registrada de forma explícita;
+- o diff foi revisado e está focado;
+- não há mistura de assuntos independentes;
+- não há arquivos desconhecidos ou mudanças de outro autor misturadas ao mesmo commit;
+- o commit torna o próximo passo mais seguro e reversível.
+
+Evitar commit automático e parar para alinhamento quando:
+
+- algum teste relevante está quebrando;
+- a mudança está no meio de uma refatoração;
+- o diff mistura código funcional, config de deploy, docs aleatórios ou outro assunto independente;
+- o agent não consegue explicar com precisão o que mudou;
+- há mudanças não relacionadas feitas pelo usuário no mesmo arquivo ou no mesmo escopo;
+- o estado local não roda ou depende de artefato temporário;
+- há risco operacional alto que exigiria deploy, segredo, migration ou rollback coordenado.
+
+Commits devem ser checkpoints pequenos, revisáveis e fáceis de reverter. "Salvar progresso" sem estado saudável é WIP, não checkpoint.
 
 ## Frase De Controle
 
