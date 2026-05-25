@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildTenantContext,
+  deriveTenantAssets,
   deriveTenantProfile,
   deriveTenantRules,
   isPropostaSubstate,
@@ -43,6 +44,9 @@ test('TenantContextManager: injeta portfolio sem mutar clientContext original', 
       has_studio_name: false,
       has_persona: false,
     },
+    tenant_assets: {
+      portfolio_urls_count: 1,
+    },
     portfolio_disponivel: true,
   });
 });
@@ -69,6 +73,9 @@ test('TenantContextManager: contexto derivado sobrescreve flags transversais ant
       has_agent_name: false,
       has_studio_name: false,
       has_persona: false,
+    },
+    tenant_assets: {
+      portfolio_urls_count: 0,
     },
     portfolio_disponivel: false,
     eh_recorrente: true,
@@ -113,6 +120,9 @@ test('TenantContextManager: injeta contexto de proposta somente em substate de p
       has_studio_name: false,
       has_persona: false,
     },
+    tenant_assets: {
+      portfolio_urls_count: 0,
+    },
     portfolio_disponivel: true,
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
   });
@@ -145,6 +155,9 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
       has_studio_name: true,
       has_persona: true,
     },
+    tenant_assets: {
+      portfolio_urls_count: 3,
+    },
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
     nome_cliente: 'Joao Silva',
   }, 'propondo_valor');
@@ -166,6 +179,7 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
     tenant_context_has_agent_name: true,
     tenant_context_has_studio_name: true,
     tenant_context_has_persona: true,
+    tenant_context_portfolio_urls_count: 3,
   });
   assert.equal(Object.hasOwn(summary, 'nome_cliente'), false);
   assert.equal(Object.hasOwn(summary, 'nome_agente'), false);
@@ -246,5 +260,17 @@ test('TenantContextManager: resume identidade do tenant sem vazar nomes', () => 
     has_agent_name: false,
     has_studio_name: false,
     has_persona: false,
+  });
+});
+
+test('TenantContextManager: resume ativos do tenant sem expor URLs', () => {
+  assert.deepEqual(deriveTenantAssets({
+    portfolio_urls: ['https://example.com/a.jpg', 'https://example.com/b.jpg'],
+  }), {
+    portfolio_urls_count: 2,
+  });
+
+  assert.deepEqual(deriveTenantAssets({ portfolio_urls: null }), {
+    portfolio_urls_count: 0,
   });
 });

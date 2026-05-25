@@ -31,6 +31,7 @@ export function summarizeTenantContext(context = {}, estado_atual = '') {
   const hasSlotsReservados = Array.isArray(context.slots_reservados);
   const tenantRules = context.tenant_rules || {};
   const tenantProfile = context.tenant_profile || {};
+  const tenantAssets = context.tenant_assets || {};
   const gatilhosHandoff = Array.isArray(tenantRules.gatilhos_handoff) ? tenantRules.gatilhos_handoff : [];
   const estilosAceitos = Array.isArray(tenantRules.estilos_aceitos) ? tenantRules.estilos_aceitos : [];
   const estilosRecusados = Array.isArray(tenantRules.estilos_recusados) ? tenantRules.estilos_recusados : [];
@@ -51,6 +52,9 @@ export function summarizeTenantContext(context = {}, estado_atual = '') {
     tenant_context_has_agent_name: tenantProfile.has_agent_name === true,
     tenant_context_has_studio_name: tenantProfile.has_studio_name === true,
     tenant_context_has_persona: tenantProfile.has_persona === true,
+    tenant_context_portfolio_urls_count: Number.isFinite(tenantAssets.portfolio_urls_count)
+      ? tenantAssets.portfolio_urls_count
+      : 0,
   };
 }
 
@@ -77,6 +81,12 @@ export function deriveTenantProfile(tenant = {}) {
   };
 }
 
+export function deriveTenantAssets(tenant = {}) {
+  return {
+    portfolio_urls_count: Array.isArray(tenant.portfolio_urls) ? tenant.portfolio_urls.length : 0,
+  };
+}
+
 export async function buildTenantContext({
   env,
   tenant,
@@ -92,6 +102,7 @@ export async function buildTenantContext({
   let context = { ...(clientContext || {}) };
   context.tenant_rules = deriveTenantRules(tenant);
   context.tenant_profile = deriveTenantProfile(tenant);
+  context.tenant_assets = deriveTenantAssets(tenant);
 
   const portfolioCtx = await prefetchPortfolioFn(env, tenant);
   context = { ...context, ...portfolioCtx };
