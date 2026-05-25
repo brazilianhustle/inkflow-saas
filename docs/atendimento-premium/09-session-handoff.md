@@ -38,7 +38,7 @@ main
 Último commit observado após checkpoint:
 
 ```text
-708e4f1 feat: escalate explicit human requests
+ff0c571 feat: escalate upset tattoo clients
 ```
 
 Último deploy de referência da frente:
@@ -52,7 +52,7 @@ Status estratégico:
 ```text
 Atendimento premium esta em Autonomy Gate Level 2, com smoke loop real/HTTP monitorado, transcript, julgamento, tail e gates por slice.
 O cadastro-handoff esta funcionalmente protegido: cadastro completo promove para aguardando_tatuador, handoff exige orcid nos smokes de orcamento, idade isolada nao persiste data/email vazios e menoridade explicita aciona handoff humano sem criar orcamento.
-Escalation Manager existe como primeira camada formal para handoff humano: menoridade gera `reason_code=minor_age`, cobertura textual gera `reason_code=cover_up`, pedido humano gera `reason_code=human_requested`; todos com `requires_orcid=false` e texto Telegram rastreavel.
+Escalation Manager existe como primeira camada formal para handoff humano: menoridade gera `reason_code=minor_age`, cobertura textual gera `reason_code=cover_up`, pedido humano gera `reason_code=human_requested` e cliente irritado gera `reason_code=client_upset`; todos com `requires_orcid=false` e texto Telegram rastreavel.
 O compact integrado foi corrigido na arquitetura: existe hook Claude Code, mas a retomada oficial agora e portavel via `bash scripts/smoke/continuity-bundle.sh --force`, adequado para Codex/API.
 Achado de linguagem da idade isolada foi corrigido para pedir data completa com seguranca e registro de maioridade.
 ```
@@ -160,7 +160,7 @@ Antes de continuar, conferir `git status --short`. A expectativa após este chec
 Run de referência:
 
 ```text
-scenario-tattoo-pedido-humano-handoff-20260525T173158Z-14363
+scenario-tattoo-cliente-irritado-handoff-20260525T174206Z-4099
 ```
 
 Alvo:
@@ -176,15 +176,15 @@ PASS
 estado_agente: aguardando_tatuador
 orcid: null
 copy_risk: baixo
-copy: aciona tatuador para assumir e orientar direto
+copy: pede desculpa pela frustracao e aciona pessoa do estudio para assumir
 tail_gate: sem enviar-orcamento-tatuador/pipeline batch failed/unhandled
-escalation: human_requested / medium / requires_orcid=false
+escalation: client_upset / high / requires_orcid=false
 ```
 
 Decisão:
 
 ```text
-O sistema nao segue coleta normal quando o cliente pede explicitamente humano/tatuador. O ConversationRouter aciona handoff humano seguro sem `orcid`, e o Escalation Manager classifica o motivo como `human_requested`.
+O sistema nao segue coleta normal quando o cliente demonstra frustracao clara com o atendimento. O ConversationRouter aciona handoff humano seguro sem `orcid`, e o Escalation Manager classifica o motivo como `client_upset`.
 ```
 
 ### Correções de smoke - 2026-05-25

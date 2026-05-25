@@ -18,7 +18,7 @@ deploy: GitHub Actions Deploy to Cloudflare Pages passou em 2026-05-25
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 708e4f1 feat: escalate explicit human requests
+ultimo_commit_validado: ff0c571 feat: escalate upset tattoo clients
 ```
 
 ## Ultimos Marcos
@@ -58,23 +58,24 @@ ultimo_commit_validado: 708e4f1 feat: escalate explicit human requests
 - Escalation Manager iniciado: menoridade agora gera `reason_code=minor_age`, `severity=high`, `requires_orcid=false` e mensagem de Telegram rastreavel, com smoke de producao sem regressao.
 - Escalation Manager expandido para cobertura textual: `cover_up` agora sai para humano em `aguardando_tatuador`, sem `orcid`, sem coleta normal e sem orçamento automatico; smoke HTTP em producao passou.
 - Escalation Manager expandido para pedido explicito de humano/tatuador: `human_requested` agora sai para humano em `aguardando_tatuador`, sem `orcid`, sem coleta normal e sem orcamento automatico; smoke HTTP em producao passou.
+- Escalation Manager expandido para cliente irritado: `client_upset` agora sai para humano em `aguardando_tatuador`, sem `orcid`, sem coleta normal e sem orcamento automatico; smoke HTTP em producao passou.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-tattoo-pedido-humano-handoff-20260525T173158Z-14363
+run_id: scenario-tattoo-cliente-irritado-handoff-20260525T174206Z-4099
 tipo: Scenario HTTP monitorado
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: aguardando_tatuador
 orcid: none
-evidence: .smoke-evidence/scenario-tattoo-pedido-humano-handoff-20260525T173158Z-14363/
+evidence: .smoke-evidence/scenario-tattoo-cliente-irritado-handoff-20260525T174206Z-4099/
 ```
 
 Mensagem:
 
 ```text
-quero falar com o tatuador
+voces demoram demais, ninguem responde
 ```
 
 Resultado:
@@ -84,8 +85,8 @@ estado_agente: aguardando_tatuador
 resposta_ai_posterior_ao_humano: true
 orcid: none
 copy_risk: baixo
-copy: aciona tatuador para assumir e orientar direto, sem seguir coleta normal
-escalation: human_requested / medium / requires_orcid=false
+copy: pede desculpa pela frustracao e aciona pessoa do estudio para assumir, sem seguir coleta normal
+escalation: client_upset / high / requires_orcid=false
 chain: HTTP smoke -> webhook -> pipeline -> resposta
 ```
 
