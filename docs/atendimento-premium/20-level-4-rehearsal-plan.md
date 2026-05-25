@@ -19,6 +19,7 @@ decision: promote_available
 scenario_pass_count: 76/70
 real_whatsapp_pass_count: 36/35
 level_4_docs: PASS
+level_4_slice_gates: atendimento-lateral, cadastro-handoff, escalation-manager, workflow-manager
 ```
 
 Mesmo assim, promocao imediata ainda seria cedo. O proximo passo correto e testar a disciplina operacional recem-criada em uma rodada controlada.
@@ -62,6 +63,7 @@ Esta onda de ensaio fecha quando:
 - `check-autonomy-gate.sh` continua PASS;
 - `decision=promote_available` esta documentado;
 - `CURRENT_LEVEL` continua 3;
+- `workflow-manager` aparece como PASS nos slice gates candidatos de Level 4;
 - docs 18/19 aparecem como PASS no gate;
 - worktree termina limpo;
 - CI e deploy passam para os commits da rodada;

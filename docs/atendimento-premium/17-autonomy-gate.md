@@ -83,9 +83,16 @@ O script pode recomendar `promote_available` para Level 4 quando todos os pontos
 - o projeto ja esta em Level 3;
 - pelo menos 70 scenarios PASS desde `MIN_PASS_UTC`;
 - pelo menos 35 scenarios WhatsApp real PASS desde `MIN_PASS_UTC`;
-- todos os slice gates criticos passam;
+- todos os slice gates criticos passam, incluindo `workflow-manager`;
 - existem documentos especificos de rollback/staging e politica de loop Level 4;
 - nao ha bloqueadores manuais.
+
+Slice gates candidatos de Level 4:
+
+- `atendimento-lateral`;
+- `cadastro-handoff`;
+- `escalation-manager`;
+- `workflow-manager`.
 
 Level 4 exige infraestrutura operacional madura. Sem rollback documentado, staging/sandbox confiavel e politica de parada supervisionada, o gate nao deve recomendar Level 4 mesmo que o volume de PASS seja alto.
 
