@@ -30,6 +30,7 @@ docs/atendimento-premium/smoke-scenarios/
   whatsapp-real-cadastro-handoff.env
   whatsapp-real-lateral-historia-vida-homenagem.env
   whatsapp-real-lateral-pergunta-imagem-com-midia.env
+  whatsapp-real-lateral-pergunta-imagem-sem-midia.env
   whatsapp-real-lateral-portfolio-disponivel.env
   whatsapp-real-lateral-preco-generico.env
   whatsapp-real-lateral-processo-tatuagem.env
@@ -144,6 +145,22 @@ Objetivo:
 
 ```text
 Validar que pergunta sobre imagem sem midia disponivel pede reenvio e nao volta ao formulario desconectado.
+```
+
+Contrato:
+
+```text
+estado final deve continuar coletando_tattoo
+resposta deve dizer que nao esta vendo imagem clara e pedir reenvio
+resposta nao pode perguntar local/altura/estilo, falar de preco, agendar, sinal ou fechar proposta
+```
+
+`whatsapp-real-lateral-pergunta-imagem-sem-midia`
+
+Objetivo:
+
+```text
+Validar o mesmo fallback seguro de ausencia de imagem em cadeia real central -> WhatsApp -> bot -> webhook -> pipeline.
 ```
 
 Contrato:

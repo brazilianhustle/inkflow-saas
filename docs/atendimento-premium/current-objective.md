@@ -48,23 +48,24 @@ worktree_esperado: limpo
 - Scenario WhatsApp real `whatsapp-real-lateral-tempo-sessao` passou: Evolution `central` enviou pergunta de tempo para o bot, webhook registrou humano real e a resposta manteve expectativa segura sem prometer horas, mesmo dia ou sessao certa.
 - Scenario WhatsApp real `whatsapp-real-lateral-processo-tatuagem` passou: Evolution `central` enviou pergunta de processo para o bot, webhook registrou humano real e a resposta explicou o fluxo sem expor sistema, erro, preco fechado, agendamento ou sinal.
 - Scenario WhatsApp real `whatsapp-real-lateral-portfolio-disponivel` passou: Evolution `central` enviou pedido de portfolio, webhook registrou humano real, resposta nao escreveu URL manual e tail confirmou `/api/tools/enviar-portfolio` HTTP 200.
+- Scenario WhatsApp real `whatsapp-real-lateral-pergunta-imagem-sem-midia` passou: Evolution `central` enviou pergunta sobre imagem sem arquivo, webhook registrou humano real sem midia e a resposta pediu reenvio sem voltar ao formulario.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T084106Z-3640
+run_id: scenario-whatsapp-real-lateral-pergunta-imagem-sem-midia-20260525T084449Z-30339
 tipo: Scenario WhatsApp real
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: coletando_tattoo
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-lateral-portfolio-disponivel-20260525T084106Z-3640/
+evidence: .smoke-evidence/scenario-whatsapp-real-lateral-pergunta-imagem-sem-midia-20260525T084449Z-30339/
 ```
 
 Mensagem:
 
 ```text
-tem exemplos de fineline?
+o que você viu na imagem?
 ```
 
 Resultado:
@@ -73,8 +74,8 @@ Resultado:
 estado_agente: coletando_tattoo
 evolution_send: /message/sendText/central HTTP 201
 webhook_registrou_humano_real: true
-resposta_sem_url_manual: true
-portfolio_tool_http_200: true
+media_recebida: none
+resposta_pediu_reenvio_de_foto: true
 copy_risk: baixo
 chain: central -> WhatsApp -> bot -> webhook -> pipeline -> resposta
 ```
