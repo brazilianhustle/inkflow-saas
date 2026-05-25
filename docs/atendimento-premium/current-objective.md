@@ -85,6 +85,7 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - Handoff Package / Telegram Premium fechou a mini-campanha Level 3 com Decision Observability nos relatórios: `summary.md`, `transcript.md` e `judgment.md` promovem `trace`, pacote e razão decisória vindos de `agent-turn-logs.json`; HTTP radar e WhatsApp real definitivo passaram.
 - Protocolos formais de Level 4 foram preparados sem promover autonomia: rollback/staging e loop supervisionado agora definem zonas de risco, stop conditions, criterios de promocao, regressao e primeira onda recomendada.
 - O proximo caminho estrategico foi definido como ensaio Level 4 ainda em Level 3: `20-level-4-rehearsal-plan.md` declara uma rodada dry-run com `CURRENT_LEVEL=3`, limite 4, sem promocao e sem zona vermelha.
+- O Workflow Manager ganhou slice gate formal para futuras promocoes: `workflow-manager` exige HTTP radar e WhatsApp real em cadastro completo, nao-mutacao lateral, cadastro incompleto, cliente irritado e gatilho tenant.
 - Workflow Manager passou a registrar decisao propria em `agent_turn_logs`: cadastro completo com recusa de email agora confirma `workflow_layer=workflow_manager`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a impor nao-mutacao para intents laterais do Router com `can_mutate_state=false`: preco generico preservou `estado=coletando_tattoo` e registrou `workflow_reason=state_preserved_by_router_policy`; HTTP radar e WhatsApp real definitivo passaram exigindo Router + Workflow Manager no mesmo turno.
 - Workflow Manager passou a calcular requisitos faltantes exatos por fase e expor bloqueio formal de cadastro incompleto: idade isolada preservou `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null` e registrou `workflow_reason=requirements_missing` com contagens de faltantes; HTTP radar e WhatsApp real definitivo passaram.
@@ -135,6 +136,7 @@ Escopo recomendado:
 - manter `CURRENT_LEVEL=3`;
 - respeitar limite de ate 4 micro-slices;
 - escolher apenas zona verde/amarela;
+- manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
 - se o ensaio fechar sem stop condition, abrir uma rodada separada para decisao deliberada de Level 4.
 

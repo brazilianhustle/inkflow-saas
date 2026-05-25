@@ -54,6 +54,7 @@ Depois disso o sistema decide se deve:
 - [18-rollback-staging-protocol.md](./18-rollback-staging-protocol.md): protocolo de rollback, staging e zonas de risco para ondas maiores.
 - [19-level-4-loop-policy.md](./19-level-4-loop-policy.md): politica de loop supervisionado, promocao e regressao de Level 4.
 - [20-level-4-rehearsal-plan.md](./20-level-4-rehearsal-plan.md): plano de ensaio Level 4 executado ainda sob Level 3.
+- [slice-gates/workflow-manager.env](./slice-gates/workflow-manager.env): gate formal da camada de transicao segura de estado.
 - [current-objective.md](./current-objective.md): estado vivo, proximo ataque e comandos de retomada.
 - [smoke-runs.md](./smoke-runs.md): indice versionado dos smokes relevantes.
 - [templates/intent-card.md](./templates/intent-card.md): template para cadastrar novas intents.

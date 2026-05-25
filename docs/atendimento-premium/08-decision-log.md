@@ -515,6 +515,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `20-level-4-rehearsal-plan.md` declara a onda dry-run, limita escopo a risco verde/amarelo, bloqueia zona vermelha e define criterios de pronto/stop conditions antes de qualquer promocao.
 
+## 2026-05-25 - Workflow Manager vira gate obrigatorio para Level 4
+
+**Status:** decidido.
+
+**Decisão:** criar `slice-gates/workflow-manager.env` e adicionar `workflow-manager` aos slice gates candidatos de Level 4.
+
+**Motivo:** o Workflow Manager e a camada que impede regressao de fase e oficializa transicoes. Se Level 4 aumentar a janela autonoma, esta camada precisa ser uma defesa verificavel, nao apenas uma lista de smokes soltos.
+
+**Alternativas rejeitadas:**
+
+- deixar Workflow Manager apenas como evidencia solta em `smoke-runs.md`;
+- promover Level 4 sem exigir essa camada como gate;
+- mover o gate para Level 2/3 retroativamente e bloquear a execucao atual sem necessidade.
+
+**Camada responsável:** Autonomy Gate, Slice Completion Gate e Workflow Manager.
+
+**Impacto:** a promocao futura para Level 4 passa a exigir PASS recente em HTTP radar e WhatsApp real para cinco superficies: cadastro completo, nao-mutacao de pergunta lateral, cadastro incompleto, cliente irritado e gatilho tenant. `CURRENT_LEVEL` continua 3 e a promocao continua exigindo alteracao deliberada do gate.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
