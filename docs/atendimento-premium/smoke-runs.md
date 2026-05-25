@@ -15,11 +15,12 @@ Ao fim de smoke monitorado:
 
 | Data UTC | Run ID | Tipo | Alvo | Telefone | Resultado | Evidencia | Decisao |
 |---|---|---|---|---|---|---|---|
+| 2026-05-25 06:22 | `scenario-cadastro-handoff-email-recusado-20260525T062239Z-3885` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-cadastro-handoff-email-recusado-20260525T062239Z-3885/` | Registry validado: `EXPECTED_STATE` autoritativo, `aguardando_tatuador`, `orcid=orc_hljd47`, `email_recusado=true`, `copy_risk=medio`. |
 | 2026-05-25 05:31 | `smoke-20260525T053147Z-23172` | HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/smoke-20260525T053147Z-23172/` | Workflow de cadastro completo validado: `aguardando_tatuador` + `orcid=orc_2x6t5l` + `email_recusado=true`. |
 
 ## Run De Referencia Atual
 
-### `smoke-20260525T053147Z-23172`
+### `scenario-cadastro-handoff-email-recusado-20260525T062239Z-3885`
 
 Mensagem:
 
@@ -33,7 +34,7 @@ Estado final:
 ```json
 {
   "estado_agente": "aguardando_tatuador",
-  "orcid": "orc_2x6t5l",
+  "orcid": "orc_hljd47",
   "dados_cadastro": {
     "nome": "Joao Silva",
     "email": null,
@@ -55,6 +56,7 @@ Leitura estrategica:
 
 - PASS tecnico.
 - Handoff esta operacional.
-- Transcript e julgamento deterministico foram gerados retroativamente para este run.
+- Scenario registry esta operacional como checkpoint reproduzivel.
+- Polling corrigido: com `EXPECTED_STATE`, resposta AI isolada nao aprova o smoke.
 - Existe risco medio de copy: a frase final funciona, mas ainda pode soar seca para padrao premium.
 - Proximo upgrade operacional deve rodar smoke WhatsApp real com `central` e registrar o primeiro evidence nativo com transcript + julgamento.

@@ -92,6 +92,8 @@ Um cenario so serve como checkpoint quando:
 - `EXPECTED_COPY_RISK_MAX` nao foi excedido quando definido;
 - `judgment.md` permite leitura rapida do risco de copy.
 
+Regra critica: quando `EXPECTED_STATE` existe, o polling nao pode aprovar por resposta AI isolada. O estado esperado e o contrato do cenario; resposta AI serve apenas como fallback para smokes sem estado-alvo.
+
 ## Proximos Passos
 
 Depois do primeiro cenario:

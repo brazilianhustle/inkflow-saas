@@ -29,17 +29,18 @@ worktree_esperado: limpo
 - CI estabilizado apos duas falhas de contrato: regex com `braço` acentuado e limite real do prompt `coleta-tattoo`.
 - Loop Continuity Protocol criado para retomada apos compactacao.
 - `transcript.md` e `judgment.md` integrados aos runners de smoke HTTP e WhatsApp real.
+- Scenario registry validado com `cadastro-handoff-email-recusado`; polling agora trata `EXPECTED_STATE` como criterio autoritativo.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: smoke-20260525T053147Z-23172
-tipo: HTTP monitorado
+run_id: scenario-cadastro-handoff-email-recusado-20260525T062239Z-3885
+tipo: Scenario HTTP monitorado
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: orc_2x6t5l
-evidence: .smoke-evidence/smoke-20260525T053147Z-23172/
+orcid: orc_hljd47
+evidence: .smoke-evidence/scenario-cadastro-handoff-email-recusado-20260525T062239Z-3885/
 ```
 
 Mensagem:
@@ -55,22 +56,23 @@ Resultado:
 estado_agente: aguardando_tatuador
 email_recusado: true
 data_nascimento: 1995-03-12
-orcid: orc_2x6t5l
+orcid: orc_hljd47
+copy_risk: medio
 ```
 
 ## Proximo Ataque
 
 ```text
-Validar o primeiro smoke scenario versionado: `cadastro-handoff-email-recusado`.
+Criar e validar o primeiro scenario WhatsApp real usando Evolution `central`.
 ```
 
 Escopo recomendado:
 
-- executar `SMOKE_SCENARIO_DRY_RUN=1 bash scripts/smoke/run-scenario.sh cadastro-handoff-email-recusado`;
-- executar o cenario real com `bash scripts/smoke/run-scenario.sh cadastro-handoff-email-recusado`;
-- validar evidence com `summary.md`, `poll.json`, `transcript.md` e `judgment.md`;
-- atualizar `smoke-runs.md` com o run gerado pelo registry;
-- depois criar cenario WhatsApp real com `central`.
+- adicionar `.env` de scenario `whatsapp-real-cadastro-handoff`;
+- reaproveitar o mesmo setup de cadastro completo;
+- enviar via Evolution `central` para o numero oficial do bot;
+- validar evidence com tail, `poll.json`, `transcript.md` e `judgment.md`;
+- atualizar `smoke-runs.md` com o primeiro run WhatsApp real versionado.
 
 ## Comando De Retomada
 

@@ -2,8 +2,9 @@
 # scripts/smoke/poll.sh
 # Aguarda o processamento assincrono do smoke no Supabase.
 #
-# Sucesso quando aparece resposta AI nova apos o inicio OU o estado muda para
-# um estado esperado. Falha por timeout com snapshot JSON para debug.
+# Sucesso quando o estado esperado e atingido. Sem estado esperado, sucesso
+# quando aparece resposta AI nova apos o inicio. Falha por timeout com snapshot
+# JSON para debug.
 
 set -euo pipefail
 cd "$(dirname "$0")/../.."
@@ -89,7 +90,7 @@ while [ "$SECONDS" -lt "$deadline" ]; do
     exit 0
   fi
 
-  if [ "$ai_count" -gt 0 ]; then
+  if [ -z "$EXPECTED_STATES" ] && [ "$ai_count" -gt 0 ]; then
     if [ -n "$EXPECTED_HUMAN_TEXT" ] && [ "$human_match_count" -eq 0 ]; then
       sleep "$INTERVAL_SECONDS"
       continue

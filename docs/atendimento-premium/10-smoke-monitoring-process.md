@@ -36,6 +36,7 @@ BASE_URL=http://localhost:8788 \
 3. Salva snapshot Supabase antes.
 4. Envia inbound com correlation id no `msg_id` e `pushName`.
 5. Faz polling ate resposta AI, estado esperado ou timeout.
+   - Quando `EXPECTED_STATE` e definido, ele vira criterio autoritativo: resposta AI sozinha nao aprova o smoke.
    - Para `EXPECTED_STATE=aguardando_tatuador`, tambem exige `orcid` por padrao.
 6. Salva snapshot Supabase depois.
 7. Gera `transcript.md` e `judgment.md`.
@@ -88,7 +89,7 @@ SMOKE_TAIL_DISABLED=1    desativa tail apenas em debug
 O smoke so deve ser considerado PASS quando:
 
 - inbound HTTP respondeu sem erro;
-- polling detectou resposta AI ou `EXPECTED_STATE`;
+- polling detectou resposta AI sem estado esperado, ou atingiu `EXPECTED_STATE` quando definido;
 - `verify-after.txt` confirma estado/dados esperados;
 - `transcript.md` permite leitura direta da conversa;
 - `judgment.md` confirma checks tecnicos e aponta risco de copy;
