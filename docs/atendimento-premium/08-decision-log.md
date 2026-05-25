@@ -461,6 +461,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** HTTP radar `cadastro-handoff-email-recusado` e WhatsApp real `whatsapp-real-cadastro-handoff` passaram exigindo `workflow_handoff_package_trace_id` com prefixo `hp_`; unit tests cobrem trace no Telegram de escalation e orçamento.
 
+## 2026-05-25 - Trace decisorio deve aparecer nos artefatos legiveis do smoke
+
+**Status:** decidido.
+
+**Decisão:** quando o smoke capturar `agent-turn-logs.json`, `summary.md`, `transcript.md` e `judgment.md` devem promover uma seção `Decision Observability` com agente, `trace`, pacote e razão decisória. O runner deve rerenderizar o relatório depois do gate de logs para que esses dados entrem na evidência final.
+
+**Motivo:** `agent-turn-logs.json` é a fonte bruta correta, mas a validação profissional precisa permitir leitura rápida sem abrir JSON manualmente. O relatório deve responder em segundos qual camada decidiu, qual trace une os artefatos e por que o handoff aconteceu.
+
+**Alternativas rejeitadas:**
+
+- deixar o trace apenas no JSON bruto;
+- duplicar toda a telemetria no transcript, poluindo a leitura;
+- gerar relatório separado só para observabilidade, fragmentando a evidência.
+
+**Camada responsável:** smoke monitoring process, scenario runner e report renderer.
+
+**Impacto:** HTTP radar `cadastro-handoff-email-recusado` e WhatsApp real `whatsapp-real-cadastro-handoff` passaram com `Decision Observability` em `summary.md`, `transcript.md` e `judgment.md`, exibindo `trace=hp_6785a917d9`, pacote `handoff_package_v1` e `workflow_reason=cadastro_and_tattoo_complete`.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

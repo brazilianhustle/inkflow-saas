@@ -10,6 +10,8 @@ POLL_JSON="$EVIDENCE_DIR/poll.json"
 REQUEST_JSON="$EVIDENCE_DIR/request.json"
 TRANSCRIPT_MD="$EVIDENCE_DIR/transcript.md"
 JUDGMENT_MD="$EVIDENCE_DIR/judgment.md"
+SUMMARY_MD="$EVIDENCE_DIR/summary.md"
+AGENT_LOGS_JSON="$EVIDENCE_DIR/agent-turn-logs.json"
 
 [ -d "$EVIDENCE_DIR" ] || { echo "ERRO: evidence_dir nao existe: $EVIDENCE_DIR" >&2; exit 1; }
 [ -f "$POLL_JSON" ] || { echo "ERRO: poll.json nao encontrado em $EVIDENCE_DIR" >&2; exit 1; }
@@ -28,6 +30,32 @@ ai_count="$(jq '[.mensagens[]? | select(.message.type=="ai")] | length' "$POLL_J
 failed_count="$(jq '[.mensagens[]? | select(.status=="failed")] | length' "$POLL_JSON")"
 last_ai="$(jq -r '[.mensagens[]? | select(.message.type=="ai")][-1].message.content // ""' "$POLL_JSON")"
 last_human="$(jq -r '[.mensagens[]? | select(.message.type=="human")][-1].message.content // ""' "$POLL_JSON")"
+decision_observability=""
+if [ -f "$AGENT_LOGS_JSON" ]; then
+  decision_observability="$(jq -r '
+    [
+      .[]?
+      | .context_metadata as $m
+      | {
+          agent_name: (.agent_name // "unknown"),
+          trace_id: ($m.workflow_handoff_package_trace_id // $m.handoff_package_trace_id // null),
+          package_version: ($m.workflow_handoff_package_version // $m.handoff_package_version // null),
+          workflow_reason: ($m.workflow_reason // null),
+          escalation_reason_code: ($m.escalation_reason_code // null)
+        }
+      | select(.trace_id != null or .package_version != null or .workflow_reason != null or .escalation_reason_code != null)
+    ]
+    | unique
+    | map(
+        "- " + .agent_name
+        + (if .trace_id then ": trace=" + .trace_id else "" end)
+        + (if .package_version then " package=" + .package_version else "" end)
+        + (if .workflow_reason then " workflow_reason=" + .workflow_reason else "" end)
+        + (if .escalation_reason_code then " escalation_reason=" + .escalation_reason_code else "" end)
+      )
+    | join("\n")
+  ' "$AGENT_LOGS_JSON")"
+fi
 
 cat > "$TRANSCRIPT_MD" <<EOF
 # Smoke Transcript
@@ -38,6 +66,18 @@ cat > "$TRANSCRIPT_MD" <<EOF
 - state: ${state:-"(none)"}
 - orcid: ${orcid:-"(none)"}
 
+EOF
+
+if [ -n "$decision_observability" ]; then
+  cat >> "$TRANSCRIPT_MD" <<EOF
+## Decision Observability
+
+${decision_observability}
+
+EOF
+fi
+
+cat >> "$TRANSCRIPT_MD" <<EOF
 ## Turns
 
 EOF
@@ -136,6 +176,18 @@ cat > "$JUDGMENT_MD" <<EOF
 | human_messages | ${human_count} |
 | ai_messages | ${ai_count} |
 
+EOF
+
+if [ -n "$decision_observability" ]; then
+  cat >> "$JUDGMENT_MD" <<EOF
+## Decision Observability
+
+${decision_observability}
+
+EOF
+fi
+
+cat >> "$JUDGMENT_MD" <<EOF
 ## Conversation Judgment
 
 - copy_risk: ${copy_risk}
@@ -166,5 +218,14 @@ cat >> "$JUDGMENT_MD" <<EOF
 
 Este julgamento e deterministico e serve como triagem operacional. Ele nao substitui a validacao humana de naturalidade, confianca e percepcao premium.
 EOF
+
+if [ -n "$decision_observability" ] && [ -f "$SUMMARY_MD" ] && ! grep -q '^## Decision Observability$' "$SUMMARY_MD"; then
+  cat >> "$SUMMARY_MD" <<EOF
+
+## Decision Observability
+
+${decision_observability}
+EOF
+fi
 
 echo "reports generated: $TRANSCRIPT_MD $JUDGMENT_MD"

@@ -386,6 +386,7 @@ run_scenario() {
       printf 'expected_agent_log_jq_true: %s\n' "$EXPECTED_AGENT_LOG_JQ_TRUE"
       printf 'status: ok\n'
     } | tee "$EVIDENCE_DIR/scenario-agent-log-jq.txt"
+    bash scripts/smoke/render-report.sh "$EVIDENCE_DIR" | tee -a "$EVIDENCE_DIR/report-render.txt"
   fi
 }
 
