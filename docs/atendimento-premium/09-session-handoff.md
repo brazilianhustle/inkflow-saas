@@ -201,7 +201,7 @@ Casos corrigidos e cobertos por teste:
 4. cadastro pendente: nome/data/email/recusa sao resolvidos pelo router antes da lateral intent.
 ```
 
-Smoke manual pendente para o usuario validar escrevendo:
+Smoke manual historico sugerido na epoca para validar escrevendo:
 
 ```text
 oi
@@ -212,6 +212,12 @@ Esperado:
 
 ```text
 O bot se apresenta primeiro ("Me chamo ...") e depois segue a coleta aproveitando o dado "braço".
+```
+
+Status atual:
+
+```text
+Coberto por teste automatizado do primeiro contato misto; nao e bloqueador ativo do handoff atual.
 ```
 
 ### Cadastro premium - QuestionPolicy
@@ -268,11 +274,17 @@ Critério aplicado:
 - não insistiu no email;
 - não criou agendamento/Pix indevido.
 
-Achado residual:
+Achado residual historico:
 
 - cadastro ficou completo em `dados_cadastro`, mas o estado permaneceu `coletando_cadastro`;
 - a última resposta foi "Confirmo por aqui e sigo com teu orçamento";
 - próximo slice deve decidir/implementar transição segura quando o router completa cadastro.
+
+Status atual:
+
+```text
+Resolvido pelo Workflow Manager / cadastro-handoff. Gate atual `cadastro-handoff` PASS e smoke real `whatsapp-real-cadastro-handoff` validado.
+```
 
 ### Tattoo - lateral + retomada
 

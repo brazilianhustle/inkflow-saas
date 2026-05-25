@@ -2,7 +2,7 @@
 
 ## Status
 
-`implementado_localmente_pendente_smoke`
+`validado_smoke_pass`
 
 ## Família
 

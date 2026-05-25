@@ -2,7 +2,7 @@
 
 ## Status
 
-`implementado_localmente_pendente_smoke`
+`validado_smoke_pass`
 
 ## Objetivo
 
@@ -113,15 +113,15 @@ Cobertura mínima:
 - pipeline não chama `runAgent` quando router intercepta;
 - kill switch chama `runAgent`.
 
-## Smoke Real Pendente
+## Smoke Real Validado
 
-Cenários mínimos:
+Cenários mínimos validados:
 
 1. `quanto fica?`
 2. `quanto tempo demora?`
 3. `como funciona pra fazer uma tattoo?`
 
-Cada smoke deve confirmar:
+Cada smoke confirmou:
 
 - resposta lateral adequada;
 - próxima pergunta útil;
@@ -131,9 +131,14 @@ Cada smoke deve confirmar:
 
 ## Próximo Slice
 
-Depois do smoke do Slice 1:
+Depois do smoke do Slice 1, os próximos incrementos foram executados dentro do slice `atendimento-lateral`:
 
 - `historia_vida`
-- depois `pergunta_imagem`
-- depois `portfolio`
+- `pergunta_imagem`
+- `portfolio`
 
+Gate atual:
+
+```bash
+bash scripts/smoke/check-slice-gate.sh atendimento-lateral
+```
