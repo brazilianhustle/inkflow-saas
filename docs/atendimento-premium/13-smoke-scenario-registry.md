@@ -19,6 +19,7 @@ SMOKE_SCENARIO_DRY_RUN=1 \
 
 ```text
 docs/atendimento-premium/smoke-scenarios/
+  cadastro-data-idade-nao-persiste.env
   cadastro-handoff-email-recusado.env
   lateral-pergunta-imagem-com-midia.env
   lateral-historia-vida-homenagem.env
@@ -103,6 +104,33 @@ orcid: presente
 email_recusado: true
 transcript.md: presente
 judgment.md: presente
+```
+
+`cadastro-data-idade-nao-persiste`
+
+Objetivo:
+
+```text
+Validar que idade isolada durante cadastro nao e persistida como data de nascimento inventada.
+```
+
+Setup:
+
+```text
+estado_agente: coletando_cadastro
+dados_coletados: descricao_curta, local_corpo, altura_cm, estilo
+dados_cadastro: nome
+historico: pergunta AI pendente sobre data de nascimento completa
+```
+
+Esperado:
+
+```text
+estado final deve continuar coletando_cadastro
+dados_cadastro.nome deve permanecer Joao Silva
+dados_cadastro.data_nascimento deve continuar null
+orcid deve continuar null
+resposta deve pedir data completa sem liberar orcamento, agendar, cobrar sinal ou falar de valor
 ```
 
 `whatsapp-real-cadastro-handoff`

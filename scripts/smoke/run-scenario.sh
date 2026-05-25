@@ -29,6 +29,7 @@ EXPECTED_BOT_REGEX=""
 FORBIDDEN_BOT_REGEX=""
 EXPECTED_TAIL_REGEX=""
 FORBIDDEN_TAIL_REGEX=""
+EXPECTED_POLL_JQ_TRUE=""
 SMOKE_MEDIA_BASE64="${SMOKE_MEDIA_BASE64:-}"
 SMOKE_MEDIA_FILE="${SMOKE_MEDIA_FILE:-}"
 SMOKE_MEDIA_MIMETYPE="${SMOKE_MEDIA_MIMETYPE:-}"
@@ -162,10 +163,57 @@ seed_cadastro_handoff_email_recusado() {
   echo "seed ok: conversa=$conv_id session_id=$sid"
 }
 
+seed_cadastro_aguardando_data() {
+  load_devvars
+  local sid now conv_body msg_body conv_id
+  sid="${TENANT_ID}_${PHONE}"
+  now="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+
+  conv_body="$(
+    jq -nc \
+      --arg tenant "$TENANT_ID" \
+      --arg phone "$PHONE" \
+      --arg now "$now" \
+      '{
+        tenant_id:$tenant,
+        telefone:$phone,
+        estado_agente:"coletando_cadastro",
+        dados_coletados:{
+          descricao_curta:"leao",
+          local_corpo:"antebraco",
+          altura_cm:170,
+          estilo:"fineline"
+        },
+        dados_cadastro:{
+          nome:"Joao Silva"
+        },
+        last_msg_at:$now
+      }'
+  )"
+  conv_id="$(supa_post "conversas" "$conv_body" | jq -r '.[0].id // empty')"
+  [ -n "$conv_id" ] || { echo "ERRO: seed nao retornou conversa id." >&2; exit 1; }
+
+  msg_body="$(
+    jq -nc \
+      --arg sid "$sid" \
+      '{
+        session_id:$sid,
+        status:"processed",
+        message:{
+          type:"ai",
+          content:"Boa, Joao. Me passa tua data de nascimento completa?"
+        }
+      }'
+  )"
+  supa_post "conversa_mensagens" "$msg_body" >/dev/null
+  echo "seed ok: conversa=$conv_id session_id=$sid"
+}
+
 run_setup() {
   case "$SETUP" in
     none|"") echo "setup: none" ;;
     seed_cadastro_handoff_email_recusado) seed_cadastro_handoff_email_recusado ;;
+    seed_cadastro_aguardando_data) seed_cadastro_aguardando_data ;;
     *) echo "ERRO: setup desconhecido: $SETUP" >&2; exit 1 ;;
   esac
 }
@@ -279,6 +327,22 @@ run_scenario() {
       printf 'forbidden_tail_regex: %s\n' "${FORBIDDEN_TAIL_REGEX:-"(none)"}"
       printf 'status: ok\n'
     } | tee "$EVIDENCE_DIR/scenario-tail-text.txt"
+  fi
+
+  if [ -n "${EXPECTED_POLL_JQ_TRUE:-}" ]; then
+    echo ""
+    echo "[scenario] poll jq gate"
+    [ -f "$EVIDENCE_DIR/poll.json" ] || { echo "ERRO: poll.json ausente." >&2; exit 1; }
+    if ! jq -e "$EXPECTED_POLL_JQ_TRUE" "$EVIDENCE_DIR/poll.json" >/dev/null; then
+      echo "ERRO: poll.json nao satisfaz EXPECTED_POLL_JQ_TRUE" >&2
+      echo "$EXPECTED_POLL_JQ_TRUE" >&2
+      jq . "$EVIDENCE_DIR/poll.json" >&2
+      exit 1
+    fi
+    {
+      printf 'expected_poll_jq_true: %s\n' "$EXPECTED_POLL_JQ_TRUE"
+      printf 'status: ok\n'
+    } | tee "$EVIDENCE_DIR/scenario-poll-jq.txt"
   fi
 }
 

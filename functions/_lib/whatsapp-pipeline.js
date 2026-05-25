@@ -325,7 +325,15 @@ export async function processBatch(env, batch, depsOverride = {}) {
     if (agentOut.pediu_foto_local && !isCadastro) {
       novoDadosColetados.tentativas_foto_local = (conversa.dados_coletados?.tentativas_foto_local || 0) + 1;
     }
-    const dadosCadastroPersistidos = { ...(agentOut.dados_persistidos || {}) };
+    const emailRecusado = agentOut.email_recusado === true || agentOut.dados_persistidos?.email_recusado === true;
+    const dadosCadastroPersistidos = Object.fromEntries(
+      Object.entries(agentOut.dados_persistidos || {})
+        .filter(([key, value]) => {
+          if (value === '' || value === undefined) return false;
+          if (value === null) return key === 'email' && emailRecusado;
+          return true;
+        })
+    );
     if (isCadastro && agentOut.email_recusado === true && dadosCadastroPersistidos.email_recusado !== true) {
       dadosCadastroPersistidos.email_recusado = true;
     }

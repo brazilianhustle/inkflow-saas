@@ -67,8 +67,22 @@ while [ "$SECONDS" -lt "$deadline" ]; do
   ai_count="$(printf '%s' "$msgs" | jq '[.[] | select(.message.type=="ai")] | length')"
   failed_count="$(printf '%s' "$msgs" | jq '[.[] | select(.status=="failed")] | length')"
   human_match_count=0
+  ai_after_human_count="$ai_count"
   if [ -n "$EXPECTED_HUMAN_TEXT" ]; then
     human_match_count="$(printf '%s' "$msgs" | jq --arg text "$EXPECTED_HUMAN_TEXT" '[.[] | select(.message.type=="human" and .message.content==$text)] | length')"
+    ai_after_human_count="$(printf '%s' "$msgs" | jq --arg text "$EXPECTED_HUMAN_TEXT" '
+      ([
+        .[]
+        | select(.message.type=="human" and .message.content==$text)
+        | .created_at
+      ] | max // "") as $human_at
+      | if $human_at == "" then 0 else
+          [
+            .[]
+            | select(.message.type=="ai" and .created_at > $human_at)
+          ] | length
+        end
+    ')"
   fi
 
   if [ "$failed_count" != "0" ]; then
@@ -82,7 +96,7 @@ while [ "$SECONDS" -lt "$deadline" ]; do
       sleep "$INTERVAL_SECONDS"
       continue
     fi
-    if [ "$REQUIRE_AI_RESPONSE" = "1" ] && [ "$ai_count" -eq 0 ]; then
+    if [ "$REQUIRE_AI_RESPONSE" = "1" ] && [ "$ai_after_human_count" -eq 0 ]; then
       sleep "$INTERVAL_SECONDS"
       continue
     fi
@@ -95,7 +109,7 @@ while [ "$SECONDS" -lt "$deadline" ]; do
     exit 0
   fi
 
-  if [ -z "$EXPECTED_STATES" ] && [ "$ai_count" -gt 0 ]; then
+  if [ -z "$EXPECTED_STATES" ] && [ "$ai_after_human_count" -gt 0 ]; then
     if [ -n "$EXPECTED_HUMAN_TEXT" ] && [ "$human_match_count" -eq 0 ]; then
       sleep "$INTERVAL_SECONDS"
       continue
