@@ -38,7 +38,7 @@ main
 Último commit observado após checkpoint:
 
 ```text
-57114ce fix: force minor cadastro from explicit date
+265bcad feat: add escalation manager for minor handoff
 ```
 
 Último deploy de referência da frente:
@@ -52,6 +52,7 @@ Status estratégico:
 ```text
 Atendimento premium esta em Autonomy Gate Level 2, com smoke loop real/HTTP monitorado, transcript, julgamento, tail e gates por slice.
 O cadastro-handoff esta funcionalmente protegido: cadastro completo promove para aguardando_tatuador, handoff exige orcid nos smokes de orcamento, idade isolada nao persiste data/email vazios e menoridade explicita aciona handoff humano sem criar orcamento.
+Escalation Manager existe como primeira camada formal para handoff humano: menoridade gera `reason_code=minor_age`, `severity=high`, `requires_orcid=false` e texto Telegram rastreavel.
 O compact integrado foi corrigido na arquitetura: existe hook Claude Code, mas a retomada oficial agora e portavel via `bash scripts/smoke/continuity-bundle.sh --force`, adequado para Codex/API.
 Achado de linguagem da idade isolada foi corrigido para pedir data completa com seguranca e registro de maioridade.
 ```
@@ -126,6 +127,7 @@ scripts/smoke/run-inbound.sh
 scripts/smoke/run-real-whatsapp.sh
 scripts/smoke/render-report.sh
 scripts/smoke/render-triage.sh
+functions/_lib/escalation-manager.js
 docs/atendimento-premium/12-loop-continuity-protocol.md
 docs/atendimento-premium/17-context-compact-architecture.md
 docs/atendimento-premium/current-objective.md
@@ -158,7 +160,7 @@ Antes de continuar, conferir `git status --short`. A expectativa após este chec
 Run de referência:
 
 ```text
-scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596
+scenario-cadastro-menoridade-handoff-humano-20260525T171756Z-19173
 ```
 
 Alvo:
@@ -177,6 +179,7 @@ orcid: null
 copy_risk: baixo
 copy: menor de 18, tatuador, seguranca e responsavel legal
 tail_gate: sem enviar-orcamento-tatuador/pipeline batch failed/unhandled
+escalation: minor_age / high / requires_orcid=false
 ```
 
 Decisão:

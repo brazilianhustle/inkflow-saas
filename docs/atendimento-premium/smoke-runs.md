@@ -15,6 +15,7 @@ Ao fim de smoke monitorado:
 
 | Data UTC | Run ID | Tipo | Alvo | Telefone | Resultado | Evidencia | Decisao |
 |---|---|---|---|---|---|---|---|
+| 2026-05-25 17:17 | `scenario-cadastro-menoridade-handoff-humano-20260525T171756Z-19173` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-cadastro-menoridade-handoff-humano-20260525T171756Z-19173/` | Escalation Manager validado sem regressao no fluxo de menoridade: `estado=aguardando_tatuador`, `orcid=null`, `data_nascimento=2015-03-12`, resposta segura, copy risk baixo, bot text/tail/poll jq gates PASS. |
 | 2026-05-25 17:09 | `scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596/` | Menoridade explicita validada em producao: data `12/03/2015` persistiu como `2015-03-12`, `estado=aguardando_tatuador`, `orcid=null`, resposta informou menor de 18, tatuador, seguranca e responsavel legal, sem preco/agendamento/sinal, bot text, tail e poll jq gates PASS. |
 | 2026-05-25 16:54 | `scenario-cadastro-data-idade-nao-persiste-20260525T165404Z-8303` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-cadastro-data-idade-nao-persiste-20260525T165404Z-8303/` | Copy de maioridade validada em producao: idade isolada nao persistiu `data_nascimento`, `estado=coletando_cadastro`, `dados_cadastro` preservou apenas `nome`, sem `orcid`, resposta pediu data completa com seguranca e registro de maioridade, `copy_risk=baixo`, bot text e poll jq gates PASS. |
 | 2026-05-25 09:00 | `scenario-cadastro-data-idade-nao-persiste-20260525T090055Z-20793` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-cadastro-data-idade-nao-persiste-20260525T090055Z-20793/` | Idade isolada validada: resposta AI nova apos humano exigida pelo polling, `estado=coletando_cadastro`, `dados_cadastro` preservou apenas `nome`, sem `data_nascimento`/`email` vazios, sem `orcid`, `copy_risk=baixo`, bot text e poll jq gates PASS. |
@@ -40,7 +41,7 @@ Ao fim de smoke monitorado:
 
 ## Run De Referencia Atual
 
-### `scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596`
+### `scenario-cadastro-menoridade-handoff-humano-20260525T171756Z-19173`
 
 Mensagem:
 
@@ -72,5 +73,6 @@ Leitura estrategica:
 - PASS tecnico.
 - Menoridade explicita nao cria orcamento e nao exige `orcid`; este e handoff humano de risco, nao handoff de orcamento.
 - Defesa server-side cobre o caso em que o LLM le a data mas nao persiste `data_nascimento`.
+- Escalation Manager passou a classificar o motivo como `minor_age`, com severidade alta e sem `orcid`.
 - Tail gate confirmou ausencia de `enviar-orcamento-tatuador`, `pipeline batch failed` e `unhandled`.
 - O scenario entrou como requisito do gate `cadastro-handoff`.

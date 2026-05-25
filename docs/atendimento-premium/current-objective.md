@@ -18,7 +18,7 @@ deploy: GitHub Actions Deploy to Cloudflare Pages passou em 2026-05-25
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 57114ce fix: force minor cadastro from explicit date
+ultimo_commit_validado: 265bcad feat: add escalation manager for minor handoff
 ```
 
 ## Ultimos Marcos
@@ -55,17 +55,18 @@ ultimo_commit_validado: 57114ce fix: force minor cadastro from explicit date
 - Compactacao de contexto corrigida na arquitetura: o bundle de continuidade agora e comando portavel (`scripts/smoke/continuity-bundle.sh --force`) e nao depende apenas de hook Claude Code.
 - Copy premium de maioridade ajustada: idade isolada agora pede data completa com seguranca e registro de maioridade, sem frase fria como "idade nao e suficiente"; smoke HTTP em producao passou.
 - Menoridade explicita em cadastro validada: `12/03/2015` agora aciona handoff humano seguro, persiste `data_nascimento=2015-03-12`, mantem `orcid=null`, nao chama envio de orcamento e passa bot/tail/poll gates em producao.
+- Escalation Manager iniciado: menoridade agora gera `reason_code=minor_age`, `severity=high`, `requires_orcid=false` e mensagem de Telegram rastreavel, com smoke de producao sem regressao.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596
+run_id: scenario-cadastro-menoridade-handoff-humano-20260525T171756Z-19173
 tipo: Scenario HTTP monitorado
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: aguardando_tatuador
 orcid: none
-evidence: .smoke-evidence/scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596/
+evidence: .smoke-evidence/scenario-cadastro-menoridade-handoff-humano-20260525T171756Z-19173/
 ```
 
 Mensagem:
@@ -83,6 +84,7 @@ data_nascimento_persistida: 2015-03-12
 orcid: none
 copy_risk: baixo
 copy: aciona tatuador com seguranca e responsavel legal, sem seguir orcamento direto
+escalation: minor_age / high / requires_orcid=false
 chain: HTTP smoke -> webhook -> pipeline -> resposta
 ```
 
