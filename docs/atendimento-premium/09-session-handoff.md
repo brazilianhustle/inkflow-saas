@@ -22,7 +22,7 @@ git status --short
 
 Se houver mudanças não commitadas, entender antes de editar.
 
-## Estado Atual Em 2026-05-24
+## Estado Atual Em 2026-05-25
 
 Branch observada:
 
@@ -33,22 +33,22 @@ main
 Último commit observado após checkpoint:
 
 ```text
-3a0e0d0 feat: resolve cadastro pending questions in router
+987646e fix: ensure first contact intro in tattoo flow
 ```
 
 Último deploy de referência da frente:
 
 ```text
-https://b59bf5bc.inkflow-saas.pages.dev
+https://3ff8fcec.inkflow-saas.pages.dev
 ```
 
 Status estratégico:
 
 ```text
-Slice de atendimento lateral + retomada em tattoo passou no smoke analisado.
-QuestionPolicy para cadastro premium foi implementada, testada, deployada e validada em smoke real controlado.
-O router agora resolve nome completo, data de nascimento, email e recusa de email quando há pergunta pendente em cadastro.
-Achado residual: ao completar cadastro via router com recusa de email + dúvida lateral, o bot diz que segue com o orçamento, mas o estado permanece em coletando_cadastro. Próximo ataque deve fechar a transição/handoff de cadastro completo.
+Atendimento premium avançou para correção de regressões encontradas em smoke real manual.
+O eixo estratégico é híbrido: orientar o modelo no prompt e usar guardrails pequenos fora do prompt apenas onde o comportamento precisa ser garantido.
+Foram corrigidos: cadastro pendente via router, estilo "old school" virando nome, adiamento da foto do local e primeiro contato misto pulando apresentação.
+Achado residual ainda válido: ao completar cadastro via router com recusa de email + dúvida lateral, o bot diz que segue com o orçamento, mas o estado permanece em coletando_cadastro. Próximo slice deve fechar a transição/handoff de cadastro completo depois dos smokes manuais atuais.
 ```
 
 ## Mudanças Funcionais Do Checkpoint
@@ -75,6 +75,23 @@ functions/_lib/conversation-router.js
 tests/_lib/conversation-policy.test.mjs
 tests/_lib/conversation-router.test.mjs
 tests/_lib/whatsapp-pipeline.test.mjs
+```
+
+Arquivos funcionais adicionados/alterados nas correções de smoke de 2026-05-25:
+
+```text
+functions/_lib/conversation-policy.js
+functions/_lib/conversation-response-composer.js
+functions/_lib/whatsapp-pipeline.js
+functions/api/agent/route.js
+functions/_lib/prompts/coleta/tattoo/contexto.js
+functions/_lib/prompts/coleta/tattoo/decisao.js
+functions/_lib/prompts/coleta/tattoo/exemplos.js
+tests/_lib/conversation-policy.test.mjs
+tests/_lib/conversation-router.test.mjs
+tests/_lib/whatsapp-pipeline.test.mjs
+tests/agent/route-runagent.test.mjs
+tests/prompts/snapshots/coleta-tattoo.txt
 ```
 
 Arquivos de documentação incluídos no checkpoint:
@@ -112,6 +129,42 @@ Contrato atual:
 Antes de continuar, conferir `git status --short`. A expectativa após este checkpoint é worktree limpo.
 
 ## Último Smoke Considerado PASS Nesta Frente
+
+### Correções de smoke - 2026-05-25
+
+Deploy validado:
+
+```text
+https://3ff8fcec.inkflow-saas.pages.dev
+```
+
+Telefone de smoke limpo ao fim da sessão:
+
+```text
+5521970789797
+```
+
+Casos corrigidos e cobertos por teste:
+
+```text
+1. pergunta de estilo: "old school" nao vira nome curto "old";
+2. foto do local pendente: "agora nao consigo" nao trava a conversa e orienta mandar depois;
+3. primeiro contato misto: "oi" + "quero fazer uma tatuagem no braço" deve apresentar antes de coletar;
+4. cadastro pendente: nome/data/email/recusa sao resolvidos pelo router antes da lateral intent.
+```
+
+Smoke manual pendente para o usuario validar escrevendo:
+
+```text
+oi
+quero fazer uma tatuagem no braço
+```
+
+Esperado:
+
+```text
+O bot se apresenta primeiro ("Me chamo ...") e depois segue a coleta aproveitando o dado "braço".
+```
 
 ### Cadastro premium - QuestionPolicy
 
@@ -228,19 +281,33 @@ Rodar subset menor quando mexer apenas em policy/router:
 node --test tests/_lib/conversation-policy.test.mjs tests/_lib/conversation-router.test.mjs
 ```
 
+Quando mexer em prompt de tattoo, rodar tambem:
+
+```bash
+node --test tests/prompts/invariants.test.mjs tests/prompts/snapshot.test.mjs tests/prompts/contracts/coleta-tattoo.mjs
+```
+
+Ultima execucao local registrada em 2026-05-25:
+
+```text
+109 testes agent/router/pipeline PASS
+26 testes prompt/snapshot PASS
+```
+
 ## Próxima Ação Recomendada
 
 Antes de codar nova frente:
 
 1. Confirmar worktree.
 2. Rodar testes relevantes.
-3. Confirmar o achado residual do smoke de cadastro.
-4. Criar/atualizar ficha no vault antes de implementação.
+3. Rodar smoke manual do primeiro contato misto no WhatsApp.
+4. Validar tambem os casos `old school`, `agora nao consigo` e cadastro com recusa de email.
+5. Confirmar o achado residual do smoke de cadastro.
 
 Minha recomendação estratégica:
 
 ```text
-Não avançar para IntentPolicy antes de fechar a transição de cadastro completo quando a completude veio pelo router.
+Se os smokes manuais passarem, nao avançar para IntentPolicy antes de fechar a transição de cadastro completo quando a completude veio pelo router.
 ```
 
 Depois disso, o próximo melhor ataque é:
