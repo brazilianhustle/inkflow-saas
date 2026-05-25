@@ -1311,6 +1311,65 @@ test('ConversationRouter cadastro: lateral com nome/data pendentes grava em dado
   });
 });
 
+test('Workflow: ConversationRouter completa cadastro com recusa de email e dispara orcamento', async () => {
+  const runAgentSpy = mock.fn(async () => {
+    throw new Error('runAgent nao deveria ser chamado');
+  });
+  const callToolSpy = mock.fn(async () => ({ ok: true }));
+  let conversaPatch = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_cadastro',
+    dados_coletados: {
+      descricao_curta: 'leão',
+      local_corpo: 'antebraço',
+      altura_cm: 170,
+      estilo: 'fineline',
+    },
+    dados_cadastro: {
+      nome: 'Joao Silva',
+      data_nascimento: '1995-03-12',
+    },
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'pode seguir sem email\nquanto tempo demora?' }]),
+      hist: [
+        {
+          id: 1,
+          message: {
+            type: 'ai',
+            content: 'E o e-mail? Se preferir seguir sem, me avisa',
+          },
+        },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.estado_agente) {
+          conversaPatch = body;
+        }
+      },
+    }),
+    runAgent: runAgentSpy,
+    callTool: callToolSpy,
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
+  assert.deepEqual(conversaPatch.dados_cadastro, {
+    nome: 'Joao Silva',
+    data_nascimento: '1995-03-12',
+    email: null,
+    email_recusado: true,
+  });
+  assert.equal(callToolSpy.mock.callCount(), 1);
+  assert.equal(callToolSpy.mock.calls[0].arguments[0], 'enviar-orcamento-tatuador');
+  assert.equal(callToolSpy.mock.calls[0].arguments[1].tenant_id, TENANT.id);
+  assert.equal(callToolSpy.mock.calls[0].arguments[1].telefone, TELEFONE);
+});
+
 test('15. multi-message: resposta com \\n\\n envia 2 balões com typing delay antes de cada', async () => {
   let evoCalls = [];
   let sleepCalls = 0;

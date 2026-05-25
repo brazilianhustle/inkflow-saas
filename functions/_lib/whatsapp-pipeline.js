@@ -13,6 +13,7 @@ import { classificarFoto } from './foto-classifier.js';
 import { enviarMidia } from './telegram-media.js';
 import { routeConversationTurn } from './conversation-router.js';
 import { logAgentTurn } from './telemetry/agent-turn-logger.js';
+import { applyWorkflowTransition } from './workflow-manager.js';
 
 export const TERMINAL_STATES = new Set([
   'aguardando_tatuador',
@@ -324,9 +325,20 @@ export async function processBatch(env, batch, depsOverride = {}) {
     if (agentOut.pediu_foto_local && !isCadastro) {
       novoDadosColetados.tentativas_foto_local = (conversa.dados_coletados?.tentativas_foto_local || 0) + 1;
     }
+    const dadosCadastroPersistidos = { ...(agentOut.dados_persistidos || {}) };
+    if (isCadastro && agentOut.email_recusado === true && dadosCadastroPersistidos.email_recusado !== true) {
+      dadosCadastroPersistidos.email_recusado = true;
+    }
     const novoDadosCadastro = isCadastro
-      ? { ...(conversa.dados_cadastro || {}), ...(agentOut.dados_persistidos || {}) }
+      ? { ...(conversa.dados_cadastro || {}), ...dadosCadastroPersistidos }
       : (conversa.dados_cadastro || {});
+    const workflow = applyWorkflowTransition({
+      estado_atual: estadoAgente,
+      agentOut,
+      dados_coletados: novoDadosColetados,
+      dados_cadastro: novoDadosCadastro,
+    });
+    agentOut = workflow.agentOut;
     await deps.supaFetch(`/rest/v1/conversas?id=eq.${conversa.id}`, {
       method: 'PATCH',
       body: JSON.stringify({
