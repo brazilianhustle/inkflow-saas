@@ -44,6 +44,25 @@ test('ConversationRouter: classifica pergunta sobre imagem', () => {
   assert.equal(_test.detectIntent('dá pra ver a tattoo?')?.intent, 'pergunta_imagem');
 });
 
+test('ConversationRouter: pedido explícito de humano aciona escalonamento sem coleta', () => {
+  assert.equal(_test.detectIntent('quero falar com o tatuador')?.intent, 'human_requested');
+  assert.equal(_test.detectIntent('me passa para um atendente')?.intent, 'human_requested');
+
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quero falar com o tatuador',
+    conversa: { dados_coletados: { descricao_curta: 'rosa' }, dados_cadastro: {} },
+  });
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'human_requested');
+  assert.equal(out.proxima_acao, 'erro');
+  assert.equal(out.estado_novo, 'aguardando_tatuador');
+  assert.equal(out.escalation.reason_code, 'human_requested');
+  assert.equal(out.escalation.requires_orcid, false);
+  assert.match(out.resposta_cliente, /acionar o tatuador/i);
+  assert.doesNotMatch(out.resposta_cliente, /Qual tua altura|parte do corpo|estilo/i);
+});
+
 test('ConversationRouter: cobertura textual aciona escalonamento humano sem coleta', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',

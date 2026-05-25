@@ -148,6 +148,12 @@ function detectIntent(text) {
   const s = normalize(text);
   if (!s) return null;
 
+  const pedidoHumano =
+    /\b(quero|queria|preciso|posso|pode|consegue|tem como|da pra|d[aá] pra)\b.{0,40}\b(falar|conversar|chamar|atender|passar|encaminhar)\b.{0,40}\b(tatuador|humano|atendente|pessoa|responsavel|responsável)\b/.test(s)
+    || /\b(falar|conversar)\b.{0,30}\b(com|com o|com a)\b.{0,20}\b(tatuador|humano|atendente|responsavel|responsável)\b/.test(s)
+    || /\bme\s+(passa|encaminha|chama|bota)\b.{0,30}\b(tatuador|humano|atendente|responsavel|responsável)\b/.test(s);
+  if (pedidoHumano) return { intent: 'human_requested', confidence: 0.9, risk: 'high' };
+
   const cobertura =
     /\b(cobrir|cobertura|cover up|coverup|tapar|disfarcar|disfarçar)\b/.test(s)
     && /\b(tattoo|tatuagem|desenho|nome|frase|antiga|velha|ja tenho|já tenho|tenho uma)\b/.test(s);
@@ -198,7 +204,37 @@ function responseForIntent(intent, estado, conversa, context = {}) {
 }
 
 function escalationOutput({ detected, estado_atual, intent }) {
-  if (intent !== 'cobertura') return null;
+  if (intent !== 'cobertura' && intent !== 'human_requested') return null;
+  if (intent === 'human_requested') {
+    return {
+      ok: true,
+      handled_by: 'conversation_router',
+      intent,
+      confidence: detected.confidence,
+      risk: detected.risk,
+      resposta_cliente: 'Claro. Vou acionar o tatuador para assumir por aqui e te orientar direto.',
+      estado_novo: 'aguardando_tatuador',
+      dados_persistidos: {},
+      dados_completos: false,
+      campos_faltando: ['human_requested_trigger'],
+      campos_conflitantes: [],
+      proxima_acao: 'erro',
+      agent_usado: estado_atual === 'cadastro' ? 'cadastro' : 'conversation_router',
+      side_effects: [],
+      urls_portfolio: [],
+      analise_imagens: null,
+      cobertura_suspeita: null,
+      escalation: {
+        required: true,
+        reason_code: 'human_requested',
+        reason_label: 'cliente pediu humano',
+        severity: 'medium',
+        source: 'conversation_router',
+        requires_orcid: false,
+      },
+    };
+  }
+
   return {
     ok: true,
     handled_by: 'conversation_router',

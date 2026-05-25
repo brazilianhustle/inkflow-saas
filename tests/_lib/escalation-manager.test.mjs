@@ -54,6 +54,21 @@ test('evaluateEscalation: cobertura em tattoo vira escalonamento high sem orcid'
   assert.equal(decision.requires_orcid, false);
 });
 
+test('evaluateEscalation: pedido humano em tattoo vira escalonamento medium sem orcid', () => {
+  const decision = evaluateEscalation({
+    estado_atual: 'tattoo',
+    agentOut: {
+      proxima_acao: 'erro',
+      campos_faltando: ['human_requested_trigger'],
+    },
+  });
+
+  assert.equal(decision.required, true);
+  assert.equal(decision.reason_code, 'human_requested');
+  assert.equal(decision.severity, 'medium');
+  assert.equal(decision.requires_orcid, false);
+});
+
 test('composeEscalationTelegram: inclui codigo rastreavel e resumo do cliente', () => {
   const text = composeEscalationTelegram({
     decision: {

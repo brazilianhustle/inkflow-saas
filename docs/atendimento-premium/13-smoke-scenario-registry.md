@@ -29,6 +29,7 @@ docs/atendimento-premium/smoke-scenarios/
   lateral-processo-tatuagem.env
   lateral-tempo-sessao.env
   tattoo-cobertura-handoff-humano.env
+  tattoo-pedido-humano-handoff.env
   whatsapp-real-cadastro-handoff.env
   whatsapp-real-lateral-historia-vida-homenagem.env
   whatsapp-real-lateral-pergunta-imagem-com-midia.env
@@ -235,6 +236,24 @@ estado final deve virar aguardando_tatuador
 orcid deve continuar null
 resposta deve citar cobertura/tatuador/avaliacao/seguranca
 resposta nao pode perguntar altura/local/estilo nem falar de preco, agendamento ou sinal
+tail nao deve chamar enviar-orcamento-tatuador
+```
+
+`tattoo-pedido-humano-handoff`
+
+Objetivo:
+
+```text
+Validar que pedido explicito para falar com humano/tatuador aciona handoff sem seguir coleta.
+```
+
+Contrato:
+
+```text
+estado final deve virar aguardando_tatuador
+orcid deve continuar null
+resposta deve avisar que vai acionar o tatuador
+resposta nao pode continuar formulario, falar de preco, agendamento ou sinal
 tail nao deve chamar enviar-orcamento-tatuador
 ```
 
