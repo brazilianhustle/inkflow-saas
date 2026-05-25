@@ -31,6 +31,7 @@ docs/atendimento-premium/smoke-scenarios/
   whatsapp-real-lateral-historia-vida-homenagem.env
   whatsapp-real-lateral-pergunta-imagem-com-midia.env
   whatsapp-real-lateral-preco-generico.env
+  whatsapp-real-lateral-tempo-sessao.env
 ```
 
 O formato inicial e `.env` por ser simples, auditavel e nativo para shell. Evita parser Markdown/YAML fragil no primeiro passo.
@@ -196,6 +197,22 @@ Contrato:
 estado final deve continuar coletando_tattoo
 resposta deve reconhecer imagem/foto/referencia/desenho/local/corpo ou mencionar ambiguidade visual
 resposta nao pode pedir reenvio por ausencia de imagem, falar de preco, agendar, sinal ou fechar proposta
+```
+
+`whatsapp-real-lateral-tempo-sessao`
+
+Objetivo:
+
+```text
+Validar a mesma protecao de expectativa em cadeia real central -> WhatsApp -> bot -> webhook -> pipeline.
+```
+
+Contrato:
+
+```text
+estado final deve continuar coletando_tattoo
+resposta deve explicar que o tempo depende de tamanho/detalhe/local/avaliacao
+resposta nao pode prometer horas, mesmo dia, uma sessao certa, preco, agendamento, sinal ou fechar proposta
 ```
 
 `lateral-portfolio-disponivel`

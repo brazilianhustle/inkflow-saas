@@ -45,33 +45,33 @@ worktree_esperado: limpo
 - Micro-slice `pergunta_imagem` iniciado pelo fallback sem midia: scenario HTTP `lateral-pergunta-imagem-sem-midia` passou com reenvio de foto e sem retorno ao formulario.
 - Micro-slice `pergunta_imagem` com midia HTTP passou apos suporte de media no runner e guardrail anti-resposta apologetica: imagem persistida, resposta pergunta referencia vs local, `copy_risk=baixo`.
 - Micro-slice `pergunta_imagem` com midia WhatsApp real passou: Evolution `central` usou `/message/sendMedia`, webhook registrou imagem/caption real e bot respondeu referencia vs local com `copy_risk=baixo`.
+- Scenario WhatsApp real `whatsapp-real-lateral-tempo-sessao` passou: Evolution `central` enviou pergunta de tempo para o bot, webhook registrou humano real e a resposta manteve expectativa segura sem prometer horas, mesmo dia ou sessao certa.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-lateral-pergunta-imagem-com-midia-20260525T082548Z-1414
+run_id: scenario-whatsapp-real-lateral-tempo-sessao-20260525T083030Z-3522
 tipo: Scenario WhatsApp real
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: coletando_tattoo
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-lateral-pergunta-imagem-com-midia-20260525T082548Z-1414/
+evidence: .smoke-evidence/scenario-whatsapp-real-lateral-tempo-sessao-20260525T083030Z-3522/
 ```
 
 Mensagem:
 
 ```text
-o que você viu na imagem?
+quanto tempo demora pra fazer uma tattoo no braço?
 ```
 
 Resultado:
 
 ```text
 estado_agente: coletando_tattoo
-evolution_send: /message/sendMedia/central HTTP 201
-media_persistida: image/png
-bot_perguntou_referencia_ou_local: true
-fallback_sem_midia_nao_acionado: true
+evolution_send: /message/sendText/central HTTP 201
+webhook_registrou_humano_real: true
+resposta_sem_promessa_exata_de_tempo: true
 copy_risk: baixo
 chain: central -> WhatsApp -> bot -> webhook -> pipeline -> resposta
 ```
