@@ -15,6 +15,8 @@ Ao fim de smoke monitorado:
 
 | Data UTC | Run ID | Tipo | Alvo | Telefone | Resultado | Evidencia | Decisao |
 |---|---|---|---|---|---|---|---|
+| 2026-05-25 22:05 | `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T220556Z-7432` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T220556Z-7432/` | Escalation Matched Trigger Trace validado em cadeia real: Evolution `central` enviou `quero tatuar no rosto quanto fica?`, webhook registrou humano exato, `estado=aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`; agent-log gate confirmou `router_matched_tenant_trigger="rosto"` e `escalation_matched_tenant_trigger="rosto"` no Escalation Manager. |
+| 2026-05-25 22:05 | `scenario-tattoo-gatilho-tenant-handoff-20260525T220520Z-26860` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-gatilho-tenant-handoff-20260525T220520Z-26860/` | Radar HTTP do trace do gatilho tenant no Escalation Manager: confirmou `escalation_matched_tenant_trigger="rosto"` junto de Router e Workflow Manager, mantendo `estado=aguardando_tatuador`, `orcid=null`, sem preço/formulário/sinal. |
 | 2026-05-25 21:58 | `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215823Z-18564` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215823Z-18564/` | Observabilidade do gatilho tenant validada em cadeia real: Evolution `central` enviou `quero tatuar no rosto quanto fica?`, `estado=aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`; agent-log gate confirmou `router_has_matched_tenant_trigger=true` e `router_matched_tenant_trigger="rosto"` junto de Workflow Manager e Escalation Manager. |
 | 2026-05-25 21:57 | `scenario-tattoo-gatilho-tenant-handoff-20260525T215752Z-31633` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-gatilho-tenant-handoff-20260525T215752Z-31633/` | Radar HTTP da observabilidade do gatilho tenant: confirmou `router_matched_tenant_trigger="rosto"` no `context_metadata` do `conversation_router`, mantendo `estado=aguardando_tatuador`, `orcid=null`, sem preço/formulário/sinal. |
 | 2026-05-25 21:50 | `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215001Z-5162` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215001Z-5162/` | Gatilho de handoff do tenant validado em cadeia real: Evolution `central` enviou `quero tatuar no rosto quanto fica?`, webhook registrou humano exato, `estado=aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`, resposta acionou pessoa do estúdio sem preço/formulário; agent-log gate confirmou `conversation_router intent=tenant_handoff_trigger`, `workflow_manager reason=escalation_required` e `escalation_manager reason_code=tenant_handoff_trigger`, `source=tenant_rules`. |
@@ -91,7 +93,7 @@ Ao fim de smoke monitorado:
 
 ## Run De Referencia Atual
 
-### `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215823Z-18564`
+### `scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T220556Z-7432`
 
 Mensagem:
 
@@ -123,7 +125,7 @@ Leitura estrategica:
 - Router classifica `tenant_handoff_trigger` antes de responder preco lateral.
 - Router registra `router_matched_tenant_trigger="rosto"` para diagnostico direto.
 - Workflow Manager oficializa `workflow_reason=escalation_required` para `aguardando_tatuador`.
-- Escalation Manager classifica o motivo como `tenant_handoff_trigger`, com fonte `tenant_rules`, severidade alta e sem `orcid`.
+- Escalation Manager classifica o motivo como `tenant_handoff_trigger`, registra `escalation_matched_tenant_trigger="rosto"`, usa fonte `tenant_rules`, severidade alta e sem `orcid`.
 - Observabilidade confirmou rows em `agent_turn_logs` para `conversation_router`, `workflow_manager` e `escalation_manager`.
 - O scenario agora falha automaticamente se essa cadeia de logs nao aparecer dentro da janela de polling do gate.
 - Tail gate confirmou ausencia de `enviar-orcamento-tatuador`, `pipeline batch failed` e `unhandled`.

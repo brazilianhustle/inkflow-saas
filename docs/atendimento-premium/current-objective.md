@@ -78,6 +78,7 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 - Context/Tenant Manager 2.0 iniciado com Tenant Rules Snapshot v1: telemetria agora registra versao do snapshot, origem dos gatilhos de handoff, presenca de gatilhos, catalogo de estilos e estilos aceitos/recusados sem vazar listas ou URLs; HTTP radar e WhatsApp real definitivo passaram no fluxo de portfolio.
 - Context/Tenant Manager 2.0 passou a aplicar gatilhos de handoff do tenant no Router deterministico antes do Agent LLM: `rosto` em mensagem com preco lateral sai para humano como `tenant_handoff_trigger`, `workflow_reason=escalation_required`, `source=tenant_rules`, `orcid=null`; HTTP radar e WhatsApp real definitivo passaram.
 - Context/Tenant Manager 2.0 ganhou traço observavel do gatilho que bateu: `conversation_router.context_metadata` agora registra `router_has_matched_tenant_trigger` e `router_matched_tenant_trigger`, com HTTP radar e WhatsApp real definitivo exigindo `rosto`.
+- Context/Tenant Manager 2.0 propagou o gatilho tenant exato ate o Escalation Manager: `escalation_manager.context_metadata.escalation_matched_tenant_trigger="rosto"` e Telegram interno inclui `Gatilho tenant: rosto`; HTTP radar e WhatsApp real definitivo passaram.
 - Workflow Manager passou a registrar decisao propria em `agent_turn_logs`: cadastro completo com recusa de email agora confirma `workflow_layer=workflow_manager`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a impor nao-mutacao para intents laterais do Router com `can_mutate_state=false`: preco generico preservou `estado=coletando_tattoo` e registrou `workflow_reason=state_preserved_by_router_policy`; HTTP radar e WhatsApp real definitivo passaram exigindo Router + Workflow Manager no mesmo turno.
 - Workflow Manager passou a calcular requisitos faltantes exatos por fase e expor bloqueio formal de cadastro incompleto: idade isolada preservou `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null` e registrou `workflow_reason=requirements_missing` com contagens de faltantes; HTTP radar e WhatsApp real definitivo passaram.
@@ -86,13 +87,13 @@ ultimo_commit_validado: conferir `git log --oneline -1`
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215823Z-18564
+run_id: scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T220556Z-7432
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
 orcid: none
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T215823Z-18564/
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-gatilho-tenant-handoff-20260525T220556Z-7432/
 ```
 
 Mensagem:
@@ -110,21 +111,21 @@ orcid: none
 copy_risk: baixo
 copy: aciona pessoa do estudio para avaliacao segura, sem responder preco, sem continuar formulario, sem agenda ou sinal
 tenant_context: agent_turn_logs confirmou handoff_triggers_source=custom, gatilhos presentes e matched_trigger=rosto
-decision_chain: conversation_router tenant_handoff_trigger matched=rosto -> workflow_manager escalation_required -> escalation_manager tenant_handoff_trigger source=tenant_rules
+decision_chain: conversation_router tenant_handoff_trigger matched=rosto -> workflow_manager escalation_required -> escalation_manager tenant_handoff_trigger source=tenant_rules escalation_matched_tenant_trigger=rosto
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
 
 ## Proximo Ataque
 
 ```text
-Rodada Context/Tenant Manager 2.0 em Level 3. Slices 1, 2 e 3 de ate 4 concluidos: Tenant Rules Snapshot v1, Tenant Handoff Trigger Eligibility e Matched Trigger Trace.
+Rodada Context/Tenant Manager 2.0 em Level 3. Slices 1, 2, 3 e 4 de 4 concluidos: Tenant Rules Snapshot v1, Tenant Handoff Trigger Eligibility, Matched Trigger Trace e Escalation Matched Trigger Trace.
 ```
 
 Escopo recomendado:
 
-- rodar `check-autonomy-gate.sh` antes de iniciar a rodada;
-- manter a familia `Context/Tenant Manager 2.0` e limitar a rodada a 4 micro-slices;
-- proximo slice recomendado: decidir se o proximo passo de elegibilidade pode ser regra objetiva existente ou se exige configuracao/politica humana do estudio;
+- rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
+- encerrar a rodada atual de `Context/Tenant Manager 2.0` em 4/4 antes de abrir outra mini-campanha;
+- proximo passo recomendado: reavaliacao estrategica de caminho, porque novas regras comerciais de estilo/local provavelmente exigem configuracao/politica humana do estudio;
 - manter Level 3 ate bater criterios de Level 4: 70 scenarios PASS, 35 WhatsApp reais PASS, docs de rollback/staging e politica Level 4.
 
 ## Comando De Retomada
