@@ -27,6 +27,8 @@ EXPECTED_HUMAN_TEXT=""
 EXPECTED_COPY_RISK_MAX=""
 EXPECTED_BOT_REGEX=""
 FORBIDDEN_BOT_REGEX=""
+EXPECTED_TAIL_REGEX=""
+FORBIDDEN_TAIL_REGEX=""
 
 # shellcheck source=/dev/null
 source "$SCENARIO_FILE"
@@ -59,6 +61,7 @@ expected_state: ${EXPECTED_STATE:-"(none)"}
 require_orcid : ${SMOKE_REQUIRE_ORCID:-0}
 bot_regex     : ${EXPECTED_BOT_REGEX:-"(none)"}
 forbid_regex  : ${FORBIDDEN_BOT_REGEX:-"(none)"}
+tail_regex    : ${EXPECTED_TAIL_REGEX:-"(none)"}
 run_id        : $RUN_ID
 evidence_dir  : $EVIDENCE_DIR
 
@@ -247,6 +250,25 @@ run_scenario() {
       printf 'forbidden_bot_regex: %s\n' "${FORBIDDEN_BOT_REGEX:-"(none)"}"
       printf 'status: ok\n'
     } | tee "$EVIDENCE_DIR/scenario-bot-text.txt"
+  fi
+
+  if [ -n "${EXPECTED_TAIL_REGEX:-}" ] || [ -n "${FORBIDDEN_TAIL_REGEX:-}" ]; then
+    echo ""
+    echo "[scenario] tail text gate"
+    [ -f "$EVIDENCE_DIR/tail-excerpt.log" ] || { echo "ERRO: tail-excerpt.log ausente." >&2; exit 1; }
+    if [ -n "${EXPECTED_TAIL_REGEX:-}" ] && ! grep -Eiq "$EXPECTED_TAIL_REGEX" "$EVIDENCE_DIR/tail-excerpt.log"; then
+      echo "ERRO: tail nao contem padrao esperado: $EXPECTED_TAIL_REGEX" >&2
+      exit 1
+    fi
+    if [ -n "${FORBIDDEN_TAIL_REGEX:-}" ] && grep -Eiq "$FORBIDDEN_TAIL_REGEX" "$EVIDENCE_DIR/tail-excerpt.log"; then
+      echo "ERRO: tail contem padrao proibido: $FORBIDDEN_TAIL_REGEX" >&2
+      exit 1
+    fi
+    {
+      printf 'expected_tail_regex: %s\n' "${EXPECTED_TAIL_REGEX:-"(none)"}"
+      printf 'forbidden_tail_regex: %s\n' "${FORBIDDEN_TAIL_REGEX:-"(none)"}"
+      printf 'status: ok\n'
+    } | tee "$EVIDENCE_DIR/scenario-tail-text.txt"
   fi
 }
 

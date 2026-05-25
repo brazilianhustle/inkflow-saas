@@ -78,7 +78,7 @@ runtime_signal="sem tail-excerpt.log"
 if [ "$EXIT_CODE" = "0" ]; then
   runtime_signal="scenario PASS; tail sem acao corretiva obrigatoria"
 elif [ -f "$EVIDENCE_DIR/tail-excerpt.log" ]; then
-  if grep -Eiq 'exception|error|erro|failed|unhandled|timeout' "$EVIDENCE_DIR/tail-excerpt.log"; then
+  if grep -Eiq 'exception[^s]|error|erro|failed|unhandled|timeout' "$EVIDENCE_DIR/tail-excerpt.log"; then
     runtime_signal="tail contem sinal de erro; revisar tail-excerpt.log"
   else
     runtime_signal="tail sem erro runtime evidente"

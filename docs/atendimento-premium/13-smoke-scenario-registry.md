@@ -20,6 +20,7 @@ SMOKE_SCENARIO_DRY_RUN=1 \
 ```text
 docs/atendimento-premium/smoke-scenarios/
   cadastro-handoff-email-recusado.env
+  lateral-portfolio-disponivel.env
   lateral-preco-generico.env
   lateral-processo-tatuagem.env
   lateral-tempo-sessao.env
@@ -46,10 +47,13 @@ CLEANUP_BEFORE       0 | 1
 MESSAGE
 EXPECTED_STATE
 SMOKE_REQUIRE_ORCID
+SMOKE_REQUIRE_AI_RESPONSE
 EXPECTED_HUMAN_TEXT
 EXPECTED_COPY_RISK_MAX
 EXPECTED_BOT_REGEX
 FORBIDDEN_BOT_REGEX
+EXPECTED_TAIL_REGEX
+FORBIDDEN_TAIL_REGEX
 SMOKE_BOT_NUMBER      somente via ambiente local/secret manager para whatsapp_real
 ```
 
@@ -138,6 +142,23 @@ resposta deve citar dependencia/avaliacao/tatuador
 resposta nao pode conter preco ou fechamento de valor
 ```
 
+`lateral-portfolio-disponivel`
+
+Objetivo:
+
+```text
+Validar que pedido de portfolio com portfolio cadastrado responde sem URL manual e sem mudar estado critico.
+```
+
+Contrato:
+
+```text
+estado final deve continuar coletando_tattoo
+resposta deve mencionar envio/exemplos/trabalhos/referencias
+resposta nao pode escrever URL manual, preco ou fechamento de valor
+tail deve mostrar acionamento de portfolio
+```
+
 `lateral-tempo-sessao`
 
 Objetivo:
@@ -176,12 +197,15 @@ Um cenario so serve como checkpoint quando:
 - evidence dir contem `summary.md`, `poll.json`, `transcript.md` e `judgment.md`;
 - `EXPECTED_STATE` foi atingido quando definido;
 - `SMOKE_REQUIRE_ORCID=1` foi respeitado quando definido;
+- resposta AI apareceu no snapshot final por padrao (`SMOKE_REQUIRE_AI_RESPONSE=1`);
 - `EXPECTED_COPY_RISK_MAX` nao foi excedido quando definido;
 - `EXPECTED_BOT_REGEX` apareceu na ultima resposta AI quando definido;
 - `FORBIDDEN_BOT_REGEX` nao apareceu na ultima resposta AI quando definido;
+- `EXPECTED_TAIL_REGEX` apareceu na tail quando definido;
+- `FORBIDDEN_TAIL_REGEX` nao apareceu na tail quando definido;
 - `judgment.md` permite leitura rapida do risco de copy.
 
-Regra critica: quando `EXPECTED_STATE` existe, o polling nao pode aprovar por resposta AI isolada. O estado esperado e o contrato do cenario; resposta AI serve apenas como fallback para smokes sem estado-alvo.
+Regra critica: quando `EXPECTED_STATE` existe, o polling nao pode aprovar por resposta AI isolada nem por estado atingido antes da resposta. O estado esperado e o contrato do cenario, e a resposta AI e obrigatoria por padrao.
 
 ## Triage Automatica
 

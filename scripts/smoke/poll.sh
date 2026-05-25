@@ -16,6 +16,7 @@ EXPECTED_STATES="${3:-}"
 TIMEOUT_SECONDS="${SMOKE_POLL_TIMEOUT_SECONDS:-60}"
 INTERVAL_SECONDS="${SMOKE_POLL_INTERVAL_SECONDS:-3}"
 REQUIRE_ORCID="${SMOKE_REQUIRE_ORCID:-0}"
+REQUIRE_AI_RESPONSE="${SMOKE_REQUIRE_AI_RESPONSE:-1}"
 EXPECTED_HUMAN_TEXT="${SMOKE_EXPECT_HUMAN_TEXT:-}"
 SID="${TENANT}_${PHONE}"
 
@@ -78,6 +79,10 @@ while [ "$SECONDS" -lt "$deadline" ]; do
 
   if expected_state_hit "$state"; then
     if [ -n "$EXPECTED_HUMAN_TEXT" ] && [ "$human_match_count" -eq 0 ]; then
+      sleep "$INTERVAL_SECONDS"
+      continue
+    fi
+    if [ "$REQUIRE_AI_RESPONSE" = "1" ] && [ "$ai_count" -eq 0 ]; then
       sleep "$INTERVAL_SECONDS"
       continue
     fi

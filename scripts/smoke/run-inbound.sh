@@ -43,6 +43,7 @@ write_summary() {
 - since: ${SINCE_ISO}
 - expected_state: ${EXPECTED_STATE:-"(none)"}
 - require_orcid: ${SMOKE_REQUIRE_ORCID:-0}
+- require_ai_response: ${SMOKE_REQUIRE_AI_RESPONSE:-1}
 
 ## Message
 

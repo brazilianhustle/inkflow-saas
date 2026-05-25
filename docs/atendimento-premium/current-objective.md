@@ -37,6 +37,7 @@ worktree_esperado: limpo
 - Gate formal de conclusao de slice criado com cenarios obrigatorios e PASS recente registrado em `smoke-runs.md`.
 - Slice `atendimento-lateral` ganhou cenarios HTTP obrigatorios para preco generico, tempo de sessao e processo; os tres passaram e o gate retornou `slice_completion: pass`.
 - Ensaio WhatsApp real para `lateral-preco-generico` passou e virou `FINAL_REHEARSAL_SCENARIO` obrigatorio do gate `atendimento-lateral`.
+- Scenario `lateral-portfolio-disponivel` passou com bot text gate e tail gate confirmando acionamento de portfolio.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -76,7 +77,7 @@ Ampliar a Onda 1 com o proximo comportamento lateral usando o loop completo.
 
 Escopo recomendado:
 
-- escolher entre `portfolio`, `historia_vida` ou `pergunta_imagem`;
+- escolher entre `historia_vida` ou `pergunta_imagem`;
 - criar contrato, scenarios HTTP e gate update;
 - rodar radar HTTP;
 - adicionar WhatsApp real se tocar expectativa operacional ou risco de promessa indevida.
