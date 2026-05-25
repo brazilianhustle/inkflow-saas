@@ -138,6 +138,9 @@ export function summarizeWorkflowDecision(decision = {}) {
   const missingTattoo = Array.isArray(decision?.missingRequirements?.tattoo)
     ? decision.missingRequirements.tattoo.length
     : 0;
+  const requiresOrcamentoHandoffPackage =
+    decision.reason === 'cadastro_and_tattoo_complete'
+    || decision.reason === 'agent_requested_handoff';
 
   return {
     workflow_layer: 'workflow_manager',
@@ -153,6 +156,8 @@ export function summarizeWorkflowDecision(decision = {}) {
     workflow_escalation_reason_code: decision?.escalation?.reason_code || null,
     workflow_escalation_severity: decision?.escalation?.severity || null,
     workflow_escalation_requires_orcid: decision?.escalation?.requires_orcid ?? null,
+    workflow_handoff_package_required: requiresOrcamentoHandoffPackage,
+    workflow_handoff_package_version: requiresOrcamentoHandoffPackage ? 'handoff_package_v1' : null,
   };
 }
 

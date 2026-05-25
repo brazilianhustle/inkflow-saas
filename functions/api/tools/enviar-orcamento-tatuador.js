@@ -108,6 +108,7 @@ export function montarTextoOrcamento(conv, resultadoFotos = null, today = new Da
   if (linhaIdade) linhas.push(linhaIdade);
   if (email) linhas.push(`📧 ${email}`);
   linhas.push('', montarBriefing(conv));
+  linhas.push('', 'Pacote: handoff_package_v1');
 
   if (resultadoFotos?.falhas_total) {
     linhas.push('', '📸 ⚠️ Não foi possível anexar as fotos do briefing. Abra a conversa pra ver.');

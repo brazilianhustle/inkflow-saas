@@ -100,6 +100,8 @@ test('Workflow Manager: resumo observavel nao vaza dados pessoais', () => {
     workflow_escalation_reason_code: null,
     workflow_escalation_severity: null,
     workflow_escalation_requires_orcid: null,
+    workflow_handoff_package_required: true,
+    workflow_handoff_package_version: 'handoff_package_v1',
   });
 });
 
@@ -139,6 +141,8 @@ test('Workflow Manager: escalonamento humano vira transicao formal observavel', 
   assert.equal(metadata.workflow_escalation_reason_code, 'client_upset');
   assert.equal(metadata.workflow_escalation_severity, 'high');
   assert.equal(metadata.workflow_escalation_requires_orcid, false);
+  assert.equal(metadata.workflow_handoff_package_required, false);
+  assert.equal(metadata.workflow_handoff_package_version, null);
 });
 
 test('Workflow Manager: Router sem permissao de mutacao preserva estado', () => {

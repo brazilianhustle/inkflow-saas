@@ -347,6 +347,7 @@ test('montarTextoOrcamento: SEM orcid visivel + linha idade + briefing', () => {
   assert.match(txt, /25 anos/);
   assert.match(txt, /maria@x\.com/);
   assert.match(txt, /borboleta/);
+  assert.match(txt, /Pacote: handoff_package_v1/);
 });
 
 test('montarTextoOrcamento: append nota se resultadoFotos.falhas > 0', () => {
