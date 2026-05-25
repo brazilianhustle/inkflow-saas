@@ -15,6 +15,7 @@ Ao fim de smoke monitorado:
 
 | Data UTC | Run ID | Tipo | Alvo | Telefone | Resultado | Evidencia | Decisao |
 |---|---|---|---|---|---|---|---|
+| 2026-05-25 17:31 | `scenario-tattoo-pedido-humano-handoff-20260525T173158Z-14363` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-pedido-humano-handoff-20260525T173158Z-14363/` | Pedido explicito de humano/tatuador validado em producao: lead novo com "quero falar com o tatuador" virou `estado=aguardando_tatuador`, `orcid=null`, resposta aciona tatuador sem continuar formulario, sem preco/agendamento/sinal, bot text/tail/poll jq gates PASS. |
 | 2026-05-25 17:25 | `scenario-tattoo-cobertura-handoff-humano-20260525T172531Z-30039` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-tattoo-cobertura-handoff-humano-20260525T172531Z-30039/` | Cobertura textual validada em producao: lead novo com "quero cobrir uma tattoo antiga" virou `estado=aguardando_tatuador`, `orcid=null`, resposta citou cobertura/tatuador/seguranca sem pedir altura/local/estilo, sem preco/agendamento/sinal, bot text/tail/poll jq gates PASS. |
 | 2026-05-25 17:17 | `scenario-cadastro-menoridade-handoff-humano-20260525T171756Z-19173` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-cadastro-menoridade-handoff-humano-20260525T171756Z-19173/` | Escalation Manager validado sem regressao no fluxo de menoridade: `estado=aguardando_tatuador`, `orcid=null`, `data_nascimento=2015-03-12`, resposta segura, copy risk baixo, bot text/tail/poll jq gates PASS. |
 | 2026-05-25 17:09 | `scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596/` | Menoridade explicita validada em producao: data `12/03/2015` persistiu como `2015-03-12`, `estado=aguardando_tatuador`, `orcid=null`, resposta informou menor de 18, tatuador, seguranca e responsavel legal, sem preco/agendamento/sinal, bot text, tail e poll jq gates PASS. |
@@ -42,12 +43,12 @@ Ao fim de smoke monitorado:
 
 ## Run De Referencia Atual
 
-### `scenario-tattoo-cobertura-handoff-humano-20260525T172531Z-30039`
+### `scenario-tattoo-pedido-humano-handoff-20260525T173158Z-14363`
 
 Mensagem:
 
 ```text
-quero cobrir uma tattoo antiga no braco
+quero falar com o tatuador
 ```
 
 Estado final:
@@ -63,13 +64,13 @@ Estado final:
 Resposta AI observada:
 
 ```text
-Pra cobertura, o tatuador precisa avaliar direto com segurança antes de seguir. Vou acionar ele para olhar teu caso e te orientar pelos próximos passos.
+Claro. Vou acionar o tatuador para assumir por aqui e te orientar direto.
 ```
 
 Leitura estrategica:
 
 - PASS tecnico.
-- Cobertura textual nao entra em coleta normal e nao cria orcamento.
-- Escalation Manager classifica o motivo como `cover_up`, com severidade alta e sem `orcid`.
+- Pedido explicito de humano nao entra em coleta normal e nao cria orcamento.
+- Escalation Manager classifica o motivo como `human_requested`, com severidade media e sem `orcid`.
 - Tail gate confirmou ausencia de `enviar-orcamento-tatuador`, `pipeline batch failed` e `unhandled`.
 - O scenario fica como evidencia de expansao do Escalation Manager para risco da fase tattoo.

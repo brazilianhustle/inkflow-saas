@@ -18,7 +18,7 @@ deploy: GitHub Actions Deploy to Cloudflare Pages passou em 2026-05-25
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 0fdf8f2 feat: escalate tattoo cover up requests
+ultimo_commit_validado: 708e4f1 feat: escalate explicit human requests
 ```
 
 ## Ultimos Marcos
@@ -57,23 +57,24 @@ ultimo_commit_validado: 0fdf8f2 feat: escalate tattoo cover up requests
 - Menoridade explicita em cadastro validada: `12/03/2015` agora aciona handoff humano seguro, persiste `data_nascimento=2015-03-12`, mantem `orcid=null`, nao chama envio de orcamento e passa bot/tail/poll gates em producao.
 - Escalation Manager iniciado: menoridade agora gera `reason_code=minor_age`, `severity=high`, `requires_orcid=false` e mensagem de Telegram rastreavel, com smoke de producao sem regressao.
 - Escalation Manager expandido para cobertura textual: `cover_up` agora sai para humano em `aguardando_tatuador`, sem `orcid`, sem coleta normal e sem orçamento automatico; smoke HTTP em producao passou.
+- Escalation Manager expandido para pedido explicito de humano/tatuador: `human_requested` agora sai para humano em `aguardando_tatuador`, sem `orcid`, sem coleta normal e sem orcamento automatico; smoke HTTP em producao passou.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-tattoo-cobertura-handoff-humano-20260525T172531Z-30039
+run_id: scenario-tattoo-pedido-humano-handoff-20260525T173158Z-14363
 tipo: Scenario HTTP monitorado
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: aguardando_tatuador
 orcid: none
-evidence: .smoke-evidence/scenario-tattoo-cobertura-handoff-humano-20260525T172531Z-30039/
+evidence: .smoke-evidence/scenario-tattoo-pedido-humano-handoff-20260525T173158Z-14363/
 ```
 
 Mensagem:
 
 ```text
-quero cobrir uma tattoo antiga no braco
+quero falar com o tatuador
 ```
 
 Resultado:
@@ -83,8 +84,8 @@ estado_agente: aguardando_tatuador
 resposta_ai_posterior_ao_humano: true
 orcid: none
 copy_risk: baixo
-copy: aciona tatuador para avaliar cobertura com seguranca, sem seguir orcamento direto
-escalation: cover_up / high / requires_orcid=false
+copy: aciona tatuador para assumir e orientar direto, sem seguir coleta normal
+escalation: human_requested / medium / requires_orcid=false
 chain: HTTP smoke -> webhook -> pipeline -> resposta
 ```
 
