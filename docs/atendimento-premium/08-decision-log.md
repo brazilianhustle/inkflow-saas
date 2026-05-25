@@ -170,6 +170,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** abaixo de 20% de contexto, a operação padrão é gerar o bundle portátil, confirmar gates e seguir pelo repo como fonte de verdade. Nenhum script local promete forçar a compactação interna do Codex; ele torna a retomada determinística.
 
+## 2026-05-25 - Menoridade explícita é handoff humano, não orçamento
+
+**Status:** decidido.
+
+**Decisão:** quando uma data de nascimento explícita indica menor de 18 anos, o cadastro deve acionar handoff humano seguro, persistir a data válida e manter `orcid=null`. Esse caminho não deve chamar `enviar-orcamento-tatuador` nem exigir `orcid` no smoke, porque não é handoff de orçamento.
+
+**Motivo:** o primeiro smoke de menoridade mostrou um risco real: o LLM podia reconhecer a situação, mas não persistir `data_nascimento`, gerando estado final inseguro ou copy incorreta. A defesa precisa existir no servidor, usando a mensagem humana como fonte adicional, não só no prompt.
+
+**Alternativas rejeitadas:**
+
+- depender do LLM para sempre persistir a data;
+- tratar menoridade como orçamento normal;
+- exigir `orcid` em todo `aguardando_tatuador`, mesmo quando o motivo é risco humano;
+- aceitar copy genérica de data inválida quando a data explícita é parsável.
+
+**Camada responsável:** guardrail de cadastro em `enforce-menor-idade`, workflow no `runAgent`, pipeline de handoff humano e smoke harness com `SMOKE_REQUIRE_ORCID`.
+
+**Impacto:** o scenario `cadastro-menoridade-handoff-humano` passou em produção (`scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596`) com `estado=aguardando_tatuador`, `orcid=null`, `data_nascimento=2015-03-12`, copy segura e tail gate sem envio de orçamento.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
@@ -182,7 +201,7 @@ Ainda falta decidir e implementar a extensão da `QuestionPolicy` para:
 - recusa de email;
 - dúvidas laterais durante cadastro.
 
-### Copy premium de maioridade
+### Copy premium de maioridade e menoridade
 
 Resolvido para idade isolada em 2026-05-25:
 
@@ -190,7 +209,14 @@ Resolvido para idade isolada em 2026-05-25:
 - data completa explicada como seguranca e registro de maioridade;
 - smoke `cadastro-data-idade-nao-persiste` passou em producao.
 
-Ainda falta, em slice futuro, validar variações explicitas de menoridade e handoff humano quando aplicável.
+Resolvido para menoridade explicita em 2026-05-25:
+
+- data explícita de menor extrai/persiste `data_nascimento`;
+- estado final vira `aguardando_tatuador`;
+- `orcid` permanece `null`;
+- smoke `cadastro-menoridade-handoff-humano` passou em producao.
+
+Ainda falta, em slice futuro, ampliar variações conversacionais de menoridade e oficializar `EscalationManager` como camada dedicada.
 
 ### IntentPolicy
 

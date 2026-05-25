@@ -15,6 +15,7 @@ Ao fim de smoke monitorado:
 
 | Data UTC | Run ID | Tipo | Alvo | Telefone | Resultado | Evidencia | Decisao |
 |---|---|---|---|---|---|---|---|
+| 2026-05-25 17:09 | `scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596/` | Menoridade explicita validada em producao: data `12/03/2015` persistiu como `2015-03-12`, `estado=aguardando_tatuador`, `orcid=null`, resposta informou menor de 18, tatuador, seguranca e responsavel legal, sem preco/agendamento/sinal, bot text, tail e poll jq gates PASS. |
 | 2026-05-25 16:54 | `scenario-cadastro-data-idade-nao-persiste-20260525T165404Z-8303` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-cadastro-data-idade-nao-persiste-20260525T165404Z-8303/` | Copy de maioridade validada em producao: idade isolada nao persistiu `data_nascimento`, `estado=coletando_cadastro`, `dados_cadastro` preservou apenas `nome`, sem `orcid`, resposta pediu data completa com seguranca e registro de maioridade, `copy_risk=baixo`, bot text e poll jq gates PASS. |
 | 2026-05-25 09:00 | `scenario-cadastro-data-idade-nao-persiste-20260525T090055Z-20793` | Scenario HTTP monitorado | `https://inkflowbrasil.com` | `5521970789797` | PASS | `.smoke-evidence/scenario-cadastro-data-idade-nao-persiste-20260525T090055Z-20793/` | Idade isolada validada: resposta AI nova apos humano exigida pelo polling, `estado=coletando_cadastro`, `dados_cadastro` preservou apenas `nome`, sem `data_nascimento`/`email` vazios, sem `orcid`, `copy_risk=baixo`, bot text e poll jq gates PASS. |
 | 2026-05-25 08:44 | `scenario-whatsapp-real-lateral-pergunta-imagem-sem-midia-20260525T084449Z-30339` | Scenario WhatsApp real | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-lateral-pergunta-imagem-sem-midia-20260525T084449Z-30339/` | Pergunta sobre imagem sem midia validada em cadeia real: Evolution `sendText` HTTP 201, webhook registrou humano real sem media, `estado=coletando_tattoo`, resposta pediu reenvio de foto sem voltar ao formulario, sem preco/agendamento/sinal, `copy_risk=baixo`, bot text gate PASS. |
@@ -39,13 +40,12 @@ Ao fim de smoke monitorado:
 
 ## Run De Referencia Atual
 
-### `scenario-whatsapp-real-cadastro-handoff-20260525T065321Z-13729`
+### `scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596`
 
 Mensagem:
 
 ```text
-pode seguir sem email
-quanto tempo demora?
+12/03/2015
 ```
 
 Estado final:
@@ -53,12 +53,10 @@ Estado final:
 ```json
 {
   "estado_agente": "aguardando_tatuador",
-  "orcid": "orc_nqk5ft",
+  "orcid": null,
   "dados_cadastro": {
     "nome": "Joao Silva",
-    "email": null,
-    "email_recusado": true,
-    "data_nascimento": "1995-03-12"
+    "data_nascimento": "2015-03-12"
   }
 }
 ```
@@ -66,17 +64,13 @@ Estado final:
 Resposta AI observada:
 
 ```text
-O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
-
-Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.
+Como a pessoa que vai tatuar tem menos de 18 anos, eu nao consigo seguir com o orçamento direto por aqui. Vou acionar o tatuador para orientar com segurança sobre responsável legal e próximos passos.
 ```
 
 Leitura estrategica:
 
 - PASS tecnico.
-- Cadeia real WhatsApp validada: `central` enviou mensagem real para o numero do bot e o webhook registrou a mensagem humana exata.
-- Handoff esta operacional.
-- Scenario registry esta operacional como checkpoint reproduzivel.
-- Polling corrigido: com `EXPECTED_STATE`, resposta AI isolada nao aprova o smoke.
-- Copy de encerramento saiu do risco medio para baixo sem prometer preco, prazo especifico ou alterar estado.
-- Proximo upgrade operacional deve expandir cenarios obrigatorios por intent/slice e usar `check-slice-gate.sh` antes de declarar conclusao.
+- Menoridade explicita nao cria orcamento e nao exige `orcid`; este e handoff humano de risco, nao handoff de orcamento.
+- Defesa server-side cobre o caso em que o LLM le a data mas nao persiste `data_nascimento`.
+- Tail gate confirmou ausencia de `enviar-orcamento-tatuador`, `pipeline batch failed` e `unhandled`.
+- O scenario entrou como requisito do gate `cadastro-handoff`.

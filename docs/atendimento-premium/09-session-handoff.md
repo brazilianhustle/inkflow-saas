@@ -38,7 +38,7 @@ main
 Último commit observado após checkpoint:
 
 ```text
-b4710e2 chore: add portable context continuity bundle
+57114ce fix: force minor cadastro from explicit date
 ```
 
 Último deploy de referência da frente:
@@ -51,9 +51,9 @@ Status estratégico:
 
 ```text
 Atendimento premium esta em Autonomy Gate Level 2, com smoke loop real/HTTP monitorado, transcript, julgamento, tail e gates por slice.
-O cadastro-handoff esta funcionalmente protegido: cadastro completo promove para aguardando_tatuador, handoff exige orcid nos smokes relevantes e idade isolada nao persiste data/email vazios.
+O cadastro-handoff esta funcionalmente protegido: cadastro completo promove para aguardando_tatuador, handoff exige orcid nos smokes de orcamento, idade isolada nao persiste data/email vazios e menoridade explicita aciona handoff humano sem criar orcamento.
 O compact integrado foi corrigido na arquitetura: existe hook Claude Code, mas a retomada oficial agora e portavel via `bash scripts/smoke/continuity-bundle.sh --force`, adequado para Codex/API.
-Achado de linguagem registrado: resposta para idade isolada ("idade nao e suficiente") esta funcionalmente correta, mas fria; deve entrar em ajuste futuro de copy/ResponseComposer, sem bloquear a fundacao.
+Achado de linguagem da idade isolada foi corrigido para pedir data completa com seguranca e registro de maioridade.
 ```
 
 ## Mudanças Funcionais Do Checkpoint
@@ -122,12 +122,17 @@ Arquivos de processo/smoke adicionados ou alterados nesta sessão:
 ```text
 .claude/settings.json
 scripts/smoke/continuity-bundle.sh
+scripts/smoke/run-inbound.sh
+scripts/smoke/run-real-whatsapp.sh
+scripts/smoke/render-report.sh
+scripts/smoke/render-triage.sh
 docs/atendimento-premium/12-loop-continuity-protocol.md
 docs/atendimento-premium/17-context-compact-architecture.md
 docs/atendimento-premium/current-objective.md
 docs/atendimento-premium/smoke-runs.md
 docs/atendimento-premium/autonomy-gate.env
 docs/atendimento-premium/slice-gates/cadastro-handoff.env
+docs/atendimento-premium/smoke-scenarios/cadastro-menoridade-handoff-humano.env
 ```
 
 Skills de continuidade ajustadas fora do repo ativo:
@@ -153,7 +158,7 @@ Antes de continuar, conferir `git status --short`. A expectativa após este chec
 Run de referência:
 
 ```text
-scenario-cadastro-data-idade-nao-persiste-20260525T165404Z-8303
+scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596
 ```
 
 Alvo:
@@ -166,17 +171,18 @@ Resultado:
 
 ```text
 PASS
-estado_agente: coletando_cadastro
-data_nascimento_persistida: false
-email_vazio_persistido: false
+estado_agente: aguardando_tatuador
+data_nascimento_persistida: 2015-03-12
+orcid: null
 copy_risk: baixo
-copy: pede data completa com seguranca e registro de maioridade
+copy: menor de 18, tatuador, seguranca e responsavel legal
+tail_gate: sem enviar-orcamento-tatuador/pipeline batch failed/unhandled
 ```
 
 Decisão:
 
 ```text
-O sistema nao aceita idade isolada como data de nascimento registravel, nao persiste campos vazios e usa linguagem de seguranca/registro de maioridade. Gap de copy fria resolvido para este caso.
+O sistema nao segue orcamento direto para menoridade explicita. Mesmo quando o LLM nao persistir a data, a defesa server-side extrai a data da mensagem, persiste `data_nascimento` e aciona handoff humano seguro sem `orcid`.
 ```
 
 ### Correções de smoke - 2026-05-25

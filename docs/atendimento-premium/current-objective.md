@@ -18,6 +18,7 @@ deploy: GitHub Actions Deploy to Cloudflare Pages passou em 2026-05-25
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo
+ultimo_commit_validado: 57114ce fix: force minor cadastro from explicit date
 ```
 
 ## Ultimos Marcos
@@ -53,35 +54,35 @@ worktree_esperado: limpo
 - Micro-slice de cadastro `cadastro-data-idade-nao-persiste` encontrou e corrigiu dois gaps: polling aceitava AI anterior ao humano esperado e pipeline persistia `data_nascimento/email` como string vazia. Apos deploy, smoke passou com `dados_cadastro` preservando apenas `nome`.
 - Compactacao de contexto corrigida na arquitetura: o bundle de continuidade agora e comando portavel (`scripts/smoke/continuity-bundle.sh --force`) e nao depende apenas de hook Claude Code.
 - Copy premium de maioridade ajustada: idade isolada agora pede data completa com seguranca e registro de maioridade, sem frase fria como "idade nao e suficiente"; smoke HTTP em producao passou.
+- Menoridade explicita em cadastro validada: `12/03/2015` agora aciona handoff humano seguro, persiste `data_nascimento=2015-03-12`, mantem `orcid=null`, nao chama envio de orcamento e passa bot/tail/poll gates em producao.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-cadastro-data-idade-nao-persiste-20260525T165404Z-8303
+run_id: scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596
 tipo: Scenario HTTP monitorado
 base_url: https://inkflowbrasil.com
 telefone: 5521970789797
-expected_state: coletando_cadastro
+expected_state: aguardando_tatuador
 orcid: none
-evidence: .smoke-evidence/scenario-cadastro-data-idade-nao-persiste-20260525T165404Z-8303/
+evidence: .smoke-evidence/scenario-cadastro-menoridade-handoff-humano-20260525T170936Z-8596/
 ```
 
 Mensagem:
 
 ```text
-tenho 30 anos
+12/03/2015
 ```
 
 Resultado:
 
 ```text
-estado_agente: coletando_cadastro
+estado_agente: aguardando_tatuador
 resposta_ai_posterior_ao_humano: true
-data_nascimento_persistida: false
-email_vazio_persistido: false
+data_nascimento_persistida: 2015-03-12
 orcid: none
 copy_risk: baixo
-copy: pede data completa com seguranca e registro de maioridade
+copy: aciona tatuador com seguranca e responsavel legal, sem seguir orcamento direto
 chain: HTTP smoke -> webhook -> pipeline -> resposta
 ```
 
@@ -96,7 +97,7 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar a rodada;
 - escolher ate 2 micro-slices relacionados;
 - depois de cada micro-slice, registrar smoke/gate/commit saudavel antes de seguir;
-- candidatos: proximo slice de cadastro premium, refinamento de observabilidade ou escalation/handoff humano.
+- candidatos: consolidar proximo slice de cadastro premium, refinamento de observabilidade ou escalation/handoff humano mais formal.
 
 ## Comando De Retomada
 
