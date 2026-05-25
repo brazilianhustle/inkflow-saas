@@ -33,22 +33,22 @@ main
 Último commit observado após checkpoint:
 
 ```text
-feat: add premium conversation policy checkpoint
+3a0e0d0 feat: resolve cadastro pending questions in router
 ```
 
 Último deploy de referência da frente:
 
 ```text
-https://0585e72c.inkflow-saas.pages.dev
+https://b59bf5bc.inkflow-saas.pages.dev
 ```
 
 Status estratégico:
 
 ```text
 Slice de atendimento lateral + retomada em tattoo passou no smoke analisado.
-Arquitetura estratégica/documental foi formalizada para retomada entre sessões.
-Checkpoint do atendimento premium foi commitado.
-Próximo território natural: cadastro premium ou IntentPolicy, mas não avançar sem confirmar worktree e testes.
+QuestionPolicy para cadastro premium foi implementada, testada, deployada e validada em smoke real controlado.
+O router agora resolve nome completo, data de nascimento, email e recusa de email quando há pergunta pendente em cadastro.
+Achado residual: ao completar cadastro via router com recusa de email + dúvida lateral, o bot diz que segue com o orçamento, mas o estado permanece em coletando_cadastro. Próximo ataque deve fechar a transição/handoff de cadastro completo.
 ```
 
 ## Mudanças Funcionais Do Checkpoint
@@ -67,6 +67,16 @@ functions/_lib/conversation-response-composer.js
 tests/_lib/conversation-policy.test.mjs
 ```
 
+Arquivos funcionais adicionados/alterados no checkpoint de cadastro premium:
+
+```text
+functions/_lib/conversation-policy.js
+functions/_lib/conversation-router.js
+tests/_lib/conversation-policy.test.mjs
+tests/_lib/conversation-router.test.mjs
+tests/_lib/whatsapp-pipeline.test.mjs
+```
+
 Arquivos de documentação incluídos no checkpoint:
 
 ```text
@@ -76,6 +86,13 @@ docs/atendimento-premium/09-session-handoff.md
 docs/canonical/decisions/2026-05-24-atendimento-premium-hybrid-architecture.md
 docs/atendimento-premium/README.md
 docs/canonical/index.md
+```
+
+Arquivos de documentação alterados no checkpoint de metodologia/commit automático:
+
+```text
+docs/canonical/methodology/conversation-change-doctrine.md
+docs/atendimento-premium/01-doutrina.md
 ```
 
 Skills de continuidade ajustadas fora do repo ativo:
@@ -95,6 +112,68 @@ Contrato atual:
 Antes de continuar, conferir `git status --short`. A expectativa após este checkpoint é worktree limpo.
 
 ## Último Smoke Considerado PASS Nesta Frente
+
+### Cadastro premium - QuestionPolicy
+
+Deploy validado:
+
+```text
+https://b59bf5bc.inkflow-saas.pages.dev
+```
+
+Setup controlado:
+
+```text
+tenant teste: db686ef2-ca42-43e4-a831-808984d8d6c6
+telefone: 5521970789797
+estado inicial: coletando_cadastro
+pergunta pendente no histórico: "Pra liberar teu orçamento, me passa nome completo e data de nascimento?"
+```
+
+Fluxo validado:
+
+```text
+Joao Silva
+12/03/1995
+como funciona o orçamento?
+
+pode seguir sem email
+quanto tempo demora?
+```
+
+Estado final observado:
+
+```json
+{
+  "estado_agente": "coletando_cadastro",
+  "dados_cadastro": {
+    "nome": "Joao Silva",
+    "email": null,
+    "email_recusado": true,
+    "data_nascimento": "1995-03-12"
+  },
+  "valor_proposto": null,
+  "orcid": null
+}
+```
+
+Critério aplicado:
+
+- persistiu nome completo e data ISO;
+- respondeu dúvida lateral sobre orçamento antes de retomar;
+- pediu email após nome/data;
+- persistiu recusa de email;
+- respondeu dúvida lateral sobre tempo;
+- não insistiu no email;
+- não criou agendamento/Pix indevido.
+
+Achado residual:
+
+- cadastro ficou completo em `dados_cadastro`, mas o estado permaneceu `coletando_cadastro`;
+- a última resposta foi "Confirmo por aqui e sigo com teu orçamento";
+- próximo slice deve decidir/implementar transição segura quando o router completa cadastro.
+
+### Tattoo - lateral + retomada
 
 Fluxo validado:
 
@@ -155,22 +234,22 @@ Antes de codar nova frente:
 
 1. Confirmar worktree.
 2. Rodar testes relevantes.
-3. Decidir se o próximo slice é `Cadastro Premium` ou `IntentPolicy`.
+3. Confirmar o achado residual do smoke de cadastro.
 4. Criar/atualizar ficha no vault antes de implementação.
 
 Minha recomendação estratégica:
 
 ```text
-Não avançar para cadastro premium sem primeiro confirmar worktree limpo e ler este handoff.
+Não avançar para IntentPolicy antes de fechar a transição de cadastro completo quando a completude veio pelo router.
 ```
 
 Depois disso, o próximo melhor ataque é:
 
 ```text
-QuestionPolicy para cadastro premium
+CadastroCompletePolicy / handoff seguro após router completar cadastro
 ```
 
-Motivo: reutiliza a arquitetura recém-criada e fecha a etapa onde o bot pode pedir dados finais de forma seca ou prematura.
+Motivo: o smoke real provou coleta e recusa de email, mas revelou que a fala de "sigo com teu orçamento" ainda não corresponde a uma transição operacional. Antes de ampliar intents, fechar essa fronteira evita conversa travada em cadastro completo.
 
 ## Checklist De Fechamento De Sessão
 
