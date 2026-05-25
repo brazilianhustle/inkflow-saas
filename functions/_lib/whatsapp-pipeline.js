@@ -450,6 +450,42 @@ export async function processBatch(env, batch, depsOverride = {}) {
     }
     const escalation = evaluateEscalation({ estado_atual: estadoAgente, agentOut });
     if (escalation.required) {
+      try {
+        deps.logAgentTurn?.({
+          conversa_id: conversa.id,
+          tenant_id: tenantId,
+          turn_index: historico.length + 1,
+          agent_name: 'escalation_manager',
+          agent_version: env.AGENT_VERSION || '2026-05-25-escalation-manager-v1',
+          estado_agente: estadoAgente,
+          model: 'rules',
+          client_input_text: texto,
+          client_input_type: imagens.length > 0 ? 'text+image' : 'text',
+          context_metadata: {
+            escalation_required: true,
+            escalation_reason_code: escalation.reason_code,
+            escalation_reason_label: escalation.reason_label,
+            escalation_severity: escalation.severity,
+            escalation_source: escalation.source,
+            escalation_requires_orcid: escalation.requires_orcid === true,
+            agent_used: agentOut.agent_usado || null,
+            agent_action: agentOut.proxima_acao || null,
+            final_state: agentOut.estado_novo || null,
+            msg_row_ids: msgRowIds,
+          },
+          llm_output_parsed: {
+            escalation,
+            resposta_cliente: agentOut.resposta_cliente || null,
+            estado_novo: agentOut.estado_novo || null,
+            proxima_acao: agentOut.proxima_acao || null,
+            campos_faltando: Array.isArray(agentOut.campos_faltando) ? agentOut.campos_faltando : [],
+          },
+          invariant_passed: true,
+          latency_total_ms: Date.now() - t0,
+        });
+      } catch (e) {
+        console.warn('[pipeline] escalation telemetry failed:', e?.message || e);
+      }
       if (!tenant.tatuador_telegram_chat_id) {
         await deps.sendTelegramAdmin(`handoff humano sem tatuador_telegram_chat_id em ${tenant.id} (${escalation.reason_code})`);
       } else {

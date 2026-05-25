@@ -1110,6 +1110,7 @@ test('4d. tattoo pedido humano aciona tatuador sem orçamento', async () => {
 test('4e. tattoo cliente irritado aciona humano com marcador rastreavel', async () => {
   const callToolSpy = mock.fn(async () => ({ ok: true }));
   const sendTelegramSpy = mock.fn(async () => ({ ok: true }));
+  const logAgentTurnSpy = mock.fn();
   let conversaPatch = null;
   const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: { descricao_curta: 'rosa' }, dados_cadastro: {} };
   const deps = mockDeps({
@@ -1125,6 +1126,7 @@ test('4e. tattoo cliente irritado aciona humano com marcador rastreavel', async 
     },
     callTool: callToolSpy,
     sendTelegram: sendTelegramSpy,
+    logAgentTurn: logAgentTurnSpy,
   });
   await processBatch({}, baseBatch(), deps);
   assert.equal(callToolSpy.mock.callCount(), 0);
@@ -1132,6 +1134,13 @@ test('4e. tattoo cliente irritado aciona humano com marcador rastreavel', async 
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /\[escalation:client_upset\]/);
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /cliente irritado/i);
   assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
+  const escalationLog = logAgentTurnSpy.mock.calls
+    .map(call => call.arguments[0])
+    .find(payload => payload.agent_name === 'escalation_manager');
+  assert.ok(escalationLog, 'deve logar decisao explicita do EscalationManager');
+  assert.equal(escalationLog.context_metadata.escalation_reason_code, 'client_upset');
+  assert.equal(escalationLog.context_metadata.escalation_severity, 'high');
+  assert.equal(escalationLog.context_metadata.escalation_requires_orcid, false);
 });
 
 test('5. portfolio intent — Task 10 implementa', async () => {
