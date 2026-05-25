@@ -44,22 +44,41 @@ command -v npx >/dev/null 2>&1 || {
   echo "ERRO: npx nao encontrado; nao consigo iniciar wrangler tail." >&2
   exit 1
 }
+command -v jq >/dev/null 2>&1 || {
+  echo "ERRO: jq nao encontrado; nao consigo resolver deployment id." >&2
+  exit 1
+}
+
+DEPLOYMENT_ID="${SMOKE_TAIL_DEPLOYMENT_ID:-}"
+if [ -z "$DEPLOYMENT_ID" ]; then
+  DEPLOYMENT_ID="$(
+    npx wrangler pages deployment list \
+      --project-name="$PROJECT" \
+      --environment="$ENVIRONMENT" \
+      --json \
+      | jq -r '.[0].Id // empty'
+  )"
+fi
+[ -n "$DEPLOYMENT_ID" ] || {
+  echo "ERRO: nenhuma deployment encontrada para project=$PROJECT environment=$ENVIRONMENT." >&2
+  exit 1
+}
 
 mkdir -p "$(dirname "$LOG_FILE")"
 : > "$LOG_FILE"
 
 if [ "${SMOKE_TAIL_FOLLOW:-}" = "1" ]; then
-  echo "iniciando smoke tail em foreground para project=$PROJECT environment=$ENVIRONMENT"
-  exec npx wrangler pages deployment tail --project-name="$PROJECT" --environment="$ENVIRONMENT"
+  echo "iniciando smoke tail em foreground para project=$PROJECT environment=$ENVIRONMENT deployment=$DEPLOYMENT_ID"
+  exec npx wrangler pages deployment tail "$DEPLOYMENT_ID" --project-name="$PROJECT" --environment="$ENVIRONMENT"
 fi
 
-nohup npx wrangler pages deployment tail --project-name="$PROJECT" --environment="$ENVIRONMENT" >> "$LOG_FILE" 2>&1 &
+nohup npx wrangler pages deployment tail "$DEPLOYMENT_ID" --project-name="$PROJECT" --environment="$ENVIRONMENT" >> "$LOG_FILE" 2>&1 &
 PID="$!"
 echo "$PID" > "$PID_FILE"
 sleep 2
 
 if kill -0 "$PID" 2>/dev/null; then
-  echo "smoke tail iniciada pid=$PID log=$LOG_FILE"
+  echo "smoke tail iniciada pid=$PID deployment=$DEPLOYMENT_ID log=$LOG_FILE"
 else
   echo "ERRO: smoke tail falhou ao iniciar. Ultimas linhas:" >&2
   tail -20 "$LOG_FILE" >&2 || true

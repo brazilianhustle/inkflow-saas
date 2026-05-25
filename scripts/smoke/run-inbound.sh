@@ -107,7 +107,7 @@ bash scripts/smoke-verify.sh "$PHONE" 20 | tee "$EVIDENCE_DIR/verify-before.txt"
 
 echo ""
 echo "[2/4] Enviando inbound com correlation id"
-SMOKE_RUN_ID="$RUN_ID" BASE_URL="$BASE_URL" bash scripts/smoke-inbound.sh "$TEXT" "$PHONE" \
+SMOKE_RUN_ID="$RUN_ID" SMOKE_TAIL_DISABLED=1 BASE_URL="$BASE_URL" bash scripts/smoke-inbound.sh "$TEXT" "$PHONE" \
   | tee "$EVIDENCE_DIR/inbound-response.txt"
 
 echo ""
