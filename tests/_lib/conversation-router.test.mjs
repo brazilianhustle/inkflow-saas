@@ -63,6 +63,25 @@ test('ConversationRouter: pedido explícito de humano aciona escalonamento sem c
   assert.doesNotMatch(out.resposta_cliente, /Qual tua altura|parte do corpo|estilo/i);
 });
 
+test('ConversationRouter: cliente irritado aciona humano com desescalada', () => {
+  assert.equal(_test.detectIntent('vocês demoram demais, ninguém responde')?.intent, 'client_upset');
+
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'vocês demoram demais, ninguém responde',
+    conversa: { dados_coletados: { descricao_curta: 'rosa' }, dados_cadastro: {} },
+  });
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'client_upset');
+  assert.equal(out.proxima_acao, 'erro');
+  assert.equal(out.estado_novo, 'aguardando_tatuador');
+  assert.equal(out.escalation.reason_code, 'client_upset');
+  assert.equal(out.escalation.severity, 'high');
+  assert.match(out.resposta_cliente, /desculpa|frustra/i);
+  assert.match(out.resposta_cliente, /pessoa do estúdio|assumir/i);
+  assert.doesNotMatch(out.resposta_cliente, /Qual tua altura|parte do corpo|estilo/i);
+});
+
 test('ConversationRouter: cobertura textual aciona escalonamento humano sem coleta', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',

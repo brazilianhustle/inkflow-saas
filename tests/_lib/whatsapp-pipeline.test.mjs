@@ -1107,6 +1107,33 @@ test('4d. tattoo pedido humano aciona tatuador sem orçamento', async () => {
   assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
 });
 
+test('4e. tattoo cliente irritado aciona humano com marcador rastreavel', async () => {
+  const callToolSpy = mock.fn(async () => ({ ok: true }));
+  const sendTelegramSpy = mock.fn(async () => ({ ok: true }));
+  let conversaPatch = null;
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: { descricao_curta: 'rosa' }, dados_cadastro: {} };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'vocês demoram demais, ninguém responde' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`)) conversaPatch = body;
+      },
+    }),
+    runAgent: async () => {
+      throw new Error('router deveria interceptar cliente irritado');
+    },
+    callTool: callToolSpy,
+    sendTelegram: sendTelegramSpy,
+  });
+  await processBatch({}, baseBatch(), deps);
+  assert.equal(callToolSpy.mock.callCount(), 0);
+  assert.equal(sendTelegramSpy.mock.callCount(), 1);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /\[escalation:client_upset\]/);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /cliente irritado/i);
+  assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
+});
+
 test('5. portfolio intent — Task 10 implementa', async () => {
   const evoSpy = mock.fn(async () => ({ ok: true }));
   const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };

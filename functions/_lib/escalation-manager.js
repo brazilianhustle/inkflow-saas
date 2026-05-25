@@ -1,5 +1,5 @@
 // Escalation Manager: centraliza quando e por que a IA deve sair de cena.
-// Coberturas formais iniciais: menoridade, cobertura/cover-up e pedido humano.
+// Coberturas formais iniciais: menoridade, cobertura/cover-up, pedido humano e cliente irritado.
 
 function preview(value, max = 500) {
   return String(value || '').slice(0, max);
@@ -45,6 +45,17 @@ export function evaluateEscalation({ estado_atual, agentOut } = {}) {
   }
 
   if (estado_atual === 'tattoo' && agentOut?.proxima_acao === 'erro') {
+    if (fields(agentOut).includes('client_upset_trigger')) {
+      return {
+        required: true,
+        reason_code: 'client_upset',
+        reason_label: 'cliente irritado',
+        severity: 'high',
+        source: 'campos_faltando',
+        requires_orcid: false,
+      };
+    }
+
     if (fields(agentOut).includes('human_requested_trigger')) {
       return {
         required: true,

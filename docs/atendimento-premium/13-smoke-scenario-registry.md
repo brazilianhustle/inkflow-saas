@@ -29,6 +29,7 @@ docs/atendimento-premium/smoke-scenarios/
   lateral-processo-tatuagem.env
   lateral-tempo-sessao.env
   tattoo-cobertura-handoff-humano.env
+  tattoo-cliente-irritado-handoff.env
   tattoo-pedido-humano-handoff.env
   whatsapp-real-cadastro-handoff.env
   whatsapp-real-lateral-historia-vida-homenagem.env
@@ -253,6 +254,24 @@ Contrato:
 estado final deve virar aguardando_tatuador
 orcid deve continuar null
 resposta deve avisar que vai acionar o tatuador
+resposta nao pode continuar formulario, falar de preco, agendamento ou sinal
+tail nao deve chamar enviar-orcamento-tatuador
+```
+
+`tattoo-cliente-irritado-handoff`
+
+Objetivo:
+
+```text
+Validar que cliente claramente irritado aciona humano com desescalada, sem seguir coleta.
+```
+
+Contrato:
+
+```text
+estado final deve virar aguardando_tatuador
+orcid deve continuar null
+resposta deve pedir desculpa/reconhecer frustração e acionar pessoa do estúdio
 resposta nao pode continuar formulario, falar de preco, agendamento ou sinal
 tail nao deve chamar enviar-orcamento-tatuador
 ```

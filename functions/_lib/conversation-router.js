@@ -154,6 +154,11 @@ function detectIntent(text) {
     || /\bme\s+(passa|encaminha|chama|bota)\b.{0,30}\b(tatuador|humano|atendente|responsavel|responsável)\b/.test(s);
   if (pedidoHumano) return { intent: 'human_requested', confidence: 0.9, risk: 'high' };
 
+  const clienteIrritado =
+    /\b(voces|vocês|atendimento|ninguem|ninguém|bot|robo|robô)\b.{0,60}\b(demoram|demora|demorando|nao respondem|não respondem|nao responde|não responde|ruim|horrivel|horrível|pessimo|péssimo|irritado|irritada|chateado|chateada|cansado|cansada)\b/.test(s)
+    || /\b(estou|to|tô|fiquei)\b.{0,30}\b(irritado|irritada|chateado|chateada|cansado|cansada)\b/.test(s);
+  if (clienteIrritado) return { intent: 'client_upset', confidence: 0.86, risk: 'high' };
+
   const cobertura =
     /\b(cobrir|cobertura|cover up|coverup|tapar|disfarcar|disfarçar)\b/.test(s)
     && /\b(tattoo|tatuagem|desenho|nome|frase|antiga|velha|ja tenho|já tenho|tenho uma)\b/.test(s);
@@ -204,7 +209,7 @@ function responseForIntent(intent, estado, conversa, context = {}) {
 }
 
 function escalationOutput({ detected, estado_atual, intent }) {
-  if (intent !== 'cobertura' && intent !== 'human_requested') return null;
+  if (!['cobertura', 'human_requested', 'client_upset'].includes(intent)) return null;
   if (intent === 'human_requested') {
     return {
       ok: true,
@@ -229,6 +234,36 @@ function escalationOutput({ detected, estado_atual, intent }) {
         reason_code: 'human_requested',
         reason_label: 'cliente pediu humano',
         severity: 'medium',
+        source: 'conversation_router',
+        requires_orcid: false,
+      },
+    };
+  }
+
+  if (intent === 'client_upset') {
+    return {
+      ok: true,
+      handled_by: 'conversation_router',
+      intent,
+      confidence: detected.confidence,
+      risk: detected.risk,
+      resposta_cliente: 'Entendi, desculpa pela frustração. Vou acionar uma pessoa do estúdio para assumir por aqui e te ajudar direto.',
+      estado_novo: 'aguardando_tatuador',
+      dados_persistidos: {},
+      dados_completos: false,
+      campos_faltando: ['client_upset_trigger'],
+      campos_conflitantes: [],
+      proxima_acao: 'erro',
+      agent_usado: estado_atual === 'cadastro' ? 'cadastro' : 'conversation_router',
+      side_effects: [],
+      urls_portfolio: [],
+      analise_imagens: null,
+      cobertura_suspeita: null,
+      escalation: {
+        required: true,
+        reason_code: 'client_upset',
+        reason_label: 'cliente irritado',
+        severity: 'high',
         source: 'conversation_router',
         requires_orcid: false,
       },
