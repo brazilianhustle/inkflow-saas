@@ -29,6 +29,7 @@ docs/atendimento-premium/smoke-scenarios/
   lateral-tempo-sessao.env
   whatsapp-real-cadastro-handoff.env
   whatsapp-real-lateral-historia-vida-homenagem.env
+  whatsapp-real-lateral-pergunta-imagem-com-midia.env
   whatsapp-real-lateral-preco-generico.env
 ```
 
@@ -58,9 +59,9 @@ EXPECTED_BOT_REGEX
 FORBIDDEN_BOT_REGEX
 EXPECTED_TAIL_REGEX
 FORBIDDEN_TAIL_REGEX
-SMOKE_MEDIA_BASE64     somente HTTP; inline base64 curto para midia sintetica
-SMOKE_MEDIA_FILE       somente HTTP; caminho local para midia sintetica
-SMOKE_MEDIA_MIMETYPE   somente HTTP; ex: image/png, image/jpeg
+SMOKE_MEDIA_BASE64     inline base64 curto para midia sintetica
+SMOKE_MEDIA_FILE       caminho local para midia sintetica
+SMOKE_MEDIA_MIMETYPE   ex: image/png, image/jpeg
 SMOKE_BOT_NUMBER      somente via ambiente local/secret manager para whatsapp_real
 ```
 
@@ -179,6 +180,22 @@ Contrato:
 ```text
 resposta deve citar dependencia/avaliacao/tatuador
 resposta nao pode conter preco ou fechamento de valor
+```
+
+`whatsapp-real-lateral-pergunta-imagem-com-midia`
+
+Objetivo:
+
+```text
+Validar a mesma protecao visual em cadeia real central -> WhatsApp -> bot -> webhook -> pipeline com imagem enviada pela Evolution.
+```
+
+Contrato:
+
+```text
+estado final deve continuar coletando_tattoo
+resposta deve reconhecer imagem/foto/referencia/desenho/local/corpo ou mencionar ambiguidade visual
+resposta nao pode pedir reenvio por ausencia de imagem, falar de preco, agendar, sinal ou fechar proposta
 ```
 
 `lateral-portfolio-disponivel`

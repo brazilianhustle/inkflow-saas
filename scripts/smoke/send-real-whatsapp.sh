@@ -2,12 +2,18 @@
 # scripts/smoke/send-real-whatsapp.sh
 # Envia uma mensagem real de WhatsApp pela Evolution API usando a instancia
 # remetente configurada para QA. Default: instancia central.
+#
+# Midia opcional:
+#   SMOKE_MEDIA_FILE=path/to/image.png bash scripts/smoke/send-real-whatsapp.sh "caption" 45999012357
+#   SMOKE_MEDIA_BASE64=... SMOKE_MEDIA_MIMETYPE=image/png bash scripts/smoke/send-real-whatsapp.sh "caption" 45999012357
 
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 TEXT="${1:?uso: send-real-whatsapp.sh \"mensagem\" <bot_number>}"
 BOT_NUMBER="${2:-${SMOKE_BOT_NUMBER:-}}"
+SMOKE_MEDIA_MIMETYPE="${SMOKE_MEDIA_MIMETYPE:-image/png}"
+SMOKE_MEDIA_FILENAME="${SMOKE_MEDIA_FILENAME:-}"
 
 DEVVARS=".dev.vars"
 [ -f "$DEVVARS" ] || { echo "ERRO: $DEVVARS nao existe." >&2; exit 1; }
@@ -29,6 +35,14 @@ STATE_APIKEY="${SMOKE_EVO_STATE_APIKEY:-${EVO_GLOBAL_KEY:-$SENDER_APIKEY}}"
 [ -n "$SENDER_INSTANCE" ] || { echo "ERRO: instancia remetente ausente." >&2; exit 1; }
 [ -n "$SENDER_APIKEY" ] || { echo "ERRO: apikey da instancia remetente ausente." >&2; exit 1; }
 
+MEDIA_BASE64="${SMOKE_MEDIA_BASE64:-}"
+if [ -z "$MEDIA_BASE64" ] && [ -n "${SMOKE_MEDIA_FILE:-}" ]; then
+  [ -f "$SMOKE_MEDIA_FILE" ] || { echo "ERRO: SMOKE_MEDIA_FILE nao encontrado: $SMOKE_MEDIA_FILE" >&2; exit 1; }
+  MEDIA_BASE64="$(base64 < "$SMOKE_MEDIA_FILE" | tr -d '\n\r')"
+  SMOKE_MEDIA_FILENAME="${SMOKE_MEDIA_FILENAME:-$(basename "$SMOKE_MEDIA_FILE")}"
+fi
+SMOKE_MEDIA_FILENAME="${SMOKE_MEDIA_FILENAME:-smoke-image.png}"
+
 state_json="$(
   curl -sS "$EVO_BASE/instance/connectionState/$SENDER_INSTANCE" \
     -H "apikey: $STATE_APIKEY"
@@ -40,20 +54,36 @@ if [ "$state" != "open" ]; then
   exit 1
 fi
 
-body="$(jq -nc --arg number "$BOT_NUMBER" --arg text "$TEXT" '{number:$number,text:$text}')"
+if [ -n "$MEDIA_BASE64" ]; then
+  endpoint="message/sendMedia"
+  body="$(
+    jq -nc \
+      --arg number "$BOT_NUMBER" \
+      --arg caption "$TEXT" \
+      --arg mediatype "image" \
+      --arg mimetype "$SMOKE_MEDIA_MIMETYPE" \
+      --arg media "$MEDIA_BASE64" \
+      --arg fileName "$SMOKE_MEDIA_FILENAME" \
+      '{number:$number,mediatype:$mediatype,mimetype:$mimetype,caption:$caption,media:$media,fileName:$fileName}'
+  )"
+  echo "POST $EVO_BASE/$endpoint/$SENDER_INSTANCE  (to=$BOT_NUMBER media=$SMOKE_MEDIA_MIMETYPE)"
+else
+  endpoint="message/sendText"
+  body="$(jq -nc --arg number "$BOT_NUMBER" --arg text "$TEXT" '{number:$number,text:$text}')"
+  echo "POST $EVO_BASE/$endpoint/$SENDER_INSTANCE  (to=$BOT_NUMBER)"
+fi
 
-echo "POST $EVO_BASE/message/sendText/$SENDER_INSTANCE  (to=$BOT_NUMBER)"
 tmp="$(mktemp)"
 status="$(
   curl -sS -o "$tmp" -w "%{http_code}" \
-    -X POST "$EVO_BASE/message/sendText/$SENDER_INSTANCE" \
+    -X POST "$EVO_BASE/$endpoint/$SENDER_INSTANCE" \
     -H "apikey: $SENDER_APIKEY" \
     -H "Content-Type: application/json" \
     --data "$body"
 )"
 
 if [[ ! "$status" =~ ^2 ]]; then
-  echo "ERRO: Evolution sendText falhou HTTP $status" >&2
+  echo "ERRO: Evolution $endpoint falhou HTTP $status" >&2
   cat "$tmp" >&2
   rm -f "$tmp"
   exit 1
@@ -64,6 +94,8 @@ jq -nc \
   --arg status "$status" \
   --arg instance "$SENDER_INSTANCE" \
   --arg to "$BOT_NUMBER" \
+  --arg endpoint "$endpoint" \
+  --arg media_mimetype "${SMOKE_MEDIA_MIMETYPE:-}" \
   --arg response_raw "$response_raw" \
-  '{ok:true,http_status:$status,instance:$instance,to:$to,response_raw:$response_raw}'
+  '{ok:true,http_status:$status,instance:$instance,to:$to,endpoint:$endpoint,media_mimetype:$media_mimetype,response_raw:$response_raw}'
 rm -f "$tmp"
