@@ -61,16 +61,16 @@ orcid: orc_2x6t5l
 ## Proximo Ataque
 
 ```text
-Rodar o primeiro smoke WhatsApp real usando `central` com transcript.md + judgment.md nativos.
+Validar o primeiro smoke scenario versionado: `cadastro-handoff-email-recusado`.
 ```
 
 Escopo recomendado:
 
-- informar `SMOKE_BOT_NUMBER`;
-- limpar/preparar o estado da conversa de teste quando necessario;
-- executar `scripts/smoke/run-real-whatsapp.sh`;
-- atualizar `smoke-runs.md` com o primeiro run real que sair com transcript + julgamento;
-- depois avaliar se vale adicionar judge LLM opcional.
+- executar `SMOKE_SCENARIO_DRY_RUN=1 bash scripts/smoke/run-scenario.sh cadastro-handoff-email-recusado`;
+- executar o cenario real com `bash scripts/smoke/run-scenario.sh cadastro-handoff-email-recusado`;
+- validar evidence com `summary.md`, `poll.json`, `transcript.md` e `judgment.md`;
+- atualizar `smoke-runs.md` com o run gerado pelo registry;
+- depois criar cenario WhatsApp real com `central`.
 
 ## Comando De Retomada
 
