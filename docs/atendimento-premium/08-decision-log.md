@@ -679,6 +679,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `cadastro-question-policy-nome` passou em teste local, HTTP radar e WhatsApp real. Houve uma falha intermediaria de contrato do smoke (`.conversa` vs `.conversas[0]`), corrigida e revalidada. Provas reais: Cliente "Joao Silva" -> Bot "Me passa tua data de nascimento completa?".
 
+## 2026-05-25 - QuestionPolicy resolve data pendente sem LLM
+
+**Status:** decidido.
+
+**Decisão:** quando o estado e cadastro, ha pergunta pendente de data de nascimento e o cliente responde uma data explicita, o `ConversationRouter` deve persistir a data ISO via `ConversationPolicy` e retomar pedindo e-mail opcional.
+
+**Motivo:** data explicita em formato brasileiro e deterministica. O sistema nao deve chamar LLM para normalizar `12/03/1995`, mas tambem nao deve aceitar idade isolada como data. O gate local cobre esse limite.
+
+**Alternativas rejeitadas:**
+
+- aceitar idade isolada como data;
+- liberar handoff antes de email presente ou recusa explicita;
+- manter o gate de copy em `baixo`, ja que a mencao a e-mail opcional e esperada e nao e stop condition;
+- implementar email e recusa no mesmo micro-slice.
+
+**Camada responsável:** ConversationPolicy, ConversationRouter, Workflow Manager e Smoke Scenario Registry.
+
+**Impacto:** `cadastro-question-policy-data` passou em teste local, HTTP radar e WhatsApp real. Houve uma falha intermediaria de copy-gate (`baixo` vs `medio`) causada pela mencao esperada a e-mail opcional; contrato ajustado para `medio`, mantendo stop real em `copy_risk=alto`. Provas reais: Cliente "12/03/1995" -> Bot "E o e-mail? Se preferir seguir sem, me avisa".
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

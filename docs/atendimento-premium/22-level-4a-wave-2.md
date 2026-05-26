@@ -79,7 +79,8 @@ Parar a onda se ocorrer:
 ```text
 status: em-andamento
 micro_slice_1: cadastro-question-policy-nome PASS
-micro_slice_atual: cadastro-question-policy-data
+micro_slice_2: cadastro-question-policy-data PASS
+micro_slice_atual: cadastro-question-policy-email
 promocao_4b_4c: proibida
 ```
 
@@ -109,4 +110,32 @@ Provas conclusivas reais:
 ```text
 Cliente: "Joao Silva"
 Bot: "Me passa tua data de nascimento completa?"
+```
+
+## Evidencia Micro-Slice 2
+
+```text
+micro_slice: cadastro-question-policy-data
+commit_codigo: 0723417 feat: resolve pending cadastro birth date answers
+commit_gate_fix: c68acfe test: allow optional email copy risk in data smoke
+tests_local: ConversationPolicy/Router PASS, WhatsApp Pipeline PASS
+ci_github: PASS
+deploy_github: PASS
+http_radar: scenario-cadastro-question-policy-data-20260526T003828Z-21859 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-question-policy-data-20260526T004242Z-9351 PASS
+falha_intermediaria: scenario-cadastro-question-policy-data-20260526T003600Z-7842 FAIL por copy gate baixo demais; comportamento correto e contrato ajustado para medio
+estado_final: coletando_cadastro
+dados_cadastro.nome: Joao Silva
+dados_cadastro.data_nascimento: 1995-03-12
+orcid: null
+copy_risk: medio
+agent_log_gate: conversation_router cadastro_pending_answer, pending_data_nascimento_answered, can_mutate_state=true
+decisao: seguir para cadastro-question-policy-email
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: "12/03/1995"
+Bot: "E o e-mail? Se preferir seguir sem, me avisa"
 ```
