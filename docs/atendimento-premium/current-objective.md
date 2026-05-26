@@ -92,6 +92,7 @@ autonomy_limit: ate 6 micro-slices da mesma onda declarada
 - Primeira onda Level 4A declarada: `level4a-wave-1-monitoring-security`, focada em monitoramento, smoke e seguranca operacional sem alterar comportamento conversacional.
 - Micro-slice Level 4A `security-gate` fechado: `check-security-gate.sh` valida npm audit da raiz, npm audit do web e Dependabot aberto.
 - Micro-slice Level 4A `wave-health-summary` fechado: `wave-health.sh` consolida Autonomy Gate, Security Gate e Git status.
+- Micro-slice Level 4A `smoke-evidence-index` fechado: `evidence-index.sh` lista rapidamente os PASS recentes, com foco em WhatsApp real.
 - Workflow Manager passou a registrar decisao propria em `agent_turn_logs`: cadastro completo com recusa de email agora confirma `workflow_layer=workflow_manager`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a impor nao-mutacao para intents laterais do Router com `can_mutate_state=false`: preco generico preservou `estado=coletando_tattoo` e registrou `workflow_reason=state_preserved_by_router_policy`; HTTP radar e WhatsApp real definitivo passaram exigindo Router + Workflow Manager no mesmo turno.
 - Workflow Manager passou a calcular requisitos faltantes exatos por fase e expor bloqueio formal de cadastro incompleto: idade isolada preservou `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null` e registrou `workflow_reason=requirements_missing` com contagens de faltantes; HTTP radar e WhatsApp real definitivo passaram.
@@ -133,7 +134,7 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: continuar `level4a-wave-1-monitoring-security`, com micro-slice atual `smoke-evidence-index`.
+Proximo passo recomendado: continuar `level4a-wave-1-monitoring-security`, com micro-slice atual `level4a-stop-audit`.
 ```
 
 Escopo recomendado:

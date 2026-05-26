@@ -67,5 +67,6 @@ Parar a onda se ocorrer:
 status: em-andamento
 micro_slice_1: security-gate PASS
 micro_slice_2: wave-health-summary PASS
-micro_slice_atual: smoke-evidence-index
+micro_slice_3: smoke-evidence-index PASS
+micro_slice_atual: level4a-stop-audit
 ```

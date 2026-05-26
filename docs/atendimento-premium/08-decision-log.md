@@ -587,6 +587,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** a primeira onda Level 4A passa a ter um comando rapido de saude antes de continuar para o proximo micro-slice. Nao altera comportamento do bot.
 
+## 2026-05-25 - Evidence Index para provas reais
+
+**Status:** decidido.
+
+**Decisão:** criar `scripts/smoke/evidence-index.sh` para listar rapidamente os PASS recentes, separando WhatsApp real de todos os smokes.
+
+**Motivo:** a metodologia exige prova real curta no fechamento de slices. Com dezenas de smokes, procurar manualmente em `smoke-runs.md` aumenta atrito e risco de usar evidencia errada.
+
+**Alternativas rejeitadas:**
+
+- continuar lendo `smoke-runs.md` manualmente;
+- duplicar evidencias longas em novos docs;
+- acoplar esse indice ao runner de smoke.
+
+**Camada responsável:** Smoke Monitoring Process e Evidence Registry.
+
+**Impacto:** a onda Level 4A ganha um comando rapido para localizar run_id, tipo e pasta de evidencia recente. Nao altera comportamento conversacional e nao exige WhatsApp real novo.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
