@@ -45,6 +45,10 @@ export function fotoAmbiguaComoReferenciaQuestion() {
   return 'Perfeito, deixei essa imagem como referência do desenho. Agora me manda a foto do local onde tu quer tatuar.';
 }
 
+export function minorAgeHandoffReply() {
+  return 'Como a pessoa que vai tatuar tem menos de 18 anos, vou chamar o tatuador para seguir com segurança sobre responsável legal e próximos passos.';
+}
+
 export const _test = {
   hasValue,
 };

@@ -8,6 +8,7 @@ import {
   fotoAmbiguaComoLocalCadastroQuestion,
   fotoAmbiguaComoReferenciaQuestion,
   fotoLocalRecebidaCadastroQuestion,
+  minorAgeHandoffReply,
   referenciaRecebidaCadastroQuestion,
 } from '../../functions/_lib/conversation-voice-policy.js';
 
@@ -63,4 +64,14 @@ test('VoicePolicy: familia de media/cadastro fica centralizada', () => {
   );
   assert.doesNotMatch(fotoLocalRecebidaCadastroQuestion(), /liberar teu orçamento|orçamento personalizado/i);
   assert.doesNotMatch(fotoAmbiguaComoLocalCadastroQuestion(), /liberar teu orçamento|orçamento personalizado/i);
+});
+
+test('VoicePolicy: menoridade preserva segurança legal sem rigidez antiga', () => {
+  const text = minorAgeHandoffReply();
+  assert.match(text, /menos de 18 anos/i);
+  assert.match(text, /tatuador/i);
+  assert.match(text, /segurança/i);
+  assert.match(text, /respons[aá]vel legal/i);
+  assert.doesNotMatch(text, /acionar o tatuador para orientar/i);
+  assert.doesNotMatch(text, /orçamento direto/i);
 });

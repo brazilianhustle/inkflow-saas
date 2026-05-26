@@ -3,6 +3,8 @@
 // (Tattoo nao tem data_nascimento). Pattern Sub-2: agent decide intent +
 // estrutura, helpers validam.
 
+import { minorAgeHandoffReply } from '../../../_lib/conversation-voice-policy.js';
+
 export function calcIdade(isoDate) {
   if (!isoDate || typeof isoDate !== 'string') return null;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
@@ -37,8 +39,7 @@ export function enforceMenorIdade(out, mensagem = '') {
     return {
       ...out,
       proxima_acao: 'erro',
-      resposta_cliente:
-        'Como a pessoa que vai tatuar tem menos de 18 anos, eu nao consigo seguir com o orçamento direto por aqui. Vou acionar o tatuador para orientar com segurança sobre responsável legal e próximos passos.',
+      resposta_cliente: minorAgeHandoffReply(),
       dados_persistidos: {
         ...(out.dados_persistidos || {}),
         data_nascimento: dateForCheck,

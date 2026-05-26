@@ -12,7 +12,7 @@
 
 import { extractLocalAnswer, extractStyleAnswer, resolveExplicitAge, resolveHeightCm, resolvePendingFormQuestion, resolveTattooSizeCm } from './conversation-policy.js';
 import { composeRouterResponse } from './conversation-response-composer.js';
-import { cadastroResumeQuestion } from './conversation-voice-policy.js';
+import { cadastroResumeQuestion, minorAgeHandoffReply } from './conversation-voice-policy.js';
 
 const HANDLED_STATES = new Set(['tattoo', 'cadastro']);
 
@@ -409,7 +409,7 @@ function escalationOutput({ detected, estado_atual, intent }) {
       risk: detected.risk,
       reason: detected.reason,
       can_mutate_state: true,
-      resposta_cliente: 'Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador para orientar com segurança sobre responsável legal.',
+      resposta_cliente: minorAgeHandoffReply(),
       estado_novo: 'aguardando_tatuador',
       dados_persistidos: {},
       dados_completos: false,
