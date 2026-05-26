@@ -13,13 +13,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ```text
 status: level4b_wave_18_closed
 branch: main
-ultimo_commit: c83b558 docs: close wave 18
+ultimo_commit: ae2e664 docs: close wave 18
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: pendente no commit c83b558
+deploy: pendente no commit ae2e664
 tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 18 micro-slice 2 sem mudanca funcional; contratos reexecutados com HTTP + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: c83b558
+ultimo_commit_validado: ae2e664
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
