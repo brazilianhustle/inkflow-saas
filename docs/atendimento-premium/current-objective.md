@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_21_micro_slice_1_pass
+status: level4b_wave_22_jornada_2_pass_pending_commit
 branch: main
-ultimo_commit: 019cb28 docs: validate wave 21 cadastro batch
-ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: PASS no commit 5fe5ae5; Wave 21 micro-slice 1 sem mudanca funcional no bot
-tests: bash -n run-scenario PASS; Wave 21 micro-slice 1 HTTP + WhatsApp real PASS
+ultimo_commit: 763d8f9 docs: record wave 22 long journey pass
+ultimo_commit_funcional: cc77bba fix: track photo request after multi info
+deploy: PASS no commit 763d8f9; Jornada 2 sem mudanca funcional no bot, apenas runner/smoke docs
+tests: bash -n run-scenario PASS; Wave 22 Jornada 2 HTTP radar + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
-worktree_esperado: limpo
-ultimo_commit_validado: 019cb28 + Wave 21 micro-slice 1 por HTTP + WhatsApp real
+worktree_esperado: pendente de commit da Jornada 2
+ultimo_commit_validado: 763d8f9 + Wave 22 Jornada 2 por HTTP radar e WhatsApp real
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -27,6 +27,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 
 ## Ultimos Marcos
 
+- Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
 - Smoke HTTP monitorado oficializado com tail, snapshots, polling, evidencia e `orcid` obrigatorio em handoff.
 - Smoke WhatsApp real criado usando Evolution `central` como instancia remetente.

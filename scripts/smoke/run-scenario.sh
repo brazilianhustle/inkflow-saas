@@ -977,11 +977,12 @@ write_single_turn_step_env() {
   local step="$1"
   local path="$2"
   local scenario_type="${3:-http}"
-  local message expected_state expected_human expected_copy bot_regex forbidden_bot poll_jq agent_jq media_base64 media_file media_mimetype
+  local message expected_state expected_human expected_copy require_ai bot_regex forbidden_bot poll_jq agent_jq media_base64 media_file media_mimetype
   message="$(step_value MESSAGE "$step")"
   expected_state="$(step_value EXPECTED_STATE "$step")"
   expected_human="$(step_value EXPECTED_HUMAN_TEXT "$step")"
   expected_copy="$(step_value EXPECTED_COPY_RISK_MAX "$step")"
+  require_ai="$(step_value SMOKE_REQUIRE_AI_RESPONSE "$step")"
   bot_regex="$(step_value EXPECTED_BOT_REGEX "$step")"
   forbidden_bot="$(step_value FORBIDDEN_BOT_REGEX "$step")"
   poll_jq="$(step_value EXPECTED_POLL_JQ_TRUE "$step")"
@@ -994,6 +995,7 @@ write_single_turn_step_env() {
   [ -n "$expected_state" ] || expected_state="$EXPECTED_STATE"
   [ -n "$expected_human" ] || expected_human="$message"
   [ -n "$expected_copy" ] || expected_copy="$EXPECTED_COPY_RISK_MAX"
+  [ -n "$require_ai" ] || require_ai="${SMOKE_REQUIRE_AI_RESPONSE:-1}"
 
   {
     printf 'SCENARIO_ID=%s\n' "$(shell_quote "${SCENARIO_ID}-step${step}")"
@@ -1010,7 +1012,7 @@ write_single_turn_step_env() {
     printf 'EXPECTED_STATE=%s\n' "$(shell_quote "$expected_state")"
     printf 'EXPECTED_HUMAN_TEXT=%s\n' "$(shell_quote "$expected_human")"
     [ -n "$expected_copy" ] && printf 'EXPECTED_COPY_RISK_MAX=%s\n' "$(shell_quote "$expected_copy")"
-    printf 'SMOKE_REQUIRE_AI_RESPONSE=%s\n' "$(shell_quote "${SMOKE_REQUIRE_AI_RESPONSE:-1}")"
+    printf 'SMOKE_REQUIRE_AI_RESPONSE=%s\n' "$(shell_quote "$require_ai")"
     [ -n "$media_base64" ] && printf 'SMOKE_MEDIA_BASE64=%s\n' "$(shell_quote "$media_base64")"
     [ -n "$media_file" ] && printf 'SMOKE_MEDIA_FILE=%s\n' "$(shell_quote "$media_file")"
     [ -n "$media_mimetype" ] && printf 'SMOKE_MEDIA_MIMETYPE=%s\n' "$(shell_quote "$media_mimetype")"

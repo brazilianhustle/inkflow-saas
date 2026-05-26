@@ -152,3 +152,65 @@ Bot: Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por 
 Leitura estrategica: a primeira jornada longa provou que micro-slices anteriores escondiam um gap real de encadeamento sem seed. A Wave 22 ja gerou valor estrutural: encontrou a falha, corrigiu a causa no Router, fortaleceu o runner multi-turn com midia por etapa e validou a conversa completa no WhatsApp real.
 
 Decisao: Jornada 1 PASS. Antes de encerrar a Wave 22, recomenda-se uma segunda jornada longa de contraste sem midia ou com pergunta lateral durante cadastro, para medir naturalidade e repeticao em outro caminho.
+
+## Jornada 2 - PASS
+
+Contrato declarado:
+
+```text
+http_radar: long-journey-cadastro-lateral-handoff
+whatsapp_real: whatsapp-real-long-journey-cadastro-lateral-handoff
+turnos: 7
+cadeia: multi-info tattoo -> foto local -> nome -> lateral tempo durante cadastro -> data -> recusa email -> texto pos-handoff
+```
+
+Fortalecimento metodologico:
+
+- `run-scenario.sh` agora aceita `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
+- Isso permite validar jornadas mistas em que os primeiros passos exigem resposta da IA, mas o passo final pos-handoff exige ausencia de nova IA.
+
+Validacao:
+
+```text
+bash -n scripts/smoke/run-scenario.sh: PASS
+http_radar: scenario-long-journey-cadastro-lateral-handoff-20260526T230701Z-22157 PASS
+whatsapp_real: scenario-whatsapp-real-long-journey-cadastro-lateral-handoff-20260526T231029Z-8936 PASS
+estado_final: aguardando_tatuador
+orcid: orc_2kyzzm
+foto_local_msg_id: 12920
+foto_local_file_id: persistido
+email_recusado: true
+workflow_reason: cadastro_and_tattoo_complete
+handoff_package: handoff_package_v1
+copy_risk_final: baixo
+pos_handoff_ai_after_human: 0
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: quero uma borboleta fineline na perna, tenho 1.70
+Bot: Boa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?
+
+Cliente: segue foto do local + image/png
+Bot: Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro.
+
+Cliente: Joao Silva
+Bot: Me passa tua data de nascimento completa?
+
+Cliente: quanto tempo demora?
+Bot: O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia. Me passa tua data de nascimento completa?
+
+Cliente: 12/03/1995
+Bot: E o e-mail? Se preferir seguir sem, me avisa
+
+Cliente: prefiro falar por aqui
+Bot: Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.
+
+Cliente: lembrei que queria pequeno
+Bot: sem nova resposta automatica; mensagem ficou encaminhada em `aguardando_tatuador`.
+```
+
+Leitura estrategica: Jornada 2 validou o contraste que faltava na Wave 22. A pergunta lateral durante cadastro foi respondida sem mutar estado, sem apagar nome, sem criar ORCID prematuro e com retomada correta de data. Depois do handoff, nova mensagem real do cliente nao reabriu coleta e nao gerou IA adicional.
+
+Decisao: Wave 22 tem duas jornadas longas reais PASS e pode ser fechada com seguranca apos commit, CI/deploy e `wave-health` final.
