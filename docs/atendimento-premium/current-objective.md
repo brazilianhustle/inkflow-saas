@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_10_telegram_media_package_audit_pass
+status: level4b_wave_11_post_handoff_media_forwarding_pass
 branch: main
-ultimo_commit: HEAD test: accept escaped telegram media tail logs
+ultimo_commit: f4cfc61 test: cover post-handoff media forwarding
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
-tests: npm test PASS local 1194/1194; testes focados Wave 10 PASS 98/98
+tests: npm test PASS local 1194/1194; testes focados Wave 11 PASS 70/70
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos closeout da Wave 10
-ultimo_commit_validado: HEAD
+worktree_esperado: limpo apos closeout da Wave 11
+ultimo_commit_validado: f4cfc61
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -131,55 +131,50 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Workflow Manager passou a impor nao-mutacao para intents laterais do Router com `can_mutate_state=false`: preco generico preservou `estado=coletando_tattoo` e registrou `workflow_reason=state_preserved_by_router_policy`; HTTP radar e WhatsApp real definitivo passaram exigindo Router + Workflow Manager no mesmo turno.
 - Workflow Manager passou a calcular requisitos faltantes exatos por fase e expor bloqueio formal de cadastro incompleto: idade isolada preservou `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null` e registrou `workflow_reason=requirements_missing` com contagens de faltantes; HTTP radar e WhatsApp real definitivo passaram.
 - Workflow Manager passou a oficializar transicoes de escalation/handoff humano: cliente irritado saiu para `aguardando_tatuador` sem `orcid`, sem orçamento automatico e com `workflow_reason=escalation_required` ligado ao `EscalationManager`; HTTP radar e WhatsApp real definitivo passaram.
+- Wave 11 validou midia adicional pos-handoff: em `aguardando_tatuador`, nova imagem enviada pelo cliente e reencaminhada ao tatuador, sem reabrir coleta e sem nova resposta AI apos o humano; HTTP radar e WhatsApp real definitivo passaram.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-after-media-telegram-media-package-20260526T081935Z-25180
-run_id_real: scenario-whatsapp-real-cadastro-after-media-telegram-media-package-20260526T082042Z-12788
-tipo: Scenario WhatsApp real de auditoria Telegram pos-midia da Wave 10
+run_id_http: scenario-post-handoff-media-forwarding-20260526T083321Z-3770
+run_id_real: scenario-whatsapp-real-post-handoff-media-forwarding-20260526T083424Z-5240
+tipo: Scenario WhatsApp real de midia adicional pos-handoff da Wave 11
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: criado
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-after-media-telegram-media-package-20260526T082042Z-12788/
+orcid: orc_poshandoff
+evidence: .smoke-evidence/scenario-whatsapp-real-post-handoff-media-forwarding-20260526T083424Z-5240/
 ```
 
 Mensagem:
 
 ```text
-joao@example.com
+mais uma referencia + image/png
 ```
 
 Resultado:
 
 ```text
 estado_agente: aguardando_tatuador
-resposta_ai_posterior_ao_humano: true
-orcid: orc_rttylv
+resposta_ai_posterior_ao_humano: false
+orcid: orc_poshandoff
 dados_coletados.descricao_curta: rosa
 dados_coletados.local_corpo: antebraco
 dados_coletados.altura_cm: 170
-dados_coletados.foto_local_msg_id: 12679
-dados_coletados.foto_local_file_id: persistido
-dados_coletados.refs_imagens_msg_ids: [12680]
-dados_coletados.refs_imagens_file_ids: 1 item persistido
-dados_coletados.tentativas_foto_local: 1
 dados_cadastro.nome: Joao Silva
 dados_cadastro.data_nascimento: 1995-03-12
 dados_cadastro.email: joao@example.com
-dados_cadastro.email_recusado: false/absent
-telegram_media: fotos-orcamento-enviadas enviadas=2 falhas_total=false
-copy_risk: baixo
-copy: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
-decision_chain: foto local fresca -> referencia fresca -> email valido -> workflow handoff package -> Telegram media enviada -> file_ids persistidos -> orcid criado -> aguardando_tatuador
-chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll por estado
+telegram_media: pos-handoff-midia-encaminhada
+copy_risk: baixo para fluxo terminal sem nova AI
+copy: sem nova resposta automatica apos a midia adicional
+decision_chain: estado terminal -> mensagem real com midia -> Telegram forward -> cleanup base64 -> estado preservado -> sem reabertura de coleta
+chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline terminal -> Telegram -> poll/tail gates
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: manter Level 4B e declarar a proxima onda funcional leve apos wave-health final.
+Proximo passo recomendado: manter Level 4B, rodar wave-health final e declarar a proxima onda funcional leve.
 ```
 
 Escopo recomendado:
@@ -187,9 +182,9 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
-- usar `docs/atendimento-premium/33-level-4b-wave-10.md` como fechamento da onda atual;
+- usar `docs/atendimento-premium/34-level-4b-wave-11.md` como fechamento da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
-- Wave 10 fechou auditoria do pacote Telegram pos-midia com midia real e WhatsApp real definitivo;
+- Wave 11 fechou midia adicional pos-handoff com midia real e WhatsApp real definitivo;
 - proximo alvo funcional deve ser declarado antes de editar codigo;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;

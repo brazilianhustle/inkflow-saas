@@ -950,6 +950,29 @@ decisao: manter Level 4B; 4C bloqueado
 proximo passo: declarar proxima onda funcional leve depois de wave-health final
 ```
 
+Wave 11 fechada:
+
+```text
+wave: level4b-wave-11-post-handoff-media-forwarding
+status: PASS
+commit_funcional: f4cfc61 test: cover post-handoff media forwarding
+tests_focados: bash -n scripts/smoke/run-scenario.sh scripts/smoke/run-inbound.sh scripts/smoke/run-real-whatsapp.sh scripts/smoke/render-report.sh PASS; node --test tests/integration/pos-handoff-foto.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 70/70
+tests_local: npm test PASS 1194/1194
+ci: PASS
+deploy: PASS
+http_radar: scenario-post-handoff-media-forwarding-20260526T083321Z-3770 PASS
+whatsapp_real: scenario-whatsapp-real-post-handoff-media-forwarding-20260526T083424Z-5240 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "mais uma referencia" + image/png
+bot: sem nova resposta automatica apos a midia adicional
+estado: aguardando_tatuador
+orcid: orc_poshandoff
+telegram: pos-handoff-midia-encaminhada
+aprendizado: fluxos terminais usam SMOKE_REQUIRE_AI_RESPONSE=0; o gate correto e zero AI posterior ao humano novo, nao zero AI em todo snapshot
+decisao: manter Level 4B; 4C bloqueado
+proximo passo: rodar wave-health final, commitar closeout e declarar proxima onda funcional leve
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

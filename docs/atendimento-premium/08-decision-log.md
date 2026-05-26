@@ -1333,6 +1333,27 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** foram adicionados seed com mídia real, cenários HTTP/WhatsApp real de auditoria Telegram, espera de side-effects no runner de smoke e regex de tail compatível com logs escapados. HTTP radar `scenario-cadastro-after-media-telegram-media-package-20260526T081935Z-25180` passou e WhatsApp real `scenario-whatsapp-real-cadastro-after-media-telegram-media-package-20260526T082042Z-12788` passou, com `enviadas=2` e `file_ids` persistidos.
 
+### Wave 11 - Midia Adicional Pos-Handoff
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** depois que a conversa já está em `aguardando_tatuador`, mídia adicional do cliente deve ser encaminhada ao tatuador e não deve reabrir coleta nem gerar nova resposta normal do bot.
+
+**Motivo:** o padrão premium não termina no primeiro handoff. O cliente pode mandar mais referência depois, e o sistema precisa preservar a linha operacional: humano recebe o material, estado terminal fica estável e o bot não volta para perguntas antigas.
+
+**Alternativas rejeitadas:**
+
+- tratar mídia pós-handoff como novo turno normal do agente;
+- exigir nova resposta AI para fluxo terminal;
+- validar apenas por banco sem evidência de tail;
+- aceitar zero AI em todo snapshot, ignorando seeds/histórico dentro da janela de polling.
+
+**Camada responsável:** Workflow terminal do pipeline, Telegram handoff, Observabilidade, Smoke Scenario Registry.
+
+**Impacto:** o pipeline passou a emitir `pos-handoff-midia-encaminhada`; o runner oficializou `SMOKE_REQUIRE_AI_RESPONSE=0`; os relatórios toleram fluxo terminal sem AI; HTTP radar `scenario-post-handoff-media-forwarding-20260526T083321Z-3770` passou; WhatsApp real `scenario-whatsapp-real-post-handoff-media-forwarding-20260526T083424Z-5240` passou.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
