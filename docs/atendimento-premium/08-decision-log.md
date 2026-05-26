@@ -850,6 +850,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** o scenario `whatsapp-real-cadastro-lateral-data-recovery` passou com run `scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T033539Z-27181`. A metodologia fica reforcada: HTTP multi-turn e radar; WhatsApp real multi-turn e prova conclusiva.
 
+## 2026-05-26 - Level 4B Wave 1 concluida sem promocao para 4C
+
+**Status:** decidido.
+
+**Decisão:** fechar `level4b-wave-1-multiturn-smoke` como PASS, manter Level 4B e nao promover para 4C.
+
+**Motivo:** a primeira onda 4B foi saudavel, com HTTP multi-turn, WhatsApp real multi-turn, CI, deploy, Security Gate e Wave Health passando. Ainda assim, 4C exige pelo menos duas ondas 4B saudaveis para provar repetibilidade antes de ampliar autonomia.
+
+**Alternativas rejeitadas:**
+
+- promover para 4C apos uma unica onda 4B;
+- abrir uma onda maior sem closeout formal;
+- tratar o runner multi-turn como produto final em vez de infraestrutura de validacao;
+- relaxar a exigencia de WhatsApp real definitivo em fluxos conversacionais.
+
+**Camada responsável:** Autonomy Gate, Level 4 Loop Policy, Smoke Scenario Registry e Observabilidade.
+
+**Impacto:** a proxima frente deve continuar em Level 4B, com ate 8 micro-slices relacionados, HTTP radar e WhatsApp real definitivo para qualquer comportamento conversacional. 4C segue bloqueado ate pelo menos mais uma onda 4B saudavel.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

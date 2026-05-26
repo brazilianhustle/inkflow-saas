@@ -79,14 +79,14 @@ Parar a onda se ocorrer:
 ## Resultado Atual
 
 ```text
-status: em-andamento
+status: concluida
 micro_slice_1: multiturn-scenario-contract PASS
 micro_slice_2: multiturn-http-runner PASS
 micro_slice_3: multiturn-whatsapp-real-runner PASS
 micro_slice_4: cadastro-lateral-data-recovery-http PASS
 micro_slice_5: cadastro-lateral-data-recovery-whatsapp-real PASS
 micro_slice_6: multiturn-evidence-summary PASS
-micro_slice_atual: level4b-wave-1-closeout
+micro_slice_7: level4b-wave-1-closeout PASS
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -155,6 +155,52 @@ judgment_final: PASS
 copy_risk_max: medio
 risco_residual: baixo
 promocao_4c: nao recomendada nesta onda
+```
+
+## Closeout
+
+```text
+wave: level4b-wave-1-multiturn-smoke
+status: PASS
+commits:
+  - bbbadeb docs: define multiturn scenario contract
+  - 7aa20e7 feat: support http multiturn smoke scenarios
+  - b71484a feat: support whatsapp real multiturn smoke scenarios
+  - db97f09 docs: summarize level 4b multiturn evidence
+ci: PASS
+deploy: PASS
+wave_health_final: PASS
+security_gate: PASS
+worktree_final: clean
+autonomy_decision: manter Level 4B
+4c_decision: bloqueada
+```
+
+Conclusao:
+
+- A onda cumpriu o objetivo central: validar conversa multi-turn em HTTP radar e WhatsApp real definitivo.
+- O fluxo `lateral durante cadastro -> data no turno seguinte` esta protegido por scenario versionado.
+- O runner agora preserva evidencia por passo e evidencia final consolidada.
+- A cadeia real `central -> bot -> webhook -> pipeline -> resposta` passou com duas mensagens sucessivas.
+- Nao houve regressao de estado, persistencia, handoff, `orcid`, copy gate, Security Gate ou Autonomy Gate.
+
+Decisao estrategica:
+
+```text
+manter_level: 4B
+motivo: primeira onda 4B saudavel, mas ainda e apenas 1 onda 4B concluida
+promover_4c: nao
+criterio_para_4c: exige pelo menos mais 1 onda 4B saudavel, com WhatsApp real definitivo e sem stop condition
+proximo_ataque_recomendado: nova onda 4B funcional, escolhendo um fluxo de maior valor com superficie ainda verde/amarela
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente 1: "quanto tempo demora?"
+Bot 1: "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia. Me passa tua data de nascimento completa?"
+Cliente 2: "12/03/1995"
+Bot 2: "E o e-mail? Se preferir seguir sem, me avisa"
 ```
 
 ## Evidencia Micro-Slice 1

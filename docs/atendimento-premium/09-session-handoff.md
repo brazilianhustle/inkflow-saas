@@ -515,7 +515,7 @@ primeiro micro-slice: multiturn-scenario-contract
 Ultimo micro-slice validado em Level 4B:
 
 ```text
-Multiturn Smoke - WhatsApp Real Runner
+Level 4B Wave 1 - Closeout
 run_id_http: scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904
 run_id_real: scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T033539Z-27181
 status: PASS
@@ -524,7 +524,10 @@ contrato: STEP_COUNT, MESSAGE_N, gates por step e evidencia steps/<n>/ preservad
 runner_http_multiturn: implementado
 runner_whatsapp_real_multiturn: implementado
 evidence_summary: PASS
-proximo micro-slice: level4b-wave-1-closeout
+closeout: PASS
+autonomy_decision: manter Level 4B
+4c_decision: bloqueada ate pelo menos mais uma onda 4B saudavel
+proximo passo: declarar proxima onda Level 4B funcional em zona verde/amarela
 prova_real: Cliente 1 "quanto tempo demora?" -> Bot 1 "O tempo de sessão depende do tamanho, detalhe e local do corpo... Me passa tua data de nascimento completa?"; Cliente 2 "12/03/1995" -> Bot 2 "E o e-mail? Se preferir seguir sem, me avisa"
 telemetria: step 1 Workflow Manager state_preserved_by_router_policy; step 2 Router pending_data_nascimento_answered.
 ```
