@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_22_jornada_2_pass_pending_commit
+status: level4b_wave_23_ready_naturalidade_premium
 branch: main
-ultimo_commit: 763d8f9 docs: record wave 22 long journey pass
+ultimo_commit: c53ba24 docs: validate wave 22 cadastro lateral journey
 ultimo_commit_funcional: cc77bba fix: track photo request after multi info
-deploy: PASS no commit 763d8f9; Jornada 2 sem mudanca funcional no bot, apenas runner/smoke docs
-tests: bash -n run-scenario PASS; Wave 22 Jornada 2 HTTP radar + WhatsApp real PASS
+deploy: PASS no commit c53ba24; Jornada 2 sem mudanca funcional no bot, apenas runner/smoke docs
+tests: CI PASS 26480585595; deploy PASS 26480585605; Wave 22 Jornada 2 HTTP radar + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
-worktree_esperado: pendente de commit da Jornada 2
-ultimo_commit_validado: 763d8f9 + Wave 22 Jornada 2 por HTTP radar e WhatsApp real
+worktree_esperado: limpo
+ultimo_commit_validado: c53ba24 + Wave 22 Jornada 2 por HTTP radar e WhatsApp real + wave-health PASS
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -27,6 +27,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 
 ## Ultimos Marcos
 
+- Wave 23 preparada como proxima frente estrategica: Naturalidade Premium em jornadas longas reais, com foco em abertura, retomada, cadastro e handoff sem remendos determinisiticos por frase.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
 - Smoke HTTP monitorado oficializado com tail, snapshots, polling, evidencia e `orcid` obrigatorio em handoff.
