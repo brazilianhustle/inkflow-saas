@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_20_micro_slice_2_pass
+status: level4b_wave_20_closed_pass
 branch: main
-ultimo_commit: 2dfb136 docs: record wave 20 cadastro recovery pass
+ultimo_commit: 0788347 docs: record wave 20 cadastro resume pass
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: PASS no commit 2dfb136; Wave 20 micro-slice 2 sem mudanca funcional
-tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 20 micro-slice 2 HTTP + WhatsApp real PASS
+deploy: PASS no commit 0788347; Wave 20 closeout em doc sem mudanca funcional
+tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 20 HTTP + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 2dfb136 + Wave 20 micro-slice 2 por HTTP + WhatsApp real
+ultimo_commit_validado: 0788347 + Wave 20 closeout
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -192,8 +192,17 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: decidir entre uma terceira variacao estreita da Wave 20 ou fechar a onda. Preferencia atual: fechar Wave 20 se nao houver gap novo, pois os dois cenarios principais da familia passaram em HTTP radar e WhatsApp real definitivo. Manter Level 4B; nao subir para 4C.
+Proximo passo recomendado: abrir nova onda leve em Level 4B, fora de preco/agenda/pagamento/secrets. Candidato preferencial: uma familia funcional com ganho claro de produto, nao mera revalidacao repetitiva. Manter 4C bloqueado.
 ```
+
+Atualizacao 2026-05-26 21:36 UTC:
+
+- Wave 20 fechada com PASS.
+- Cobertura final: cadastro pendente de data com recuperacao multi-turn + cadastro vazio com retomada nome/data.
+- Todos os cenarios principais passaram em HTTP radar e WhatsApp real definitivo pela instancia `central`.
+- `wave-health` PASS, Security Gate PASS, Dependabot 0, Evidence Orphan Gate PASS com WARNs historicos nao bloqueantes.
+- Decisao: manter Level 4B, nao promover 4C.
+- Provas conclusivas reais: Cliente `quanto tempo demora?`; Bot `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.` Cliente `12/03/1995`; Bot `E o e-mail? Se preferir seguir sem, me avisa`. Cliente `quanto tempo demora?`; Bot respondeu tempo e retomou `Pra montar teu cadastro, me passa teu nome completo e data de nascimento?`.
 
 Atualizacao 2026-05-26 21:33 UTC:
 

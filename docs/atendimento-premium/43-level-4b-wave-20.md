@@ -131,3 +131,57 @@ Estado final: `coletando_cadastro`, `orcid=null`, `dados_cadastro={}`.
 ## Decisao Apos Micro-Slice 2
 
 Manter Level 4B. A Wave 20 ja cobriu dois pontos da familia: cadastro pendente de data com recuperacao multi-turn e cadastro vazio com retomada nome/data. Proximo ataque recomendado: escolher uma terceira variacao estreita se houver ganho claro, ou fechar Wave 20 para evitar repeticao de revalidacoes ja saudaveis.
+
+## Closeout - Wave 20
+
+PASS. A onda validou recuperacao de cadastro apos duvida lateral sem alterar codigo funcional. Os dois pontos principais da familia passaram em HTTP radar e WhatsApp real definitivo:
+
+```text
+cadastro pendente de data:
+- HTTP: scenario-cadastro-lateral-data-recovery-20260526T211602Z-31472 PASS
+- WhatsApp real: scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T211646Z-28418 PASS
+- estado_final: coletando_cadastro
+- orcid: null
+- data_nascimento: 1995-03-12 apos o segundo turno
+
+cadastro vazio:
+- HTTP: scenario-cadastro-resume-nome-data-natural-20260526T213201Z-8633 PASS
+- WhatsApp real: scenario-whatsapp-real-cadastro-resume-nome-data-natural-20260526T213232Z-28275 PASS
+- estado_final: coletando_cadastro
+- orcid: null
+- dados_cadastro: {}
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: quanto tempo demora?
+Bot: O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
+
+Cliente: 12/03/1995
+Bot: E o e-mail? Se preferir seguir sem, me avisa
+
+Cliente: quanto tempo demora?
+Bot: O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
+Retomada: Pra montar teu cadastro, me passa teu nome completo e data de nascimento?
+```
+
+Gates finais:
+
+```text
+wave_health: PASS
+autonomy_gate: keep
+security_gate: PASS
+dependabot: 0 alertas abertos
+evidence_orphan_gate: PASS com WARNs historicos nao bloqueantes
+worktree: clean antes do closeout doc
+```
+
+Decisao:
+
+```text
+wave_status: closed_pass
+autonomy_level: manter 4B
+level_4c: bloqueado
+proximo_ataque: abrir nova onda leve fora de preco/agenda/pagamento/secrets
+```
