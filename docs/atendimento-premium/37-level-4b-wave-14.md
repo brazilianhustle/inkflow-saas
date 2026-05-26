@@ -46,6 +46,10 @@ whatsapp_real: scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-202
 - `orcid` e criado normalmente para handoff de orcamento.
 - Bot nao insiste em e-mail, nome ou data.
 
+## Micro-Slice 2
+
+Em implementacao: validar `melhor falar por aqui` como segunda variacao natural de recusa de e-mail opcional, com o mesmo contrato de handoff e WhatsApp real.
+
 ## Provas Conclusivas Reais
 
 Cliente: `prefiro falar por aqui`
