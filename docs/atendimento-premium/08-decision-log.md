@@ -1421,7 +1421,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Data:** 2026-05-26
 
-**Status:** primeiro micro-slice validado.
+**Status:** dois micro-slices validados.
 
 **Decisão:** iniciar `level4b-wave-15-minor-age-natural-variants` para tratar `sou menor de idade` como menoridade explicita, sem exigir idade numerica.
 
@@ -1437,7 +1437,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Camada responsável:** ConversationPolicy, ConversationRouter, Escalation Manager, Smoke Scenario Registry.
 
-**Impacto:** `resolveExplicitAge` passou a reconhecer `sou menor de idade` e a respeitar a negacao `nao sou menor de idade`. HTTP radar `scenario-cadastro-menoridade-natural-handoff-humano-20260526T165653Z-17022` passou; WhatsApp real `scenario-whatsapp-real-cadastro-menoridade-natural-handoff-humano-20260526T165811Z-26978` passou; logs confirmaram Router `minor_age_explicit` e Escalation Manager `minor_age`.
+**Impacto:** `resolveExplicitAge` passou a reconhecer `sou menor de idade` e a respeitar a negacao `nao sou menor de idade`. HTTP radar `scenario-cadastro-menoridade-natural-handoff-humano-20260526T165653Z-17022` e WhatsApp real `scenario-whatsapp-real-cadastro-menoridade-natural-handoff-humano-20260526T165811Z-26978` passaram para a declaracao natural sem numero; HTTP radar `scenario-cadastro-idade-17-handoff-humano-20260526T170830Z-24069` e WhatsApp real `scenario-whatsapp-real-cadastro-idade-17-handoff-humano-20260526T171946Z-31823` passaram para `tenho 17 anos`; logs confirmaram Router `minor_age_explicit` e Escalation Manager `minor_age`.
 
 ## Decisões Em Aberto
 

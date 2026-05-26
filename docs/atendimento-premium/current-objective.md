@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_15_minor_age_natural_pass
+status: level4b_wave_15_age_17_pass
 branch: main
-ultimo_commit: 2a60215 feat: detect natural minor age disclosure
+ultimo_commit: dde6737 test: cover age 17 minor handoff
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
-tests: npm test PASS local 1200/1200; testes focados Wave 15 micro-slice 1 PASS 140/140; CI PASS no GitHub Actions
+tests: npm test PASS local 1201/1201; testes focados Wave 15 micro-slice 2 PASS 141/141; CI PASS no GitHub Actions
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos closeout da Wave 15 micro-slice 1
-ultimo_commit_validado: 2a60215
+worktree_esperado: limpo apos closeout da Wave 15 micro-slice 2
+ultimo_commit_validado: dde6737
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -140,24 +140,25 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 14 micro-slice 3 passou: `por aqui mesmo` tambem vira `email_recusado=true`, cria `orcid`, promove `aguardando_tatuador` e passa HTTP radar + WhatsApp real definitivo.
 - Wave 15 declarada: `level4b-wave-15-minor-age-natural-variants`, foco leve em menoridade natural no cadastro, sem preco, agenda, pagamento, secrets ou 4C.
 - Wave 15 micro-slice 1 passou: `sou menor de idade` sai para humano, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e passa HTTP radar + WhatsApp real definitivo.
+- Wave 15 micro-slice 2 passou: `tenho 17 anos` sai para humano, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e passa HTTP radar + WhatsApp real definitivo.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-menoridade-natural-handoff-humano-20260526T165653Z-17022
-run_id_real: scenario-whatsapp-real-cadastro-menoridade-natural-handoff-humano-20260526T165811Z-26978
+run_id_http: scenario-cadastro-idade-17-handoff-humano-20260526T170830Z-24069
+run_id_real: scenario-whatsapp-real-cadastro-idade-17-handoff-humano-20260526T171946Z-31823
 tipo: Scenario WhatsApp real de menoridade natural da Wave 15
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-menoridade-natural-handoff-humano-20260526T165811Z-26978/
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-idade-17-handoff-humano-20260526T171946Z-31823/
 ```
 
 Mensagem:
 
 ```text
-sou menor de idade
+tenho 17 anos
 ```
 
 Resultado:
@@ -177,7 +178,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router m
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: manter Level 4B e decidir se continua Wave 15 com `tenho 17 anos` ou fecha a onda apos a variacao natural sem numero.
+Proximo passo recomendado: manter Level 4B e fechar a Wave 15 ou declarar nova onda leve.
 ```
 
 Escopo recomendado:

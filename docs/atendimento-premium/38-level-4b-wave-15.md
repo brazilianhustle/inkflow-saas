@@ -22,7 +22,7 @@ Fortalecer a menoridade em cadastro para variações naturais sem depender de da
 
 ## Estado
 
-PASS parcial: micro-slice 1 concluido.
+PASS parcial: micro-slices 1 e 2 concluidos.
 
 ## Micro-Slice 1
 
@@ -48,8 +48,24 @@ Estado final: `aguardando_tatuador`, `orcid=null`, `data_nascimento=null`.
 
 ## Micro-Slice 2
 
-Em implementacao: validar `tenho 17 anos` como variacao numerica diferente de menoridade, acionando humano sem inventar `data_nascimento` e sem criar `orcid`.
+PASS: `tenho 17 anos` validado como variacao numerica diferente de menoridade, acionando humano sem inventar `data_nascimento` e sem criar `orcid`.
+
+```text
+commit_funcional: dde6737 test: cover age 17 minor handoff
+tests_focados: bash -n scripts/smoke/run-scenario.sh scripts/smoke/run-inbound.sh scripts/smoke/run-real-whatsapp.sh scripts/smoke/render-report.sh PASS; node --test tests/_lib/conversation-policy.test.mjs tests/_lib/conversation-router.test.mjs tests/_lib/escalation-manager.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 141/141
+tests_local: npm test PASS 1201/1201
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-idade-17-handoff-humano-20260526T170830Z-24069 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-idade-17-handoff-humano-20260526T171946Z-31823 PASS
+```
+
+Cliente: `tenho 17 anos`
+
+Bot: `Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador para orientar com segurança sobre responsável legal.`
+
+Estado final: `aguardando_tatuador`, `orcid=null`, `data_nascimento=null`.
 
 ## Decisao
 
-Manter Level 4B. A Wave 14 fica encerrada pragmaticamente com tres variacoes reais de recusa de e-mail; a Wave 15 move para uma frente de risco maior e escopo estreito: menoridade declarada em linguagem natural. Proximo micro-slice recomendado: validar uma variacao numerica diferente (`tenho 17 anos`) ou fechar a onda se o objetivo for apenas cobrir declaracao natural sem numero.
+Manter Level 4B. A Wave 14 fica encerrada pragmaticamente com tres variacoes reais de recusa de e-mail; a Wave 15 move para uma frente de risco maior e escopo estreito: menoridade declarada em linguagem natural. Com `sou menor de idade` e `tenho 17 anos` validados em WhatsApp real, o proximo passo recomendado e fechar a Wave 15 ou atacar uma nova onda leve.

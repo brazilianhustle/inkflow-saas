@@ -1119,6 +1119,32 @@ restricoes: nao tocar preco, sinal, pagamento, agenda, secrets ou 4C
 proximo passo: rodar wave-health final e decidir entre `tenho 17 anos` ou closeout da Wave 15
 ```
 
+Wave 15 micro-slice 2 fechado:
+
+```text
+wave: level4b-wave-15-minor-age-natural-variants
+status: micro-slice 2 PASS
+segundo_micro_slice: "tenho 17 anos" quando cadastro aguarda data
+objetivo: tratar idade 17 como risco high, sem inventar data e sem criar orcamento
+commit_funcional: dde6737 test: cover age 17 minor handoff
+tests_focados: bash -n scripts/smoke/run-scenario.sh scripts/smoke/run-inbound.sh scripts/smoke/run-real-whatsapp.sh scripts/smoke/render-report.sh PASS; node --test tests/_lib/conversation-policy.test.mjs tests/_lib/conversation-router.test.mjs tests/_lib/escalation-manager.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 141/141
+tests_local: npm test PASS 1201/1201
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-idade-17-handoff-humano-20260526T170830Z-24069 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-idade-17-handoff-humano-20260526T171946Z-31823 PASS
+cliente: "tenho 17 anos"
+bot: "Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador para orientar com segurança sobre responsável legal."
+estado: aguardando_tatuador
+orcid: null
+data_nascimento: null
+router: minor_age_explicit, explicit_minor_age, high
+escalation: minor_age, high, requires_orcid=false
+zona: amarela
+restricoes: nao tocar preco, sinal, pagamento, agenda, secrets ou 4C
+proximo passo: rodar wave-health final e fechar Wave 15 ou declarar nova onda leve
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:
