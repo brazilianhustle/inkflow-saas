@@ -58,7 +58,7 @@ last_snapshot="{}"
 echo "poll: aguardando processamento phone=$PHONE timeout=${TIMEOUT_SECONDS}s" >&2
 
 while [ "$SECONDS" -lt "$deadline" ]; do
-  conv="$(get "conversas?tenant_id=eq.${TENANT}&telefone=eq.${PHONE}&select=estado_agente,orcid,updated_at,dados_cadastro&limit=1")"
+  conv="$(get "conversas?tenant_id=eq.${TENANT}&telefone=eq.${PHONE}&select=estado_agente,orcid,updated_at,dados_coletados,dados_cadastro&limit=1")"
   msgs="$(get "conversa_mensagens?session_id=eq.${SID}&created_at=gte.${SINCE_ISO}&select=created_at,status,message&order=created_at.asc")"
   last_snapshot="$(jq -nc --argjson conv "$conv" --argjson msgs "$msgs" '{conversas:$conv,mensagens:$msgs}')"
 

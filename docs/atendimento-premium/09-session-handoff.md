@@ -532,6 +532,20 @@ prova_real: Cliente 1 "quanto tempo demora?" -> Bot 1 "O tempo de sessão depend
 telemetria: step 1 Workflow Manager state_preserved_by_router_policy; step 2 Router pending_data_nascimento_answered.
 ```
 
+Proxima onda Level 4B declarada:
+
+```text
+wave: level4b-wave-2-tattoo-multi-info
+doc: docs/atendimento-premium/24-level-4b-wave-2.md
+objetivo: validar extracao de varias informacoes de tattoo no mesmo turno
+risco: amarelo
+janela: ate 8 micro-slices
+primeiro scenario HTTP: tattoo-multi-info-basic
+primeiro scenario WhatsApp real: whatsapp-real-tattoo-multi-info-basic
+primeiro fluxo: Cliente "quero uma rosa fineline no antebraco, tenho 1,70"
+4C: bloqueado
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

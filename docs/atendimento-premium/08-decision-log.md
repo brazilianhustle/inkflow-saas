@@ -869,6 +869,44 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** a proxima frente deve continuar em Level 4B, com ate 8 micro-slices relacionados, HTTP radar e WhatsApp real definitivo para qualquer comportamento conversacional. 4C segue bloqueado ate pelo menos mais uma onda 4B saudavel.
 
+## 2026-05-26 - Segunda onda 4B foca multi-info de tattoo
+
+**Status:** decidido.
+
+**Decisão:** declarar `level4b-wave-2-tattoo-multi-info` para validar que o bot extrai varias informacoes de tattoo no mesmo turno e nao repete perguntas ja respondidas.
+
+**Motivo:** o mapa de turnos humanos classifica `multi_info` como coleta de alta prioridade. Cliente real frequentemente manda ideia, estilo, local, tamanho/altura juntos. O padrao premium precisa aproveitar esses dados de uma vez, reduzindo friccao e repeticao.
+
+**Alternativas rejeitadas:**
+
+- atacar preco, sinal, pagamento ou agenda nesta onda;
+- promover para 4C apos apenas uma onda 4B saudavel;
+- fazer copy ampla sem contrato de persistencia;
+- validar multi-info apenas por prompt sem HTTP/WhatsApp real.
+
+**Camada responsável:** Agent operacional de tattoo, Prompt de coleta tattoo, Workflow Manager, Smoke Scenario Registry e Observabilidade.
+
+**Impacto:** a nova onda permanece em Level 4B, zona amarela, com primeiro alvo `tattoo-multi-info-basic`: `quero uma rosa fineline no antebraco, tenho 1,70`. O slice so fecha com HTTP radar e WhatsApp real definitivo.
+
+## 2026-05-26 - Multi-info basico deve ser deterministico no Router
+
+**Status:** decidido.
+
+**Decisão:** tratar multi-info basico de tattoo no `ConversationRouter`, persistindo campos seguros sem depender do Agent operacional.
+
+**Motivo:** o primeiro radar HTTP da Wave 2 mostrou que a mensagem `quero uma rosa fineline no antebraco, tenho 1,70` caiu no fallback do Agent operacional depois de latencia alta, sem persistir dados. Ideia, local, estilo e altura sao campos estruturados e podem ser resolvidos com baixo risco pelo Router.
+
+**Alternativas rejeitadas:**
+
+- aumentar apenas timeout do smoke;
+- aceitar fallback como resposta valida;
+- tentar resolver com copy/prompt antes de criar contrato deterministico;
+- seguir para WhatsApp real sem HTTP radar PASS.
+
+**Camada responsável:** ConversationRouter, ConversationPolicy, Workflow Manager e Smoke Scenario Registry.
+
+**Impacto:** o Router passa a emitir intent `multi_info`, `can_mutate_state=true`, `reason=multiple_tattoo_fields_detected` e `dados_persistidos` com os campos encontrados. O smoke so pode fechar apos deploy e revalidacao HTTP + WhatsApp real.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

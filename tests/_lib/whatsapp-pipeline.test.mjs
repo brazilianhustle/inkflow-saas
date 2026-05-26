@@ -1945,7 +1945,7 @@ test('Bug1: pediu_foto_local incrementa dados_coletados.tentativas_foto_local', 
       onPatch: (path, body) => { if (body.dados_coletados) patchBody = body; },
     }),
   });
-  await processBatch({}, baseBatch({ msgRowIds: [201] }), deps);
+  await processBatch({ DISABLE_CONVERSATION_ROUTER: 'true' }, baseBatch({ msgRowIds: [201] }), deps);
   assert.ok(patchBody, 'deve ter PATCH com dados_coletados');
   assert.equal(patchBody.dados_coletados.tentativas_foto_local, 1);
 });

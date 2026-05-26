@@ -10,7 +10,7 @@
 // O contrato retorna um output compatível com runAgent para o pipeline poder
 // persistir/enviar sem criar um segundo caminho de side effects.
 
-import { extractLocalAnswer, extractStyleAnswer, resolvePendingFormQuestion } from './conversation-policy.js';
+import { extractLocalAnswer, extractStyleAnswer, resolveHeightCm, resolvePendingFormQuestion } from './conversation-policy.js';
 import { composeRouterResponse } from './conversation-response-composer.js';
 
 const HANDLED_STATES = new Set(['tattoo', 'cadastro']);
@@ -74,6 +74,11 @@ function extractTattooHints(message, dados = {}) {
     if (estilo) extracted.estilo = estilo;
   }
 
+  if (!hasValue(dados.altura_cm)) {
+    const altura = resolveHeightCm(s);
+    if (altura.answered && altura.value) extracted.altura_cm = altura.value;
+  }
+
   if (!hasValue(dados.descricao_curta)) {
     const patterns = [
       /\b(?:tatuagem|tattoo|tauagem)\s+de\s+(?:um|uma|uns|umas)?\s*([a-z0-9 ]+?)(?=\b(?:no|na|em|com|realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto|quanto|quantop|qnto|qual|me passa|$))/,
@@ -104,6 +109,12 @@ function extractTattooHints(message, dados = {}) {
   }
 
   return extracted;
+}
+
+function shouldHandleTattooMultiInfo(extracted = {}) {
+  const keys = ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']
+    .filter(key => hasValue(extracted[key]));
+  return keys.length >= 2;
 }
 
 function tattooResumeQuestion(conversa = {}) {
@@ -352,6 +363,52 @@ function cadastroPendingAnswerOutput({ pendingResolution, estado_atual, conversa
   };
 }
 
+function tattooMultiInfoOutput({ extracted, estado_atual, conversa, tenant, clientContext, historico }) {
+  const dadosAtualizados = {
+    ...(conversa?.dados_coletados || {}),
+    ...extracted,
+  };
+  const conversaParaRetomada = {
+    ...conversa,
+    dados_coletados: dadosAtualizados,
+  };
+  const missing = missingTattooFields(dadosAtualizados);
+  const nextField = missing[0] || 'foto_local';
+  const intro = clientContext?.is_first_contact === true
+    ? `Oii, tudo bem? Me chamo ${tenant?.nome_agente || 'atendente'}, muito prazer.\n\n`
+    : '';
+  const resposta = nextField === 'foto_local'
+    ? `${intro}Boa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?`
+    : `${intro}${tattooResumeQuestion(conversaParaRetomada)}`;
+
+  return {
+    ok: true,
+    handled_by: 'conversation_router',
+    intent: 'multi_info',
+    confidence: 0.84,
+    risk: 'medium',
+    reason: 'multiple_tattoo_fields_detected',
+    can_mutate_state: true,
+    resposta_cliente: resposta,
+    estado_novo: estado_atual,
+    dados_persistidos: extracted,
+    dados_completos: false,
+    campos_faltando: missing,
+    campos_conflitantes: [],
+    proxima_acao: 'pergunta',
+    agent_usado: 'conversation_router',
+    side_effects: [],
+    urls_portfolio: [],
+    analise_imagens: null,
+    cobertura_suspeita: null,
+    multi_info_resolution: {
+      extracted_fields: Object.keys(extracted).filter(key => hasValue(extracted[key])),
+      next_field: nextField,
+      history_turns_n: historico?.length || 0,
+    },
+  };
+}
+
 function escalationOutput({ detected, estado_atual, intent }) {
   if (!['cobertura', 'human_requested', 'client_upset', 'tenant_handoff_trigger'].includes(intent)) return null;
   if (intent === 'human_requested') {
@@ -502,6 +559,12 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
   const pendingResolution = resolvePendingFormQuestion({ historico, mensagem });
   if (!detected && estado_atual === 'cadastro' && shouldHandleCadastroPendingAnswer(pendingResolution)) {
     return cadastroPendingAnswerOutput({ pendingResolution, estado_atual, conversa, historico });
+  }
+  if (!detected && estado_atual === 'tattoo') {
+    const extracted = extractTattooHints(mensagem, conversa?.dados_coletados || {});
+    if (shouldHandleTattooMultiInfo(extracted)) {
+      return tattooMultiInfoOutput({ extracted, estado_atual, conversa, tenant, clientContext, historico });
+    }
   }
   if (!detected) return null;
 

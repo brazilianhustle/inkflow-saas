@@ -11,7 +11,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_1_concluida
+status: level4b_wave_2_em_andamento
 branch: main
 ultimo_commit: conferir `git log --oneline -1`
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
@@ -144,7 +144,7 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: declarar a proxima onda Level 4B funcional em zona verde/amarela.
+Proximo passo recomendado: executar micro-slice `tattoo-multi-info-basic-http` da onda `level4b-wave-2-tattoo-multi-info`.
 ```
 
 Escopo recomendado:
@@ -154,8 +154,9 @@ Escopo recomendado:
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
 - seguir a onda declarada em `docs/atendimento-premium/23-level-4b-wave-1.md`;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
+- nova onda declarada: `level4b-wave-2-tattoo-multi-info`;
+- primeiro comportamento alvo: cliente manda ideia + estilo + local + altura no mesmo turno;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
-- escolher um fluxo funcional de alto valor para a proxima onda, mantendo HTTP radar + WhatsApp real definitivo;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
 - nao subir para 4C; 4C exige duas rodadas 4B saudaveis.
