@@ -79,13 +79,15 @@ Parar a onda se ocorrer:
 ## Resultado Atual
 
 ```text
-status: em-andamento
+status: closeout_pass
 micro_slice_1: tattoo-pending-answer-wave-contract PASS
 micro_slice_2: tattoo-pending-local-lateral-http PASS
 micro_slice_3: tattoo-pending-local-lateral-whatsapp-real PASS
 micro_slice_4: tattoo-pending-height-lateral-http PASS
 micro_slice_5: tattoo-pending-height-lateral-whatsapp-real PASS
-micro_slice_atual: tattoo-pending-style-lateral-http
+micro_slice_6: tattoo-pending-style-lateral-http PASS
+micro_slice_7: tattoo-pending-style-lateral-whatsapp-real PASS
+micro_slice_8: level4b-wave-3-closeout PASS
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -182,4 +184,60 @@ status: melhoria_identificada
 observacao: nos dois primeiros comportamentos da Wave 3, o loop detectou falhas de contrato sem exigir mudanca funcional no bot.
 impacto: bom sinal para piloto automatico; as ferramentas separaram falha de contrato de regressao real.
 proximo_upgrade_candidato: gerar automaticamente um bloco de closeout/evidence-summary a partir de evidence-registrar + transcript multi-turn, mantendo revisao do Commander antes de commit.
+```
+
+Terceiro comportamento validado:
+
+```text
+micro_slice: tattoo-pending-style-lateral-http
+status: PASS
+run_id: scenario-tattoo-pending-style-lateral-20260526T054644Z-15302
+fluxo: Cliente "quero uma hiena na panturrilha, tenho 1.70" -> Bot pergunta estilo; Cliente "realismo\nem quantas sessoes seria?" -> Bot responde tempo/sessoes e pede foto do local
+resultado_final: descricao_curta=hiena, local_corpo=panturrilha, altura_cm=170, estilo=realismo, estado=coletando_tattoo, orcid=null, copy_risk=baixo
+```
+
+```text
+micro_slice: tattoo-pending-style-lateral-whatsapp-real
+status: PASS
+run_id: scenario-whatsapp-real-tattoo-pending-style-lateral-20260526T054800Z-24659
+cadeia: Evolution central -> bot 5545999012357
+resultado_final: descricao_curta=hiena, local_corpo=panturrilha, altura_cm=170, estilo=realismo, estado=coletando_tattoo, orcid=null, copy_risk=baixo
+provas_conclusivas_reais: Cliente "quero uma hiena na panturrilha, tenho 1.70" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nTu prefere qual estilo pra essa tattoo?"; Cliente "realismo\nem quantas sessoes seria?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nCom isso já ajuda bastante. Consegue mandar uma foto do local?"
+```
+
+## Evidence Summary
+
+```text
+micro_slice: level4b-wave-3-closeout
+status: PASS
+evidencias_http:
+  - scenario-tattoo-pending-local-lateral-20260526T052610Z-24026
+  - scenario-tattoo-pending-height-lateral-20260526T053818Z-26635
+  - scenario-tattoo-pending-style-lateral-20260526T054644Z-15302
+evidencias_whatsapp_real:
+  - scenario-whatsapp-real-tattoo-pending-local-lateral-20260526T052659Z-26598
+  - scenario-whatsapp-real-tattoo-pending-height-lateral-20260526T053902Z-11885
+  - scenario-whatsapp-real-tattoo-pending-style-lateral-20260526T054800Z-24659
+resultado: local, altura e estilo pendentes passaram com duvida lateral de tempo/sessoes no mesmo turno.
+copy_risk: baixo em todos os PASS da onda.
+orcid: null em todos os fluxos de coleta de tattoo, sem handoff indevido.
+regressao_observada: nenhuma regressao funcional observada nos gates finais.
+decisao_autonomia: manter Level 4B, sem promover 4C.
+```
+
+Provas conclusivas reais consolidadas:
+
+```text
+1. Cliente "quero uma borboleta fineline" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nTu imagina fazer em qual parte do corpo?"; Cliente "bunda\nquantas sessoes seria?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nMe diz tua altura?"
+2. Cliente "quero uma baleia fineline na barriga" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nQual tua altura?"; Cliente "tenho 1.70\nquanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nCom isso já ajuda bastante. Consegue mandar uma foto do local?"
+3. Cliente "quero uma hiena na panturrilha, tenho 1.70" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nTu prefere qual estilo pra essa tattoo?"; Cliente "realismo\nem quantas sessoes seria?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nCom isso já ajuda bastante. Consegue mandar uma foto do local?"
+```
+
+## Proximo Upgrade Do Piloto Automatico
+
+```text
+recomendacao: implementar um `wave-closeout-summarizer` revisavel
+objetivo: gerar automaticamente bloco de Evidence Summary, provas conclusivas reais e sugestao de linhas para docs a partir de evidence dirs ja validados
+limite: nao commitar sozinho, nao promover autonomia, nao executar WhatsApp real em lote
+motivo: a Wave 3 repetiu o mesmo padrao manual de consolidacao tres vezes; automatizar esse resumo reduz erro humano sem reduzir controle
 ```

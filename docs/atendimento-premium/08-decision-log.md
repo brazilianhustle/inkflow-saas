@@ -1046,7 +1046,9 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Validacao de altura:** o primeiro contrato de altura falhou porque proibia `foto do local`, embora esse fosse o proximo passo correto apos preencher altura. O gate foi ajustado; HTTP multi-turn `scenario-tattoo-pending-height-lateral-20260526T053818Z-26635` e WhatsApp real multi-turn `scenario-whatsapp-real-tattoo-pending-height-lateral-20260526T053902Z-11885` passaram, persistindo `descricao_curta=baleia`, `estilo=fineline`, `local_corpo=barriga`, `altura_cm=170`, com `orcid=null`, `copy_risk=baixo`, resposta lateral de tempo e pedido de foto.
 
-**Aprendizado de automação:** a Wave 3 esta mostrando que o loop ja separa falha de contrato de regressao funcional. Proximo upgrade metodologico candidato: gerar automaticamente um bloco revisavel de closeout/evidence-summary a partir de evidence, transcript e judgment.
+**Validacao de estilo:** HTTP multi-turn `scenario-tattoo-pending-style-lateral-20260526T054644Z-15302` e WhatsApp real multi-turn `scenario-whatsapp-real-tattoo-pending-style-lateral-20260526T054800Z-24659` passaram, persistindo `descricao_curta=hiena`, `local_corpo=panturrilha`, `altura_cm=170`, `estilo=realismo`, com `orcid=null`, `copy_risk=baixo`, resposta lateral de tempo e pedido de foto.
+
+**Aprendizado de automação:** a Wave 3 mostrou que o loop ja separa falha de contrato de regressao funcional e que o gargalo manual agora e consolidar evidencias. Proximo upgrade metodologico aprovado como caminho recomendado: gerar automaticamente um bloco revisavel de closeout/evidence-summary a partir de evidence, transcript e judgment, sem commit automatico e sem executar WhatsApp real em lote.
 
 ## Decisões Em Aberto
 

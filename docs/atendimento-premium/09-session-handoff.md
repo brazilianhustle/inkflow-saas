@@ -676,8 +676,12 @@ segundo_http: scenario-tattoo-pending-height-lateral-20260526T053818Z-26635 PASS
 segundo_real: scenario-whatsapp-real-tattoo-pending-height-lateral-20260526T053902Z-11885 PASS
 falha_util_2: scenario-tattoo-pending-height-lateral-20260526T053717Z-9642 mostrou contrato errado proibindo foto do local quando ela era o proximo passo correto
 provas_conclusivas_reais_2: Cliente "quero uma baleia fineline na barriga" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nQual tua altura?"; Cliente "tenho 1.70\nquanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nCom isso já ajuda bastante. Consegue mandar uma foto do local?"
-automacao_observada: o loop detectou duas falhas de contrato sem mudanca funcional no bot; candidato de proximo upgrade e gerador revisavel de closeout/evidence-summary
-proximo passo: executar tattoo-pending-style-lateral-http
+terceiro_http: scenario-tattoo-pending-style-lateral-20260526T054644Z-15302 PASS
+terceiro_real: scenario-whatsapp-real-tattoo-pending-style-lateral-20260526T054800Z-24659 PASS
+provas_conclusivas_reais_3: Cliente "quero uma hiena na panturrilha, tenho 1.70" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nTu prefere qual estilo pra essa tattoo?"; Cliente "realismo\nem quantas sessoes seria?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nCom isso já ajuda bastante. Consegue mandar uma foto do local?"
+closeout: PASS
+automacao_observada: o loop detectou falhas de contrato sem mudanca funcional no bot; candidato de proximo upgrade e gerador revisavel de closeout/evidence-summary
+proximo passo: implementar wave-closeout-summarizer revisavel para acelerar o piloto automatico sem commit automatico
 ```
 
 ## Checklist De Fechamento De Sessão
