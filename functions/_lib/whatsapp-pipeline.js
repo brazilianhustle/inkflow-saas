@@ -199,6 +199,22 @@ export async function processBatch(env, batch, depsOverride = {}) {
       if (!conversa) throw new Error(`conversa-create-failed (status=${insStatus}): ${insText.slice(0, 200)}`);
     }
 
+    const dadosColetadosOriginais = conversa.dados_coletados || {};
+    const fotoLocalPendente = fotos.length > 0
+      && (dadosColetadosOriginais.tentativas_foto_local || 0) > 0
+      && !dadosColetadosOriginais.foto_local
+      && !dadosColetadosOriginais.foto_local_msg_id;
+    if (fotoLocalPendente) {
+      conversa = {
+        ...conversa,
+        dados_coletados: {
+          ...dadosColetadosOriginais,
+          foto_local_msg_id: fotos[0].msgRowId,
+        },
+      };
+    }
+    const imagensParaAgent = fotoLocalPendente ? [] : imagens;
+
     // Etapa 2: EARLY-RETURN estado terminal
     if (TERMINAL_STATES.has(conversa.estado_agente)) {
       if (tenant.tatuador_telegram_chat_id) {
@@ -261,13 +277,13 @@ export async function processBatch(env, batch, depsOverride = {}) {
       tenant_assets: deriveTenantAssets(tenant),
     };
     const routerDisabled = String(env?.DISABLE_CONVERSATION_ROUTER || '').toLowerCase() === 'true';
-    const routerEligible = !routerDisabled && !isFirstContactGreetingOnly && imagens.length === 0;
+    const routerEligible = !routerDisabled && !isFirstContactGreetingOnly && fotos.length === 0;
     if (routerEligible) {
       agentOut = deps.routeConversationTurn({
         estado_atual: estadoAgente,
         mensagem: texto,
         historico,
-        imagens,
+        imagens: imagensParaAgent,
         tenant,
         conversa: { ...conversa, estado_agente: estadoAgente },
         clientContext: baseClientContext,
@@ -284,7 +300,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
           estado_atual: estadoAgente, dados_acumulados: conversa.dados_coletados || {},
           historico, tenant, conversa: { ...conversa, estado_agente: estadoAgente },
           clientContext: baseClientContext,
-          imagens,
+          imagens: imagensParaAgent,
         });
       }
     } catch (e) { throw new Error(`runAgent threw: ${e.message}`); }
@@ -416,7 +432,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
         const dadosPreMerge = conversa.dados_coletados || {};
         let dadosAcc = isCadastro ? { ...dadosPreMerge } : { ...novoDadosColetados };
         let tentativas = dadosPreMerge.tentativas_foto_local || 0;
-        let fotoLocalAtual = dadosPreMerge.foto_local;
+        let fotoLocalAtual = dadosPreMerge.foto_local || dadosPreMerge.foto_local_msg_id;
         const analise = Array.isArray(agentOut.analise_imagens) ? agentOut.analise_imagens : null;
         // No maximo UMA foto_local por lote: a 1ª 'local' vence; demais viram ref.
         let localAtribuidaNoLote = false;
@@ -424,6 +440,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
         const descricoesRef = [];
         for (let i = 0; i < fotos.length; i++) {
           const foto = fotos[i];
+          if (foto.msgRowId === dadosPreMerge.foto_local_msg_id) continue;
           let tipo; // 'local' | 'ref'
           const a = analise && analise[i];
           if (a) {

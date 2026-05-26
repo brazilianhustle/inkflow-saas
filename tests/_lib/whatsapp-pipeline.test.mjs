@@ -1869,6 +1869,53 @@ test('Etapa 4.5 model-driven: corpo + referencia → local + ref (roteamento mis
     'id=401 (foto_local) nao aparece em refs_imagens_msg_ids');
 });
 
+test('Etapa 4.5: foto local aguardada preclassifica antes do LLM e nao envia imagem ao agent', async () => {
+  let conversaPatches = [];
+  let runAgentArgs = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: {
+      descricao_curta: 'rosa',
+      local_corpo: 'antebraco',
+      altura_cm: 170,
+      estilo: 'fineline',
+      tentativas_foto_local: 1,
+    },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 601, content: 'segue foto do local', media_base64: 'img', media_mimetype: 'image/png' },
+      ]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.dados_coletados) {
+          conversaPatches.push(body.dados_coletados);
+        }
+      },
+    }),
+    runAgent: async (args) => {
+      runAgentArgs = args;
+      return {
+        ok: true, resposta_cliente: 'me manda teu nome completo',
+        estado_novo: 'cadastro', dados_persistidos: {},
+        proxima_acao: 'pergunta', agent_usado: 'tattoo',
+      };
+    },
+    classificarFoto: () => 'referencia',
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [601] }), deps);
+
+  assert.deepEqual(runAgentArgs.imagens, [], 'foto local aguardada nao deve ir para visao do LLM');
+  assert.equal(runAgentArgs.dados_acumulados.foto_local_msg_id, 601);
+  const fotoPatch = conversaPatches.find(p => p.foto_local_msg_id === 601);
+  assert.ok(fotoPatch, 'foto local aguardada deve ficar persistida no patch principal');
+  assert.equal(fotoPatch.refs_imagens_msg_ids, undefined, 'a mesma foto nao deve ser duplicada como referencia');
+});
+
 test('Etapa 4.5 multi-ref: 2 fotos referencia → RPC set_descricao_visual dispara 2x com payloads pareados', async () => {
   // Fan-out: cada foto 'referencia' com descricao deve gerar 1 chamada RPC com seu proprio
   // p_msg_id + p_descricao. Verifica pareamento correto (501→'arte A', 502→'arte B').
