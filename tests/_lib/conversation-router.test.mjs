@@ -683,7 +683,7 @@ test('ConversationRouter: cadastro persiste email pendente sem chamar LLM', () =
 test('ConversationRouter: texto sem email válido não resolve email pendente', () => {
   const out = routeConversationTurn({
     estado_atual: 'cadastro',
-    mensagem: 'prefiro passar depois',
+    mensagem: 'prefiro falar por aqui',
     conversa: {
       dados_coletados: {},
       dados_cadastro: { nome: 'Joao Silva', data_nascimento: '1995-03-12' },
@@ -693,6 +693,32 @@ test('ConversationRouter: texto sem email válido não resolve email pendente', 
     ],
   });
   assert.equal(out, null);
+});
+
+test('ConversationRouter: cadastro persiste recusa pura de email pendente sem chamar LLM', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'pode seguir sem email',
+    conversa: {
+      dados_coletados: {
+        descricao_curta: 'leao',
+        local_corpo: 'antebraco',
+        altura_cm: 170,
+        estilo: 'fineline',
+      },
+      dados_cadastro: { nome: 'Joao Silva', data_nascimento: '1995-03-12' },
+    },
+    historico: [
+      { role: 'assistant', content: 'E o e-mail? Se preferir seguir sem, me avisa' },
+    ],
+  });
+  assert.equal(out.intent, 'cadastro_pending_answer');
+  assert.equal(out.reason, 'pending_email_refused');
+  assert.equal(out.can_mutate_state, true);
+  assert.equal(out.agent_usado, 'cadastro');
+  assert.deepEqual(out.dados_persistidos, { email: null, email_recusado: true });
+  assert.match(out.resposta_cliente, /tatuador vai avaliar/i);
+  assert.doesNotMatch(out.resposta_cliente, /e-?mail/i);
 });
 
 test('ConversationRouter: cadastro persiste nome e data pendentes antes de responder lateral', () => {

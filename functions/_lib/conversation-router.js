@@ -306,7 +306,7 @@ function shouldHandleCadastroPendingAnswer(pendingResolution) {
   const extracted = pendingResolution.extracted || {};
   if (pendingResolution.field === 'nome_completo') return hasValue(extracted.nome);
   if (pendingResolution.field === 'data_nascimento') return hasValue(extracted.data_nascimento);
-  if (pendingResolution.field === 'email') return hasValue(extracted.email);
+  if (pendingResolution.field === 'email') return hasValue(extracted.email) || extracted.email_recusado === true;
   if (pendingResolution.field === 'cadastro_nome_data') {
     return hasValue(extracted.nome) && !hasValue(extracted.data_nascimento);
   }
@@ -328,7 +328,9 @@ function cadastroPendingAnswerOutput({ pendingResolution, estado_atual, conversa
     intent: 'cadastro_pending_answer',
     confidence: pendingResolution.confidence || 0.8,
     risk: 'low',
-    reason: `pending_${pendingResolution.field}_answered`,
+    reason: pendingResolution.field === 'email' && extracted.email_recusado === true
+      ? 'pending_email_refused'
+      : `pending_${pendingResolution.field}_answered`,
     can_mutate_state: true,
     resposta_cliente: resumeQuestionForState(estado_atual, conversaParaRetomada),
     estado_novo: estado_atual,
