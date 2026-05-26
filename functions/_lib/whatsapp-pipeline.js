@@ -257,6 +257,14 @@ export async function processBatch(env, batch, depsOverride = {}) {
           try {
             const nome = conversa.dados_cadastro?.nome || telefone;
             await deps.enviarMidia(env, tenant.tatuador_telegram_chat_id, foto.mediaBase64, foto.mediaMimetype, `📸 ${nome} mandou +1 foto`);
+            console.log(JSON.stringify({
+              evento: 'pos-handoff-midia-encaminhada',
+              tenant_id: tenant.id,
+              telefone,
+              estado_agente: conversa.estado_agente,
+              msg_id: foto.msgRowId,
+              mimetype: foto.mediaMimetype,
+            }));
             await deps.supaFetch(`/rest/v1/rpc/zerar_media_base64`, {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ p_msg_id: foto.msgRowId }),

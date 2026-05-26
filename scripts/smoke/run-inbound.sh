@@ -96,10 +96,11 @@ jq -nc \
   --arg since "$SINCE_ISO" \
   --arg expected_state "$EXPECTED_STATE" \
   --arg require_orcid "${SMOKE_REQUIRE_ORCID:-0}" \
+  --arg require_ai_response "${SMOKE_REQUIRE_AI_RESPONSE:-1}" \
   --arg media_mimetype "${SMOKE_MEDIA_MIMETYPE:-}" \
   --arg media_file "${SMOKE_MEDIA_FILE:-}" \
   --arg has_media_base64 "$([ -n "${SMOKE_MEDIA_BASE64:-}" ] && echo true || echo false)" \
-  '{run_id:$run_id,base_url:$base_url,phone:$phone,text:$text,since:$since,expected_state:$expected_state,require_orcid:$require_orcid,media:{mimetype:$media_mimetype,file:$media_file,has_inline_base64:($has_media_base64=="true")}}' \
+  '{run_id:$run_id,base_url:$base_url,phone:$phone,text:$text,since:$since,expected_state:$expected_state,require_orcid:$require_orcid,require_ai_response:$require_ai_response,media:{mimetype:$media_mimetype,file:$media_file,has_inline_base64:($has_media_base64=="true")}}' \
   > "$EVIDENCE_DIR/request.json"
 
 echo "=== Smoke inbound padrao ==="
@@ -129,7 +130,7 @@ SMOKE_RUN_ID="$RUN_ID" SMOKE_TAIL_DISABLED=1 BASE_URL="$BASE_URL" bash scripts/s
 
 echo ""
 echo "[3/4] Polling de processamento"
-bash scripts/smoke/poll.sh "$PHONE" "$SINCE_ISO" "$EXPECTED_STATE" \
+SMOKE_EXPECT_HUMAN_TEXT="${SMOKE_EXPECT_HUMAN_TEXT:-}" bash scripts/smoke/poll.sh "$PHONE" "$SINCE_ISO" "$EXPECTED_STATE" \
   | tee "$EVIDENCE_DIR/poll.json"
 
 echo ""

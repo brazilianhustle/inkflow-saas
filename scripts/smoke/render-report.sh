@@ -21,6 +21,7 @@ command -v jq >/dev/null 2>&1 || { echo "ERRO: jq nao instalado." >&2; exit 1; }
 run_id="$(jq -r '.run_id // "(unknown)"' "$REQUEST_JSON")"
 expected_state="$(jq -r '.expected_state // ""' "$REQUEST_JSON")"
 require_orcid="$(jq -r '.require_orcid // "0"' "$REQUEST_JSON")"
+require_ai_response="$(jq -r '.require_ai_response // "1"' "$REQUEST_JSON")"
 target_phone="$(jq -r '.phone // .sender_phone // "(unknown)"' "$REQUEST_JSON")"
 base_url="$(jq -r '.base_url // "(unknown)"' "$REQUEST_JSON")"
 state="$(jq -r '.conversas[0].estado_agente // ""' "$POLL_JSON")"
@@ -108,7 +109,7 @@ if [ "$failed_count" != "0" ]; then
 fi
 
 ai_ok=true
-if [ "$ai_count" -lt 1 ]; then
+if [ "$require_ai_response" = "1" ] && [ "$ai_count" -lt 1 ]; then
   ai_ok=false
 fi
 
@@ -116,8 +117,12 @@ copy_risk="baixo"
 notes=()
 
 if [ -z "$last_ai" ]; then
-  copy_risk="alto"
-  notes+=("sem resposta AI no snapshot")
+  if [ "$require_ai_response" = "1" ]; then
+    copy_risk="alto"
+    notes+=("sem resposta AI no snapshot")
+  else
+    notes+=("sem resposta AI esperada para fluxo terminal/handoff")
+  fi
 else
   ai_chars="${#last_ai}"
   if [ "$ai_chars" -lt 25 ]; then
@@ -172,7 +177,8 @@ cat > "$JUDGMENT_MD" <<EOF
 | expected_state | ${state_ok} |
 | require_orcid_for_handoff | ${orcid_ok} |
 | no_failed_messages | ${failed_ok} |
-| ai_response_present | ${ai_ok} |
+| ai_response_required | ${require_ai_response} |
+| ai_response_present_when_required | ${ai_ok} |
 | human_messages | ${human_count} |
 | ai_messages | ${ai_count} |
 

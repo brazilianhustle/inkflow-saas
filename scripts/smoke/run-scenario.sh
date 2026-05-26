@@ -38,6 +38,7 @@ EXPECTED_SIDE_EFFECT_TIMEOUT_SECONDS="${EXPECTED_SIDE_EFFECT_TIMEOUT_SECONDS:-20
 SMOKE_MEDIA_BASE64="${SMOKE_MEDIA_BASE64:-}"
 SMOKE_MEDIA_FILE="${SMOKE_MEDIA_FILE:-}"
 SMOKE_MEDIA_MIMETYPE="${SMOKE_MEDIA_MIMETYPE:-}"
+SMOKE_REQUIRE_AI_RESPONSE="${SMOKE_REQUIRE_AI_RESPONSE:-1}"
 
 # shellcheck source=/dev/null
 source "$SCENARIO_FILE"
@@ -810,6 +811,60 @@ seed_cadastro_pos_midia_aguardando_email_media_fresca() {
   echo "seed ok: conversa=$conv_id session_id=$sid foto_local_msg_id=$local_msg_id ref_msg_id=$ref_msg_id"
 }
 
+seed_pos_handoff_aguardando_tatuador() {
+  load_devvars
+  local sid now conv_body msg_body conv_id
+  sid="${TENANT_ID}_${PHONE}"
+  now="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+
+  conv_body="$(
+    jq -nc \
+      --arg tenant "$TENANT_ID" \
+      --arg phone "$PHONE" \
+      --arg now "$now" \
+      '{
+        tenant_id:$tenant,
+        telefone:$phone,
+        estado_agente:"aguardando_tatuador",
+        orcid:"orc_poshandoff",
+        dados_coletados:{
+          descricao_curta:"rosa",
+          local_corpo:"antebraco",
+          altura_cm:170,
+          estilo:"fineline",
+          foto_local_msg_id:12632,
+          refs_imagens_msg_ids:[11951],
+          foto_local_file_id:"SMOKE_LOCAL_FILE_ID",
+          refs_imagens_file_ids:["SMOKE_REF_FILE_ID"],
+          tentativas_foto_local:1
+        },
+        dados_cadastro:{
+          nome:"Joao Silva",
+          data_nascimento:"1995-03-12",
+          email:"joao@example.com"
+        },
+        last_msg_at:$now
+      }'
+  )"
+  conv_id="$(supa_post "conversas" "$conv_body" | jq -r '.[0].id // empty')"
+  [ -n "$conv_id" ] || { echo "ERRO: seed nao retornou conversa id." >&2; exit 1; }
+
+  msg_body="$(
+    jq -nc \
+      --arg sid "$sid" \
+      '{
+        session_id:$sid,
+        status:"processed",
+        message:{
+          type:"ai",
+          content:"Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+        }
+      }'
+  )"
+  supa_post "conversa_mensagens" "$msg_body" >/dev/null
+  echo "seed ok: conversa=$conv_id session_id=$sid estado=aguardando_tatuador orcid=orc_poshandoff"
+}
+
 run_setup() {
   case "$SETUP" in
     none|"") echo "setup: none" ;;
@@ -824,6 +879,7 @@ run_setup() {
     seed_cadastro_pos_midia_aguardando_nome) seed_cadastro_pos_midia_aguardando_nome ;;
     seed_cadastro_pos_midia_aguardando_email) seed_cadastro_pos_midia_aguardando_email ;;
     seed_cadastro_pos_midia_aguardando_email_media_fresca) seed_cadastro_pos_midia_aguardando_email_media_fresca ;;
+    seed_pos_handoff_aguardando_tatuador) seed_pos_handoff_aguardando_tatuador ;;
     *) echo "ERRO: setup desconhecido: $SETUP" >&2; exit 1 ;;
   esac
 }
@@ -862,6 +918,7 @@ write_single_turn_step_env() {
     printf 'EXPECTED_STATE=%s\n' "$(shell_quote "$expected_state")"
     printf 'EXPECTED_HUMAN_TEXT=%s\n' "$(shell_quote "$expected_human")"
     [ -n "$expected_copy" ] && printf 'EXPECTED_COPY_RISK_MAX=%s\n' "$(shell_quote "$expected_copy")"
+    printf 'SMOKE_REQUIRE_AI_RESPONSE=%s\n' "$(shell_quote "${SMOKE_REQUIRE_AI_RESPONSE:-1}")"
     [ -n "$bot_regex" ] && printf 'EXPECTED_BOT_REGEX=%s\n' "$(shell_quote "$bot_regex")"
     [ -n "$forbidden_bot" ] && printf 'FORBIDDEN_BOT_REGEX=%s\n' "$(shell_quote "$forbidden_bot")"
     [ -n "$poll_jq" ] && printf 'EXPECTED_POLL_JQ_TRUE=%s\n' "$(shell_quote "$poll_jq")"
@@ -1010,6 +1067,7 @@ run_scenario() {
       SMOKE_EVIDENCE_ROOT="$EVIDENCE_ROOT" \
       SMOKE_TENANT_ID="$TENANT_ID" \
       SMOKE_REQUIRE_ORCID="${SMOKE_REQUIRE_ORCID:-}" \
+      SMOKE_REQUIRE_AI_RESPONSE="${SMOKE_REQUIRE_AI_RESPONSE:-1}" \
       SMOKE_EXPECT_HUMAN_TEXT="${EXPECTED_HUMAN_TEXT:-}" \
       BASE_URL="$BASE_URL" \
       INSTANCE="${INSTANCE:-}" \
@@ -1025,6 +1083,7 @@ run_scenario() {
       SMOKE_EVIDENCE_ROOT="$EVIDENCE_ROOT" \
       SMOKE_TENANT_ID="$TENANT_ID" \
       SMOKE_REQUIRE_ORCID="${SMOKE_REQUIRE_ORCID:-}" \
+      SMOKE_REQUIRE_AI_RESPONSE="${SMOKE_REQUIRE_AI_RESPONSE:-1}" \
       SMOKE_MEDIA_BASE64="${SMOKE_MEDIA_BASE64:-}" \
       SMOKE_MEDIA_FILE="${SMOKE_MEDIA_FILE:-}" \
       SMOKE_MEDIA_MIMETYPE="${SMOKE_MEDIA_MIMETYPE:-}" \
