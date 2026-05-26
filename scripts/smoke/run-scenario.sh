@@ -367,6 +367,7 @@ write_single_turn_step_env() {
     [ -n "$forbidden_bot" ] && printf 'FORBIDDEN_BOT_REGEX=%s\n' "$(shell_quote "$forbidden_bot")"
     [ -n "$poll_jq" ] && printf 'EXPECTED_POLL_JQ_TRUE=%s\n' "$(shell_quote "$poll_jq")"
     [ -n "$agent_jq" ] && printf 'EXPECTED_AGENT_LOG_JQ_TRUE=%s\n' "$(shell_quote "$agent_jq")"
+    true
   } > "$path"
 }
 
