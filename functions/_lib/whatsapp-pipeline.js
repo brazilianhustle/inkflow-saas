@@ -62,6 +62,10 @@ function hasTattooCoreForCadastro(dados = {}) {
   return Boolean(dados.descricao_curta && dados.local_corpo && dados.altura_cm && dados.estilo);
 }
 
+function hasFotoLocal(dados = {}) {
+  return Boolean(dados.foto_local || dados.foto_local_msg_id);
+}
+
 function dbToAgent(state) {
   return STATE_DB_TO_AGENT[state] || state;
 }
@@ -288,6 +292,24 @@ export async function processBatch(env, batch, depsOverride = {}) {
         resposta_cliente: 'Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo.',
         estado_novo: 'cadastro',
         dados_persistidos: { foto_local_msg_id: fotos[0].msgRowId },
+        dados_completos: true,
+        campos_faltando: [],
+        campos_conflitantes: [],
+        proxima_acao: 'pergunta',
+        agent_usado: 'tattoo',
+        analise_imagens: null,
+      };
+    }
+    const fotoReferenciaAposLocalTattoo = !agentOut
+      && fotos.length > 0
+      && hasFotoLocal(conversa.dados_coletados || {})
+      && hasTattooCoreForCadastro(conversa.dados_coletados || {});
+    if (fotoReferenciaAposLocalTattoo) {
+      agentOut = {
+        ok: true,
+        resposta_cliente: 'Recebi essa referência também. Pra liberar teu orçamento, preciso do teu nome completo.',
+        estado_novo: 'cadastro',
+        dados_persistidos: {},
         dados_completos: true,
         campos_faltando: [],
         campos_conflitantes: [],

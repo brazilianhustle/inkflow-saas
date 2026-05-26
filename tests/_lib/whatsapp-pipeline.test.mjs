@@ -1913,6 +1913,53 @@ test('Etapa 4.5: foto local aguardada com core completo avanca sem chamar LLM', 
   assert.match(aiInsert.message.content, /nome completo/i);
 });
 
+test('Etapa 4.5: foto posterior com foto local existente vira referencia sem chamar LLM', async () => {
+  let conversaPatches = [];
+  let runAgentCalled = false;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_cadastro',
+    dados_coletados: {
+      descricao_curta: 'rosa',
+      local_corpo: 'antebraco',
+      altura_cm: 170,
+      estilo: 'fineline',
+      foto_local_msg_id: 600,
+      tentativas_foto_local: 1,
+    },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 602, content: 'essa é referência do desenho', media_base64: 'img-ref', media_mimetype: 'image/png' },
+      ]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.dados_coletados) {
+          conversaPatches.push(body.dados_coletados);
+        }
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: async () => { runAgentCalled = true; throw new Error('nao deveria chamar LLM'); },
+    classificarFoto: classificarFotoReal,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [602] }), deps);
+
+  assert.equal(runAgentCalled, false, 'foto posterior com foto local existente nao deve chamar LLM');
+  const refPatch = conversaPatches.find(p => Array.isArray(p.refs_imagens_msg_ids));
+  assert.ok(refPatch, 'foto posterior deve gerar patch de referencia');
+  assert.equal(refPatch.foto_local_msg_id, 600, 'foto local original deve permanecer');
+  assert.deepEqual(refPatch.refs_imagens_msg_ids, [602]);
+  assert.match(aiInsert.message.content, /refer[eê]ncia/i);
+  assert.match(aiInsert.message.content, /nome completo/i);
+});
+
 test('Etapa 4.5 multi-ref: 2 fotos referencia → RPC set_descricao_visual dispara 2x com payloads pareados', async () => {
   // Fan-out: cada foto 'referencia' com descricao deve gerar 1 chamada RPC com seu proprio
   // p_msg_id + p_descricao. Verifica pareamento correto (501→'arte A', 502→'arte B').
