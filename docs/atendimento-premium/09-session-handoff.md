@@ -739,6 +739,29 @@ provas_conclusivas_reais: Cliente "essa é referência do desenho" + imagem -> B
 proximo passo: tattoo-media-ambiguous-photo-clarification
 ```
 
+Wave 4 em andamento, terceiro comportamento de midia validado:
+
+```text
+wave: level4b-wave-4-tattoo-media-intake
+micro_slice_http: tattoo-media-ambiguous-photo-clarification-http PASS
+run_id_http: scenario-tattoo-media-ambiguous-photo-clarification-20260526T064538Z-31035
+micro_slice_real: tattoo-media-ambiguous-photo-clarification-whatsapp-real PASS
+run_id_real: scenario-whatsapp-real-tattoo-media-ambiguous-photo-clarification-20260526T064904Z-10234
+scenario_http: tattoo-media-ambiguous-photo-clarification
+scenario_real: whatsapp-real-tattoo-media-ambiguous-photo-clarification
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: image/png sem legenda
+bot: "Vi a imagem, mas fiquei em dúvida se ela é referência do desenho ou o local do corpo. Qual dos dois fica valendo?"
+estado: coletando_tattoo
+orcid: null
+dados: descricao_curta=rosa, local_corpo=antebraco, altura_cm=170, refs_imagens_msg_ids=1 item, foto_local_msg_id=null, estilo=null
+copy_risk: baixo
+validacao: node --test focado PASS; npm test PASS 1187/1187; CI/deploy PASS; HTTP radar PASS; WhatsApp real PASS
+mudanca: pipeline pede classificacao para foto unica sem legenda clara, sem chamar LLM; runners agora aceitam media-only, polling exige IA nova posterior ao humano e evidence de Evolution omite base64 grande
+provas_conclusivas_reais: Cliente imagem sem legenda -> Bot "Vi a imagem, mas fiquei em dúvida se ela é referência do desenho ou o local do corpo. Qual dos dois fica valendo?"
+proximo passo: level4b-wave-4-closeout
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

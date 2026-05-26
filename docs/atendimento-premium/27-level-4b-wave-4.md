@@ -103,12 +103,14 @@ Bot: resposta reconhece/segue sem pedir novamente a foto do local
 ## Resultado Atual
 
 ```text
-status: primeiro comportamento fechado
+status: terceiro comportamento fechado
 micro_slice_1: tattoo-media-wave-contract PASS
 micro_slice_2: tattoo-media-local-photo-http PASS
 micro_slice_3: tattoo-media-local-photo-whatsapp-real PASS
 micro_slice_4: tattoo-media-reference-after-local-http PASS
 micro_slice_5: tattoo-media-reference-after-local-whatsapp-real PASS
+micro_slice_6: tattoo-media-ambiguous-photo-clarification-http PASS
+micro_slice_7: tattoo-media-ambiguous-photo-clarification-whatsapp-real PASS
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -144,15 +146,6 @@ Cliente: "segue foto do local" + imagem
 Bot: "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
 ```
 
-## Proximo Ataque
-
-```text
-micro_slice_6: tattoo-media-ambiguous-photo-clarification-http
-micro_slice_7: tattoo-media-ambiguous-photo-clarification-whatsapp-real
-objetivo: validar que foto ambigua pede classificacao sem perder dados
-4c: bloqueado
-```
-
 ## Evidencias - Referencia Apos Foto Local
 
 ```text
@@ -177,4 +170,49 @@ copy_risk: baixo
 ```text
 Cliente: "essa é referência do desenho" + imagem
 Bot: "Recebi essa referência também. Pra liberar teu orçamento, preciso do teu nome completo."
+```
+
+## Evidencias - Foto Ambigua Sem Legenda
+
+```text
+commit_fix: 80418c9 fix: clarify unlabeled tattoo media
+commit_infra_media_only: 7e8afbc fix: allow media-only smoke scenarios
+commit_poll: b8fc06a fix: wait for fresh ai in smoke polling
+commit_real_media_only: 45de124 fix: allow media-only real whatsapp smoke
+commit_evidence: d19ffbb chore: sanitize evolution smoke evidence
+tests_local: npm test PASS, 1187/1187
+ci: PASS
+deploy: PASS
+http_radar: scenario-tattoo-media-ambiguous-photo-clarification-20260526T064538Z-31035 PASS
+whatsapp_real: scenario-whatsapp-real-tattoo-media-ambiguous-photo-clarification-20260526T064904Z-10234 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: imagem sem legenda clara
+bot: "Vi a imagem, mas fiquei em dúvida se ela é referência do desenho ou o local do corpo. Qual dos dois fica valendo?"
+estado_final: coletando_tattoo
+orcid: null
+foto_local_msg_id: ausente
+refs_imagens_msg_ids: 1 item novo
+descricao_curta: rosa
+local_corpo: antebraco
+altura_cm: 170
+copy_risk: baixo
+```
+
+### Leitura Tecnica
+
+Foto unica sem legenda clara, durante coleta de tattoo e sem pedido pendente de foto local, agora recebe resposta deterministica de classificacao. O pipeline registra a imagem como referencia provisoria, preserva os dados existentes e nao chama LLM, evitando quota/stale. O runner tambem foi fortalecido para aceitar cenarios media-only, esperar IA nova posterior ao humano e omitir base64 grande das evidencias.
+
+### Provas Conclusivas Reais
+
+```text
+Cliente: imagem sem legenda
+Bot: "Vi a imagem, mas fiquei em dúvida se ela é referência do desenho ou o local do corpo. Qual dos dois fica valendo?"
+```
+
+## Proximo Ataque
+
+```text
+micro_slice_8: level4b-wave-4-closeout
+objetivo: rodar gates finais, consolidar evidencias e decidir manter/expandir/rebaixar Level 4B sem promover 4C
+4c: bloqueado
 ```

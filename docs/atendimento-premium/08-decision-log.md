@@ -1138,6 +1138,28 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** commit `122c43f` adicionou bypass deterministico para foto posterior, setup `seed_tattoo_com_foto_local_aguardando_nome` e cenarios HTTP/WhatsApp real. `npm test` passou `1186/1186`, CI/deploy passaram, HTTP radar `scenario-tattoo-media-reference-after-local-20260526T063321Z-3051` passou e WhatsApp real `scenario-whatsapp-real-tattoo-media-reference-after-local-20260526T063402Z-4330` passou.
 
+### Wave 4 - Foto Ambigua Sem Legenda Pede Classificacao
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** imagem unica sem legenda clara, em coleta de tattoo e sem pedido pendente de foto local, deve pedir classificacao entre referencia do desenho e local do corpo sem chamar LLM.
+
+**Motivo:** sem legenda e sem contexto de foto local pendente, o sistema nao deve adivinhar. O comportamento premium e explicitar a ambiguidade, preservar os dados ja coletados e manter o estado seguro.
+
+**Alternativas rejeitadas:**
+
+- tratar automaticamente como foto local;
+- tratar automaticamente como referencia definitiva sem perguntar;
+- chamar LLM/visao para decidir um contrato que depende de intencao do cliente;
+- pedir novamente todos os campos;
+- fechar o comportamento sem WhatsApp real.
+
+**Camada responsável:** WhatsApp Pipeline, Smoke Scenario Registry e Monitoramento de Smoke.
+
+**Impacto:** commit `80418c9` adicionou resposta deterministica para foto ambigua sem legenda; commits `7e8afbc`, `b8fc06a`, `45de124` e `d19ffbb` fortaleceram o processo media-only e evidencias. `npm test` passou `1187/1187`, CI/deploy passaram, HTTP radar `scenario-tattoo-media-ambiguous-photo-clarification-20260526T064538Z-31035` passou e WhatsApp real `scenario-whatsapp-real-tattoo-media-ambiguous-photo-clarification-20260526T064904Z-10234` passou.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

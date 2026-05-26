@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_4_tattoo_media_intake_referencia_pos_local_fechada
+status: level4b_wave_4_tattoo_media_intake_foto_ambigua_fechada
 branch: main
-ultimo_commit: 122c43f fix: classify post-local tattoo photos as references
+ultimo_commit: d19ffbb chore: sanitize evolution smoke evidence
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo apos commit de docs
-ultimo_commit_validado: 122c43f
+ultimo_commit_validado: d19ffbb
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -91,6 +91,8 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Level 4B Wave 4 declarada: `level4b-wave-4-tattoo-media-intake`, foco em foto/midia dentro da coleta de tattoo. Primeiro contrato valida foto do local quando o bot ja pediu a foto: setup controlado, HTTP radar e WhatsApp real definitivo usando imagem real enviada pela Evolution `central`.
 - Level 4B Wave 4 fechou o primeiro comportamento: foto do local aguardada agora e resolvida deterministicamente sem LLM quando os dados principais de tattoo ja existem. HTTP radar e WhatsApp real `central -> bot` passaram com `foto_local_msg_id` presente, `refs_imagens_msg_ids` ausente, `estado=coletando_cadastro`, `orcid=null` e `copy_risk=baixo`.
 - Level 4B Wave 4 fechou o segundo comportamento: foto posterior com `foto_local_msg_id` ja existente agora vira referencia deterministica sem chamar LLM. HTTP radar e WhatsApp real `central -> bot` passaram preservando `foto_local_msg_id=599`, adicionando 1 item em `refs_imagens_msg_ids`, mantendo `estado=coletando_cadastro`, `orcid=null` e `copy_risk=baixo`.
+- Level 4B Wave 4 fechou o terceiro comportamento: foto unica sem legenda clara, sem pedido pendente de foto local, agora pede classificacao entre referencia e local do corpo sem chamar LLM. HTTP radar e WhatsApp real `central -> bot` passaram preservando dados de tattoo, adicionando 1 item em `refs_imagens_msg_ids`, mantendo `foto_local_msg_id=null`, `estado=coletando_tattoo`, `orcid=null` e `copy_risk=baixo`.
+- Monitoramento media-only foi fortalecido: runners aceitam mensagem vazia com midia, polling exige IA nova posterior ao humano e evidencias da Evolution omitem base64/thumbnail grande.
 - Governanca multi-agente oficializada: agentes podem acelerar analise, preparo, auditoria e triage, mas Level 4B mantem Commander unico, single-writer por micro-slice, WhatsApp real serial e 4C bloqueado.
 - Wave Runner v1 e Evidence Registrar implementados como ferramentas metodologicas: preflight seguro de onda e geracao revisavel de linha para `smoke-runs.md`, sem executar WhatsApp real, sem editar evidencias automaticamente e sem promover autonomia.
 - Evidence Orphan Gate integrado ao `wave-health`: registros quebrados passam a bloquear a saude da onda; evidencias completas recentes sem registro aparecem como `WARN` no modo padrao e bloqueiam somente no modo estrito de auditoria.
@@ -123,45 +125,44 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-tattoo-media-reference-after-local-20260526T063321Z-3051
-run_id_real: scenario-whatsapp-real-tattoo-media-reference-after-local-20260526T063402Z-4330
+run_id_http: scenario-tattoo-media-ambiguous-photo-clarification-20260526T064538Z-31035
+run_id_real: scenario-whatsapp-real-tattoo-media-ambiguous-photo-clarification-20260526T064904Z-10234
 tipo: Scenario WhatsApp real de midia da Wave 4
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: coletando_cadastro
+expected_state: coletando_tattoo
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-reference-after-local-20260526T063402Z-4330/
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-ambiguous-photo-clarification-20260526T064904Z-10234/
 ```
 
 Mensagem:
 
 ```text
-essa é referência do desenho
 image/png
+sem legenda
 ```
 
 Resultado:
 
 ```text
-estado_agente: coletando_cadastro
+estado_agente: coletando_tattoo
 resposta_ai_posterior_ao_humano: true
 orcid: null
 dados_coletados.descricao_curta: rosa
-dados_coletados.estilo: fineline
 dados_coletados.local_corpo: antebraco
 dados_coletados.altura_cm: 170
-dados_coletados.foto_local_msg_id: 599
+dados_coletados.foto_local_msg_id: null
 dados_coletados.refs_imagens_msg_ids: 1 item
 copy_risk: baixo
-copy: "Recebi essa referência também. Pra liberar teu orçamento, preciso do teu nome completo."
-decision_chain: foto local ja existente + nova imagem -> referencia deterministica -> cadastro preservado
+copy: "Vi a imagem, mas fiquei em dúvida se ela é referência do desenho ou o local do corpo. Qual dos dois fica valendo?"
+decision_chain: foto sem legenda + sem foto local pendente -> classificacao deterministica -> dados preservados
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll por estado
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar Wave 4 micro-slice `tattoo-media-ambiguous-photo-clarification`: HTTP radar e, se passar, WhatsApp real definitivo.
+Proximo passo recomendado: executar `level4b-wave-4-closeout`: gates finais, resumo de evidencias e decisao de manter/expandir/rebaixar Level 4B sem promover 4C.
 ```
 
 Escopo recomendado:
@@ -172,7 +173,7 @@ Escopo recomendado:
 - usar `docs/atendimento-premium/27-level-4b-wave-4.md` como plano da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
 - Wave 4 iniciou a familia `tattoo-media-intake`;
-- proximo alvo funcional: validar foto ambigua sem legenda clara, pedindo classificacao sem perder dados ja coletados;
+- proximo alvo funcional: fechar Wave 4 com gates finais e consolidacao documental;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
