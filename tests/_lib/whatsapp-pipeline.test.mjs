@@ -1733,6 +1733,66 @@ test('Workflow: cadastro pos-midia com recusa de email preserva pacote de midia 
   assert.equal(callToolSpy.mock.calls[0].arguments[0], 'enviar-orcamento-tatuador');
 });
 
+test('Workflow: cadastro pos-midia com email valido preserva pacote de midia no handoff', async () => {
+  const runAgentSpy = mock.fn(async () => {
+    throw new Error('runAgent nao deveria ser chamado');
+  });
+  const callToolSpy = mock.fn(async () => ({ ok: true }));
+  let conversaPatch = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_cadastro',
+    dados_coletados: {
+      descricao_curta: 'rosa',
+      local_corpo: 'antebraço',
+      altura_cm: 170,
+      estilo: 'fineline',
+      foto_local_msg_id: 12632,
+      refs_imagens_msg_ids: [11951],
+      tentativas_foto_local: 1,
+    },
+    dados_cadastro: {
+      nome: 'Joao Silva',
+      data_nascimento: '1995-03-12',
+    },
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'joao@example.com' }]),
+      hist: [
+        {
+          id: 1,
+          message: {
+            type: 'ai',
+            content: 'E o e-mail? Se preferir seguir sem, me avisa',
+          },
+        },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.estado_agente) {
+          conversaPatch = body;
+        }
+      },
+    }),
+    runAgent: runAgentSpy,
+    callTool: callToolSpy,
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
+  assert.deepEqual(conversaPatch.dados_coletados, conversa.dados_coletados);
+  assert.deepEqual(conversaPatch.dados_cadastro, {
+    nome: 'Joao Silva',
+    data_nascimento: '1995-03-12',
+    email: 'joao@example.com',
+  });
+  assert.equal(callToolSpy.mock.callCount(), 1);
+  assert.equal(callToolSpy.mock.calls[0].arguments[0], 'enviar-orcamento-tatuador');
+});
+
 test('15. multi-message: resposta com \\n\\n envia 2 balões com typing delay antes de cada', async () => {
   let evoCalls = [];
   let sleepCalls = 0;
