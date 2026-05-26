@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_18_closed
+status: level4b_wave_19_micro_slice_1_pass
 branch: main
-ultimo_commit: ae2e664 docs: close wave 18
+ultimo_commit: 91fabdb docs: start wave 19 post handoff hardening
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: pendente no commit ae2e664
-tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 18 micro-slice 2 sem mudanca funcional; contratos reexecutados com HTTP + WhatsApp real PASS
+deploy: pendente no commit 91fabdb
+tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 19 micro-slice 1 alterou somente scripts/docs; bash -n PASS; HTTP + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: ae2e664
+ultimo_commit_validado: 91fabdb
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -192,8 +192,25 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: abrir Wave 19 pequena fora de menoridade legal. Candidatos preferenciais: pos-handoff leve ou lateral/portfolio. A auditoria atual ficou com 10 baixo, 3 medio, 0 alto; os 3 medios restantes sao menoridade legal aceitavel por seguranca. Manter Level 4B; nao subir para 4C.
+Proximo passo recomendado: continuar Wave 19 com revalidacao de midia pos-handoff, usando o mesmo criterio terminal de `ai_messages_after_last_human=0`. Manter Level 4B; nao subir para 4C.
 ```
+
+Atualizacao 2026-05-26 21:00 UTC:
+
+- Wave 19 micro-slice 1 passou com melhoria metodologica de monitoramento.
+- HTTP radar `scenario-post-handoff-text-forwarding-20260526T205943Z-14853` PASS.
+- WhatsApp real definitivo `scenario-whatsapp-real-post-handoff-text-forwarding-20260526T210016Z-26317` PASS.
+- Estado final `aguardando_tatuador`, `orcid=orc_poshandoff`, tail `pos-handoff-mensagem-encaminhada`.
+- `render-report.sh` agora separa IA anterior ao humano de IA posterior ao humano em fluxos `SMOKE_REQUIRE_AI_RESPONSE=0`; julgamento final mostra `ai_messages_after_last_human=0`.
+- Seed pos-handoff agora usa copy atual de handoff, removendo ruido antigo de `Fechado`/`valor certinho`.
+- Provas conclusivas reais: Cliente `lembrei de mais um detalhe`; Bot sem nova resposta automatica apos o humano.
+
+Atualizacao 2026-05-26 20:49 UTC:
+
+- Wave 19 declarada: `level4b-wave-19-post-handoff-hardening`.
+- Primeiro ataque: revalidar `post-handoff-text-forwarding` em HTTP radar e WhatsApp real definitivo.
+- Objetivo: garantir que cliente em `aguardando_tatuador` possa mandar complemento sem reabrir coleta e sem receber nova resposta automatica.
+- Fora de escopo: menoridade legal, preco, agenda, pagamento, sinal, 4C.
 
 Atualizacao 2026-05-26 20:37 UTC:
 

@@ -898,7 +898,7 @@ seed_pos_handoff_aguardando_tatuador() {
         status:"processed",
         message:{
           type:"ai",
-          content:"Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+          content:"Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor."
         }
       }'
   )"

@@ -29,8 +29,15 @@ orcid="$(jq -r '.conversas[0].orcid // ""' "$POLL_JSON")"
 human_count="$(jq '[.mensagens[]? | select(.message.type=="human")] | length' "$POLL_JSON")"
 ai_count="$(jq '[.mensagens[]? | select(.message.type=="ai")] | length' "$POLL_JSON")"
 failed_count="$(jq '[.mensagens[]? | select(.status=="failed")] | length' "$POLL_JSON")"
-last_ai="$(jq -r '[.mensagens[]? | select(.message.type=="ai")][-1].message.content // ""' "$POLL_JSON")"
+last_ai_overall="$(jq -r '[.mensagens[]? | select(.message.type=="ai")][-1].message.content // ""' "$POLL_JSON")"
 last_human="$(jq -r '[.mensagens[]? | select(.message.type=="human")][-1].message.content // ""' "$POLL_JSON")"
+last_human_at="$(jq -r '[.mensagens[]? | select(.message.type=="human")][-1].created_at // ""' "$POLL_JSON")"
+ai_after_last_human_count="$(jq --arg last_human_at "$last_human_at" '[.mensagens[]? | select(.message.type=="ai" and .created_at > $last_human_at)] | length' "$POLL_JSON")"
+last_ai_after_human="$(jq -r --arg last_human_at "$last_human_at" '[.mensagens[]? | select(.message.type=="ai" and .created_at > $last_human_at)][-1].message.content // ""' "$POLL_JSON")"
+last_ai="$last_ai_overall"
+if [ "$require_ai_response" = "0" ]; then
+  last_ai="$last_ai_after_human"
+fi
 decision_observability=""
 if [ -f "$AGENT_LOGS_JSON" ]; then
   decision_observability="$(jq -r '
@@ -112,6 +119,9 @@ ai_ok=true
 if [ "$require_ai_response" = "1" ] && [ "$ai_count" -lt 1 ]; then
   ai_ok=false
 fi
+if [ "$require_ai_response" = "0" ] && [ "$ai_after_last_human_count" != "0" ]; then
+  ai_ok=false
+fi
 
 copy_risk="baixo"
 notes=()
@@ -121,7 +131,7 @@ if [ -z "$last_ai" ]; then
     copy_risk="alto"
     notes+=("sem resposta AI no snapshot")
   else
-    notes+=("sem resposta AI esperada para fluxo terminal/handoff")
+    notes+=("sem resposta AI apos o ultimo humano, esperado para fluxo terminal/handoff")
   fi
 else
   ai_chars="${#last_ai}"
@@ -152,6 +162,11 @@ else
   fi
 fi
 
+if [ "$require_ai_response" = "0" ] && [ "$ai_after_last_human_count" != "0" ]; then
+  copy_risk="alto"
+  notes+=("fluxo terminal gerou resposta AI apos o humano")
+fi
+
 if [ "$state_ok" != "true" ] || [ "$orcid_ok" != "true" ] || [ "$failed_ok" != "true" ] || [ "$ai_ok" != "true" ]; then
   copy_risk="alto"
 fi
@@ -179,6 +194,7 @@ cat > "$JUDGMENT_MD" <<EOF
 | no_failed_messages | ${failed_ok} |
 | ai_response_required | ${require_ai_response} |
 | ai_response_present_when_required | ${ai_ok} |
+| ai_messages_after_last_human | ${ai_after_last_human_count} |
 | human_messages | ${human_count} |
 | ai_messages | ${ai_count} |
 
@@ -208,6 +224,12 @@ ${last_human}
 
 \`\`\`text
 ${last_ai}
+\`\`\`
+
+### Last Bot Before Human
+
+\`\`\`text
+${last_ai_overall}
 \`\`\`
 
 ### Notes
