@@ -11,7 +11,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_3_em_andamento
+status: level4b_wave_3_fechada_piloto_auto_closeout_summarizer
 branch: main
 ultimo_commit: conferir `git log --oneline -1`
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
@@ -87,6 +87,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Level 4B Wave 3 validou o segundo comportamento: altura pendente + pergunta lateral de tempo/sessoes. HTTP multi-turn e WhatsApp real multi-turn passaram para `quero uma baleia fineline na barriga` -> `tenho 1.70\nquanto tempo demora?`, persistindo `altura_cm=170`, respondendo tempo e pedindo foto do local.
 - Level 4B Wave 3 fechou PASS com o terceiro comportamento: estilo pendente + pergunta lateral de tempo/sessoes. HTTP multi-turn e WhatsApp real multi-turn passaram para `quero uma hiena na panturrilha, tenho 1.70` -> `realismo\nem quantas sessoes seria?`, persistindo `estilo=realismo`, respondendo tempo e pedindo foto do local.
 - Proximo upgrade recomendado do piloto automatico: criar `wave-closeout-summarizer` revisavel para gerar Evidence Summary e provas conclusivas reais a partir de evidencias ja validadas, sem commit automatico e sem executar WhatsApp real em lote.
+- `wave-closeout-summarizer` implementado como ferramenta read-only: gera Evidence Summary, estado final, ORCID, copy risk, dados persistidos, provas reais Cliente/Bot e decisao sugerida a partir de evidence dirs. A ferramenta nao executa smoke, nao edita docs, nao commita e nao promove 4C.
 - Governanca multi-agente oficializada: agentes podem acelerar analise, preparo, auditoria e triage, mas Level 4B mantem Commander unico, single-writer por micro-slice, WhatsApp real serial e 4C bloqueado.
 - Wave Runner v1 e Evidence Registrar implementados como ferramentas metodologicas: preflight seguro de onda e geracao revisavel de linha para `smoke-runs.md`, sem executar WhatsApp real, sem editar evidencias automaticamente e sem promover autonomia.
 - Evidence Orphan Gate integrado ao `wave-health`: registros quebrados passam a bloquear a saude da onda; evidencias completas recentes sem registro aparecem como `WARN` no modo padrao e bloqueiam somente no modo estrito de auditoria.
@@ -156,7 +157,7 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: implementar `wave-closeout-summarizer` revisavel como proximo upgrade do piloto automatico.
+Proximo passo recomendado: validar e versionar `wave-closeout-summarizer`; depois escolher a proxima onda funcional leve em Level 4B.
 ```
 
 Escopo recomendado:
@@ -167,7 +168,7 @@ Escopo recomendado:
 - usar `docs/atendimento-premium/26-level-4b-wave-3.md` como plano da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
 - Wave 3 fechou os tres comportamentos planejados em HTTP + WhatsApp real;
-- proximo alvo metodologico: automatizar resumo de closeout sem reduzir controle do Commander;
+- proximo alvo metodologico: validar `wave-closeout-summarizer` com evidencias da Wave 3 e commitar;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;

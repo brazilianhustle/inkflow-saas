@@ -1050,6 +1050,28 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Aprendizado de automação:** a Wave 3 mostrou que o loop ja separa falha de contrato de regressao funcional e que o gargalo manual agora e consolidar evidencias. Proximo upgrade metodologico aprovado como caminho recomendado: gerar automaticamente um bloco revisavel de closeout/evidence-summary a partir de evidence, transcript e judgment, sem commit automatico e sem executar WhatsApp real em lote.
 
+### Wave Closeout Summarizer Como Peça Do Piloto Automático
+
+**Data:** 2026-05-26
+
+**Status:** decidido.
+
+**Decisão:** implementar `scripts/smoke/wave-closeout-summarizer.sh` como ferramenta revisavel para fechamento de ondas.
+
+**Motivo:** o gargalo atual do Level 4B nao e mais detectar PASS/FAIL basico, e sim consolidar rapidamente evidencia, transcript, julgamento, estado final, ORCID, copy risk e prova real Cliente/Bot sem perder rastreabilidade. Automatizar esse resumo aumenta velocidade do piloto automatico sem reduzir autoridade humana.
+
+**Alternativas rejeitadas:**
+
+- auto-commitar closeout;
+- promover autonomia para 4C por ferramenta;
+- rodar WhatsApp real em lote sem supervisao;
+- editar `smoke-runs.md` automaticamente;
+- substituir leitura de `summary.md`, `transcript.md`, `judgment.md`, `poll.json` e `agent-turn-logs.json`.
+
+**Camada responsável:** Smoke Tooling / Multi-Agent Governance.
+
+**Impacto:** `wave-closeout-summarizer.sh` gera Markdown revisavel com Evidence Summary, provas conclusivas reais e decisao sugerida a partir de uma ou mais evidencias. A ferramenta foi registrada em `25-multi-agent-governance.md` e mantem o Commander como unico responsavel pelo PASS final.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

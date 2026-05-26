@@ -161,6 +161,7 @@ O ganho principal deve vir de orquestrar melhor ferramentas existentes:
 - `scripts/smoke/wave-health.sh`;
 - `scripts/smoke/evidence-index.sh`;
 - `scripts/smoke/evidence-registrar.sh`;
+- `scripts/smoke/wave-closeout-summarizer.sh`;
 - `scripts/smoke/evidence-orphan-gate.sh`;
 - `scripts/smoke/continuity-bundle.sh`;
 - GitHub Actions de tests, prompts/evals e deploy.
@@ -240,6 +241,36 @@ Ele imprime:
 - decisao resumida com estado, `orcid`, `copy_risk`, dados persistidos e ultima resposta do bot.
 
 Ele nao edita `smoke-runs.md`. O Commander ainda revisa e cola a linha final.
+
+## Wave Closeout Summarizer
+
+O `scripts/smoke/wave-closeout-summarizer.sh` gera um bloco revisavel de fechamento de onda a partir de uma ou mais evidencias ja existentes.
+
+Uso:
+
+```bash
+bash scripts/smoke/wave-closeout-summarizer.sh .smoke-evidence/<run_id> [...]
+```
+
+Ele consolida:
+
+- Evidence Summary por run id;
+- estado final, ORCID e copy risk;
+- dados coletados/cadastro do ultimo step;
+- provas conclusivas reais no formato Cliente/Bot para WhatsApp real;
+- decisao sugerida para revisao do Commander.
+
+Ele nao executa:
+
+- HTTP smoke;
+- WhatsApp real;
+- edicao de `smoke-runs.md`;
+- commit;
+- push;
+- deploy;
+- promocao para Level 4C.
+
+Regra operacional: usar este script para acelerar closeout e auditoria, mas nunca como substituto de `summary.md`, `transcript.md`, `judgment.md`, `poll.json` e `agent-turn-logs.json` quando aplicavel.
 
 ## Evidence Orphan Gate
 

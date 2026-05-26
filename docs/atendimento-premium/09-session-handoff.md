@@ -27,6 +27,15 @@ Se houver mudanças não commitadas, entender antes de editar.
 
 Para retomada rapida apos compactacao, os tres primeiros arquivos acima sao suficientes na maioria dos casos.
 
+## Atualizacao Operacional Em 2026-05-26
+
+```text
+Autonomy Gate atual: Level 4B, ate 8 micro-slices da mesma onda declarada.
+Wave 3 Level 4B fechada: pending answer recovery passou em HTTP multi-turn e WhatsApp real multi-turn para local, altura e estilo pendentes com duvida lateral de tempo/sessoes.
+Proximo upgrade do piloto automatico: `scripts/smoke/wave-closeout-summarizer.sh`, ferramenta read-only para gerar Evidence Summary e provas reais Cliente/Bot a partir de evidencias ja validadas.
+4C continua bloqueado; WhatsApp real continua validacao definitiva para comportamento conversacional.
+```
+
 ## Estado Atual Em 2026-05-25
 
 Branch observada:
