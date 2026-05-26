@@ -755,6 +755,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `cadastro-question-policy-lateral` passou em teste local, HTTP radar e WhatsApp real. O WhatsApp real validou envio pela Evolution `central`, webhook real, `estado=coletando_cadastro`, `orcid=null`, sem `data_nascimento`/`email` persistidos, copy risk baixo e logs de decisao Router + Workflow. Provas reais: Cliente "quanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia. Me passa tua data de nascimento completa?".
 
+## 2026-05-26 - Level 4A Wave 2 concluida sem promocao automatica
+
+**Status:** decidido.
+
+**Decisão:** fechar `level4a-wave-2-cadastro-question-policy` como PASS, registrar 4B como elegivel para decisao deliberada e manter 4C bloqueado.
+
+**Motivo:** a onda validou os cinco micro-slices conversacionais planejados com teste local, CI/deploy, HTTP radar e WhatsApp real definitivo. A politica de Level 4 permite discutir 4B apos duas rodadas 4A saudaveis, mas promocao exige commit proprio. 4C exige duas rodadas 4B saudaveis, portanto ainda nao e elegivel.
+
+**Alternativas rejeitadas:**
+
+- promover para 4B automaticamente durante o closeout;
+- discutir 4C antes de qualquer rodada 4B;
+- iniciar nova familia funcional sem registrar o fechamento da onda;
+- tratar falhas intermediarias de contrato como regressao funcional sem evidencia.
+
+**Camada responsável:** Autonomy Gate, Level 4 Loop Policy, Smoke Evidence Registry e Session Handoff.
+
+**Impacto:** `wave-health.sh` final passou com 86 smokes PASS, 41 WhatsApp reais PASS, Security Gate PASS, Dependabot 0 e worktree limpo. Proxima acao deve ser decisao estrategica: promover deliberadamente para 4B ou declarar mais uma onda 4A.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

@@ -11,16 +11,17 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: em-andamento
+status: wave_2_concluida
 branch: main
 ultimo_commit: conferir `git log --oneline -1`
-deploy: GitHub Actions Deploy to Cloudflare Pages passou em 2026-05-25
+deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo
 ultimo_commit_validado: conferir `git log --oneline -1`
 autonomy_level: 4A
 autonomy_limit: ate 6 micro-slices da mesma onda declarada
+autonomy_recommendation: 4B elegivel para decisao deliberada; 4C bloqueado
 ```
 
 ## Ultimos Marcos
@@ -140,7 +141,7 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar `wave-closeout` da onda `level4a-wave-2-cadastro-question-policy`.
+Proximo passo recomendado: decisao estrategica sobre promocao 4B ou nova onda 4A.
 ```
 
 Escopo recomendado:
@@ -148,12 +149,20 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=6`;
-- respeitar limite de ate 6 micro-slices;
-- alterar apenas o necessario para `QuestionPolicy` de cadastro;
-- validar com teste local relevante, HTTP radar e WhatsApp real definitivo;
+- se promover para 4B, fazer commit proprio em `autonomy-gate.env` antes de qualquer implementacao;
+- se nao promover, declarar nova onda 4A antes de codar;
+- validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
-- nao subir para 4B/4C sem duas ondas 4A saudaveis e commit deliberado.
+- nao subir para 4C; 4C exige duas rodadas 4B saudaveis.
+
+Leitura recomendada:
+
+```text
+4B esta elegivel para discussao porque Wave 1 e Wave 2 Level 4A fecharam saudaveis.
+4B nao deve ser aplicado automaticamente: exige decisao e commit proprio.
+4C permanece bloqueado.
+```
 
 ## Comando De Retomada
 

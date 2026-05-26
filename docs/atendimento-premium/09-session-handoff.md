@@ -458,10 +458,10 @@ Nao avançar para IntentPolicy ampla antes de consolidar os proximos micro-slice
 Depois disso, o próximo melhor ataque é:
 
 ```text
-Proximo micro-slice recomendado: executar `wave-closeout` dentro da onda Level 4A Wave 2.
+Proximo passo recomendado: decidir estrategia de autonomia antes da proxima onda.
 ```
 
-Motivo: `cadastro-question-policy-lateral` ja passou em teste local, CI, deploy, HTTP radar e WhatsApp real definitivo. A onda ja validou nome, data, e-mail, recusa de e-mail e lateral durante cadastro. O proximo passo correto e consolidar evidencias, rodar health final e emitir recomendacao de autonomia sem promover automaticamente para 4B/4C.
+Motivo: `level4a-wave-2-cadastro-question-policy` fechou os 5 micro-slices conversacionais planejados e o closeout registrou health final PASS. A decisao agora e escolher entre promover para 4B com commit proprio ou declarar outra onda 4A em familia nova.
 
 Ultimo micro-slice validado em Level 4A:
 
@@ -475,6 +475,21 @@ whatsapp real: scenario-whatsapp-real-cadastro-question-policy-lateral-20260526T
 prova real: Cliente "quanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia. Me passa tua data de nascimento completa?"
 telemetria: conversation_router tempo_sessao can_mutate_state=false e workflow_manager state_preserved_by_router_policy; orcid null.
 rodada: Level 4A Wave 2; 5 de ate 6 micro-slices concluidos; proximo passo e closeout.
+```
+
+Closeout Level 4A Wave 2:
+
+```text
+status: PASS
+wave: level4a-wave-2-cadastro-question-policy
+micro-slices: nome, data, email, email_recusado, lateral, closeout
+http radar: PASS em todos os micro-slices conversacionais
+whatsapp real: PASS em todos os micro-slices conversacionais
+wave_health_final: PASS
+security_gate: PASS
+worktree_final: clean
+autonomy: 4B elegivel para decisao deliberada; 4C bloqueado
+proxima decisao: promover para 4B ou manter 4A para nova familia
 ```
 
 ## Checklist De Fechamento De Sessão

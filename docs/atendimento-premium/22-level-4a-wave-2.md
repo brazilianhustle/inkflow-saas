@@ -77,14 +77,15 @@ Parar a onda se ocorrer:
 ## Resultado Atual
 
 ```text
-status: em-andamento
+status: concluida
 micro_slice_1: cadastro-question-policy-nome PASS
 micro_slice_2: cadastro-question-policy-data PASS
 micro_slice_3: cadastro-question-policy-email PASS
 micro_slice_4: cadastro-question-policy-email-recusado PASS
 micro_slice_5: cadastro-question-policy-lateral PASS
-micro_slice_atual: wave-closeout
-promocao_4b_4c: proibida
+micro_slice_6: wave-closeout PASS
+promocao_4b: elegivel_para_decisao_deliberada
+promocao_4c: bloqueada
 ```
 
 ## Evidencia Micro-Slice 1
@@ -223,4 +224,42 @@ Provas conclusivas reais:
 ```text
 Cliente: "quanto tempo demora?"
 Bot: "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nMe passa tua data de nascimento completa?"
+```
+
+## Closeout Da Onda
+
+```text
+micro_slice: wave-closeout
+status: PASS
+wave_health_final: PASS
+scenario_pass_count: 86
+real_whatsapp_pass_count: 41
+security_gate: PASS
+dependabot_open_alerts: 0
+worktree_final: clean
+ci_final: PASS
+deploy_final: PASS
+zona_vermelha: nao tocada
+preco_sinal_pagamento_agenda: nao tocados
+secrets: nao tocados
+tenant_real_amplo: nao tocado
+```
+
+Leitura estrategica:
+
+- A onda cumpriu os 5 micro-slices planejados de comportamento conversacional.
+- Todos os micro-slices tiveram teste local relevante, CI/deploy, HTTP radar e WhatsApp real definitivo.
+- As duas falhas intermediarias registradas na onda foram falhas de contrato/gate, nao regressao funcional: `.conversa` vs `.conversas[0]` e copy gate baixo demais para e-mail opcional.
+- O padrao metodologico foi respeitado: HTTP como radar inicial; WhatsApp real como validacao definitiva.
+- O `Workflow Manager` ficou confirmado como autoridade de transicao e preservacao de estado.
+- A `QuestionPolicy` agora cobre nome, data, e-mail, recusa de e-mail e duvida lateral durante cadastro sem depender do LLM.
+
+Recomendacao de autonomia:
+
+```text
+4B: elegivel para discussao/promocao deliberada, nao automatica.
+4C: nao elegivel.
+motivo_4B: Wave 1 Level 4A e Wave 2 Level 4A fecharam saudaveis, sem blocker e com gates finais PASS.
+motivo_4C: politica exige duas rodadas 4B saudaveis antes de 4C.
+proximo_passo_seguro: decidir entre promover para 4B com commit proprio ou executar mais uma onda 4A em familia nova antes de expandir janela.
 ```
