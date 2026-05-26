@@ -19,9 +19,9 @@ tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo
 ultimo_commit_validado: conferir `git log --oneline -1`
-autonomy_level: 4A
-autonomy_limit: ate 6 micro-slices da mesma onda declarada
-autonomy_recommendation: 4B elegivel para decisao deliberada; 4C bloqueado
+autonomy_level: 4B
+autonomy_limit: ate 8 micro-slices da mesma onda declarada
+autonomy_recommendation: 4C bloqueado ate duas rodadas 4B saudaveis
 ```
 
 ## Ultimos Marcos
@@ -141,16 +141,15 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: decisao estrategica sobre promocao 4B ou nova onda 4A.
+Proximo passo recomendado: declarar primeira onda 4B antes de qualquer implementacao.
 ```
 
 Escopo recomendado:
 
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
-- manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=6`;
-- se promover para 4B, fazer commit proprio em `autonomy-gate.env` antes de qualquer implementacao;
-- se nao promover, declarar nova onda 4A antes de codar;
+- manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
+- declarar uma onda 4B com ate 8 micro-slices antes de codar;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
@@ -159,8 +158,8 @@ Escopo recomendado:
 Leitura recomendada:
 
 ```text
-4B esta elegivel para discussao porque Wave 1 e Wave 2 Level 4A fecharam saudaveis.
-4B nao deve ser aplicado automaticamente: exige decisao e commit proprio.
+4B promovido por decisao deliberada apos Wave 1 e Wave 2 Level 4A saudaveis.
+Primeira onda 4B deve permanecer em zona verde/amarela.
 4C permanece bloqueado.
 ```
 

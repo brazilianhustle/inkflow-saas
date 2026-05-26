@@ -463,6 +463,14 @@ Proximo passo recomendado: decidir estrategia de autonomia antes da proxima onda
 
 Motivo: `level4a-wave-2-cadastro-question-policy` fechou os 5 micro-slices conversacionais planejados e o closeout registrou health final PASS. A decisao agora e escolher entre promover para 4B com commit proprio ou declarar outra onda 4A em familia nova.
 
+Decisao posterior:
+
+```text
+Level 4B promovido por commit proprio em `autonomy-gate.env`.
+MAX_BATCH_SIZE=8.
+4C segue bloqueado ate duas rodadas 4B saudaveis.
+```
+
 Ultimo micro-slice validado em Level 4A:
 
 ```text
@@ -488,8 +496,8 @@ whatsapp real: PASS em todos os micro-slices conversacionais
 wave_health_final: PASS
 security_gate: PASS
 worktree_final: clean
-autonomy: 4B elegivel para decisao deliberada; 4C bloqueado
-proxima decisao: promover para 4B ou manter 4A para nova familia
+autonomy: 4B promovido deliberadamente; 4C bloqueado
+proxima decisao: declarar primeira onda 4B em zona verde/amarela
 ```
 
 ## Checklist De Fechamento De Sessão

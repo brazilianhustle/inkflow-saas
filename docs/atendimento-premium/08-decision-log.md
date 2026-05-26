@@ -774,6 +774,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `wave-health.sh` final passou com 86 smokes PASS, 41 WhatsApp reais PASS, Security Gate PASS, Dependabot 0 e worktree limpo. Proxima acao deve ser decisao estrategica: promover deliberadamente para 4B ou declarar mais uma onda 4A.
 
+## 2026-05-26 - Promocao deliberada para Level 4B
+
+**Status:** decidido.
+
+**Decisão:** promover a janela operacional para Level 4B, mantendo `CURRENT_LEVEL=4`, alterando `CURRENT_LEVEL_LABEL` para `Level 4B` e `MAX_BATCH_SIZE=8`.
+
+**Motivo:** Wave 1 e Wave 2 de Level 4A fecharam saudaveis, sem blocker, com `wave-health.sh` PASS, Security Gate PASS, 86 smokes PASS e 41 WhatsApp reais PASS. O objetivo e aumentar a janela de execucao supervisionada, nao aumentar o risco funcional.
+
+**Alternativas rejeitadas:**
+
+- manter 4A mesmo com duas ondas saudaveis e evidencia suficiente;
+- promover para 4C sem duas rodadas 4B saudaveis;
+- liberar zona vermelha, preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
+- promover sem commit proprio.
+
+**Camada responsável:** Autonomy Gate e Level 4 Loop Policy.
+
+**Impacto:** primeira onda 4B pode ter ate 8 micro-slices da mesma onda declarada, ainda em zona verde/amarela, com WhatsApp real obrigatorio para qualquer comportamento conversacional e parada em qualquer falha. 4C permanece bloqueado.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
