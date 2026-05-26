@@ -693,6 +693,29 @@ automacao_observada: o loop detectou falhas de contrato sem mudanca funcional no
 proximo passo: implementar wave-closeout-summarizer revisavel para acelerar o piloto automatico sem commit automatico
 ```
 
+Wave 4 em andamento, primeiro comportamento de midia validado:
+
+```text
+wave: level4b-wave-4-tattoo-media-intake
+micro_slice_http: tattoo-media-local-photo-http PASS
+run_id_http: scenario-tattoo-media-local-photo-20260526T062316Z-5750
+micro_slice_real: tattoo-media-local-photo-whatsapp-real PASS
+run_id_real: scenario-whatsapp-real-tattoo-media-local-photo-20260526T062358Z-24484
+scenario_http: tattoo-media-local-photo
+scenario_real: whatsapp-real-tattoo-media-local-photo
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "segue foto do local" + image/png
+bot: "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
+estado: coletando_cadastro
+orcid: null
+dados: descricao_curta=rosa, estilo=fineline, local_corpo=antebraco, altura_cm=170, foto_local_msg_id=presente, refs_imagens_msg_ids=ausente
+copy_risk: baixo
+validacao: node --test focado PASS; npm test PASS 1185/1185; CI/deploy PASS; HTTP radar PASS; WhatsApp real PASS
+mudanca: pipeline resolve foto local aguardada com core completo sem LLM, evitando 429/quota e stale batch
+provas_conclusivas_reais: Cliente "segue foto do local" + imagem -> Bot "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
+proximo passo: tattoo-media-reference-after-local
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

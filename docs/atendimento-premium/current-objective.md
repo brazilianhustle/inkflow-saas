@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_4_tattoo_media_intake_iniciada
+status: level4b_wave_4_tattoo_media_intake_primeiro_comportamento_fechado
 branch: main
-ultimo_commit: conferir `git log --oneline -1`
+ultimo_commit: 2984a15 fix: bypass llm for awaited local photo
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo
-ultimo_commit_validado: conferir `git log --oneline -1`
+worktree_esperado: limpo apos commit de docs
+ultimo_commit_validado: 2984a15
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -89,6 +89,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Proximo upgrade recomendado do piloto automatico: criar `wave-closeout-summarizer` revisavel para gerar Evidence Summary e provas conclusivas reais a partir de evidencias ja validadas, sem commit automatico e sem executar WhatsApp real em lote.
 - `wave-closeout-summarizer` implementado como ferramenta read-only: gera Evidence Summary, estado final, ORCID, copy risk, dados persistidos, provas reais Cliente/Bot e decisao sugerida a partir de evidence dirs. A ferramenta nao executa smoke, nao edita docs, nao commita e nao promove 4C.
 - Level 4B Wave 4 declarada: `level4b-wave-4-tattoo-media-intake`, foco em foto/midia dentro da coleta de tattoo. Primeiro contrato valida foto do local quando o bot ja pediu a foto: setup controlado, HTTP radar e WhatsApp real definitivo usando imagem real enviada pela Evolution `central`.
+- Level 4B Wave 4 fechou o primeiro comportamento: foto do local aguardada agora e resolvida deterministicamente sem LLM quando os dados principais de tattoo ja existem. HTTP radar e WhatsApp real `central -> bot` passaram com `foto_local_msg_id` presente, `refs_imagens_msg_ids` ausente, `estado=coletando_cadastro`, `orcid=null` e `copy_risk=baixo`.
 - Governanca multi-agente oficializada: agentes podem acelerar analise, preparo, auditoria e triage, mas Level 4B mantem Commander unico, single-writer por micro-slice, WhatsApp real serial e 4C bloqueado.
 - Wave Runner v1 e Evidence Registrar implementados como ferramentas metodologicas: preflight seguro de onda e geracao revisavel de linha para `smoke-runs.md`, sem executar WhatsApp real, sem editar evidencias automaticamente e sem promover autonomia.
 - Evidence Orphan Gate integrado ao `wave-health`: registros quebrados passam a bloquear a saude da onda; evidencias completas recentes sem registro aparecem como `WARN` no modo padrao e bloqueiam somente no modo estrito de auditoria.
@@ -121,44 +122,45 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-tattoo-pending-style-lateral-20260526T054644Z-15302
-run_id_real: scenario-whatsapp-real-tattoo-pending-style-lateral-20260526T054800Z-24659
-tipo: Scenario WhatsApp real multi-turn da Wave 3
+run_id_http: scenario-tattoo-media-local-photo-20260526T062316Z-5750
+run_id_real: scenario-whatsapp-real-tattoo-media-local-photo-20260526T062358Z-24484
+tipo: Scenario WhatsApp real de midia da Wave 4
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: coletando_tattoo
+expected_state: coletando_cadastro
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-pending-style-lateral-20260526T054800Z-24659/
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-local-photo-20260526T062358Z-24484/
 ```
 
 Mensagem:
 
 ```text
-quero uma hiena na panturrilha, tenho 1.70
-realismo
-em quantas sessoes seria?
+segue foto do local
+image/png
 ```
 
 Resultado:
 
 ```text
-estado_agente: coletando_tattoo
+estado_agente: coletando_cadastro
 resposta_ai_posterior_ao_humano: true
 orcid: null
-dados_coletados.descricao_curta: hiena
-dados_coletados.estilo: realismo
-dados_coletados.local_corpo: panturrilha
+dados_coletados.descricao_curta: rosa
+dados_coletados.estilo: fineline
+dados_coletados.local_corpo: antebraco
 dados_coletados.altura_cm: 170
+dados_coletados.foto_local_msg_id: presente
+dados_coletados.refs_imagens_msg_ids: ausente
 copy_risk: baixo
-copy: step 1 pergunta estilo; step 2 responde tempo/sessoes e pede foto do local
-decision_chain: pergunta pendente de estilo -> resposta de estilo + duvida lateral no mesmo turno -> persistencia do estilo + retomada segura
-chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll por step
+copy: "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
+decision_chain: foto local aguardada + core tattoo completo -> persistencia deterministicamente segura -> entrada em cadastro
+chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll por estado
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar Wave 4 micro-slice `tattoo-media-local-photo`: HTTP radar e, se passar, WhatsApp real definitivo.
+Proximo passo recomendado: executar Wave 4 micro-slice `tattoo-media-reference-after-local`: HTTP radar e, se passar, WhatsApp real definitivo.
 ```
 
 Escopo recomendado:
@@ -169,7 +171,7 @@ Escopo recomendado:
 - usar `docs/atendimento-premium/27-level-4b-wave-4.md` como plano da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
 - Wave 4 iniciou a familia `tattoo-media-intake`;
-- proximo alvo funcional: validar foto do local aguardada com midia real;
+- proximo alvo funcional: validar que foto posterior, quando `foto_local_msg_id` ja existe, vira referencia e nao sobrescreve a foto local;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;

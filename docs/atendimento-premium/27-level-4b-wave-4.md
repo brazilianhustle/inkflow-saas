@@ -103,9 +103,50 @@ Bot: resposta reconhece/segue sem pedir novamente a foto do local
 ## Resultado Atual
 
 ```text
-status: declarada
-micro_slice_1: tattoo-media-wave-contract em andamento
+status: primeiro comportamento fechado
+micro_slice_1: tattoo-media-wave-contract PASS
+micro_slice_2: tattoo-media-local-photo-http PASS
+micro_slice_3: tattoo-media-local-photo-whatsapp-real PASS
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
+```
+
+## Evidencias - Foto Local Aguardada
+
+```text
+commit_fix: 2984a15 fix: bypass llm for awaited local photo
+tests_local: npm test PASS, 1185/1185
+ci: PASS
+deploy: PASS
+http_radar: scenario-tattoo-media-local-photo-20260526T062316Z-5750 PASS
+whatsapp_real: scenario-whatsapp-real-tattoo-media-local-photo-20260526T062358Z-24484 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "segue foto do local" + image/png
+bot: "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
+estado_final: coletando_cadastro
+orcid: null
+foto_local_msg_id: presente
+refs_imagens_msg_ids: ausente
+copy_risk: baixo
+```
+
+### Leitura Tecnica
+
+O primeiro radar HTTP mostrou que a foto do local aguardada ainda podia cair no caminho do LLM, esbarrando em `429 insufficient_quota` e atrasando o processamento ate gerar risco de batch stale. A correcao oficializada foi tratar deterministicamente a foto aguardada quando os quatro dados principais de tattoo ja existem (`descricao_curta`, `local_corpo`, `altura_cm`, `estilo`), persistindo `foto_local_msg_id`, avancando para cadastro e evitando reenviar a mesma imagem ao LLM.
+
+### Provas Conclusivas Reais
+
+```text
+Cliente: "segue foto do local" + imagem
+Bot: "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
+```
+
+## Proximo Ataque
+
+```text
+micro_slice_4: tattoo-media-reference-after-local-http
+micro_slice_5: tattoo-media-reference-after-local-whatsapp-real
+objetivo: validar que foto posterior, quando foto_local ja existe, vira referencia e nao sobrescreve foto_local_msg_id
+4c: bloqueado
 ```

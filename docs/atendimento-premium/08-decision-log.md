@@ -1094,6 +1094,28 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** criada a doc `27-level-4b-wave-4.md`, o setup `seed_tattoo_aguardando_foto_local` e os cenarios `tattoo-media-local-photo` / `whatsapp-real-tattoo-media-local-photo`.
 
+### Wave 4 - Foto Local Aguardada Sem LLM
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** foto do local aguardada, quando os dados principais de tattoo ja estao completos, deve ser resolvida deterministicamente pelo pipeline sem chamar o LLM.
+
+**Motivo:** o primeiro radar HTTP da Wave 4 mostrou que enviar a imagem aguardada ainda podia cair no caminho do LLM, bater em `429 insufficient_quota` e atrasar o batch. Para esse contrato, a decisao correta nao depende de visao ampla: o bot pediu foto do local, o cliente enviou midia com legenda coerente e o core da tattoo ja existe.
+
+**Alternativas rejeitadas:**
+
+- aumentar timeout e continuar dependendo do LLM;
+- tratar a foto como referencia por fallback;
+- pedir novamente a mesma foto;
+- criar orcamento/handoff antes do cadastro;
+- validar apenas com HTTP sem WhatsApp real.
+
+**Camada responsável:** WhatsApp Pipeline, Pipeline Classifier, Workflow Manager e Smoke Scenario Registry.
+
+**Impacto:** commit `2984a15` adicionou bypass deterministico para persistir `foto_local_msg_id`, avancar para `coletando_cadastro` e evitar duplicar a imagem em `refs_imagens_msg_ids`. `npm test` passou `1185/1185`, CI/deploy passaram, HTTP radar `scenario-tattoo-media-local-photo-20260526T062316Z-5750` passou e WhatsApp real `scenario-whatsapp-real-tattoo-media-local-photo-20260526T062358Z-24484` passou.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
