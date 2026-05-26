@@ -1354,6 +1354,27 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** o pipeline passou a emitir `pos-handoff-midia-encaminhada`; o runner oficializou `SMOKE_REQUIRE_AI_RESPONSE=0`; os relatórios toleram fluxo terminal sem AI; HTTP radar `scenario-post-handoff-media-forwarding-20260526T083321Z-3770` passou; WhatsApp real `scenario-whatsapp-real-post-handoff-media-forwarding-20260526T083424Z-5240` passou.
 
+### Wave 12 - Texto Adicional Pos-Handoff
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** depois que a conversa já está em `aguardando_tatuador`, texto adicional do cliente também deve ser encaminhado ao tatuador e não deve reabrir coleta nem gerar nova resposta normal do bot.
+
+**Motivo:** a Wave 11 provou mídia adicional, mas o caminho text-only também precisava ser auditável. O humano deve receber qualquer complemento relevante depois do handoff, sem o bot voltar a operar como se a coleta estivesse aberta.
+
+**Alternativas rejeitadas:**
+
+- considerar o teste de mídia suficiente para cobrir texto;
+- exigir resposta AI em fluxo terminal;
+- validar apenas envio Telegram sem poll de estado;
+- reabrir coleta ao receber texto novo.
+
+**Camada responsável:** Workflow terminal do pipeline, Telegram handoff, Observabilidade, Smoke Scenario Registry.
+
+**Impacto:** o pipeline passou a emitir `pos-handoff-mensagem-encaminhada`; HTTP radar `scenario-post-handoff-text-forwarding-20260526T084158Z-5095` passou; WhatsApp real `scenario-whatsapp-real-post-handoff-text-forwarding-20260526T084232Z-15708` passou.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

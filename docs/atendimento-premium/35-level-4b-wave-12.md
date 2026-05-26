@@ -27,4 +27,27 @@ Validar que, depois do handoff terminal (`aguardando_tatuador`), uma nova mensag
 
 ## Estado
 
-Em implementacao.
+PASS.
+
+## Resultado
+
+- Commit funcional: `193dd9d test: cover post-handoff text forwarding`.
+- Testes focados: `bash -n scripts/smoke/run-scenario.sh scripts/smoke/run-inbound.sh scripts/smoke/run-real-whatsapp.sh scripts/smoke/render-report.sh` PASS; `node --test tests/integration/pos-handoff-foto.test.mjs tests/_lib/whatsapp-pipeline.test.mjs` PASS 70/70.
+- Testes locais: `npm test` PASS 1194/1194.
+- CI/deploy: PASS.
+- HTTP radar: `scenario-post-handoff-text-forwarding-20260526T084158Z-5095` PASS.
+- WhatsApp real: `scenario-whatsapp-real-post-handoff-text-forwarding-20260526T084232Z-15708` PASS.
+
+## Provas Conclusivas Reais
+
+```text
+Cliente: "lembrei de mais um detalhe"
+Bot: sem nova resposta automatica apos o humano
+Estado: aguardando_tatuador
+ORCID: orc_poshandoff
+Tail: pos-handoff-mensagem-encaminhada
+```
+
+## Aprendizado
+
+O fluxo terminal precisa cobrir texto e midia separadamente. A Wave 11 provou midia adicional; a Wave 12 provou texto adicional. Em ambos, o contrato correto e encaminhar ao tatuador, manter estado terminal e nao gerar nova resposta AI apos o humano.

@@ -973,6 +973,28 @@ decisao: manter Level 4B; 4C bloqueado
 proximo passo: rodar wave-health final, commitar closeout e declarar proxima onda funcional leve
 ```
 
+Wave 12 fechada:
+
+```text
+wave: level4b-wave-12-post-handoff-text-forwarding
+status: PASS
+commit_funcional: 193dd9d test: cover post-handoff text forwarding
+tests_focados: bash -n scripts/smoke/run-scenario.sh scripts/smoke/run-inbound.sh scripts/smoke/run-real-whatsapp.sh scripts/smoke/render-report.sh PASS; node --test tests/integration/pos-handoff-foto.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 70/70
+tests_local: npm test PASS 1194/1194
+ci: PASS
+deploy: PASS
+http_radar: scenario-post-handoff-text-forwarding-20260526T084158Z-5095 PASS
+whatsapp_real: scenario-whatsapp-real-post-handoff-text-forwarding-20260526T084232Z-15708 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "lembrei de mais um detalhe"
+bot: sem nova resposta automatica apos o humano
+estado: aguardando_tatuador
+orcid: orc_poshandoff
+telegram: pos-handoff-mensagem-encaminhada
+decisao: manter Level 4B; 4C bloqueado
+proximo passo: rodar wave-health final, commitar closeout e declarar proxima onda funcional leve
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:
