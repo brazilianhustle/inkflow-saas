@@ -717,13 +717,31 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `cadastro-question-policy-email` passou em teste local, HTTP radar e WhatsApp real. O WhatsApp real validou envio pela Evolution `central`, webhook real, persistencia de `joao@example.com`, `estado=aguardando_tatuador`, `orcid=orc_as5blj`, copy risk baixo e logs de decisao Router + Workflow. Provas reais: Cliente "joao@example.com" -> Bot "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.".
 
+## 2026-05-25 - QuestionPolicy resolve recusa de email pendente sem LLM
+
+**Status:** decidido.
+
+**Decisão:** quando o estado e cadastro, ha pergunta pendente de e-mail e o cliente recusa explicitamente informar e-mail, o `ConversationRouter` deve persistir `email=null` e `email_recusado=true` via `ConversationPolicy`, com razão observável `pending_email_refused`, liberando o `Workflow Manager` para avançar se os demais requisitos estiverem completos.
+
+**Motivo:** recusa de e-mail e uma resposta valida porque e-mail e opcional. Insistir no campo aumenta fricção e pode travar handoff mesmo com cadastro obrigatório completo. O fluxo deve diferenciar e-mail fornecido de e-mail recusado para auditoria e para o pacote de handoff.
+
+**Alternativas rejeitadas:**
+
+- chamar LLM para interpretar recusa simples;
+- tratar recusa como texto invalido e repetir e-mail;
+- persistir string vazia em `email`;
+- misturar a validacao da recusa pura com pergunta lateral no mesmo scenario definitivo.
+
+**Camada responsável:** ConversationPolicy, ConversationRouter, Workflow Manager e Smoke Scenario Registry.
+
+**Impacto:** `cadastro-question-policy-email-recusado` passou em teste local, HTTP radar e WhatsApp real. O WhatsApp real validou envio pela Evolution `central`, webhook real, persistencia de `email_recusado=true`, `estado=aguardando_tatuador`, `orcid=orc_bwqoy5`, copy risk baixo e logs de decisao Router + Workflow. Provas reais: Cliente "pode seguir sem email" -> Bot "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.".
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
 
 Ainda falta decidir e implementar a extensão da `QuestionPolicy` para:
 
-- recusa de email;
 - dúvidas laterais durante cadastro.
 
 ### Copy premium de maioridade e menoridade

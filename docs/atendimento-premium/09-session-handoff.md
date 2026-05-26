@@ -458,23 +458,23 @@ Nao avançar para IntentPolicy ampla antes de consolidar os proximos micro-slice
 Depois disso, o próximo melhor ataque é:
 
 ```text
-Proximo micro-slice recomendado: executar `cadastro-question-policy-email-recusado` dentro da onda Level 4A Wave 2.
+Proximo micro-slice recomendado: executar `cadastro-question-policy-lateral` dentro da onda Level 4A Wave 2.
 ```
 
-Motivo: `cadastro-question-policy-email` ja passou em teste local, CI, deploy, HTTP radar e WhatsApp real definitivo. A proxima lacuna funcional da mesma familia e a recusa explicita de e-mail, mantendo a cadeia QuestionPolicy -> Router -> Workflow Manager e sem tocar preco, sinal, pagamento ou agenda.
+Motivo: `cadastro-question-policy-email-recusado` ja passou em teste local, CI, deploy, HTTP radar e WhatsApp real definitivo. A proxima lacuna funcional da mesma familia e responder uma duvida lateral durante cadastro sem perder a pergunta pendente, mantendo a cadeia QuestionPolicy -> Router -> Workflow Manager e sem tocar preco, sinal, pagamento ou agenda.
 
 Ultimo micro-slice validado em Level 4A:
 
 ```text
-Cadastro QuestionPolicy - Email pendente
-commit: ef87948 feat: resolve pending cadastro email answers
+Cadastro QuestionPolicy - Recusa de email pendente
+commit: 1e42603 feat: resolve pending cadastro email refusal
 local: ConversationPolicy/Router PASS; WhatsApp Pipeline PASS
 ci: Tests e Deploy PASS
-http radar: scenario-cadastro-question-policy-email-20260526T005117Z-24570 PASS
-whatsapp real: scenario-whatsapp-real-cadastro-question-policy-email-20260526T005621Z-20607 PASS
-prova real: Cliente "joao@example.com" -> Bot "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
-telemetria: conversation_router pending_email_answered e workflow_manager cadastro_and_tattoo_complete; orcid criado.
-rodada: Level 4A Wave 2; 3 de ate 6 micro-slices concluidos; continuar sem promover para 4B/4C.
+http radar: scenario-cadastro-question-policy-email-recusado-20260526T010832Z-11912 PASS
+whatsapp real: scenario-whatsapp-real-cadastro-question-policy-email-recusado-20260526T011456Z-18795 PASS
+prova real: Cliente "pode seguir sem email" -> Bot "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+telemetria: conversation_router pending_email_refused e workflow_manager cadastro_and_tattoo_complete; orcid criado.
+rodada: Level 4A Wave 2; 4 de ate 6 micro-slices concluidos; continuar sem promover para 4B/4C.
 ```
 
 ## Checklist De Fechamento De Sessão

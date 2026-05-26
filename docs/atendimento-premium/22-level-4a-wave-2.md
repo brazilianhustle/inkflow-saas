@@ -81,7 +81,8 @@ status: em-andamento
 micro_slice_1: cadastro-question-policy-nome PASS
 micro_slice_2: cadastro-question-policy-data PASS
 micro_slice_3: cadastro-question-policy-email PASS
-micro_slice_atual: cadastro-question-policy-email-recusado
+micro_slice_4: cadastro-question-policy-email-recusado PASS
+micro_slice_atual: cadastro-question-policy-lateral
 promocao_4b_4c: proibida
 ```
 
@@ -165,5 +166,33 @@ Provas conclusivas reais:
 
 ```text
 Cliente: "joao@example.com"
+Bot: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+```
+
+## Evidencia Micro-Slice 4
+
+```text
+micro_slice: cadastro-question-policy-email-recusado
+commit_codigo: 1e42603 feat: resolve pending cadastro email refusal
+tests_local: ConversationPolicy/Router PASS, WhatsApp Pipeline PASS
+ci_github: PASS
+deploy_github: PASS
+http_radar: scenario-cadastro-question-policy-email-recusado-20260526T010832Z-11912 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-question-policy-email-recusado-20260526T011456Z-18795 PASS
+estado_final: aguardando_tatuador
+dados_cadastro.nome: Joao Silva
+dados_cadastro.data_nascimento: 1995-03-12
+dados_cadastro.email: null
+dados_cadastro.email_recusado: true
+orcid: orc_bwqoy5
+copy_risk: baixo
+agent_log_gate: conversation_router cadastro_pending_answer pending_email_refused + workflow_manager cadastro_and_tattoo_complete
+decisao: seguir para cadastro-question-policy-lateral
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: "pode seguir sem email"
 Bot: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
 ```
