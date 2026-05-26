@@ -423,6 +423,12 @@ function tattooMultiInfoOutput({ extracted, estado_atual, conversa, tenant, clie
   const resposta = nextField === 'foto_local'
     ? `${intro}Boa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?`
     : `${intro}${tattooResumeQuestion(conversaParaRetomada)}`;
+  const dadosPersistidos = nextField === 'foto_local'
+    ? {
+        ...extracted,
+        tentativas_foto_local: Math.max(Number(dadosAtualizados.tentativas_foto_local || 0), 1),
+      }
+    : extracted;
 
   return {
     ok: true,
@@ -434,7 +440,7 @@ function tattooMultiInfoOutput({ extracted, estado_atual, conversa, tenant, clie
     can_mutate_state: true,
     resposta_cliente: resposta,
     estado_novo: estado_atual,
-    dados_persistidos: extracted,
+    dados_persistidos: dadosPersistidos,
     dados_completos: false,
     campos_faltando: missing,
     campos_conflitantes: [],

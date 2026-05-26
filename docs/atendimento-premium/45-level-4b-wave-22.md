@@ -65,3 +65,39 @@ objetivo_do_primeiro_round: criar ou selecionar scenario longo, rodar HTTP radar
 ## Criterio Para Encerrar A Wave
 
 A Wave 22 pode ser encerrada com PASS quando pelo menos uma jornada longa passar em WhatsApp real com transcript e judgment completos. A extensao para duas ou tres jornadas so deve acontecer se a primeira revelar sinais de rigidez, repeticao ou lacunas de estado que precisem de contraste.
+
+## Jornada 1 - Preparacao E Falha Util Inicial
+
+Contrato declarado:
+
+```text
+http_radar: long-journey-lateral-media-cadastro-handoff
+whatsapp_real: whatsapp-real-long-journey-lateral-media-cadastro-handoff
+turnos: 6
+cadeia: lateral processo -> multi-info tattoo -> foto local -> nome -> data -> recusa email -> handoff
+```
+
+Falha util inicial:
+
+```text
+run_id: scenario-long-journey-lateral-media-cadastro-handoff-20260526T220049Z-28966
+step: 3
+failure_class: contract_state_not_reached
+final_state: coletando_tattoo
+```
+
+Leitura: em conversa sem seed, o Router pediu foto do local apos multi-info, mas nao persistiu `tentativas_foto_local`. A etapa de midia aguardada depende desse marcador para reconhecer deterministicamente a proxima imagem como foto do local. Resultado: a imagem entrou, mas nao promoveu para cadastro dentro do contrato.
+
+Correcao minima:
+
+- `conversation-router` passa a persistir `tentativas_foto_local=1` quando `multi_info` resolve os campos principais e a proxima pergunta e foto do local.
+- `run-scenario.sh` passa a propagar midia por etapa em multi-turn, permitindo jornadas longas reais sem runner paralelo.
+- Testes locais cobrem o novo contrato.
+
+Validacao local:
+
+```text
+bash -n scripts/smoke/run-scenario.sh: PASS
+node --test tests/_lib/conversation-router.test.mjs tests/_lib/whatsapp-pipeline.test.mjs: PASS 129/129
+npm test: PASS 1211/1211
+```

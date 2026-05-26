@@ -393,6 +393,7 @@ test('ConversationRouter: recupera multi-info em resposta ao local pendente', ()
   assert.deepEqual(out.dados_persistidos, {
     local_corpo: 'perna',
     altura_cm: 181,
+    tentativas_foto_local: 1,
   });
   assert.deepEqual(out.campos_faltando, []);
   assert.match(out.resposta_cliente, /foto do local/i);
@@ -552,6 +553,21 @@ test('ConversationRouter: se estilo pendente foi respondido, persiste estilo e r
   assert.deepEqual(out.dados_persistidos, { estilo: 'realismo' });
   assert.match(out.resposta_cliente, /O tempo de sessão depende/);
   assert.match(out.resposta_cliente, /foto do local/);
+});
+
+test('ConversationRouter: multi-info que pede foto registra tentativa de foto local', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quero uma rosa fineline no antebraco, tenho 1.70',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    historico: [],
+  });
+  assert.equal(out.intent, 'multi_info');
+  assert.equal(out.dados_persistidos.descricao_curta, 'rosa');
+  assert.equal(out.dados_persistidos.estilo, 'fineline');
+  assert.equal(out.dados_persistidos.altura_cm, 170);
+  assert.equal(out.dados_persistidos.tentativas_foto_local, 1);
+  assert.match(out.resposta_cliente, /foto do local/i);
 });
 
 test('ConversationRouter: estilo old school após nome não vira displayName old', () => {

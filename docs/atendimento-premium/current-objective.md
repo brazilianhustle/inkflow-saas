@@ -204,6 +204,15 @@ Atualizacao 2026-05-26 21:58 UTC:
 - Primeiro ataque recomendado: jornada com duvida lateral, coleta de tattoo, midia, cadastro, recusa de e-mail e handoff.
 - Provas conclusivas reais da Wave 21: Cliente `Joao Silva / 12/03/1995 / como funciona o orçamento?`; Bot `Funciona assim: eu entendo tua ideia, junto as infos principais e o tatuador avalia pra passar valor e horário. E o e-mail? Se preferir seguir sem, me avisa`.
 
+Atualizacao 2026-05-26 22:10 UTC:
+
+- Wave 22 Jornada 1 preparada com cenarios `long-journey-lateral-media-cadastro-handoff` e `whatsapp-real-long-journey-lateral-media-cadastro-handoff`.
+- Falha util inicial no HTTP radar: step 3 com midia ficou em `coletando_tattoo`; causa identificada como ausencia de `tentativas_foto_local` apos o Router pedir foto no fluxo `multi_info` sem seed.
+- Correcao minima aplicada: `conversation-router` persiste `tentativas_foto_local=1` quando multi-info resolve os campos principais e a proxima pergunta e foto do local.
+- Runner fortalecido: multi-turn agora propaga `SMOKE_MEDIA_FILE_N`, `SMOKE_MEDIA_BASE64_N` e `SMOKE_MEDIA_MIMETYPE_N` por etapa.
+- Validacao local PASS: `bash -n scripts/smoke/run-scenario.sh`, testes focados 129/129 e `npm test` 1211/1211.
+- Proximo passo obrigatorio antes do WhatsApp real: commit + push + CI/deploy PASS, depois rerodar HTTP radar da mesma jornada longa e somente entao WhatsApp real definitivo.
+
 Atualizacao 2026-05-26 21:44 UTC:
 
 - Wave 21 micro-slice 1 passou.

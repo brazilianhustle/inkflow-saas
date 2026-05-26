@@ -103,18 +103,21 @@ EOF
   if is_multiturn_type; then
     echo ""
     echo "steps:"
-    local i msg state bot_regex poll_jq
+    local i msg state bot_regex poll_jq media_file media_mimetype
     for i in $(seq 1 "$STEP_COUNT"); do
       msg="$(step_value MESSAGE "$i")"
       state="$(step_value EXPECTED_STATE "$i")"
       bot_regex="$(step_value EXPECTED_BOT_REGEX "$i")"
       poll_jq="$(step_value EXPECTED_POLL_JQ_TRUE "$i")"
+      media_file="$(step_value SMOKE_MEDIA_FILE "$i")"
+      media_mimetype="$(step_value SMOKE_MEDIA_MIMETYPE "$i")"
       cat <<EOF
   [$i]
     message: ${msg:-"(empty)"}
     expected_state: ${state:-"(none)"}
     bot_regex: ${bot_regex:-"(none)"}
     poll_jq: ${poll_jq:-"(none)"}
+    media: ${media_mimetype:-"(none)"} ${media_file:-""}
 EOF
     done
     return
@@ -974,7 +977,7 @@ write_single_turn_step_env() {
   local step="$1"
   local path="$2"
   local scenario_type="${3:-http}"
-  local message expected_state expected_human expected_copy bot_regex forbidden_bot poll_jq agent_jq
+  local message expected_state expected_human expected_copy bot_regex forbidden_bot poll_jq agent_jq media_base64 media_file media_mimetype
   message="$(step_value MESSAGE "$step")"
   expected_state="$(step_value EXPECTED_STATE "$step")"
   expected_human="$(step_value EXPECTED_HUMAN_TEXT "$step")"
@@ -983,8 +986,11 @@ write_single_turn_step_env() {
   forbidden_bot="$(step_value FORBIDDEN_BOT_REGEX "$step")"
   poll_jq="$(step_value EXPECTED_POLL_JQ_TRUE "$step")"
   agent_jq="$(step_value EXPECTED_AGENT_LOG_JQ_TRUE "$step")"
+  media_base64="$(step_value SMOKE_MEDIA_BASE64 "$step")"
+  media_file="$(step_value SMOKE_MEDIA_FILE "$step")"
+  media_mimetype="$(step_value SMOKE_MEDIA_MIMETYPE "$step")"
 
-  [ -n "$message" ] || { echo "ERRO: MESSAGE_${step} vazio." >&2; exit 1; }
+  [ -n "$message" ] || [ -n "$media_base64" ] || [ -n "$media_file" ] || { echo "ERRO: MESSAGE_${step} vazio e sem midia." >&2; exit 1; }
   [ -n "$expected_state" ] || expected_state="$EXPECTED_STATE"
   [ -n "$expected_human" ] || expected_human="$message"
   [ -n "$expected_copy" ] || expected_copy="$EXPECTED_COPY_RISK_MAX"
@@ -1005,6 +1011,9 @@ write_single_turn_step_env() {
     printf 'EXPECTED_HUMAN_TEXT=%s\n' "$(shell_quote "$expected_human")"
     [ -n "$expected_copy" ] && printf 'EXPECTED_COPY_RISK_MAX=%s\n' "$(shell_quote "$expected_copy")"
     printf 'SMOKE_REQUIRE_AI_RESPONSE=%s\n' "$(shell_quote "${SMOKE_REQUIRE_AI_RESPONSE:-1}")"
+    [ -n "$media_base64" ] && printf 'SMOKE_MEDIA_BASE64=%s\n' "$(shell_quote "$media_base64")"
+    [ -n "$media_file" ] && printf 'SMOKE_MEDIA_FILE=%s\n' "$(shell_quote "$media_file")"
+    [ -n "$media_mimetype" ] && printf 'SMOKE_MEDIA_MIMETYPE=%s\n' "$(shell_quote "$media_mimetype")"
     [ -n "$bot_regex" ] && printf 'EXPECTED_BOT_REGEX=%s\n' "$(shell_quote "$bot_regex")"
     [ -n "$forbidden_bot" ] && printf 'FORBIDDEN_BOT_REGEX=%s\n' "$(shell_quote "$forbidden_bot")"
     [ -n "$poll_jq" ] && printf 'EXPECTED_POLL_JQ_TRUE=%s\n' "$(shell_quote "$poll_jq")"
