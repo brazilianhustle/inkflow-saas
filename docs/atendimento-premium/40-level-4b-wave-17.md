@@ -473,3 +473,45 @@ email_recusado_antigo: 1 evidencia marcada como rigid_template_terms + formulaic
 ```
 
 Decisao: nao alterar menoridade legal agora. A classificacao media ali e aceitavel por seguranca operacional, porque a copy ja esta baixa no `copy_risk`, passou WhatsApp real e preserva termos juridicos importantes. O proximo ataque mais eficiente e atualizar/revalidar a familia de fechamento de cadastro/e-mail recusado que ainda aparece com `Fechado` e `valor certinho`, sem tocar menoridade, preco fechado, agenda, pagamento, secrets ou 4C.
+
+## Micro-Slice 9 - Revalidacao De Fechamento Email Recusado
+
+PASS sem mudanca de codigo: a evidencia media de fechamento cadastro/e-mail recusado era historica. O codigo atual ja usa `cadastroHandoffReply`, sem `Fechado`, `valor certinho` ou `avaliar com calma`.
+
+Validacao:
+
+```text
+tests_focados_router_voice_pipeline: PASS 133/133
+wave_health_pre: PASS
+http_radar: scenario-cadastro-email-refusal-por-aqui-mesmo-20260526T200420Z-32050 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-email-refusal-por-aqui-mesmo-20260526T200456Z-17474 PASS
+copy_risk: baixo
+estado_final: aguardando_tatuador
+orcid: orc_l0fed8
+email_recusado: true
+```
+
+Auditoria apos substituir a evidencia antiga pela nova:
+
+```text
+evidencias_analisadas: 12
+baixo: 9
+medio: 3
+alto: 0
+decisao: watchlist
+repeticao_exata_global: 0
+```
+
+Os tres medios restantes sao apenas menoridade legal por termos de seguranca/responsavel legal.
+
+### Provas Conclusivas Reais - Micro-Slice 9
+
+Cliente: `por aqui mesmo`
+
+Bot: `Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`
+
+Estado final: `aguardando_tatuador`, `orcid=orc_l0fed8`, `email_recusado=true`, `copy_risk=baixo`.
+
+## Decisão Apos Micro-Slice 9
+
+Manter Level 4B. A frente de naturalidade da Wave 17 removeu todos os medios nao-legais da amostra atual. O residual medio esta restrito a menoridade legal e deve permanecer como watchlist aceitavel por seguranca. Proximo passo recomendado: fechar Wave 17 ou abrir nova onda pequena para outra familia funcional, sem subir para 4C ainda.

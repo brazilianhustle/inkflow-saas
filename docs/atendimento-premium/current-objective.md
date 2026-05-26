@@ -216,6 +216,16 @@ Auditoria rodada apos micro-slice 8:
 
 Proximo passo recomendado atualizado: atacar uma familia pequena de fechamento cadastro/e-mail recusado para remover linguagem formulaica antiga, mantendo Level 4B e WhatsApp real definitivo. Nao mexer agora em menoridade legal, porque o residual medio e esperado por seguranca.
 
+Atualizacao 2026-05-26 20:05 UTC:
+
+- Wave 17 micro-slice 9 fechou sem mudanca de codigo: a evidencia media de fechamento/e-mail recusado era historica.
+- HTTP radar `scenario-cadastro-email-refusal-por-aqui-mesmo-20260526T200420Z-32050` PASS.
+- WhatsApp real `scenario-whatsapp-real-cadastro-email-refusal-por-aqui-mesmo-20260526T200456Z-17474` PASS.
+- Auditoria atualizada: 12 evidencias, 9 baixo, 3 medio, 0 alto; os 3 medios restantes sao menoridade legal por termos de seguranca.
+- Provas conclusivas reais: Cliente `por aqui mesmo`; Bot `Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`.
+
+Proximo passo recomendado atualizado: fechar Wave 17 ou abrir nova onda pequena. Nao ha bug ou regressao pendente nesta frente; manter Level 4B e nao promover 4C ainda.
+
 Escopo recomendado:
 
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
