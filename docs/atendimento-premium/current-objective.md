@@ -13,13 +13,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ```text
 status: level4b_wave_19_micro_slice_1_pass
 branch: main
-ultimo_commit: 91fabdb docs: start wave 19 post handoff hardening
+ultimo_commit: ebdb3b8 docs: start wave 19 post handoff hardening
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: pendente no commit 91fabdb
+deploy: pendente no commit ebdb3b8
 tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 19 micro-slice 1 alterou somente scripts/docs; bash -n PASS; HTTP + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 91fabdb
+ultimo_commit_validado: ebdb3b8
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
