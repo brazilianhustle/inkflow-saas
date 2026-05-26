@@ -133,6 +133,16 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Motivo:** um fluxo pode estar tecnicamente correto e ainda parecer ruim para o cliente.
 
+## 2026-05-26 - Naturalidade entra como radar, não como gate primário contínuo
+
+**Status:** decidido.
+
+**Decisão:** avaliar naturalidade primeiro com auditorias objetivas e read-only sobre evidencias reais: repeticao, tamanho de bolha, excesso de perguntas, linguagem interna e termos rigidos de template. Scores subjetivos ou LLM contínuo podem apoiar revisão, mas nao substituem invariantes binarios e WhatsApp real definitivo.
+
+**Motivo:** a frente precisa melhorar percepção premium sem transformar variação subjetiva em bloqueio instável. O gate principal continua sendo operacional e conversacional binário; naturalidade vira radar de priorização e só vira mudança quando houver slice pequeno com validação completa.
+
+**Camada responsável:** processo de smoke/metodologia, `scripts/smoke/naturalness-audit.sh` e documentos da Wave 17.
+
 ## 2026-05-25 - Autonomia Level 2 exige evidência e checkpoints por micro-slice
 
 **Status:** decidido.
