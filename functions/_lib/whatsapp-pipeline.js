@@ -21,6 +21,12 @@ import { routeConversationTurn } from './conversation-router.js';
 import { logAgentTurn } from './telemetry/agent-turn-logger.js';
 import { applyWorkflowTransition, summarizeWorkflowDecision } from './workflow-manager.js';
 import { buildEscalationHandoffPackage, composeEscalationTelegram, evaluateEscalation } from './escalation-manager.js';
+import {
+  fotoAmbiguaComoLocalCadastroQuestion,
+  fotoAmbiguaComoReferenciaQuestion,
+  fotoLocalRecebidaCadastroQuestion,
+  referenciaRecebidaCadastroQuestion,
+} from './conversation-voice-policy.js';
 import { buildHandoffPackageTraceId } from './handoff-package.js';
 
 export const TERMINAL_STATES = new Set([
@@ -327,7 +333,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
     if (fotoLocalCompletaTattoo) {
       agentOut = {
         ok: true,
-        resposta_cliente: 'Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo.',
+        resposta_cliente: fotoLocalRecebidaCadastroQuestion(),
         estado_novo: 'cadastro',
         dados_persistidos: { foto_local_msg_id: fotos[0].msgRowId },
         dados_completos: true,
@@ -345,7 +351,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
     if (fotoReferenciaAposLocalTattoo) {
       agentOut = {
         ok: true,
-        resposta_cliente: 'Recebi essa referência também. Pra liberar teu orçamento, preciso do teu nome completo.',
+        resposta_cliente: referenciaRecebidaCadastroQuestion(),
         estado_novo: 'cadastro',
         dados_persistidos: {},
         dados_completos: true,
@@ -385,7 +391,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
     if (confirmacaoAmbiguaComoLocal) {
       agentOut = {
         ok: true,
-        resposta_cliente: 'Perfeito, então vou usar essa imagem como foto do local. Pra liberar teu orçamento personalizado, me passa nome completo e data de nascimento?',
+        resposta_cliente: fotoAmbiguaComoLocalCadastroQuestion(),
         estado_novo: 'cadastro',
         dados_persistidos: {
           foto_local: 'foto do local confirmada pelo cliente',
@@ -408,7 +414,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
     if (confirmacaoAmbiguaComoReferencia) {
       agentOut = {
         ok: true,
-        resposta_cliente: 'Perfeito, deixei essa imagem como referência do desenho. Agora preciso da foto do local do corpo onde tu quer tatuar.',
+        resposta_cliente: fotoAmbiguaComoReferenciaQuestion(),
         estado_novo: 'tattoo',
         dados_persistidos: {},
         dados_completos: false,

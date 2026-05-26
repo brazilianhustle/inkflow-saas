@@ -143,6 +143,16 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Camada responsável:** processo de smoke/metodologia, `scripts/smoke/naturalness-audit.sh` e documentos da Wave 17.
 
+## 2026-05-26 - Naturalidade determinística precisa de VoicePolicy central
+
+**Status:** decidido.
+
+**Decisão:** respostas determinísticas novas ou alteradas devem passar por `conversation-voice-policy.js` quando pertencerem a uma família reutilizável de copy. Router, pipeline e resolvedores não devem acumular frases de naturalidade sem contrato.
+
+**Motivo:** trocar frase por frase resolve sintomas, mas nao escala. A arquitetura premium precisa de famílias de voz reutilizáveis, auditáveis e testadas: cadastro, mídia/cadastro, handoff humano, menoridade, lateral de preço/tempo e retomadas.
+
+**Impacto:** a auditoria de naturalidade aponta a família prioritária; a VoicePolicy concentra o padrão; os smokes validam a experiência real no WhatsApp quando houver mudança de fala.
+
 ## 2026-05-25 - Autonomia Level 2 exige evidência e checkpoints por micro-slice
 
 **Status:** decidido.

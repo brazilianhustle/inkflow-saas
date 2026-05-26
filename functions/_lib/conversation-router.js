@@ -12,6 +12,7 @@
 
 import { extractLocalAnswer, extractStyleAnswer, resolveExplicitAge, resolveHeightCm, resolvePendingFormQuestion, resolveTattooSizeCm } from './conversation-policy.js';
 import { composeRouterResponse } from './conversation-response-composer.js';
+import { cadastroResumeQuestion } from './conversation-voice-policy.js';
 
 const HANDLED_STATES = new Set(['tattoo', 'cadastro']);
 
@@ -31,10 +32,6 @@ function normalize(text) {
 
 function hasValue(v) {
   return v !== null && v !== undefined && v !== '';
-}
-
-function firstName(name) {
-  return String(name || '').trim().split(/\s+/)[0] || '';
 }
 
 function missingTattooFields(dados = {}) {
@@ -129,19 +126,6 @@ function tattooResumeQuestion(conversa = {}) {
   if (next === 'altura_cm') return 'Qual tua altura?';
   if (next === 'estilo') return 'Tu prefere qual estilo pra essa tattoo?';
   return 'Consegue mandar uma foto do local onde tu quer tatuar?';
-}
-
-function cadastroResumeQuestion(conversa = {}) {
-  const dados = conversa.dados_cadastro || {};
-  if (!hasValue(dados.nome) && !hasValue(dados.data_nascimento)) {
-    return 'Pra liberar teu orçamento, me passa nome completo e data de nascimento?';
-  }
-  if (!hasValue(dados.nome)) return 'Me passa teu nome completo?';
-  if (!hasValue(dados.data_nascimento)) return 'Me passa tua data de nascimento completa?';
-  if (!hasValue(dados.email) && dados.email_recusado !== true) return 'E o e-mail? Se preferir seguir sem, me avisa';
-  const nome = firstName(dados.nome);
-  const prefix = nome ? `Boa, ${nome}. ` : 'Boa. ';
-  return `${prefix}Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`;
 }
 
 function resumeQuestionForState(estado, conversa) {

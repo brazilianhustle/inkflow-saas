@@ -167,3 +167,31 @@ medio: 0
 alto: 0
 decisao: pass
 ```
+
+## Micro-Slice 3 - VoicePolicy Central
+
+PASS estrutural: a naturalidade deterministica ganhou uma camada central de contrato antes de novas mudanças de linguagem.
+
+Arquitetura:
+
+```text
+naturalness-audit.sh -> VoicePolicy -> Router/Pipeline -> HTTP radar -> WhatsApp real quando fala mudar
+```
+
+Implementado:
+
+- `functions/_lib/conversation-voice-policy.js`;
+- testes diretos em `tests/_lib/conversation-voice-policy.test.mjs`;
+- `ConversationRouter` passou a usar `cadastroResumeQuestion` da VoicePolicy;
+- caminhos determinísticos de mídia/cadastro no pipeline passaram a importar copy da VoicePolicy;
+- decisão registrada no `08-decision-log.md`.
+
+Critério:
+
+```text
+mudanca_de_texto_cliente: nao
+whatsapp_real_novo: nao aplicavel; refactor estrutural sem alterar fala
+validacao_minima: testes focados + npm test + CI/deploy
+```
+
+Decisão: próximas melhorias de naturalidade não devem editar strings diretamente em router/pipeline quando pertencerem a uma família reutilizável. Primeiro entra na VoicePolicy, depois nos resolvedores.

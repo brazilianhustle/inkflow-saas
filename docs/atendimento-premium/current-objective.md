@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_17_cadastro_handoff_copy_pass
+status: level4b_wave_17_voice_policy_structural_pass
 branch: main
-ultimo_commit: 8de8f84 feat: soften cadastro handoff copy
+ultimo_commit: 776e3ad docs: close wave 17 cadastro copy slice
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit funcional validado
-tests: npm test PASS local 1203/1203; testes focados Wave 17 micro-slice 2 PASS 68/68; CI PASS no GitHub Actions
+tests: npm test PASS local 1207/1207; testes focados Wave 17 micro-slice 3 PASS 130/130; CI pendente para commit estrutural
 prompts_ci: PASS no GitHub Actions
-worktree_esperado: limpo apos closeout documental da Wave 17
-ultimo_commit_validado: 8de8f84
+worktree_esperado: limpo apos commit do micro-slice estrutural da Wave 17
+ultimo_commit_validado: 776e3ad
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -146,6 +146,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 16 micro-slice 2 passou: `tenho autorizacao dos meus pais` sai para humano como segunda variacao de menoridade indireta por responsavel legal, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e passa HTTP radar + WhatsApp real definitivo.
 - Wave 17 iniciada como auditoria de naturalidade read-only: `naturalness-audit.sh` analisou 10 evidencias WhatsApp real ja aprovadas, encontrou 0 risco alto, 9 risco medio por rigidez/template ou multi-pergunta e 1 risco baixo; decisao `watchlist`, sem mudanca conversacional nesta primeira passada.
 - Wave 17 micro-slice 2 passou: fechamento deterministico de cadastro/handoff ficou menos rigido (`Boa, Joao. Deixei as infos separadas...`), com testes locais, CI, Prompts CI, eval gate, deploy, HTTP radar e WhatsApp real definitivo pela `central` todos PASS.
+- Wave 17 micro-slice 3 iniciou a arquitetura escalavel de naturalidade: `conversation-voice-policy.js` centraliza familias deterministicas de cadastro e midia/cadastro; Router e Pipeline passaram a importar a policy sem alterar texto ao cliente; testes locais passaram.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -184,7 +185,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router r
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: manter Level 4B, reexecutar auditoria de naturalidade incluindo as novas evidencias da Wave 17 e escolher uma segunda familia pequena de linguagem.
+Proximo passo recomendado: manter Level 4B, concluir CI/deploy do micro-slice estrutural de VoicePolicy e so entao escolher uma segunda familia pequena de linguagem.
 ```
 
 Escopo recomendado:
@@ -197,6 +198,7 @@ Escopo recomendado:
 - Wave 16 fechou menoridade indireta por responsavel legal com duas variacoes validadas em WhatsApp real definitivo;
 - Wave 17 micro-slice 1 fechou apenas auditoria read-only sobre evidencias reais existentes; WhatsApp real novo nao foi exigido porque nao houve mudanca conversacional;
 - Wave 17 micro-slice 2 fechou mudanca conversacional com HTTP radar e WhatsApp real definitivo;
+- Wave 17 micro-slice 3 e refactor estrutural sem mudanca de fala; WhatsApp real novo nao e exigido, mas CI/deploy e wave-health sao obrigatorios;
 - qualquer proximo micro-slice que altere linguagem do bot exige WhatsApp real definitivo;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
