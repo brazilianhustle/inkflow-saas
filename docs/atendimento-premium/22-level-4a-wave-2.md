@@ -80,7 +80,8 @@ Parar a onda se ocorrer:
 status: em-andamento
 micro_slice_1: cadastro-question-policy-nome PASS
 micro_slice_2: cadastro-question-policy-data PASS
-micro_slice_atual: cadastro-question-policy-email
+micro_slice_3: cadastro-question-policy-email PASS
+micro_slice_atual: cadastro-question-policy-email-recusado
 promocao_4b_4c: proibida
 ```
 
@@ -138,4 +139,31 @@ Provas conclusivas reais:
 ```text
 Cliente: "12/03/1995"
 Bot: "E o e-mail? Se preferir seguir sem, me avisa"
+```
+
+## Evidencia Micro-Slice 3
+
+```text
+micro_slice: cadastro-question-policy-email
+commit_codigo: ef87948 feat: resolve pending cadastro email answers
+tests_local: ConversationPolicy/Router PASS, WhatsApp Pipeline PASS
+ci_github: PASS
+deploy_github: PASS
+http_radar: scenario-cadastro-question-policy-email-20260526T005117Z-24570 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-question-policy-email-20260526T005621Z-20607 PASS
+estado_final: aguardando_tatuador
+dados_cadastro.nome: Joao Silva
+dados_cadastro.data_nascimento: 1995-03-12
+dados_cadastro.email: joao@example.com
+orcid: orc_as5blj
+copy_risk: baixo
+agent_log_gate: conversation_router cadastro_pending_answer pending_email_answered + workflow_manager cadastro_and_tattoo_complete
+decisao: seguir para cadastro-question-policy-email-recusado
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: "joao@example.com"
+Bot: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
 ```

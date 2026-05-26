@@ -106,40 +106,41 @@ autonomy_limit: ate 6 micro-slices da mesma onda declarada
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-cadastro-question-policy-data-20260526T004242Z-9351
+run_id: scenario-whatsapp-real-cadastro-question-policy-email-20260526T005621Z-20607
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: coletando_cadastro
-orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-question-policy-data-20260526T004242Z-9351/
+expected_state: aguardando_tatuador
+orcid: orc_as5blj
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-question-policy-email-20260526T005621Z-20607/
 ```
 
 Mensagem:
 
 ```text
-12/03/1995
+joao@example.com
 ```
 
 Resultado:
 
 ```text
-estado_agente: coletando_cadastro
+estado_agente: aguardando_tatuador
 resposta_ai_posterior_ao_humano: true
-orcid: null
-copy_risk: medio
+orcid: orc_as5blj
+copy_risk: baixo
 dados_cadastro.nome: Joao Silva
 dados_cadastro.data_nascimento: 1995-03-12
-copy: pede e-mail como opcional e deixa claro que pode seguir sem
-decision_observability: agent-log gate confirmou conversation_router cadastro_pending_answer, pending_data_nascimento_answered e can_mutate_state=true
-decision_chain: pergunta pendente de data -> ConversationPolicy resolve ISO -> Router persiste data -> Workflow Manager preserva cadastro incompleto por email_or_refusal
+dados_cadastro.email: joao@example.com
+copy: aciona avaliacao do tatuador sem repetir e-mail/data/nome
+decision_observability: agent-log gate confirmou conversation_router cadastro_pending_answer, pending_email_answered, can_mutate_state=true e workflow_manager cadastro_and_tattoo_complete
+decision_chain: pergunta pendente de e-mail -> ConversationPolicy resolve email -> Router persiste email -> Workflow Manager cria orcamento/handoff
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar micro-slice `cadastro-question-policy-email` da onda `level4a-wave-2-cadastro-question-policy`.
+Proximo passo recomendado: executar micro-slice `cadastro-question-policy-email-recusado` da onda `level4a-wave-2-cadastro-question-policy`.
 ```
 
 Escopo recomendado:

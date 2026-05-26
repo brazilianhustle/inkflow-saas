@@ -458,10 +458,24 @@ Nao avançar para IntentPolicy ampla antes de consolidar os proximos micro-slice
 Depois disso, o próximo melhor ataque é:
 
 ```text
-Proximo micro-slice recomendado: adicionar trace/id de pacote para cruzar Telegram, agent logs e smoke evidence sem depender de leitura manual do chat.
+Proximo micro-slice recomendado: executar `cadastro-question-policy-email-recusado` dentro da onda Level 4A Wave 2.
 ```
 
-Motivo: snapshot observavel ja existe; o proximo passo premium e fazer uma regra do tenant influenciar decisao de atendimento com HTTP radar e WhatsApp real.
+Motivo: `cadastro-question-policy-email` ja passou em teste local, CI, deploy, HTTP radar e WhatsApp real definitivo. A proxima lacuna funcional da mesma familia e a recusa explicita de e-mail, mantendo a cadeia QuestionPolicy -> Router -> Workflow Manager e sem tocar preco, sinal, pagamento ou agenda.
+
+Ultimo micro-slice validado em Level 4A:
+
+```text
+Cadastro QuestionPolicy - Email pendente
+commit: ef87948 feat: resolve pending cadastro email answers
+local: ConversationPolicy/Router PASS; WhatsApp Pipeline PASS
+ci: Tests e Deploy PASS
+http radar: scenario-cadastro-question-policy-email-20260526T005117Z-24570 PASS
+whatsapp real: scenario-whatsapp-real-cadastro-question-policy-email-20260526T005621Z-20607 PASS
+prova real: Cliente "joao@example.com" -> Bot "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+telemetria: conversation_router pending_email_answered e workflow_manager cadastro_and_tattoo_complete; orcid criado.
+rodada: Level 4A Wave 2; 3 de ate 6 micro-slices concluidos; continuar sem promover para 4B/4C.
+```
 
 ## Checklist De Fechamento De Sessão
 

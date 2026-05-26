@@ -698,15 +698,31 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `cadastro-question-policy-data` passou em teste local, HTTP radar e WhatsApp real. Houve uma falha intermediaria de copy-gate (`baixo` vs `medio`) causada pela mencao esperada a e-mail opcional; contrato ajustado para `medio`, mantendo stop real em `copy_risk=alto`. Provas reais: Cliente "12/03/1995" -> Bot "E o e-mail? Se preferir seguir sem, me avisa".
 
+## 2026-05-25 - QuestionPolicy resolve email pendente sem LLM
+
+**Status:** decidido.
+
+**Decisão:** quando o estado e cadastro, ha pergunta pendente de e-mail e o cliente responde um e-mail valido, o `ConversationRouter` deve persistir `dados_cadastro.email` via `ConversationPolicy` e permitir que o `Workflow Manager` avance para `aguardando_tatuador` quando o cadastro e os dados de tattoo ja estiverem completos.
+
+**Motivo:** e-mail valido e um campo simples e deterministico. O bot nao deve chamar LLM nem repetir a pergunta quando a resposta ja satisfaz a pendencia. Como cadastro e tattoo ja estavam completos no setup, a transicao correta e criar `orcid` e preparar handoff para avaliacao do tatuador.
+
+**Alternativas rejeitadas:**
+
+- chamar LLM para interpretar e-mail simples;
+- manter o estado em cadastro depois de e-mail valido;
+- aceitar texto sem e-mail como resposta valida;
+- implementar recusa de e-mail no mesmo micro-slice.
+
+**Camada responsável:** ConversationPolicy, ConversationRouter, Workflow Manager e Smoke Scenario Registry.
+
+**Impacto:** `cadastro-question-policy-email` passou em teste local, HTTP radar e WhatsApp real. O WhatsApp real validou envio pela Evolution `central`, webhook real, persistencia de `joao@example.com`, `estado=aguardando_tatuador`, `orcid=orc_as5blj`, copy risk baixo e logs de decisao Router + Workflow. Provas reais: Cliente "joao@example.com" -> Bot "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.".
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
 
 Ainda falta decidir e implementar a extensão da `QuestionPolicy` para:
 
-- nome completo;
-- data de nascimento;
-- email;
 - recusa de email;
 - dúvidas laterais durante cadastro.
 
