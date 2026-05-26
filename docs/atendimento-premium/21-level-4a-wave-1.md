@@ -64,10 +64,29 @@ Parar a onda se ocorrer:
 ## Resultado Atual
 
 ```text
-status: em-andamento
+status: concluida
 micro_slice_1: security-gate PASS
 micro_slice_2: wave-health-summary PASS
 micro_slice_3: smoke-evidence-index PASS
 micro_slice_4: level4a-stop-audit PASS
-micro_slice_atual: wave-closeout
+micro_slice_atual: none
+closeout: PASS
+promocao_4b_4c: nao
 ```
+
+## Closeout
+
+```text
+commit_final: afc5a92 docs: add level 4a stop audit
+tests_github: PASS
+deploy_github: PASS
+wave_health_final: PASS
+security_gate: PASS
+dependabot_open_alerts: 0
+worktree_final: limpo
+whatsapp_real_exigido: nao
+motivo_whatsapp_real_nao_exigido: onda nao alterou comportamento conversacional
+decisao: manter Level 4A, nao promover para 4B/4C
+```
+
+Conclusao: a primeira onda Level 4A terminou saudavel. Ela fortaleceu seguranca, saude de onda, leitura de evidencia e auditoria de freios sem tocar linguagem, estado, preco, agenda, pagamento, secrets ou tenant real amplo.

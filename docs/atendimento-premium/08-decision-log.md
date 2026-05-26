@@ -623,6 +623,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** a onda Level 4A agora tem um gate documental para impedir que os freios operacionais desaparecam do processo. Nao altera comportamento do bot.
 
+## 2026-05-25 - Closeout da primeira onda Level 4A
+
+**Status:** decidido.
+
+**Decisão:** encerrar `level4a-wave-1-monitoring-security` como concluida e manter autonomia em Level 4A.
+
+**Motivo:** os quatro micro-slices planejados passaram, o commit final teve CI/deploy PASS, `wave-health` final retornou PASS com worktree limpo, `check-security-gate.sh` confirmou npm audit limpo e Dependabot sem alertas abertos. A onda nao alterou comportamento conversacional, entao WhatsApp real nao era gate necessario.
+
+**Alternativas rejeitadas:**
+
+- promover para 4B/4C apos apenas uma onda 4A;
+- seguir para nova familia sem closeout registrado;
+- exigir WhatsApp real artificial em mudanca puramente operacional.
+
+**Camada responsável:** Level 4 Loop Policy, Wave Health, Security Gate e Autonomy Gate.
+
+**Impacto:** o processo agora tem uma primeira onda Level 4A saudavel como evidencia para futuras decisoes, mas ainda exige outra onda 4A sem falhas antes de discutir 4B.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
