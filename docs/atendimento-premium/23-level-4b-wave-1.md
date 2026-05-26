@@ -85,7 +85,8 @@ micro_slice_2: multiturn-http-runner PASS
 micro_slice_3: multiturn-whatsapp-real-runner PASS
 micro_slice_4: cadastro-lateral-data-recovery-http PASS
 micro_slice_5: cadastro-lateral-data-recovery-whatsapp-real PASS
-micro_slice_atual: multiturn-evidence-summary
+micro_slice_6: multiturn-evidence-summary PASS
+micro_slice_atual: level4b-wave-1-closeout
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -115,6 +116,45 @@ Cliente 1: "quanto tempo demora?"
 Bot 1: resposta de tempo + retomada de data
 Cliente 2: "12/03/1995"
 Bot 2: "E o e-mail? Se preferir seguir sem, me avisa"
+```
+
+## Evidencia Micro-Slice 6
+
+```text
+micro_slice: multiturn-evidence-summary
+status: PASS
+http_run_id: scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904
+whatsapp_real_run_id: scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T033539Z-27181
+proximo_micro_slice: level4b-wave-1-closeout
+```
+
+Resumo de julgamento:
+
+| Camada | HTTP Radar | WhatsApp Real Definitivo |
+|---|---|---|
+| Envio cliente | `/api/whatsapp/inbound` | Evolution `central -> bot (*2357)` |
+| Step 1 humano | `quanto tempo demora?` | `quanto tempo demora?` |
+| Step 1 bot | respondeu tempo e retomou data | respondeu tempo e retomou data |
+| Step 1 estado | `coletando_cadastro` | `coletando_cadastro` |
+| Step 1 dado critico | `data_nascimento=null`, `orcid=null` | `data_nascimento=null`, `orcid=null` |
+| Step 1 observabilidade | Workflow Manager `state_preserved_by_router_policy` | Workflow Manager `state_preserved_by_router_policy` |
+| Step 2 humano | `12/03/1995` | `12/03/1995` |
+| Step 2 bot | pediu e-mail opcional | pediu e-mail opcional |
+| Step 2 estado | `coletando_cadastro` | `coletando_cadastro` |
+| Step 2 dado critico | `data_nascimento=1995-03-12`, `orcid=null` | `data_nascimento=1995-03-12`, `orcid=null` |
+| Step 2 observabilidade | Router `pending_data_nascimento_answered` | Router `pending_data_nascimento_answered` |
+
+Veredito:
+
+```text
+validacao_http: PASS
+validacao_whatsapp_real: PASS
+evidencia_por_step: PASS
+transcript_final: PASS
+judgment_final: PASS
+copy_risk_max: medio
+risco_residual: baixo
+promocao_4c: nao recomendada nesta onda
 ```
 
 ## Evidencia Micro-Slice 1
