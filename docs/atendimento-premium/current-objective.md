@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_19_micro_slice_2_pass
+status: level4b_wave_19_closed_pass
 branch: main
-ultimo_commit: 7e3c444 docs: revalidate wave 19 post handoff media
+ultimo_commit: closeout docs da Wave 19 em andamento
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: pendente no commit 7e3c444
-tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 19 micro-slice 2 sem mudanca funcional; HTTP + WhatsApp real PASS
+deploy: PASS no commit 1ed345c; closeout docs sem mudanca funcional
+tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 19 sem mudanca funcional; HTTP + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 7e3c444
+ultimo_commit_validado: 1ed345c
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -192,8 +192,19 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: fechar Wave 19 ou, se for continuar a frente, atacar uma variacao estreita de pos-handoff com texto + midia no mesmo envio. Manter Level 4B; nao subir para 4C.
+Proximo passo recomendado: abrir nova onda funcional leve em Level 4B. Candidato preferencial: escolher familia conversacional pequena fora de preco/agenda/pagamento/secrets, com HTTP radar e WhatsApp real definitivo por micro-slice. A variacao texto+midia pos-handoff fica como candidato futuro, nao bloqueio atual.
 ```
+
+Atualizacao 2026-05-26 21:09 UTC:
+
+- Wave 19 fechada com PASS.
+- CI `Tests` PASS no commit `1ed345c`.
+- Deploy Cloudflare Pages PASS no commit `1ed345c`.
+- `wave-health` PASS, Security Gate PASS, Dependabot 0, Evidence Orphan Gate PASS com WARNs historicos nao bloqueantes.
+- Worktree limpo antes do closeout doc e nenhum processo de smoke/tail/curl ficou vivo apos validacao.
+- Decisao: manter Level 4B, nao promover 4C.
+- Observacao metodologica: `wave-closeout-summarizer.sh` ainda pode mostrar a IA anterior como `Bot` em cenarios sem resposta esperada; para pos-handoff terminal, a prova definitiva e `ai_messages_after_last_human=0`.
+- Provas conclusivas reais: Cliente `lembrei de mais um detalhe`; Bot sem nova resposta automatica apos o humano. Cliente `mais uma referencia` + `image/png`; Bot sem nova resposta automatica apos o humano.
 
 Atualizacao 2026-05-26 21:05 UTC:
 

@@ -132,3 +132,47 @@ Estado final: `aguardando_tatuador`, `orcid=orc_poshandoff`, `ai_messages_after_
 ## Decisao Apos Micro-Slice 2
 
 Manter Level 4B. A Wave 19 cobriu texto e midia pos-handoff com HTTP radar e WhatsApp real definitivo, ambos com o criterio terminal correto de zero IA apos o humano. Proximo ataque recomendado: fechar Wave 19 ou, se for continuar a frente, atacar uma variação estreita de pos-handoff com texto + midia no mesmo envio. Nao subir para 4C.
+
+## Closeout - Wave 19
+
+PASS. A onda revalidou o terminal pos-handoff em `aguardando_tatuador` para texto e midia, cobrindo HTTP radar e WhatsApp real definitivo pela instancia `central`.
+
+Evidence Summary:
+
+```text
+scenario-post-handoff-text-forwarding-20260526T205943Z-14853: PASS; estado=aguardando_tatuador; orcid=orc_poshandoff; copy_risk=baixo
+scenario-whatsapp-real-post-handoff-text-forwarding-20260526T210016Z-26317: PASS; estado=aguardando_tatuador; orcid=orc_poshandoff; copy_risk=baixo; ai_messages_after_last_human=0
+scenario-post-handoff-media-forwarding-20260526T210521Z-19735: PASS; estado=aguardando_tatuador; orcid=orc_poshandoff; copy_risk=baixo
+scenario-whatsapp-real-post-handoff-media-forwarding-20260526T210550Z-4850: PASS; estado=aguardando_tatuador; orcid=orc_poshandoff; copy_risk=baixo; ai_messages_after_last_human=0
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: lembrei de mais um detalhe
+Bot: sem nova resposta automatica apos o humano
+
+Cliente: mais uma referencia + image/png
+Bot: sem nova resposta automatica apos o humano
+```
+
+Gates finais:
+
+```text
+ci: PASS no commit 1ed345c
+deploy: PASS no commit 1ed345c
+wave_health: PASS
+worktree: clean antes do closeout doc
+processos_smoke_tail: nenhum processo vivo apos validacao
+```
+
+Nota metodologica: `wave-closeout-summarizer.sh` ainda e util para o quadro geral, mas em cenarios `SMOKE_REQUIRE_AI_RESPONSE=0` ele pode exibir como `Bot` a IA anterior ao ultimo humano. A prova definitiva para esta onda e o campo `ai_messages_after_last_human=0` no `judgment.md`.
+
+Decisao:
+
+```text
+wave_status: closed_pass
+autonomy_level: manter 4B
+level_4c: bloqueado
+proximo_ataque: escolher nova onda funcional leve; variacao texto+midia pos-handoff fica como candidato futuro, nao bloqueio atual
+```
