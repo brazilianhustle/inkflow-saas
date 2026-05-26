@@ -1019,16 +1019,29 @@ decisao: manter Level 4B; 4C bloqueado
 proximo passo: rodar wave-health final, commitar closeout e declarar proxima onda funcional leve
 ```
 
-Wave 14 declarada:
+Wave 14 micro-slice 1 fechado:
 
 ```text
 wave: level4b-wave-14-cadastro-email-refusal-variants
-status: em implementacao
+status: micro-slice 1 PASS
 primeiro_micro_slice: "prefiro falar por aqui" quando email esta pendente
 objetivo: tratar recusa natural de email opcional como email_recusado=true sem cair no LLM
-validacao_obrigatoria: teste local + HTTP radar + WhatsApp real central -> bot
+commit_funcional: 3c27878 test: cover natural email refusal
+tests_focados: bash -n scripts/smoke/run-scenario.sh scripts/smoke/run-inbound.sh scripts/smoke/run-real-whatsapp.sh scripts/smoke/render-report.sh PASS; node --test tests/_lib/conversation-router.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 120/120
+tests_local: npm test PASS 1196/1196
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-email-refusal-channel-handoff-20260526T090119Z-9662 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T090215Z-18284 PASS
+cliente: "prefiro falar por aqui"
+bot: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+estado: aguardando_tatuador
+orcid: orc_41d3yq
+email: null
+email_recusado: true
 zona: verde/amarela
 restricoes: nao tocar preco, sinal, pagamento, agenda, secrets ou 4C
+proximo passo: rodar wave-health final e decidir se continua Wave 14 com outra variacao natural
 ```
 
 ## Checklist De Fechamento De Sessão

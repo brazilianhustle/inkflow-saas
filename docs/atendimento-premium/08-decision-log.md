@@ -1400,7 +1400,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Data:** 2026-05-26
 
-**Status:** declarada.
+**Status:** primeiro micro-slice validado.
 
 **Decisão:** iniciar `level4b-wave-14-cadastro-email-refusal-variants` para tratar recusas naturais do e-mail opcional, começando por `prefiro falar por aqui`.
 
@@ -1415,7 +1415,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Camada responsável:** ConversationPolicy, ConversationRouter, Workflow Manager, Smoke Scenario Registry.
 
-**Impacto:** esperado HTTP radar e WhatsApp real definitivo para `prefiro falar por aqui`, com `email_recusado=true`, `orcid` criado e logs de Router/Workflow Manager.
+**Impacto:** `resolveEmail` passou a aceitar linguagem de canal para recusa opcional. HTTP radar `scenario-cadastro-email-refusal-channel-handoff-20260526T090119Z-9662` passou; WhatsApp real `scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T090215Z-18284` passou; logs confirmaram Router `pending_email_refused` e Workflow Manager `cadastro_and_tattoo_complete`.
 
 ## Decisões Em Aberto
 

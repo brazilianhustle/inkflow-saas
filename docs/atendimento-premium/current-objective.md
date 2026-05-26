@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_14_email_refusal_variants_in_progress
+status: level4b_wave_14_email_refusal_channel_pass
 branch: main
-ultimo_commit: ae88b65 test: cover explicit minor age handoff
+ultimo_commit: 3c27878 test: cover natural email refusal
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
-tests: npm test PASS local 1195/1195; testes focados Wave 13 PASS 129/129
+tests: npm test PASS local 1196/1196; testes focados Wave 14 PASS 120/120
 prompts_ci: passou no GitHub Actions
-worktree_esperado: dirty durante implementacao da Wave 14
-ultimo_commit_validado: ae88b65
+worktree_esperado: limpo apos closeout da Wave 14 micro-slice 1
+ultimo_commit_validado: 3c27878
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -135,44 +135,47 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 12 validou texto adicional pos-handoff: em `aguardando_tatuador`, nova mensagem enviada pelo cliente e reencaminhada ao tatuador, sem reabrir coleta e sem nova resposta AI apos o humano; HTTP radar e WhatsApp real definitivo passaram.
 - Wave 13 validou menoridade explicita sem data: em `cadastro`, `tenho 16 anos` sai para humano, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e registra Router `minor_age_explicit` + Escalation Manager `minor_age`; HTTP radar e WhatsApp real definitivo passaram.
 - Wave 14 declarada: `level4b-wave-14-cadastro-email-refusal-variants`, foco leve em recusas naturais de e-mail opcional, começando por `prefiro falar por aqui`.
+- Wave 14 micro-slice 1 passou: `prefiro falar por aqui` agora vira `email_recusado=true`, cria `orcid`, promove `aguardando_tatuador` e passa HTTP radar + WhatsApp real definitivo.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-idade-menor-handoff-humano-20260526T085147Z-3519
-run_id_real: scenario-whatsapp-real-cadastro-idade-menor-handoff-humano-20260526T085229Z-3539
-tipo: Scenario WhatsApp real de menoridade explicita da Wave 13
+run_id_http: scenario-cadastro-email-refusal-channel-handoff-20260526T090119Z-9662
+run_id_real: scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T090215Z-18284
+tipo: Scenario WhatsApp real de recusa natural de email da Wave 14
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-idade-menor-handoff-humano-20260526T085229Z-3539/
+orcid: orc_41d3yq
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T090215Z-18284/
 ```
 
 Mensagem:
 
 ```text
-tenho 16 anos
+prefiro falar por aqui
 ```
 
 Resultado:
 
 ```text
 estado_agente: aguardando_tatuador
-resposta_ai: Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador para orientar com segurança sobre responsável legal.
-orcid: null
+resposta_ai: Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.
+orcid: orc_41d3yq
 dados_cadastro.nome: Joao Silva
-dados_cadastro.data_nascimento: null
+dados_cadastro.data_nascimento: 1995-03-12
+dados_cadastro.email: null
+dados_cadastro.email_recusado: true
 copy_risk: baixo
-router: minor_age_explicit, explicit_minor_age, high, can_mutate_state=true
-escalation: minor_age, high, requires_orcid=false
-decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router menoridade -> Escalation Manager -> aguardando_tatuador
+router: cadastro_pending_answer, pending_email_refused, can_mutate_state=true
+workflow: cadastro_and_tattoo_complete, aguardando_tatuador
+decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router recusa email -> Workflow Manager -> orçamento para humano
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: implementar e validar o primeiro micro-slice da Wave 14: `prefiro falar por aqui` como recusa de e-mail opcional.
+Proximo passo recomendado: manter Level 4B e decidir se continua Wave 14 com outra variacao natural de recusa de email ou se declara nova onda leve.
 ```
 
 Escopo recomendado:
