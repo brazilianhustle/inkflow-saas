@@ -1160,6 +1160,28 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** commit `80418c9` adicionou resposta deterministica para foto ambigua sem legenda; commits `7e8afbc`, `b8fc06a`, `45de124` e `d19ffbb` fortaleceram o processo media-only e evidencias. `npm test` passou `1187/1187`, CI/deploy passaram, HTTP radar `scenario-tattoo-media-ambiguous-photo-clarification-20260526T064538Z-31035` passou e WhatsApp real `scenario-whatsapp-real-tattoo-media-ambiguous-photo-clarification-20260526T064904Z-10234` passou.
 
+### Wave 4 - Closeout E Manutencao Do Level 4B
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** fechar `level4b-wave-4-tattoo-media-intake` como PASS e manter autonomia em Level 4B, sem promocao para 4C.
+
+**Motivo:** os tres comportamentos conversacionais da onda passaram em HTTP radar e WhatsApp real definitivo, com `copy_risk=baixo`, `orcid=null` e persistencia coerente. Os gates finais (`wave-health`, Autonomy Gate, Security Gate e Evidence Orphan Gate) passaram. Os WARNs de evidencia orfa sao historicos e nao bloqueantes.
+
+**Alternativas rejeitadas:**
+
+- promover para 4C apenas por quantidade de smokes;
+- abrir nova frente sem closeout;
+- tratar WARN historico nao bloqueante como regressao funcional;
+- limpar evidencias manualmente antes de fechar a onda;
+- iniciar preco, agenda ou pagamento.
+
+**Camada responsável:** Processo de Automacao Level 4B, Smoke Scenario Registry, Evidence Orphan Gate e docs de handoff.
+
+**Impacto:** Wave 4 fica fechada com evidence summary e provas reais. Proxima onda recomendada: confirmar a resposta do cliente apos foto ambigua, cobrindo `é local do corpo` e `é referência` com HTTP radar e WhatsApp real definitivo.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

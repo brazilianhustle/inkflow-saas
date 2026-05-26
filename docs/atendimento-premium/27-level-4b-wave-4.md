@@ -103,7 +103,7 @@ Bot: resposta reconhece/segue sem pedir novamente a foto do local
 ## Resultado Atual
 
 ```text
-status: terceiro comportamento fechado
+status: wave fechada
 micro_slice_1: tattoo-media-wave-contract PASS
 micro_slice_2: tattoo-media-local-photo-http PASS
 micro_slice_3: tattoo-media-local-photo-whatsapp-real PASS
@@ -111,6 +111,7 @@ micro_slice_4: tattoo-media-reference-after-local-http PASS
 micro_slice_5: tattoo-media-reference-after-local-whatsapp-real PASS
 micro_slice_6: tattoo-media-ambiguous-photo-clarification-http PASS
 micro_slice_7: tattoo-media-ambiguous-photo-clarification-whatsapp-real PASS
+micro_slice_8: level4b-wave-4-closeout PASS
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -209,10 +210,49 @@ Cliente: imagem sem legenda
 Bot: "Vi a imagem, mas fiquei em dúvida se ela é referência do desenho ou o local do corpo. Qual dos dois fica valendo?"
 ```
 
-## Proximo Ataque
+## Closeout
 
 ```text
-micro_slice_8: level4b-wave-4-closeout
-objetivo: rodar gates finais, consolidar evidencias e decidir manter/expandir/rebaixar Level 4B sem promover 4C
+micro_slice: level4b-wave-4-closeout
+status: PASS
+wave_health: PASS
+autonomy_gate: PASS, keep
+security_gate: PASS
+dependabot_open_alerts: 0
+evidence_orphan_gate: PASS com WARN historico nao bloqueante
+worktree: clean antes do closeout docs
+ci_docs: PASS
+deploy_docs: PASS
+decisao_autonomia: manter Level 4B
 4c: bloqueado
+proximo_alvo: declarar Wave 5 para confirmacao da foto ambigua
 ```
+
+### Evidence Summary
+
+| Run ID | Tipo | Resultado | Estado Final | ORCID | Copy Risk |
+|---|---|---:|---|---|---|
+| `scenario-whatsapp-real-tattoo-media-local-photo-20260526T062358Z-24484` | WhatsApp real | PASS | `coletando_cadastro` | `null` | `baixo` |
+| `scenario-whatsapp-real-tattoo-media-reference-after-local-20260526T063402Z-4330` | WhatsApp real | PASS | `coletando_cadastro` | `null` | `baixo` |
+| `scenario-whatsapp-real-tattoo-media-ambiguous-photo-clarification-20260526T064904Z-10234` | WhatsApp real | PASS | `coletando_tattoo` | `null` | `baixo` |
+
+### Provas Conclusivas Reais Da Onda
+
+```text
+1. Cliente: "segue foto do local" + imagem
+   Bot: "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
+
+2. Cliente: "essa é referência do desenho" + imagem
+   Bot: "Recebi essa referência também. Pra liberar teu orçamento, preciso do teu nome completo."
+
+3. Cliente: imagem sem legenda
+   Bot: "Vi a imagem, mas fiquei em dúvida se ela é referência do desenho ou o local do corpo. Qual dos dois fica valendo?"
+```
+
+### Decisao Estrategica
+
+Wave 4 cumpriu o objetivo de validar entrada de midia em coleta de tattoo sem quebrar estado, cadastro, orcamento ou handoff. A automacao de monitoramento tambem evoluiu: media-only agora e caminho oficial, polling exige IA nova posterior ao humano e evidencias da Evolution ficam legiveis.
+
+Os WARNs de evidencia orfa sao historicos e nao bloqueiam o fechamento. O unico WARN novo da familia foi um run HTTP util anterior a correcao do polling; ele fica tratado como falha de infraestrutura/metodologia ja corrigida por `b8fc06a`.
+
+Proxima onda recomendada: confirmar a resposta do cliente apos foto ambigua, cobrindo pelo menos `é local do corpo` e `é referência`, com HTTP radar e WhatsApp real definitivo para cada comportamento.

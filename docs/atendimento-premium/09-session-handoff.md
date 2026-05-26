@@ -762,6 +762,25 @@ provas_conclusivas_reais: Cliente imagem sem legenda -> Bot "Vi a imagem, mas fi
 proximo passo: level4b-wave-4-closeout
 ```
 
+Wave 4 closeout:
+
+```text
+wave: level4b-wave-4-tattoo-media-intake
+status: PASS
+micro_slice_8: level4b-wave-4-closeout PASS
+wave_health: PASS em 2026-05-26T06:56:15Z
+autonomy_gate: PASS, decision=keep
+security_gate: PASS, Dependabot 0
+evidence_orphan_gate: PASS com WARN historico nao bloqueante
+worktree: clean antes do closeout docs
+decisao: manter Level 4B; 4C bloqueado
+provas_conclusivas_reais:
+  1. Cliente "segue foto do local" + imagem -> Bot "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
+  2. Cliente "essa é referência do desenho" + imagem -> Bot "Recebi essa referência também. Pra liberar teu orçamento, preciso do teu nome completo."
+  3. Cliente imagem sem legenda -> Bot "Vi a imagem, mas fiquei em dúvida se ela é referência do desenho ou o local do corpo. Qual dos dois fica valendo?"
+proximo passo: declarar Wave 5 em Level 4B para confirmacao da foto ambigua como local ou referencia
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:
