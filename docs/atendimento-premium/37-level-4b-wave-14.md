@@ -48,7 +48,16 @@ whatsapp_real: scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-202
 
 ## Micro-Slice 2
 
-Em implementacao: validar `melhor falar por aqui` como segunda variacao natural de recusa de e-mail opcional, com o mesmo contrato de handoff e WhatsApp real.
+PASS: `melhor falar por aqui` validado como segunda variacao natural de recusa de e-mail opcional, com o mesmo contrato de handoff e WhatsApp real.
+
+```text
+commit_funcional: 0ccf0a2 test: cover second natural email refusal
+tests_focados: bash -n scripts/smoke/run-scenario.sh scripts/smoke/run-inbound.sh scripts/smoke/run-real-whatsapp.sh scripts/smoke/render-report.sh PASS; node --test tests/_lib/conversation-router.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 121/121
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-email-refusal-melhor-falar-aqui-20260526T091028Z-10893 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-email-refusal-melhor-falar-aqui-20260526T091108Z-5886 PASS
+```
 
 ## Provas Conclusivas Reais
 
@@ -58,6 +67,12 @@ Bot: `Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve c
 
 Estado final: `aguardando_tatuador`, `orcid=orc_41d3yq`, `email=null`, `email_recusado=true`.
 
+Cliente: `melhor falar por aqui`
+
+Bot: `Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.`
+
+Estado final: `aguardando_tatuador`, `orcid=orc_0a1325`, `email=null`, `email_recusado=true`.
+
 ## Decisao
 
-Manter Level 4B. O primeiro micro-slice da Wave 14 passou com HTTP radar e WhatsApp real definitivo. Proximo passo pode continuar a mesma onda com outra variacao natural de recusa, desde que continue fora de preco, agenda, sinal e pagamento.
+Manter Level 4B. Os dois primeiros micro-slices da Wave 14 passaram com HTTP radar e WhatsApp real definitivo. Proximo passo pode continuar a mesma onda com outra variacao natural de recusa, desde que continue fora de preco, agenda, sinal e pagamento.
