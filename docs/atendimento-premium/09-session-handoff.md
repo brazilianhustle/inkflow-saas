@@ -895,6 +895,30 @@ decisao: manter Level 4B; 4C bloqueado
 proximo passo: escolher entre validar email real informado apos midia ou auditar pacote Telegram com midia no handoff
 ```
 
+Wave 9 fechada:
+
+```text
+wave: level4b-wave-9-post-media-valid-email-handoff
+status: PASS
+commit_funcional: b8e58bf test: cover post-media valid email handoff
+tests_focados: node --test tests/_lib/whatsapp-pipeline.test.mjs PASS 66/66
+tests_local: npm test PASS 1194/1194
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-after-media-email-valido-handoff-20260526T075219Z-32176 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-after-media-email-valido-handoff-20260526T075330Z-15358 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "joao@example.com"
+bot: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+estado: aguardando_tatuador
+orcid: orc_xumele
+dados: descricao_curta=rosa, estilo=fineline, local_corpo=antebraco, altura_cm=170, foto_local_msg_id=12632, refs_imagens_msg_ids=[11951], nome=Joao Silva, data_nascimento=1995-03-12, email=joao@example.com
+copy_risk: baixo
+workflow: cadastro_and_tattoo_complete, handoff_package_v1, trace hp_*
+decisao: manter Level 4B; 4C bloqueado
+proximo passo: auditar pacote Telegram com midia no handoff
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

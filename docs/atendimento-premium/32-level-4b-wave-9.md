@@ -100,12 +100,55 @@ estado_final: aguardando_tatuador
 orcid: criado
 ```
 
-## Resultado Atual
+## Resultado Fechado
 
 ```text
-status: wave declarada
-micro_slice_1: post-media-valid-email-contract em andamento
+status: PASS
+commit_funcional: b8e58bf test: cover post-media valid email handoff
+micro_slice_1: post-media-valid-email-contract PASS
+micro_slice_2: post-media-valid-email-http PASS
+micro_slice_3: post-media-valid-email-whatsapp-real PASS
+micro_slice_4: level4b-wave-9-closeout PASS
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
 ```
+
+## Evidencias
+
+```text
+tests_focados: node --test tests/_lib/whatsapp-pipeline.test.mjs PASS 66/66
+tests_local: npm test PASS 1194/1194
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-after-media-email-valido-handoff-20260526T075219Z-32176 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-after-media-email-valido-handoff-20260526T075330Z-15358 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+estado_final: aguardando_tatuador
+orcid: criado
+copy_risk_final: baixo
+dados_coletados: descricao_curta=rosa, estilo=fineline, local_corpo=antebraco, altura_cm=170, foto_local_msg_id=12632, refs_imagens_msg_ids=[11951], tentativas_foto_local=1
+dados_cadastro: nome=Joao Silva, data_nascimento=1995-03-12, email=joao@example.com
+workflow: cadastro_and_tattoo_complete, handoff_package_v1, trace hp_*
+```
+
+## Provas Conclusivas Reais
+
+```text
+Cliente: "joao@example.com"
+Bot: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+```
+
+## Nota De Processo
+
+```text
+tentativa_dns_local: scenario-cadastro-after-media-email-valido-handoff-20260526T075101Z-13211
+classe: falha_ambiente_local_dns
+efeito: nao enviou mensagem, falhou no cleanup antes do setup
+acao: repetido com execucao de rede liberada
+status_pos_repeticao: HTTP radar e WhatsApp real passaram
+```
+
+## Decisao
+
+Manter Level 4B. A onda confirmou que o cadastro pos-midia fecha tambem com email valido, cria `orcid`, preserva foto local e referencias, nao marca `email_recusado` indevidamente e registra Router + Workflow Manager com `handoff_package_v1`. O proximo ataque mais coerente e auditar o pacote Telegram com midia no handoff.

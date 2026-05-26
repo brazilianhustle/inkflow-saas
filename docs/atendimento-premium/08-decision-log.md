@@ -1290,6 +1290,27 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** commit `4f90480` adicionou seed pos-midia aguardando email, teste local e cenarios HTTP/WhatsApp real. `npm test` passou `1193/1193`, HTTP radar `scenario-cadastro-after-media-email-recusado-handoff-20260526T074229Z-13531` passou e WhatsApp real `scenario-whatsapp-real-cadastro-after-media-email-recusado-handoff-20260526T074321Z-12642` passou.
 
+### Wave 9 - Email Valido Pos-Midia
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** cadastro pos-midia com email valido deve seguir o mesmo handoff de orcamento da recusa de email, criando `orcid` e preservando `foto_local_msg_id` e `refs_imagens_msg_ids`, sem marcar `email_recusado=true`.
+
+**Motivo:** a Wave 8 fechou o caminho de recusa, mas o fluxo premium precisa garantir paridade no caminho mais comum: cliente informa email. O contrato protege contra regressao em que o handoff funciona para recusa, mas perde midia ou telemetria quando o email e valido.
+
+**Alternativas rejeitadas:**
+
+- considerar a Wave 8 suficiente sem testar email valido;
+- validar apenas por teste local sem WhatsApp real;
+- aceitar `email_recusado` ambíguo junto de email valido;
+- promover autonomia para 4C.
+
+**Camada responsável:** ConversationRouter, Workflow Manager, Handoff Package, Smoke Scenario Registry.
+
+**Impacto:** commit `b8e58bf` adicionou teste local e cenarios HTTP/WhatsApp real. `npm test` passou `1194/1194`, HTTP radar `scenario-cadastro-after-media-email-valido-handoff-20260526T075219Z-32176` passou e WhatsApp real `scenario-whatsapp-real-cadastro-after-media-email-valido-handoff-20260526T075330Z-15358` passou.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

@@ -11,13 +11,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_8_post_media_email_handoff_closeout_pass
+status: level4b_wave_9_post_media_valid_email_handoff_closeout_pass
 branch: main
-ultimo_commit: HEAD test: cover post-media email handoff
+ultimo_commit: HEAD test: cover post-media valid email handoff
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
-tests: npm test PASS local 1193/1193
+tests: npm test PASS local 1194/1194
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos closeout da Wave 7
+worktree_esperado: limpo apos closeout da Wave 9
 ultimo_commit_validado: HEAD
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
@@ -100,6 +100,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Level 4B Wave 7 fechou PASS: cadastro pos-midia aceitou nome e data sem voltar para coleta de tattoo, preservando `foto_local_msg_id=12632`, `refs_imagens_msg_ids=[11951]` e `orcid=null`. Provas reais: Cliente "Joao Silva" -> Bot "Me passa tua data de nascimento completa?"; Cliente "12/03/1995" -> Bot "E o e-mail? Se preferir seguir sem, me avisa".
 - Licao de processo da Wave 7: um HTTP smoke falhou antes do deploy do commit funcional; regra reforcada: quando houver mudanca de codigo, CI/deploy PASS vem antes de qualquer smoke de producao.
 - Level 4B Wave 8 fechou PASS: recusa de email apos midia criou `orcid`, promoveu `aguardando_tatuador`, preservou `foto_local_msg_id=12632` e `refs_imagens_msg_ids=[11951]`, e registrou Workflow Manager com `handoff_package_v1`. Prova real: Cliente "pode seguir sem email\nquanto tempo demora?" -> Bot respondeu tempo de sessao e confirmou avaliacao do tatuador.
+- Level 4B Wave 9 fechou PASS: email valido apos midia criou `orcid`, promoveu `aguardando_tatuador`, preservou `foto_local_msg_id=12632` e `refs_imagens_msg_ids=[11951]`, registrou Router `pending_email_answered` e Workflow Manager com `handoff_package_v1`. Prova real: Cliente "joao@example.com" -> Bot "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
 - Governanca multi-agente oficializada: agentes podem acelerar analise, preparo, auditoria e triage, mas Level 4B mantem Commander unico, single-writer por micro-slice, WhatsApp real serial e 4C bloqueado.
 - Wave Runner v1 e Evidence Registrar implementados como ferramentas metodologicas: preflight seguro de onda e geracao revisavel de linha para `smoke-runs.md`, sem executar WhatsApp real, sem editar evidencias automaticamente e sem promover autonomia.
 - Evidence Orphan Gate integrado ao `wave-health`: registros quebrados passam a bloquear a saude da onda; evidencias completas recentes sem registro aparecem como `WARN` no modo padrao e bloqueiam somente no modo estrito de auditoria.
@@ -132,21 +133,20 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-after-media-email-recusado-handoff-20260526T074229Z-13531
-run_id_real: scenario-whatsapp-real-cadastro-after-media-email-recusado-handoff-20260526T074321Z-12642
-tipo: Scenario WhatsApp real de recusa de email pos-midia da Wave 8
+run_id_http: scenario-cadastro-after-media-email-valido-handoff-20260526T075219Z-32176
+run_id_real: scenario-whatsapp-real-cadastro-after-media-email-valido-handoff-20260526T075330Z-15358
+tipo: Scenario WhatsApp real de email valido pos-midia da Wave 9
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
 orcid: criado
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-after-media-email-recusado-handoff-20260526T074321Z-12642/
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-after-media-email-valido-handoff-20260526T075330Z-15358/
 ```
 
 Mensagem:
 
 ```text
-pode seguir sem email
-quanto tempo demora?
+joao@example.com
 ```
 
 Resultado:
@@ -154,7 +154,7 @@ Resultado:
 ```text
 estado_agente: aguardando_tatuador
 resposta_ai_posterior_ao_humano: true
-orcid: orc_hvs024
+orcid: orc_xumele
 dados_coletados.descricao_curta: rosa
 dados_coletados.local_corpo: antebraco
 dados_coletados.altura_cm: 170
@@ -163,17 +163,18 @@ dados_coletados.refs_imagens_msg_ids: [11951]
 dados_coletados.tentativas_foto_local: 1
 dados_cadastro.nome: Joao Silva
 dados_cadastro.data_nascimento: 1995-03-12
-dados_cadastro.email_recusado: true
+dados_cadastro.email: joao@example.com
+dados_cadastro.email_recusado: false/absent
 copy_risk: baixo
-copy: "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nFechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
-decision_chain: foto local preservada -> referencia preservada -> email recusado -> workflow handoff package -> orcid criado -> aguardando_tatuador
+copy: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+decision_chain: foto local preservada -> referencia preservada -> email valido -> workflow handoff package -> orcid criado -> aguardando_tatuador
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll por estado
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: manter Level 4B e escolher entre validar email real informado apos midia ou auditar o pacote Telegram com midia no handoff.
+Proximo passo recomendado: manter Level 4B e auditar o pacote Telegram com midia no handoff.
 ```
 
 Escopo recomendado:
@@ -181,9 +182,9 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
-- usar `docs/atendimento-premium/31-level-4b-wave-8.md` como fechamento da onda atual;
+- usar `docs/atendimento-premium/32-level-4b-wave-9.md` como fechamento da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
-- Wave 8 fechou recusa de email pos-midia com handoff de orcamento;
+- Wave 9 fechou email valido pos-midia com handoff de orcamento;
 - proximo alvo funcional deve ser declarado antes de editar codigo;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
