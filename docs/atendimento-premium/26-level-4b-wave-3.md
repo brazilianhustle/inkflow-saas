@@ -83,7 +83,9 @@ status: em-andamento
 micro_slice_1: tattoo-pending-answer-wave-contract PASS
 micro_slice_2: tattoo-pending-local-lateral-http PASS
 micro_slice_3: tattoo-pending-local-lateral-whatsapp-real PASS
-micro_slice_atual: tattoo-pending-height-lateral-http
+micro_slice_4: tattoo-pending-height-lateral-http PASS
+micro_slice_5: tattoo-pending-height-lateral-whatsapp-real PASS
+micro_slice_atual: tattoo-pending-style-lateral-http
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -142,4 +144,42 @@ run_id: scenario-whatsapp-real-tattoo-pending-local-lateral-20260526T052659Z-265
 cadeia: Evolution central -> bot 5545999012357
 resultado_final: descricao_curta=borboleta, estilo=fineline, local_corpo=glúteo, altura_cm=null, estado=coletando_tattoo, orcid=null, copy_risk=baixo
 provas_conclusivas_reais: Cliente "quero uma borboleta fineline" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nTu imagina fazer em qual parte do corpo?"; Cliente "bunda\nquantas sessoes seria?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nMe diz tua altura?"
+```
+
+Segundo radar HTTP antes do ajuste de contrato:
+
+```text
+run_id: scenario-tattoo-pending-height-lateral-20260526T053717Z-9642
+status: FAIL
+failure_class: scenario_gate_failed
+causa: o comportamento estava correto e pediu foto do local apos preencher altura, mas o contrato ainda proibia `foto do local`
+decisao: ajustar o gate para aceitar foto quando os campos obrigatorios ja estao preenchidos
+```
+
+Validação apos ajuste:
+
+```text
+micro_slice: tattoo-pending-height-lateral-http
+status: PASS
+run_id: scenario-tattoo-pending-height-lateral-20260526T053818Z-26635
+fluxo: Cliente "quero uma baleia fineline na barriga" -> Bot pergunta altura; Cliente "tenho 1.70\nquanto tempo demora?" -> Bot responde tempo/sessoes e pede foto do local
+resultado_final: descricao_curta=baleia, estilo=fineline, local_corpo=barriga, altura_cm=170, estado=coletando_tattoo, orcid=null, copy_risk=baixo
+```
+
+```text
+micro_slice: tattoo-pending-height-lateral-whatsapp-real
+status: PASS
+run_id: scenario-whatsapp-real-tattoo-pending-height-lateral-20260526T053902Z-11885
+cadeia: Evolution central -> bot 5545999012357
+resultado_final: descricao_curta=baleia, estilo=fineline, local_corpo=barriga, altura_cm=170, estado=coletando_tattoo, orcid=null, copy_risk=baixo
+provas_conclusivas_reais: Cliente "quero uma baleia fineline na barriga" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nQual tua altura?"; Cliente "tenho 1.70\nquanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nCom isso já ajuda bastante. Consegue mandar uma foto do local?"
+```
+
+## Automacao Processual Observada
+
+```text
+status: melhoria_identificada
+observacao: nos dois primeiros comportamentos da Wave 3, o loop detectou falhas de contrato sem exigir mudanca funcional no bot.
+impacto: bom sinal para piloto automatico; as ferramentas separaram falha de contrato de regressao real.
+proximo_upgrade_candidato: gerar automaticamente um bloco de closeout/evidence-summary a partir de evidence-registrar + transcript multi-turn, mantendo revisao do Commander antes de commit.
 ```

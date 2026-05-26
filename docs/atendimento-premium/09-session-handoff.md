@@ -672,7 +672,12 @@ primeiro_http: scenario-tattoo-pending-local-lateral-20260526T052610Z-24026 PASS
 primeiro_real: scenario-whatsapp-real-tattoo-pending-local-lateral-20260526T052659Z-26598 PASS
 falha_util: scenario-tattoo-pending-local-lateral-20260526T052255Z-4229 mostrou que "quero uma borboleta" era briefing inicial generico demais para esta onda
 provas_conclusivas_reais: Cliente "quero uma borboleta fineline" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nTu imagina fazer em qual parte do corpo?"; Cliente "bunda\nquantas sessoes seria?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nMe diz tua altura?"
-proximo passo: executar tattoo-pending-height-lateral-http
+segundo_http: scenario-tattoo-pending-height-lateral-20260526T053818Z-26635 PASS
+segundo_real: scenario-whatsapp-real-tattoo-pending-height-lateral-20260526T053902Z-11885 PASS
+falha_util_2: scenario-tattoo-pending-height-lateral-20260526T053717Z-9642 mostrou contrato errado proibindo foto do local quando ela era o proximo passo correto
+provas_conclusivas_reais_2: Cliente "quero uma baleia fineline na barriga" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nQual tua altura?"; Cliente "tenho 1.70\nquanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nCom isso já ajuda bastante. Consegue mandar uma foto do local?"
+automacao_observada: o loop detectou duas falhas de contrato sem mudanca funcional no bot; candidato de proximo upgrade e gerador revisavel de closeout/evidence-summary
+proximo passo: executar tattoo-pending-style-lateral-http
 ```
 
 ## Checklist De Fechamento De Sessão

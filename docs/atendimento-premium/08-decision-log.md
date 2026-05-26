@@ -1044,6 +1044,10 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Validacao inicial:** o primeiro contrato com `quero uma borboleta` falhou por briefing inicial generico demais para o alvo da onda. O contrato foi ajustado para `quero uma borboleta fineline`; depois disso, HTTP multi-turn `scenario-tattoo-pending-local-lateral-20260526T052610Z-24026` e WhatsApp real multi-turn `scenario-whatsapp-real-tattoo-pending-local-lateral-20260526T052659Z-26598` passaram, persistindo `descricao_curta=borboleta`, `estilo=fineline`, `local_corpo=glúteo`, com `orcid=null`, `copy_risk=baixo`, resposta lateral de tempo e retomada de altura.
 
+**Validacao de altura:** o primeiro contrato de altura falhou porque proibia `foto do local`, embora esse fosse o proximo passo correto apos preencher altura. O gate foi ajustado; HTTP multi-turn `scenario-tattoo-pending-height-lateral-20260526T053818Z-26635` e WhatsApp real multi-turn `scenario-whatsapp-real-tattoo-pending-height-lateral-20260526T053902Z-11885` passaram, persistindo `descricao_curta=baleia`, `estilo=fineline`, `local_corpo=barriga`, `altura_cm=170`, com `orcid=null`, `copy_risk=baixo`, resposta lateral de tempo e pedido de foto.
+
+**Aprendizado de automação:** a Wave 3 esta mostrando que o loop ja separa falha de contrato de regressao funcional. Proximo upgrade metodologico candidato: gerar automaticamente um bloco revisavel de closeout/evidence-summary a partir de evidence, transcript e judgment.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

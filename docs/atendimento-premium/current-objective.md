@@ -84,6 +84,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Level 4B Wave 2 foi consolidada em closeout: evidencias HTTP + WhatsApp real dos tres comportamentos foram registradas, `wave-health` PASS, `security-gate` PASS, `evidence-orphan-gate` PASS com um WARN nao bloqueante antigo, e decisao de manter Level 4B sem promover 4C.
 - Level 4B Wave 3 declarada: `level4b-wave-3-tattoo-pending-answer-recovery`, foco leve em respostas a campos pendentes de tattoo junto de duvidas laterais, sem preco/agenda/secrets e com WhatsApp real definitivo por comportamento conversacional.
 - Level 4B Wave 3 validou o primeiro comportamento: local pendente + pergunta lateral de tempo/sessoes. HTTP multi-turn e WhatsApp real multi-turn passaram para `quero uma borboleta fineline` -> `bunda\nquantas sessoes seria?`, persistindo `local_corpo=glúteo`, respondendo tempo e retomando altura.
+- Level 4B Wave 3 validou o segundo comportamento: altura pendente + pergunta lateral de tempo/sessoes. HTTP multi-turn e WhatsApp real multi-turn passaram para `quero uma baleia fineline na barriga` -> `tenho 1.70\nquanto tempo demora?`, persistindo `altura_cm=170`, respondendo tempo e pedindo foto do local.
 - Governanca multi-agente oficializada: agentes podem acelerar analise, preparo, auditoria e triage, mas Level 4B mantem Commander unico, single-writer por micro-slice, WhatsApp real serial e 4C bloqueado.
 - Wave Runner v1 e Evidence Registrar implementados como ferramentas metodologicas: preflight seguro de onda e geracao revisavel de linha para `smoke-runs.md`, sem executar WhatsApp real, sem editar evidencias automaticamente e sem promover autonomia.
 - Evidence Orphan Gate integrado ao `wave-health`: registros quebrados passam a bloquear a saude da onda; evidencias completas recentes sem registro aparecem como `WARN` no modo padrao e bloqueiam somente no modo estrito de auditoria.
@@ -116,22 +117,22 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-tattoo-pending-local-lateral-20260526T052610Z-24026
-run_id_real: scenario-whatsapp-real-tattoo-pending-local-lateral-20260526T052659Z-26598
+run_id_http: scenario-tattoo-pending-height-lateral-20260526T053818Z-26635
+run_id_real: scenario-whatsapp-real-tattoo-pending-height-lateral-20260526T053902Z-11885
 tipo: Scenario WhatsApp real multi-turn da Wave 3
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_tattoo
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-pending-local-lateral-20260526T052659Z-26598/
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-pending-height-lateral-20260526T053902Z-11885/
 ```
 
 Mensagem:
 
 ```text
-quero uma borboleta fineline
-bunda
-quantas sessoes seria?
+quero uma baleia fineline na barriga
+tenho 1.70
+quanto tempo demora?
 ```
 
 Resultado:
@@ -140,20 +141,20 @@ Resultado:
 estado_agente: coletando_tattoo
 resposta_ai_posterior_ao_humano: true
 orcid: null
-dados_coletados.descricao_curta: borboleta
+dados_coletados.descricao_curta: baleia
 dados_coletados.estilo: fineline
-dados_coletados.local_corpo: glúteo
-dados_coletados.altura_cm: null
+dados_coletados.local_corpo: barriga
+dados_coletados.altura_cm: 170
 copy_risk: baixo
-copy: step 1 pergunta local; step 2 responde tempo/sessoes e retoma altura
-decision_chain: pergunta pendente de local -> resposta de local + duvida lateral no mesmo turno -> persistencia do local + retomada segura
+copy: step 1 pergunta altura; step 2 responde tempo/sessoes e pede foto do local
+decision_chain: pergunta pendente de altura -> resposta de altura + duvida lateral no mesmo turno -> persistencia da altura + retomada segura
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll por step
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar micro-slice `tattoo-pending-height-lateral-http` da onda `level4b-wave-3-tattoo-pending-answer-recovery`.
+Proximo passo recomendado: executar micro-slice `tattoo-pending-style-lateral-http` da onda `level4b-wave-3-tattoo-pending-answer-recovery`.
 ```
 
 Escopo recomendado:
@@ -163,7 +164,7 @@ Escopo recomendado:
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
 - usar `docs/atendimento-premium/26-level-4b-wave-3.md` como plano da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
-- proximo comportamento alvo: altura pendente + pergunta lateral de tempo/sessoes no mesmo turno;
+- proximo comportamento alvo: estilo pendente + pergunta lateral de tempo/sessoes no mesmo turno;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
