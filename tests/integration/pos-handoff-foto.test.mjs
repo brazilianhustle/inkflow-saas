@@ -76,7 +76,7 @@ test('Estado terminal + foto JPEG: re-encaminha como photo + RPC zerar', async (
   assert.ok(rpc.some(r => r.p_msg_id === 99));
 });
 
-test('Estado terminal SEM foto: comportamento atual (so texto preview)', async () => {
+test('Estado terminal SEM foto: reencaminha texto sem midia e sem cleanup', async () => {
   const conversaTerminal = {
     id: 'c1', estado_agente: 'aguardando_tatuador',
     dados_coletados: {}, dados_cadastro: { nome: 'Maria' },
@@ -89,6 +89,7 @@ test('Estado terminal SEM foto: comportamento atual (so texto preview)', async (
     deps,
   );
   assert.ok(tg.some(x => x.text?.includes('Cliente ' + TELEFONE)), 'texto preview enviado');
+  assert.ok(tg.some(x => x.text?.includes('oi')), 'texto do cliente enviado ao tatuador');
   assert.equal(tg.filter(x => x.midia).length, 0);
   assert.equal(rpc.length, 0);
 });

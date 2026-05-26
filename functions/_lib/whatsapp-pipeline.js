@@ -252,6 +252,14 @@ export async function processBatch(env, batch, depsOverride = {}) {
           tenant.tatuador_telegram_chat_id,
           `📩 Cliente ${telefone} (${tenant.nome_estudio}) mandou msg:\n${preview(texto, 200)}`,
         );
+        console.log(JSON.stringify({
+          evento: 'pos-handoff-mensagem-encaminhada',
+          tenant_id: tenant.id,
+          telefone,
+          estado_agente: conversa.estado_agente,
+          mensagens: msgRowIds.length,
+          tem_midia: fotos.length > 0,
+        }));
         // Re-encaminha foto(s) avulsa(s) pos-handoff; cleanup base64 só após upload OK.
         for (const foto of fotos) {
           try {
