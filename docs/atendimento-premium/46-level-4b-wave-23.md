@@ -116,3 +116,29 @@ decision: iniciar Wave 23 em Level 4B
 level_4c: bloqueado
 next_action: rodar wave-health inicial e criar primeiro scenario de naturalidade
 ```
+
+## Jornada 1 - Contrato Declarado
+
+```text
+http_radar: long-journey-naturalidade-abertura-retomada
+whatsapp_real: whatsapp-real-long-journey-naturalidade-abertura-retomada
+turnos: 5
+cadeia: lateral inicial -> tattoo incompleta -> complemento com lateral -> estilo -> foto local -> cadastro parcial
+objetivo: avaliar abertura, continuidade e retomada sem handoff
+```
+
+Rubrica aplicada nesta jornada:
+
+- abertura: lateral inicial nao deve gerar promessa exata nem preco;
+- continuidade: apos iniciar tattoo, o bot nao deve se reapresentar mecanicamente;
+- retomada: complemento com lateral deve preservar descricao/local/altura e pedir o campo faltante;
+- cadastro parcial: foto local deve promover para `coletando_cadastro` sem ORCID;
+- seguranca: sem preco fechado, agenda, pagamento, sinal ou vazamento interno.
+
+Status:
+
+```text
+wave_health_inicial: PASS 2026-05-26T23:27:29Z
+scenario_files: declarados
+next_action: rodar HTTP radar; se PASS, rodar WhatsApp real definitivo
+```
