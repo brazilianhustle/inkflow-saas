@@ -551,6 +551,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** a primeira onda Level 4A pode executar ate 6 micro-slices da mesma onda declarada, somente zona verde/amarela, com HTTP radar e WhatsApp real definitivo quando conversacional. Qualquer falha de CI, deploy, smoke, cleanup, estado, copy risk alto ou gate interrompe a onda e volta para triage.
 
+## 2026-05-25 - Primeira onda Level 4A com gate de seguranca
+
+**Status:** decidido.
+
+**Decisão:** declarar `level4a-wave-1-monitoring-security` e iniciar pelo micro-slice `security-gate`.
+
+**Motivo:** antes de usar a janela maior em comportamento conversacional, a primeira onda 4A deve provar disciplina operacional. Dependabot e `npm audit` precisam virar gate reproduzivel, porque alertas de seguranca abertos sao ruído e risco para qualquer loop maior.
+
+**Alternativas rejeitadas:**
+
+- seguir direto para novo comportamento do bot;
+- deixar auditoria de seguranca como checagem manual;
+- tratar alerta Dependabot como problema externo ao loop de smoke.
+
+**Camada responsável:** Security Gate, Autonomy Gate, Level 4A Wave Plan.
+
+**Impacto:** `scripts/smoke/check-security-gate.sh` passa a validar `npm audit` na raiz e no `web`, alem de alertas Dependabot abertos via GitHub. Esta onda nao exige WhatsApp real enquanto nao alterar comportamento conversacional.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

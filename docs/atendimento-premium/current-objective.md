@@ -89,6 +89,7 @@ autonomy_limit: ate 6 micro-slices da mesma onda declarada
 - O ensaio Level 4 em Level 3 foi concluido e usado como base para promocao deliberada a Level 4A.
 - O Workflow Manager ganhou slice gate formal para futuras promocoes: `workflow-manager` exige HTTP radar e WhatsApp real em cadastro completo, nao-mutacao lateral, cadastro incompleto, cliente irritado e gatilho tenant.
 - Autonomy Gate foi promovido deliberadamente para Level 4A: janela inicial de ate 6 micro-slices da mesma onda declarada, sem zona vermelha e com parada em qualquer falha.
+- Primeira onda Level 4A declarada: `level4a-wave-1-monitoring-security`, focada em monitoramento, smoke e seguranca operacional sem alterar comportamento conversacional.
 - Workflow Manager passou a registrar decisao propria em `agent_turn_logs`: cadastro completo com recusa de email agora confirma `workflow_layer=workflow_manager`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a impor nao-mutacao para intents laterais do Router com `can_mutate_state=false`: preco generico preservou `estado=coletando_tattoo` e registrou `workflow_reason=state_preserved_by_router_policy`; HTTP radar e WhatsApp real definitivo passaram exigindo Router + Workflow Manager no mesmo turno.
 - Workflow Manager passou a calcular requisitos faltantes exatos por fase e expor bloqueio formal de cadastro incompleto: idade isolada preservou `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null` e registrou `workflow_reason=requirements_missing` com contagens de faltantes; HTTP radar e WhatsApp real definitivo passaram.
@@ -130,7 +131,7 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: declarar a primeira onda Level 4A de risco verde/amarelo e executar ate 6 micro-slices no maximo, parando em qualquer falha.
+Proximo passo recomendado: executar `level4a-wave-1-monitoring-security`, com micro-slice atual `security-gate`.
 ```
 
 Escopo recomendado:
@@ -139,6 +140,7 @@ Escopo recomendado:
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=6`;
 - respeitar limite de ate 6 micro-slices;
 - escolher apenas zona verde/amarela;
+- rodar `bash scripts/smoke/check-security-gate.sh` antes de seguir a onda;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
 - nao subir para 4B/4C sem duas ondas 4A saudaveis e commit deliberado.
