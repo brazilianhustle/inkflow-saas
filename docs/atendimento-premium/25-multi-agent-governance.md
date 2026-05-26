@@ -171,6 +171,45 @@ Ferramentas candidatas futuras:
 - dry-run de scenarios no CI;
 - matriz executavel de risco para bloquear comandos fora da zona autorizada.
 
+## Wave Runner
+
+O `scripts/smoke/wave-runner.sh` e a primeira ferramenta metodologica desta governanca.
+
+Na versao atual, ele executa apenas preflight seguro:
+
+```bash
+bash scripts/smoke/wave-runner.sh tattoo-multi-info-basic whatsapp-real-tattoo-multi-info-basic
+```
+
+Ele valida:
+
+- `autonomy-gate.env`;
+- limite de `MAX_BATCH_SIZE`;
+- worktree;
+- `git diff --check`;
+- sintaxe dos scripts de smoke;
+- dry-run dos scenarios informados;
+- `check-autonomy-gate.sh`;
+- `wave-health.sh`.
+
+Ele nao executa:
+
+- HTTP radar real;
+- WhatsApp real;
+- commit;
+- push;
+- deploy;
+- edicao em `smoke-runs.md`;
+- promocao de autonomia.
+
+Durante desenvolvimento do proprio processo, pode ser usado com:
+
+```bash
+WAVE_RUNNER_ALLOW_DIRTY=1 bash scripts/smoke/wave-runner.sh <scenario>
+```
+
+Esse modo so permite worktree sujo para preflight. Ele nao autoriza fechar slice com worktree sujo.
+
 ## Protocolo Por Micro-Slice
 
 1. Commander declara micro-slice, risco, arquivos provaveis e dono.

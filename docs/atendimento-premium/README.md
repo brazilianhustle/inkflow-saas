@@ -75,6 +75,16 @@ Fluxo esperado:
 observação real -> ficha de intent -> plano técnico -> testes -> smoke -> ajuste da ficha
 ```
 
+## Comando De Preflight De Onda
+
+Antes de iniciar uma onda ou pacote de scenarios em Level 4B, usar:
+
+```bash
+bash scripts/smoke/wave-runner.sh <scenario> [scenario...]
+```
+
+A versao atual e apenas um preflight seguro: ela roda dry-run e gates, mas nao executa HTTP/WhatsApp real nem altera evidencias.
+
 ## Estado Atual
 
 Versão inicial criada em 2026-05-24 com foco na primeira frente:
