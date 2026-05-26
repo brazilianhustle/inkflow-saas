@@ -81,7 +81,8 @@ status: em-andamento
 micro_slice_1: tattoo-multi-info-wave-contract PASS
 micro_slice_2: tattoo-multi-info-basic-http PASS
 micro_slice_3: tattoo-multi-info-basic-whatsapp-real PASS
-micro_slice_atual: tattoo-multi-info-height-size-http
+micro_slice_4: tattoo-multi-info-height-size-http EM_VALIDACAO
+micro_slice_atual: tattoo-multi-info-height-size-whatsapp-real
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -146,4 +147,16 @@ run_id: scenario-whatsapp-real-tattoo-multi-info-basic-20260526T040309Z-22657
 cadeia: Evolution central -> bot 5545999012357
 resultado: descricao_curta=rosa, estilo=fineline, local_corpo=antebraço, altura_cm=170, estado=coletando_tattoo, orcid=null, copy_risk=baixo
 provas_conclusivas_reais: Cliente "quero uma rosa fineline no antebraco, tenho 1,70" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nBoa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
+```
+
+Segundo fluxo alvo declarado:
+
+```text
+micro_slice: tattoo-multi-info-height-size-http
+status: pre-deploy local PASS
+scenario_http: tattoo-multi-info-height-size
+scenario_whatsapp_real: whatsapp-real-tattoo-multi-info-height-size
+cliente: "quero uma rosa fineline na perna de 5cm, tenho 1,81"
+criterio: persistir tamanho_cm=5 e altura_cm=181 no mesmo turno; nao repetir ideia/local/estilo/altura; nao criar orcid.
+validacao_local: node --test focado PASS; npm test PASS; dry-run HTTP/WhatsApp real PASS
 ```

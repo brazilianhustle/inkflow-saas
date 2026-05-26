@@ -966,6 +966,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `wave-health.sh` agora inclui Evidence Orphan Gate. O gate falha para registro quebrado, emite `WARN` para evidence completa recente nao registrada e pode ser executado com `EVIDENCE_ORPHAN_STRICT=1` para auditoria rigorosa.
 
+## 2026-05-26 - Multi-info separa tamanho da tattoo e altura
+
+**Status:** em validacao.
+
+**Decisão:** expandir o `ConversationRouter` deterministico para extrair `tamanho_cm` espontaneo sem confundir com `altura_cm`.
+
+**Motivo:** a doutrina de tattoo 4 OBR define `tamanho_cm` como opcional, mas quando o cliente manda no mesmo turno ele deve ser persistido junto com ideia, local, estilo e altura. A frase `5cm, tenho 1,81` precisa virar `tamanho_cm=5` e `altura_cm=181`, sem re-perguntar campos ja respondidos.
+
+**Alternativas rejeitadas:**
+
+- deixar a separacao apenas para o Agent LLM;
+- ignorar `tamanho_cm` espontaneo por ser opcional;
+- tratar todo numero com `cm` como altura;
+- fechar o slice apenas com teste HTTP sem WhatsApp real definitivo.
+
+**Camada responsável:** ConversationPolicy, ConversationRouter, Smoke Scenario e metodologia Level 4B.
+
+**Impacto:** novos cenarios `tattoo-multi-info-height-size` e `whatsapp-real-tattoo-multi-info-height-size` validam a separacao. O slice so fecha apos deploy, HTTP radar e WhatsApp real em cadeia `central -> bot`.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

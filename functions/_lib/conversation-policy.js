@@ -127,6 +127,22 @@ export function resolveHeightCm(message) {
     : { answered: false, value: null, confidence: 0, reason: 'no_height' };
 }
 
+export function resolveTattooSizeCm(message) {
+  const s = normalize(message);
+  const patterns = [
+    /\b(?:tamanho|tam|medindo|aprox(?:imadamente)?|uns?|umas?|de)\s*(?:de\s*)?([1-4]?\d|50)\s*cm\b/,
+    /\b([1-4]?\d|50)\s*cm\b/,
+  ];
+  for (const re of patterns) {
+    const m = s.match(re);
+    const value = Number(m?.[1]);
+    if (Number.isFinite(value) && value > 0 && value <= 50) {
+      return { answered: true, value, confidence: 0.9, reason: 'tattoo_size_cm' };
+    }
+  }
+  return { answered: false, value: null, confidence: 0, reason: 'no_tattoo_size' };
+}
+
 export function extractStyleAnswer(message) {
   return resolveTattooStyle(message).value;
 }

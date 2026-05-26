@@ -587,6 +587,18 @@ comportamento_bot: inalterado
 uso: wave-runner faz preflight; evidence-registrar imprime linha sugerida para smoke-runs.md sem editar arquivo; evidence-orphan-gate bloqueia registro quebrado e alerta evidence recente nao registrada
 ```
 
+Wave 2 em andamento, segundo fluxo funcional preparado:
+
+```text
+micro_slice_http: tattoo-multi-info-height-size-http pre-deploy local PASS
+scenario_http: tattoo-multi-info-height-size
+scenario_real: whatsapp-real-tattoo-multi-info-height-size
+cliente: "quero uma rosa fineline na perna de 5cm, tenho 1,81"
+mudanca: Router separa tamanho_cm=5 de altura_cm=181 no mesmo turno
+validacao_local: node --test focado PASS; npm test PASS; dry-run HTTP/WhatsApp real PASS
+proximo passo: commit funcional, push, CI/deploy, HTTP radar e WhatsApp real definitivo
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

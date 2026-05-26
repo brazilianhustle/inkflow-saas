@@ -353,6 +353,29 @@ test('ConversationRouter: multi-info de tattoo persiste campos e pede só foto',
   assert.doesNotMatch(out.resposta_cliente, /qual tua altura|parte do corpo|qual estilo|me conta o que tu quer tatuar/i);
 });
 
+test('ConversationRouter: multi-info separa tamanho da tattoo e altura da pessoa', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quero uma rosa fineline na perna de 5cm, tenho 1,81',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    tenant: { nome_agente: 'Assistente' },
+    clientContext: { is_first_contact: true },
+    historico: [],
+  });
+
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'multi_info');
+  assert.equal(out.reason, 'multiple_tattoo_fields_detected');
+  assert.equal(out.dados_persistidos.descricao_curta, 'rosa');
+  assert.equal(out.dados_persistidos.estilo, 'fineline');
+  assert.equal(out.dados_persistidos.local_corpo, 'perna');
+  assert.equal(out.dados_persistidos.tamanho_cm, 5);
+  assert.equal(out.dados_persistidos.altura_cm, 181);
+  assert.deepEqual(out.campos_faltando, []);
+  assert.match(out.resposta_cliente, /foto do local/i);
+  assert.doesNotMatch(out.resposta_cliente, /qual tua altura|parte do corpo|qual estilo|me conta o que tu quer tatuar/i);
+});
+
 test('ConversationRouter: se pergunta de formulário está pendente, responde objeção sem continuar formulário', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',

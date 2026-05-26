@@ -10,7 +10,7 @@
 // O contrato retorna um output compatível com runAgent para o pipeline poder
 // persistir/enviar sem criar um segundo caminho de side effects.
 
-import { extractLocalAnswer, extractStyleAnswer, resolveHeightCm, resolvePendingFormQuestion } from './conversation-policy.js';
+import { extractLocalAnswer, extractStyleAnswer, resolveHeightCm, resolvePendingFormQuestion, resolveTattooSizeCm } from './conversation-policy.js';
 import { composeRouterResponse } from './conversation-response-composer.js';
 
 const HANDLED_STATES = new Set(['tattoo', 'cadastro']);
@@ -79,6 +79,11 @@ function extractTattooHints(message, dados = {}) {
     if (altura.answered && altura.value) extracted.altura_cm = altura.value;
   }
 
+  if (!hasValue(dados.tamanho_cm)) {
+    const tamanho = resolveTattooSizeCm(s);
+    if (tamanho.answered && tamanho.value) extracted.tamanho_cm = tamanho.value;
+  }
+
   if (!hasValue(dados.descricao_curta)) {
     const patterns = [
       /\b(?:tatuagem|tattoo|tauagem)\s+de\s+(?:um|uma|uns|umas)?\s*([a-z0-9 ]+?)(?=\b(?:no|na|em|com|realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto|quanto|quantop|qnto|qual|me passa|$))/,
@@ -112,7 +117,7 @@ function extractTattooHints(message, dados = {}) {
 }
 
 function shouldHandleTattooMultiInfo(extracted = {}) {
-  const keys = ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']
+  const keys = ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo', 'tamanho_cm']
     .filter(key => hasValue(extracted[key]));
   return keys.length >= 2;
 }

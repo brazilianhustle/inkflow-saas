@@ -8,6 +8,7 @@ import {
   resolveHeightCm,
   resolvePendingFormQuestion,
   resolveShortName,
+  resolveTattooSizeCm,
   resolveTattooStyle,
 } from '../../functions/_lib/conversation-policy.js';
 
@@ -29,6 +30,17 @@ test('ConversationPolicy: resolve altura, local e estilo com confiança', () => 
   assert.equal(resolveBodyLocation('quero fazer na bunda').value, 'glúteo');
   assert.equal(resolveBodyLocation('na virilha').value, 'virilha');
   assert.equal(resolveTattooStyle('quero fineline').value, 'fineline');
+});
+
+test('ConversationPolicy: separa tamanho da tattoo de altura da pessoa', () => {
+  assert.deepEqual(resolveTattooSizeCm('quero uma rosa de 5cm, tenho 1,81'), {
+    answered: true,
+    value: 5,
+    confidence: 0.9,
+    reason: 'tattoo_size_cm',
+  });
+  assert.equal(resolveTattooSizeCm('tenho 1,81').answered, false);
+  assert.equal(resolveHeightCm('quero uma rosa de 5cm, tenho 1,81').value, 181);
 });
 
 test('ConversationPolicy: resolve pergunta pendente usando resolver tipado', () => {
