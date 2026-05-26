@@ -21,7 +21,7 @@ test('VoicePolicy: firstName extrai primeiro nome com fallback seguro', () => {
 test('VoicePolicy: cadastroResumeQuestion cobre familia de cadastro', () => {
   assert.equal(
     cadastroResumeQuestion({ dados_cadastro: {} }),
-    'Pra liberar teu orçamento, me passa nome completo e data de nascimento?',
+    'Pra montar teu cadastro, me passa teu nome completo e data de nascimento?',
   );
   assert.equal(
     cadastroResumeQuestion({ dados_cadastro: { data_nascimento: '1995-03-12' } }),
@@ -35,6 +35,7 @@ test('VoicePolicy: cadastroResumeQuestion cobre familia de cadastro', () => {
     cadastroResumeQuestion({ dados_cadastro: { nome: 'Joao Silva', data_nascimento: '1995-03-12' } }),
     'E o e-mail? Se preferir seguir sem, me avisa',
   );
+  assert.doesNotMatch(cadastroResumeQuestion({ dados_cadastro: {} }), /liberar teu orçamento|orçamento personalizado/i);
 });
 
 test('VoicePolicy: cadastroHandoffReply evita fechamento rigido antigo', () => {

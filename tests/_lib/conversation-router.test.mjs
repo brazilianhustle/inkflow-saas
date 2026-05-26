@@ -648,6 +648,20 @@ test('ConversationRouter: cadastro retoma cadastro, não coleta tattoo', () => {
   assert.match(out.resposta_cliente, /data de nascimento/);
 });
 
+test('ConversationRouter: cadastro vazio retoma sem linguagem transacional rigida', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'quanto tempo demora?',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+  });
+  assert.equal(out.intent, 'tempo_sessao');
+  assert.equal(out.estado_novo, 'cadastro');
+  assert.match(out.resposta_cliente, /nome completo/i);
+  assert.match(out.resposta_cliente, /data de nascimento/i);
+  assert.match(out.resposta_cliente, /cadastro/i);
+  assert.doesNotMatch(out.resposta_cliente, /liberar teu orçamento|orçamento personalizado/i);
+});
+
 test('ConversationRouter: cadastro persiste nome pendente sem chamar LLM', () => {
   const out = routeConversationTurn({
     estado_atual: 'cadastro',

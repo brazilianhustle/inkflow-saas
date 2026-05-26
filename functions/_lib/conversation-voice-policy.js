@@ -21,7 +21,7 @@ export function cadastroHandoffReply({ nome } = {}) {
 export function cadastroResumeQuestion(conversa = {}) {
   const dados = conversa.dados_cadastro || {};
   if (!hasValue(dados.nome) && !hasValue(dados.data_nascimento)) {
-    return 'Pra liberar teu orçamento, me passa nome completo e data de nascimento?';
+    return 'Pra montar teu cadastro, me passa teu nome completo e data de nascimento?';
   }
   if (!hasValue(dados.nome)) return 'Me passa teu nome completo?';
   if (!hasValue(dados.data_nascimento)) return 'Me passa tua data de nascimento completa?';
