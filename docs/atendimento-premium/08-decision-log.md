@@ -1465,7 +1465,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Data:** 2026-05-26
 
-**Status:** primeiro micro-slice validado.
+**Status:** dois micro-slices validados; onda encerrada.
 
 **Decisão:** iniciar `level4b-wave-16-minor-age-guardian-consent-variants` para tratar `minha mae autorizou` como sinal indireto de menoridade e acionar humano imediatamente, sem persistir data inexistente e sem criar `orcid`/orcamento.
 
@@ -1481,7 +1481,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Camada responsável:** ConversationPolicy, ConversationRouter, Escalation Manager, Smoke Scenario Registry.
 
-**Impacto:** `resolveExplicitAge` passou a reconhecer consentimento/autorizacao de responsavel como `guardian_consent_minor_age_signal`. HTTP radar `scenario-cadastro-menoridade-responsavel-handoff-humano-20260526T174032Z-6477` e WhatsApp real `scenario-whatsapp-real-cadastro-menoridade-responsavel-handoff-humano-20260526T174106Z-9280` passaram para `minha mae autorizou`; logs confirmaram Router `minor_age_explicit` e Escalation Manager `minor_age`.
+**Impacto:** `resolveExplicitAge` passou a reconhecer consentimento/autorizacao de responsavel como `guardian_consent_minor_age_signal`. HTTP radar `scenario-cadastro-menoridade-responsavel-handoff-humano-20260526T174032Z-6477` e WhatsApp real `scenario-whatsapp-real-cadastro-menoridade-responsavel-handoff-humano-20260526T174106Z-9280` passaram para `minha mae autorizou`; HTTP radar `scenario-cadastro-menoridade-pais-handoff-humano-20260526T175054Z-4335` e WhatsApp real `scenario-whatsapp-real-cadastro-menoridade-pais-handoff-humano-20260526T175152Z-23494` passaram para `tenho autorizacao dos meus pais`; logs confirmaram Router `minor_age_explicit` e Escalation Manager `minor_age`.
 
 ## Decisões Em Aberto
 

@@ -48,7 +48,7 @@ copy_risk: baixo
 
 ## Estado
 
-PASS parcial: micro-slice 1 concluido.
+PASS: dois micro-slices concluidos. Wave 16 encerrada pragmaticamente.
 
 ## Micro-Slice 1
 
@@ -72,6 +72,36 @@ Bot: `Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador 
 
 Estado final: `aguardando_tatuador`, `orcid=null`, `data_nascimento=null`.
 
-## Decisao
+## Decisao Apos Micro-Slice 1
 
 Manter Level 4B. A menoridade indireta por responsavel legal agora tem primeira cobertura deterministica com HTTP radar e WhatsApp real definitivo. Proximo passo recomendado: continuar a Wave 16 apenas se houver ganho claro em segunda variacao, como `tenho autorizacao dos meus pais`; caso contrario, fechar a onda e declarar nova frente leve.
+
+## Micro-Slice 2
+
+PASS: `tenho autorizacao dos meus pais` validado como segunda variacao de menoridade indireta por responsavel legal, acionando humano sem inventar `data_nascimento` e sem criar `orcid`.
+
+```text
+commit_cobertura: 078614c test: cover parents consent minor risk
+tests_focados: bash -n scripts/smoke/run-scenario.sh scripts/smoke/run-inbound.sh scripts/smoke/run-real-whatsapp.sh scripts/smoke/render-report.sh PASS; node --test tests/_lib/conversation-policy.test.mjs tests/_lib/conversation-router.test.mjs tests/_lib/escalation-manager.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 143/143
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-menoridade-pais-handoff-humano-20260526T175054Z-4335 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-menoridade-pais-handoff-humano-20260526T175152Z-23494 PASS
+```
+
+## Provas Conclusivas Reais - Micro-Slice 2
+
+Cliente: `tenho autorizacao dos meus pais`
+
+Bot: `Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador para orientar com segurança sobre responsável legal.`
+
+Estado final: `aguardando_tatuador`, `orcid=null`, `data_nascimento=null`.
+
+## Decisao Final Da Wave
+
+Wave 16 encerrada. As duas variacoes principais de responsavel legal passaram com HTTP radar e WhatsApp real definitivo:
+
+- `minha mae autorizou`;
+- `tenho autorizacao dos meus pais`.
+
+Nao ha ganho imediato em continuar expandindo sinonimos dentro da mesma onda sem nova evidencia de uso real. Proximo passo deve ser nova onda leve declarada, ainda em Level 4B.

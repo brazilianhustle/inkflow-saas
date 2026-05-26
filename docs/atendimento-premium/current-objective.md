@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_16_guardian_consent_pass
+status: level4b_wave_16_parents_consent_pass
 branch: main
-ultimo_commit: 0584aeb feat: detect guardian consent minor risk
+ultimo_commit: 078614c test: cover parents consent minor risk
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit funcional validado
-tests: npm test PASS local 1202/1202; testes focados Wave 16 micro-slice 1 PASS 142/142; CI PASS no GitHub Actions
+tests: npm test PASS local 1202/1202; testes focados Wave 16 micro-slice 2 PASS 143/143; CI PASS no GitHub Actions
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos closeout da Wave 16 micro-slice 1
-ultimo_commit_validado: 0584aeb
+worktree_esperado: limpo apos closeout da Wave 16
+ultimo_commit_validado: 078614c
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -143,24 +143,25 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 15 micro-slice 2 passou: `tenho 17 anos` sai para humano, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e passa HTTP radar + WhatsApp real definitivo.
 - Continue implicito oficializado: quando todos os gates estao verdes e nao ha decisao humana pendente, resposta curta de continuidade ou ausencia de nova direcao autoriza seguir para o proximo micro-slice logico da mesma onda declarada; qualquer stop condition continua parando o loop.
 - Wave 16 micro-slice 1 passou: `minha mae autorizou` sai para humano como sinal indireto de menoridade por responsavel legal, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e passa HTTP radar + WhatsApp real definitivo.
+- Wave 16 micro-slice 2 passou: `tenho autorizacao dos meus pais` sai para humano como segunda variacao de menoridade indireta por responsavel legal, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e passa HTTP radar + WhatsApp real definitivo.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-menoridade-responsavel-handoff-humano-20260526T174032Z-6477
-run_id_real: scenario-whatsapp-real-cadastro-menoridade-responsavel-handoff-humano-20260526T174106Z-9280
+run_id_http: scenario-cadastro-menoridade-pais-handoff-humano-20260526T175054Z-4335
+run_id_real: scenario-whatsapp-real-cadastro-menoridade-pais-handoff-humano-20260526T175152Z-23494
 tipo: Scenario WhatsApp real de menoridade indireta por responsavel legal da Wave 16
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-menoridade-responsavel-handoff-humano-20260526T174106Z-9280/
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-menoridade-pais-handoff-humano-20260526T175152Z-23494/
 ```
 
 Mensagem:
 
 ```text
-minha mae autorizou
+tenho autorizacao dos meus pais
 ```
 
 Resultado:
@@ -180,7 +181,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router m
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: manter Level 4B e decidir entre Wave 16 micro-slice 2 (`tenho autorizacao dos meus pais`) ou fechar a Wave 16 e declarar nova onda leve.
+Proximo passo recomendado: manter Level 4B, considerar Wave 16 encerrada e declarar nova onda leve antes de tocar codigo.
 ```
 
 Escopo recomendado:
@@ -190,7 +191,7 @@ Escopo recomendado:
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
 - usar `docs/atendimento-premium/39-level-4b-wave-16.md` como fechamento da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
-- Wave 16 micro-slice 1 fechou menoridade indireta por responsavel legal com WhatsApp real definitivo;
+- Wave 16 fechou menoridade indireta por responsavel legal com duas variacoes validadas em WhatsApp real definitivo;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
