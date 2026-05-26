@@ -845,6 +845,32 @@ decisao: manter Level 4B; 4C bloqueado
 proximo passo: declarar proxima onda funcional leve; candidato principal cadastro pos-midia sem repetir tattoo
 ```
 
+Wave 7 fechada:
+
+```text
+wave: level4b-wave-7-cadastro-after-media
+status: PASS
+commit_funcional: b606cad fix: preserve post-media cadastro routing
+tests_focados: node --test tests/_lib/conversation-policy.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 70/70
+tests_local: npm test PASS 1192/1192
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-after-media-nome-data-20260526T073334Z-32292 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-after-media-nome-data-20260526T073435Z-27846 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente_1: "Joao Silva"
+bot_1: "Me passa tua data de nascimento completa?"
+cliente_2: "12/03/1995"
+bot_2: "E o e-mail? Se preferir seguir sem, me avisa"
+estado: coletando_cadastro
+orcid: null
+dados: descricao_curta=rosa, estilo=fineline, local_corpo=antebraco, altura_cm=170, foto_local_msg_id=12632, refs_imagens_msg_ids=[11951], nome=Joao Silva, data_nascimento=1995-03-12
+copy_risk: medio
+falha_util: scenario-cadastro-after-media-nome-data-20260526T072952Z-18485 falhou porque smoke de producao rodou antes do deploy do commit funcional; regra reforcada: CI/deploy antes de smoke de producao quando houver codigo novo
+decisao: manter Level 4B; 4C bloqueado
+proximo passo: declarar Wave 8 para email/recusa de email apos midia e handoff de orcamento preservando pacote de midia
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

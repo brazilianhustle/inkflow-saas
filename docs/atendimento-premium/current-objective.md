@@ -11,13 +11,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_6_media_chain_after_reference_closeout_pass
+status: level4b_wave_7_cadastro_after_media_closeout_pass
 branch: main
-ultimo_commit: HEAD test: cover media reference to local chain
+ultimo_commit: HEAD fix: preserve post-media cadastro routing
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
-tests: npm test PASS local 1190/1190
+tests: npm test PASS local 1192/1192
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos commit de Wave 6
+worktree_esperado: limpo apos closeout da Wave 7
 ultimo_commit_validado: HEAD
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
@@ -97,6 +97,8 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Level 4B Wave 5 declarada: `level4b-wave-5-ambiguous-media-confirmation`, foco em confirmar foto ambigua como local ou referencia. A confirmacao curta agora e caminho deterministico no pipeline, sem LLM.
 - Level 4B Wave 5 fechou PASS: confirmacao de foto ambigua como local e como referencia passaram em HTTP radar e WhatsApp real definitivo. Provas reais: Cliente "é local do corpo" -> Bot "Perfeito, então vou usar essa imagem como foto do local. Pra liberar teu orçamento personalizado, me passa nome completo e data de nascimento?"; Cliente "é referência do desenho" -> Bot "Perfeito, deixei essa imagem como referência do desenho. Agora preciso da foto do local do corpo onde tu quer tatuar."
 - Level 4B Wave 6 fechou PASS: referencia confirmada seguida de foto local passou em teste local, HTTP radar e WhatsApp real definitivo. A nova foto virou `foto_local_msg_id`, a referencia `[11951]` permaneceu preservada e o estado avancou para `coletando_cadastro`. Prova real: Cliente "segue foto do local" + imagem -> Bot "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
+- Level 4B Wave 7 fechou PASS: cadastro pos-midia aceitou nome e data sem voltar para coleta de tattoo, preservando `foto_local_msg_id=12632`, `refs_imagens_msg_ids=[11951]` e `orcid=null`. Provas reais: Cliente "Joao Silva" -> Bot "Me passa tua data de nascimento completa?"; Cliente "12/03/1995" -> Bot "E o e-mail? Se preferir seguir sem, me avisa".
+- Licao de processo da Wave 7: um HTTP smoke falhou antes do deploy do commit funcional; regra reforcada: quando houver mudanca de codigo, CI/deploy PASS vem antes de qualquer smoke de producao.
 - Governanca multi-agente oficializada: agentes podem acelerar analise, preparo, auditoria e triage, mas Level 4B mantem Commander unico, single-writer por micro-slice, WhatsApp real serial e 4C bloqueado.
 - Wave Runner v1 e Evidence Registrar implementados como ferramentas metodologicas: preflight seguro de onda e geracao revisavel de linha para `smoke-runs.md`, sem executar WhatsApp real, sem editar evidencias automaticamente e sem promover autonomia.
 - Evidence Orphan Gate integrado ao `wave-health`: registros quebrados passam a bloquear a saude da onda; evidencias completas recentes sem registro aparecem como `WARN` no modo padrao e bloqueiam somente no modo estrito de auditoria.
@@ -129,20 +131,21 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-tattoo-media-reference-then-local-20260526T071835Z-9411
-run_id_real: scenario-whatsapp-real-tattoo-media-reference-then-local-20260526T071915Z-30812
-tipo: Scenario WhatsApp real de encadeamento referencia -> foto local da Wave 6
+run_id_http: scenario-cadastro-after-media-nome-data-20260526T073334Z-32292
+run_id_real: scenario-whatsapp-real-cadastro-after-media-nome-data-20260526T073435Z-27846
+tipo: Scenario WhatsApp real multi-turn de cadastro pos-midia da Wave 7
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_cadastro
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-reference-then-local-20260526T071915Z-30812/
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-after-media-nome-data-20260526T073435Z-27846/
 ```
 
 Mensagem:
 
 ```text
-segue foto do local + image/png
+Joao Silva
+12/03/1995
 ```
 
 Resultado:
@@ -157,16 +160,19 @@ dados_coletados.altura_cm: 170
 dados_coletados.foto_local_msg_id: 12632
 dados_coletados.refs_imagens_msg_ids: [11951]
 dados_coletados.tentativas_foto_local: 1
-copy_risk: baixo
-copy: "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
-decision_chain: referencia confirmada preservada -> foto local recebida -> avancar para cadastro sem LLM
+dados_cadastro.nome: Joao Silva
+dados_cadastro.data_nascimento: 1995-03-12
+copy_risk: medio
+copy_1: "Me passa tua data de nascimento completa?"
+copy_2: "E o e-mail? Se preferir seguir sem, me avisa"
+decision_chain: foto local preservada -> referencia preservada -> nome coletado -> data coletada -> pedir email opcional
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll por estado
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: declarar proxima onda funcional leve em Level 4B. Candidato principal: cadastro pos-midia, validando nome/data apos foto local sem repetir etapa de tattoo.
+Proximo passo recomendado: declarar Wave 8 em Level 4B para email/recusa de email apos midia e handoff de orcamento preservando o pacote de midia.
 ```
 
 Escopo recomendado:
@@ -174,9 +180,9 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
-- usar `docs/atendimento-premium/29-level-4b-wave-6.md` como fechamento da onda atual;
+- usar `docs/atendimento-premium/30-level-4b-wave-7.md` como fechamento da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
-- Wave 6 fechou o encadeamento referencia confirmada -> foto local;
+- Wave 7 fechou cadastro pos-midia nome/data;
 - proximo alvo funcional deve ser declarado antes de editar codigo;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;

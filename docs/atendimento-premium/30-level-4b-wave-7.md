@@ -94,12 +94,59 @@ estado_final: coletando_cadastro
 orcid: null
 ```
 
-## Resultado Atual
+## Resultado Fechado
 
 ```text
-status: wave declarada
-micro_slice_1: cadastro-after-media-wave-contract em andamento
+status: PASS
+commit_funcional: b606cad fix: preserve post-media cadastro routing
+micro_slice_1: cadastro-after-media-wave-contract PASS
+micro_slice_2: cadastro-after-media-nome-data-http PASS
+micro_slice_3: cadastro-after-media-nome-data-whatsapp-real PASS
+micro_slice_4: level4b-wave-7-closeout PASS
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
 ```
+
+## Evidencias
+
+```text
+tests_focados: node --test tests/_lib/conversation-policy.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 70/70
+tests_local: npm test PASS 1192/1192
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-after-media-nome-data-20260526T073334Z-32292 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-after-media-nome-data-20260526T073435Z-27846 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+estado_final: coletando_cadastro
+orcid: null
+copy_risk_final: medio
+dados_coletados: descricao_curta=rosa, estilo=fineline, local_corpo=antebraco, altura_cm=170, foto_local_msg_id=12632, refs_imagens_msg_ids=[11951], tentativas_foto_local=1
+dados_cadastro: nome=Joao Silva, data_nascimento=1995-03-12
+```
+
+## Provas Conclusivas Reais
+
+```text
+Cliente: "Joao Silva"
+Bot: "Me passa tua data de nascimento completa?"
+
+Cliente: "12/03/1995"
+Bot: "E o e-mail? Se preferir seguir sem, me avisa"
+```
+
+## Falha Util De Processo
+
+```text
+run_id: scenario-cadastro-after-media-nome-data-20260526T072952Z-18485
+resultado: FAIL
+classe: deploy_desatualizado
+causa: smoke HTTP de producao foi executado antes do deploy do commit funcional b606cad
+efeito: producao ainda usava a prioridade antiga da ConversationPolicy e nao processou "Joao Silva" como resposta ao nome pendente
+correcao: aguardar CI/deploy PASS antes de qualquer smoke de producao quando houver alteracao de codigo
+status_pos_correcao: HTTP radar e WhatsApp real passaram apos deploy
+```
+
+## Decisao
+
+Manter Level 4B. A onda comprovou que cadastro pos-midia aceita nome e data sem voltar para coleta de tattoo, preserva as imagens e nao cria orcamento antes do email. O proximo ataque natural e o fechamento de email/recusa de email apos midia, culminando no handoff de orcamento com pacote de midia preservado.

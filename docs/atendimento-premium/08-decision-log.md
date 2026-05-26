@@ -1246,6 +1246,29 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** criada `29-level-4b-wave-6.md`, setup `seed_tattoo_ref_confirmada_aguardando_foto_local`, cenarios HTTP/WhatsApp real e teste local `Etapa 6.1`. `npm test` passou `1190/1190`, HTTP radar `scenario-tattoo-media-reference-then-local-20260526T071835Z-9411` passou e WhatsApp real `scenario-whatsapp-real-tattoo-media-reference-then-local-20260526T071915Z-30812` passou.
 
+### Wave 7 - Cadastro Pos-Midia E Prioridade De Pergunta Pendente
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** perguntas pendentes de cadastro (`nome completo`, `data de nascimento`, `email`) vencem mencoes anteriores a `foto do local` na deteccao de pergunta pendente.
+
+**Motivo:** apos a Wave 6, o texto "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo." contem uma mencao historica a foto, mas a pergunta ativa e nome completo. Se a policy escolhe foto primeiro, o Router perde a resposta de cadastro e pode cair no Agent operacional indevido.
+
+**Alternativas rejeitadas:**
+
+- depender do LLM para interpretar resposta simples de nome;
+- remover do texto a mencao a foto local apenas para contornar a policy;
+- tratar todo turno pos-midia como coleta de tattoo;
+- fechar a onda somente com HTTP sem WhatsApp real.
+
+**Camada responsável:** ConversationPolicy, ConversationRouter, Workflow Manager, Smoke Scenario Registry.
+
+**Impacto:** commit `b606cad` corrigiu a prioridade da policy, adicionou teste local e cenarios HTTP/WhatsApp real. `npm test` passou `1192/1192`, HTTP radar `scenario-cadastro-after-media-nome-data-20260526T073334Z-32292` passou e WhatsApp real `scenario-whatsapp-real-cadastro-after-media-nome-data-20260526T073435Z-27846` passou.
+
+**Regra de processo:** quando houver mudanca de codigo, smoke de producao so deve rodar apos CI/deploy PASS. A tentativa `scenario-cadastro-after-media-nome-data-20260526T072952Z-18485` falhou por deploy desatualizado e virou evidencia util de metodologia.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
