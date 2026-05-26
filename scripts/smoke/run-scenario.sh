@@ -39,6 +39,9 @@ SMOKE_MEDIA_BASE64="${SMOKE_MEDIA_BASE64:-}"
 SMOKE_MEDIA_FILE="${SMOKE_MEDIA_FILE:-}"
 SMOKE_MEDIA_MIMETYPE="${SMOKE_MEDIA_MIMETYPE:-}"
 SMOKE_REQUIRE_AI_RESPONSE="${SMOKE_REQUIRE_AI_RESPONSE:-1}"
+SMOKE_SUPABASE_CONNECT_TIMEOUT_SECONDS="${SMOKE_SUPABASE_CONNECT_TIMEOUT_SECONDS:-5}"
+SMOKE_SUPABASE_MAX_TIME_SECONDS="${SMOKE_SUPABASE_MAX_TIME_SECONDS:-20}"
+SMOKE_SUPABASE_PREFLIGHT_DISABLED="${SMOKE_SUPABASE_PREFLIGHT_DISABLED:-0}"
 
 # shellcheck source=/dev/null
 source "$SCENARIO_FILE"
@@ -151,13 +154,51 @@ load_devvars() {
   }
 }
 
+supabase_curl() {
+  curl -sS \
+    --connect-timeout "$SMOKE_SUPABASE_CONNECT_TIMEOUT_SECONDS" \
+    --max-time "$SMOKE_SUPABASE_MAX_TIME_SECONDS" \
+    "$@"
+}
+
+supabase_preflight() {
+  [ "$SMOKE_SUPABASE_PREFLIGHT_DISABLED" = "1" ] && return 0
+  load_devvars
+  local tmp status curl_status
+  tmp="$(mktemp)"
+  set +e
+  status="$(
+    supabase_curl -o "$tmp" -w "%{http_code}" \
+      "${SUPABASE_URL}/rest/v1/conversas?select=id&limit=1" \
+      -H "apikey: $SUPA_KEY" \
+      -H "Authorization: Bearer $SUPA_KEY"
+  )"
+  curl_status=$?
+  set -e
+  {
+    echo "supabase_url=${SUPABASE_URL}"
+    echo "curl_status=${curl_status}"
+    echo "http_status=${status:-000}"
+    echo "connect_timeout_seconds=${SMOKE_SUPABASE_CONNECT_TIMEOUT_SECONDS}"
+    echo "max_time_seconds=${SMOKE_SUPABASE_MAX_TIME_SECONDS}"
+  } > "$EVIDENCE_DIR/supabase-preflight.txt"
+  if [ "$curl_status" -ne 0 ] || [[ ! "$status" =~ ^2 ]]; then
+    echo "ERRO: Supabase preflight falhou (curl_status=${curl_status}, http_status=${status:-000})." >&2
+    echo "Classe operacional: infra_supabase_connectivity. Nao rodar smoke/WhatsApp real ate resolver." >&2
+    cat "$tmp" >> "$EVIDENCE_DIR/supabase-preflight.txt" || true
+    rm -f "$tmp"
+    exit 1
+  fi
+  rm -f "$tmp"
+}
+
 supa_post() {
   local path="$1"
   local body="$2"
   local tmp status
   tmp="$(mktemp)"
   status="$(
-    curl -sS -o "$tmp" -w "%{http_code}" \
+    supabase_curl -o "$tmp" -w "%{http_code}" \
       -X POST "${SUPABASE_URL}/rest/v1/${path}" \
       -H "apikey: $SUPA_KEY" \
       -H "Authorization: Bearer $SUPA_KEY" \
@@ -177,7 +218,7 @@ supa_post() {
 
 supa_get_agent_turn_logs_since_run() {
   load_devvars
-  curl -sS --get "${SUPABASE_URL}/rest/v1/agent_turn_logs" \
+  supabase_curl --get "${SUPABASE_URL}/rest/v1/agent_turn_logs" \
     --data-urlencode "tenant_id=eq.${TENANT_ID}" \
     --data-urlencode "created_at=gte.${RUN_STARTED_ISO}" \
     --data-urlencode "select=created_at,agent_name,client_input_text,context_metadata,llm_output_parsed" \
@@ -192,7 +233,7 @@ refresh_poll_snapshot() {
   local sid conv msgs msgs_snapshot
   sid="${TENANT_ID}_${PHONE}"
   conv="$(
-    curl -sS --get "${SUPABASE_URL}/rest/v1/conversas" \
+    supabase_curl --get "${SUPABASE_URL}/rest/v1/conversas" \
       --data-urlencode "tenant_id=eq.${TENANT_ID}" \
       --data-urlencode "telefone=eq.${PHONE}" \
       --data-urlencode "select=estado_agente,orcid,updated_at,dados_coletados,dados_cadastro" \
@@ -201,7 +242,7 @@ refresh_poll_snapshot() {
       -H "Authorization: Bearer $SUPA_KEY"
   )"
   msgs="$(
-    curl -sS --get "${SUPABASE_URL}/rest/v1/conversa_mensagens" \
+    supabase_curl --get "${SUPABASE_URL}/rest/v1/conversa_mensagens" \
       --data-urlencode "session_id=eq.${sid}" \
       --data-urlencode "created_at=gte.${RUN_STARTED_ISO}" \
       --data-urlencode "select=created_at,status,message" \
@@ -1039,6 +1080,11 @@ run_scenario() {
   mkdir -p "$EVIDENCE_DIR"
   print_plan | tee "$EVIDENCE_DIR/scenario-plan.txt"
   cp "$SCENARIO_FILE" "$EVIDENCE_DIR/scenario.env"
+
+  echo ""
+  echo "[scenario] supabase preflight"
+  supabase_preflight
+  cat "$EVIDENCE_DIR/supabase-preflight.txt"
 
   if [ "${CLEANUP_BEFORE:-0}" = "1" ]; then
     echo ""

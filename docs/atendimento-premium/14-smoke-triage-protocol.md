@@ -23,6 +23,7 @@ Quando a falha e `contract_*`, o runner tambem gera automaticamente `plan-review
 ```text
 infra_evolution_send          Evolution/sendText falhou ou instancia nao enviou
 infra_inbound_http            webhook HTTP retornou erro
+infra_supabase_connectivity   Supabase REST/DNS timeout antes de cleanup, seed, poll ou evidencia
 pipeline_failed_message       existe conversa_mensagens.status=failed
 contract_state_not_reached    EXPECTED_STATE nao foi atingido
 contract_handoff_without_orcid aguardando_tatuador sem orcid
@@ -49,6 +50,7 @@ O `triage.md` registra:
 ## Regra De Decisao
 
 - `infra_*`: corrigir ambiente, Evolution, webhook ou runtime antes de mexer no plano do bot.
+- `infra_supabase_connectivity`: nao rodar WhatsApp real; aguardar preflight Supabase PASS, testar rede/VPN e rerodar o mesmo scenario.
 - `contract_*`: reabrir plano do slice; o contrato esperado nao foi cumprido.
 - `copy_risk_*`: manter fluxo tecnico e atacar linguagem, ResponseComposer ou prompt.
 - `agent_no_response`: investigar fila/session queue e logs do agent.

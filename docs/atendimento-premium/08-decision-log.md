@@ -1505,6 +1505,26 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 ## Decisões Em Aberto
 
+### 2026-05-26 - Supabase Reachability Vira Preflight Bloqueante Do Smoke
+
+**Decisão:** todo scenario monitorado deve validar reachability autenticada do Supabase antes de cleanup, seed, polling ou WhatsApp real, e todo curl Supabase dos scripts de smoke deve ter timeout explícito.
+
+**Motivo:** durante a Wave 17, o host Supabase alternou entre timeout, falha de DNS e resposta normal, enquanto a Supabase reportava incidente de acesso por alguns provedores no Brasil. O runner ficou preso no cleanup porque chamadas REST sem timeout podiam bloquear indefinidamente. Isso transformava falha de infraestrutura em pausa ambígua do plano.
+
+**Alternativas rejeitadas:**
+
+- continuar rodando smoke sem preflight;
+- pular HTTP radar e ir direto para WhatsApp real;
+- tratar timeout Supabase como regressão do bot;
+- deixar `curl` sem `--connect-timeout` e `--max-time`;
+- fechar slice com validação incompleta.
+
+**Camada responsável:** Smoke Monitoring Process, Smoke Triage Protocol, runners `run-scenario.sh`, `poll.sh` e `cleanup-conversa-teste.sh`.
+
+**Impacto:** `run-scenario.sh` agora gera `supabase-preflight.txt` e bloqueia o scenario antes de tocar dados quando Supabase não responde. Os scripts de Supabase usam timeout configurável por `SMOKE_SUPABASE_CONNECT_TIMEOUT_SECONDS` e `SMOKE_SUPABASE_MAX_TIME_SECONDS`. A triage ganhou `infra_supabase_connectivity`, que impede mudanças no bot e exige repetir o mesmo scenario somente após preflight PASS.
+
+**Status:** implementado como correção metodológica antes de retomar `cadastro-resume-nome-data-natural`.
+
 ### Cadastro premium
 
 Wave 2 de `QuestionPolicy` esta pronta para closeout formal. Nao ha campo planejado pendente nesta onda.

@@ -41,6 +41,8 @@ done < "$DEVVARS"
 SUPA_KEY="${SUPABASE_SERVICE_ROLE_KEY:-${SUPABASE_SERVICE_KEY:-}}"
 [ -n "${SUPABASE_URL:-}" ] && [ -n "$SUPA_KEY" ] || {
   echo "ERRO: SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY precisam estar no $DEVVARS." >&2; exit 1; }
+SMOKE_SUPABASE_CONNECT_TIMEOUT_SECONDS="${SMOKE_SUPABASE_CONNECT_TIMEOUT_SECONDS:-5}"
+SMOKE_SUPABASE_MAX_TIME_SECONDS="${SMOKE_SUPABASE_MAX_TIME_SECONDS:-20}"
 
 # --- args ---
 TENANT="$TENANT_TESTE"
@@ -67,19 +69,26 @@ if [ "$TENANT" != "$TENANT_TESTE" ]; then
 fi
 
 # helpers REST (PostgREST). select=id evita puxar o jsonb pesado (base64 das fotos).
+supabase_curl() {
+  curl -sS \
+    --connect-timeout "$SMOKE_SUPABASE_CONNECT_TIMEOUT_SECONDS" \
+    --max-time "$SMOKE_SUPABASE_MAX_TIME_SECONDS" \
+    "$@"
+}
+
 api() { # $1=method $2=path-com-query  -> stdout = body
-  curl -sS -X "$1" "${SUPABASE_URL}/rest/v1/${2}" \
+  supabase_curl -X "$1" "${SUPABASE_URL}/rest/v1/${2}" \
     -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY" \
     -H "Content-Type: application/json" -H "Prefer: return=representation"
 }
 count() { # $1=path-com-query (sem select) -> stdout = nº de linhas
-  curl -sS "${SUPABASE_URL}/rest/v1/${1}&select=id" \
+  supabase_curl "${SUPABASE_URL}/rest/v1/${1}&select=id" \
     -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY" | jq 'length'
 }
 
 # Resolve telefones alvo
 if [ "$ALL" -eq 1 ]; then
-  mapfile -t PHONES < <(curl -sS "${SUPABASE_URL}/rest/v1/conversas?tenant_id=eq.${TENANT}&select=telefone" \
+  mapfile -t PHONES < <(supabase_curl "${SUPABASE_URL}/rest/v1/conversas?tenant_id=eq.${TENANT}&select=telefone" \
     -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY" | jq -r '.[].telefone' | sort -u)
 fi
 [ "${#PHONES[@]}" -gt 0 ] || { echo "Nada pra limpar (sem telefones alvo / tenant vazio). Passe um telefone ou use --all."; exit 0; }

@@ -54,6 +54,10 @@ elif [ -f "$EVIDENCE_DIR/evolution-send.json" ] \
 elif [ -f "$EVIDENCE_DIR/inbound-response.txt" ] && grep -Eiq 'HTTP [45][0-9][0-9]|ERRO|error' "$EVIDENCE_DIR/inbound-response.txt"; then
   failure_class="infra_inbound_http"
   next_action="Inspecionar inbound-response.txt e tail-excerpt.log antes de alterar prompt ou policy."
+elif [ -f "$EVIDENCE_DIR/supabase-preflight.txt" ] \
+  && grep -Eq 'curl_status=([1-9][0-9]*|000)|http_status=000|http_status=[45][0-9][0-9]' "$EVIDENCE_DIR/supabase-preflight.txt"; then
+  failure_class="infra_supabase_connectivity"
+  next_action="Nao mexer no bot. Verificar status Supabase/provedor, rede/VPN e repetir somente depois do preflight Supabase PASS."
 elif [ "$failed_count" != "0" ]; then
   failure_class="pipeline_failed_message"
   next_action="Abrir poll.json e tail-excerpt.log; corrigir erro runtime antes de reavaliar plano conversacional."

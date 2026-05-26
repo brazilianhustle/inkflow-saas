@@ -149,6 +149,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 17 micro-slice 3 iniciou a arquitetura escalavel de naturalidade: `conversation-voice-policy.js` centraliza familias deterministicas de cadastro e midia/cadastro; Router e Pipeline passaram a importar a policy sem alterar texto ao cliente; testes locais passaram.
 - Wave 17 micro-slice 4 passou: copy deterministica de mídia/cadastro deixou de usar `Pra liberar teu orçamento` e passou para `Agora me passa teu nome completo pra eu montar o cadastro`; testes locais, CI/deploy, HTTP radar e WhatsApp real definitivo pela `central` passaram com `copy_risk=baixo`.
 - Wave 17 micro-slice 5 iniciou: retomada deterministica de cadastro vazio mudou de `Pra liberar teu orçamento...` para `Pra montar teu cadastro...`; testes locais, CI e deploy passaram, mas HTTP radar nao concluiu por timeout/conectividade Supabase antes do processamento. WhatsApp real ainda NAO foi executado para este commit.
+- Execucao funcional travada para investigacao Supabase: causa provavel e conectividade/DNS intermitente entre ambiente local/sandbox e Supabase durante incidente de provedor no Brasil. Metodologia corrigida: `run-scenario.sh` agora faz preflight Supabase antes de cleanup/seed, scripts REST usam timeout e triage classifica `infra_supabase_connectivity`.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -189,7 +190,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Pipeline
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: repetir o HTTP radar `cadastro-resume-nome-data-natural` quando Supabase responder; se passar, rodar WhatsApp real `whatsapp-real-cadastro-resume-nome-data-natural`; so depois registrar closeout da micro-slice 5.
+Proximo passo recomendado: apos commit/deploy da protecao Supabase, repetir o HTTP radar `cadastro-resume-nome-data-natural`; se passar, rodar WhatsApp real `whatsapp-real-cadastro-resume-nome-data-natural`; so depois registrar closeout da micro-slice 5.
 ```
 
 Escopo recomendado:
