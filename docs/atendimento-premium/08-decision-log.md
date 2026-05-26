@@ -1072,6 +1072,28 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `wave-closeout-summarizer.sh` gera Markdown revisavel com Evidence Summary, provas conclusivas reais e decisao sugerida a partir de uma ou mais evidencias. A ferramenta foi registrada em `25-multi-agent-governance.md` e mantem o Commander como unico responsavel pelo PASS final.
 
+### Level 4B Wave 4 - Tattoo Media Intake
+
+**Data:** 2026-05-26
+
+**Status:** decidido.
+
+**Decisão:** declarar `level4b-wave-4-tattoo-media-intake` como proxima onda funcional leve em Level 4B.
+
+**Motivo:** depois de multi-info textual e recuperacao de campos pendentes, o proximo gargalo funcional premium e o envio de foto. O fluxo precisa provar que imagem enviada quando o bot pediu foto do local vira `foto_local_msg_id`, sem ser confundida com referencia, sem pedir a mesma foto novamente e sem criar handoff/orcamento indevido.
+
+**Alternativas rejeitadas:**
+
+- atacar preco, sinal, pagamento ou agenda;
+- abrir leitura visual ampla sem contrato fechado;
+- validar apenas com HTTP sem WhatsApp real;
+- promover para 4C;
+- alterar tenant real amplo, secrets ou migrations.
+
+**Camada responsável:** WhatsApp Pipeline, Pipeline Classifier, Tattoo Agent, Workflow Manager e Smoke Scenario Registry.
+
+**Impacto:** criada a doc `27-level-4b-wave-4.md`, o setup `seed_tattoo_aguardando_foto_local` e os cenarios `tattoo-media-local-photo` / `whatsapp-real-tattoo-media-local-photo`.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
