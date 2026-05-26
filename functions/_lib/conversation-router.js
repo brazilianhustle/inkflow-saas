@@ -119,6 +119,16 @@ function shouldHandleTattooMultiInfo(extracted = {}) {
   return keys.length >= 2;
 }
 
+function answeredTattooCoreFields(extracted = {}) {
+  return ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']
+    .filter(key => hasValue(extracted[key]));
+}
+
+function shouldHandleTattooPendingAnswer(extracted = {}, conversa = {}) {
+  const next = nextTattooField(conversa);
+  return next !== 'foto_local' && hasValue(extracted[next]);
+}
+
 function tattooResumeQuestion(conversa = {}) {
   const next = nextTattooField(conversa);
   if (next === 'descricao_curta') return 'Me conta o que tu pensa em tatuar?';
@@ -458,6 +468,52 @@ function tattooMultiInfoOutput({ extracted, estado_atual, conversa, tenant, clie
   };
 }
 
+function tattooPendingAnswerOutput({ extracted, estado_atual, conversa }) {
+  const nextAnswered = nextTattooField(conversa);
+  const dadosAtualizados = {
+    ...(conversa?.dados_coletados || {}),
+    ...extracted,
+  };
+  const conversaParaRetomada = {
+    ...conversa,
+    dados_coletados: dadosAtualizados,
+  };
+  const missing = missingTattooFields(dadosAtualizados);
+  const nextField = missing[0] || 'foto_local';
+  const dadosPersistidos = nextField === 'foto_local'
+    ? {
+        ...extracted,
+        tentativas_foto_local: Math.max(Number(dadosAtualizados.tentativas_foto_local || 0), 1),
+      }
+    : extracted;
+
+  return {
+    ok: true,
+    handled_by: 'conversation_router',
+    intent: 'tattoo_pending_answer',
+    confidence: 0.84,
+    risk: 'medium',
+    reason: `pending_${nextAnswered}_answered`,
+    can_mutate_state: true,
+    resposta_cliente: tattooResumeQuestion(conversaParaRetomada),
+    estado_novo: estado_atual,
+    dados_persistidos: dadosPersistidos,
+    dados_completos: false,
+    campos_faltando: missing,
+    campos_conflitantes: [],
+    proxima_acao: 'pergunta',
+    agent_usado: 'conversation_router',
+    side_effects: [],
+    urls_portfolio: [],
+    analise_imagens: null,
+    cobertura_suspeita: null,
+    pending_answer_resolution: {
+      answered_field: nextAnswered,
+      next_field: nextField,
+    },
+  };
+}
+
 function escalationOutput({ detected, estado_atual, intent }) {
   if (!['cobertura', 'human_requested', 'client_upset', 'tenant_handoff_trigger', 'minor_age_explicit'].includes(intent)) return null;
   if (intent === 'minor_age_explicit') {
@@ -664,6 +720,10 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
     const extracted = extractTattooHints(mensagem, conversa?.dados_coletados || {});
     if (shouldHandleTattooMultiInfo(extracted)) {
       return tattooMultiInfoOutput({ extracted, estado_atual, conversa, tenant, clientContext, historico });
+    }
+    const coreFields = answeredTattooCoreFields(extracted);
+    if (coreFields.length === 1 && shouldHandleTattooPendingAnswer(extracted, conversa)) {
+      return tattooPendingAnswerOutput({ extracted, estado_atual, conversa });
     }
   }
   if (!detected) return null;

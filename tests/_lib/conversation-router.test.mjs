@@ -355,6 +355,49 @@ test('ConversationRouter: multi-info de tattoo persiste campos e pede só foto',
   assert.doesNotMatch(out.resposta_cliente, /qual tua altura|parte do corpo|qual estilo|me conta o que tu quer tatuar/i);
 });
 
+test('ConversationRouter: resposta simples ao campo descricao pendente persiste e retoma local', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quero uma frase pequena',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    tenant: { nome_agente: 'Assistente' },
+    clientContext: { is_first_contact: false },
+    historico: [
+      { role: 'user', content: 'quanto tempo demora uma tattoo pequena?' },
+      { role: 'assistant', content: 'O tempo de sessão depende do tamanho, detalhe e local do corpo. Me conta o que tu pensa em tatuar?' },
+    ],
+  });
+
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'tattoo_pending_answer');
+  assert.equal(out.reason, 'pending_descricao_curta_answered');
+  assert.equal(out.can_mutate_state, true);
+  assert.deepEqual(out.dados_persistidos, { descricao_curta: 'frase pequena' });
+  assert.match(out.resposta_cliente, /parte do corpo|qual parte|local/i);
+  assert.doesNotMatch(out.resposta_cliente, /me conta o que tu pensa em tatuar/i);
+});
+
+test('ConversationRouter: resposta simples ao campo estilo pendente persiste e pede foto local', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'fineline',
+    conversa: { dados_coletados: { descricao_curta: 'frase pequena', local_corpo: 'antebraço', altura_cm: 170 }, dados_cadastro: {} },
+    tenant: { nome_agente: 'Assistente' },
+    clientContext: { is_first_contact: false },
+    historico: [
+      { role: 'assistant', content: 'Tu prefere qual estilo pra essa tattoo?' },
+    ],
+  });
+
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'tattoo_pending_answer');
+  assert.equal(out.reason, 'pending_estilo_answered');
+  assert.equal(out.can_mutate_state, true);
+  assert.deepEqual(out.dados_persistidos, { estilo: 'fineline', tentativas_foto_local: 1 });
+  assert.match(out.resposta_cliente, /foto do local/i);
+  assert.doesNotMatch(out.resposta_cliente, /qual estilo|que estilo/i);
+});
+
 test('ConversationRouter: multi-info separa tamanho da tattoo e altura da pessoa', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',
