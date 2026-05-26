@@ -13,13 +13,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ```text
 status: level4b_wave_21_micro_slice_1_pass
 branch: main
-ultimo_commit: 5fe5ae5 docs: close wave 20 cadastro recovery
+ultimo_commit: 019cb28 docs: validate wave 21 cadastro batch
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
 deploy: PASS no commit 5fe5ae5; Wave 21 micro-slice 1 sem mudanca funcional no bot
 tests: bash -n run-scenario PASS; Wave 21 micro-slice 1 HTTP + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 5fe5ae5 + Wave 21 micro-slice 1 por HTTP + WhatsApp real
+ultimo_commit_validado: 019cb28 + Wave 21 micro-slice 1 por HTTP + WhatsApp real
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -192,8 +192,17 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: fechar Wave 21 como cobertura nova pequena ou atacar uma segunda variacao batch com email/recusa no mesmo envio somente se houver ganho claro. Manter Level 4B; 4C bloqueado.
+Proximo passo recomendado: Wave 21 fechada; iniciar Wave 22 com auditoria de jornada longa real no WhatsApp. Manter Level 4B; 4C bloqueado.
 ```
+
+Atualizacao 2026-05-26 21:58 UTC:
+
+- Wave 21 fechada com PASS.
+- Decisao: nao atacar segunda variacao batch agora porque o ganho seria marginal diante da cobertura ja existente de e-mail/recusa.
+- Nova Wave 22 declarada: `level4b-wave-22-long-journey-real-audit`.
+- Objetivo da Wave 22: validar jornadas reais mais longas no WhatsApp, com transcript, judgment, estado coerente e provas conclusivas reais.
+- Primeiro ataque recomendado: jornada com duvida lateral, coleta de tattoo, midia, cadastro, recusa de e-mail e handoff.
+- Provas conclusivas reais da Wave 21: Cliente `Joao Silva / 12/03/1995 / como funciona o orçamento?`; Bot `Funciona assim: eu entendo tua ideia, junto as infos principais e o tatuador avalia pra passar valor e horário. E o e-mail? Se preferir seguir sem, me avisa`.
 
 Atualizacao 2026-05-26 21:44 UTC:
 

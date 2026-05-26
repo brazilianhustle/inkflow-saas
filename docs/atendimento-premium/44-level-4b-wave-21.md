@@ -130,3 +130,30 @@ segunda tentativa WhatsApp real fora do sandbox: PASS
 ```
 
 Proximo ataque recomendado: fechar Wave 21 como cobertura nova pequena ou atacar uma segunda variacao batch com email/recusa no mesmo envio apenas se houver ganho claro.
+
+## Closeout
+
+```text
+status: PASS
+decisao: fechar Wave 21
+autonomy_level: manter 4B
+promocao_4c: nao recomendada
+```
+
+A Wave 21 fica encerrada como cobertura nova e suficiente para cadastro batch leve. A segunda variacao com e-mail/recusa no mesmo envio foi descartada neste momento por ganho marginal: o fluxo de recusa/e-mail ja tem cobertura propria, enquanto esta onda provou o ponto novo de maior risco, que era nome + data + duvida lateral no mesmo turno.
+
+Evidencias finais:
+
+- HTTP radar `scenario-cadastro-batch-nome-data-lateral-20260526T214326Z-27063` PASS.
+- WhatsApp real definitivo `scenario-whatsapp-real-cadastro-batch-nome-data-lateral-20260526T214404Z-5218` PASS.
+- `wave-health` PASS no commit `019cb28`.
+- Worktree limpo antes do fechamento.
+
+Provas conclusivas reais:
+
+```text
+Cliente: Joao Silva / 12/03/1995 / como funciona o orçamento?
+Bot: Funciona assim: eu entendo tua ideia, junto as infos principais e o tatuador avalia pra passar valor e horário. E o e-mail? Se preferir seguir sem, me avisa
+```
+
+Leitura estrategica: a arquitetura respondeu corretamente a um comportamento realista de WhatsApp, onde o cliente resolve campos e pergunta algo lateral no mesmo envio. O proximo ganho de qualidade deve vir de jornadas longas, nao de repetir variantes muito parecidas de batch.
