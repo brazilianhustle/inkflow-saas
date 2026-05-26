@@ -4,6 +4,7 @@ import {
   resolveBirthDate,
   resolveBodyLocation,
   resolveEmail,
+  resolveExplicitAge,
   resolveFullName,
   resolveHeightCm,
   resolvePendingFormQuestion,
@@ -80,6 +81,18 @@ test('ConversationPolicy: resolve cadastro por pergunta pendente tipada', () => 
     nome: 'Joao Silva',
     data_nascimento: '1995-03-12',
   });
+});
+
+test('ConversationPolicy: resolve menoridade explicita sem numero e respeita negacao', () => {
+  assert.deepEqual(resolveExplicitAge('sou menor de idade'), {
+    answered: true,
+    value: null,
+    confidence: 0.86,
+    reason: 'explicit_minor_age',
+  });
+  assert.equal(resolveExplicitAge('nao sou menor de idade').answered, false);
+  assert.equal(resolveExplicitAge('tenho 17 anos').value, 17);
+  assert.equal(resolveExplicitAge('tenho 18 anos').answered, false);
 });
 
 test('ConversationPolicy: nome completo vence menção anterior a foto do local', () => {

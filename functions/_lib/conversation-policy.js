@@ -248,6 +248,12 @@ export function resolveBirthDate(message) {
 
 export function resolveExplicitAge(message) {
   const s = stripAccents(message || '');
+  if (/\bnao\s+sou\s+(?:de\s+)?menor(?:\s+de\s+idade)?\b/.test(s)) {
+    return { answered: false, value: null, confidence: 0, reason: 'negated_minor_age' };
+  }
+  if (/\bsou\s+(?:de\s+)?menor(?:\s+de\s+idade)?\b/.test(s)) {
+    return { answered: true, value: null, confidence: 0.86, reason: 'explicit_minor_age' };
+  }
   const hit = s.match(/\b(?:tenho|tem|idade(?:\s+(?:e|é))?|com)?\s*(1[0-7]|[1-9])\s+anos?\b/);
   const value = Number(hit?.[1]);
   if (Number.isFinite(value) && value > 0 && value < 18) {
