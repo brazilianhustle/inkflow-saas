@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_20_micro_slice_1_pass
+status: level4b_wave_20_micro_slice_2_pass
 branch: main
-ultimo_commit: docs de Wave 20 micro-slice 1 registrados; ver `git log -1`
+ultimo_commit: 2dfb136 docs: record wave 20 cadastro recovery pass
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: PASS no ultimo commit publicado; Wave 20 micro-slice 1 sem mudanca funcional
-tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 20 micro-slice 1 HTTP + WhatsApp real PASS
+deploy: PASS no commit 2dfb136; Wave 20 micro-slice 2 sem mudanca funcional
+tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 20 micro-slice 2 HTTP + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: Wave 20 micro-slice 1 por HTTP + WhatsApp real
+ultimo_commit_validado: 2dfb136 + Wave 20 micro-slice 2 por HTTP + WhatsApp real
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -192,8 +192,19 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: seguir Wave 20 com uma segunda variacao pequena da mesma familia, preferencialmente cadastro pendente de nome com duvida lateral ou cadastro vazio retomando nome/data. Manter Level 4B; nao subir para 4C.
+Proximo passo recomendado: decidir entre uma terceira variacao estreita da Wave 20 ou fechar a onda. Preferencia atual: fechar Wave 20 se nao houver gap novo, pois os dois cenarios principais da familia passaram em HTTP radar e WhatsApp real definitivo. Manter Level 4B; nao subir para 4C.
 ```
+
+Atualizacao 2026-05-26 21:33 UTC:
+
+- Wave 20 micro-slice 2 passou sem mudanca de codigo.
+- HTTP radar `scenario-cadastro-resume-nome-data-natural-20260526T213201Z-8633` PASS.
+- WhatsApp real definitivo `scenario-whatsapp-real-cadastro-resume-nome-data-natural-20260526T213232Z-28275` PASS.
+- Estado final `coletando_cadastro`, `orcid=null`, `dados_cadastro={}`.
+- Workflow Manager confirmou `state_preserved_by_router_policy`.
+- `copy_risk=baixo`.
+- Provas conclusivas reais: Cliente `quanto tempo demora?`; Bot `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.` Retomada no mesmo turno: `Pra montar teu cadastro, me passa teu nome completo e data de nascimento?`.
+- Leitura estrategica: a familia principal de recuperacao de cadastro apos lateral ja tem cobertura suficiente para fechar a Wave 20, salvo decisao de atacar uma terceira variacao estreita.
 
 Atualizacao 2026-05-26 21:17 UTC:
 

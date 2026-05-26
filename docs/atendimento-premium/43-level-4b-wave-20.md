@@ -100,3 +100,34 @@ Estado final: `coletando_cadastro`, `orcid=null`, `dados_cadastro.nome=Joao Silv
 Manter Level 4B. O comportamento atual esta funcional e foi validado em WhatsApp real. O risco medio do segundo turno e esperado pelo julgador deterministico porque a resposta menciona e-mail; nao e regressao, pois e-mail e exatamente o proximo campo opcional do cadastro.
 
 Proximo ataque recomendado: escolher uma segunda variacao pequena da mesma familia, preferencialmente cadastro pendente de nome com duvida lateral ou cadastro vazio retomando nome/data, sem alterar preco, agenda, pagamento, secrets ou 4C.
+
+## Micro-Slice 2 - Lateral Durante Cadastro Vazio
+
+PASS sem mudanca de codigo: pergunta lateral de tempo durante cadastro ainda sem nome preservou a fase, respondeu a duvida e retomou nome completo + data de nascimento sem pedir e-mail antes da hora e sem criar orcamento.
+
+Validacao:
+
+```text
+mudanca_funcional_bot: nao
+http_radar: scenario-cadastro-resume-nome-data-natural-20260526T213201Z-8633 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-resume-nome-data-natural-20260526T213232Z-28275 PASS
+estado_final: coletando_cadastro
+orcid: null
+dados_cadastro: {}
+workflow_reason: state_preserved_by_router_policy
+copy_risk: baixo
+```
+
+### Provas Conclusivas Reais - Micro-Slice 2
+
+Cliente: `quanto tempo demora?`
+
+Bot: `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.`
+
+Retomada operacional no mesmo turno: `Pra montar teu cadastro, me passa teu nome completo e data de nascimento?`
+
+Estado final: `coletando_cadastro`, `orcid=null`, `dados_cadastro={}`.
+
+## Decisao Apos Micro-Slice 2
+
+Manter Level 4B. A Wave 20 ja cobriu dois pontos da familia: cadastro pendente de data com recuperacao multi-turn e cadastro vazio com retomada nome/data. Proximo ataque recomendado: escolher uma terceira variacao estreita se houver ganho claro, ou fechar Wave 20 para evitar repeticao de revalidacoes ja saudaveis.
