@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_17_media_cadastro_revalidated
+status: level4b_wave_17_lateral_opening_validated
 branch: main
-ultimo_commit: 9f0cc8f test: add supabase smoke preflight
-ultimo_commit_funcional: 87af5c1 feat: soften cadastro resume copy
-deploy: GitHub Actions Deploy to Cloudflare Pages PASS no commit funcional e no commit de protecao metodologica
-tests: npm test PASS local 1208/1208; testes focados Wave 17 micro-slice 5 PASS 131/131; CI PASS
+ultimo_commit: 498c8c5 feat: soften first contact lateral greeting
+ultimo_commit_funcional: 498c8c5 feat: soften first contact lateral greeting
+deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit funcional
+tests: npm test PASS local 1208/1208; testes focados Wave 17 micro-slice 7 PASS Router 61/61 e Pipeline 66/66; CI PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 87af5c1
+ultimo_commit_validado: 498c8c5
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -151,43 +151,49 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 17 micro-slice 4 passou: copy deterministica de mídia/cadastro deixou de usar `Pra liberar teu orçamento` e passou para `Agora me passa teu nome completo pra eu montar o cadastro`; testes locais, CI/deploy, HTTP radar e WhatsApp real definitivo pela `central` passaram com `copy_risk=baixo`.
 - Wave 17 micro-slice 5 passou: retomada deterministica de cadastro vazio mudou de `Pra liberar teu orçamento...` para `Pra montar teu cadastro...`; testes locais, CI, deploy, HTTP radar e WhatsApp real definitivo pela `central` passaram com `copy_risk=baixo`.
 - Wave 17 micro-slice 6 passou sem mudança de código: cenários atuais de mídia/cadastro `ambiguous-confirm-local` e `reference-then-local` foram revalidados em HTTP radar e WhatsApp real definitivo; ambos saíram com `copy_risk=baixo`, confirmando que os riscos médios restantes eram evidências antigas.
+- Wave 17 micro-slice 7 passou: abertura lateral de primeiro contato removeu a pergunta retórica da saudação (`tudo bem.`), preservou a pergunta operacional, e validou preço/tempo/processo com HTTP radar + WhatsApp real definitivo; auditoria subiu para 9 baixo, 3 médio, 0 alto.
 - Execucao funcional travada para investigacao Supabase: causa provavel e conectividade/DNS intermitente entre ambiente local/sandbox e Supabase durante incidente de provedor no Brasil. Metodologia corrigida: `run-scenario.sh` agora faz preflight Supabase antes de cleanup/seed, scripts REST usam timeout e triage classifica `infra_supabase_connectivity`.
 - Investigacao Supabase concluida para a rodada: primeira tentativa WhatsApp real no sandbox foi bloqueada corretamente por `infra_supabase_connectivity`; rerun fora do sandbox passou com Supabase preflight 200, confirmando falha de DNS/rede do ambiente e nao regressao do bot.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-tattoo-media-reference-then-local-20260526T190952Z-22123
-run_id_real: scenario-whatsapp-real-tattoo-media-reference-then-local-20260526T191020Z-26744
-tipo: Scenario WhatsApp real de mídia/cadastro revalidado da Wave 17
+run_id_http: scenario-lateral-preco-generico-20260526T191838Z-18997
+run_id_real: scenario-whatsapp-real-lateral-preco-generico-20260526T191953Z-2933
+tipo: Scenario WhatsApp real de abertura lateral mais natural da Wave 17
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: coletando_cadastro
+expected_state: coletando_tattoo
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-reference-then-local-20260526T191020Z-26744/
+evidence: .smoke-evidence/scenario-whatsapp-real-lateral-preco-generico-20260526T191953Z-2933/
 ```
 
 Mensagem:
 
 ```text
-segue foto do local
+quanto fica uma rosa fineline no braco?
 ```
 
 Resultado:
 
 ```text
-estado_agente: coletando_cadastro
-resposta_ai: Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro.
+estado_agente: coletando_tattoo
+resposta_ai: Oii, tudo bem. Me chamo Assistente, muito prazer.
+
+O valor depende do tamanho, detalhe e local do corpo. O tatuador confirma certinho depois de avaliar tua ideia.
+
+Pra montar tua proposta certinho, como posso te chamar?
 orcid: null
 copy_risk: baixo
-workflow: transicao segura para coletando_cadastro; sem handoff e sem orcid
-decision_chain: Evolution central -> WhatsApp real com imagem -> bot -> webhook -> Pipeline media deterministica -> coleta de cadastro
+workflow: estado preservado em coletando_tattoo; sem handoff e sem orcid
+observabilidade: Router preco_generico + Workflow Manager state_preserved_by_router_policy
+decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router lateral -> Workflow Manager preserva estado -> resposta lateral + retomada de coleta
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: micro-slice pequeno para reduzir `multi_question_bubble` nos primeiros contatos laterais (`lateral-preco-generico`, `lateral-tempo-sessao`, `lateral-processo-tatuagem`), mantendo Level 4B e sem tocar menoridade, preco fechado, agenda, pagamento, secrets ou 4C.
+Proximo passo recomendado: revalidar ou suavizar uma familia pequena de menoridade/handoff que ainda aparece como risco medio na auditoria, mantendo seguranca legal e Level 4B, sem tocar preco fechado, agenda, pagamento, secrets ou 4C.
 ```
 
 Escopo recomendado:

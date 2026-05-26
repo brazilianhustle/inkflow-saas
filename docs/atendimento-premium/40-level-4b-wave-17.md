@@ -324,3 +324,76 @@ Estado final: `coletando_cadastro`, `orcid=null`, `copy_risk=baixo`.
 ## Decisão Apos Micro-Slice 6
 
 Manter Level 4B. A família mídia/cadastro está verde nas evidências atuais. Próximo ataque recomendado: abrir micro-slice pequeno para reduzir `multi_question_bubble` nos primeiros contatos laterais (`lateral-preco-generico`, `lateral-tempo-sessao`, `lateral-processo-tatuagem`) sem tocar menoridade, preço fechado, agenda, pagamento, secrets ou 4C.
+
+## Micro-Slice 7 - Abertura Lateral Com Menos Perguntas
+
+PASS: a saudação determinística de primeiro contato lateral deixou de carregar uma pergunta retórica (`tudo bem?`) quando a mesma bolha já precisa fazer a pergunta operacional de retomada. A mudança reduz `multi_question_bubble` sem alterar intent, persistência, Workflow Manager ou coleta.
+
+Mudança principal:
+
+```text
+antes: Oii, tudo bem? Me chamo Assistente, muito prazer.
+depois: Oii, tudo bem. Me chamo Assistente, muito prazer.
+```
+
+Validação:
+
+```text
+commit_funcional: 498c8c5 feat: soften first contact lateral greeting
+tests_focados_router: PASS 61/61
+tests_focados_pipeline: PASS 66/66
+tests_local: npm test PASS 1208/1208
+ci: PASS
+deploy: PASS
+http_radar_preco: scenario-lateral-preco-generico-20260526T191838Z-18997 PASS
+http_radar_tempo: scenario-lateral-tempo-sessao-20260526T191903Z-17741 PASS
+http_radar_processo: scenario-lateral-processo-tatuagem-20260526T191926Z-14667 PASS
+whatsapp_real_preco: scenario-whatsapp-real-lateral-preco-generico-20260526T191953Z-2933 PASS
+whatsapp_real_tempo: scenario-whatsapp-real-lateral-tempo-sessao-20260526T192019Z-18032 PASS
+whatsapp_real_processo: scenario-whatsapp-real-lateral-processo-tatuagem-20260526T192046Z-31313 PASS
+copy_risk: baixo nos tres WhatsApp reais
+orcid: null nos tres WhatsApp reais
+```
+
+Auditoria após micro-slice:
+
+```text
+evidencias_analisadas: 12
+baixo: 9
+medio: 3
+alto: 0
+decisao: watchlist
+sem_repeticao_exata_global: true
+```
+
+### Provas Conclusivas Reais - Micro-Slice 7
+
+Cliente: `quanto fica uma rosa fineline no braco?`
+
+Bot: `Oii, tudo bem. Me chamo Assistente, muito prazer.
+
+O valor depende do tamanho, detalhe e local do corpo. O tatuador confirma certinho depois de avaliar tua ideia.
+
+Pra montar tua proposta certinho, como posso te chamar?`
+
+Cliente: `quanto tempo demora pra fazer uma tattoo no braço?`
+
+Bot: `Oii, tudo bem. Me chamo Assistente, muito prazer.
+
+O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
+
+Pra montar tua proposta certinho, como posso te chamar?`
+
+Cliente: `como funciona pra fazer uma tattoo?`
+
+Bot: `Oii, tudo bem. Me chamo Assistente, muito prazer.
+
+Funciona assim: eu entendo tua ideia, junto as infos principais e o tatuador avalia pra passar valor e horário.
+
+Pra montar tua proposta certinho, como posso te chamar?`
+
+Estado final nos três: `coletando_tattoo`, `orcid=null`, `copy_risk=baixo`.
+
+## Decisão Apos Micro-Slice 7
+
+Manter Level 4B. O risco `multi_question_bubble` foi removido das três aberturas laterais atuais. A auditoria agora aponta apenas três médios: menoridade/handoff legal e handoff antigo histórico. Próximo ataque recomendado: revalidar ou suavizar uma família de menoridade/handoff com escopo pequeno, mantendo segurança legal e sem tocar preço fechado, agenda, pagamento, secrets ou 4C.
