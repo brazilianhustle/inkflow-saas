@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_15_age_17_pass
+status: level4b_continue_implicito_officialized
 branch: main
-ultimo_commit: dde6737 test: cover age 17 minor handoff
-deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
+ultimo_commit: aaac99c docs: close wave 15 age 17 handoff
+deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit funcional validado
 tests: npm test PASS local 1201/1201; testes focados Wave 15 micro-slice 2 PASS 141/141; CI PASS no GitHub Actions
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos closeout da Wave 15 micro-slice 2
-ultimo_commit_validado: dde6737
+worktree_esperado: limpo apos oficializar continue implicito
+ultimo_commit_validado: aaac99c
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -141,6 +141,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 15 declarada: `level4b-wave-15-minor-age-natural-variants`, foco leve em menoridade natural no cadastro, sem preco, agenda, pagamento, secrets ou 4C.
 - Wave 15 micro-slice 1 passou: `sou menor de idade` sai para humano, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e passa HTTP radar + WhatsApp real definitivo.
 - Wave 15 micro-slice 2 passou: `tenho 17 anos` sai para humano, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e passa HTTP radar + WhatsApp real definitivo.
+- Continue implicito oficializado: quando todos os gates estao verdes e nao ha decisao humana pendente, resposta curta de continuidade ou ausencia de nova direcao autoriza seguir para o proximo micro-slice logico da mesma onda declarada; qualquer stop condition continua parando o loop.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -178,7 +179,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router m
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: manter Level 4B e fechar a Wave 15 ou declarar nova onda leve.
+Proximo passo recomendado: manter Level 4B, usar continue implicito apenas com gates verdes e declarar a proxima onda leve antes de tocar codigo.
 ```
 
 Escopo recomendado:
@@ -194,6 +195,7 @@ Escopo recomendado:
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
 - nao subir para 4C; 4C exige duas rodadas 4B saudaveis.
+- quando nao houver regressao, blocker ou decisao humana pendente, tratar continuidade como implicita para o proximo micro-slice logico da onda declarada.
 
 Leitura recomendada:
 

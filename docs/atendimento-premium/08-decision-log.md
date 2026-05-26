@@ -1439,6 +1439,28 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `resolveExplicitAge` passou a reconhecer `sou menor de idade` e a respeitar a negacao `nao sou menor de idade`. HTTP radar `scenario-cadastro-menoridade-natural-handoff-humano-20260526T165653Z-17022` e WhatsApp real `scenario-whatsapp-real-cadastro-menoridade-natural-handoff-humano-20260526T165811Z-26978` passaram para a declaracao natural sem numero; HTTP radar `scenario-cadastro-idade-17-handoff-humano-20260526T170830Z-24069` e WhatsApp real `scenario-whatsapp-real-cadastro-idade-17-handoff-humano-20260526T171946Z-31823` passaram para `tenho 17 anos`; logs confirmaram Router `minor_age_explicit` e Escalation Manager `minor_age`.
 
+### Continue Implicito No Loop Level 4B
+
+**Data:** 2026-05-26
+
+**Status:** oficializado como governanca metodologica.
+
+**Decisão:** quando um micro-slice terminar com todos os gates verdes e sem decisao humana pendente, a continuidade fica implicita para o proximo micro-slice logico da mesma onda declarada. Isso nao promove autonomia, nao autoriza 4C e nao permite pular CI, deploy, HTTP radar, WhatsApp real definitivo ou registros.
+
+**Motivo:** a maior parte das pausas recentes ocorria apenas para confirmar "continue" depois de um fechamento verde. A regra reduz atrito operacional sem reduzir seguranca, porque mantem stop conditions, zona vermelha e decisoes de escopo como barreiras obrigatorias.
+
+**Alternativas rejeitadas:**
+
+- parar sempre apos cada micro-slice mesmo com gates verdes;
+- continuar sem `wave-health`, CI/deploy ou WhatsApp real quando exigido;
+- transformar resposta curta em autorizacao para mudar escopo;
+- promover automaticamente para 4C;
+- codificar a regra no bot de producao.
+
+**Camada responsável:** Governanca do Loop Level 4, Autonomy Gate, Wave Health, Session Handoff, Current Objective.
+
+**Impacto:** `19-level-4-loop-policy.md` passa a definir criterios formais de continue implicito; `09-session-handoff.md` registra a regra para retomadas; `current-objective.md` passa a tratar continuidade verde como padrao operacional. Qualquer falha, regressao, triage pendente, zona vermelha, decisao de produto/arquitetura ou promocao de autonomia ainda para o loop.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

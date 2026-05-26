@@ -147,6 +147,40 @@ No fim da onda:
 5. confirmar worktree limpo;
 6. registrar recomendacao: manter, expandir, rebaixar ou pausar.
 
+## Continue Implicito
+
+Quando um micro-slice terminar sem regressao, sem blocker e sem decisao humana pendente, a ausencia de nova direcao do usuario ou uma resposta curta de continuidade deve ser interpretada como autorizacao para seguir para o proximo micro-slice logico da mesma onda declarada.
+
+Isso nao aumenta autonomia, nao promove nivel e nao permite pular gates. A regra apenas remove pausas artificiais quando o processo ja provou que nao ha acao humana imediata.
+
+Condicoes obrigatorias:
+
+- `wave-health` PASS;
+- CI/deploy PASS quando houve commit;
+- HTTP radar PASS quando aplicavel;
+- WhatsApp real PASS quando o comportamento for conversacional;
+- worktree limpo;
+- sem regressao, bug aberto ou stop condition;
+- sem zona vermelha;
+- sem promocao de autonomia;
+- sem mudanca de escopo, produto, copy sensivel ou arquitetura;
+- proximo passo dentro da mesma onda declarada ou fechamento natural da onda.
+
+Deve parar e pedir decisao quando:
+
+- qualquer stop condition ocorrer;
+- houver falha, regressao ou triage pendente;
+- proximo passo exigir nova onda com escopo ambiguo;
+- tocar preco, agenda, pagamento, secrets, tenant real amplo ou 4C;
+- alterar linguagem de marca/copy sensivel;
+- surgir risco legal, financeiro ou operacional novo.
+
+Registro esperado:
+
+- final de slice deve informar PASS, run ids e provas conclusivas reais quando houver WhatsApp real;
+- se o criterio de continue implicito for usado, registrar no handoff/current objective que nao havia decisao humana pendente;
+- a decisao de continuar deve apontar para o proximo micro-slice logico, nao para trabalho aberto sem onda declarada.
+
 ## Stop Conditions
 
 Parar imediatamente se qualquer item ocorrer:

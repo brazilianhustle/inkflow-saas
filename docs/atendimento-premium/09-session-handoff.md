@@ -1145,6 +1145,28 @@ restricoes: nao tocar preco, sinal, pagamento, agenda, secrets ou 4C
 proximo passo: rodar wave-health final e fechar Wave 15 ou declarar nova onda leve
 ```
 
+## Regra Operacional - Continue Implicito
+
+A partir de 2026-05-26, quando um micro-slice ou onda terminar com gates verdes e sem decisao humana pendente, a resposta curta de continuidade do usuario ou a ausencia de nova direcao deve ser tratada como autorizacao para seguir para o proximo micro-slice logico da mesma onda declarada.
+
+Esta regra nao muda o nivel de autonomia e nao autoriza pular validacoes. Ela vale apenas quando:
+
+```text
+wave-health: PASS
+ci/deploy: PASS quando houve commit
+http_radar: PASS quando aplicavel
+whatsapp_real: PASS quando conversacional
+worktree: limpo
+stop_conditions: nenhuma
+zona_vermelha: nao
+mudanca_de_escopo: nao
+promocao_de_autonomia: nao
+```
+
+Parar e pedir decisao continua obrigatorio quando houver falha, regressao, triage pendente, nova onda ambigua, alteracao de preco/agenda/pagamento/secrets/tenant amplo, promocao 4C, copy sensivel ou risco legal/operacional novo.
+
+Registro esperado no fechamento: PASS, run ids, provas conclusivas reais quando houver WhatsApp real e nota de que nao havia decisao humana pendente quando o continue implicito for aplicado.
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:
