@@ -1960,6 +1960,53 @@ test('Etapa 4.5: foto posterior com foto local existente vira referencia sem cha
   assert.match(aiInsert.message.content, /nome completo/i);
 });
 
+test('Etapa 4.5: foto ambigua sem legenda pergunta classificacao sem chamar LLM', async () => {
+  let conversaPatches = [];
+  let runAgentCalled = false;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: {
+      descricao_curta: 'rosa',
+      local_corpo: 'antebraco',
+      altura_cm: 170,
+    },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 603, content: '', media_base64: 'img-ambigua', media_mimetype: 'image/png' },
+      ]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.dados_coletados) {
+          conversaPatches.push(body.dados_coletados);
+        }
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: async () => { runAgentCalled = true; throw new Error('nao deveria chamar LLM'); },
+    classificarFoto: classificarFotoReal,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [603] }), deps);
+
+  assert.equal(runAgentCalled, false, 'foto ambigua sem legenda nao deve chamar LLM');
+  const refPatch = conversaPatches.find(p => Array.isArray(p.refs_imagens_msg_ids));
+  assert.ok(refPatch, 'foto ambigua fica rastreavel para confirmacao posterior');
+  assert.equal(refPatch.foto_local_msg_id, undefined);
+  assert.deepEqual(refPatch.refs_imagens_msg_ids, [603]);
+  assert.equal(refPatch.descricao_curta, 'rosa');
+  assert.equal(refPatch.local_corpo, 'antebraco');
+  assert.equal(refPatch.altura_cm, 170);
+  assert.match(aiInsert.message.content, /refer[eê]ncia/i);
+  assert.match(aiInsert.message.content, /local do corpo/i);
+});
+
 test('Etapa 4.5 multi-ref: 2 fotos referencia → RPC set_descricao_visual dispara 2x com payloads pareados', async () => {
   // Fan-out: cada foto 'referencia' com descricao deve gerar 1 chamada RPC com seu proprio
   // p_msg_id + p_descricao. Verifica pareamento correto (501→'arte A', 502→'arte B').
