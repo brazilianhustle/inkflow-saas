@@ -98,12 +98,59 @@ estado_final: aguardando_tatuador
 orcid: criado
 ```
 
-## Resultado Atual
+## Resultado Fechado
 
 ```text
-status: wave declarada
-micro_slice_1: post-media-email-handoff-contract em andamento
+status: PASS
+commit_funcional: 4f90480 test: cover post-media email handoff
+micro_slice_1: post-media-email-handoff-contract PASS
+micro_slice_2: post-media-email-handoff-http PASS
+micro_slice_3: post-media-email-handoff-whatsapp-real PASS
+micro_slice_4: level4b-wave-8-closeout PASS
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
 ```
+
+## Evidencias
+
+```text
+tests_focados: node --test tests/_lib/whatsapp-pipeline.test.mjs PASS 65/65
+tests_local: npm test PASS 1193/1193
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-after-media-email-recusado-handoff-20260526T074229Z-13531 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-after-media-email-recusado-handoff-20260526T074321Z-12642 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+estado_final: aguardando_tatuador
+orcid: criado
+copy_risk_final: baixo
+dados_coletados: descricao_curta=rosa, estilo=fineline, local_corpo=antebraco, altura_cm=170, foto_local_msg_id=12632, refs_imagens_msg_ids=[11951], tentativas_foto_local=1
+dados_cadastro: nome=Joao Silva, data_nascimento=1995-03-12, email=null, email_recusado=true
+workflow: cadastro_and_tattoo_complete, handoff_package_v1, trace hp_*
+```
+
+## Provas Conclusivas Reais
+
+```text
+Cliente: "pode seguir sem email
+quanto tempo demora?"
+
+Bot: "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
+
+Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+```
+
+## Nota De Processo
+
+```text
+tentativa_dns_local: scenario-cadastro-after-media-email-recusado-handoff-20260526T074156Z-10437
+classe: falha_ambiente_local_dns
+efeito: nao enviou mensagem, falhou no cleanup antes do setup
+acao: repetido com execucao de rede liberada
+status_pos_repeticao: HTTP radar e WhatsApp real passaram
+```
+
+## Decisao
+
+Manter Level 4B. A onda confirmou que o cadastro pos-midia fecha o email recusado, responde lateral segura de tempo, cria `orcid`, preserva foto local e referencias e registra o Workflow Manager com `handoff_package_v1`. O proximo ataque deve continuar leve: validar a variante com email real informado apos midia ou iniciar auditoria do pacote enviado ao Telegram quando ha midia.

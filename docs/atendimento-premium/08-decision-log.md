@@ -1269,6 +1269,27 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Regra de processo:** quando houver mudanca de codigo, smoke de producao so deve rodar apos CI/deploy PASS. A tentativa `scenario-cadastro-after-media-nome-data-20260526T072952Z-18485` falhou por deploy desatualizado e virou evidencia util de metodologia.
 
+### Wave 8 - Handoff De Orcamento Pos-Midia
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** cadastro pos-midia com email recusado deve promover para `aguardando_tatuador`, criar `orcid` e preservar `foto_local_msg_id` e `refs_imagens_msg_ids`.
+
+**Motivo:** a fase premium nao termina apenas ao coletar nome/data; o pacote visual precisa sobreviver ate o handoff de orcamento. Sem esse contrato, o tatuador recebe um lead tecnicamente completo mas perde a evidência visual que justificou o fluxo de midia.
+
+**Alternativas rejeitadas:**
+
+- tratar email recusado pos-midia como caminho separado do handoff padrao;
+- criar orcamento sem validar preservacao de midia;
+- aceitar apenas HTTP radar sem WhatsApp real;
+- promover autonomia para 4C por uma unica onda saudavel.
+
+**Camada responsável:** ConversationRouter, Workflow Manager, Handoff Package, Smoke Scenario Registry.
+
+**Impacto:** commit `4f90480` adicionou seed pos-midia aguardando email, teste local e cenarios HTTP/WhatsApp real. `npm test` passou `1193/1193`, HTTP radar `scenario-cadastro-after-media-email-recusado-handoff-20260526T074229Z-13531` passou e WhatsApp real `scenario-whatsapp-real-cadastro-after-media-email-recusado-handoff-20260526T074321Z-12642` passou.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

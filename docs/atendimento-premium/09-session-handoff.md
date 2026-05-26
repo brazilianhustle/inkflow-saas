@@ -871,6 +871,30 @@ decisao: manter Level 4B; 4C bloqueado
 proximo passo: declarar Wave 8 para email/recusa de email apos midia e handoff de orcamento preservando pacote de midia
 ```
 
+Wave 8 fechada:
+
+```text
+wave: level4b-wave-8-post-media-email-handoff
+status: PASS
+commit_funcional: 4f90480 test: cover post-media email handoff
+tests_focados: node --test tests/_lib/whatsapp-pipeline.test.mjs PASS 65/65
+tests_local: npm test PASS 1193/1193
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-after-media-email-recusado-handoff-20260526T074229Z-13531 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-after-media-email-recusado-handoff-20260526T074321Z-12642 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "pode seguir sem email\nquanto tempo demora?"
+bot: "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nFechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+estado: aguardando_tatuador
+orcid: orc_hvs024
+dados: descricao_curta=rosa, estilo=fineline, local_corpo=antebraco, altura_cm=170, foto_local_msg_id=12632, refs_imagens_msg_ids=[11951], nome=Joao Silva, data_nascimento=1995-03-12, email_recusado=true
+copy_risk: baixo
+workflow: cadastro_and_tattoo_complete, handoff_package_v1, trace hp_*
+decisao: manter Level 4B; 4C bloqueado
+proximo passo: escolher entre validar email real informado apos midia ou auditar pacote Telegram com midia no handoff
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:
