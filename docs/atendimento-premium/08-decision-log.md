@@ -1375,6 +1375,27 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** o pipeline passou a emitir `pos-handoff-mensagem-encaminhada`; HTTP radar `scenario-post-handoff-text-forwarding-20260526T084158Z-5095` passou; WhatsApp real `scenario-whatsapp-real-post-handoff-text-forwarding-20260526T084232Z-15708` passou.
 
+### Wave 13 - Menoridade Explicita Sem Data
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** em `cadastro`, idade explicitamente menor de 18 anos deve acionar humano imediatamente, sem tentar converter idade em `data_nascimento`, sem criar `orcid` e sem seguir para orçamento.
+
+**Motivo:** a regra anterior ja impedia idade adulta isolada de virar data inventada, mas faltava cobrir a variacao de menoridade explícita em que o risco operacional é alto. Nesse caso, segurança e responsável legal vencem coleta normal.
+
+**Alternativas rejeitadas:**
+
+- pedir a data completa depois de o cliente declarar menoridade;
+- deixar o LLM decidir se continua ou escala;
+- criar orçamento sem confirmação humana;
+- tratar idade menor como dado suficiente para inventar uma data.
+
+**Camada responsável:** ConversationPolicy, ConversationRouter, Escalation Manager, Workflow Manager, Observabilidade, Smoke Scenario Registry.
+
+**Impacto:** HTTP radar `scenario-cadastro-idade-menor-handoff-humano-20260526T085147Z-3519` passou; WhatsApp real `scenario-whatsapp-real-cadastro-idade-menor-handoff-humano-20260526T085229Z-3539` passou; agent logs confirmaram `minor_age_explicit` e `minor_age`.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

@@ -995,6 +995,30 @@ decisao: manter Level 4B; 4C bloqueado
 proximo passo: rodar wave-health final, commitar closeout e declarar proxima onda funcional leve
 ```
 
+Wave 13 fechada:
+
+```text
+wave: level4b-wave-13-minor-age-explicit
+status: PASS
+commit_funcional: ae88b65 test: cover explicit minor age handoff
+tests_focados: bash -n scripts/smoke/run-scenario.sh scripts/smoke/run-inbound.sh scripts/smoke/run-real-whatsapp.sh scripts/smoke/render-report.sh PASS; node --test tests/_lib/conversation-router.test.mjs tests/_lib/whatsapp-pipeline.test.mjs tests/_lib/escalation-manager.test.mjs PASS 129/129
+tests_local: npm test PASS 1195/1195
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-idade-menor-handoff-humano-20260526T085147Z-3519 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-idade-menor-handoff-humano-20260526T085229Z-3539 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "tenho 16 anos"
+bot: "Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador para orientar com segurança sobre responsável legal."
+estado: aguardando_tatuador
+orcid: null
+data_nascimento: null
+router: minor_age_explicit, explicit_minor_age, high
+escalation: minor_age, high, requires_orcid=false
+decisao: manter Level 4B; 4C bloqueado
+proximo passo: rodar wave-health final, commitar closeout e declarar proxima onda funcional leve
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

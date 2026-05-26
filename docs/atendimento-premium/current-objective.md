@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_12_post_handoff_text_forwarding_pass
+status: level4b_wave_13_minor_age_explicit_pass
 branch: main
-ultimo_commit: 193dd9d test: cover post-handoff text forwarding
+ultimo_commit: ae88b65 test: cover explicit minor age handoff
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
-tests: npm test PASS local 1194/1194; testes focados Wave 12 PASS 70/70
+tests: npm test PASS local 1195/1195; testes focados Wave 13 PASS 129/129
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos closeout da Wave 12
-ultimo_commit_validado: 193dd9d
+worktree_esperado: limpo apos closeout da Wave 13
+ultimo_commit_validado: ae88b65
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -133,43 +133,39 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Workflow Manager passou a oficializar transicoes de escalation/handoff humano: cliente irritado saiu para `aguardando_tatuador` sem `orcid`, sem orçamento automatico e com `workflow_reason=escalation_required` ligado ao `EscalationManager`; HTTP radar e WhatsApp real definitivo passaram.
 - Wave 11 validou midia adicional pos-handoff: em `aguardando_tatuador`, nova imagem enviada pelo cliente e reencaminhada ao tatuador, sem reabrir coleta e sem nova resposta AI apos o humano; HTTP radar e WhatsApp real definitivo passaram.
 - Wave 12 validou texto adicional pos-handoff: em `aguardando_tatuador`, nova mensagem enviada pelo cliente e reencaminhada ao tatuador, sem reabrir coleta e sem nova resposta AI apos o humano; HTTP radar e WhatsApp real definitivo passaram.
+- Wave 13 validou menoridade explicita sem data: em `cadastro`, `tenho 16 anos` sai para humano, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e registra Router `minor_age_explicit` + Escalation Manager `minor_age`; HTTP radar e WhatsApp real definitivo passaram.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-post-handoff-text-forwarding-20260526T084158Z-5095
-run_id_real: scenario-whatsapp-real-post-handoff-text-forwarding-20260526T084232Z-15708
-tipo: Scenario WhatsApp real de texto adicional pos-handoff da Wave 12
+run_id_http: scenario-cadastro-idade-menor-handoff-humano-20260526T085147Z-3519
+run_id_real: scenario-whatsapp-real-cadastro-idade-menor-handoff-humano-20260526T085229Z-3539
+tipo: Scenario WhatsApp real de menoridade explicita da Wave 13
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: orc_poshandoff
-evidence: .smoke-evidence/scenario-whatsapp-real-post-handoff-text-forwarding-20260526T084232Z-15708/
+orcid: null
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-idade-menor-handoff-humano-20260526T085229Z-3539/
 ```
 
 Mensagem:
 
 ```text
-lembrei de mais um detalhe
+tenho 16 anos
 ```
 
 Resultado:
 
 ```text
 estado_agente: aguardando_tatuador
-resposta_ai_posterior_ao_humano: false
-orcid: orc_poshandoff
-dados_coletados.descricao_curta: rosa
-dados_coletados.local_corpo: antebraco
-dados_coletados.altura_cm: 170
+resposta_ai: Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador para orientar com segurança sobre responsável legal.
+orcid: null
 dados_cadastro.nome: Joao Silva
-dados_cadastro.data_nascimento: 1995-03-12
-dados_cadastro.email: joao@example.com
-telegram_text: pos-handoff-mensagem-encaminhada
-copy_risk: baixo para fluxo terminal sem nova AI
-copy: sem nova resposta automatica apos o texto adicional
-decision_chain: estado terminal -> mensagem real text-only -> Telegram forward -> estado preservado -> sem reabertura de coleta
-chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline terminal -> Telegram -> poll/tail gates
+dados_cadastro.data_nascimento: null
+copy_risk: baixo
+router: minor_age_explicit, explicit_minor_age, high, can_mutate_state=true
+escalation: minor_age, high, requires_orcid=false
+decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router menoridade -> Escalation Manager -> aguardando_tatuador
 ```
 
 ## Proximo Ataque
@@ -183,9 +179,9 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
-- usar `docs/atendimento-premium/35-level-4b-wave-12.md` como fechamento da onda atual;
+- usar `docs/atendimento-premium/36-level-4b-wave-13.md` como fechamento da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
-- Wave 12 fechou texto adicional pos-handoff com WhatsApp real definitivo;
+- Wave 13 fechou menoridade explicita em cadastro com WhatsApp real definitivo;
 - proximo alvo funcional deve ser declarado antes de editar codigo;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
