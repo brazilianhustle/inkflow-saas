@@ -78,7 +78,11 @@ extract_judgment_value() {
   awk -F': ' -v key="$key" '$0 ~ "^- " key ": " { print $2; exit }' "$judgment"
 }
 
-run_id="$(jq -r '.run_id // empty' "$request")"
+if [ -f "$EVIDENCE_DIR/multiturn-summary.md" ]; then
+  run_id="$(basename "$EVIDENCE_DIR")"
+else
+  run_id="$(jq -r '.run_id // empty' "$request")"
+fi
 [ -n "$run_id" ] || run_id="$(basename "$EVIDENCE_DIR")"
 
 since="$(jq -r '.since // empty' "$request")"

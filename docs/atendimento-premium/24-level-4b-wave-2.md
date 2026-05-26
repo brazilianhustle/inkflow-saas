@@ -83,7 +83,8 @@ micro_slice_2: tattoo-multi-info-basic-http PASS
 micro_slice_3: tattoo-multi-info-basic-whatsapp-real PASS
 micro_slice_4: tattoo-multi-info-height-size-http PASS
 micro_slice_5: tattoo-multi-info-height-size-whatsapp-real PASS
-micro_slice_atual: tattoo-multi-info-multiturn-recovery
+micro_slice_6: tattoo-multi-info-multiturn-recovery PASS
+micro_slice_atual: tattoo-multi-info-evidence-summary
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -171,4 +172,24 @@ run_id: scenario-whatsapp-real-tattoo-multi-info-height-size-20260526T045323Z-26
 cadeia: Evolution central -> bot 5545999012357
 resultado: descricao_curta=rosa, estilo=fineline, local_corpo=perna, tamanho_cm=5, altura_cm=181, estado=coletando_tattoo, orcid=null, copy_risk=baixo
 provas_conclusivas_reais: Cliente "quero uma rosa fineline na perna de 5cm, tenho 1,81" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nBoa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
+```
+
+Terceiro fluxo validado:
+
+```text
+micro_slice: tattoo-multi-info-multiturn-recovery-http
+status: PASS
+run_id: scenario-tattoo-multi-info-multiturn-recovery-20260526T045958Z-29435
+fluxo: Cliente "quero uma rosa fineline" -> Bot pergunta local; Cliente "na perna, tenho 1,81" -> Bot pede foto do local
+resultado_final: descricao_curta=rosa, estilo=fineline, local_corpo=perna, altura_cm=181, estado=coletando_tattoo, orcid=null, copy_risk=baixo
+validacao: npm test PASS; CI/deploy PASS; HTTP multi-turn PASS
+```
+
+```text
+micro_slice: tattoo-multi-info-multiturn-recovery-whatsapp-real
+status: PASS
+run_id: scenario-whatsapp-real-tattoo-multi-info-multiturn-recovery-20260526T050202Z-31833
+cadeia: Evolution central -> bot 5545999012357
+resultado_final: descricao_curta=rosa, estilo=fineline, local_corpo=perna, altura_cm=181, estado=coletando_tattoo, orcid=null, copy_risk=baixo
+provas_conclusivas_reais: Cliente "quero uma rosa fineline" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nTu imagina fazer em qual parte do corpo?"; Cliente "na perna, tenho 1,81" -> Bot "Boa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
 ```

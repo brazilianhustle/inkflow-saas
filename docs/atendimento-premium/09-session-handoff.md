@@ -608,6 +608,27 @@ validacao: node --test focado PASS; npm test PASS; CI/deploy PASS; HTTP radar PA
 proximo passo: tattoo-multi-info-multiturn-recovery
 ```
 
+Wave 2 em andamento, recuperacao multi-turn validada:
+
+```text
+micro_slice_http: tattoo-multi-info-multiturn-recovery-http PASS
+run_id_http: scenario-tattoo-multi-info-multiturn-recovery-20260526T045958Z-29435
+micro_slice_real: tattoo-multi-info-multiturn-recovery-whatsapp-real PASS
+run_id_real: scenario-whatsapp-real-tattoo-multi-info-multiturn-recovery-20260526T050202Z-31833
+cadeia_real: Evolution central -> bot 5545999012357
+cliente_step_1: "quero uma rosa fineline"
+bot_step_1: "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nTu imagina fazer em qual parte do corpo?"
+cliente_step_2: "na perna, tenho 1,81"
+bot_step_2: "Boa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
+estado: coletando_tattoo
+orcid: null
+dados: descricao_curta=rosa, estilo=fineline, local_corpo=perna, altura_cm=181
+copy_risk: baixo
+validacao: npm test PASS; CI/deploy PASS; HTTP multi-turn PASS; WhatsApp real multi-turn PASS
+ajuste_metodologico: run-scenario agora aceita step multi-turn sem EXPECTED_AGENT_LOG_JQ_TRUE opcional
+proximo passo: tattoo-multi-info-evidence-summary
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

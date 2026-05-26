@@ -985,6 +985,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** novos cenarios `tattoo-multi-info-height-size` e `whatsapp-real-tattoo-multi-info-height-size` validaram a separacao. O commit `c379f0f` passou em testes locais, CI/deploy, HTTP radar (`scenario-tattoo-multi-info-height-size-20260526T045135Z-29004`) e WhatsApp real em cadeia `central -> bot` (`scenario-whatsapp-real-tattoo-multi-info-height-size-20260526T045323Z-26781`).
 
+## 2026-05-26 - Recuperacao multi-turn de tattoo
+
+**Status:** validado.
+
+**Decisão:** oficializar scenario multi-turn para provar que uma resposta ao campo pendente pode trazer mais de uma informacao e o Router deve persistir todas no mesmo turno.
+
+**Motivo:** na conversa real o cliente nao responde de forma atomica. Depois de o bot perguntar local, `na perna, tenho 1,81` precisa resolver local e altura sem perder contexto, sem repetir pergunta e sem criar orcamento.
+
+**Alternativas rejeitadas:**
+
+- validar apenas por unit test;
+- exigir uma mensagem por campo;
+- deixar a recuperacao para o Agent LLM sem contrato de smoke;
+- exigir `agent-log` em todo step multi-turn mesmo quando o gate de poll/copy ja cobre o objetivo.
+
+**Camada responsável:** ConversationRouter, Smoke Monitoring Process e metodologia Level 4B.
+
+**Impacto:** cenarios `tattoo-multi-info-multiturn-recovery` e `whatsapp-real-tattoo-multi-info-multiturn-recovery` passaram em HTTP multi-turn e WhatsApp real multi-turn. O runner foi ajustado para aceitar `EXPECTED_AGENT_LOG_JQ_TRUE` opcional em steps multi-turn sem abortar a geracao do step env.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
