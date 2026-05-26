@@ -95,6 +95,7 @@ autonomy_limit: ate 6 micro-slices da mesma onda declarada
 - Micro-slice Level 4A `smoke-evidence-index` fechado: `evidence-index.sh` lista rapidamente os PASS recentes, com foco em WhatsApp real.
 - Micro-slice Level 4A `level4a-stop-audit` fechado: `level4a-stop-audit.sh` verifica se stop conditions criticas seguem documentadas.
 - Onda Level 4A `level4a-wave-1-monitoring-security` concluida com CI PASS, deploy PASS, `wave-health` PASS, Security Gate PASS, Dependabot 0 e worktree limpo; WhatsApp real nao foi exigido porque a onda nao alterou comportamento conversacional.
+- Segunda onda Level 4A declarada: `level4a-wave-2-cadastro-question-policy`, risco amarelo, focada em respostas de cadastro pendente com HTTP radar e WhatsApp real definitivo por micro-slice conversacional.
 - Workflow Manager passou a registrar decisao propria em `agent_turn_logs`: cadastro completo com recusa de email agora confirma `workflow_layer=workflow_manager`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a impor nao-mutacao para intents laterais do Router com `can_mutate_state=false`: preco generico preservou `estado=coletando_tattoo` e registrou `workflow_reason=state_preserved_by_router_policy`; HTTP radar e WhatsApp real definitivo passaram exigindo Router + Workflow Manager no mesmo turno.
 - Workflow Manager passou a calcular requisitos faltantes exatos por fase e expor bloqueio formal de cadastro incompleto: idade isolada preservou `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null` e registrou `workflow_reason=requirements_missing` com contagens de faltantes; HTTP radar e WhatsApp real definitivo passaram.
@@ -136,18 +137,17 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: declarar proxima onda Level 4A verde/amarela antes de codar, sem promover para 4B/4C.
+Proximo passo recomendado: executar micro-slice `cadastro-question-policy-nome` da onda `level4a-wave-2-cadastro-question-policy`.
 ```
 
 Escopo recomendado:
 
-- usar a onda concluida como base operacional;
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
-- declarar `onda_id`, familia, risco, escopo, fora_de_escopo e criterios de pronto;
+- rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=6`;
 - respeitar limite de ate 6 micro-slices;
-- escolher apenas zona verde/amarela;
-- rodar `bash scripts/smoke/check-security-gate.sh` antes de seguir a onda;
+- alterar apenas o necessario para `QuestionPolicy` de cadastro;
+- validar com teste local relevante, HTTP radar e WhatsApp real definitivo;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
 - nao subir para 4B/4C sem duas ondas 4A saudaveis e commit deliberado.

@@ -641,6 +641,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** o processo agora tem uma primeira onda Level 4A saudavel como evidencia para futuras decisoes, mas ainda exige outra onda 4A sem falhas antes de discutir 4B.
 
+## 2026-05-25 - Segunda onda Level 4A para QuestionPolicy de cadastro
+
+**Status:** decidido.
+
+**Decisão:** declarar `level4a-wave-2-cadastro-question-policy` como segunda onda Level 4A, com risco amarelo e WhatsApp real definitivo obrigatorio por micro-slice conversacional.
+
+**Motivo:** apos fortalecer os gates operacionais, o melhor proximo ganho premium e corrigir a interpretacao de respostas a perguntas pendentes de cadastro. Essa frente reduz repeticao de perguntas, perda de contexto e transicao errada, sem entrar em preco, pagamento, agenda, secrets ou tenant real amplo.
+
+**Alternativas rejeitadas:**
+
+- promover para 4B antes de uma segunda onda 4A saudavel;
+- atacar copy ampla sem contrato de campo pendente;
+- voltar para monitoramento sem ganho funcional direto;
+- iniciar preco/agenda, que continuam zona de risco maior.
+
+**Camada responsável:** ConversationPolicy, Workflow Manager, Smoke Scenario Registry e Level 4 Loop Policy.
+
+**Impacto:** a proxima execucao deve comecar por `cadastro-question-policy-nome`, com teste local relevante, HTTP radar e WhatsApp real definitivo antes de qualquer proximo micro-slice.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
