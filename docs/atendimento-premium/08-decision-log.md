@@ -907,6 +907,8 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** o Router passa a emitir intent `multi_info`, `can_mutate_state=true`, `reason=multiple_tattoo_fields_detected` e `dados_persistidos` com os campos encontrados. O smoke so pode fechar apos deploy e revalidacao HTTP + WhatsApp real.
 
+**Validacao:** commit `0923b9e` teve testes locais, CI e deploy PASS. O HTTP radar `scenario-tattoo-multi-info-basic-20260526T035828Z-32439` e o WhatsApp real `scenario-whatsapp-real-tattoo-multi-info-basic-20260526T040309Z-22657` passaram, persistindo `descricao_curta=rosa`, `estilo=fineline`, `local_corpo=antebraço`, `altura_cm=170`, com `orcid=null`, `copy_risk=baixo` e resposta pedindo somente foto do local.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

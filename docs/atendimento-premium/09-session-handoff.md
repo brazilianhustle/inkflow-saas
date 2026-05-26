@@ -546,6 +546,23 @@ primeiro fluxo: Cliente "quero uma rosa fineline no antebraco, tenho 1,70"
 4C: bloqueado
 ```
 
+Primeiro micro-slice funcional da Wave 2 validado:
+
+```text
+micro_slice_http: tattoo-multi-info-basic-http PASS
+run_id_http: scenario-tattoo-multi-info-basic-20260526T035828Z-32439
+micro_slice_real: tattoo-multi-info-basic-whatsapp-real PASS
+run_id_real: scenario-whatsapp-real-tattoo-multi-info-basic-20260526T040309Z-22657
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "quero uma rosa fineline no antebraco, tenho 1,70"
+bot: "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nBoa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
+estado: coletando_tattoo
+orcid: null
+dados: descricao_curta=rosa, estilo=fineline, local_corpo=antebraço, altura_cm=170
+copy_risk: baixo
+proximo passo: tattoo-multi-info-height-size-http
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

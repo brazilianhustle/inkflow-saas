@@ -79,7 +79,9 @@ Parar a onda se ocorrer:
 ```text
 status: em-andamento
 micro_slice_1: tattoo-multi-info-wave-contract PASS
-micro_slice_atual: tattoo-multi-info-basic-http
+micro_slice_2: tattoo-multi-info-basic-http PASS
+micro_slice_3: tattoo-multi-info-basic-whatsapp-real PASS
+micro_slice_atual: tattoo-multi-info-height-size-http
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -125,4 +127,23 @@ status: FAIL
 failure_class: scenario_gate_failed
 causa: Agent operacional caiu em fallback e nao persistiu os campos multi-info
 decisao: tratar multi-info basico no ConversationRouter deterministico
+```
+
+Validacao apos correcao:
+
+```text
+micro_slice: tattoo-multi-info-basic-http
+status: PASS
+run_id: scenario-tattoo-multi-info-basic-20260526T035828Z-32439
+resultado: descricao_curta=rosa, estilo=fineline, local_corpo=antebraço, altura_cm=170, estado=coletando_tattoo, orcid=null, copy_risk=baixo
+bot: "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nBoa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
+```
+
+```text
+micro_slice: tattoo-multi-info-basic-whatsapp-real
+status: PASS
+run_id: scenario-whatsapp-real-tattoo-multi-info-basic-20260526T040309Z-22657
+cadeia: Evolution central -> bot 5545999012357
+resultado: descricao_curta=rosa, estilo=fineline, local_corpo=antebraço, altura_cm=170, estado=coletando_tattoo, orcid=null, copy_risk=baixo
+provas_conclusivas_reais: Cliente "quero uma rosa fineline no antebraco, tenho 1,70" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nBoa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
 ```
