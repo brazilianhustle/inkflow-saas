@@ -236,3 +236,47 @@ Estado final: `coletando_cadastro`, `foto_local_msg_id=12752`, `orcid=null`, `co
 ## Decisão Apos Micro-Slice 4
 
 Manter Level 4B. A mudança conversacional passou em HTTP radar e WhatsApp real definitivo pela `central`, sem regressão de mídia nem avanço indevido para orçamento. Próximo ataque recomendado: reexecutar a auditoria de naturalidade incluindo as novas evidências e escolher entre uma segunda variação pequena de mídia/cadastro ou outro ponto de rigidez já mapeado, sem misturar com menoridade legal ampla.
+
+## Micro-Slice 5 - Retomada De Cadastro Mais Natural
+
+PASS: a retomada determinística de cadastro vazio deixou de usar linguagem transacional de orçamento e passou a pedir nome/data como montagem de cadastro, preservando a resposta lateral e o estado.
+
+Mudança principal:
+
+```text
+antes: Pra liberar teu orçamento, me passa nome completo e data de nascimento?
+depois: Pra montar teu cadastro, me passa teu nome completo e data de nascimento?
+```
+
+Validação:
+
+```text
+commit_funcional: 87af5c1 feat: soften cadastro resume copy
+protecao_metodologica: 9f0cc8f test: add supabase smoke preflight
+tests_focados: PASS 131/131
+tests_local: npm test PASS 1208/1208
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-resume-nome-data-natural-20260526T190309Z-14385 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-resume-nome-data-natural-20260526T190437Z-6788 PASS
+estado_final: coletando_cadastro
+orcid: null
+copy_risk: baixo
+observabilidade: workflow_manager workflow_reason=state_preserved_by_router_policy
+```
+
+Nota metodológica: a primeira tentativa de WhatsApp real dentro do sandbox foi bloqueada antes do envio por `infra_supabase_connectivity` (`curl_status=6`, `http_status=000`). O rerun fora do sandbox passou com Supabase preflight 200, confirmando falha de DNS/rede do ambiente e não regressão do bot.
+
+### Provas Conclusivas Reais - Micro-Slice 5
+
+Cliente: `quanto tempo demora?`
+
+Bot: `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
+
+Pra montar teu cadastro, me passa teu nome completo e data de nascimento?`
+
+Estado final: `coletando_cadastro`, `orcid=null`, `copy_risk=baixo`.
+
+## Decisão Apos Micro-Slice 5
+
+Manter Level 4B. A mudança conversacional passou no radar HTTP e no WhatsApp real definitivo, e o novo gate Supabase evitou uma validação falsa quando o ambiente sandbox perdeu DNS. Próximo ataque recomendado: reexecutar a auditoria de naturalidade incluindo as evidências dos micro-slices 4 e 5 antes de escolher a próxima família pequena.

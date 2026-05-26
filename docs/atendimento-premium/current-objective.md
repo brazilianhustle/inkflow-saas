@@ -11,14 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_17_cadastro_resume_copy_pending_prod_validation
+status: level4b_wave_17_cadastro_resume_copy_validated
 branch: main
-ultimo_commit: 87af5c1 feat: soften cadastro resume copy
-deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit funcional, mas smoke de producao pendente
+ultimo_commit: 9f0cc8f test: add supabase smoke preflight
+ultimo_commit_funcional: 87af5c1 feat: soften cadastro resume copy
+deploy: GitHub Actions Deploy to Cloudflare Pages PASS no commit funcional e no commit de protecao metodologica
 tests: npm test PASS local 1208/1208; testes focados Wave 17 micro-slice 5 PASS 131/131; CI PASS
 prompts_ci: PASS no GitHub Actions
-worktree_esperado: limpo; proximo passo deve repetir HTTP radar antes de WhatsApp real
-ultimo_commit_validado: 721d489
+worktree_esperado: limpo
+ultimo_commit_validado: 87af5c1
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -148,49 +149,47 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 17 micro-slice 2 passou: fechamento deterministico de cadastro/handoff ficou menos rigido (`Boa, Joao. Deixei as infos separadas...`), com testes locais, CI, Prompts CI, eval gate, deploy, HTTP radar e WhatsApp real definitivo pela `central` todos PASS.
 - Wave 17 micro-slice 3 iniciou a arquitetura escalavel de naturalidade: `conversation-voice-policy.js` centraliza familias deterministicas de cadastro e midia/cadastro; Router e Pipeline passaram a importar a policy sem alterar texto ao cliente; testes locais passaram.
 - Wave 17 micro-slice 4 passou: copy deterministica de mídia/cadastro deixou de usar `Pra liberar teu orçamento` e passou para `Agora me passa teu nome completo pra eu montar o cadastro`; testes locais, CI/deploy, HTTP radar e WhatsApp real definitivo pela `central` passaram com `copy_risk=baixo`.
-- Wave 17 micro-slice 5 iniciou: retomada deterministica de cadastro vazio mudou de `Pra liberar teu orçamento...` para `Pra montar teu cadastro...`; testes locais, CI e deploy passaram, mas HTTP radar nao concluiu por timeout/conectividade Supabase antes do processamento. WhatsApp real ainda NAO foi executado para este commit.
+- Wave 17 micro-slice 5 passou: retomada deterministica de cadastro vazio mudou de `Pra liberar teu orçamento...` para `Pra montar teu cadastro...`; testes locais, CI, deploy, HTTP radar e WhatsApp real definitivo pela `central` passaram com `copy_risk=baixo`.
 - Execucao funcional travada para investigacao Supabase: causa provavel e conectividade/DNS intermitente entre ambiente local/sandbox e Supabase durante incidente de provedor no Brasil. Metodologia corrigida: `run-scenario.sh` agora faz preflight Supabase antes de cleanup/seed, scripts REST usam timeout e triage classifica `infra_supabase_connectivity`.
+- Investigacao Supabase concluida para a rodada: primeira tentativa WhatsApp real no sandbox foi bloqueada corretamente por `infra_supabase_connectivity`; rerun fora do sandbox passou com Supabase preflight 200, confirmando falha de DNS/rede do ambiente e nao regressao do bot.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-tattoo-media-local-photo-20260526T182841Z-30300
-run_id_real: scenario-whatsapp-real-tattoo-media-local-photo-20260526T182903Z-13172
-tipo: Scenario WhatsApp real de mídia/cadastro mais natural da Wave 17
+run_id_http: scenario-cadastro-resume-nome-data-natural-20260526T190309Z-14385
+run_id_real: scenario-whatsapp-real-cadastro-resume-nome-data-natural-20260526T190437Z-6788
+tipo: Scenario WhatsApp real de retomada cadastro mais natural da Wave 17
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_cadastro
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-local-photo-20260526T182903Z-13172/
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-resume-nome-data-natural-20260526T190437Z-6788/
 ```
 
 Mensagem:
 
 ```text
-segue foto do local
+quanto tempo demora?
 ```
 
 Resultado:
 
 ```text
 estado_agente: coletando_cadastro
-resposta_ai: Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro.
+resposta_ai: O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
+
+Pra montar teu cadastro, me passa teu nome completo e data de nascimento?
 orcid: null
-dados_coletados.descricao_curta: rosa
-dados_coletados.estilo: fineline
-dados_coletados.local_corpo: antebraco
-dados_coletados.altura_cm: 170
-dados_coletados.foto_local_msg_id: 12752
 copy_risk: baixo
-router/pipeline: media deterministica, foto_local_msg_id persistido, sem orcamento automatico
-workflow: transicao segura para coletando_cadastro, sem handoff e sem orcid
-decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Pipeline media deterministica -> coleta de cadastro
+workflow: estado preservado em coletando_cadastro; sem handoff e sem orcid
+observabilidade: workflow_manager workflow_reason=state_preserved_by_router_policy
+decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router lateral tempo_sessao -> Workflow Manager preserva cadastro -> resposta lateral + retomada cadastro
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: apos commit/deploy da protecao Supabase, repetir o HTTP radar `cadastro-resume-nome-data-natural`; se passar, rodar WhatsApp real `whatsapp-real-cadastro-resume-nome-data-natural`; so depois registrar closeout da micro-slice 5.
+Proximo passo recomendado: reexecutar `naturalness-audit.sh` incluindo evidencias dos micro-slices 4 e 5; escolher a proxima familia pequena da Wave 17 somente depois da auditoria, mantendo Level 4B.
 ```
 
 Escopo recomendado:
