@@ -11,13 +11,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_9_post_media_valid_email_handoff_closeout_pass
+status: level4b_wave_10_telegram_media_package_audit_pass
 branch: main
-ultimo_commit: HEAD test: cover post-media valid email handoff
+ultimo_commit: HEAD test: accept escaped telegram media tail logs
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
-tests: npm test PASS local 1194/1194
+tests: npm test PASS local 1194/1194; testes focados Wave 10 PASS 98/98
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos closeout da Wave 9
+worktree_esperado: limpo apos closeout da Wave 10
 ultimo_commit_validado: HEAD
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
@@ -104,6 +104,8 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Governanca multi-agente oficializada: agentes podem acelerar analise, preparo, auditoria e triage, mas Level 4B mantem Commander unico, single-writer por micro-slice, WhatsApp real serial e 4C bloqueado.
 - Wave Runner v1 e Evidence Registrar implementados como ferramentas metodologicas: preflight seguro de onda e geracao revisavel de linha para `smoke-runs.md`, sem executar WhatsApp real, sem editar evidencias automaticamente e sem promover autonomia.
 - Evidence Orphan Gate integrado ao `wave-health`: registros quebrados passam a bloquear a saude da onda; evidencias completas recentes sem registro aparecem como `WARN` no modo padrao e bloqueiam somente no modo estrito de auditoria.
+- Level 4B Wave 10 fechou PASS: auditoria do pacote Telegram pos-midia provou envio real de 2 imagens ao Telegram, persistencia de `foto_local_file_id` e `refs_imagens_file_ids`, HTTP radar PASS e WhatsApp real definitivo PASS pela instancia `central`.
+- Processo de smoke fortalecido: seeds de mídia devem usar arquivos reais versionados, `run-scenario.sh` agora aguarda side-effects de tail/poll antes dos gates e regex de tail aceita logs JSON escapados.
 - Context/Tenant Manager 2.0 iniciado com Tenant Rules Snapshot v1: telemetria agora registra versao do snapshot, origem dos gatilhos de handoff, presenca de gatilhos, catalogo de estilos e estilos aceitos/recusados sem vazar listas ou URLs; HTTP radar e WhatsApp real definitivo passaram no fluxo de portfolio.
 - Context/Tenant Manager 2.0 passou a aplicar gatilhos de handoff do tenant no Router deterministico antes do Agent LLM: `rosto` em mensagem com preco lateral sai para humano como `tenant_handoff_trigger`, `workflow_reason=escalation_required`, `source=tenant_rules`, `orcid=null`; HTTP radar e WhatsApp real definitivo passaram.
 - Context/Tenant Manager 2.0 ganhou traço observavel do gatilho que bateu: `conversation_router.context_metadata` agora registra `router_has_matched_tenant_trigger` e `router_matched_tenant_trigger`, com HTTP radar e WhatsApp real definitivo exigindo `rosto`.
@@ -133,14 +135,14 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-after-media-email-valido-handoff-20260526T075219Z-32176
-run_id_real: scenario-whatsapp-real-cadastro-after-media-email-valido-handoff-20260526T075330Z-15358
-tipo: Scenario WhatsApp real de email valido pos-midia da Wave 9
+run_id_http: scenario-cadastro-after-media-telegram-media-package-20260526T081935Z-25180
+run_id_real: scenario-whatsapp-real-cadastro-after-media-telegram-media-package-20260526T082042Z-12788
+tipo: Scenario WhatsApp real de auditoria Telegram pos-midia da Wave 10
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
 orcid: criado
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-after-media-email-valido-handoff-20260526T075330Z-15358/
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-after-media-telegram-media-package-20260526T082042Z-12788/
 ```
 
 Mensagem:
@@ -154,27 +156,30 @@ Resultado:
 ```text
 estado_agente: aguardando_tatuador
 resposta_ai_posterior_ao_humano: true
-orcid: orc_xumele
+orcid: orc_rttylv
 dados_coletados.descricao_curta: rosa
 dados_coletados.local_corpo: antebraco
 dados_coletados.altura_cm: 170
-dados_coletados.foto_local_msg_id: 12632
-dados_coletados.refs_imagens_msg_ids: [11951]
+dados_coletados.foto_local_msg_id: 12679
+dados_coletados.foto_local_file_id: persistido
+dados_coletados.refs_imagens_msg_ids: [12680]
+dados_coletados.refs_imagens_file_ids: 1 item persistido
 dados_coletados.tentativas_foto_local: 1
 dados_cadastro.nome: Joao Silva
 dados_cadastro.data_nascimento: 1995-03-12
 dados_cadastro.email: joao@example.com
 dados_cadastro.email_recusado: false/absent
+telegram_media: fotos-orcamento-enviadas enviadas=2 falhas_total=false
 copy_risk: baixo
 copy: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
-decision_chain: foto local preservada -> referencia preservada -> email valido -> workflow handoff package -> orcid criado -> aguardando_tatuador
+decision_chain: foto local fresca -> referencia fresca -> email valido -> workflow handoff package -> Telegram media enviada -> file_ids persistidos -> orcid criado -> aguardando_tatuador
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll por estado
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: manter Level 4B e auditar o pacote Telegram com midia no handoff.
+Proximo passo recomendado: manter Level 4B e declarar a proxima onda funcional leve apos wave-health final.
 ```
 
 Escopo recomendado:
@@ -182,9 +187,9 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
-- usar `docs/atendimento-premium/32-level-4b-wave-9.md` como fechamento da onda atual;
+- usar `docs/atendimento-premium/33-level-4b-wave-10.md` como fechamento da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
-- Wave 9 fechou email valido pos-midia com handoff de orcamento;
+- Wave 10 fechou auditoria do pacote Telegram pos-midia com midia real e WhatsApp real definitivo;
 - proximo alvo funcional deve ser declarado antes de editar codigo;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;

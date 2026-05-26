@@ -1311,6 +1311,28 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** commit `b8e58bf` adicionou teste local e cenarios HTTP/WhatsApp real. `npm test` passou `1194/1194`, HTTP radar `scenario-cadastro-after-media-email-valido-handoff-20260526T075219Z-32176` passou e WhatsApp real `scenario-whatsapp-real-cadastro-after-media-email-valido-handoff-20260526T075330Z-15358` passou.
 
+### Wave 10 - Auditoria Do Pacote Telegram Pos-Midia
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** o handoff de orçamento pos-midia precisa provar envio real das mídias ao Telegram, não apenas preservação dos IDs das mensagens. O contrato passa a exigir `foto_local_file_id`, `refs_imagens_file_ids`, evento `fotos-orcamento-enviadas` com fotos enviadas e WhatsApp real definitivo.
+
+**Motivo:** as Waves 8 e 9 garantiram que `foto_local_msg_id` e `refs_imagens_msg_ids` chegam ao handoff, mas isso ainda não provava que o tatuador recebeu as imagens no Telegram. O padrão premium exige evidência operacional do pacote entregue ao humano.
+
+**Alternativas rejeitadas:**
+
+- aceitar preservação de `msg_id` como prova suficiente;
+- validar apenas por HTTP sem WhatsApp real;
+- usar imagem fake mínima como evidência definitiva;
+- ignorar side-effects tardios do envio Telegram;
+- promover autonomia para 4C.
+
+**Camada responsável:** Handoff Package, Telegram tool, Smoke Scenario Registry, Observabilidade.
+
+**Impacto:** foram adicionados seed com mídia real, cenários HTTP/WhatsApp real de auditoria Telegram, espera de side-effects no runner de smoke e regex de tail compatível com logs escapados. HTTP radar `scenario-cadastro-after-media-telegram-media-package-20260526T081935Z-25180` passou e WhatsApp real `scenario-whatsapp-real-cadastro-after-media-telegram-media-package-20260526T082042Z-12788` passou, com `enviadas=2` e `file_ids` persistidos.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

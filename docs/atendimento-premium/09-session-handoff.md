@@ -919,6 +919,37 @@ decisao: manter Level 4B; 4C bloqueado
 proximo passo: auditar pacote Telegram com midia no handoff
 ```
 
+Wave 10 fechada:
+
+```text
+wave: level4b-wave-10-telegram-media-package-audit
+status: PASS
+commit_funcional: 4aa7c5a test: audit telegram media handoff package
+commits_metodologia:
+  - b434ead test: use real media seed for telegram smoke
+  - e5803b6 test: make media seed base64 portable
+  - 116e69a test: wait for smoke side effects
+  - 648e2e6 test: accept escaped telegram media tail logs
+tests_focados: bash -n scripts/smoke/run-scenario.sh; node --test tests/tools/enviar-orcamento-tatuador.test.mjs tests/integration/orcamento-com-fotos.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 98/98
+tests_local: npm test PASS 1194/1194 antes dos ajustes finais de runner/scenario
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-after-media-telegram-media-package-20260526T081935Z-25180 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-after-media-telegram-media-package-20260526T082042Z-12788 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "joao@example.com"
+bot: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+estado: aguardando_tatuador
+orcid: orc_rttylv
+dados: descricao_curta=rosa, estilo=fineline, local_corpo=antebraco, altura_cm=170, foto_local_msg_id=12679, foto_local_file_id=persistido, refs_imagens_msg_ids=[12680], refs_imagens_file_ids=1 item, nome=Joao Silva, data_nascimento=1995-03-12, email=joao@example.com
+telegram: fotos-orcamento-enviadas enviadas=2 falhas_total=false
+copy_risk: baixo
+workflow: cadastro_and_tattoo_complete, handoff_package_v1, trace hp_*
+aprendizado: seed de midia deve usar arquivo real versionado; runner agora aguarda side-effects de tail/poll; regex de tail aceita JSON escapado
+decisao: manter Level 4B; 4C bloqueado
+proximo passo: declarar proxima onda funcional leve depois de wave-health final
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

@@ -54,9 +54,56 @@ Fora do escopo:
 ## Resultado Atual
 
 ```text
-status: wave declarada
-micro_slice_1: telegram-media-package-audit-contract em andamento
+status: PASS
+micro_slice_1: telegram-media-package-audit-contract fechado
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
 ```
+
+## Fechamento
+
+```text
+status: PASS
+commits:
+  - 4aa7c5a test: audit telegram media handoff package
+  - b434ead test: use real media seed for telegram smoke
+  - e5803b6 test: make media seed base64 portable
+  - 116e69a test: wait for smoke side effects
+  - 648e2e6 test: accept escaped telegram media tail logs
+tests_focados: bash -n scripts/smoke/run-scenario.sh; node --test tests/tools/enviar-orcamento-tatuador.test.mjs tests/integration/orcamento-com-fotos.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 98/98
+tests_local: npm test PASS 1194/1194 antes dos ajustes finais de runner/scenario
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-after-media-telegram-media-package-20260526T081935Z-25180 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-after-media-telegram-media-package-20260526T082042Z-12788 PASS
+```
+
+## Evidencia Funcional
+
+```text
+estado: aguardando_tatuador
+orcid_http: orc_minj4l
+orcid_real: orc_rttylv
+email: joao@example.com
+foto_local_file_id: persistido
+refs_imagens_file_ids: 1 item persistido
+tail: fotos-orcamento-enviadas com enviadas=2 e falhas_total=false
+copy_risk: baixo
+router: pending_email_answered
+workflow: cadastro_and_tattoo_complete, handoff_package_v1, trace hp_*
+```
+
+## Provas Conclusivas Reais
+
+```text
+Cliente: "joao@example.com"
+Bot: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+```
+
+## Aprendizados De Processo
+
+- Seed com PNG 1x1 nao e confiavel para Telegram: usar midia real versionada no repo.
+- Side-effects de Telegram podem terminar segundos depois do estado virar `aguardando_tatuador`: `run-scenario.sh` agora aguarda tail/poll de side-effects antes dos gates.
+- Logs do Cloudflare podem renderizar JSON escapado: regex de tail deve validar o evento sem depender de aspas literais.
+- Level 4B permanece correto; 4C segue bloqueado.
