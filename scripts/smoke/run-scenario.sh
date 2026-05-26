@@ -547,6 +547,53 @@ seed_tattoo_ref_confirmada_aguardando_foto_local() {
   echo "seed ok: conversa=$conv_id session_id=$sid"
 }
 
+seed_cadastro_pos_midia_aguardando_nome() {
+  load_devvars
+  local sid now conv_body msg_body conv_id
+  sid="${TENANT_ID}_${PHONE}"
+  now="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+
+  conv_body="$(
+    jq -nc \
+      --arg tenant "$TENANT_ID" \
+      --arg phone "$PHONE" \
+      --arg now "$now" \
+      '{
+        tenant_id:$tenant,
+        telefone:$phone,
+        estado_agente:"coletando_cadastro",
+        dados_coletados:{
+          descricao_curta:"rosa",
+          local_corpo:"antebraco",
+          altura_cm:170,
+          estilo:"fineline",
+          foto_local_msg_id:12632,
+          refs_imagens_msg_ids:[11951],
+          tentativas_foto_local:1
+        },
+        dados_cadastro:{},
+        last_msg_at:$now
+      }'
+  )"
+  conv_id="$(supa_post "conversas" "$conv_body" | jq -r '.[0].id // empty')"
+  [ -n "$conv_id" ] || { echo "ERRO: seed nao retornou conversa id." >&2; exit 1; }
+
+  msg_body="$(
+    jq -nc \
+      --arg sid "$sid" \
+      '{
+        session_id:$sid,
+        status:"processed",
+        message:{
+          type:"ai",
+          content:"Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
+        }
+      }'
+  )"
+  supa_post "conversa_mensagens" "$msg_body" >/dev/null
+  echo "seed ok: conversa=$conv_id session_id=$sid"
+}
+
 run_setup() {
   case "$SETUP" in
     none|"") echo "setup: none" ;;
@@ -558,6 +605,7 @@ run_setup() {
     seed_tattoo_parcial_foto_ambigua) seed_tattoo_parcial_foto_ambigua ;;
     seed_tattoo_foto_ambigua_aguardando_confirmacao) seed_tattoo_foto_ambigua_aguardando_confirmacao ;;
     seed_tattoo_ref_confirmada_aguardando_foto_local) seed_tattoo_ref_confirmada_aguardando_foto_local ;;
+    seed_cadastro_pos_midia_aguardando_nome) seed_cadastro_pos_midia_aguardando_nome ;;
     *) echo "ERRO: setup desconhecido: $SETUP" >&2; exit 1 ;;
   esac
 }

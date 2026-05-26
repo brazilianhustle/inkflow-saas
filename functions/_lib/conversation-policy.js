@@ -51,11 +51,11 @@ export function detectPendingFormQuestion(text) {
     || /\btu curte mais\b.*\b(fineline|realismo|blackwork|tradicional|old school)\b/i.test(s)
   ) return 'estilo';
   if (/em qual parte do corpo\?*\s*$/i.test(s) || /qual parte do corpo\?*\s*$/i.test(s)) return 'local_corpo';
-  if (/foto do local/i.test(s) || /foto.*onde.*quer tatuar/i.test(s)) return 'foto_local';
   if (/nome completo.*data de nascimento|data de nascimento.*nome completo/i.test(s)) return 'cadastro_nome_data';
   if (/nome completo/i.test(s)) return 'nome_completo';
   if (/data de nascimento/i.test(s)) return 'data_nascimento';
   if (/e-?mail/i.test(s)) return 'email';
+  if (/foto do local/i.test(s) || /foto.*onde.*quer tatuar/i.test(s)) return 'foto_local';
   return null;
 }
 

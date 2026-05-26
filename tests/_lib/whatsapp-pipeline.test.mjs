@@ -1550,6 +1550,57 @@ test('ConversationRouter cadastro: lateral com nome/data pendentes grava em dado
   });
 });
 
+test('ConversationRouter cadastro pos-midia preserva foto local e referencias ao preencher nome', async () => {
+  const runAgentSpy = mock.fn(async () => {
+    throw new Error('runAgent nao deveria ser chamado');
+  });
+  let conversaPatch = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_cadastro',
+    dados_coletados: {
+      descricao_curta: 'rosa',
+      local_corpo: 'antebraco',
+      altura_cm: 170,
+      estilo: 'fineline',
+      foto_local_msg_id: 606,
+      refs_imagens_msg_ids: [603],
+      tentativas_foto_local: 1,
+    },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'Joao Silva' }]),
+      hist: [
+        {
+          id: 1,
+          message: {
+            type: 'ai',
+            content: 'Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo.',
+          },
+        },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.estado_agente) {
+          conversaPatch = body;
+        }
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.estado_agente, 'coletando_cadastro');
+  assert.deepEqual(conversaPatch.dados_coletados, conversa.dados_coletados);
+  assert.deepEqual(conversaPatch.dados_cadastro, {
+    nome: 'Joao Silva',
+  });
+});
+
 test('Workflow: ConversationRouter completa cadastro com recusa de email e dispara orcamento', async () => {
   const runAgentSpy = mock.fn(async () => {
     throw new Error('runAgent nao deveria ser chamado');

@@ -81,3 +81,16 @@ test('ConversationPolicy: resolve cadastro por pergunta pendente tipada', () => 
     data_nascimento: '1995-03-12',
   });
 });
+
+test('ConversationPolicy: nome completo vence menção anterior a foto do local', () => {
+  const out = resolvePendingFormQuestion({
+    mensagem: 'Joao Silva',
+    historico: [
+      { role: 'assistant', content: 'Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo.' },
+    ],
+  });
+  assert.equal(out.pending, true);
+  assert.equal(out.answered, true);
+  assert.equal(out.field, 'nome_completo');
+  assert.deepEqual(out.extracted, { nome: 'Joao Silva' });
+});
