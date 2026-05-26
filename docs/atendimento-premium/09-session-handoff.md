@@ -563,6 +563,18 @@ copy_risk: baixo
 proximo passo: tattoo-multi-info-height-size-http
 ```
 
+Governanca multi-agente oficializada:
+
+```text
+doc: docs/atendimento-premium/25-multi-agent-governance.md
+status: ativo
+modelo: commander + single-writer + reviewers
+permitido: analise, preparo de cenarios, auditoria, triage e continuidade
+nao_permitido: WhatsApp real paralelo, promocao de autonomia por agente, escrita paralela em docs canonicos, varios writers no mesmo micro-slice
+4c: bloqueado
+proximo passo metodologico opcional: criar wave-runner inicial e/ou evidence-registrar
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

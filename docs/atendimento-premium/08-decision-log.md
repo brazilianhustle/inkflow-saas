@@ -909,6 +909,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Validacao:** commit `0923b9e` teve testes locais, CI e deploy PASS. O HTTP radar `scenario-tattoo-multi-info-basic-20260526T035828Z-32439` e o WhatsApp real `scenario-whatsapp-real-tattoo-multi-info-basic-20260526T040309Z-22657` passaram, persistindo `descricao_curta=rosa`, `estilo=fineline`, `local_corpo=antebraço`, `altura_cm=170`, com `orcid=null`, `copy_risk=baixo` e resposta pedindo somente foto do local.
 
+## 2026-05-26 - Governanca multi-agente em Level 4B
+
+**Status:** decidido.
+
+**Decisão:** oficializar multi-agentes como Estado-Maior de apoio, com Commander unico, single-writer por micro-slice, WhatsApp real serial e escrita canonica centralizada.
+
+**Motivo:** agentes paralelos podem acelerar analise, preparo de cenarios, auditoria e triage, mas paralelismo livre reduz rastreabilidade, contamina smoke real e pode gerar falso PASS. O processo premium depende de commit, deploy, HTTP radar, WhatsApp real e evidencia alinhados.
+
+**Alternativas rejeitadas:**
+
+- permitir varios agentes editando comportamento conversacional ao mesmo tempo;
+- permitir WhatsApp real paralelo no mesmo telefone/setup;
+- permitir que agente paralelo promova autonomia ou feche micro-slice;
+- tratar multi-agentes como criterio automatico para 4C.
+
+**Camada responsável:** processo Level 4, Autonomy Gate, Smoke Scenario Registry, Wave Health e governanca de agentes.
+
+**Impacto:** `25-multi-agent-governance.md` passa a ser documento de comando. Level 4B pode usar agentes para leitura/auditoria/preparo, mas a integracao, commit, deploy, WhatsApp real e PASS final continuam centralizados. 4C segue bloqueado.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

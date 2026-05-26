@@ -28,6 +28,22 @@ Level 4 nao permite:
 - ignorar falhas;
 - tocar zona vermelha sem staging;
 - alterar secrets sem aprovacao explicita.
+- paralelismo livre sem comandante unico e single-writer.
+
+## Governanca Multi-Agente
+
+Multi-agentes podem apoiar Level 4B/4C apenas sob o protocolo [25-multi-agent-governance.md](./25-multi-agent-governance.md).
+
+Regras canonicas:
+
+- o Commander continua sendo o unico responsavel por integrar, commitar, deployar, rodar WhatsApp real e declarar PASS final;
+- cada micro-slice pode ter apenas um writer de codigo;
+- agentes paralelos podem acelerar analise, preparo de cenarios, auditoria e triage;
+- WhatsApp real definitivo continua serial no telefone de teste;
+- arquivos de verdade operacional (`autonomy-gate.env`, `smoke-runs.md`, `current-objective.md`, `09-session-handoff.md`) nao podem receber escrita paralela;
+- multi-agentes nao tornam 4C elegivel por si so.
+
+Se dois agentes precisam editar a mesma camada logica, o trabalho deve ser sequenciado.
 
 ## Pre-Condicoes Para Promocao
 
@@ -149,6 +165,10 @@ Parar imediatamente se qualquer item ocorrer:
 - risco de preco/pagamento/sinal/agenda;
 - contexto abaixo de seguranca sem continuidade recuperavel;
 - usuario envia nova direcao conflitante.
+- conflito de ownership entre agentes;
+- smoke rodado sobre commit diferente do deploy validado;
+- evidencia sem run id, artifact, commit ou registro;
+- WhatsApp real paralelo no mesmo telefone/setup.
 
 Depois de parar:
 

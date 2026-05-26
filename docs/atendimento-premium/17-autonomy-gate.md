@@ -47,8 +47,8 @@ Pode continuar ate falha, risco alto ou fim da onda. Requer staging/sandbox e ro
 
 ```text
 current_level: 4
-max_batch_size: 6 micro-slices da mesma onda declarada
-politica: Level 4A, loop supervisionado com HTTP radar e WhatsApp real definitivo por micro-slice conversacional
+max_batch_size: conferir docs/atendimento-premium/autonomy-gate.env
+politica: Level 4B, loop supervisionado com HTTP radar e WhatsApp real definitivo por micro-slice conversacional
 ```
 
 ## Requisitos Para Promover Ao Nivel 2
@@ -100,6 +100,7 @@ Documentos de comando:
 
 - [18-rollback-staging-protocol.md](./18-rollback-staging-protocol.md)
 - [19-level-4-loop-policy.md](./19-level-4-loop-policy.md)
+- [25-multi-agent-governance.md](./25-multi-agent-governance.md)
 
 Esses documentos removem o bloqueio estrutural para discutir Level 4, mas nao promovem o nivel. A promocao continua exigindo commit deliberado em `autonomy-gate.env`.
 
@@ -188,6 +189,9 @@ Nao permitido:
 - pular WhatsApp real definitivo;
 - tocar produção sensivel sem plano de rollback;
 - ignorar falha de CI, deploy, smoke, cleanup ou gate.
+- usar agentes paralelos sem comandante unico e single-writer.
+
+Multi-agentes em Level 4B/4C devem seguir `25-multi-agent-governance.md`: agentes podem acelerar analise, preparo, auditoria e triage, mas o Commander continua unico responsavel por integrar, commitar, deployar, rodar WhatsApp real e declarar PASS final.
 
 ## Ordem Padrao
 
@@ -204,7 +208,7 @@ Nao permitido:
 Enquanto o projeto estiver em Nivel 4A, a maior janela segura continua sendo:
 
 ```text
-ate 6 micro-slices da mesma onda declarada.
+conferir CURRENT_LEVEL_LABEL e MAX_BATCH_SIZE em autonomy-gate.env.
 ```
 
-Qualquer aumento para 4B/4C exige nova evidencia, rodada 4A sem stop condition e commit deliberado alterando `MAX_BATCH_SIZE`.
+Qualquer aumento para 4B/4C exige nova evidencia, ondas saudaveis no nivel anterior e commit deliberado alterando `MAX_BATCH_SIZE`.

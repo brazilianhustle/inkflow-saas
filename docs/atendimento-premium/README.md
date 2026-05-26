@@ -56,6 +56,9 @@ Depois disso o sistema decide se deve:
 - [20-level-4-rehearsal-plan.md](./20-level-4-rehearsal-plan.md): plano de ensaio Level 4 executado ainda sob Level 3.
 - [21-level-4a-wave-1.md](./21-level-4a-wave-1.md): primeira onda Level 4A de monitoramento, smoke e seguranca operacional.
 - [22-level-4a-wave-2.md](./22-level-4a-wave-2.md): segunda onda Level 4A para `QuestionPolicy` de cadastro com WhatsApp real por micro-slice.
+- [23-level-4b-wave-1.md](./23-level-4b-wave-1.md): primeira onda Level 4B para conversas multi-turn.
+- [24-level-4b-wave-2.md](./24-level-4b-wave-2.md): segunda onda Level 4B para multi-info de tattoo.
+- [25-multi-agent-governance.md](./25-multi-agent-governance.md): governanca para agentes paralelos com comandante unico, single-writer e WhatsApp real serial.
 - [slice-gates/workflow-manager.env](./slice-gates/workflow-manager.env): gate formal da camada de transicao segura de estado.
 - [current-objective.md](./current-objective.md): estado vivo, proximo ataque e comandos de retomada.
 - [smoke-runs.md](./smoke-runs.md): indice versionado dos smokes relevantes.
