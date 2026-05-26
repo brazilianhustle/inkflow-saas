@@ -60,7 +60,8 @@ echo "poll: aguardando processamento phone=$PHONE timeout=${TIMEOUT_SECONDS}s" >
 while [ "$SECONDS" -lt "$deadline" ]; do
   conv="$(get "conversas?tenant_id=eq.${TENANT}&telefone=eq.${PHONE}&select=estado_agente,orcid,updated_at,dados_coletados,dados_cadastro&limit=1")"
   msgs="$(get "conversa_mensagens?session_id=eq.${SID}&created_at=gte.${SINCE_ISO}&select=created_at,status,message&order=created_at.asc")"
-  last_snapshot="$(jq -nc --argjson conv "$conv" --argjson msgs "$msgs" '{conversas:$conv,mensagens:$msgs}')"
+  msgs_snapshot="$(printf '%s' "$msgs" | jq '[.[] | del(.message.media_base64)]')"
+  last_snapshot="$(jq -nc --argjson conv "$conv" --argjson msgs "$msgs_snapshot" '{conversas:$conv,mensagens:$msgs}')"
 
   state="$(printf '%s' "$conv" | jq -r '.[0].estado_agente // ""')"
   orcid="$(printf '%s' "$conv" | jq -r '.[0].orcid // ""')"
@@ -74,6 +75,20 @@ while [ "$SECONDS" -lt "$deadline" ]; do
       ([
         .[]
         | select(.message.type=="human" and .message.content==$text)
+        | .created_at
+      ] | max // "") as $human_at
+      | if $human_at == "" then 0 else
+          [
+            .[]
+            | select(.message.type=="ai" and .created_at > $human_at)
+          ] | length
+        end
+    ')"
+  elif [ "$REQUIRE_AI_RESPONSE" = "1" ]; then
+    ai_after_human_count="$(printf '%s' "$msgs" | jq '
+      ([
+        .[]
+        | select(.message.type=="human")
         | .created_at
       ] | max // "") as $human_at
       | if $human_at == "" then 0 else
