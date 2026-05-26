@@ -30,19 +30,19 @@ export function cadastroResumeQuestion(conversa = {}) {
 }
 
 export function fotoLocalRecebidaCadastroQuestion() {
-  return 'Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo.';
+  return 'Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro.';
 }
 
 export function referenciaRecebidaCadastroQuestion() {
-  return 'Recebi essa referência também. Pra liberar teu orçamento, preciso do teu nome completo.';
+  return 'Recebi essa referência também. Agora me passa teu nome completo pra eu montar o cadastro.';
 }
 
 export function fotoAmbiguaComoLocalCadastroQuestion() {
-  return 'Perfeito, então vou usar essa imagem como foto do local. Pra liberar teu orçamento personalizado, me passa nome completo e data de nascimento?';
+  return 'Perfeito, vou usar essa imagem como foto do local. Me passa nome completo e data de nascimento pra eu montar o cadastro?';
 }
 
 export function fotoAmbiguaComoReferenciaQuestion() {
-  return 'Perfeito, deixei essa imagem como referência do desenho. Agora preciso da foto do local do corpo onde tu quer tatuar.';
+  return 'Perfeito, deixei essa imagem como referência do desenho. Agora me manda a foto do local onde tu quer tatuar.';
 }
 
 export const _test = {

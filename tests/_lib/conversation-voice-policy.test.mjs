@@ -44,8 +44,22 @@ test('VoicePolicy: cadastroHandoffReply evita fechamento rigido antigo', () => {
 });
 
 test('VoicePolicy: familia de media/cadastro fica centralizada', () => {
-  assert.match(fotoLocalRecebidaCadastroQuestion(), /Recebi a foto do local/);
-  assert.match(referenciaRecebidaCadastroQuestion(), /referência também/);
-  assert.match(fotoAmbiguaComoLocalCadastroQuestion(), /foto do local/);
-  assert.match(fotoAmbiguaComoReferenciaQuestion(), /referência do desenho/);
+  assert.equal(
+    fotoLocalRecebidaCadastroQuestion(),
+    'Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro.',
+  );
+  assert.equal(
+    referenciaRecebidaCadastroQuestion(),
+    'Recebi essa referência também. Agora me passa teu nome completo pra eu montar o cadastro.',
+  );
+  assert.equal(
+    fotoAmbiguaComoLocalCadastroQuestion(),
+    'Perfeito, vou usar essa imagem como foto do local. Me passa nome completo e data de nascimento pra eu montar o cadastro?',
+  );
+  assert.equal(
+    fotoAmbiguaComoReferenciaQuestion(),
+    'Perfeito, deixei essa imagem como referência do desenho. Agora me manda a foto do local onde tu quer tatuar.',
+  );
+  assert.doesNotMatch(fotoLocalRecebidaCadastroQuestion(), /liberar teu orçamento|orçamento personalizado/i);
+  assert.doesNotMatch(fotoAmbiguaComoLocalCadastroQuestion(), /liberar teu orçamento|orçamento personalizado/i);
 });
