@@ -6,7 +6,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-TEXT="${1:?uso: run-real-whatsapp.sh \"mensagem\" [sender_phone] [bot_number]}"
+TEXT="${1-}"
 SENDER_PHONE="${2:-${SMOKE_SENDER_PHONE:-5521970789797}}"
 BOT_NUMBER="${3:-${SMOKE_BOT_NUMBER:-}}"
 BASE_URL="${BASE_URL:-https://inkflowbrasil.com}"
@@ -25,6 +25,10 @@ SINCE_ISO="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 [[ "$SENDER_PHONE" =~ ^[0-9]{10,15}$ ]] || { echo "ERRO: sender_phone invalido: $SENDER_PHONE" >&2; exit 1; }
 [[ "$BOT_NUMBER" =~ ^[0-9]{10,15}$ ]] || { echo "ERRO: bot_number invalido: $BOT_NUMBER" >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { echo "ERRO: jq nao instalado." >&2; exit 1; }
+[ -n "$TEXT" ] || [ -n "${SMOKE_MEDIA_FILE:-}" ] || [ -n "${SMOKE_MEDIA_BASE64:-}" ] || {
+  echo 'ERRO: run-real-whatsapp.sh exige mensagem ou midia.' >&2
+  exit 1
+}
 
 mkdir -p "$EVIDENCE_DIR"
 

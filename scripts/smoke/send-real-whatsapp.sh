@@ -10,7 +10,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-TEXT="${1:?uso: send-real-whatsapp.sh \"mensagem\" <bot_number>}"
+TEXT="${1-}"
 BOT_NUMBER="${2:-${SMOKE_BOT_NUMBER:-}}"
 SMOKE_MEDIA_MIMETYPE="${SMOKE_MEDIA_MIMETYPE:-image/png}"
 SMOKE_MEDIA_FILENAME="${SMOKE_MEDIA_FILENAME:-}"
@@ -34,6 +34,10 @@ STATE_APIKEY="${SMOKE_EVO_STATE_APIKEY:-${EVO_GLOBAL_KEY:-$SENDER_APIKEY}}"
 [[ "$BOT_NUMBER" =~ ^[0-9]{10,15}$ ]] || { echo "ERRO: bot_number invalido: $BOT_NUMBER" >&2; exit 1; }
 [ -n "$SENDER_INSTANCE" ] || { echo "ERRO: instancia remetente ausente." >&2; exit 1; }
 [ -n "$SENDER_APIKEY" ] || { echo "ERRO: apikey da instancia remetente ausente." >&2; exit 1; }
+[ -n "$TEXT" ] || [ -n "${SMOKE_MEDIA_FILE:-}" ] || [ -n "${SMOKE_MEDIA_BASE64:-}" ] || {
+  echo 'ERRO: send-real-whatsapp.sh exige mensagem ou midia.' >&2
+  exit 1
+}
 
 MEDIA_BASE64="${SMOKE_MEDIA_BASE64:-}"
 if [ -z "$MEDIA_BASE64" ] && [ -n "${SMOKE_MEDIA_FILE:-}" ]; then
