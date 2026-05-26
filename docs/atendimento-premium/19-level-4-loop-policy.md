@@ -181,6 +181,12 @@ Registro esperado:
 - se o criterio de continue implicito for usado, registrar no handoff/current objective que nao havia decisao humana pendente;
 - a decisao de continuar deve apontar para o proximo micro-slice logico, nao para trabalho aberto sem onda declarada.
 
+Aplicacao pratica:
+
+- se todos os gates estiverem verdes e o proximo micro-slice logico ja estiver declarado na mesma onda, o fechamento do slice nao deve virar pausa operacional;
+- a resposta ao usuario deve ser um update curto de PASS e, em seguida, o loop deve iniciar o proximo micro-slice;
+- enviar um fechamento final sem iniciar o proximo micro-slice so e correto quando a onda terminou, quando o proximo passo e ambiguo ou quando alguma stop condition exige decisao humana.
+
 ## Stop Conditions
 
 Parar imediatamente se qualquer item ocorrer:
