@@ -58,6 +58,10 @@ const STATE_AGENT_TO_DB = {
   cadastro: 'coletando_cadastro',
 };
 
+function hasTattooCoreForCadastro(dados = {}) {
+  return Boolean(dados.descricao_curta && dados.local_corpo && dados.altura_cm && dados.estilo);
+}
+
 function dbToAgent(state) {
   return STATE_DB_TO_AGENT[state] || state;
 }
@@ -277,7 +281,22 @@ export async function processBatch(env, batch, depsOverride = {}) {
       tenant_assets: deriveTenantAssets(tenant),
     };
     const routerDisabled = String(env?.DISABLE_CONVERSATION_ROUTER || '').toLowerCase() === 'true';
-    const routerEligible = !routerDisabled && !isFirstContactGreetingOnly && fotos.length === 0;
+    const fotoLocalCompletaTattoo = fotoLocalPendente && hasTattooCoreForCadastro(conversa.dados_coletados || {});
+    if (fotoLocalCompletaTattoo) {
+      agentOut = {
+        ok: true,
+        resposta_cliente: 'Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo.',
+        estado_novo: 'cadastro',
+        dados_persistidos: { foto_local_msg_id: fotos[0].msgRowId },
+        dados_completos: true,
+        campos_faltando: [],
+        campos_conflitantes: [],
+        proxima_acao: 'pergunta',
+        agent_usado: 'tattoo',
+        analise_imagens: null,
+      };
+    }
+    const routerEligible = !agentOut && !routerDisabled && !isFirstContactGreetingOnly && fotos.length === 0;
     if (routerEligible) {
       agentOut = deps.routeConversationTurn({
         estado_atual: estadoAgente,
@@ -289,8 +308,6 @@ export async function processBatch(env, batch, depsOverride = {}) {
         clientContext: baseClientContext,
         disabled: false,
       });
-    } else {
-      agentOut = null;
     }
 
     try {

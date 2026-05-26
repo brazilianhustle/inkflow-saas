@@ -1869,9 +1869,10 @@ test('Etapa 4.5 model-driven: corpo + referencia → local + ref (roteamento mis
     'id=401 (foto_local) nao aparece em refs_imagens_msg_ids');
 });
 
-test('Etapa 4.5: foto local aguardada preclassifica antes do LLM e nao envia imagem ao agent', async () => {
+test('Etapa 4.5: foto local aguardada com core completo avanca sem chamar LLM', async () => {
   let conversaPatches = [];
-  let runAgentArgs = null;
+  let runAgentCalled = false;
+  let aiInsert = null;
   const conversa = {
     id: CONVERSA_ID,
     estado_agente: 'coletando_tattoo',
@@ -1895,25 +1896,21 @@ test('Etapa 4.5: foto local aguardada preclassifica antes do LLM e nao envia ima
           conversaPatches.push(body.dados_coletados);
         }
       },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
     }),
-    runAgent: async (args) => {
-      runAgentArgs = args;
-      return {
-        ok: true, resposta_cliente: 'me manda teu nome completo',
-        estado_novo: 'cadastro', dados_persistidos: {},
-        proxima_acao: 'pergunta', agent_usado: 'tattoo',
-      };
-    },
+    runAgent: async () => { runAgentCalled = true; throw new Error('nao deveria chamar LLM'); },
     classificarFoto: () => 'referencia',
   });
 
   await processBatch({}, baseBatch({ msgRowIds: [601] }), deps);
 
-  assert.deepEqual(runAgentArgs.imagens, [], 'foto local aguardada nao deve ir para visao do LLM');
-  assert.equal(runAgentArgs.dados_acumulados.foto_local_msg_id, 601);
+  assert.equal(runAgentCalled, false, 'foto local aguardada com core completo nao deve chamar LLM');
   const fotoPatch = conversaPatches.find(p => p.foto_local_msg_id === 601);
   assert.ok(fotoPatch, 'foto local aguardada deve ficar persistida no patch principal');
   assert.equal(fotoPatch.refs_imagens_msg_ids, undefined, 'a mesma foto nao deve ser duplicada como referencia');
+  assert.match(aiInsert.message.content, /nome completo/i);
 });
 
 test('Etapa 4.5 multi-ref: 2 fotos referencia → RPC set_descricao_visual dispara 2x com payloads pareados', async () => {
