@@ -254,6 +254,12 @@ export function resolveExplicitAge(message) {
   if (/\bsou\s+(?:de\s+)?menor(?:\s+de\s+idade)?\b/.test(s)) {
     return { answered: true, value: null, confidence: 0.86, reason: 'explicit_minor_age' };
   }
+  const guardianConsent =
+    /\b(?:minha\s+mae|meu\s+pai|meus\s+pais|responsavel|responsavel\s+legal)\b.{0,50}\b(?:autorizou|autorizaram|deixou|deixaram|permitiu|permitiram|liberou|liberaram)\b/.test(s)
+    || /\b(?:tenho|to\s+com|estou\s+com)\b.{0,30}\b(?:autorizacao|permissao|liberacao)\b.{0,50}\b(?:minha\s+mae|meu\s+pai|meus\s+pais|responsavel|responsavel\s+legal)\b/.test(s);
+  if (guardianConsent) {
+    return { answered: true, value: null, confidence: 0.84, reason: 'guardian_consent_minor_age_signal' };
+  }
   const hit = s.match(/\b(?:tenho|tem|idade(?:\s+(?:e|é))?|com)?\s*(1[0-7]|[1-9])\s+anos?\b/);
   const value = Number(hit?.[1]);
   if (Number.isFinite(value) && value > 0 && value < 18) {

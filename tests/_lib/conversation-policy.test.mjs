@@ -91,6 +91,13 @@ test('ConversationPolicy: resolve menoridade explicita sem numero e respeita neg
     reason: 'explicit_minor_age',
   });
   assert.equal(resolveExplicitAge('nao sou menor de idade').answered, false);
+  assert.deepEqual(resolveExplicitAge('minha mãe autorizou'), {
+    answered: true,
+    value: null,
+    confidence: 0.84,
+    reason: 'guardian_consent_minor_age_signal',
+  });
+  assert.equal(resolveExplicitAge('tenho autorização dos meus pais').reason, 'guardian_consent_minor_age_signal');
   assert.equal(resolveExplicitAge('tenho 17 anos').value, 17);
   assert.equal(resolveExplicitAge('tenho 18 anos').answered, false);
 });
