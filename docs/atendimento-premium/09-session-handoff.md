@@ -575,6 +575,17 @@ nao_permitido: WhatsApp real paralelo, promocao de autonomia por agente, escrita
 proximo passo metodologico opcional: criar wave-runner inicial e/ou evidence-registrar
 ```
 
+Ferramentas metodologicas adicionadas:
+
+```text
+wave_runner: scripts/smoke/wave-runner.sh
+evidence_registrar: scripts/smoke/evidence-registrar.sh
+status: PASS
+validacao: bash -n, git diff --check, wave-runner oficial limpo, wave-health
+comportamento_bot: inalterado
+uso: wave-runner faz preflight; evidence-registrar imprime linha sugerida para smoke-runs.md sem editar arquivo
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

@@ -160,13 +160,13 @@ O ganho principal deve vir de orquestrar melhor ferramentas existentes:
 - `scripts/smoke/check-autonomy-gate.sh`;
 - `scripts/smoke/wave-health.sh`;
 - `scripts/smoke/evidence-index.sh`;
+- `scripts/smoke/evidence-registrar.sh`;
 - `scripts/smoke/continuity-bundle.sh`;
 - GitHub Actions de tests, prompts/evals e deploy.
 
 Ferramentas candidatas futuras:
 
 - `wave-runner`: orquestra preflight, dry-run, HTTP radar, WhatsApp real, gates e relatorio;
-- `evidence-registrar`: gera linha sugerida para `smoke-runs.md`;
 - `evidence-orphan-gate`: detecta evidencia sem registro e registro sem artifact;
 - dry-run de scenarios no CI;
 - matriz executavel de risco para bloquear comandos fora da zona autorizada.
@@ -209,6 +209,37 @@ WAVE_RUNNER_ALLOW_DIRTY=1 bash scripts/smoke/wave-runner.sh <scenario>
 ```
 
 Esse modo so permite worktree sujo para preflight. Ele nao autoriza fechar slice com worktree sujo.
+
+## Evidence Registrar
+
+O `scripts/smoke/evidence-registrar.sh` gera uma linha sugerida para `smoke-runs.md` a partir de um diretorio de evidencia.
+
+Uso:
+
+```bash
+bash scripts/smoke/evidence-registrar.sh .smoke-evidence/<run_id>
+```
+
+Ele le:
+
+- `summary.md`;
+- `judgment.md`;
+- `request.json`;
+- `poll.json`;
+- `scenario.env`.
+
+Ele imprime:
+
+- data UTC;
+- run id;
+- tipo;
+- alvo;
+- telefone;
+- resultado;
+- evidence dir;
+- decisao resumida com estado, `orcid`, `copy_risk`, dados persistidos e ultima resposta do bot.
+
+Ele nao edita `smoke-runs.md`. O Commander ainda revisa e cola a linha final.
 
 ## Protocolo Por Micro-Slice
 

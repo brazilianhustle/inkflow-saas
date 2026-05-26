@@ -85,6 +85,14 @@ bash scripts/smoke/wave-runner.sh <scenario> [scenario...]
 
 A versao atual e apenas um preflight seguro: ela roda dry-run e gates, mas nao executa HTTP/WhatsApp real nem altera evidencias.
 
+Para gerar uma linha sugerida de registro depois de um smoke:
+
+```bash
+bash scripts/smoke/evidence-registrar.sh .smoke-evidence/<run_id>
+```
+
+Esse comando nao edita `smoke-runs.md`; ele apenas imprime a sugestao para revisao.
+
 ## Estado Atual
 
 Versão inicial criada em 2026-05-24 com foco na primeira frente:

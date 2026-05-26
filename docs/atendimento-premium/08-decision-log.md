@@ -928,6 +928,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `25-multi-agent-governance.md` passa a ser documento de comando. Level 4B pode usar agentes para leitura/auditoria/preparo, mas a integracao, commit, deploy, WhatsApp real e PASS final continuam centralizados. 4C segue bloqueado.
 
+## 2026-05-26 - Ferramentas metodologicas de onda
+
+**Status:** decidido.
+
+**Decisão:** implementar `wave-runner.sh` e `evidence-registrar.sh` como ferramentas de apoio ao Commander, sem side effects automaticos em producao.
+
+**Motivo:** o loop Level 4B ja possui scripts fortes, mas ainda havia risco operacional por orquestracao manual: esquecer dry-run, registrar evidencia com erro ou perder alinhamento entre run id, artifact e `smoke-runs.md`. As novas ferramentas reduzem atrito sem pular julgamento humano.
+
+**Alternativas rejeitadas:**
+
+- criar um runner que ja execute WhatsApp real em lote;
+- editar `smoke-runs.md` automaticamente;
+- fazer commit/push automatico pelo runner;
+- deixar o registro de evidencia totalmente manual.
+
+**Camada responsável:** Smoke Monitoring Process, Wave Health, Autonomy Gate e Multi-Agent Governance.
+
+**Impacto:** `wave-runner.sh` valida preflight, dry-run, gates e saude da onda; `evidence-registrar.sh` gera uma linha sugerida para `smoke-runs.md`. Ambos preservam Commander unico, WhatsApp real serial e revisao humana da evidencia.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
