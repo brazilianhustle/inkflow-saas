@@ -34,6 +34,7 @@ FORBIDDEN_TAIL_REGEX=""
 EXPECTED_POLL_JQ_TRUE=""
 EXPECTED_AGENT_LOG_JQ_TRUE=""
 EXPECTED_AGENT_LOG_TIMEOUT_SECONDS="${EXPECTED_AGENT_LOG_TIMEOUT_SECONDS:-20}"
+EXPECTED_SIDE_EFFECT_TIMEOUT_SECONDS="${EXPECTED_SIDE_EFFECT_TIMEOUT_SECONDS:-20}"
 SMOKE_MEDIA_BASE64="${SMOKE_MEDIA_BASE64:-}"
 SMOKE_MEDIA_FILE="${SMOKE_MEDIA_FILE:-}"
 SMOKE_MEDIA_MIMETYPE="${SMOKE_MEDIA_MIMETYPE:-}"
@@ -183,6 +184,77 @@ supa_get_agent_turn_logs_since_run() {
     --data-urlencode "limit=30" \
     -H "apikey: $SUPA_KEY" \
     -H "Authorization: Bearer $SUPA_KEY"
+}
+
+refresh_poll_snapshot() {
+  load_devvars
+  local sid conv msgs msgs_snapshot
+  sid="${TENANT_ID}_${PHONE}"
+  conv="$(
+    curl -sS --get "${SUPABASE_URL}/rest/v1/conversas" \
+      --data-urlencode "tenant_id=eq.${TENANT_ID}" \
+      --data-urlencode "telefone=eq.${PHONE}" \
+      --data-urlencode "select=estado_agente,orcid,updated_at,dados_coletados,dados_cadastro" \
+      --data-urlencode "limit=1" \
+      -H "apikey: $SUPA_KEY" \
+      -H "Authorization: Bearer $SUPA_KEY"
+  )"
+  msgs="$(
+    curl -sS --get "${SUPABASE_URL}/rest/v1/conversa_mensagens" \
+      --data-urlencode "session_id=eq.${sid}" \
+      --data-urlencode "created_at=gte.${RUN_STARTED_ISO}" \
+      --data-urlencode "select=created_at,status,message" \
+      --data-urlencode "order=created_at.asc" \
+      -H "apikey: $SUPA_KEY" \
+      -H "Authorization: Bearer $SUPA_KEY"
+  )"
+  msgs_snapshot="$(printf '%s' "$msgs" | jq '[.[] | del(.message.media_base64)]')"
+  jq -nc --argjson conv "$conv" --argjson msgs "$msgs_snapshot" '{conversas:$conv,mensagens:$msgs}' \
+    > "$EVIDENCE_DIR/poll.json"
+}
+
+refresh_tail_excerpt() {
+  local tail_log="${SMOKE_TAIL_LOG:-/tmp/inkflow-smoke-tail.log}"
+  if [ -f "$tail_log" ]; then
+    tail -240 "$tail_log" > "$EVIDENCE_DIR/tail-excerpt.log" || true
+  fi
+}
+
+wait_side_effect_gates() {
+  [ -n "${EXPECTED_TAIL_REGEX:-}" ] || [ -n "${EXPECTED_POLL_JQ_TRUE:-}" ] || return 0
+
+  echo ""
+  echo "[scenario] side-effect wait"
+  local deadline tail_ok poll_ok
+  deadline=$((SECONDS + EXPECTED_SIDE_EFFECT_TIMEOUT_SECONDS))
+  while true; do
+    tail_ok=1
+    poll_ok=1
+    if [ -n "${EXPECTED_TAIL_REGEX:-}" ]; then
+      refresh_tail_excerpt
+      if [ ! -f "$EVIDENCE_DIR/tail-excerpt.log" ] || ! grep -Eiq "$EXPECTED_TAIL_REGEX" "$EVIDENCE_DIR/tail-excerpt.log"; then
+        tail_ok=0
+      fi
+    fi
+    if [ -n "${FORBIDDEN_TAIL_REGEX:-}" ] && [ -f "$EVIDENCE_DIR/tail-excerpt.log" ] && grep -Eiq "$FORBIDDEN_TAIL_REGEX" "$EVIDENCE_DIR/tail-excerpt.log"; then
+      echo "side-effect wait: tail contem padrao proibido" >&2
+      return 1
+    fi
+    if [ -n "${EXPECTED_POLL_JQ_TRUE:-}" ]; then
+      refresh_poll_snapshot
+      if ! jq -e "$EXPECTED_POLL_JQ_TRUE" "$EVIDENCE_DIR/poll.json" >/dev/null; then
+        poll_ok=0
+      fi
+    fi
+    if [ "$tail_ok" -eq 1 ] && [ "$poll_ok" -eq 1 ]; then
+      echo "side-effect wait: ok"
+      return 0
+    fi
+    [ "$SECONDS" -lt "$deadline" ] || break
+    sleep 2
+  done
+  echo "side-effect wait: timeout aguardando tail/poll side-effects" >&2
+  return 0
 }
 
 seed_cadastro_handoff_email_recusado() {
@@ -1005,6 +1077,8 @@ run_scenario() {
       printf 'status: ok\n'
     } | tee "$EVIDENCE_DIR/scenario-bot-text.txt"
   fi
+
+  wait_side_effect_gates
 
   if [ -n "${EXPECTED_TAIL_REGEX:-}" ] || [ -n "${FORBIDDEN_TAIL_REGEX:-}" ]; then
     echo ""
