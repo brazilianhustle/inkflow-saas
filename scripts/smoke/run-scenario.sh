@@ -644,6 +644,94 @@ seed_cadastro_pos_midia_aguardando_email() {
   echo "seed ok: conversa=$conv_id session_id=$sid"
 }
 
+seed_cadastro_pos_midia_aguardando_email_media_fresca() {
+  load_devvars
+  local sid now media_body media_rows local_msg_id ref_msg_id conv_body msg_body conv_id tiny_png
+  sid="${TENANT_ID}_${PHONE}"
+  now="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+  tiny_png="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lUz7WQAAAABJRU5ErkJggg=="
+
+  media_body="$(
+    jq -nc \
+      --arg sid "$sid" \
+      --arg b64 "$tiny_png" \
+      '[
+        {
+          session_id:$sid,
+          status:"processed",
+          message:{
+            type:"human",
+            content:"foto local seed auditoria",
+            media_base64:$b64,
+            media_mimetype:"image/png"
+          }
+        },
+        {
+          session_id:$sid,
+          status:"processed",
+          message:{
+            type:"human",
+            content:"referencia seed auditoria",
+            media_base64:$b64,
+            media_mimetype:"image/png"
+          }
+        }
+      ]'
+  )"
+  media_rows="$(supa_post "conversa_mensagens" "$media_body")"
+  local_msg_id="$(printf '%s' "$media_rows" | jq -r '.[0].id // empty')"
+  ref_msg_id="$(printf '%s' "$media_rows" | jq -r '.[1].id // empty')"
+  if [ -z "$local_msg_id" ] || [ -z "$ref_msg_id" ] || [ "$local_msg_id" = "null" ] || [ "$ref_msg_id" = "null" ]; then
+    echo "ERRO: seed nao retornou ids de midia fresca." >&2
+    exit 1
+  fi
+
+  conv_body="$(
+    jq -nc \
+      --arg tenant "$TENANT_ID" \
+      --arg phone "$PHONE" \
+      --arg now "$now" \
+      --argjson local_id "$local_msg_id" \
+      --argjson ref_id "$ref_msg_id" \
+      '{
+        tenant_id:$tenant,
+        telefone:$phone,
+        estado_agente:"coletando_cadastro",
+        dados_coletados:{
+          descricao_curta:"rosa",
+          local_corpo:"antebraco",
+          altura_cm:170,
+          estilo:"fineline",
+          foto_local_msg_id:$local_id,
+          refs_imagens_msg_ids:[$ref_id],
+          tentativas_foto_local:1
+        },
+        dados_cadastro:{
+          nome:"Joao Silva",
+          data_nascimento:"1995-03-12"
+        },
+        last_msg_at:$now
+      }'
+  )"
+  conv_id="$(supa_post "conversas" "$conv_body" | jq -r '.[0].id // empty')"
+  [ -n "$conv_id" ] || { echo "ERRO: seed nao retornou conversa id." >&2; exit 1; }
+
+  msg_body="$(
+    jq -nc \
+      --arg sid "$sid" \
+      '{
+        session_id:$sid,
+        status:"processed",
+        message:{
+          type:"ai",
+          content:"E o e-mail? Se preferir seguir sem, me avisa"
+        }
+      }'
+  )"
+  supa_post "conversa_mensagens" "$msg_body" >/dev/null
+  echo "seed ok: conversa=$conv_id session_id=$sid foto_local_msg_id=$local_msg_id ref_msg_id=$ref_msg_id"
+}
+
 run_setup() {
   case "$SETUP" in
     none|"") echo "setup: none" ;;
@@ -657,6 +745,7 @@ run_setup() {
     seed_tattoo_ref_confirmada_aguardando_foto_local) seed_tattoo_ref_confirmada_aguardando_foto_local ;;
     seed_cadastro_pos_midia_aguardando_nome) seed_cadastro_pos_midia_aguardando_nome ;;
     seed_cadastro_pos_midia_aguardando_email) seed_cadastro_pos_midia_aguardando_email ;;
+    seed_cadastro_pos_midia_aguardando_email_media_fresca) seed_cadastro_pos_midia_aguardando_email_media_fresca ;;
     *) echo "ERRO: setup desconhecido: $SETUP" >&2; exit 1 ;;
   esac
 }
