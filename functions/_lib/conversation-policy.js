@@ -246,6 +246,16 @@ export function resolveBirthDate(message) {
   return { answered: false, value: null, confidence: 0, reason: 'no_birthdate' };
 }
 
+export function resolveExplicitAge(message) {
+  const s = stripAccents(message || '');
+  const hit = s.match(/\b(?:tenho|tem|idade(?:\s+(?:e|é))?|com)?\s*(1[0-7]|[1-9])\s+anos?\b/);
+  const value = Number(hit?.[1]);
+  if (Number.isFinite(value) && value > 0 && value < 18) {
+    return { answered: true, value, confidence: 0.88, reason: 'explicit_minor_age' };
+  }
+  return { answered: false, value: null, confidence: 0, reason: 'no_minor_age' };
+}
+
 export function resolveEmail(message) {
   const raw = String(message || '');
   if (/\b(nao tenho|não tenho|sem e-?mail|pode seguir sem|prefiro sem|pula|depois|nao quero passar|não quero passar)\b/i.test(raw)) {

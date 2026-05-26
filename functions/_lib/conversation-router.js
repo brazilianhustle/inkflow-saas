@@ -10,7 +10,7 @@
 // O contrato retorna um output compatível com runAgent para o pipeline poder
 // persistir/enviar sem criar um segundo caminho de side effects.
 
-import { extractLocalAnswer, extractStyleAnswer, resolveHeightCm, resolvePendingFormQuestion, resolveTattooSizeCm } from './conversation-policy.js';
+import { extractLocalAnswer, extractStyleAnswer, resolveExplicitAge, resolveHeightCm, resolvePendingFormQuestion, resolveTattooSizeCm } from './conversation-policy.js';
 import { composeRouterResponse } from './conversation-response-composer.js';
 
 const HANDLED_STATES = new Set(['tattoo', 'cadastro']);
@@ -415,7 +415,42 @@ function tattooMultiInfoOutput({ extracted, estado_atual, conversa, tenant, clie
 }
 
 function escalationOutput({ detected, estado_atual, intent }) {
-  if (!['cobertura', 'human_requested', 'client_upset', 'tenant_handoff_trigger'].includes(intent)) return null;
+  if (!['cobertura', 'human_requested', 'client_upset', 'tenant_handoff_trigger', 'minor_age_explicit'].includes(intent)) return null;
+  if (intent === 'minor_age_explicit') {
+    return {
+      ok: true,
+      handled_by: 'conversation_router',
+      intent,
+      confidence: detected.confidence,
+      risk: detected.risk,
+      reason: detected.reason,
+      can_mutate_state: true,
+      resposta_cliente: 'Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador para orientar com segurança sobre responsável legal.',
+      estado_novo: 'aguardando_tatuador',
+      dados_persistidos: {},
+      dados_completos: false,
+      campos_faltando: ['menor_idade_trigger'],
+      campos_conflitantes: [],
+      proxima_acao: 'erro',
+      agent_usado: 'cadastro',
+      side_effects: [],
+      urls_portfolio: [],
+      analise_imagens: null,
+      cobertura_suspeita: null,
+      escalation: {
+        required: true,
+        reason_code: 'minor_age',
+        reason_label: 'menoridade / responsavel legal',
+        severity: 'high',
+        source: 'conversation_router',
+        requires_orcid: false,
+      },
+      minor_age_resolution: {
+        age: detected.age || null,
+        data_nascimento_persistida: false,
+      },
+    };
+  }
   if (intent === 'human_requested') {
     return {
       ok: true,
@@ -548,6 +583,22 @@ function escalationOutput({ detected, estado_atual, intent }) {
 export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant, clientContext, historico, disabled = false }) {
   if (disabled) return null;
   if (!HANDLED_STATES.has(estado_atual)) return null;
+
+  if (estado_atual === 'cadastro') {
+    const minorAge = resolveExplicitAge(mensagem);
+    if (minorAge.answered) {
+      return escalationOutput({
+        estado_atual,
+        intent: 'minor_age_explicit',
+        detected: {
+          confidence: minorAge.confidence,
+          risk: 'high',
+          reason: minorAge.reason,
+          age: minorAge.value,
+        },
+      });
+    }
+  }
 
   const baseDetected = detectIntent(mensagem);
   const tenantDetected = estado_atual === 'tattoo'
