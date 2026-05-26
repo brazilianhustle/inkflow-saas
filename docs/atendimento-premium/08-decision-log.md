@@ -1396,6 +1396,27 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** HTTP radar `scenario-cadastro-idade-menor-handoff-humano-20260526T085147Z-3519` passou; WhatsApp real `scenario-whatsapp-real-cadastro-idade-menor-handoff-humano-20260526T085229Z-3539` passou; agent logs confirmaram `minor_age_explicit` e `minor_age`.
 
+### Wave 14 - Recusas Naturais De Email Opcional
+
+**Data:** 2026-05-26
+
+**Status:** declarada.
+
+**Decisão:** iniciar `level4b-wave-14-cadastro-email-refusal-variants` para tratar recusas naturais do e-mail opcional, começando por `prefiro falar por aqui`.
+
+**Motivo:** o cadastro já aceita e-mail válido e recusa explícita como `pode seguir sem email`, mas usuários reais podem recusar usando linguagem de canal. Se o bot pediu e-mail opcional, essa resposta deve completar o cadastro sem insistência.
+
+**Alternativas rejeitadas:**
+
+- deixar o LLM interpretar a recusa;
+- exigir frase literal com a palavra e-mail;
+- bloquear handoff por e-mail opcional recusado em linguagem natural;
+- promover autonomia para 4C.
+
+**Camada responsável:** ConversationPolicy, ConversationRouter, Workflow Manager, Smoke Scenario Registry.
+
+**Impacto:** esperado HTTP radar e WhatsApp real definitivo para `prefiro falar por aqui`, com `email_recusado=true`, `orcid` criado e logs de Router/Workflow Manager.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

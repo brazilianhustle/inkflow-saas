@@ -11,13 +11,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_13_minor_age_explicit_pass
+status: level4b_wave_14_email_refusal_variants_in_progress
 branch: main
 ultimo_commit: ae88b65 test: cover explicit minor age handoff
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
 tests: npm test PASS local 1195/1195; testes focados Wave 13 PASS 129/129
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos closeout da Wave 13
+worktree_esperado: dirty durante implementacao da Wave 14
 ultimo_commit_validado: ae88b65
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
@@ -134,6 +134,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 11 validou midia adicional pos-handoff: em `aguardando_tatuador`, nova imagem enviada pelo cliente e reencaminhada ao tatuador, sem reabrir coleta e sem nova resposta AI apos o humano; HTTP radar e WhatsApp real definitivo passaram.
 - Wave 12 validou texto adicional pos-handoff: em `aguardando_tatuador`, nova mensagem enviada pelo cliente e reencaminhada ao tatuador, sem reabrir coleta e sem nova resposta AI apos o humano; HTTP radar e WhatsApp real definitivo passaram.
 - Wave 13 validou menoridade explicita sem data: em `cadastro`, `tenho 16 anos` sai para humano, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e registra Router `minor_age_explicit` + Escalation Manager `minor_age`; HTTP radar e WhatsApp real definitivo passaram.
+- Wave 14 declarada: `level4b-wave-14-cadastro-email-refusal-variants`, foco leve em recusas naturais de e-mail opcional, começando por `prefiro falar por aqui`.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -171,7 +172,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router m
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: manter Level 4B, rodar wave-health final e declarar a proxima onda funcional leve.
+Proximo passo recomendado: implementar e validar o primeiro micro-slice da Wave 14: `prefiro falar por aqui` como recusa de e-mail opcional.
 ```
 
 Escopo recomendado:
@@ -182,7 +183,7 @@ Escopo recomendado:
 - usar `docs/atendimento-premium/36-level-4b-wave-13.md` como fechamento da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
 - Wave 13 fechou menoridade explicita em cadastro com WhatsApp real definitivo;
-- proximo alvo funcional deve ser declarado antes de editar codigo;
+- Wave 14 declarada antes de editar codigo;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;

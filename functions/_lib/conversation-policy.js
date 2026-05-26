@@ -258,7 +258,7 @@ export function resolveExplicitAge(message) {
 
 export function resolveEmail(message) {
   const raw = String(message || '');
-  if (/\b(nao tenho|não tenho|sem e-?mail|pode seguir sem|prefiro sem|pula|depois|nao quero passar|não quero passar)\b/i.test(raw)) {
+  if (/\b(nao tenho|não tenho|sem e-?mail|pode seguir sem|prefiro sem|prefiro falar por aqui|melhor falar por aqui|vamos falar por aqui|por aqui mesmo|pula|depois|nao quero passar|não quero passar|nao vou passar|não vou passar)\b/i.test(raw)) {
     return {
       answered: true,
       value: null,

@@ -1019,6 +1019,18 @@ decisao: manter Level 4B; 4C bloqueado
 proximo passo: rodar wave-health final, commitar closeout e declarar proxima onda funcional leve
 ```
 
+Wave 14 declarada:
+
+```text
+wave: level4b-wave-14-cadastro-email-refusal-variants
+status: em implementacao
+primeiro_micro_slice: "prefiro falar por aqui" quando email esta pendente
+objetivo: tratar recusa natural de email opcional como email_recusado=true sem cair no LLM
+validacao_obrigatoria: teste local + HTTP radar + WhatsApp real central -> bot
+zona: verde/amarela
+restricoes: nao tocar preco, sinal, pagamento, agenda, secrets ou 4C
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:
