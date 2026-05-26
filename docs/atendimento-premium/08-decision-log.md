@@ -947,6 +947,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `wave-runner.sh` valida preflight, dry-run, gates e saude da onda; `evidence-registrar.sh` gera uma linha sugerida para `smoke-runs.md`. Ambos preservam Commander unico, WhatsApp real serial e revisao humana da evidencia.
 
+## 2026-05-26 - Gate de evidencia orfa
+
+**Status:** decidido.
+
+**Decisão:** adicionar `evidence-orphan-gate.sh` ao processo de `wave-health`, bloqueando registros quebrados e alertando evidencias completas recentes ainda nao registradas.
+
+**Motivo:** o Level 4B depende de evidencia rastreavel. Um registro em `smoke-runs.md` apontando para pasta inexistente invalida retomada. Ao mesmo tempo, o historico contem tentativas abortadas e controles nao registrados; por isso o modo padrao deve alertar sem bloquear para orfaos recentes, enquanto o modo estrito fica reservado para auditoria/limpeza planejada.
+
+**Alternativas rejeitadas:**
+
+- bloquear todo evidence dir nao registrado imediatamente;
+- ignorar divergencias entre `smoke-runs.md` e artifacts;
+- apagar ou editar evidencias antigas automaticamente;
+- tornar modo estrito padrao antes de limpar historico.
+
+**Camada responsável:** Smoke Monitoring Process, Wave Health, Evidence Index e Multi-Agent Governance.
+
+**Impacto:** `wave-health.sh` agora inclui Evidence Orphan Gate. O gate falha para registro quebrado, emite `WARN` para evidence completa recente nao registrada e pode ser executado com `EVIDENCE_ORPHAN_STRICT=1` para auditoria rigorosa.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

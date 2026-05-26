@@ -35,6 +35,7 @@ fi
 
 run_section "Autonomy Gate" bash scripts/smoke/check-autonomy-gate.sh
 run_section "Security Gate" bash scripts/smoke/check-security-gate.sh
+run_section "Evidence Orphan Gate" bash scripts/smoke/evidence-orphan-gate.sh
 
 echo
 echo "## Git"

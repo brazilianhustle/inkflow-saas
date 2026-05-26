@@ -580,10 +580,11 @@ Ferramentas metodologicas adicionadas:
 ```text
 wave_runner: scripts/smoke/wave-runner.sh
 evidence_registrar: scripts/smoke/evidence-registrar.sh
+evidence_orphan_gate: scripts/smoke/evidence-orphan-gate.sh
 status: PASS
-validacao: bash -n, git diff --check, wave-runner oficial limpo, wave-health
+validacao: bash -n, git diff --check, evidence-registrar, evidence-orphan-gate, wave-runner oficial limpo, wave-health
 comportamento_bot: inalterado
-uso: wave-runner faz preflight; evidence-registrar imprime linha sugerida para smoke-runs.md sem editar arquivo
+uso: wave-runner faz preflight; evidence-registrar imprime linha sugerida para smoke-runs.md sem editar arquivo; evidence-orphan-gate bloqueia registro quebrado e alerta evidence recente nao registrada
 ```
 
 ## Checklist De Fechamento De Sessão

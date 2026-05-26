@@ -161,13 +161,13 @@ O ganho principal deve vir de orquestrar melhor ferramentas existentes:
 - `scripts/smoke/wave-health.sh`;
 - `scripts/smoke/evidence-index.sh`;
 - `scripts/smoke/evidence-registrar.sh`;
+- `scripts/smoke/evidence-orphan-gate.sh`;
 - `scripts/smoke/continuity-bundle.sh`;
 - GitHub Actions de tests, prompts/evals e deploy.
 
 Ferramentas candidatas futuras:
 
 - `wave-runner`: orquestra preflight, dry-run, HTTP radar, WhatsApp real, gates e relatorio;
-- `evidence-orphan-gate`: detecta evidencia sem registro e registro sem artifact;
 - dry-run de scenarios no CI;
 - matriz executavel de risco para bloquear comandos fora da zona autorizada.
 
@@ -240,6 +240,36 @@ Ele imprime:
 - decisao resumida com estado, `orcid`, `copy_risk`, dados persistidos e ultima resposta do bot.
 
 Ele nao edita `smoke-runs.md`. O Commander ainda revisa e cola a linha final.
+
+## Evidence Orphan Gate
+
+O `scripts/smoke/evidence-orphan-gate.sh` detecta divergencias entre `.smoke-evidence` e `smoke-runs.md`.
+
+Uso operacional:
+
+```bash
+bash scripts/smoke/evidence-orphan-gate.sh
+```
+
+Ele valida:
+
+- registros em `smoke-runs.md` apontando para evidence dirs existentes;
+- evidence dirs completos recentes sem registro;
+- evidence dirs incompletos recentes quando o modo estrito estiver ativo.
+
+Modo padrao:
+
+- falha se um registro versionado aponta para artifact ausente;
+- emite `WARN` para evidence recente completa sem registro;
+- ignora evidence incompleta historica ou de tentativa abortada.
+
+Modo estrito:
+
+```bash
+EVIDENCE_ORPHAN_STRICT=1 bash scripts/smoke/evidence-orphan-gate.sh
+```
+
+O modo estrito falha tambem para evidence recente nao registrada ou incompleta. Ele deve ser usado em auditoria/limpeza planejada, nao como bloqueio diario enquanto ha historico antigo de tentativas e controles nao registrados.
 
 ## Protocolo Por Micro-Slice
 
