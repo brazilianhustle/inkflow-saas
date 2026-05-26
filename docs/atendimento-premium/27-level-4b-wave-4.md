@@ -81,7 +81,7 @@ Parar a onda se ocorrer:
 ```text
 setup: seed_tattoo_aguardando_foto_local
 cliente: envia imagem com legenda "segue foto do local"
-estado_final: coletando_cadastro ou coletando_tattoo, sem orcid
+estado_final: coletando_cadastro, sem orcid
 dados_esperados:
   descricao_curta: rosa
   estilo: fineline
