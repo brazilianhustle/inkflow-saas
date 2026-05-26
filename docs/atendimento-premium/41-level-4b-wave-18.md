@@ -156,3 +156,47 @@ Estado final: `aguardando_tatuador`, `orcid=orc_24av8g`, `copy_risk=baixo`.
 ## Decisao Apos Micro-Slice 2
 
 Manter Level 4B. A Wave 18 removeu os residuos historicos nao-legais de fechamento/handoff da amostra atual. O residual medio ficou restrito a menoridade legal e permanece como watchlist aceitavel por seguranca. Proximo ataque recomendado: fechar Wave 18 ou abrir uma nova onda pequena fora de menoridade, sem subir para 4C.
+
+## Closeout Da Wave 18
+
+Status: PASS.
+
+Resumo:
+
+```text
+onda: level4b-wave-18-cadastro-after-media-naturalness
+escopo: revalidar fechamento/handoff atual contra evidencias historicas com copy rigida
+mudanca_funcional: nao
+mudanca_de_contrato: sim, cadastro-handoff agora exige copy_risk=baixo e bloqueia copy antiga/promessas indevidas
+http_radar_final: scenario-cadastro-handoff-email-recusado-20260526T203228Z-29078 PASS
+whatsapp_real_final: scenario-whatsapp-real-cadastro-handoff-20260526T203258Z-19586 PASS
+resultado_final_auditoria: 13 evidencias, 10 baixo, 3 medio, 0 alto
+residual_medio: menoridade legal por termos de seguranca/responsavel legal
+regressao_aberta: nenhuma
+autonomy_level: manter 4B
+promocao_4C: bloqueada
+```
+
+Entregas:
+
+- e-mail valido apos midia revalidado com HTTP radar e WhatsApp real definitivo;
+- cadastro-handoff basico revalidado com HTTP radar e WhatsApp real definitivo;
+- residuos historicos nao-legais de `Fechado`, `valor certinho` e `avaliar com calma` removidos da amostra atual;
+- contratos `cadastro-handoff-email-recusado` e `whatsapp-real-cadastro-handoff` fortalecidos para impedir retorno da copy antiga;
+- auditoria de naturalidade consolidada em `10 baixo`, `3 medio`, `0 alto`.
+
+### Provas Conclusivas Reais - Closeout
+
+Cliente: `joao@example.com`
+
+Bot: `Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`
+
+Cliente: `pode seguir sem email`
+
+Cliente: `quanto tempo demora?`
+
+Bot: `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.`
+
+Bot: `Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`
+
+Decisao final: encerrar a Wave 18. A proxima onda deve continuar em Level 4B, pequena e fora de menoridade legal. Caminhos preferenciais: pos-handoff leve ou lateral/portfolio. Nao subir para 4C.

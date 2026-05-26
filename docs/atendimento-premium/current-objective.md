@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_18_micro_slice_2_pass
+status: level4b_wave_18_closed
 branch: main
-ultimo_commit: 0402416 docs: update wave 18 handoff objective
+ultimo_commit: c83b558 docs: close wave 18
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: GitHub Actions Deploy to Cloudflare Pages PASS no fechamento da Wave 18 micro-slice 2
+deploy: pendente no commit c83b558
 tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 18 micro-slice 2 sem mudanca funcional; contratos reexecutados com HTTP + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 0402416
+ultimo_commit_validado: c83b558
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -192,8 +192,16 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: fechar Wave 18 ou abrir uma nova onda pequena fora de menoridade legal. A auditoria atual ficou com 10 baixo, 3 medio, 0 alto; os 3 medios restantes sao menoridade legal aceitavel por seguranca. Manter Level 4B; nao subir para 4C.
+Proximo passo recomendado: abrir Wave 19 pequena fora de menoridade legal. Candidatos preferenciais: pos-handoff leve ou lateral/portfolio. A auditoria atual ficou com 10 baixo, 3 medio, 0 alto; os 3 medios restantes sao menoridade legal aceitavel por seguranca. Manter Level 4B; nao subir para 4C.
 ```
+
+Atualizacao 2026-05-26 20:37 UTC:
+
+- Wave 18 fechada com PASS.
+- Resultado final: 13 evidencias auditadas, 10 baixo, 3 medio, 0 alto.
+- Residual medio restrito a menoridade legal por termos de seguranca/responsavel legal; decisao: nao atacar agora.
+- Contratos de `cadastro-handoff` ficaram mais rígidos contra copy antiga e promessas indevidas.
+- Proximo passo recomendado: declarar Wave 19 pequena, fora de menoridade legal, mantendo Level 4B e 4C bloqueado.
 
 Atualizacao 2026-05-26 20:30 UTC:
 
