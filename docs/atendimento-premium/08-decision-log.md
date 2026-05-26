@@ -831,6 +831,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** scenarios `http_multiturn` agora executam passos sequenciais, preservam evidencia por step e geram evidencia final consolidada. O primeiro run PASS foi `scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904`. O proximo passo obrigatorio e implementar `whatsapp_real_multiturn` antes de chamar a validacao de definitiva.
 
+## 2026-05-26 - WhatsApp real multi-turn vira validacao definitiva
+
+**Status:** decidido.
+
+**Decisão:** implementar `whatsapp_real_multiturn` no runner versionado e exigir esse caminho como validacao definitiva de fluxos conversacionais encadeados.
+
+**Motivo:** o teste definitivo precisa provar que mensagens sucessivas saem da instancia `central`, entram no numero oficial do bot, chegam pelo webhook real, preservam o estado e passam por Router/Workflow Manager com logs auditaveis.
+
+**Alternativas rejeitadas:**
+
+- considerar HTTP multi-turn suficiente para comportamento conversacional;
+- mandar mensagens reais manualmente sem evidence package padronizado;
+- validar somente o ultimo turno, sem preservar evidencia por step;
+- pular transcript/judgment consolidado.
+
+**Camada responsável:** Smoke Scenario Registry, Evolution Outbound QA, Pipeline WhatsApp real, ConversationRouter, Workflow Manager e Observabilidade.
+
+**Impacto:** o scenario `whatsapp-real-cadastro-lateral-data-recovery` passou com run `scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T033539Z-27181`. A metodologia fica reforcada: HTTP multi-turn e radar; WhatsApp real multi-turn e prova conclusiva.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

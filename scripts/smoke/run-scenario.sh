@@ -332,6 +332,7 @@ run_setup() {
 write_single_turn_step_env() {
   local step="$1"
   local path="$2"
+  local scenario_type="${3:-http}"
   local message expected_state expected_human expected_copy bot_regex forbidden_bot poll_jq agent_jq
   message="$(step_value MESSAGE "$step")"
   expected_state="$(step_value EXPECTED_STATE "$step")"
@@ -350,11 +351,12 @@ write_single_turn_step_env() {
   {
     printf 'SCENARIO_ID=%s\n' "$(shell_quote "${SCENARIO_ID}-step${step}")"
     printf 'SCENARIO_TITLE=%s\n' "$(shell_quote "${SCENARIO_TITLE} step ${step}")"
-    printf 'SCENARIO_TYPE="http"\n'
+    printf 'SCENARIO_TYPE=%s\n' "$(shell_quote "$scenario_type")"
     printf 'BASE_URL=%s\n' "$(shell_quote "$BASE_URL")"
     printf 'TENANT_ID=%s\n' "$(shell_quote "$TENANT_ID")"
     printf 'PHONE=%s\n' "$(shell_quote "$PHONE")"
     printf 'INSTANCE=%s\n' "$(shell_quote "${INSTANCE:-}")"
+    [ -n "${SMOKE_BOT_NUMBER:-}" ] && printf 'SMOKE_BOT_NUMBER=%s\n' "$(shell_quote "$SMOKE_BOT_NUMBER")"
     printf 'SETUP="none"\n'
     printf 'CLEANUP_BEFORE="0"\n'
     printf 'MESSAGE=%s\n' "$(shell_quote "$message")"
@@ -371,7 +373,7 @@ write_single_turn_step_env() {
 copy_final_step_evidence() {
   local final_dir="$1"
   local file
-  for file in request.json poll.json summary.md transcript.md judgment.md agent-turn-logs.json scenario-bot-text.txt scenario-poll-jq.txt scenario-agent-log-jq.txt report-render.txt; do
+  for file in request.json poll.json summary.md transcript.md judgment.md agent-turn-logs.json evolution-send.json tail-start.txt tail-excerpt.log scenario-bot-text.txt scenario-poll-jq.txt scenario-agent-log-jq.txt report-render.txt; do
     [ -f "$final_dir/$file" ] && cp "$final_dir/$file" "$EVIDENCE_DIR/$file"
   done
 }
@@ -424,6 +426,58 @@ run_http_multiturn() {
   bash scripts/smoke/render-report.sh "$EVIDENCE_DIR" | tee -a "$EVIDENCE_DIR/report-render.txt"
 }
 
+run_whatsapp_real_multiturn() {
+  local steps_root step step_dir step_env step_run_id generated_dir final_dir
+  load_devvars
+  [ -n "${SMOKE_BOT_NUMBER:-}" ] || { echo "ERRO: whatsapp_real_multiturn exige SMOKE_BOT_NUMBER." >&2; exit 1; }
+  steps_root="$EVIDENCE_DIR/steps"
+  mkdir -p "$steps_root"
+
+  {
+    printf '# Multi-turn WhatsApp real steps\n\n'
+    printf -- '- step_count: %s\n' "$STEP_COUNT"
+    printf -- '- step_wait_seconds: %s\n' "$STEP_WAIT_SECONDS"
+    printf -- '- sender_instance: %s\n' "${INSTANCE:-central}"
+    printf -- '- bot_number: %s\n' "$SMOKE_BOT_NUMBER"
+  } > "$EVIDENCE_DIR/multiturn-summary.md"
+
+  for step in $(seq 1 "$STEP_COUNT"); do
+    step_dir="$steps_root/$step"
+    mkdir -p "$step_dir"
+    step_env="$step_dir/scenario.env"
+    step_run_id="${RUN_ID}-step${step}"
+    write_single_turn_step_env "$step" "$step_env" "whatsapp_real"
+
+    echo ""
+    echo "[scenario] whatsapp real multiturn step $step/$STEP_COUNT"
+    SMOKE_SCENARIO_FILE="$step_env" \
+    SMOKE_RUN_ID="$step_run_id" \
+    SMOKE_EVIDENCE_ROOT="$steps_root" \
+      bash scripts/smoke/run-scenario.sh "${SCENARIO_ID}-step${step}" \
+        | tee "$step_dir/run.log"
+
+    generated_dir="$steps_root/$step_run_id"
+    if [ -d "$generated_dir" ]; then
+      cp -R "$generated_dir/." "$step_dir/"
+      rm -rf "$generated_dir"
+    fi
+    {
+      printf '\n## Step %s\n\n' "$step"
+      printf -- '- run_id: %s\n' "$step_run_id"
+      printf -- '- evidence: steps/%s/\n' "$step"
+      printf -- '- message: %s\n' "$(step_value MESSAGE "$step")"
+    } >> "$EVIDENCE_DIR/multiturn-summary.md"
+
+    final_dir="$step_dir"
+    if [ "$step" -lt "$STEP_COUNT" ] && [ "${STEP_WAIT_SECONDS:-0}" -gt 0 ]; then
+      sleep "$STEP_WAIT_SECONDS"
+    fi
+  done
+
+  copy_final_step_evidence "$final_dir"
+  bash scripts/smoke/render-report.sh "$EVIDENCE_DIR" | tee -a "$EVIDENCE_DIR/report-render.txt"
+}
+
 run_scenario() {
   mkdir -p "$EVIDENCE_DIR"
   print_plan | tee "$EVIDENCE_DIR/scenario-plan.txt"
@@ -448,8 +502,8 @@ run_scenario() {
       return 0
       ;;
     whatsapp_real_multiturn)
-      echo "ERRO: whatsapp_real_multiturn ainda nao implementado." >&2
-      exit 1
+      run_whatsapp_real_multiturn
+      return 0
       ;;
     http)
       SMOKE_RUN_ID="$RUN_ID" \

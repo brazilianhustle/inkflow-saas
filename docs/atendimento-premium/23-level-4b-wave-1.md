@@ -82,7 +82,10 @@ Parar a onda se ocorrer:
 status: em-andamento
 micro_slice_1: multiturn-scenario-contract PASS
 micro_slice_2: multiturn-http-runner PASS
-micro_slice_atual: multiturn-whatsapp-real-runner
+micro_slice_3: multiturn-whatsapp-real-runner PASS
+micro_slice_4: cadastro-lateral-data-recovery-http PASS
+micro_slice_5: cadastro-lateral-data-recovery-whatsapp-real PASS
+micro_slice_atual: multiturn-evidence-summary
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -151,6 +154,35 @@ Leitura:
 - Houve uma falha util anterior por contrato de evidencia/copy gate; o comportamento estava correto, e o runner foi ajustado antes do PASS final.
 
 Provas HTTP radar:
+
+```text
+Cliente 1: "quanto tempo demora?"
+Bot 1: "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia. Me passa tua data de nascimento completa?"
+Cliente 2: "12/03/1995"
+Bot 2: "E o e-mail? Se preferir seguir sem, me avisa"
+```
+
+## Evidencia Micro-Slice 3-5
+
+```text
+micro_slice: multiturn-whatsapp-real-runner
+status: PASS
+run_id: scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T033539Z-27181
+tipo: WhatsApp real multi-turn
+cadeia: Evolution central -> numero bot -> webhook real -> pipeline -> resposta
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T033539Z-27181/
+proximo_micro_slice: multiturn-evidence-summary
+```
+
+Leitura:
+
+- O runner `whatsapp_real_multiturn` executou dois envios reais pela instancia `central`.
+- O webhook registrou os humanos exatos nos dois passos.
+- Step 1 manteve `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null`, copy risk baixo e Workflow Manager `state_preserved_by_router_policy`.
+- Step 2 persistiu `data_nascimento=1995-03-12`, manteve `orcid=null`, copy risk medio permitido e Router `pending_data_nascimento_answered`.
+- Como o mesmo fluxo alvo foi validado em HTTP e WhatsApp real, os micro-slices `cadastro-lateral-data-recovery-http` e `cadastro-lateral-data-recovery-whatsapp-real` tambem ficam cobertos.
+
+Provas conclusivas reais:
 
 ```text
 Cliente 1: "quanto tempo demora?"

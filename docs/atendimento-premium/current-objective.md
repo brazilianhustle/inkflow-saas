@@ -107,13 +107,14 @@ autonomy_recommendation: 4C bloqueado ate duas rodadas 4B saudaveis
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904
-tipo: Scenario HTTP multi-turn
-base_url: https://inkflowbrasil.com
+run_id_http: scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904
+run_id_real: scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T033539Z-27181
+tipo: Scenario WhatsApp real multi-turn
+base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_cadastro
 orcid: null
-evidence: .smoke-evidence/scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904/
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T033539Z-27181/
 ```
 
 Mensagem:
@@ -137,13 +138,13 @@ step_2_copy_risk: medio
 copy: responde tempo de sessao, retoma data, persiste data e pede e-mail opcional
 decision_observability: step 1 confirmou Workflow Manager state_preserved_by_router_policy; step 2 confirmou Router pending_data_nascimento_answered
 decision_chain: pergunta lateral durante cadastro -> preserva pergunta pendente -> resposta de data no turno seguinte persiste corretamente
-chain: HTTP production smoke -> pipeline -> resposta -> poll -> agent-log gates por step
+chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll -> agent-log gates por step
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar micro-slice `multiturn-whatsapp-real-runner` da onda `level4b-wave-1-multiturn-smoke`.
+Proximo passo recomendado: executar micro-slice `multiturn-evidence-summary` da onda `level4b-wave-1-multiturn-smoke`.
 ```
 
 Escopo recomendado:
@@ -153,7 +154,7 @@ Escopo recomendado:
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
 - seguir a onda declarada em `docs/atendimento-premium/23-level-4b-wave-1.md`;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
-- implementar `whatsapp_real_multiturn` sem chamar o fluxo definitivo de PASS ate a cadeia real `central -> bot` passar;
+- consolidar transcript/judgment/provas por passo em resumo rapido da onda;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
 - nao subir para 4C; 4C exige duas rodadas 4B saudaveis.
