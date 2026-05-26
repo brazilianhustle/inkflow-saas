@@ -656,6 +656,25 @@ provas_conclusivas_reais:
   3. Cliente "quero uma rosa fineline" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nTu imagina fazer em qual parte do corpo?"; Cliente "na perna, tenho 1,81" -> Bot "Boa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
 ```
 
+Proxima onda Level 4B declarada:
+
+```text
+wave: level4b-wave-3-tattoo-pending-answer-recovery
+doc: docs/atendimento-premium/26-level-4b-wave-3.md
+objetivo: validar respostas a campos pendentes de tattoo junto de duvidas laterais
+risco: amarelo leve
+janela: ate 8 micro-slices
+primeiro scenario HTTP: tattoo-pending-local-lateral
+primeiro scenario WhatsApp real: whatsapp-real-tattoo-pending-local-lateral
+primeiro fluxo: Cliente "quero uma borboleta fineline"; Bot pergunta local; Cliente "bunda\nquantas sessoes seria?"
+4C: bloqueado
+primeiro_http: scenario-tattoo-pending-local-lateral-20260526T052610Z-24026 PASS
+primeiro_real: scenario-whatsapp-real-tattoo-pending-local-lateral-20260526T052659Z-26598 PASS
+falha_util: scenario-tattoo-pending-local-lateral-20260526T052255Z-4229 mostrou que "quero uma borboleta" era briefing inicial generico demais para esta onda
+provas_conclusivas_reais: Cliente "quero uma borboleta fineline" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nTu imagina fazer em qual parte do corpo?"; Cliente "bunda\nquantas sessoes seria?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nMe diz tua altura?"
+proximo passo: executar tattoo-pending-height-lateral-http
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

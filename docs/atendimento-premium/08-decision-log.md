@@ -1023,6 +1023,27 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `24-level-4b-wave-2.md`, `current-objective.md` e `09-session-handoff.md` agora registram closeout, provas conclusivas reais e a decisao de manter Level 4B. O proximo passo e declarar uma nova onda funcional em zona verde/amarela antes de tocar comportamento.
 
+## 2026-05-26 - Wave 3 Level 4B para pending answer de tattoo
+
+**Status:** decidido.
+
+**Decisão:** declarar `level4b-wave-3-tattoo-pending-answer-recovery` como proxima onda funcional leve em Level 4B.
+
+**Motivo:** depois de validar multi-info espontaneo, o proximo risco pragmatico e o cliente responder um campo pendente e fazer uma duvida lateral no mesmo turno. Esse caminho ja existe em testes unitarios, mas precisa de contrato HTTP e WhatsApp real para virar comportamento premium rastreavel.
+
+**Alternativas rejeitadas:**
+
+- atacar preco, agenda, sinal ou pagamento nesta rodada;
+- promover para 4C antes de outra onda 4B saudavel;
+- validar apenas com unit test;
+- abrir uma onda ampla de linguagem sem cenarios fechados.
+
+**Camada responsável:** ConversationRouter, ConversationPolicy, Workflow Manager e Smoke Scenario Registry.
+
+**Impacto:** nova onda documentada em `26-level-4b-wave-3.md`; primeiros cenarios versionados sao `tattoo-pending-local-lateral` e `whatsapp-real-tattoo-pending-local-lateral`, validando local pendente + pergunta de tempo/sessoes.
+
+**Validacao inicial:** o primeiro contrato com `quero uma borboleta` falhou por briefing inicial generico demais para o alvo da onda. O contrato foi ajustado para `quero uma borboleta fineline`; depois disso, HTTP multi-turn `scenario-tattoo-pending-local-lateral-20260526T052610Z-24026` e WhatsApp real multi-turn `scenario-whatsapp-real-tattoo-pending-local-lateral-20260526T052659Z-26598` passaram, persistindo `descricao_curta=borboleta`, `estilo=fineline`, `local_corpo=glúteo`, com `orcid=null`, `copy_risk=baixo`, resposta lateral de tempo e retomada de altura.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
