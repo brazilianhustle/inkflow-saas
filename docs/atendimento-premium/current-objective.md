@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_18_micro_slice_1_pass
+status: level4b_wave_18_micro_slice_2_pass
 branch: main
-ultimo_commit: c82efd2 docs: revalidate wave 18 valid email handoff
+ultimo_commit: b196a5e docs: revalidate wave 18 cadastro handoff
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: GitHub Actions Deploy to Cloudflare Pages PASS no fechamento da Wave 18 micro-slice 1
-tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 18 micro-slice 1 sem mudanca de codigo; GitHub Tests PASS
+deploy: pendente no commit b196a5e
+tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 18 micro-slice 2 sem mudanca funcional; contratos reexecutados com HTTP + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: c82efd2
+ultimo_commit_validado: b196a5e
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -158,39 +158,52 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-after-media-email-valido-handoff-20260526T202208Z-30399
-run_id_real: scenario-whatsapp-real-cadastro-after-media-email-valido-handoff-20260526T202325Z-13097
-tipo: Scenario WhatsApp real de fechamento pos-midia com e-mail valido da Wave 18
+run_id_http: scenario-cadastro-handoff-email-recusado-20260526T203228Z-29078
+run_id_real: scenario-whatsapp-real-cadastro-handoff-20260526T203258Z-19586
+tipo: Scenario WhatsApp real de cadastro-handoff basico da Wave 18
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: orc_0cse9z
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-after-media-email-valido-handoff-20260526T202325Z-13097/
+orcid: orc_24av8g
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260526T203258Z-19586/
 ```
 
 Mensagem:
 
 ```text
-joao@example.com
+pode seguir sem email
+quanto tempo demora?
 ```
 
 Resultado:
 
 ```text
 estado_agente: aguardando_tatuador
-resposta_ai: Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.
-orcid: orc_0cse9z
+resposta_ai: O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
+
+Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.
+orcid: orc_24av8g
 copy_risk: baixo
-workflow: cadastro completo pos-midia promoveu para aguardando_tatuador com handoff_package_v1
-observabilidade: Router pending_email_answered + Workflow Manager cadastro_and_tattoo_complete
-decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router cadastro pendente -> Workflow Manager cria handoff de orcamento -> resposta final ao cliente
+workflow: cadastro completo com email recusado promoveu para aguardando_tatuador com handoff_package_v1
+observabilidade: Workflow Manager cadastro_and_tattoo_complete + trace hp_*
+decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa de email + lateral tempo -> Workflow Manager cria handoff de orcamento -> resposta lateral + fechamento ao cliente
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: revalidar a familia `cadastro-handoff` basica que ainda aparece com uma evidencia historica media (`Fechado`/`valor certinho`) antes de qualquer nova mudanca de codigo. Manter Level 4B; nao subir para 4C.
+Proximo passo recomendado: fechar Wave 18 ou abrir uma nova onda pequena fora de menoridade legal. A auditoria atual ficou com 10 baixo, 3 medio, 0 alto; os 3 medios restantes sao menoridade legal aceitavel por seguranca. Manter Level 4B; nao subir para 4C.
 ```
+
+Atualizacao 2026-05-26 20:30 UTC:
+
+- Wave 18 micro-slice 2 fechou sem mudanca funcional: `cadastro-handoff` basico atual tambem ja usa copy limpa.
+- HTTP radar final `scenario-cadastro-handoff-email-recusado-20260526T203228Z-29078` PASS com contrato fortalecido.
+- WhatsApp real definitivo final `scenario-whatsapp-real-cadastro-handoff-20260526T203258Z-19586` PASS com contrato fortalecido.
+- Estado final `aguardando_tatuador`, `orcid=orc_24av8g`, `email_recusado=true`, `copy_risk=baixo`.
+- Contratos dos cenarios `cadastro-handoff-email-recusado` e `whatsapp-real-cadastro-handoff` foram apertados para `EXPECTED_COPY_RISK_MAX=baixo` e `FORBIDDEN_BOT_REGEX` contra copy antiga (`Fechado`, `valor certinho`, `avaliar com calma`) e promessas indevidas; ambos foram reexecutados e passaram.
+- Auditoria de naturalidade atual: 13 evidencias, 10 baixo, 3 medio, 0 alto; os 3 medios restantes sao apenas menoridade legal por termos de seguranca.
+- Provas conclusivas reais: Cliente `pode seguir sem email\nquanto tempo demora?`; Bot `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nBoa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`.
 
 Atualizacao 2026-05-26 20:23 UTC:
 

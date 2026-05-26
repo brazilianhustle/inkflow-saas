@@ -99,3 +99,60 @@ Estado final: `aguardando_tatuador`, `orcid=orc_0cse9z`, `copy_risk=baixo`.
 ## Decisao Apos Micro-Slice 1
 
 Manter Level 4B. O caminho pos-midia com e-mail valido esta limpo na producao atual e passou no WhatsApp real definitivo pela `central`. Proximo ataque recomendado: revalidar a familia `cadastro-handoff` basica que ainda aparece com evidencia historica media, antes de qualquer nova mudanca de codigo. Nao subir para 4C.
+
+## Micro-Slice 2 - Cadastro Handoff Basico
+
+PASS sem mudanca de codigo: a evidencia historica media do `cadastro-handoff` basico tambem era antiga. O fluxo atual responde a pergunta lateral de tempo e fecha o handoff com a copy centralizada atual.
+
+Validacao:
+
+```text
+mudanca_de_codigo: nao
+wave_health_pre: PASS
+http_radar: scenario-cadastro-handoff-email-recusado-20260526T203228Z-29078 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-handoff-20260526T203258Z-19586 PASS
+estado_final: aguardando_tatuador
+orcid_http: orc_4h39n6
+orcid_real: orc_24av8g
+email_recusado: true
+copy_risk: baixo
+observabilidade: Workflow Manager cadastro_and_tattoo_complete + handoff_package_v1 + trace hp_*
+```
+
+Fortalecimento de contrato:
+
+```text
+cadastro-handoff-email-recusado: EXPECTED_COPY_RISK_MAX=baixo
+whatsapp-real-cadastro-handoff: EXPECTED_COPY_RISK_MAX=baixo
+forbidden_copy: Fechado, valor certinho, avaliar com calma, orcamento liberado, preco fechado, agenda, sinal, pagamento
+http_contrato_fortalecido: PASS, copy_risk actual=baixo max=baixo, bot text gate PASS
+whatsapp_real_contrato_fortalecido: PASS, copy_risk actual=baixo max=baixo, bot text gate PASS
+bash_n_envs: PASS
+```
+
+Auditoria de naturalidade:
+
+```text
+amostra_expandida_com_evidencia_nova: 13 evidencias
+baixo: 10
+medio: 3
+alto: 0
+decisao: watchlist
+observacao: os 3 medios restantes sao apenas menoridade legal por termos de seguranca/responsavel legal.
+```
+
+### Provas Conclusivas Reais - Micro-Slice 2
+
+Cliente: `pode seguir sem email`
+
+Cliente: `quanto tempo demora?`
+
+Bot: `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.`
+
+Bot: `Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`
+
+Estado final: `aguardando_tatuador`, `orcid=orc_24av8g`, `copy_risk=baixo`.
+
+## Decisao Apos Micro-Slice 2
+
+Manter Level 4B. A Wave 18 removeu os residuos historicos nao-legais de fechamento/handoff da amostra atual. O residual medio ficou restrito a menoridade legal e permanece como watchlist aceitavel por seguranca. Proximo ataque recomendado: fechar Wave 18 ou abrir uma nova onda pequena fora de menoridade, sem subir para 4C.
