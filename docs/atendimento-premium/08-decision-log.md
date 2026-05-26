@@ -1505,6 +1505,26 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 ## Decisões Em Aberto
 
+### 2026-05-26 - Menoridade Por Data Pendente Deve Ser Gate Do Router
+
+**Decisão:** quando o Router resolve uma pergunta pendente de `data_nascimento`, ele deve calcular a idade antes de retomar o cadastro. Se a data indicar menor de 18 anos, a resposta vira handoff humano com `reason_code=minor_age`, `estado_novo=aguardando_tatuador`, `orcid=null` e copy centralizada em `minorAgeHandoffReply`.
+
+**Motivo:** a revalidacao de menoridade da Wave 17 encontrou um gap real: `12/03/2015` em cadastro aguardando data era persistido como dado comum e o bot perguntava e-mail, em vez de acionar humano. O enforcement pós-agent ja cobria o caminho LLM, mas o caminho deterministico do Router bypassava esse enforcement.
+
+**Alternativas rejeitadas:**
+
+- deixar o LLM ou `enforceMenorIdade` resolver depois;
+- tratar data menor apenas por prompt;
+- manter uma frase hardcoded diferente no Router;
+- fechar slice somente com `tenho 17 anos` e autorizacao dos pais;
+- seguir para WhatsApp real sem corrigir o HTTP radar falho.
+
+**Camada responsável:** ConversationRouter, ConversationVoicePolicy, Escalation Manager, Smoke Monitoring Process.
+
+**Impacto:** `minorAgeHandoffReply` centraliza a copy legal; `cadastroPendingAnswerOutput` agora bloqueia data pendente menor antes da retomada; teste local cobre `12/03/2015`; HTTP radar e WhatsApp real definitivo passaram para data menor, idade 17 e autorizacao dos pais. Commits: `6b92582` e `b94ca29`.
+
+**Status:** implementado e validado em producao com `scenario-whatsapp-real-cadastro-menoridade-handoff-humano-20260526T193615Z-815`, `scenario-whatsapp-real-cadastro-idade-17-handoff-humano-20260526T193645Z-7253` e `scenario-whatsapp-real-cadastro-menoridade-pais-handoff-humano-20260526T193718Z-22294`.
+
 ### 2026-05-26 - Supabase Reachability Vira Preflight Bloqueante Do Smoke
 
 **Decisão:** todo scenario monitorado deve validar reachability autenticada do Supabase antes de cleanup, seed, polling ou WhatsApp real, e todo curl Supabase dos scripts de smoke deve ter timeout explícito.

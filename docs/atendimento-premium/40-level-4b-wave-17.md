@@ -397,3 +397,55 @@ Estado final nos três: `coletando_tattoo`, `orcid=null`, `copy_risk=baixo`.
 ## Decisão Apos Micro-Slice 7
 
 Manter Level 4B. O risco `multi_question_bubble` foi removido das três aberturas laterais atuais. A auditoria agora aponta apenas três médios: menoridade/handoff legal e handoff antigo histórico. Próximo ataque recomendado: revalidar ou suavizar uma família de menoridade/handoff com escopo pequeno, mantendo segurança legal e sem tocar preço fechado, agenda, pagamento, secrets ou 4C.
+
+## Micro-Slice 8 - Menoridade Legal Com Copy Mais Natural
+
+PASS com achado corrigido: a copy de menoridade foi centralizada em `conversation-voice-policy` e trocada por uma frase menos rigida, mantendo os termos de seguranca legal. Durante o HTTP radar, o cenario de data explicita `12/03/2015` revelou um gap real: o Router persistia a data pendente e retomava cadastro pedindo e-mail, sem acionar humano. A execucao foi travada, o Router passou a calcular idade para `data_nascimento` pendente e a transformar menoridade em Escalation Manager antes da retomada.
+
+Mudancas:
+
+```text
+commit_copy: 6b92582 feat: soften minor age handoff copy
+commit_hotfix: b94ca29 fix: escalate minor birthdate in router
+copy_nova: Como a pessoa que vai tatuar tem menos de 18 anos, vou chamar o tatuador para seguir com segurança sobre responsável legal e próximos passos.
+```
+
+Validacao:
+
+```text
+tests_focados_router_voice_enforce: PASS 74/74
+tests_focados_pipeline: PASS 66/66
+tests_local: npm test PASS 1210/1210
+ci: PASS
+deploy: PASS
+falha_util_http_pre_hotfix: scenario-cadastro-menoridade-handoff-humano-20260526T193112Z-26273 FAIL
+http_radar_data_menor: scenario-cadastro-menoridade-handoff-humano-20260526T193451Z-8334 PASS
+http_radar_idade_17: scenario-cadastro-idade-17-handoff-humano-20260526T193518Z-29793 PASS
+http_radar_autorizacao_pais: scenario-cadastro-menoridade-pais-handoff-humano-20260526T193544Z-28962 PASS
+whatsapp_real_data_menor: scenario-whatsapp-real-cadastro-menoridade-handoff-humano-20260526T193615Z-815 PASS
+whatsapp_real_idade_17: scenario-whatsapp-real-cadastro-idade-17-handoff-humano-20260526T193645Z-7253 PASS
+whatsapp_real_autorizacao_pais: scenario-whatsapp-real-cadastro-menoridade-pais-handoff-humano-20260526T193718Z-22294 PASS
+copy_risk: baixo nos tres WhatsApp reais
+orcid: null nos tres WhatsApp reais
+tail: limpo nos tres WhatsApp reais
+```
+
+### Provas Conclusivas Reais - Micro-Slice 8
+
+Cliente: `12/03/2015`
+
+Bot: `Como a pessoa que vai tatuar tem menos de 18 anos, vou chamar o tatuador para seguir com segurança sobre responsável legal e próximos passos.`
+
+Cliente: `tenho 17 anos`
+
+Bot: `Como a pessoa que vai tatuar tem menos de 18 anos, vou chamar o tatuador para seguir com segurança sobre responsável legal e próximos passos.`
+
+Cliente: `tenho autorizacao dos meus pais`
+
+Bot: `Como a pessoa que vai tatuar tem menos de 18 anos, vou chamar o tatuador para seguir com segurança sobre responsável legal e próximos passos.`
+
+Estado final nos três: `aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`.
+
+## Decisão Apos Micro-Slice 8
+
+Manter Level 4B. A menoridade legal agora tem copy centralizada e cobertura deterministica para data de nascimento menor, idade textual e autorizacao dos pais, todos validados em HTTP radar e WhatsApp real definitivo. Proximo ataque recomendado: reexecutar auditoria de naturalidade com as novas evidencias e escolher uma familia pequena restante; nao subir para 4C ainda.

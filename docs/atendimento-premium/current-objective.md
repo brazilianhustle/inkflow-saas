@@ -196,6 +196,16 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router l
 Proximo passo recomendado: revalidar ou suavizar uma familia pequena de menoridade/handoff que ainda aparece como risco medio na auditoria, mantendo seguranca legal e Level 4B, sem tocar preco fechado, agenda, pagamento, secrets ou 4C.
 ```
 
+Atualizacao 2026-05-26 19:37 UTC:
+
+- Wave 17 micro-slice 8 fechou menoridade legal com copy centralizada e mais natural.
+- Achado real corrigido: data pendente menor (`12/03/2015`) estava escapando pelo Router como dado normal e pedia e-mail; hotfix `b94ca29` agora calcula idade antes da retomada e aciona Escalation Manager.
+- Validacao definitiva passou em HTTP radar e WhatsApp real para `12/03/2015`, `tenho 17 anos` e `tenho autorizacao dos meus pais`.
+- Commits funcionais: `6b92582 feat: soften minor age handoff copy` e `b94ca29 fix: escalate minor birthdate in router`.
+- Provas conclusivas reais: Cliente `12/03/2015`; Bot `Como a pessoa que vai tatuar tem menos de 18 anos, vou chamar o tatuador para seguir com segurança sobre responsável legal e próximos passos.`.
+
+Novo proximo passo recomendado: rodar auditoria de naturalidade com as evidencias novas da Wave 17 e escolher uma proxima familia pequena. Manter Level 4B; 4C continua bloqueado.
+
 Escopo recomendado:
 
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
