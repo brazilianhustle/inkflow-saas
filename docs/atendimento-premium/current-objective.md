@@ -106,42 +106,41 @@ autonomy_limit: ate 6 micro-slices da mesma onda declarada
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-cadastro-question-policy-email-recusado-20260526T011456Z-18795
+run_id: scenario-whatsapp-real-cadastro-question-policy-lateral-20260526T030449Z-21011
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: aguardando_tatuador
-orcid: orc_bwqoy5
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-question-policy-email-recusado-20260526T011456Z-18795/
+expected_state: coletando_cadastro
+orcid: null
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-question-policy-lateral-20260526T030449Z-21011/
 ```
 
 Mensagem:
 
 ```text
-pode seguir sem email
+quanto tempo demora?
 ```
 
 Resultado:
 
 ```text
-estado_agente: aguardando_tatuador
+estado_agente: coletando_cadastro
 resposta_ai_posterior_ao_humano: true
-orcid: orc_bwqoy5
+orcid: null
 copy_risk: baixo
 dados_cadastro.nome: Joao Silva
-dados_cadastro.data_nascimento: 1995-03-12
+dados_cadastro.data_nascimento: null
 dados_cadastro.email: null
-dados_cadastro.email_recusado: true
-copy: aciona avaliacao do tatuador sem repetir e-mail/data/nome
-decision_observability: agent-log gate confirmou conversation_router cadastro_pending_answer, pending_email_refused, can_mutate_state=true e workflow_manager cadastro_and_tattoo_complete
-decision_chain: pergunta pendente de e-mail -> ConversationPolicy resolve recusa -> Router persiste email_recusado -> Workflow Manager cria orcamento/handoff
+copy: responde tempo de sessao e retoma data de nascimento pendente
+decision_observability: agent-log gate confirmou conversation_router tempo_sessao, can_mutate_state=false e workflow_manager state_preserved_by_router_policy
+decision_chain: pergunta lateral durante cadastro -> Router responde sem mutacao -> Workflow Manager preserva cadastro -> pergunta pendente continua recuperavel
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar micro-slice `cadastro-question-policy-lateral` da onda `level4a-wave-2-cadastro-question-policy`.
+Proximo passo recomendado: executar `wave-closeout` da onda `level4a-wave-2-cadastro-question-policy`.
 ```
 
 Escopo recomendado:

@@ -82,7 +82,8 @@ micro_slice_1: cadastro-question-policy-nome PASS
 micro_slice_2: cadastro-question-policy-data PASS
 micro_slice_3: cadastro-question-policy-email PASS
 micro_slice_4: cadastro-question-policy-email-recusado PASS
-micro_slice_atual: cadastro-question-policy-lateral
+micro_slice_5: cadastro-question-policy-lateral PASS
+micro_slice_atual: wave-closeout
 promocao_4b_4c: proibida
 ```
 
@@ -195,4 +196,31 @@ Provas conclusivas reais:
 ```text
 Cliente: "pode seguir sem email"
 Bot: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+```
+
+## Evidencia Micro-Slice 5
+
+```text
+micro_slice: cadastro-question-policy-lateral
+commit_codigo: aff6773 test: cover cadastro lateral pending question
+tests_local: ConversationPolicy/Router PASS, WhatsApp Pipeline PASS
+ci_github: PASS
+deploy_github: PASS
+http_radar: scenario-cadastro-question-policy-lateral-20260526T030316Z-20991 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-question-policy-lateral-20260526T030449Z-21011 PASS
+estado_final: coletando_cadastro
+dados_cadastro.nome: Joao Silva
+dados_cadastro.data_nascimento: null
+dados_cadastro.email: null
+orcid: null
+copy_risk: baixo
+agent_log_gate: conversation_router tempo_sessao can_mutate_state=false + workflow_manager state_preserved_by_router_policy
+decisao: seguir para wave-closeout
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: "quanto tempo demora?"
+Bot: "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.\n\nMe passa tua data de nascimento completa?"
 ```

@@ -458,23 +458,23 @@ Nao avançar para IntentPolicy ampla antes de consolidar os proximos micro-slice
 Depois disso, o próximo melhor ataque é:
 
 ```text
-Proximo micro-slice recomendado: executar `cadastro-question-policy-lateral` dentro da onda Level 4A Wave 2.
+Proximo micro-slice recomendado: executar `wave-closeout` dentro da onda Level 4A Wave 2.
 ```
 
-Motivo: `cadastro-question-policy-email-recusado` ja passou em teste local, CI, deploy, HTTP radar e WhatsApp real definitivo. A proxima lacuna funcional da mesma familia e responder uma duvida lateral durante cadastro sem perder a pergunta pendente, mantendo a cadeia QuestionPolicy -> Router -> Workflow Manager e sem tocar preco, sinal, pagamento ou agenda.
+Motivo: `cadastro-question-policy-lateral` ja passou em teste local, CI, deploy, HTTP radar e WhatsApp real definitivo. A onda ja validou nome, data, e-mail, recusa de e-mail e lateral durante cadastro. O proximo passo correto e consolidar evidencias, rodar health final e emitir recomendacao de autonomia sem promover automaticamente para 4B/4C.
 
 Ultimo micro-slice validado em Level 4A:
 
 ```text
-Cadastro QuestionPolicy - Recusa de email pendente
-commit: 1e42603 feat: resolve pending cadastro email refusal
+Cadastro QuestionPolicy - Lateral preserva pergunta pendente
+commit: aff6773 test: cover cadastro lateral pending question
 local: ConversationPolicy/Router PASS; WhatsApp Pipeline PASS
 ci: Tests e Deploy PASS
-http radar: scenario-cadastro-question-policy-email-recusado-20260526T010832Z-11912 PASS
-whatsapp real: scenario-whatsapp-real-cadastro-question-policy-email-recusado-20260526T011456Z-18795 PASS
-prova real: Cliente "pode seguir sem email" -> Bot "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
-telemetria: conversation_router pending_email_refused e workflow_manager cadastro_and_tattoo_complete; orcid criado.
-rodada: Level 4A Wave 2; 4 de ate 6 micro-slices concluidos; continuar sem promover para 4B/4C.
+http radar: scenario-cadastro-question-policy-lateral-20260526T030316Z-20991 PASS
+whatsapp real: scenario-whatsapp-real-cadastro-question-policy-lateral-20260526T030449Z-21011 PASS
+prova real: Cliente "quanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia. Me passa tua data de nascimento completa?"
+telemetria: conversation_router tempo_sessao can_mutate_state=false e workflow_manager state_preserved_by_router_policy; orcid null.
+rodada: Level 4A Wave 2; 5 de ate 6 micro-slices concluidos; proximo passo e closeout.
 ```
 
 ## Checklist De Fechamento De Sessão

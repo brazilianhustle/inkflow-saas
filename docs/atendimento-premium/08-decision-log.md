@@ -736,13 +736,30 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `cadastro-question-policy-email-recusado` passou em teste local, HTTP radar e WhatsApp real. O WhatsApp real validou envio pela Evolution `central`, webhook real, persistencia de `email_recusado=true`, `estado=aguardando_tatuador`, `orcid=orc_bwqoy5`, copy risk baixo e logs de decisao Router + Workflow. Provas reais: Cliente "pode seguir sem email" -> Bot "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.".
 
+## 2026-05-26 - Router responde lateral em cadastro sem perder pendencia
+
+**Status:** decidido.
+
+**Decisão:** quando o estado e cadastro, ha pergunta pendente e o cliente faz uma duvida lateral, o `ConversationRouter` pode responder a duvida com `can_mutate_state=false`, sem persistir campos novos, enquanto o `Workflow Manager` preserva `coletando_cadastro` e a resposta retoma a pergunta pendente.
+
+**Motivo:** atendimento premium nao pode ignorar a duvida do cliente nem abandonar a coleta obrigatoria. A regra correta e responder a duvida lateral e manter a fase atual ate o campo pendente ser respondido.
+
+**Alternativas rejeitadas:**
+
+- chamar LLM para responder uma lateral ja classificada pelo Router;
+- avancar para handoff sem data de nascimento;
+- persistir dados de cadastro a partir de uma pergunta lateral;
+- responder a lateral sem retomar a pergunta pendente.
+
+**Camada responsável:** ConversationRouter, ResponseComposer, Workflow Manager e Smoke Scenario Registry.
+
+**Impacto:** `cadastro-question-policy-lateral` passou em teste local, HTTP radar e WhatsApp real. O WhatsApp real validou envio pela Evolution `central`, webhook real, `estado=coletando_cadastro`, `orcid=null`, sem `data_nascimento`/`email` persistidos, copy risk baixo e logs de decisao Router + Workflow. Provas reais: Cliente "quanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia. Me passa tua data de nascimento completa?".
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
 
-Ainda falta decidir e implementar a extensão da `QuestionPolicy` para:
-
-- dúvidas laterais durante cadastro.
+Wave 2 de `QuestionPolicy` esta pronta para closeout formal. Nao ha campo planejado pendente nesta onda.
 
 ### Copy premium de maioridade e menoridade
 
