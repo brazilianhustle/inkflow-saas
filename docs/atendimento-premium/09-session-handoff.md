@@ -781,6 +781,27 @@ provas_conclusivas_reais:
 proximo passo: declarar Wave 5 em Level 4B para confirmacao da foto ambigua como local ou referencia
 ```
 
+Wave 5 declarada:
+
+```text
+wave: level4b-wave-5-ambiguous-media-confirmation
+doc: docs/atendimento-premium/28-level-4b-wave-5.md
+status: declarada, contrato e cenarios criados
+objetivo: confirmar foto ambigua como local ou referencia sem perder dados e sem LLM para resposta curta
+micro_slice_1: ambiguous-confirmation-wave-contract em andamento
+cenarios_http:
+  - tattoo-media-ambiguous-confirm-local
+  - tattoo-media-ambiguous-confirm-reference
+cenarios_whatsapp_real:
+  - whatsapp-real-tattoo-media-ambiguous-confirm-local
+  - whatsapp-real-tattoo-media-ambiguous-confirm-reference
+setup: seed_tattoo_foto_ambigua_aguardando_confirmacao
+validacao_local: node --test tests/_lib/whatsapp-pipeline.test.mjs PASS 62/62; npm test PASS 1189/1189
+decisao: confirmacao curta e deterministica no pipeline; nao chamar LLM
+proximo passo: commit, CI/deploy, HTTP radar local-confirm e WhatsApp real local-confirm
+4c: bloqueado
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

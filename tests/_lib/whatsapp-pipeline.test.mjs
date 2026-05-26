@@ -2007,6 +2007,96 @@ test('Etapa 4.5: foto ambigua sem legenda pergunta classificacao sem chamar LLM'
   assert.match(aiInsert.message.content, /local do corpo/i);
 });
 
+test('Etapa 5.1: confirmacao de foto ambigua como local promove ref sem chamar LLM', async () => {
+  let conversaPatches = [];
+  let runAgentCalled = false;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: {
+      descricao_curta: 'rosa',
+      local_corpo: 'antebraco',
+      altura_cm: 170,
+      estilo: 'fineline',
+      refs_imagens_msg_ids: [603],
+    },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: 604, content: 'é local do corpo' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.dados_coletados) {
+          conversaPatches.push(body.dados_coletados);
+        }
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: async () => { runAgentCalled = true; throw new Error('nao deveria chamar LLM'); },
+    classificarFoto: classificarFotoReal,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [604] }), deps);
+
+  assert.equal(runAgentCalled, false, 'confirmacao simples como local nao deve chamar LLM');
+  const patch = conversaPatches.find(p => p.foto_local_msg_id === 603);
+  assert.ok(patch, 'ultima ref ambigua deve virar foto_local_msg_id');
+  assert.deepEqual(patch.refs_imagens_msg_ids, [603], 'historico da ref permanece rastreavel');
+  assert.equal(patch.descricao_curta, 'rosa');
+  assert.equal(patch.estilo, 'fineline');
+  assert.match(aiInsert.message.content, /nome completo/i);
+  assert.match(aiInsert.message.content, /data de nascimento/i);
+});
+
+test('Etapa 5.1: confirmacao de foto ambigua como referencia pede foto local sem chamar LLM', async () => {
+  let conversaPatches = [];
+  let runAgentCalled = false;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: {
+      descricao_curta: 'rosa',
+      local_corpo: 'antebraco',
+      altura_cm: 170,
+      estilo: 'fineline',
+      refs_imagens_msg_ids: [603],
+    },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: 605, content: 'é referência do desenho' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.dados_coletados) {
+          conversaPatches.push(body.dados_coletados);
+        }
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: async () => { runAgentCalled = true; throw new Error('nao deveria chamar LLM'); },
+    classificarFoto: classificarFotoReal,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [605] }), deps);
+
+  assert.equal(runAgentCalled, false, 'confirmacao simples como referencia nao deve chamar LLM');
+  const patch = conversaPatches.find(p => Array.isArray(p.refs_imagens_msg_ids));
+  assert.ok(patch, 'dados existentes devem ser preservados');
+  assert.equal(patch.foto_local_msg_id, undefined);
+  assert.deepEqual(patch.refs_imagens_msg_ids, [603]);
+  assert.equal(patch.tentativas_foto_local, 1);
+  assert.match(aiInsert.message.content, /refer[eê]ncia/i);
+  assert.match(aiInsert.message.content, /foto do local|local do corpo/i);
+});
+
 test('Etapa 4.5 multi-ref: 2 fotos referencia → RPC set_descricao_visual dispara 2x com payloads pareados', async () => {
   // Fan-out: cada foto 'referencia' com descricao deve gerar 1 chamada RPC com seu proprio
   // p_msg_id + p_descricao. Verifica pareamento correto (501→'arte A', 502→'arte B').

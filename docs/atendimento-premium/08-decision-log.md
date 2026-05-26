@@ -1182,6 +1182,28 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** Wave 4 fica fechada com evidence summary e provas reais. Proxima onda recomendada: confirmar a resposta do cliente apos foto ambigua, cobrindo `é local do corpo` e `é referência` com HTTP radar e WhatsApp real definitivo.
 
+### Wave 5 - Confirmacao Deterministica De Foto Ambigua
+
+**Data:** 2026-05-26
+
+**Status:** decidido e iniciado.
+
+**Decisão:** resposta curta do cliente apos pergunta de foto ambigua deve ser resolvida deterministicamente no pipeline: `é local` promove a ultima imagem ambigua para `foto_local_msg_id`; `é referência` preserva a imagem em `refs_imagens_msg_ids` e pede a foto do local.
+
+**Motivo:** esse turno nao exige raciocinio generativo. Depender do LLM para uma confirmacao curta cria risco de quota, latencia, resposta stale e regressao de estado. O contrato e binario e deve ser rastreavel.
+
+**Alternativas rejeitadas:**
+
+- deixar a decisao para o Agent LLM;
+- pedir novamente a classificacao;
+- tratar toda confirmacao como foto local;
+- tratar toda confirmacao como referencia;
+- abrir leitura visual ampla.
+
+**Camada responsável:** WhatsApp Pipeline, Workflow Manager e Smoke Scenario Registry.
+
+**Impacto:** criada `28-level-4b-wave-5.md`, setup `seed_tattoo_foto_ambigua_aguardando_confirmacao`, cenarios HTTP/WhatsApp real para confirmacao como local e referencia, e testes locais no pipeline. `npm test` passou `1189/1189`.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

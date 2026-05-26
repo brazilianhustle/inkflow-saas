@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_4_tattoo_media_intake_closeout_pass
+status: level4b_wave_5_ambiguous_media_confirmation_declared
 branch: main
-ultimo_commit: 1f77819 docs: record tattoo media ambiguous validation
+ultimo_commit: 89b1a2a docs: close level 4b wave 4
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
 worktree_esperado: limpo apos commit de docs
-ultimo_commit_validado: 1f77819
+ultimo_commit_validado: 89b1a2a
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -94,6 +94,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Level 4B Wave 4 fechou o terceiro comportamento: foto unica sem legenda clara, sem pedido pendente de foto local, agora pede classificacao entre referencia e local do corpo sem chamar LLM. HTTP radar e WhatsApp real `central -> bot` passaram preservando dados de tattoo, adicionando 1 item em `refs_imagens_msg_ids`, mantendo `foto_local_msg_id=null`, `estado=coletando_tattoo`, `orcid=null` e `copy_risk=baixo`.
 - Monitoramento media-only foi fortalecido: runners aceitam mensagem vazia com midia, polling exige IA nova posterior ao humano e evidencias da Evolution omitem base64/thumbnail grande.
 - Level 4B Wave 4 fechou closeout PASS: `wave-health` PASS, Autonomy Gate keep, Security Gate PASS, Dependabot 0, Evidence Orphan Gate PASS com WARNs historicos nao bloqueantes e decisao de manter Level 4B sem promover 4C.
+- Level 4B Wave 5 declarada: `level4b-wave-5-ambiguous-media-confirmation`, foco em confirmar foto ambigua como local ou referencia. A confirmacao curta agora e caminho deterministico no pipeline, sem LLM.
 - Governanca multi-agente oficializada: agentes podem acelerar analise, preparo, auditoria e triage, mas Level 4B mantem Commander unico, single-writer por micro-slice, WhatsApp real serial e 4C bloqueado.
 - Wave Runner v1 e Evidence Registrar implementados como ferramentas metodologicas: preflight seguro de onda e geracao revisavel de linha para `smoke-runs.md`, sem executar WhatsApp real, sem editar evidencias automaticamente e sem promover autonomia.
 - Evidence Orphan Gate integrado ao `wave-health`: registros quebrados passam a bloquear a saude da onda; evidencias completas recentes sem registro aparecem como `WARN` no modo padrao e bloqueiam somente no modo estrito de auditoria.
@@ -163,7 +164,7 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: declarar Wave 5 em Level 4B para confirmar resposta do cliente apos foto ambigua.
+Proximo passo recomendado: executar Wave 5 micro-slice `tattoo-media-ambiguous-confirm-local`: HTTP radar e, se passar, WhatsApp real definitivo.
 ```
 
 Escopo recomendado:
@@ -174,7 +175,7 @@ Escopo recomendado:
 - usar `docs/atendimento-premium/27-level-4b-wave-4.md` como plano da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
 - Wave 4 iniciou a familia `tattoo-media-intake`;
-- proximo alvo funcional: confirmar foto ambigua como `local do corpo` ou `referência` sem perder dados;
+- proximo alvo funcional: validar confirmacao de foto ambigua como `local do corpo` em HTTP e WhatsApp real;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;

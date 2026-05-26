@@ -70,6 +70,24 @@ function isImagemSemLegendaClara(fotos = []) {
   return fotos.length === 1 && !String(fotos[0]?.caption || '').trim();
 }
 
+function getUltimaReferenciaImagem(dados = {}) {
+  const refs = Array.isArray(dados?.refs_imagens_msg_ids) ? dados.refs_imagens_msg_ids : [];
+  return refs.length > 0 ? refs[refs.length - 1] : null;
+}
+
+function isConfirmacaoFotoAmbiguaComoLocal(text = '') {
+  const s = String(text || '').toLowerCase();
+  return /\b(e|é|eh)\s+(do\s+)?local\b/.test(s)
+    || /\b(local\s+do\s+corpo|foto\s+do\s+local|local\s+da\s+tatuagem)\b/.test(s)
+    || /\b(pele\s+limpa|sem\s+(tattoo|tatuagem|tatuagens))\b/.test(s);
+}
+
+function isConfirmacaoFotoAmbiguaComoReferencia(text = '') {
+  const s = String(text || '').toLowerCase();
+  return /\b(e|é|eh)\s+(a\s+)?refer[eê]ncia\b/.test(s)
+    || /\b(ref|refer[eê]ncia\s+do\s+desenho|refer[eê]ncia\s+da\s+arte|desenho|arte)\b/.test(s);
+}
+
 function dbToAgent(state) {
   return STATE_DB_TO_AGENT[state] || state;
 }
@@ -338,6 +356,52 @@ export async function processBatch(env, batch, depsOverride = {}) {
         proxima_acao: 'pergunta',
         agent_usado: 'tattoo',
         analise_imagens: [{ tipo: 'incerto', descricao: 'imagem ambigua', corpo_tem_tattoo: false, corpo_tem_marcacao: false }],
+      };
+    }
+    const dadosColetadosAtuais = conversa.dados_coletados || {};
+    const ultimaRefAmbigua = getUltimaReferenciaImagem(dadosColetadosAtuais);
+    const confirmacaoAmbiguaComoLocal = !agentOut
+      && estadoAgente === 'tattoo'
+      && fotos.length === 0
+      && ultimaRefAmbigua
+      && !hasFotoLocal(dadosColetadosAtuais)
+      && isConfirmacaoFotoAmbiguaComoLocal(texto);
+    if (confirmacaoAmbiguaComoLocal) {
+      agentOut = {
+        ok: true,
+        resposta_cliente: 'Perfeito, então vou usar essa imagem como foto do local. Pra liberar teu orçamento personalizado, me passa nome completo e data de nascimento?',
+        estado_novo: 'cadastro',
+        dados_persistidos: {
+          foto_local: 'foto do local confirmada pelo cliente',
+          foto_local_msg_id: ultimaRefAmbigua,
+        },
+        dados_completos: true,
+        campos_faltando: [],
+        campos_conflitantes: [],
+        proxima_acao: 'pergunta',
+        agent_usado: 'tattoo',
+        analise_imagens: null,
+      };
+    }
+    const confirmacaoAmbiguaComoReferencia = !agentOut
+      && estadoAgente === 'tattoo'
+      && fotos.length === 0
+      && ultimaRefAmbigua
+      && !hasFotoLocal(dadosColetadosAtuais)
+      && isConfirmacaoFotoAmbiguaComoReferencia(texto);
+    if (confirmacaoAmbiguaComoReferencia) {
+      agentOut = {
+        ok: true,
+        resposta_cliente: 'Perfeito, deixei essa imagem como referência do desenho. Agora preciso da foto do local do corpo onde tu quer tatuar.',
+        estado_novo: 'tattoo',
+        dados_persistidos: {},
+        dados_completos: false,
+        campos_faltando: ['foto_local'],
+        campos_conflitantes: [],
+        proxima_acao: 'pergunta',
+        agent_usado: 'tattoo',
+        analise_imagens: null,
+        pediu_foto_local: true,
       };
     }
     const routerEligible = !agentOut && !routerDisabled && !isFirstContactGreetingOnly && fotos.length === 0;
