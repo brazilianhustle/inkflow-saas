@@ -280,3 +280,47 @@ Estado final: `coletando_cadastro`, `orcid=null`, `copy_risk=baixo`.
 ## Decisão Apos Micro-Slice 5
 
 Manter Level 4B. A mudança conversacional passou no radar HTTP e no WhatsApp real definitivo, e o novo gate Supabase evitou uma validação falsa quando o ambiente sandbox perdeu DNS. Próximo ataque recomendado: reexecutar a auditoria de naturalidade incluindo as evidências dos micro-slices 4 e 5 antes de escolher a próxima família pequena.
+
+## Micro-Slice 6 - Revalidação De Mídia/Cadastro
+
+PASS: a auditoria mostrou que duas evidências médias de mídia/cadastro eram históricas, anteriores à `VoicePolicy`. A família foi revalidada sem mudança de código em dois caminhos que ainda apareciam com linguagem antiga.
+
+Validação:
+
+```text
+mudanca_de_codigo: nao
+http_radar_ambiguous_local: scenario-tattoo-media-ambiguous-confirm-local-20260526T190841Z-31034 PASS
+whatsapp_real_ambiguous_local: scenario-whatsapp-real-tattoo-media-ambiguous-confirm-local-20260526T190907Z-3854 PASS
+http_radar_reference_then_local: scenario-tattoo-media-reference-then-local-20260526T190952Z-22123 PASS
+whatsapp_real_reference_then_local: scenario-whatsapp-real-tattoo-media-reference-then-local-20260526T191020Z-26744 PASS
+copy_risk: baixo nos dois WhatsApp reais
+estado_final: coletando_cadastro
+orcid: null
+```
+
+Auditoria após revalidação:
+
+```text
+evidencias_analisadas: 12
+baixo: 6
+medio: 6
+alto: 0
+decisao: watchlist
+sem_repeticao_exata_global: true
+```
+
+### Provas Conclusivas Reais - Micro-Slice 6
+
+Cliente: `é local do corpo`
+
+Bot: `Perfeito, vou usar essa imagem como foto do local. Me passa nome completo e data de nascimento pra eu montar o cadastro?`
+
+Cliente: `segue foto do local`
+
+Bot: `Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro.`
+
+Estado final: `coletando_cadastro`, `orcid=null`, `copy_risk=baixo`.
+
+## Decisão Apos Micro-Slice 6
+
+Manter Level 4B. A família mídia/cadastro está verde nas evidências atuais. Próximo ataque recomendado: abrir micro-slice pequeno para reduzir `multi_question_bubble` nos primeiros contatos laterais (`lateral-preco-generico`, `lateral-tempo-sessao`, `lateral-processo-tatuagem`) sem tocar menoridade, preço fechado, agenda, pagamento, secrets ou 4C.

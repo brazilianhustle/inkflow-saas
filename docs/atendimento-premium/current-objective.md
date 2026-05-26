@@ -11,7 +11,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_17_cadastro_resume_copy_validated
+status: level4b_wave_17_media_cadastro_revalidated
 branch: main
 ultimo_commit: 9f0cc8f test: add supabase smoke preflight
 ultimo_commit_funcional: 87af5c1 feat: soften cadastro resume copy
@@ -150,46 +150,44 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 17 micro-slice 3 iniciou a arquitetura escalavel de naturalidade: `conversation-voice-policy.js` centraliza familias deterministicas de cadastro e midia/cadastro; Router e Pipeline passaram a importar a policy sem alterar texto ao cliente; testes locais passaram.
 - Wave 17 micro-slice 4 passou: copy deterministica de mídia/cadastro deixou de usar `Pra liberar teu orçamento` e passou para `Agora me passa teu nome completo pra eu montar o cadastro`; testes locais, CI/deploy, HTTP radar e WhatsApp real definitivo pela `central` passaram com `copy_risk=baixo`.
 - Wave 17 micro-slice 5 passou: retomada deterministica de cadastro vazio mudou de `Pra liberar teu orçamento...` para `Pra montar teu cadastro...`; testes locais, CI, deploy, HTTP radar e WhatsApp real definitivo pela `central` passaram com `copy_risk=baixo`.
+- Wave 17 micro-slice 6 passou sem mudança de código: cenários atuais de mídia/cadastro `ambiguous-confirm-local` e `reference-then-local` foram revalidados em HTTP radar e WhatsApp real definitivo; ambos saíram com `copy_risk=baixo`, confirmando que os riscos médios restantes eram evidências antigas.
 - Execucao funcional travada para investigacao Supabase: causa provavel e conectividade/DNS intermitente entre ambiente local/sandbox e Supabase durante incidente de provedor no Brasil. Metodologia corrigida: `run-scenario.sh` agora faz preflight Supabase antes de cleanup/seed, scripts REST usam timeout e triage classifica `infra_supabase_connectivity`.
 - Investigacao Supabase concluida para a rodada: primeira tentativa WhatsApp real no sandbox foi bloqueada corretamente por `infra_supabase_connectivity`; rerun fora do sandbox passou com Supabase preflight 200, confirmando falha de DNS/rede do ambiente e nao regressao do bot.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-resume-nome-data-natural-20260526T190309Z-14385
-run_id_real: scenario-whatsapp-real-cadastro-resume-nome-data-natural-20260526T190437Z-6788
-tipo: Scenario WhatsApp real de retomada cadastro mais natural da Wave 17
+run_id_http: scenario-tattoo-media-reference-then-local-20260526T190952Z-22123
+run_id_real: scenario-whatsapp-real-tattoo-media-reference-then-local-20260526T191020Z-26744
+tipo: Scenario WhatsApp real de mídia/cadastro revalidado da Wave 17
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_cadastro
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-resume-nome-data-natural-20260526T190437Z-6788/
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-reference-then-local-20260526T191020Z-26744/
 ```
 
 Mensagem:
 
 ```text
-quanto tempo demora?
+segue foto do local
 ```
 
 Resultado:
 
 ```text
 estado_agente: coletando_cadastro
-resposta_ai: O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
-
-Pra montar teu cadastro, me passa teu nome completo e data de nascimento?
+resposta_ai: Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro.
 orcid: null
 copy_risk: baixo
-workflow: estado preservado em coletando_cadastro; sem handoff e sem orcid
-observabilidade: workflow_manager workflow_reason=state_preserved_by_router_policy
-decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router lateral tempo_sessao -> Workflow Manager preserva cadastro -> resposta lateral + retomada cadastro
+workflow: transicao segura para coletando_cadastro; sem handoff e sem orcid
+decision_chain: Evolution central -> WhatsApp real com imagem -> bot -> webhook -> Pipeline media deterministica -> coleta de cadastro
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: reexecutar `naturalness-audit.sh` incluindo evidencias dos micro-slices 4 e 5; escolher a proxima familia pequena da Wave 17 somente depois da auditoria, mantendo Level 4B.
+Proximo passo recomendado: micro-slice pequeno para reduzir `multi_question_bubble` nos primeiros contatos laterais (`lateral-preco-generico`, `lateral-tempo-sessao`, `lateral-processo-tatuagem`), mantendo Level 4B e sem tocar menoridade, preco fechado, agenda, pagamento, secrets ou 4C.
 ```
 
 Escopo recomendado:
