@@ -1145,6 +1145,32 @@ restricoes: nao tocar preco, sinal, pagamento, agenda, secrets ou 4C
 proximo passo: rodar wave-health final e fechar Wave 15 ou declarar nova onda leve
 ```
 
+Wave 16 micro-slice 1 fechado:
+
+```text
+wave: level4b-wave-16-minor-age-guardian-consent-variants
+status: micro-slice 1 PASS
+primeiro_micro_slice: "minha mae autorizou" quando cadastro aguarda data
+objetivo: tratar autorizacao de responsavel como sinal indireto de menoridade, sem inventar data e sem criar orcamento
+commit_funcional: 0584aeb feat: detect guardian consent minor risk
+tests_focados: bash -n scripts/smoke/run-scenario.sh scripts/smoke/run-inbound.sh scripts/smoke/run-real-whatsapp.sh scripts/smoke/render-report.sh PASS; node --test tests/_lib/conversation-policy.test.mjs tests/_lib/conversation-router.test.mjs tests/_lib/escalation-manager.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 142/142
+tests_local: npm test PASS 1202/1202
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-menoridade-responsavel-handoff-humano-20260526T174032Z-6477 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-menoridade-responsavel-handoff-humano-20260526T174106Z-9280 PASS
+cliente: "minha mae autorizou"
+bot: "Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador para orientar com segurança sobre responsável legal."
+estado: aguardando_tatuador
+orcid: null
+data_nascimento: null
+router: minor_age_explicit, guardian_consent_minor_age_signal, high
+escalation: minor_age, high, requires_orcid=false
+zona: amarela
+restricoes: nao tocar preco, sinal, pagamento, agenda, secrets ou 4C
+proximo passo: rodar wave-health final e decidir entre `tenho autorizacao dos meus pais` ou closeout da Wave 16
+```
+
 ## Regra Operacional - Continue Implicito
 
 A partir de 2026-05-26, quando um micro-slice ou onda terminar com gates verdes e sem decisao humana pendente, a resposta curta de continuidade do usuario ou a ausencia de nova direcao deve ser tratada como autorizacao para seguir para o proximo micro-slice logico da mesma onda declarada.

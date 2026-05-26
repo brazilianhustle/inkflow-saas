@@ -1461,6 +1461,28 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `19-level-4-loop-policy.md` passa a definir criterios formais de continue implicito; `09-session-handoff.md` registra a regra para retomadas; `current-objective.md` passa a tratar continuidade verde como padrao operacional. Qualquer falha, regressao, triage pendente, zona vermelha, decisao de produto/arquitetura ou promocao de autonomia ainda para o loop.
 
+### Wave 16 - Menoridade Indireta Por Responsavel Legal
+
+**Data:** 2026-05-26
+
+**Status:** primeiro micro-slice validado.
+
+**Decisão:** iniciar `level4b-wave-16-minor-age-guardian-consent-variants` para tratar `minha mae autorizou` como sinal indireto de menoridade e acionar humano imediatamente, sem persistir data inexistente e sem criar `orcid`/orcamento.
+
+**Motivo:** clientes menores podem nao declarar literalmente idade ou menoridade, mas citar autorizacao de pai, mae, pais ou responsavel. Esse sinal tem risco operacional alto e nao deve liberar fluxo automatico nem depender do LLM.
+
+**Alternativas rejeitadas:**
+
+- pedir data de nascimento depois de sinal de autorizacao de responsavel;
+- tratar autorizacao dos pais como permissao automatica para continuar;
+- deixar o LLM interpretar a frase;
+- criar orcamento sem avaliacao humana;
+- promover autonomia para 4C.
+
+**Camada responsável:** ConversationPolicy, ConversationRouter, Escalation Manager, Smoke Scenario Registry.
+
+**Impacto:** `resolveExplicitAge` passou a reconhecer consentimento/autorizacao de responsavel como `guardian_consent_minor_age_signal`. HTTP radar `scenario-cadastro-menoridade-responsavel-handoff-humano-20260526T174032Z-6477` e WhatsApp real `scenario-whatsapp-real-cadastro-menoridade-responsavel-handoff-humano-20260526T174106Z-9280` passaram para `minha mae autorizou`; logs confirmaram Router `minor_age_explicit` e Escalation Manager `minor_age`.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
