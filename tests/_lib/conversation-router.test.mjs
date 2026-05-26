@@ -847,6 +847,26 @@ test('ConversationRouter: recusa natural "melhor falar por aqui" resolve email p
   assert.doesNotMatch(out.resposta_cliente, /e-?mail/i);
 });
 
+test('ConversationRouter: recusa natural "por aqui mesmo" resolve email pendente', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'por aqui mesmo',
+    conversa: {
+      dados_coletados: {},
+      dados_cadastro: { nome: 'Joao Silva', data_nascimento: '1995-03-12' },
+    },
+    historico: [
+      { role: 'assistant', content: 'E o e-mail? Se preferir seguir sem, me avisa' },
+    ],
+  });
+  assert.equal(out.intent, 'cadastro_pending_answer');
+  assert.equal(out.reason, 'pending_email_refused');
+  assert.equal(out.can_mutate_state, true);
+  assert.deepEqual(out.dados_persistidos, { email: null, email_recusado: true });
+  assert.match(out.resposta_cliente, /tatuador vai avaliar/i);
+  assert.doesNotMatch(out.resposta_cliente, /e-?mail/i);
+});
+
 test('ConversationRouter: cadastro persiste recusa pura de email pendente sem chamar LLM', () => {
   const out = routeConversationTurn({
     estado_atual: 'cadastro',

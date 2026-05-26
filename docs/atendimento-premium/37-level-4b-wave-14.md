@@ -73,6 +73,10 @@ Bot: `Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve c
 
 Estado final: `aguardando_tatuador`, `orcid=orc_0a1325`, `email=null`, `email_recusado=true`.
 
+## Micro-Slice 3
+
+Em implementacao: validar `por aqui mesmo` como terceira variacao natural de recusa de e-mail opcional, com o mesmo contrato de handoff e WhatsApp real.
+
 ## Decisao
 
 Manter Level 4B. Os dois primeiros micro-slices da Wave 14 passaram com HTTP radar e WhatsApp real definitivo. Proximo passo pode continuar a mesma onda com outra variacao natural de recusa, desde que continue fora de preco, agenda, sinal e pagamento.
