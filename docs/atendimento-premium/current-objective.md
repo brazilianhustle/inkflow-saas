@@ -141,7 +141,7 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: declarar primeira onda 4B antes de qualquer implementacao.
+Proximo passo recomendado: executar micro-slice `multiturn-scenario-contract` da onda `level4b-wave-1-multiturn-smoke`.
 ```
 
 Escopo recomendado:
@@ -149,7 +149,7 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
-- declarar uma onda 4B com ate 8 micro-slices antes de codar;
+- seguir a onda declarada em `docs/atendimento-premium/23-level-4b-wave-1.md`;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
@@ -160,6 +160,7 @@ Leitura recomendada:
 ```text
 4B promovido por decisao deliberada apos Wave 1 e Wave 2 Level 4A saudaveis.
 Primeira onda 4B deve permanecer em zona verde/amarela.
+Primeira onda 4B declarada: `level4b-wave-1-multiturn-smoke`.
 4C permanece bloqueado.
 ```
 

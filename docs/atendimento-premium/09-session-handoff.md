@@ -500,6 +500,18 @@ autonomy: 4B promovido deliberadamente; 4C bloqueado
 proxima decisao: declarar primeira onda 4B em zona verde/amarela
 ```
 
+Primeira onda 4B declarada:
+
+```text
+wave: level4b-wave-1-multiturn-smoke
+doc: docs/atendimento-premium/23-level-4b-wave-1.md
+objetivo: validar conversas multi-turn com HTTP radar e WhatsApp real definitivo
+risco: amarelo
+janela: ate 8 micro-slices
+primeiro micro-slice: multiturn-scenario-contract
+4C: bloqueado
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

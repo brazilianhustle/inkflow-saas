@@ -793,6 +793,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** primeira onda 4B pode ter ate 8 micro-slices da mesma onda declarada, ainda em zona verde/amarela, com WhatsApp real obrigatorio para qualquer comportamento conversacional e parada em qualquer falha. 4C permanece bloqueado.
 
+## 2026-05-26 - Primeira onda 4B foca smoke multi-turn
+
+**Status:** decidido.
+
+**Decisão:** declarar `level4b-wave-1-multiturn-smoke` como primeira onda Level 4B.
+
+**Motivo:** antes de aumentar a superficie funcional, o maior ganho de seguranca e provar conversas completas com mais de uma mensagem humana no mesmo fluxo. Isso ataca uma lacuna metodologica: smokes single-turn validam respostas isoladas, mas o atendimento premium depende de recuperacao entre turnos.
+
+**Alternativas rejeitadas:**
+
+- iniciar uma onda funcional maior imediatamente apos promover 4B;
+- validar recuperacao pos-lateral apenas por inferencia a partir de smokes single-turn;
+- promover para 4C;
+- tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo na primeira onda 4B.
+
+**Camada responsável:** Smoke Scenario Registry, runners de smoke, Observabilidade e Workflow Manager.
+
+**Impacto:** a primeira onda 4B fica limitada a infraestrutura de validacao multi-turn e ao fluxo seguro de cadastro `lateral -> data`. Comportamento conversacional novo continua exigindo HTTP radar e WhatsApp real definitivo.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
