@@ -653,8 +653,8 @@ seed_cadastro_pos_midia_aguardando_email_media_fresca() {
   ref_png="docs/superpowers/specs/assets/2026-05-04-home-refator-ref/mobile-375-hero.png"
   [ -f "$local_png" ] || { echo "ERRO: seed media ausente: $local_png" >&2; exit 1; }
   [ -f "$ref_png" ] || { echo "ERRO: seed media ausente: $ref_png" >&2; exit 1; }
-  local_b64="$(base64 "$local_png" | tr -d '\n')"
-  ref_b64="$(base64 "$ref_png" | tr -d '\n')"
+  local_b64="$(base64 < "$local_png" | tr -d '\n')"
+  ref_b64="$(base64 < "$ref_png" | tr -d '\n')"
 
   media_body="$(
     jq -nc \
