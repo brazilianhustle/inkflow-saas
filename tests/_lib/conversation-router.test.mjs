@@ -629,6 +629,36 @@ test('ConversationRouter: pedido humano tem prioridade sobre resposta pendente d
   assert.deepEqual(out.dados_persistidos, {});
 });
 
+test('ConversationRouter: cadastro persiste data pendente sem chamar LLM', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: '12/03/1995',
+    conversa: { dados_coletados: {}, dados_cadastro: { nome: 'Joao Silva' } },
+    historico: [
+      { role: 'assistant', content: 'Me passa tua data de nascimento completa?' },
+    ],
+  });
+  assert.equal(out.intent, 'cadastro_pending_answer');
+  assert.equal(out.reason, 'pending_data_nascimento_answered');
+  assert.equal(out.can_mutate_state, true);
+  assert.equal(out.agent_usado, 'cadastro');
+  assert.deepEqual(out.dados_persistidos, { data_nascimento: '1995-03-12' });
+  assert.match(out.resposta_cliente, /e-?mail/i);
+  assert.doesNotMatch(out.resposta_cliente, /data de nascimento/i);
+});
+
+test('ConversationRouter: idade isolada não resolve data pendente', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'tenho 31 anos',
+    conversa: { dados_coletados: {}, dados_cadastro: { nome: 'Joao Silva' } },
+    historico: [
+      { role: 'assistant', content: 'Me passa tua data de nascimento completa?' },
+    ],
+  });
+  assert.equal(out, null);
+});
+
 test('ConversationRouter: cadastro persiste nome e data pendentes antes de responder lateral', () => {
   const out = routeConversationTurn({
     estado_atual: 'cadastro',
