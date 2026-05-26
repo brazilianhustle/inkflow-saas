@@ -253,9 +253,10 @@ test('ConversationRouter: primeiro contato misto responde dúvida antes de pedir
     descricao_curta: 'urso',
     local_corpo: 'coxa',
   });
-  assert.match(out.resposta_cliente, /^Oii, tudo bem\? Me chamo Assistente/);
+  assert.match(out.resposta_cliente, /^Oii, tudo bem\. Me chamo Assistente/);
   assert.match(out.resposta_cliente, /O valor depende/);
   assert.match(out.resposta_cliente, /como posso te chamar\?$/i);
+  assert.equal((out.resposta_cliente.match(/\?/g) || []).length, 1);
   assert.doesNotMatch(out.resposta_cliente, /Qual tua altura\?/);
 });
 
@@ -272,9 +273,10 @@ test('ConversationRouter: primeiro contato misto com "quanto que é" mantém int
     descricao_curta: 'foguinho',
     local_corpo: 'virilha',
   });
-  assert.match(out.resposta_cliente, /^Oii, tudo bem\? Me chamo Assistente/);
+  assert.match(out.resposta_cliente, /^Oii, tudo bem\. Me chamo Assistente/);
   assert.match(out.resposta_cliente, /O valor depende/);
   assert.match(out.resposta_cliente, /como posso te chamar\?$/i);
+  assert.equal((out.resposta_cliente.match(/\?/g) || []).length, 1);
   assert.doesNotMatch(out.resposta_cliente, /Qual tua altura\?/);
 });
 
@@ -292,7 +294,7 @@ test('ConversationRouter: história de vida em primeiro contato não ignora brie
   assert.deepEqual(out.dados_persistidos, {
     descricao_curta: 'homenagem ao pai com passaros e frase',
   });
-  assert.match(out.resposta_cliente, /^Oii, tudo bem\? Me chamo Assistente/);
+  assert.match(out.resposta_cliente, /^Oii, tudo bem\. Me chamo Assistente/);
   assert.match(out.resposta_cliente, /Dá pra pensar em algo simbólico/);
   assert.match(out.resposta_cliente, /parte do corpo\?/);
   assert.doesNotMatch(out.resposta_cliente, /como posso te chamar/i);
@@ -324,7 +326,7 @@ test('ConversationRouter: pergunta de imagem em primeiro contato não troca fall
     clientContext: { is_first_contact: true },
   });
   assert.equal(out.intent, 'pergunta_imagem');
-  assert.match(out.resposta_cliente, /^Oii, tudo bem\? Me chamo Assistente/);
+  assert.match(out.resposta_cliente, /^Oii, tudo bem\. Me chamo Assistente/);
   assert.match(out.resposta_cliente, /não estou vendo uma imagem clara/i);
   assert.doesNotMatch(out.resposta_cliente, /como posso te chamar/i);
   assert.doesNotMatch(out.resposta_cliente, /parte do corpo|altura|estilo/i);

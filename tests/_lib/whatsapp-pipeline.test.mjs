@@ -445,10 +445,11 @@ test('ConversationRouter Slice 1: primeiro contato misto com preço usa router e
   assert.equal(runAgentSpy.mock.callCount(), 0);
   assert.equal(conversaPatch.dados_coletados.descricao_curta, 'anjo');
   assert.equal(conversaPatch.dados_coletados.local_corpo, 'perna');
-  assert.match(aiInsert.message.content, /^Oii, tudo bem\? Me chamo atendente/);
+  assert.match(aiInsert.message.content, /^Oii, tudo bem\. Me chamo atendente/);
   assert.match(aiInsert.message.content, /O valor depende/);
   assert.match(aiInsert.message.content, /Pra montar tua proposta certinho/);
   assert.match(aiInsert.message.content, /como posso te chamar\?$/i);
+  assert.equal((aiInsert.message.content.match(/\?/g) || []).length, 1);
   assert.doesNotMatch(aiInsert.message.content, /Qual tua altura\?/);
   assert.doesNotMatch(aiInsert.message.content, /^Oii, tudo bem\??$/);
 });
@@ -486,9 +487,10 @@ test('ConversationRouter Slice 1: primeiro contato misto com "quanto que é" nã
   assert.equal(runAgentSpy.mock.callCount(), 0);
   assert.equal(conversaPatch.dados_coletados.descricao_curta, 'foguinho');
   assert.equal(conversaPatch.dados_coletados.local_corpo, 'virilha');
-  assert.match(aiInsert.message.content, /^Oii, tudo bem\? Me chamo atendente/);
+  assert.match(aiInsert.message.content, /^Oii, tudo bem\. Me chamo atendente/);
   assert.match(aiInsert.message.content, /O valor depende/);
   assert.match(aiInsert.message.content, /como posso te chamar\?$/i);
+  assert.equal((aiInsert.message.content.match(/\?/g) || []).length, 1);
   assert.doesNotMatch(aiInsert.message.content, /Qual a sua altura\?|Qual tua altura\?|sua altura/i);
 });
 

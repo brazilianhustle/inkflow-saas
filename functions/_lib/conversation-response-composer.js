@@ -19,7 +19,7 @@ function historyHasAssistant(historico = [], pattern) {
 
 function firstContactIntro(tenant) {
   const nomeAgente = tenant?.nome_agente || 'atendente';
-  return `Oii, tudo bem? Me chamo ${nomeAgente}, muito prazer.`;
+  return `Oii, tudo bem. Me chamo ${nomeAgente}, muito prazer.`;
 }
 
 function firstContactResumeQuestion() {
