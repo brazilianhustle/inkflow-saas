@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_20_declared
+status: level4b_wave_20_micro_slice_1_pass
 branch: main
-ultimo_commit: 0db3016 docs: close wave 19 post handoff
+ultimo_commit: docs de Wave 20 micro-slice 1 registrados; ver `git log -1`
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: PASS no commit 0db3016
-tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 19 fechada PASS; Wave 20 declarada
+deploy: PASS no ultimo commit publicado; Wave 20 micro-slice 1 sem mudanca funcional
+tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 20 micro-slice 1 HTTP + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 0db3016
+ultimo_commit_validado: Wave 20 micro-slice 1 por HTTP + WhatsApp real
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -192,8 +192,19 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar Wave 20 micro-slice 1 com `cadastro-lateral-data-recovery` em HTTP radar e `whatsapp-real-cadastro-lateral-data-recovery` em WhatsApp real definitivo. Manter Level 4B; nao subir para 4C.
+Proximo passo recomendado: seguir Wave 20 com uma segunda variacao pequena da mesma familia, preferencialmente cadastro pendente de nome com duvida lateral ou cadastro vazio retomando nome/data. Manter Level 4B; nao subir para 4C.
 ```
+
+Atualizacao 2026-05-26 21:17 UTC:
+
+- Wave 20 micro-slice 1 passou sem mudanca de codigo.
+- HTTP radar `scenario-cadastro-lateral-data-recovery-20260526T211602Z-31472` PASS.
+- WhatsApp real definitivo `scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T211646Z-28418` PASS.
+- Estado final `coletando_cadastro`, `orcid=null`, nome preservado e `data_nascimento=1995-03-12`.
+- Step 1 confirmou Workflow Manager `state_preserved_by_router_policy` apos pergunta lateral `quanto tempo demora?`.
+- Step 2 confirmou Router `pending_data_nascimento_answered` apos `12/03/1995`.
+- Provas conclusivas reais: Cliente `quanto tempo demora?`; Bot `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.` Cliente `12/03/1995`; Bot `E o e-mail? Se preferir seguir sem, me avisa`.
+- Risco medio no step 2 e esperado pelo julgador porque menciona e-mail; nao e regressao, pois e-mail e o proximo campo opcional correto.
 
 Atualizacao 2026-05-26 21:15 UTC:
 

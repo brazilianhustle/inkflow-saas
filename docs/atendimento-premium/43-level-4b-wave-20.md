@@ -62,3 +62,41 @@ Se FAIL:
 ```text
 decisao: travar execucao, gerar triage/plan-review e corrigir o ponto minimo antes de qualquer novo slice
 ```
+
+## Micro-Slice 1 - Lateral Durante Cadastro Pendente De Data
+
+PASS sem mudanca de codigo: pergunta lateral de tempo durante cadastro pendente de data preservou a fase, respondeu a duvida e retomou a data. No turno seguinte, a data foi persistida e o fluxo avancou para e-mail opcional sem repetir data e sem criar orcamento.
+
+Validacao:
+
+```text
+mudanca_funcional_bot: nao
+http_radar: scenario-cadastro-lateral-data-recovery-20260526T211602Z-31472 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T211646Z-28418 PASS
+estado_final: coletando_cadastro
+orcid: null
+nome: Joao Silva
+data_nascimento: 1995-03-12
+step_1_workflow_reason: state_preserved_by_router_policy
+step_2_router_reason: pending_data_nascimento_answered
+copy_risk_step_1: baixo
+copy_risk_step_2: medio
+```
+
+### Provas Conclusivas Reais - Micro-Slice 1
+
+Cliente: `quanto tempo demora?`
+
+Bot: `O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.`
+
+Cliente: `12/03/1995`
+
+Bot: `E o e-mail? Se preferir seguir sem, me avisa`
+
+Estado final: `coletando_cadastro`, `orcid=null`, `dados_cadastro.nome=Joao Silva`, `dados_cadastro.data_nascimento=1995-03-12`.
+
+## Decisao Apos Micro-Slice 1
+
+Manter Level 4B. O comportamento atual esta funcional e foi validado em WhatsApp real. O risco medio do segundo turno e esperado pelo julgador deterministico porque a resposta menciona e-mail; nao e regressao, pois e-mail e exatamente o proximo campo opcional do cadastro.
+
+Proximo ataque recomendado: escolher uma segunda variacao pequena da mesma familia, preferencialmente cadastro pendente de nome com duvida lateral ou cadastro vazio retomando nome/data, sem alterar preco, agenda, pagamento, secrets ou 4C.
