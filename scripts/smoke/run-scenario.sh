@@ -436,6 +436,50 @@ seed_cadastro_aguardando_nome() {
   echo "seed ok: conversa=$conv_id session_id=$sid"
 }
 
+seed_cadastro_aguardando_nome_data() {
+  load_devvars
+  local sid now conv_body msg_body conv_id
+  sid="${TENANT_ID}_${PHONE}"
+  now="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+
+  conv_body="$(
+    jq -nc \
+      --arg tenant "$TENANT_ID" \
+      --arg phone "$PHONE" \
+      --arg now "$now" \
+      '{
+        tenant_id:$tenant,
+        telefone:$phone,
+        estado_agente:"coletando_cadastro",
+        dados_coletados:{
+          descricao_curta:"leao",
+          local_corpo:"antebraco",
+          altura_cm:170,
+          estilo:"fineline"
+        },
+        dados_cadastro:{},
+        last_msg_at:$now
+      }'
+  )"
+  conv_id="$(supa_post "conversas" "$conv_body" | jq -r '.[0].id // empty')"
+  [ -n "$conv_id" ] || { echo "ERRO: seed nao retornou conversa id." >&2; exit 1; }
+
+  msg_body="$(
+    jq -nc \
+      --arg sid "$sid" \
+      '{
+        session_id:$sid,
+        status:"processed",
+        message:{
+          type:"ai",
+          content:"Pra montar teu cadastro, me passa teu nome completo e data de nascimento?"
+        }
+      }'
+  )"
+  supa_post "conversa_mensagens" "$msg_body" >/dev/null
+  echo "seed ok: conversa=$conv_id session_id=$sid"
+}
+
 seed_tattoo_aguardando_foto_local() {
   load_devvars
   local sid now conv_body msg_body conv_id
@@ -912,6 +956,7 @@ run_setup() {
     seed_cadastro_handoff_email_recusado) seed_cadastro_handoff_email_recusado ;;
     seed_cadastro_aguardando_data) seed_cadastro_aguardando_data ;;
     seed_cadastro_aguardando_nome) seed_cadastro_aguardando_nome ;;
+    seed_cadastro_aguardando_nome_data) seed_cadastro_aguardando_nome_data ;;
     seed_tattoo_aguardando_foto_local) seed_tattoo_aguardando_foto_local ;;
     seed_tattoo_com_foto_local_aguardando_nome) seed_tattoo_com_foto_local_aguardando_nome ;;
     seed_tattoo_parcial_foto_ambigua) seed_tattoo_parcial_foto_ambigua ;;

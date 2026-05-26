@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_20_closed_pass
+status: level4b_wave_21_micro_slice_1_pass
 branch: main
-ultimo_commit: 0788347 docs: record wave 20 cadastro resume pass
+ultimo_commit: 5fe5ae5 docs: close wave 20 cadastro recovery
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: PASS no commit 0788347; Wave 20 closeout em doc sem mudanca funcional
-tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 20 HTTP + WhatsApp real PASS
+deploy: PASS no commit 5fe5ae5; Wave 21 micro-slice 1 sem mudanca funcional no bot
+tests: bash -n run-scenario PASS; Wave 21 micro-slice 1 HTTP + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 0788347 + Wave 20 closeout
+ultimo_commit_validado: 5fe5ae5 + Wave 21 micro-slice 1 por HTTP + WhatsApp real
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -192,8 +192,28 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: abrir nova onda leve em Level 4B, fora de preco/agenda/pagamento/secrets. Candidato preferencial: uma familia funcional com ganho claro de produto, nao mera revalidacao repetitiva. Manter 4C bloqueado.
+Proximo passo recomendado: fechar Wave 21 como cobertura nova pequena ou atacar uma segunda variacao batch com email/recusa no mesmo envio somente se houver ganho claro. Manter Level 4B; 4C bloqueado.
 ```
+
+Atualizacao 2026-05-26 21:44 UTC:
+
+- Wave 21 micro-slice 1 passou.
+- Novo seed local `seed_cadastro_aguardando_nome_data` criado para smoke.
+- HTTP radar `scenario-cadastro-batch-nome-data-lateral-20260526T214326Z-27063` PASS.
+- WhatsApp real definitivo `scenario-whatsapp-real-cadastro-batch-nome-data-lateral-20260526T214404Z-5218` PASS.
+- Estado final `coletando_cadastro`, `orcid=null`, `nome=Joao Silva`, `data_nascimento=1995-03-12`.
+- Router observavel: `processo_tatuagem`, `tattoo_process_or_booking_flow_question`.
+- `copy_risk=medio` aceito porque o proximo campo correto e e-mail opcional.
+- Provas conclusivas reais: Cliente `Joao Silva\n12/03/1995\ncomo funciona o orçamento?`; Bot `Funciona assim: eu entendo tua ideia, junto as infos principais e o tatuador avalia pra passar valor e horário.\n\nE o e-mail? Se preferir seguir sem, me avisa`.
+- Triage: duas tentativas foram bloqueadas por `infra_supabase_connectivity` no sandbox antes de executar; uma tentativa HTTP revelou contrato muito rigido, corrigido para a telemetria real.
+
+Atualizacao 2026-05-26 21:39 UTC:
+
+- Wave 21 declarada: `level4b-wave-21-cadastro-batch-fields`.
+- Objetivo: validar nome + data + duvida lateral no mesmo envio, sem repetir campos ja persistidos e sem criar `orcid` prematuro.
+- Novos cenarios: `cadastro-batch-nome-data-lateral` e `whatsapp-real-cadastro-batch-nome-data-lateral`.
+- Novo seed metodologico: `seed_cadastro_aguardando_nome_data`, sem mudanca funcional no bot.
+- Fora de escopo: preco fechado, agenda, pagamento, sinal, secrets, 4C.
 
 Atualizacao 2026-05-26 21:36 UTC:
 
