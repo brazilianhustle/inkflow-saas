@@ -515,12 +515,16 @@ primeiro micro-slice: multiturn-scenario-contract
 Ultimo micro-slice validado em Level 4B:
 
 ```text
-Multiturn Smoke - Scenario Contract
-doc: docs/atendimento-premium/13-smoke-scenario-registry.md
+Multiturn Smoke - HTTP Runner
+run_id: scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904
 status: PASS
-contrato: STEP_COUNT, MESSAGE_N, gates por step e evidencia steps/<n>/
-runner: ainda nao implementado para http_multiturn/whatsapp_real_multiturn
-proximo micro-slice: multiturn-http-runner
+tipo: HTTP radar multi-turn
+contrato: STEP_COUNT, MESSAGE_N, gates por step e evidencia steps/<n>/ preservados
+runner_http_multiturn: implementado
+runner_whatsapp_real_multiturn: ainda nao implementado
+proximo micro-slice: multiturn-whatsapp-real-runner
+prova_http: Cliente 1 "quanto tempo demora?" -> Bot 1 "O tempo de sessão depende do tamanho, detalhe e local do corpo... Me passa tua data de nascimento completa?"; Cliente 2 "12/03/1995" -> Bot 2 "E o e-mail? Se preferir seguir sem, me avisa"
+telemetria: step 1 Workflow Manager state_preserved_by_router_policy; step 2 Router pending_data_nascimento_answered.
 ```
 
 ## Checklist De Fechamento De Sessão

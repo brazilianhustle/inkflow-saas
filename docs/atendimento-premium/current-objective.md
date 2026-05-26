@@ -11,7 +11,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: wave_2_concluida
+status: level4b_wave_1_em_andamento
 branch: main
 ultimo_commit: conferir `git log --oneline -1`
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
@@ -107,19 +107,20 @@ autonomy_recommendation: 4C bloqueado ate duas rodadas 4B saudaveis
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-cadastro-question-policy-lateral-20260526T030449Z-21011
-tipo: Scenario WhatsApp real
-base_url: central -> bot (*2357)
+run_id: scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904
+tipo: Scenario HTTP multi-turn
+base_url: https://inkflowbrasil.com
 telefone: 5521970789797
 expected_state: coletando_cadastro
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-question-policy-lateral-20260526T030449Z-21011/
+evidence: .smoke-evidence/scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904/
 ```
 
 Mensagem:
 
 ```text
 quanto tempo demora?
+12/03/1995
 ```
 
 Resultado:
@@ -128,20 +129,21 @@ Resultado:
 estado_agente: coletando_cadastro
 resposta_ai_posterior_ao_humano: true
 orcid: null
-copy_risk: baixo
 dados_cadastro.nome: Joao Silva
-dados_cadastro.data_nascimento: null
+dados_cadastro.data_nascimento: 1995-03-12
 dados_cadastro.email: null
-copy: responde tempo de sessao e retoma data de nascimento pendente
-decision_observability: agent-log gate confirmou conversation_router tempo_sessao, can_mutate_state=false e workflow_manager state_preserved_by_router_policy
-decision_chain: pergunta lateral durante cadastro -> Router responde sem mutacao -> Workflow Manager preserva cadastro -> pergunta pendente continua recuperavel
-chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
+step_1_copy_risk: baixo
+step_2_copy_risk: medio
+copy: responde tempo de sessao, retoma data, persiste data e pede e-mail opcional
+decision_observability: step 1 confirmou Workflow Manager state_preserved_by_router_policy; step 2 confirmou Router pending_data_nascimento_answered
+decision_chain: pergunta lateral durante cadastro -> preserva pergunta pendente -> resposta de data no turno seguinte persiste corretamente
+chain: HTTP production smoke -> pipeline -> resposta -> poll -> agent-log gates por step
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar micro-slice `multiturn-http-runner` da onda `level4b-wave-1-multiturn-smoke`.
+Proximo passo recomendado: executar micro-slice `multiturn-whatsapp-real-runner` da onda `level4b-wave-1-multiturn-smoke`.
 ```
 
 Escopo recomendado:
@@ -151,6 +153,7 @@ Escopo recomendado:
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
 - seguir a onda declarada em `docs/atendimento-premium/23-level-4b-wave-1.md`;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
+- implementar `whatsapp_real_multiturn` sem chamar o fluxo definitivo de PASS ate a cadeia real `central -> bot` passar;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
 - nao subir para 4C; 4C exige duas rodadas 4B saudaveis.

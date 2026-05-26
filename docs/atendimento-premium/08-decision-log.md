@@ -812,6 +812,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** a primeira onda 4B fica limitada a infraestrutura de validacao multi-turn e ao fluxo seguro de cadastro `lateral -> data`. Comportamento conversacional novo continua exigindo HTTP radar e WhatsApp real definitivo.
 
+## 2026-05-26 - Runner HTTP multi-turn vira radar oficial
+
+**Status:** decidido.
+
+**Decisão:** implementar `http_multiturn` no runner versionado de scenarios e usar `cadastro-lateral-data-recovery` como primeiro radar multi-turn.
+
+**Motivo:** smokes single-turn nao provam recuperacao entre mensagens. O fluxo `quanto tempo demora?` seguido de `12/03/1995` precisa confirmar que o bot responde a duvida lateral, preserva a pergunta pendente e depois persiste a data sem criar handoff indevido.
+
+**Alternativas rejeitadas:**
+
+- validar a cadeia apenas por dois smokes isolados;
+- pular direto para WhatsApp real multi-turn sem radar HTTP;
+- considerar PASS sem transcript/judgment raiz;
+- aceitar evidencia por step sem indice consolidado.
+
+**Camada responsável:** Smoke Scenario Registry, runner de smoke, Workflow Manager, ConversationRouter e Observabilidade.
+
+**Impacto:** scenarios `http_multiturn` agora executam passos sequenciais, preservam evidencia por step e geram evidencia final consolidada. O primeiro run PASS foi `scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904`. O proximo passo obrigatorio e implementar `whatsapp_real_multiturn` antes de chamar a validacao de definitiva.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

@@ -81,7 +81,8 @@ Parar a onda se ocorrer:
 ```text
 status: em-andamento
 micro_slice_1: multiturn-scenario-contract PASS
-micro_slice_atual: multiturn-http-runner
+micro_slice_2: multiturn-http-runner PASS
+micro_slice_atual: multiturn-whatsapp-real-runner
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -129,3 +130,31 @@ Leitura:
 - O contrato define `STEP_COUNT`, `MESSAGE_N`, gates por step e evidencia em `steps/<n>/`.
 - `http_multiturn` e `whatsapp_real_multiturn` ainda nao contam como PASS ate o runner suportar esses tipos.
 - A regra preserva a metodologia: HTTP radar primeiro, WhatsApp real definitivo depois.
+
+## Evidencia Micro-Slice 2
+
+```text
+micro_slice: multiturn-http-runner
+status: PASS
+run_id: scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904
+tipo: HTTP radar multi-turn
+evidence: .smoke-evidence/scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904/
+proximo_micro_slice: multiturn-whatsapp-real-runner
+```
+
+Leitura:
+
+- O runner `http_multiturn` executa passos sequenciais no mesmo setup e preserva evidencias em `steps/<n>/`.
+- O pacote raiz passou a copiar a evidencia final necessaria para gerar `transcript.md` e `judgment.md`.
+- Step 1 respondeu a duvida lateral sobre tempo, preservou `estado=coletando_cadastro`, nao persistiu data e confirmou Workflow Manager `state_preserved_by_router_policy`.
+- Step 2 persistiu `data_nascimento=1995-03-12`, manteve `orcid=null`, pediu e-mail opcional e confirmou Router `pending_data_nascimento_answered`.
+- Houve uma falha util anterior por contrato de evidencia/copy gate; o comportamento estava correto, e o runner foi ajustado antes do PASS final.
+
+Provas HTTP radar:
+
+```text
+Cliente 1: "quanto tempo demora?"
+Bot 1: "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia. Me passa tua data de nascimento completa?"
+Cliente 2: "12/03/1995"
+Bot 2: "E o e-mail? Se preferir seguir sem, me avisa"
+```

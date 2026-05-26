@@ -15,6 +15,8 @@ command -v jq >/dev/null 2>&1 || { echo "ERRO: jq nao instalado." >&2; exit 1; }
 SCENARIO_ID="$SCENARIO_NAME"
 SCENARIO_TITLE="$SCENARIO_NAME"
 SCENARIO_TYPE="http"
+STEP_COUNT="0"
+STEP_WAIT_SECONDS="${STEP_WAIT_SECONDS:-2}"
 BASE_URL="${BASE_URL:-https://inkflowbrasil.com}"
 TENANT_ID="${SMOKE_TENANT_ID:-db686ef2-ca42-43e4-a831-808984d8d6c6}"
 PHONE="5521970789797"
@@ -39,10 +41,24 @@ SMOKE_MEDIA_MIMETYPE="${SMOKE_MEDIA_MIMETYPE:-}"
 # shellcheck source=/dev/null
 source "$SCENARIO_FILE"
 
-[ -n "$MESSAGE" ] || { echo "ERRO: scenario sem MESSAGE." >&2; exit 1; }
+is_multiturn_type() {
+  case "$SCENARIO_TYPE" in
+    http_multiturn|whatsapp_real_multiturn) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+if is_multiturn_type; then
+  [[ "$STEP_COUNT" =~ ^[0-9]+$ ]] && [ "$STEP_COUNT" -ge 2 ] || {
+    echo "ERRO: scenario multi-turn exige STEP_COUNT >= 2." >&2
+    exit 1
+  }
+else
+  [ -n "$MESSAGE" ] || { echo "ERRO: scenario sem MESSAGE." >&2; exit 1; }
+fi
 [[ "$PHONE" =~ ^[0-9]{10,15}$ ]] || { echo "ERRO: PHONE invalido: $PHONE" >&2; exit 1; }
 case "$SCENARIO_TYPE" in
-  http|whatsapp_real) ;;
+  http|whatsapp_real|http_multiturn|whatsapp_real_multiturn) ;;
   *) echo "ERRO: SCENARIO_TYPE invalido: $SCENARIO_TYPE" >&2; exit 1 ;;
 esac
 
@@ -74,12 +90,45 @@ agent_log_wait: ${EXPECTED_AGENT_LOG_TIMEOUT_SECONDS}s
 media         : ${SMOKE_MEDIA_MIMETYPE:-"(none)"}
 run_id        : $RUN_ID
 evidence_dir  : $EVIDENCE_DIR
+EOF
 
+  if is_multiturn_type; then
+    echo ""
+    echo "steps:"
+    local i msg state bot_regex poll_jq
+    for i in $(seq 1 "$STEP_COUNT"); do
+      msg="$(step_value MESSAGE "$i")"
+      state="$(step_value EXPECTED_STATE "$i")"
+      bot_regex="$(step_value EXPECTED_BOT_REGEX "$i")"
+      poll_jq="$(step_value EXPECTED_POLL_JQ_TRUE "$i")"
+      cat <<EOF
+  [$i]
+    message: ${msg:-"(empty)"}
+    expected_state: ${state:-"(none)"}
+    bot_regex: ${bot_regex:-"(none)"}
+    poll_jq: ${poll_jq:-"(none)"}
+EOF
+    done
+    return
+  fi
+
+  cat <<EOF
 message:
 ---
 $MESSAGE
 ---
 EOF
+}
+
+step_value() {
+  local base="$1"
+  local step="$2"
+  local name="${base}_${step}"
+  printf '%s' "${!name:-}"
+}
+
+shell_quote() {
+  printf '%q' "$1"
 }
 
 load_devvars() {
@@ -280,6 +329,101 @@ run_setup() {
   esac
 }
 
+write_single_turn_step_env() {
+  local step="$1"
+  local path="$2"
+  local message expected_state expected_human expected_copy bot_regex forbidden_bot poll_jq agent_jq
+  message="$(step_value MESSAGE "$step")"
+  expected_state="$(step_value EXPECTED_STATE "$step")"
+  expected_human="$(step_value EXPECTED_HUMAN_TEXT "$step")"
+  expected_copy="$(step_value EXPECTED_COPY_RISK_MAX "$step")"
+  bot_regex="$(step_value EXPECTED_BOT_REGEX "$step")"
+  forbidden_bot="$(step_value FORBIDDEN_BOT_REGEX "$step")"
+  poll_jq="$(step_value EXPECTED_POLL_JQ_TRUE "$step")"
+  agent_jq="$(step_value EXPECTED_AGENT_LOG_JQ_TRUE "$step")"
+
+  [ -n "$message" ] || { echo "ERRO: MESSAGE_${step} vazio." >&2; exit 1; }
+  [ -n "$expected_state" ] || expected_state="$EXPECTED_STATE"
+  [ -n "$expected_human" ] || expected_human="$message"
+  [ -n "$expected_copy" ] || expected_copy="$EXPECTED_COPY_RISK_MAX"
+
+  {
+    printf 'SCENARIO_ID=%s\n' "$(shell_quote "${SCENARIO_ID}-step${step}")"
+    printf 'SCENARIO_TITLE=%s\n' "$(shell_quote "${SCENARIO_TITLE} step ${step}")"
+    printf 'SCENARIO_TYPE="http"\n'
+    printf 'BASE_URL=%s\n' "$(shell_quote "$BASE_URL")"
+    printf 'TENANT_ID=%s\n' "$(shell_quote "$TENANT_ID")"
+    printf 'PHONE=%s\n' "$(shell_quote "$PHONE")"
+    printf 'INSTANCE=%s\n' "$(shell_quote "${INSTANCE:-}")"
+    printf 'SETUP="none"\n'
+    printf 'CLEANUP_BEFORE="0"\n'
+    printf 'MESSAGE=%s\n' "$(shell_quote "$message")"
+    printf 'EXPECTED_STATE=%s\n' "$(shell_quote "$expected_state")"
+    printf 'EXPECTED_HUMAN_TEXT=%s\n' "$(shell_quote "$expected_human")"
+    [ -n "$expected_copy" ] && printf 'EXPECTED_COPY_RISK_MAX=%s\n' "$(shell_quote "$expected_copy")"
+    [ -n "$bot_regex" ] && printf 'EXPECTED_BOT_REGEX=%s\n' "$(shell_quote "$bot_regex")"
+    [ -n "$forbidden_bot" ] && printf 'FORBIDDEN_BOT_REGEX=%s\n' "$(shell_quote "$forbidden_bot")"
+    [ -n "$poll_jq" ] && printf 'EXPECTED_POLL_JQ_TRUE=%s\n' "$(shell_quote "$poll_jq")"
+    [ -n "$agent_jq" ] && printf 'EXPECTED_AGENT_LOG_JQ_TRUE=%s\n' "$(shell_quote "$agent_jq")"
+  } > "$path"
+}
+
+copy_final_step_evidence() {
+  local final_dir="$1"
+  local file
+  for file in request.json poll.json summary.md transcript.md judgment.md agent-turn-logs.json scenario-bot-text.txt scenario-poll-jq.txt scenario-agent-log-jq.txt report-render.txt; do
+    [ -f "$final_dir/$file" ] && cp "$final_dir/$file" "$EVIDENCE_DIR/$file"
+  done
+}
+
+run_http_multiturn() {
+  local steps_root step step_dir step_env step_run_id generated_dir final_dir
+  steps_root="$EVIDENCE_DIR/steps"
+  mkdir -p "$steps_root"
+
+  {
+    printf '# Multi-turn steps\n\n'
+    printf -- '- step_count: %s\n' "$STEP_COUNT"
+    printf -- '- step_wait_seconds: %s\n' "$STEP_WAIT_SECONDS"
+  } > "$EVIDENCE_DIR/multiturn-summary.md"
+
+  for step in $(seq 1 "$STEP_COUNT"); do
+    step_dir="$steps_root/$step"
+    mkdir -p "$step_dir"
+    step_env="$step_dir/scenario.env"
+    step_run_id="${RUN_ID}-step${step}"
+    write_single_turn_step_env "$step" "$step_env"
+
+    echo ""
+    echo "[scenario] multiturn step $step/$STEP_COUNT"
+    SMOKE_SCENARIO_FILE="$step_env" \
+    SMOKE_RUN_ID="$step_run_id" \
+    SMOKE_EVIDENCE_ROOT="$steps_root" \
+      bash scripts/smoke/run-scenario.sh "${SCENARIO_ID}-step${step}" \
+        | tee "$step_dir/run.log"
+
+    generated_dir="$steps_root/$step_run_id"
+    if [ -d "$generated_dir" ]; then
+      cp -R "$generated_dir/." "$step_dir/"
+      rm -rf "$generated_dir"
+    fi
+    {
+      printf '\n## Step %s\n\n' "$step"
+      printf -- '- run_id: %s\n' "$step_run_id"
+      printf -- '- evidence: steps/%s/\n' "$step"
+      printf -- '- message: %s\n' "$(step_value MESSAGE "$step")"
+    } >> "$EVIDENCE_DIR/multiturn-summary.md"
+
+    final_dir="$step_dir"
+    if [ "$step" -lt "$STEP_COUNT" ] && [ "${STEP_WAIT_SECONDS:-0}" -gt 0 ]; then
+      sleep "$STEP_WAIT_SECONDS"
+    fi
+  done
+
+  copy_final_step_evidence "$final_dir"
+  bash scripts/smoke/render-report.sh "$EVIDENCE_DIR" | tee -a "$EVIDENCE_DIR/report-render.txt"
+}
+
 run_scenario() {
   mkdir -p "$EVIDENCE_DIR"
   print_plan | tee "$EVIDENCE_DIR/scenario-plan.txt"
@@ -299,6 +443,14 @@ run_scenario() {
   echo ""
   echo "[scenario] run"
   case "$SCENARIO_TYPE" in
+    http_multiturn)
+      run_http_multiturn
+      return 0
+      ;;
+    whatsapp_real_multiturn)
+      echo "ERRO: whatsapp_real_multiturn ainda nao implementado." >&2
+      exit 1
+      ;;
     http)
       SMOKE_RUN_ID="$RUN_ID" \
       SMOKE_EVIDENCE_ROOT="$EVIDENCE_ROOT" \
