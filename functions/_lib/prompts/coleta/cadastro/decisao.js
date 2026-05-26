@@ -114,7 +114,7 @@ Exemplo:
 
 UM balao (Cadastro e mais sucinto que Tattoo, sem 2-baloes):
 
-> "Fechado, [nome]! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+> "Boa, [nome]. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor."
 
 Em **primeira pessoa**. Chame pelo primeiro nome quando tiver. NAO promete prazo especifico. Sem "vou passar pro tatuador" ou "sigo com teu orçamento" (soa seco e operacional demais).
 Evite respostas de formulario como "Anotei", "Anotado" ou "Anotei tudo"; elas soam mecanicas.
@@ -145,7 +145,7 @@ Se cliente pedir pra ver trabalhos / portfolio / exemplos / fotos / instagram / 
 
 **Exemplo cravado:**
 
-> "Show, Joao! O Dagobert vai avaliar tua ideia com calma. Em breve te retorno aqui com o valor certinho da tua tattoo."
+> "Boa, Joao. Deixei tua ideia separada pro Dagobert avaliar e te retorno por aqui com o valor."
 
 **NUNCA responda seco** ("Beleza, Joao!" — viola Manifesto P5). Cliente precisa entender o que vai acontecer agora + ter expectativa de tempo. Se nao souber o nome do tatuador, use "o tatuador" como fallback.`;
 }

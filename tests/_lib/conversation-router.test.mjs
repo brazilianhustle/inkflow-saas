@@ -869,7 +869,10 @@ test('ConversationRouter: cadastro persiste email pendente sem chamar LLM', () =
   assert.equal(out.can_mutate_state, true);
   assert.equal(out.agent_usado, 'cadastro');
   assert.deepEqual(out.dados_persistidos, { email: 'joao@example.com' });
-  assert.match(out.resposta_cliente, /tatuador vai avaliar/i);
+  assert.match(out.resposta_cliente, /Deixei as infos separadas/i);
+  assert.match(out.resposta_cliente, /tatuador avaliar/i);
+  assert.match(out.resposta_cliente, /retorno por aqui com o valor/i);
+  assert.doesNotMatch(out.resposta_cliente, /valor certinho|avaliar com calma/i);
   assert.doesNotMatch(out.resposta_cliente, /e-?mail/i);
 });
 
@@ -904,7 +907,10 @@ test('ConversationRouter: recusa natural de email por canal atual resolve email 
   assert.equal(out.reason, 'pending_email_refused');
   assert.equal(out.can_mutate_state, true);
   assert.deepEqual(out.dados_persistidos, { email: null, email_recusado: true });
-  assert.match(out.resposta_cliente, /tatuador vai avaliar/i);
+  assert.match(out.resposta_cliente, /Deixei as infos separadas/i);
+  assert.match(out.resposta_cliente, /tatuador avaliar/i);
+  assert.match(out.resposta_cliente, /retorno por aqui com o valor/i);
+  assert.doesNotMatch(out.resposta_cliente, /valor certinho|avaliar com calma/i);
   assert.doesNotMatch(out.resposta_cliente, /e-?mail/i);
 });
 
@@ -923,7 +929,10 @@ test('ConversationRouter: recusa natural "melhor falar por aqui" resolve email p
   assert.equal(out.intent, 'cadastro_pending_answer');
   assert.equal(out.reason, 'pending_email_refused');
   assert.deepEqual(out.dados_persistidos, { email: null, email_recusado: true });
-  assert.match(out.resposta_cliente, /tatuador vai avaliar/i);
+  assert.match(out.resposta_cliente, /Deixei as infos separadas/i);
+  assert.match(out.resposta_cliente, /tatuador avaliar/i);
+  assert.match(out.resposta_cliente, /retorno por aqui com o valor/i);
+  assert.doesNotMatch(out.resposta_cliente, /valor certinho|avaliar com calma/i);
   assert.doesNotMatch(out.resposta_cliente, /e-?mail/i);
 });
 
@@ -943,7 +952,10 @@ test('ConversationRouter: recusa natural "por aqui mesmo" resolve email pendente
   assert.equal(out.reason, 'pending_email_refused');
   assert.equal(out.can_mutate_state, true);
   assert.deepEqual(out.dados_persistidos, { email: null, email_recusado: true });
-  assert.match(out.resposta_cliente, /tatuador vai avaliar/i);
+  assert.match(out.resposta_cliente, /Deixei as infos separadas/i);
+  assert.match(out.resposta_cliente, /tatuador avaliar/i);
+  assert.match(out.resposta_cliente, /retorno por aqui com o valor/i);
+  assert.doesNotMatch(out.resposta_cliente, /valor certinho|avaliar com calma/i);
   assert.doesNotMatch(out.resposta_cliente, /e-?mail/i);
 });
 
@@ -969,7 +981,10 @@ test('ConversationRouter: cadastro persiste recusa pura de email pendente sem ch
   assert.equal(out.can_mutate_state, true);
   assert.equal(out.agent_usado, 'cadastro');
   assert.deepEqual(out.dados_persistidos, { email: null, email_recusado: true });
-  assert.match(out.resposta_cliente, /tatuador vai avaliar/i);
+  assert.match(out.resposta_cliente, /Deixei as infos separadas/i);
+  assert.match(out.resposta_cliente, /tatuador avaliar/i);
+  assert.match(out.resposta_cliente, /retorno por aqui com o valor/i);
+  assert.doesNotMatch(out.resposta_cliente, /valor certinho|avaliar com calma/i);
   assert.doesNotMatch(out.resposta_cliente, /e-?mail/i);
 });
 
@@ -1007,11 +1022,12 @@ test('ConversationRouter: cadastro persiste recusa de email e não insiste no em
   assert.equal(out.agent_usado, 'cadastro');
   assert.deepEqual(out.dados_persistidos, { email: null, email_recusado: true });
   assert.match(out.resposta_cliente, /tempo de sessão/);
-  assert.match(out.resposta_cliente, /Fechado, Maria!/);
-  assert.match(out.resposta_cliente, /O tatuador vai avaliar com calma/);
-  assert.match(out.resposta_cliente, /te retorno em breve com o valor certinho/);
+  assert.match(out.resposta_cliente, /Boa, Maria\./);
+  assert.match(out.resposta_cliente, /Deixei as infos separadas/);
+  assert.match(out.resposta_cliente, /te retorno por aqui com o valor/);
   assert.doesNotMatch(out.resposta_cliente, /e-mail/i);
   assert.doesNotMatch(out.resposta_cliente, /sigo com teu orçamento/i);
+  assert.doesNotMatch(out.resposta_cliente, /valor certinho|avaliar com calma/i);
 });
 
 test('ConversationRouter: tempo de sessão responde sobre duração, não preço', () => {

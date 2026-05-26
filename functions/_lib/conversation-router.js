@@ -140,8 +140,8 @@ function cadastroResumeQuestion(conversa = {}) {
   if (!hasValue(dados.data_nascimento)) return 'Me passa tua data de nascimento completa?';
   if (!hasValue(dados.email) && dados.email_recusado !== true) return 'E o e-mail? Se preferir seguir sem, me avisa';
   const nome = firstName(dados.nome);
-  const prefix = nome ? `Fechado, ${nome}! ` : 'Fechado! ';
-  return `${prefix}O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.`;
+  const prefix = nome ? `Boa, ${nome}. ` : 'Boa. ';
+  return `${prefix}Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`;
 }
 
 function resumeQuestionForState(estado, conversa) {

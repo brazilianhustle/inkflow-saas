@@ -21,7 +21,7 @@ export const CONTRACT_COLETA_CADASTRO = {
     'proxima_acao',
     'email_recusado',
     'enviar_orcamento_tatuador',
-    'O tatuador vai avaliar com calma',
+    'Deixei as infos separadas',
   ],
   must_not_contain: [
     // Ancoras v1 removidas no rewrite v2.
@@ -42,6 +42,9 @@ export const CONTRACT_COLETA_CADASTRO = {
     'AGENTE: Anotei',
     // Fechamento seco rejeitado no smoke WhatsApp real 2026-05-25.
     'Confirmo por aqui e sigo com teu orçamento',
+    // Fechamentos rigidos rejeitados na Wave 17 de naturalidade.
+    'O tatuador vai avaliar com calma',
+    'valor certinho',
   ],
   max_tokens: 6000,
 };
