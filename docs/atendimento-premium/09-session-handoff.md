@@ -629,6 +629,33 @@ ajuste_metodologico: run-scenario agora aceita step multi-turn sem EXPECTED_AGEN
 proximo passo: tattoo-multi-info-evidence-summary
 ```
 
+Wave 2 closeout consolidado:
+
+```text
+wave: level4b-wave-2-tattoo-multi-info
+status: closeout_pass
+micro_slice_7: tattoo-multi-info-evidence-summary PASS
+micro_slice_8: level4b-wave-2-closeout PASS
+evidencias_http:
+  - scenario-tattoo-multi-info-basic-20260526T035828Z-32439
+  - scenario-tattoo-multi-info-height-size-20260526T045135Z-29004
+  - scenario-tattoo-multi-info-multiturn-recovery-20260526T045958Z-29435
+evidencias_whatsapp_real:
+  - scenario-whatsapp-real-tattoo-multi-info-basic-20260526T040309Z-22657
+  - scenario-whatsapp-real-tattoo-multi-info-height-size-20260526T045323Z-26781
+  - scenario-whatsapp-real-tattoo-multi-info-multiturn-recovery-20260526T050202Z-31833
+wave_health: PASS
+autonomy_gate: PASS, manter Level 4B
+security_gate: PASS
+evidence_orphan_gate: PASS com WARN nao bloqueante antigo
+4c: bloqueado, sem promocao automatica
+proximo passo: escolher e declarar proxima onda funcional Level 4B em zona verde/amarela
+provas_conclusivas_reais:
+  1. Cliente "quero uma rosa fineline no antebraco, tenho 1,70" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nBoa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
+  2. Cliente "quero uma rosa fineline na perna de 5cm, tenho 1,81" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nBoa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
+  3. Cliente "quero uma rosa fineline" -> Bot "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nTu imagina fazer em qual parte do corpo?"; Cliente "na perna, tenho 1,81" -> Bot "Boa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

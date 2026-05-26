@@ -11,7 +11,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_2_em_andamento
+status: level4b_wave_2_closeout_pass
 branch: main
 ultimo_commit: conferir `git log --oneline -1`
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
@@ -21,7 +21,7 @@ worktree_esperado: limpo
 ultimo_commit_validado: conferir `git log --oneline -1`
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
-autonomy_recommendation: 4C bloqueado ate duas rodadas 4B saudaveis
+autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
 ```
 
 ## Ultimos Marcos
@@ -81,6 +81,7 @@ autonomy_recommendation: 4C bloqueado ate duas rodadas 4B saudaveis
 - Level 4B Wave 2 iniciou a frente `tattoo-multi-info`: o Router agora resolve multi-info basico de tattoo de forma deterministica; HTTP radar e WhatsApp real definitivo passaram para `quero uma rosa fineline no antebraco, tenho 1,70`, persistindo `descricao_curta`, `estilo`, `local_corpo` e `altura_cm`, mantendo `orcid=null` e pedindo somente foto do local.
 - Level 4B Wave 2 validou separacao de tamanho da tattoo versus altura da pessoa: o Router agora extrai `tamanho_cm` espontaneo junto de `altura_cm`; testes locais, CI/deploy, HTTP radar e WhatsApp real definitivo passaram para `quero uma rosa fineline na perna de 5cm, tenho 1,81`, persistindo `tamanho_cm=5` e `altura_cm=181`.
 - Level 4B Wave 2 validou recuperacao multi-turn: `quero uma rosa fineline` persistiu descricao/estilo e perguntou local; `na perna, tenho 1,81` persistiu local/altura no mesmo turno e pediu foto. HTTP multi-turn e WhatsApp real multi-turn passaram.
+- Level 4B Wave 2 foi consolidada em closeout: evidencias HTTP + WhatsApp real dos tres comportamentos foram registradas, `wave-health` PASS, `security-gate` PASS, `evidence-orphan-gate` PASS com um WARN nao bloqueante antigo, e decisao de manter Level 4B sem promover 4C.
 - Governanca multi-agente oficializada: agentes podem acelerar analise, preparo, auditoria e triage, mas Level 4B mantem Commander unico, single-writer por micro-slice, WhatsApp real serial e 4C bloqueado.
 - Wave Runner v1 e Evidence Registrar implementados como ferramentas metodologicas: preflight seguro de onda e geracao revisavel de linha para `smoke-runs.md`, sem executar WhatsApp real, sem editar evidencias automaticamente e sem promover autonomia.
 - Evidence Orphan Gate integrado ao `wave-health`: registros quebrados passam a bloquear a saude da onda; evidencias completas recentes sem registro aparecem como `WARN` no modo padrao e bloqueiam somente no modo estrito de auditoria.
@@ -113,44 +114,43 @@ autonomy_recommendation: 4C bloqueado ate duas rodadas 4B saudaveis
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-lateral-data-recovery-20260526T033036Z-11904
-run_id_real: scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T033539Z-27181
-tipo: Scenario WhatsApp real multi-turn
+run_id_http: scenario-tattoo-multi-info-multiturn-recovery-20260526T045958Z-29435
+run_id_real: scenario-whatsapp-real-tattoo-multi-info-multiturn-recovery-20260526T050202Z-31833
+tipo: Scenario WhatsApp real multi-turn da Wave 2
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: coletando_cadastro
+expected_state: coletando_tattoo
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-lateral-data-recovery-20260526T033539Z-27181/
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-multi-info-multiturn-recovery-20260526T050202Z-31833/
 ```
 
 Mensagem:
 
 ```text
-quanto tempo demora?
-12/03/1995
+quero uma rosa fineline
+na perna, tenho 1,81
 ```
 
 Resultado:
 
 ```text
-estado_agente: coletando_cadastro
+estado_agente: coletando_tattoo
 resposta_ai_posterior_ao_humano: true
 orcid: null
-dados_cadastro.nome: Joao Silva
-dados_cadastro.data_nascimento: 1995-03-12
-dados_cadastro.email: null
-step_1_copy_risk: baixo
-step_2_copy_risk: medio
-copy: responde tempo de sessao, retoma data, persiste data e pede e-mail opcional
-decision_observability: step 1 confirmou Workflow Manager state_preserved_by_router_policy; step 2 confirmou Router pending_data_nascimento_answered
-decision_chain: pergunta lateral durante cadastro -> preserva pergunta pendente -> resposta de data no turno seguinte persiste corretamente
-chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll -> agent-log gates por step
+dados_coletados.descricao_curta: rosa
+dados_coletados.estilo: fineline
+dados_coletados.local_corpo: perna
+dados_coletados.altura_cm: 181
+copy_risk: baixo
+copy: step 1 pergunta local; step 2 persiste local e altura e pede foto do local
+decision_chain: multi-info parcial -> pergunta pendente -> resposta seguinte resolve mais de um campo sem repetir pergunta
+chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll por step
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar micro-slice `tattoo-multi-info-basic-http` da onda `level4b-wave-2-tattoo-multi-info`.
+Proximo passo recomendado: escolher e declarar a proxima onda funcional Level 4B em zona verde/amarela.
 ```
 
 Escopo recomendado:
@@ -158,10 +158,10 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
-- seguir a onda declarada em `docs/atendimento-premium/23-level-4b-wave-1.md`;
+- usar `docs/atendimento-premium/24-level-4b-wave-2.md` como referencia de closeout da onda anterior;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
-- nova onda declarada: `level4b-wave-2-tattoo-multi-info`;
-- primeiro comportamento alvo: cliente manda ideia + estilo + local + altura no mesmo turno;
+- declarar nova onda antes de editar comportamento;
+- priorizar proximo alvo funcional com risco controlado;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
@@ -171,8 +171,8 @@ Leitura recomendada:
 
 ```text
 4B promovido por decisao deliberada apos Wave 1 e Wave 2 Level 4A saudaveis.
-Primeira onda 4B deve permanecer em zona verde/amarela.
-Primeira onda 4B declarada: `level4b-wave-1-multiturn-smoke`.
+Wave 2 4B fechou PASS com HTTP + WhatsApp real definitivo.
+Proxima onda 4B deve permanecer em zona verde/amarela.
 4C permanece bloqueado.
 ```
 

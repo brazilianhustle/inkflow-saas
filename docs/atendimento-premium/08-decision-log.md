@@ -1004,6 +1004,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** cenarios `tattoo-multi-info-multiturn-recovery` e `whatsapp-real-tattoo-multi-info-multiturn-recovery` passaram em HTTP multi-turn e WhatsApp real multi-turn. O runner foi ajustado para aceitar `EXPECTED_AGENT_LOG_JQ_TRUE` opcional em steps multi-turn sem abortar a geracao do step env.
 
+## 2026-05-26 - Closeout da Wave 2 Level 4B
+
+**Status:** decidido.
+
+**Decisão:** fechar `level4b-wave-2-tattoo-multi-info` como PASS, manter Level 4B e nao promover para 4C.
+
+**Motivo:** a onda cobriu os tres comportamentos planejados com HTTP radar antes de WhatsApp real definitivo: multi-info basico, separacao entre tamanho da tattoo e altura da pessoa, e recuperacao multi-turn. Todos os PASS mantiveram `copy_risk=baixo`, `orcid=null` e pergunta seguinte coerente sem repetir campos ja persistidos.
+
+**Alternativas rejeitadas:**
+
+- promover para 4C apenas porque a onda fechou sem regressao;
+- seguir para nova implementacao sem consolidar evidencias;
+- considerar apenas HTTP como evidencia final;
+- bloquear a onda por WARN nao bloqueante de evidencia antiga completa sem registro.
+
+**Camada responsável:** Autonomy Gate, Wave Health, Smoke Monitoring Process e documentacao de onda.
+
+**Impacto:** `24-level-4b-wave-2.md`, `current-objective.md` e `09-session-handoff.md` agora registram closeout, provas conclusivas reais e a decisao de manter Level 4B. O proximo passo e declarar uma nova onda funcional em zona verde/amarela antes de tocar comportamento.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
