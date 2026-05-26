@@ -587,16 +587,25 @@ comportamento_bot: inalterado
 uso: wave-runner faz preflight; evidence-registrar imprime linha sugerida para smoke-runs.md sem editar arquivo; evidence-orphan-gate bloqueia registro quebrado e alerta evidence recente nao registrada
 ```
 
-Wave 2 em andamento, segundo fluxo funcional preparado:
+Wave 2 em andamento, segundo fluxo funcional validado:
 
 ```text
-micro_slice_http: tattoo-multi-info-height-size-http pre-deploy local PASS
+micro_slice_http: tattoo-multi-info-height-size-http PASS
+run_id_http: scenario-tattoo-multi-info-height-size-20260526T045135Z-29004
+micro_slice_real: tattoo-multi-info-height-size-whatsapp-real PASS
+run_id_real: scenario-whatsapp-real-tattoo-multi-info-height-size-20260526T045323Z-26781
 scenario_http: tattoo-multi-info-height-size
 scenario_real: whatsapp-real-tattoo-multi-info-height-size
+cadeia_real: Evolution central -> bot 5545999012357
 cliente: "quero uma rosa fineline na perna de 5cm, tenho 1,81"
 mudanca: Router separa tamanho_cm=5 de altura_cm=181 no mesmo turno
-validacao_local: node --test focado PASS; npm test PASS; dry-run HTTP/WhatsApp real PASS
-proximo passo: commit funcional, push, CI/deploy, HTTP radar e WhatsApp real definitivo
+bot: "Oii, tudo bem? Me chamo Assistente, muito prazer.\n\nBoa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
+estado: coletando_tattoo
+orcid: null
+dados: descricao_curta=rosa, estilo=fineline, local_corpo=perna, tamanho_cm=5, altura_cm=181
+copy_risk: baixo
+validacao: node --test focado PASS; npm test PASS; CI/deploy PASS; HTTP radar PASS; WhatsApp real PASS
+proximo passo: tattoo-multi-info-multiturn-recovery
 ```
 
 ## Checklist De Fechamento De Sessão

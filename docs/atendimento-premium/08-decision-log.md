@@ -968,7 +968,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 ## 2026-05-26 - Multi-info separa tamanho da tattoo e altura
 
-**Status:** em validacao.
+**Status:** validado.
 
 **Decisão:** expandir o `ConversationRouter` deterministico para extrair `tamanho_cm` espontaneo sem confundir com `altura_cm`.
 
@@ -983,7 +983,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Camada responsável:** ConversationPolicy, ConversationRouter, Smoke Scenario e metodologia Level 4B.
 
-**Impacto:** novos cenarios `tattoo-multi-info-height-size` e `whatsapp-real-tattoo-multi-info-height-size` validam a separacao. O slice so fecha apos deploy, HTTP radar e WhatsApp real em cadeia `central -> bot`.
+**Impacto:** novos cenarios `tattoo-multi-info-height-size` e `whatsapp-real-tattoo-multi-info-height-size` validaram a separacao. O commit `c379f0f` passou em testes locais, CI/deploy, HTTP radar (`scenario-tattoo-multi-info-height-size-20260526T045135Z-29004`) e WhatsApp real em cadeia `central -> bot` (`scenario-whatsapp-real-tattoo-multi-info-height-size-20260526T045323Z-26781`).
 
 ## Decisões Em Aberto
 
