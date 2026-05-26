@@ -605,6 +605,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** a onda Level 4A ganha um comando rapido para localizar run_id, tipo e pasta de evidencia recente. Nao altera comportamento conversacional e nao exige WhatsApp real novo.
 
+## 2026-05-25 - Stop Audit para freios Level 4A
+
+**Status:** decidido.
+
+**Decisão:** criar `scripts/smoke/level4a-stop-audit.sh` para verificar se as stop conditions criticas continuam documentadas.
+
+**Motivo:** autonomia maior precisa de freios auditaveis. Se os documentos perderem termos como CI/deploy fail, WhatsApp real fail, cleanup inseguro, copy risk alto, secrets, dinheiro/agenda ou triage, a onda deve ser bloqueada antes de seguir.
+
+**Alternativas rejeitadas:**
+
+- confiar apenas na leitura manual dos docs;
+- duplicar as stop conditions em comentario sem gate;
+- deixar a verificacao para o fim da onda.
+
+**Camada responsável:** Level 4 Loop Policy, Wave Plan e Smoke Monitoring Process.
+
+**Impacto:** a onda Level 4A agora tem um gate documental para impedir que os freios operacionais desaparecam do processo. Nao altera comportamento do bot.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
