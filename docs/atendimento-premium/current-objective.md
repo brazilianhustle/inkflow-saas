@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_17_lateral_opening_validated
+status: level4b_wave_17_closed
 branch: main
-ultimo_commit: 498c8c5 feat: soften first contact lateral greeting
-ultimo_commit_funcional: 498c8c5 feat: soften first contact lateral greeting
-deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit funcional
-tests: npm test PASS local 1208/1208; testes focados Wave 17 micro-slice 7 PASS Router 61/61 e Pipeline 66/66; CI PASS
+ultimo_commit: fd7775f docs: revalidate wave 17 email refusal naturalness
+ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
+deploy: GitHub Actions Deploy to Cloudflare Pages PASS no fechamento da Wave 17
+tests: npm test PASS local 1210/1210 no ultimo commit funcional; testes focados Wave 17 micro-slice 9 PASS 133/133; CI PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 498c8c5
+ultimo_commit_validado: fd7775f
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -224,7 +224,14 @@ Atualizacao 2026-05-26 20:05 UTC:
 - Auditoria atualizada: 12 evidencias, 9 baixo, 3 medio, 0 alto; os 3 medios restantes sao menoridade legal por termos de seguranca.
 - Provas conclusivas reais: Cliente `por aqui mesmo`; Bot `Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`.
 
-Proximo passo recomendado atualizado: fechar Wave 17 ou abrir nova onda pequena. Nao ha bug ou regressao pendente nesta frente; manter Level 4B e nao promover 4C ainda.
+Wave 17 fechada: naturalidade deterministica ficou com 9 baixo, 3 medio, 0 alto na amostra atual; os 3 medios restantes sao menoridade legal e permanecem como watchlist aceitavel por seguranca.
+
+Proximo passo recomendado atualizado: abrir Wave 18 pequena em Level 4B, sem 4C, escolhendo uma familia funcional fora de menoridade legal. Candidatos preferenciais:
+
+- revalidar e suavizar fechamento de cadastro com e-mail valido apos midia, porque historico antigo ainda registrou `Fechado`/`valor certinho`;
+- ou revalidar midia/cadastro multi-turn atual para confirmar que nao restou copy antiga em evidencias recentes.
+
+Primeiro ataque recomendado da Wave 18: revalidar `cadastro-after-media-email-valido-handoff` em HTTP radar e WhatsApp real antes de mexer em codigo. Se a copy atual ja estiver limpa, fechar como revalidacao sem codigo; se ainda vier rigida, corrigir na VoicePolicy/Workflow com micro-slice pequeno.
 
 Escopo recomendado:
 

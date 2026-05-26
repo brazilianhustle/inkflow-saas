@@ -515,3 +515,31 @@ Estado final: `aguardando_tatuador`, `orcid=orc_l0fed8`, `email_recusado=true`, 
 ## Decisão Apos Micro-Slice 9
 
 Manter Level 4B. A frente de naturalidade da Wave 17 removeu todos os medios nao-legais da amostra atual. O residual medio esta restrito a menoridade legal e deve permanecer como watchlist aceitavel por seguranca. Proximo passo recomendado: fechar Wave 17 ou abrir nova onda pequena para outra familia funcional, sem subir para 4C ainda.
+
+## Closeout Da Wave 17
+
+Status: PASS.
+
+Resumo:
+
+```text
+onda: level4b-wave-17-naturalness-audit-and-voice-policy
+escopo: auditoria de naturalidade, centralizacao de VoicePolicy e reducao de linguagem rigida deterministica
+resultado_final_auditoria: 12 evidencias, 9 baixo, 3 medio, 0 alto
+residual_medio: menoridade legal por termos de seguranca/responsavel legal
+regressao_aberta: nenhuma
+autonomy_level: manter 4B
+promocao_4C: bloqueada
+```
+
+Entregas:
+
+- `naturalness-audit.sh` criou radar read-only de naturalidade;
+- fechamento de cadastro/handoff foi suavizado e centralizado;
+- familia midia/cadastro saiu de `Pra liberar teu orcamento` para cadastro direto;
+- retomada de cadastro vazio ficou mais natural;
+- primeira abertura lateral removeu pergunta retorica extra;
+- menoridade legal ganhou copy centralizada e hotfix para data pendente menor;
+- fechamento de e-mail recusado foi revalidado e tirou o unico medio nao-legal da amostra atual.
+
+Decisao final: encerrar a Wave 17. A proxima onda deve continuar pequena em Level 4B, preferencialmente revalidando `cadastro-after-media-email-valido-handoff`, porque historico antigo ainda mostra copy rigida com `Fechado`/`valor certinho`. Primeiro passo da nova onda deve ser revalidacao HTTP + WhatsApp real; so alterar codigo se a evidencia atual ainda falhar em naturalidade.
