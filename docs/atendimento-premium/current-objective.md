@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_19_micro_slice_1_pass
+status: level4b_wave_19_micro_slice_2_pass
 branch: main
-ultimo_commit: ebdb3b8 docs: start wave 19 post handoff hardening
+ultimo_commit: eb6fec7 docs: revalidate wave 19 post handoff media
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: GitHub Actions Deploy to Cloudflare Pages PASS no fechamento da Wave 19 micro-slice 1
-tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 19 micro-slice 1 alterou somente scripts/docs; bash -n PASS; HTTP + WhatsApp real PASS; GitHub Tests PASS
+deploy: pendente no commit eb6fec7
+tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 19 micro-slice 2 sem mudanca funcional; HTTP + WhatsApp real PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: ebdb3b8
+ultimo_commit_validado: eb6fec7
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -192,8 +192,17 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: continuar Wave 19 com revalidacao de midia pos-handoff, usando o mesmo criterio terminal de `ai_messages_after_last_human=0`. Manter Level 4B; nao subir para 4C.
+Proximo passo recomendado: fechar Wave 19 ou, se for continuar a frente, atacar uma variacao estreita de pos-handoff com texto + midia no mesmo envio. Manter Level 4B; nao subir para 4C.
 ```
+
+Atualizacao 2026-05-26 21:05 UTC:
+
+- Wave 19 micro-slice 2 passou sem mudanca de codigo.
+- HTTP radar `scenario-post-handoff-media-forwarding-20260526T210521Z-19735` PASS.
+- WhatsApp real definitivo `scenario-whatsapp-real-post-handoff-media-forwarding-20260526T210550Z-4850` PASS.
+- Estado final `aguardando_tatuador`, `orcid=orc_poshandoff`, tail `pos-handoff-midia-encaminhada`.
+- `judgment.md` confirmou `ai_messages_after_last_human=0`, `copy_risk=baixo`.
+- Provas conclusivas reais: Cliente `mais uma referencia` + `image/png`; Bot sem nova resposta automatica apos o humano.
 
 Atualizacao 2026-05-26 21:00 UTC:
 

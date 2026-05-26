@@ -101,3 +101,34 @@ Estado final: `aguardando_tatuador`, `orcid=orc_poshandoff`, `ai_messages_after_
 ## Decisao Apos Micro-Slice 1
 
 Manter Level 4B. O fluxo terminal de texto pos-handoff esta verde na producao e a evidencia agora ficou mais legivel. Proximo ataque recomendado: revalidar midia pos-handoff com o mesmo criterio de ausencia de IA posterior ao humano.
+
+## Micro-Slice 2 - Midia Pos-Handoff
+
+PASS sem mudanca de codigo: midia adicional enviada em `aguardando_tatuador` continua sendo encaminhada ao tatuador, sem reabrir coleta e sem gerar resposta automatica apos o humano.
+
+Validacao:
+
+```text
+mudanca_funcional_bot: nao
+http_radar: scenario-post-handoff-media-forwarding-20260526T210521Z-19735 PASS
+whatsapp_real: scenario-whatsapp-real-post-handoff-media-forwarding-20260526T210550Z-4850 PASS
+estado_final: aguardando_tatuador
+orcid: orc_poshandoff
+media: image/png
+tail: pos-handoff-midia-encaminhada
+forbidden_tail: PASS
+ai_messages_after_last_human: 0
+copy_risk: baixo
+```
+
+### Provas Conclusivas Reais - Micro-Slice 2
+
+Cliente: `mais uma referencia` + `image/png`
+
+Bot: sem nova resposta automatica apos o humano.
+
+Estado final: `aguardando_tatuador`, `orcid=orc_poshandoff`, `ai_messages_after_last_human=0`, tail `pos-handoff-midia-encaminhada`.
+
+## Decisao Apos Micro-Slice 2
+
+Manter Level 4B. A Wave 19 cobriu texto e midia pos-handoff com HTTP radar e WhatsApp real definitivo, ambos com o criterio terminal correto de zero IA apos o humano. Proximo ataque recomendado: fechar Wave 19 ou, se for continuar a frente, atacar uma variação estreita de pos-handoff com texto + midia no mesmo envio. Nao subir para 4C.
