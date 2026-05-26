@@ -730,6 +730,27 @@ test('ConversationRouter: cadastro persiste data pendente sem chamar LLM', () =>
   assert.doesNotMatch(out.resposta_cliente, /data de nascimento/i);
 });
 
+test('ConversationRouter: cadastro com data pendente menor de idade aciona humano', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: '12/03/2015',
+    conversa: { dados_coletados: {}, dados_cadastro: { nome: 'Joao Silva' } },
+    historico: [
+      { role: 'assistant', content: 'Me passa tua data de nascimento completa?' },
+    ],
+  });
+  assert.equal(out.intent, 'minor_age_birthdate');
+  assert.equal(out.reason, 'pending_birthdate_under_18');
+  assert.equal(out.estado_novo, 'aguardando_tatuador');
+  assert.equal(out.proxima_acao, 'erro');
+  assert.equal(out.escalation.reason_code, 'minor_age');
+  assert.equal(out.minor_age_resolution.data_nascimento_persistida, true);
+  assert.deepEqual(out.dados_persistidos, { data_nascimento: '2015-03-12' });
+  assert.match(out.resposta_cliente, /menos de 18 anos/i);
+  assert.match(out.resposta_cliente, /respons[aá]vel legal/i);
+  assert.doesNotMatch(out.resposta_cliente, /e-?mail/i);
+});
+
 test('ConversationRouter: dúvida lateral em cadastro preserva pergunta de data pendente', () => {
   const out = routeConversationTurn({
     estado_atual: 'cadastro',

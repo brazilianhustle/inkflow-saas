@@ -313,8 +313,62 @@ function shouldHandleCadastroPendingAnswer(pendingResolution) {
   return false;
 }
 
+function ageFromBirthDate(isoDate, now = new Date()) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(isoDate || ''))) return null;
+  const [year, month, day] = isoDate.split('-').map(Number);
+  const today = now instanceof Date ? now : new Date(now);
+  if (!Number.isFinite(today.getTime())) return null;
+  let age = today.getUTCFullYear() - year;
+  const currentMonth = today.getUTCMonth() + 1;
+  const currentDay = today.getUTCDate();
+  if (currentMonth < month || (currentMonth === month && currentDay < day)) age -= 1;
+  return Number.isFinite(age) ? age : null;
+}
+
+function minorAgeBirthDateOutput({ data_nascimento }) {
+  return {
+    ok: true,
+    handled_by: 'conversation_router',
+    intent: 'minor_age_birthdate',
+    confidence: 0.92,
+    risk: 'high',
+    reason: 'pending_birthdate_under_18',
+    can_mutate_state: true,
+    resposta_cliente: minorAgeHandoffReply(),
+    estado_novo: 'aguardando_tatuador',
+    dados_persistidos: { data_nascimento },
+    dados_completos: false,
+    campos_faltando: ['menor_idade_trigger'],
+    campos_conflitantes: [],
+    proxima_acao: 'erro',
+    agent_usado: 'cadastro',
+    side_effects: [],
+    urls_portfolio: [],
+    analise_imagens: null,
+    cobertura_suspeita: null,
+    escalation: {
+      required: true,
+      reason_code: 'minor_age',
+      reason_label: 'menoridade / responsavel legal',
+      severity: 'high',
+      source: 'conversation_router',
+      requires_orcid: false,
+    },
+    minor_age_resolution: {
+      age: ageFromBirthDate(data_nascimento),
+      data_nascimento_persistida: true,
+    },
+  };
+}
+
 function cadastroPendingAnswerOutput({ pendingResolution, estado_atual, conversa, historico }) {
   const extracted = { ...(pendingResolution.extracted || {}) };
+  if (pendingResolution.field === 'data_nascimento') {
+    const age = ageFromBirthDate(extracted.data_nascimento);
+    if (Number.isFinite(age) && age < 18) {
+      return minorAgeBirthDateOutput({ data_nascimento: extracted.data_nascimento });
+    }
+  }
   const conversaParaRetomada = {
     ...conversa,
     dados_cadastro: {
