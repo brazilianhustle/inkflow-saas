@@ -646,15 +646,21 @@ seed_cadastro_pos_midia_aguardando_email() {
 
 seed_cadastro_pos_midia_aguardando_email_media_fresca() {
   load_devvars
-  local sid now media_body media_rows local_msg_id ref_msg_id conv_body msg_body conv_id tiny_png
+  local sid now media_body media_rows local_msg_id ref_msg_id conv_body msg_body conv_id local_png ref_png local_b64 ref_b64
   sid="${TENANT_ID}_${PHONE}"
   now="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-  tiny_png="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lUz7WQAAAABJRU5ErkJggg=="
+  local_png="docs/superpowers/specs/assets/2026-05-04-home-refator-ref/symbols/logo-white-header-240h.png"
+  ref_png="docs/superpowers/specs/assets/2026-05-04-home-refator-ref/mobile-375-hero.png"
+  [ -f "$local_png" ] || { echo "ERRO: seed media ausente: $local_png" >&2; exit 1; }
+  [ -f "$ref_png" ] || { echo "ERRO: seed media ausente: $ref_png" >&2; exit 1; }
+  local_b64="$(base64 "$local_png" | tr -d '\n')"
+  ref_b64="$(base64 "$ref_png" | tr -d '\n')"
 
   media_body="$(
     jq -nc \
       --arg sid "$sid" \
-      --arg b64 "$tiny_png" \
+      --arg local_b64 "$local_b64" \
+      --arg ref_b64 "$ref_b64" \
       '[
         {
           session_id:$sid,
@@ -662,7 +668,7 @@ seed_cadastro_pos_midia_aguardando_email_media_fresca() {
           message:{
             type:"human",
             content:"foto local seed auditoria",
-            media_base64:$b64,
+            media_base64:$local_b64,
             media_mimetype:"image/png"
           }
         },
@@ -672,7 +678,7 @@ seed_cadastro_pos_midia_aguardando_email_media_fresca() {
           message:{
             type:"human",
             content:"referencia seed auditoria",
-            media_base64:$b64,
+            media_base64:$ref_b64,
             media_mimetype:"image/png"
           }
         }
