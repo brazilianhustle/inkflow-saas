@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_16_parents_consent_pass
+status: level4b_wave_17_naturalidade_audit_watchlist
 branch: main
-ultimo_commit: 078614c test: cover parents consent minor risk
+ultimo_commit: 9dd12b2 test: add naturalness audit radar
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit funcional validado
 tests: npm test PASS local 1202/1202; testes focados Wave 16 micro-slice 2 PASS 143/143; CI PASS no GitHub Actions
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos closeout da Wave 16
-ultimo_commit_validado: 078614c
+worktree_esperado: limpo apos closeout documental da Wave 17
+ultimo_commit_validado: 9dd12b2
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -144,6 +144,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Continue implicito oficializado: quando todos os gates estao verdes e nao ha decisao humana pendente, resposta curta de continuidade ou ausencia de nova direcao autoriza seguir para o proximo micro-slice logico da mesma onda declarada; qualquer stop condition continua parando o loop.
 - Wave 16 micro-slice 1 passou: `minha mae autorizou` sai para humano como sinal indireto de menoridade por responsavel legal, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e passa HTTP radar + WhatsApp real definitivo.
 - Wave 16 micro-slice 2 passou: `tenho autorizacao dos meus pais` sai para humano como segunda variacao de menoridade indireta por responsavel legal, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e passa HTTP radar + WhatsApp real definitivo.
+- Wave 17 iniciada como auditoria de naturalidade read-only: `naturalness-audit.sh` analisou 10 evidencias WhatsApp real ja aprovadas, encontrou 0 risco alto, 9 risco medio por rigidez/template ou multi-pergunta e 1 risco baixo; decisao `watchlist`, sem mudanca conversacional nesta primeira passada.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -181,7 +182,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router m
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: manter Level 4B, considerar Wave 16 encerrada e declarar nova onda leve antes de tocar codigo.
+Proximo passo recomendado: manter Level 4B e continuar Wave 17 com micro-slice pequeno de linguagem, preferencialmente fechamento de cadastro/handoff de orcamento, validando com testes focados, CI/deploy, HTTP radar e WhatsApp real definitivo.
 ```
 
 Escopo recomendado:
@@ -189,9 +190,11 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
-- usar `docs/atendimento-premium/39-level-4b-wave-16.md` como fechamento da onda atual;
+- usar `docs/atendimento-premium/40-level-4b-wave-17.md` como estado da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
 - Wave 16 fechou menoridade indireta por responsavel legal com duas variacoes validadas em WhatsApp real definitivo;
+- Wave 17 micro-slice 1 fechou apenas auditoria read-only sobre evidencias reais existentes; WhatsApp real novo nao foi exigido porque nao houve mudanca conversacional;
+- qualquer proximo micro-slice que altere linguagem do bot exige WhatsApp real definitivo;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;
