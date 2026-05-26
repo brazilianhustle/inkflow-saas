@@ -647,6 +647,33 @@ test('ConversationRouter: cadastro persiste data pendente sem chamar LLM', () =>
   assert.doesNotMatch(out.resposta_cliente, /data de nascimento/i);
 });
 
+test('ConversationRouter: dúvida lateral em cadastro preserva pergunta de data pendente', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'quanto tempo demora?',
+    conversa: {
+      dados_coletados: {
+        descricao_curta: 'leao',
+        local_corpo: 'antebraco',
+        altura_cm: 170,
+        estilo: 'fineline',
+      },
+      dados_cadastro: { nome: 'Joao Silva' },
+    },
+    historico: [
+      { role: 'assistant', content: 'Boa, Joao. Me passa tua data de nascimento completa?' },
+    ],
+  });
+  assert.equal(out.intent, 'tempo_sessao');
+  assert.equal(out.can_mutate_state, false);
+  assert.equal(out.agent_usado, 'cadastro');
+  assert.deepEqual(out.dados_persistidos, {});
+  assert.match(out.resposta_cliente, /tempo de sessão/i);
+  assert.match(out.resposta_cliente, /data de nascimento completa/i);
+  assert.doesNotMatch(out.resposta_cliente, /e-?mail/i);
+  assert.doesNotMatch(out.resposta_cliente, /tatuador vai avaliar/i);
+});
+
 test('ConversationRouter: idade isolada não resolve data pendente', () => {
   const out = routeConversationTurn({
     estado_atual: 'cadastro',
