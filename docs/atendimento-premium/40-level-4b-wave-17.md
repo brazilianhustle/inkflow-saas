@@ -449,3 +449,27 @@ Estado final nos três: `aguardando_tatuador`, `orcid=null`, `copy_risk=baixo`.
 ## Decisão Apos Micro-Slice 8
 
 Manter Level 4B. A menoridade legal agora tem copy centralizada e cobertura deterministica para data de nascimento menor, idade textual e autorizacao dos pais, todos validados em HTTP radar e WhatsApp real definitivo. Proximo ataque recomendado: reexecutar auditoria de naturalidade com as novas evidencias e escolher uma familia pequena restante; nao subir para 4C ainda.
+
+## Auditoria Apos Micro-Slice 8
+
+PASS read-only: auditoria de naturalidade executada com 12 evidencias WhatsApp real atuais, incluindo os tres cenarios novos de menoridade legal.
+
+Resultado:
+
+```text
+evidencias_analisadas: 12
+baixo: 8
+medio: 4
+alto: 0
+decisao: watchlist
+repeticao_exata_global: 0
+```
+
+Riscos medios restantes:
+
+```text
+menoridade_legal: 3 evidencias marcadas como rigid_template_terms por conter responsavel legal / seguranca
+email_recusado_antigo: 1 evidencia marcada como rigid_template_terms + formulaic_opening por "Fechado" e "valor certinho"
+```
+
+Decisao: nao alterar menoridade legal agora. A classificacao media ali e aceitavel por seguranca operacional, porque a copy ja esta baixa no `copy_risk`, passou WhatsApp real e preserva termos juridicos importantes. O proximo ataque mais eficiente e atualizar/revalidar a familia de fechamento de cadastro/e-mail recusado que ainda aparece com `Fechado` e `valor certinho`, sem tocar menoridade, preco fechado, agenda, pagamento, secrets ou 4C.

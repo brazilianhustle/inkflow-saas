@@ -206,6 +206,16 @@ Atualizacao 2026-05-26 19:37 UTC:
 
 Novo proximo passo recomendado: rodar auditoria de naturalidade com as evidencias novas da Wave 17 e escolher uma proxima familia pequena. Manter Level 4B; 4C continua bloqueado.
 
+Auditoria rodada apos micro-slice 8:
+
+- 12 evidencias WhatsApp real analisadas;
+- 8 baixo, 4 medio, 0 alto;
+- sem repeticao exata global;
+- tres medios sao menoridade legal por termos obrigatorios de seguranca/responsavel legal;
+- um medio e fechamento antigo de cadastro/e-mail recusado com `Fechado` e `valor certinho`.
+
+Proximo passo recomendado atualizado: atacar uma familia pequena de fechamento cadastro/e-mail recusado para remover linguagem formulaica antiga, mantendo Level 4B e WhatsApp real definitivo. Nao mexer agora em menoridade legal, porque o residual medio e esperado por seguranca.
+
 Escopo recomendado:
 
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
