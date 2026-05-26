@@ -1913,6 +1913,54 @@ test('Etapa 4.5: foto local aguardada com core completo avanca sem chamar LLM', 
   assert.match(aiInsert.message.content, /nome completo/i);
 });
 
+test('Etapa 6.1: foto local apos referencia confirmada preserva refs sem chamar LLM', async () => {
+  let conversaPatches = [];
+  let runAgentCalled = false;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: {
+      descricao_curta: 'rosa',
+      local_corpo: 'antebraco',
+      altura_cm: 170,
+      estilo: 'fineline',
+      refs_imagens_msg_ids: [603],
+      tentativas_foto_local: 1,
+    },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 606, content: 'segue foto do local', media_base64: 'img-local', media_mimetype: 'image/png' },
+      ]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.dados_coletados) {
+          conversaPatches.push(body.dados_coletados);
+        }
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: async () => { runAgentCalled = true; throw new Error('nao deveria chamar LLM'); },
+    classificarFoto: () => 'referencia',
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [606] }), deps);
+
+  assert.equal(runAgentCalled, false, 'foto local aguardada apos ref confirmada nao deve chamar LLM');
+  const fotoPatch = conversaPatches.find(p => p.foto_local_msg_id === 606);
+  assert.ok(fotoPatch, 'nova imagem deve virar foto_local_msg_id');
+  assert.deepEqual(fotoPatch.refs_imagens_msg_ids, [603], 'referencia confirmada deve permanecer rastreavel');
+  assert.equal(fotoPatch.descricao_curta, 'rosa');
+  assert.equal(fotoPatch.estilo, 'fineline');
+  assert.match(aiInsert.message.content, /nome completo/i);
+  assert.doesNotMatch(aiInsert.message.content, /refer[eê]ncia do desenho/i);
+});
+
 test('Etapa 4.5: foto posterior com foto local existente vira referencia sem chamar LLM', async () => {
   let conversaPatches = [];
   let runAgentCalled = false;

@@ -1225,6 +1225,27 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** a Wave 5 fecha o ciclo de midia ambigua aberto pela Wave 4: o bot pergunta, entende a resposta curta e segue o fluxo correto sem perder dados nem criar orcamento/handoff indevido.
 
+### Wave 6 - Encadeamento Referencia Confirmada Para Foto Local
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** quando uma imagem ambigua ja foi confirmada como referencia e o bot pediu a foto do local, a proxima imagem enviada como local deve virar `foto_local_msg_id` sem remover a referencia anterior.
+
+**Motivo:** o ciclo premium de midia precisa preservar ambas as evidencias: referencia do desenho e foto do corpo. Se a referencia desaparece, o tatuador perde contexto; se a nova foto vira referencia, o cadastro nao avanca.
+
+**Alternativas rejeitadas:**
+
+- sobrescrever `refs_imagens_msg_ids`;
+- tratar a nova foto como referencia por padrao;
+- depender do LLM para um turno de foto local ja pedido;
+- fechar sem WhatsApp real definitivo.
+
+**Camada responsável:** WhatsApp Pipeline, Smoke Scenario Registry e processo Level 4B.
+
+**Impacto:** criada `29-level-4b-wave-6.md`, setup `seed_tattoo_ref_confirmada_aguardando_foto_local`, cenarios HTTP/WhatsApp real e teste local `Etapa 6.1`. `npm test` passou `1190/1190`, HTTP radar `scenario-tattoo-media-reference-then-local-20260526T071835Z-9411` passou e WhatsApp real `scenario-whatsapp-real-tattoo-media-reference-then-local-20260526T071915Z-30812` passou.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

@@ -825,6 +825,26 @@ decisao: manter Level 4B; 4C bloqueado
 proximo passo: declarar proxima onda funcional leve antes de editar codigo
 ```
 
+Wave 6 fechada:
+
+```text
+wave: level4b-wave-6-media-chain-after-reference
+status: PASS
+tests_focados: node --test tests/_lib/whatsapp-pipeline.test.mjs PASS 63/63
+tests_local: npm test PASS 1190/1190
+http_radar: scenario-tattoo-media-reference-then-local-20260526T071835Z-9411 PASS
+whatsapp_real: scenario-whatsapp-real-tattoo-media-reference-then-local-20260526T071915Z-30812 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "segue foto do local" + image/png
+bot: "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
+estado: coletando_cadastro
+orcid: null
+dados: descricao_curta=rosa, estilo=fineline, local_corpo=antebraco, altura_cm=170, foto_local_msg_id=12632, refs_imagens_msg_ids=[11951], tentativas_foto_local=1
+copy_risk: baixo
+decisao: manter Level 4B; 4C bloqueado
+proximo passo: declarar proxima onda funcional leve; candidato principal cadastro pos-midia sem repetir tattoo
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

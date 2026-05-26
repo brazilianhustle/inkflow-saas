@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_5_ambiguous_media_confirmation_closeout_pass
+status: level4b_wave_6_media_chain_after_reference_closeout_pass
 branch: main
-ultimo_commit: 6c900d2 fix: confirm ambiguous tattoo media
+ultimo_commit: HEAD test: cover media reference to local chain
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
-tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
+tests: npm test PASS local 1190/1190
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos commit de docs de Wave 5
-ultimo_commit_validado: 6c900d2
+worktree_esperado: limpo apos commit de Wave 6
+ultimo_commit_validado: HEAD
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -96,6 +96,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Level 4B Wave 4 fechou closeout PASS: `wave-health` PASS, Autonomy Gate keep, Security Gate PASS, Dependabot 0, Evidence Orphan Gate PASS com WARNs historicos nao bloqueantes e decisao de manter Level 4B sem promover 4C.
 - Level 4B Wave 5 declarada: `level4b-wave-5-ambiguous-media-confirmation`, foco em confirmar foto ambigua como local ou referencia. A confirmacao curta agora e caminho deterministico no pipeline, sem LLM.
 - Level 4B Wave 5 fechou PASS: confirmacao de foto ambigua como local e como referencia passaram em HTTP radar e WhatsApp real definitivo. Provas reais: Cliente "é local do corpo" -> Bot "Perfeito, então vou usar essa imagem como foto do local. Pra liberar teu orçamento personalizado, me passa nome completo e data de nascimento?"; Cliente "é referência do desenho" -> Bot "Perfeito, deixei essa imagem como referência do desenho. Agora preciso da foto do local do corpo onde tu quer tatuar."
+- Level 4B Wave 6 fechou PASS: referencia confirmada seguida de foto local passou em teste local, HTTP radar e WhatsApp real definitivo. A nova foto virou `foto_local_msg_id`, a referencia `[11951]` permaneceu preservada e o estado avancou para `coletando_cadastro`. Prova real: Cliente "segue foto do local" + imagem -> Bot "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
 - Governanca multi-agente oficializada: agentes podem acelerar analise, preparo, auditoria e triage, mas Level 4B mantem Commander unico, single-writer por micro-slice, WhatsApp real serial e 4C bloqueado.
 - Wave Runner v1 e Evidence Registrar implementados como ferramentas metodologicas: preflight seguro de onda e geracao revisavel de linha para `smoke-runs.md`, sem executar WhatsApp real, sem editar evidencias automaticamente e sem promover autonomia.
 - Evidence Orphan Gate integrado ao `wave-health`: registros quebrados passam a bloquear a saude da onda; evidencias completas recentes sem registro aparecem como `WARN` no modo padrao e bloqueiam somente no modo estrito de auditoria.
@@ -128,44 +129,44 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-tattoo-media-ambiguous-confirm-reference-20260526T070726Z-11122
-run_id_real: scenario-whatsapp-real-tattoo-media-ambiguous-confirm-reference-20260526T070803Z-28038
-tipo: Scenario WhatsApp real de confirmacao de midia ambigua da Wave 5
+run_id_http: scenario-tattoo-media-reference-then-local-20260526T071835Z-9411
+run_id_real: scenario-whatsapp-real-tattoo-media-reference-then-local-20260526T071915Z-30812
+tipo: Scenario WhatsApp real de encadeamento referencia -> foto local da Wave 6
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: coletando_tattoo
+expected_state: coletando_cadastro
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-ambiguous-confirm-reference-20260526T070803Z-28038/
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-reference-then-local-20260526T071915Z-30812/
 ```
 
 Mensagem:
 
 ```text
-é referência do desenho
+segue foto do local + image/png
 ```
 
 Resultado:
 
 ```text
-estado_agente: coletando_tattoo
+estado_agente: coletando_cadastro
 resposta_ai_posterior_ao_humano: true
 orcid: null
 dados_coletados.descricao_curta: rosa
 dados_coletados.local_corpo: antebraco
 dados_coletados.altura_cm: 170
-dados_coletados.foto_local_msg_id: null
+dados_coletados.foto_local_msg_id: 12632
 dados_coletados.refs_imagens_msg_ids: [11951]
 dados_coletados.tentativas_foto_local: 1
 copy_risk: baixo
-copy: "Perfeito, deixei essa imagem como referência do desenho. Agora preciso da foto do local do corpo onde tu quer tatuar."
-decision_chain: confirmacao curta como referencia -> dados preservados -> pedir foto do local sem LLM
+copy: "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo."
+decision_chain: referencia confirmada preservada -> foto local recebida -> avancar para cadastro sem LLM
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll por estado
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: declarar proxima onda funcional leve em Level 4B. Candidatos: encadear referencia confirmada -> envio da foto local, ou retomar cadastro pos-midia confirmada.
+Proximo passo recomendado: declarar proxima onda funcional leve em Level 4B. Candidato principal: cadastro pos-midia, validando nome/data apos foto local sem repetir etapa de tattoo.
 ```
 
 Escopo recomendado:
@@ -173,9 +174,9 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
-- usar `docs/atendimento-premium/28-level-4b-wave-5.md` como fechamento da onda atual;
+- usar `docs/atendimento-premium/29-level-4b-wave-6.md` como fechamento da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
-- Wave 5 fechou a familia de confirmacao de midia ambigua;
+- Wave 6 fechou o encadeamento referencia confirmada -> foto local;
 - proximo alvo funcional deve ser declarado antes de editar codigo;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
