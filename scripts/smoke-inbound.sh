@@ -23,7 +23,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-TEXT="${1:?uso: smoke-inbound.sh \"mensagem\" [telefone]}"
+TEXT="${1-}"
 PHONE="${2:-5521970789797}"
 BASE_URL="${BASE_URL:-http://localhost:8788}"
 INSTANCE="${INSTANCE:-inkflow_test_sub4}"   # evo_instance do tenant "InkFlow Sub4 Test"
@@ -31,6 +31,10 @@ SMOKE_MEDIA_MIMETYPE="${SMOKE_MEDIA_MIMETYPE:-image/png}"
 
 command -v jq >/dev/null 2>&1 || { echo "ERRO: jq nao instalado." >&2; exit 1; }
 [ -f .dev.vars ] || { echo "ERRO: .dev.vars nao existe (rode da raiz do repo)." >&2; exit 1; }
+[ -n "$TEXT" ] || [ -n "${SMOKE_MEDIA_FILE:-}" ] || [ -n "${SMOKE_MEDIA_BASE64:-}" ] || {
+  echo 'ERRO: smoke-inbound.sh exige mensagem ou midia.' >&2
+  exit 1
+}
 
 if ! [[ "$BASE_URL" =~ ^https?://(localhost|127\.0\.0\.1)(:|/|$) ]]; then
   bash scripts/smoke/tail.sh

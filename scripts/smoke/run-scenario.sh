@@ -54,7 +54,10 @@ if is_multiturn_type; then
     exit 1
   }
 else
-  [ -n "$MESSAGE" ] || { echo "ERRO: scenario sem MESSAGE." >&2; exit 1; }
+  [ -n "$MESSAGE" ] || [ -n "${SMOKE_MEDIA_FILE:-}" ] || [ -n "${SMOKE_MEDIA_BASE64:-}" ] || {
+    echo "ERRO: scenario sem MESSAGE ou midia." >&2
+    exit 1
+  }
 fi
 [[ "$PHONE" =~ ^[0-9]{10,15}$ ]] || { echo "ERRO: PHONE invalido: $PHONE" >&2; exit 1; }
 case "$SCENARIO_TYPE" in

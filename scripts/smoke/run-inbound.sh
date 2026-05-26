@@ -12,7 +12,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-TEXT="${1:?uso: run-inbound.sh \"mensagem\" [telefone]}"
+TEXT="${1-}"
 PHONE="${2:-5521970789797}"
 BASE_URL="${BASE_URL:-http://localhost:8788}"
 EXPECTED_STATE="${EXPECTED_STATE:-}"
@@ -83,6 +83,10 @@ on_exit() {
 trap on_exit EXIT
 
 command -v jq >/dev/null 2>&1 || { echo "ERRO: jq nao instalado." >&2; exit 1; }
+[ -n "$TEXT" ] || [ -n "${SMOKE_MEDIA_FILE:-}" ] || [ -n "${SMOKE_MEDIA_BASE64:-}" ] || {
+  echo 'ERRO: run-inbound.sh exige mensagem ou midia.' >&2
+  exit 1
+}
 
 jq -nc \
   --arg run_id "$RUN_ID" \
