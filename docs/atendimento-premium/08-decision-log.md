@@ -1116,6 +1116,28 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** commit `2984a15` adicionou bypass deterministico para persistir `foto_local_msg_id`, avancar para `coletando_cadastro` e evitar duplicar a imagem em `refs_imagens_msg_ids`. `npm test` passou `1185/1185`, CI/deploy passaram, HTTP radar `scenario-tattoo-media-local-photo-20260526T062316Z-5750` passou e WhatsApp real `scenario-whatsapp-real-tattoo-media-local-photo-20260526T062358Z-24484` passou.
 
+### Wave 4 - Referencia Apos Foto Local Sem LLM
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** quando `foto_local_msg_id` ja existe e o cliente envia nova imagem com core de tattoo completo, a imagem deve ser tratada deterministicamente como referencia sem chamar o LLM.
+
+**Motivo:** depois que a foto do local ja foi recebida, uma nova imagem nao deve sobrescrever a foto local nem depender de visao ampla para manter o fluxo. O caminho deterministico reduz latencia, remove risco de quota/stale e preserva a transicao para cadastro.
+
+**Alternativas rejeitadas:**
+
+- chamar LLM de visao para toda foto posterior;
+- sobrescrever `foto_local_msg_id`;
+- ignorar a imagem;
+- pedir novamente a foto do local;
+- fechar o comportamento sem WhatsApp real.
+
+**Camada responsável:** WhatsApp Pipeline, Pipeline Classifier, Workflow Manager e Smoke Scenario Registry.
+
+**Impacto:** commit `122c43f` adicionou bypass deterministico para foto posterior, setup `seed_tattoo_com_foto_local_aguardando_nome` e cenarios HTTP/WhatsApp real. `npm test` passou `1186/1186`, CI/deploy passaram, HTTP radar `scenario-tattoo-media-reference-after-local-20260526T063321Z-3051` passou e WhatsApp real `scenario-whatsapp-real-tattoo-media-reference-after-local-20260526T063402Z-4330` passou.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium

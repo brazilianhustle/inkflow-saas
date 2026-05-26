@@ -716,6 +716,29 @@ provas_conclusivas_reais: Cliente "segue foto do local" + imagem -> Bot "Recebi 
 proximo passo: tattoo-media-reference-after-local
 ```
 
+Wave 4 em andamento, segundo comportamento de midia validado:
+
+```text
+wave: level4b-wave-4-tattoo-media-intake
+micro_slice_http: tattoo-media-reference-after-local-http PASS
+run_id_http: scenario-tattoo-media-reference-after-local-20260526T063321Z-3051
+micro_slice_real: tattoo-media-reference-after-local-whatsapp-real PASS
+run_id_real: scenario-whatsapp-real-tattoo-media-reference-after-local-20260526T063402Z-4330
+scenario_http: tattoo-media-reference-after-local
+scenario_real: whatsapp-real-tattoo-media-reference-after-local
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "essa é referência do desenho" + image/png
+bot: "Recebi essa referência também. Pra liberar teu orçamento, preciso do teu nome completo."
+estado: coletando_cadastro
+orcid: null
+dados: descricao_curta=rosa, estilo=fineline, local_corpo=antebraco, altura_cm=170, foto_local_msg_id=599 preservado, refs_imagens_msg_ids=1 item
+copy_risk: baixo
+validacao: node --test focado PASS; npm test PASS 1186/1186; CI/deploy PASS; HTTP radar PASS; WhatsApp real PASS
+mudanca: pipeline resolve foto posterior com foto local existente como referencia sem LLM, evitando quota/stale e sem sobrescrever foto_local_msg_id
+provas_conclusivas_reais: Cliente "essa é referência do desenho" + imagem -> Bot "Recebi essa referência também. Pra liberar teu orçamento, preciso do teu nome completo."
+proximo passo: tattoo-media-ambiguous-photo-clarification
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

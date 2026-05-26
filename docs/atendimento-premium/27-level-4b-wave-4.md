@@ -107,6 +107,8 @@ status: primeiro comportamento fechado
 micro_slice_1: tattoo-media-wave-contract PASS
 micro_slice_2: tattoo-media-local-photo-http PASS
 micro_slice_3: tattoo-media-local-photo-whatsapp-real PASS
+micro_slice_4: tattoo-media-reference-after-local-http PASS
+micro_slice_5: tattoo-media-reference-after-local-whatsapp-real PASS
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -145,8 +147,34 @@ Bot: "Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome co
 ## Proximo Ataque
 
 ```text
-micro_slice_4: tattoo-media-reference-after-local-http
-micro_slice_5: tattoo-media-reference-after-local-whatsapp-real
-objetivo: validar que foto posterior, quando foto_local ja existe, vira referencia e nao sobrescreve foto_local_msg_id
+micro_slice_6: tattoo-media-ambiguous-photo-clarification-http
+micro_slice_7: tattoo-media-ambiguous-photo-clarification-whatsapp-real
+objetivo: validar que foto ambigua pede classificacao sem perder dados
 4c: bloqueado
+```
+
+## Evidencias - Referencia Apos Foto Local
+
+```text
+commit_fix: 122c43f fix: classify post-local tattoo photos as references
+tests_local: npm test PASS, 1186/1186
+ci: PASS
+deploy: PASS
+http_radar: scenario-tattoo-media-reference-after-local-20260526T063321Z-3051 PASS
+whatsapp_real: scenario-whatsapp-real-tattoo-media-reference-after-local-20260526T063402Z-4330 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "essa é referência do desenho" + image/png
+bot: "Recebi essa referência também. Pra liberar teu orçamento, preciso do teu nome completo."
+estado_final: coletando_cadastro
+orcid: null
+foto_local_msg_id: 599 preservado
+refs_imagens_msg_ids: 1 item novo
+copy_risk: baixo
+```
+
+### Provas Conclusivas Reais
+
+```text
+Cliente: "essa é referência do desenho" + imagem
+Bot: "Recebi essa referência também. Pra liberar teu orçamento, preciso do teu nome completo."
 ```
