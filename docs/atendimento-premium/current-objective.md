@@ -96,6 +96,7 @@ autonomy_limit: ate 6 micro-slices da mesma onda declarada
 - Micro-slice Level 4A `level4a-stop-audit` fechado: `level4a-stop-audit.sh` verifica se stop conditions criticas seguem documentadas.
 - Onda Level 4A `level4a-wave-1-monitoring-security` concluida com CI PASS, deploy PASS, `wave-health` PASS, Security Gate PASS, Dependabot 0 e worktree limpo; WhatsApp real nao foi exigido porque a onda nao alterou comportamento conversacional.
 - Segunda onda Level 4A declarada: `level4a-wave-2-cadastro-question-policy`, risco amarelo, focada em respostas de cadastro pendente com HTTP radar e WhatsApp real definitivo por micro-slice conversacional.
+- Micro-slice `cadastro-question-policy-nome` fechado: nome completo pendente agora e resolvido deterministicamente pela ConversationPolicy/Router sem LLM; HTTP radar e WhatsApp real `central -> bot` passaram com `nome="Joao Silva"`, `data_nascimento=null`, `orcid=null`, `copy_risk=baixo` e agent-log `cadastro_pending_answer`.
 - Workflow Manager passou a registrar decisao propria em `agent_turn_logs`: cadastro completo com recusa de email agora confirma `workflow_layer=workflow_manager`, `workflow_transition_allowed=true` e `workflow_reason=cadastro_and_tattoo_complete`; HTTP radar e WhatsApp real definitivo passaram no fluxo `cadastro-handoff`.
 - Workflow Manager passou a impor nao-mutacao para intents laterais do Router com `can_mutate_state=false`: preco generico preservou `estado=coletando_tattoo` e registrou `workflow_reason=state_preserved_by_router_policy`; HTTP radar e WhatsApp real definitivo passaram exigindo Router + Workflow Manager no mesmo turno.
 - Workflow Manager passou a calcular requisitos faltantes exatos por fase e expor bloqueio formal de cadastro incompleto: idade isolada preservou `estado=coletando_cadastro`, `data_nascimento=null`, `orcid=null` e registrou `workflow_reason=requirements_missing` com contagens de faltantes; HTTP radar e WhatsApp real definitivo passaram.
@@ -104,40 +105,40 @@ autonomy_limit: ate 6 micro-slices da mesma onda declarada
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id: scenario-whatsapp-real-cadastro-handoff-20260525T224152Z-27460
+run_id: scenario-whatsapp-real-cadastro-question-policy-nome-20260526T002906Z-28311
 tipo: Scenario WhatsApp real
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: aguardando_tatuador
-orcid: orc_6exrgj
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260525T224152Z-27460/
+expected_state: coletando_cadastro
+orcid: null
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-question-policy-nome-20260526T002906Z-28311/
 ```
 
 Mensagem:
 
 ```text
-pode seguir sem email
-quanto tempo demora?
+Joao Silva
 ```
 
 Resultado:
 
 ```text
-estado_agente: aguardando_tatuador
+estado_agente: coletando_cadastro
 resposta_ai_posterior_ao_humano: true
-orcid: orc_6exrgj
+orcid: null
 copy_risk: baixo
-copy: responde lateral de tempo e fecha envio ao tatuador sem prometer prazo fechado
-handoff_package: agent_turn_logs confirmou workflow_handoff_package_required=true, workflow_handoff_package_version=handoff_package_v1 e workflow_handoff_package_trace_id=hp_6785a917d9
-decision_observability: summary/transcript/judgment exibem trace=hp_6785a917d9 package=handoff_package_v1 workflow_reason=cadastro_and_tattoo_complete
-decision_chain: cadastro completo -> workflow_manager cadastro_and_tattoo_complete -> enviar-orcamento-tatuador com pacote handoff_package_v1
+dados_cadastro.nome: Joao Silva
+dados_cadastro.data_nascimento: null
+copy: pede data de nascimento completa sem repetir nome completo nem antecipar orcamento
+decision_observability: agent-log gate confirmou conversation_router cadastro_pending_answer, pending_nome_completo_answered e can_mutate_state=true
+decision_chain: pergunta pendente de nome -> ConversationPolicy resolve nome -> Router persiste nome -> Workflow Manager preserva cadastro incompleto
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar micro-slice `cadastro-question-policy-nome` da onda `level4a-wave-2-cadastro-question-policy`.
+Proximo passo recomendado: executar micro-slice `cadastro-question-policy-data` da onda `level4a-wave-2-cadastro-question-policy`.
 ```
 
 Escopo recomendado:

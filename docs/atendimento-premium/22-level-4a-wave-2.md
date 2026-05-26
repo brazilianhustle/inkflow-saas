@@ -77,7 +77,36 @@ Parar a onda se ocorrer:
 ## Resultado Atual
 
 ```text
-status: declarada
-micro_slice_atual: cadastro-question-policy-nome
+status: em-andamento
+micro_slice_1: cadastro-question-policy-nome PASS
+micro_slice_atual: cadastro-question-policy-data
 promocao_4b_4c: proibida
+```
+
+## Evidencia Micro-Slice 1
+
+```text
+micro_slice: cadastro-question-policy-nome
+commit_codigo: 7714042 feat: resolve pending cadastro name answers
+commit_gate_fix: d350099 test: fix cadastro question policy smoke gate
+tests_local: npm test PASS, 1174/1174
+ci_github: PASS
+deploy_github: PASS
+http_radar: scenario-cadastro-question-policy-nome-20260526T002805Z-22782 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-question-policy-nome-20260526T002906Z-28311 PASS
+falha_intermediaria: scenario-cadastro-question-policy-nome-20260526T002546Z-25121 FAIL por contrato jq incorreto, comportamento correto
+estado_final: coletando_cadastro
+dados_cadastro.nome: Joao Silva
+dados_cadastro.data_nascimento: null
+orcid: null
+copy_risk: baixo
+agent_log_gate: conversation_router cadastro_pending_answer, pending_nome_completo_answered, can_mutate_state=true
+decisao: seguir para cadastro-question-policy-data
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: "Joao Silva"
+Bot: "Me passa tua data de nascimento completa?"
 ```

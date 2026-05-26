@@ -660,6 +660,25 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** a proxima execucao deve comecar por `cadastro-question-policy-nome`, com teste local relevante, HTTP radar e WhatsApp real definitivo antes de qualquer proximo micro-slice.
 
+## 2026-05-25 - QuestionPolicy resolve nome pendente sem LLM
+
+**Status:** decidido.
+
+**Decisão:** quando o estado e cadastro, ha pergunta pendente de nome completo e o cliente responde apenas o nome, o `ConversationRouter` deve persistir o campo via `ConversationPolicy` e retomar pedindo data de nascimento.
+
+**Motivo:** nome pendente e um campo simples e deterministico. Chamar LLM para esse caso aumenta latencia e chance de repetir pergunta ja respondida. O caminho novo e estreito: nao captura data, email ou duvida lateral ampla neste micro-slice, e escalonamentos continuam tendo prioridade.
+
+**Alternativas rejeitadas:**
+
+- deixar o LLM interpretar nome simples;
+- implementar todos os campos de cadastro no mesmo micro-slice;
+- permitir que resposta pendente sobrescreva pedido humano ou escalation;
+- aceitar nome+data juntos neste caminho antes do micro-slice de data.
+
+**Camada responsável:** ConversationPolicy, ConversationRouter e Workflow Manager.
+
+**Impacto:** `cadastro-question-policy-nome` passou em teste local, HTTP radar e WhatsApp real. Houve uma falha intermediaria de contrato do smoke (`.conversa` vs `.conversas[0]`), corrigida e revalidada. Provas reais: Cliente "Joao Silva" -> Bot "Me passa tua data de nascimento completa?".
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
