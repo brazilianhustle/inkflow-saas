@@ -75,8 +75,24 @@ Estado final: `aguardando_tatuador`, `orcid=orc_0a1325`, `email=null`, `email_re
 
 ## Micro-Slice 3
 
-Em implementacao: validar `por aqui mesmo` como terceira variacao natural de recusa de e-mail opcional, com o mesmo contrato de handoff e WhatsApp real.
+PASS: `por aqui mesmo` validado como terceira variacao natural de recusa de e-mail opcional, com o mesmo contrato de handoff e WhatsApp real.
+
+```text
+commit_funcional: cf58cba test: cover third natural email refusal
+tests_focados: bash -n scripts/smoke/run-scenario.sh scripts/smoke/run-inbound.sh scripts/smoke/run-real-whatsapp.sh scripts/smoke/render-report.sh PASS; node --test tests/_lib/conversation-router.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 122/122
+tests_local: npm test PASS 1198/1198
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-email-refusal-por-aqui-mesmo-20260526T091805Z-25672 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-email-refusal-por-aqui-mesmo-20260526T091846Z-10188 PASS
+```
+
+Cliente: `por aqui mesmo`
+
+Bot: `Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.`
+
+Estado final: `aguardando_tatuador`, `orcid=orc_2ajuj4`, `email=null`, `email_recusado=true`.
 
 ## Decisao
 
-Manter Level 4B. Os dois primeiros micro-slices da Wave 14 passaram com HTTP radar e WhatsApp real definitivo. Proximo passo pode continuar a mesma onda com outra variacao natural de recusa, desde que continue fora de preco, agenda, sinal e pagamento.
+Manter Level 4B. Os tres primeiros micro-slices da Wave 14 passaram com HTTP radar e WhatsApp real definitivo. Proximo passo recomendado: fechar a onda ou declarar nova onda leve; continuar variacoes so se houver ganho claro.

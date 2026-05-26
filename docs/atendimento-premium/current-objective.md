@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_14_email_refusal_second_variant_pass
+status: level4b_wave_14_email_refusal_third_variant_pass
 branch: main
-ultimo_commit: 0ccf0a2 test: cover second natural email refusal
+ultimo_commit: cf58cba test: cover third natural email refusal
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
-tests: testes focados Wave 14 micro-slice 2 PASS 121/121; CI PASS no GitHub Actions
+tests: npm test PASS local 1198/1198; testes focados Wave 14 micro-slice 3 PASS 122/122; CI PASS no GitHub Actions
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos closeout da Wave 14 micro-slice 2
-ultimo_commit_validado: 0ccf0a2
+worktree_esperado: limpo apos closeout da Wave 14 micro-slice 3
+ultimo_commit_validado: cf58cba
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -137,24 +137,25 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 14 declarada: `level4b-wave-14-cadastro-email-refusal-variants`, foco leve em recusas naturais de e-mail opcional, começando por `prefiro falar por aqui`.
 - Wave 14 micro-slice 1 passou: `prefiro falar por aqui` agora vira `email_recusado=true`, cria `orcid`, promove `aguardando_tatuador` e passa HTTP radar + WhatsApp real definitivo.
 - Wave 14 micro-slice 2 passou: `melhor falar por aqui` tambem vira `email_recusado=true`, cria `orcid`, promove `aguardando_tatuador` e passa HTTP radar + WhatsApp real definitivo.
+- Wave 14 micro-slice 3 passou: `por aqui mesmo` tambem vira `email_recusado=true`, cria `orcid`, promove `aguardando_tatuador` e passa HTTP radar + WhatsApp real definitivo.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-email-refusal-melhor-falar-aqui-20260526T091028Z-10893
-run_id_real: scenario-whatsapp-real-cadastro-email-refusal-melhor-falar-aqui-20260526T091108Z-5886
+run_id_http: scenario-cadastro-email-refusal-por-aqui-mesmo-20260526T091805Z-25672
+run_id_real: scenario-whatsapp-real-cadastro-email-refusal-por-aqui-mesmo-20260526T091846Z-10188
 tipo: Scenario WhatsApp real de recusa natural de email da Wave 14
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: orc_0a1325
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-email-refusal-melhor-falar-aqui-20260526T091108Z-5886/
+orcid: orc_2ajuj4
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-email-refusal-por-aqui-mesmo-20260526T091846Z-10188/
 ```
 
 Mensagem:
 
 ```text
-melhor falar por aqui
+por aqui mesmo
 ```
 
 Resultado:
@@ -162,7 +163,7 @@ Resultado:
 ```text
 estado_agente: aguardando_tatuador
 resposta_ai: Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.
-orcid: orc_0a1325
+orcid: orc_2ajuj4
 dados_cadastro.nome: Joao Silva
 dados_cadastro.data_nascimento: 1995-03-12
 dados_cadastro.email: null
@@ -176,7 +177,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router r
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: manter Level 4B e decidir se continua Wave 14 com terceira variacao natural de recusa de email ou se declara nova onda leve.
+Proximo passo recomendado: manter Level 4B e fechar a Wave 14 ou declarar nova onda leve; continuar variacoes de recusa de email somente se houver ganho claro.
 ```
 
 Escopo recomendado:

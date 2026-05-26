@@ -1400,7 +1400,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Data:** 2026-05-26
 
-**Status:** dois micro-slices validados.
+**Status:** tres micro-slices validados.
 
 **Decisão:** iniciar `level4b-wave-14-cadastro-email-refusal-variants` para tratar recusas naturais do e-mail opcional, começando por `prefiro falar por aqui`.
 
@@ -1415,7 +1415,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Camada responsável:** ConversationPolicy, ConversationRouter, Workflow Manager, Smoke Scenario Registry.
 
-**Impacto:** `resolveEmail` passou a aceitar linguagem de canal para recusa opcional. HTTP radar `scenario-cadastro-email-refusal-channel-handoff-20260526T090119Z-9662` e WhatsApp real `scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T090215Z-18284` passaram para `prefiro falar por aqui`; HTTP radar `scenario-cadastro-email-refusal-melhor-falar-aqui-20260526T091028Z-10893` e WhatsApp real `scenario-whatsapp-real-cadastro-email-refusal-melhor-falar-aqui-20260526T091108Z-5886` passaram para `melhor falar por aqui`; logs confirmaram Router `pending_email_refused` e Workflow Manager `cadastro_and_tattoo_complete`.
+**Impacto:** `resolveEmail` passou a aceitar linguagem de canal para recusa opcional. HTTP radar `scenario-cadastro-email-refusal-channel-handoff-20260526T090119Z-9662` e WhatsApp real `scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T090215Z-18284` passaram para `prefiro falar por aqui`; HTTP radar `scenario-cadastro-email-refusal-melhor-falar-aqui-20260526T091028Z-10893` e WhatsApp real `scenario-whatsapp-real-cadastro-email-refusal-melhor-falar-aqui-20260526T091108Z-5886` passaram para `melhor falar por aqui`; HTTP radar `scenario-cadastro-email-refusal-por-aqui-mesmo-20260526T091805Z-25672` e WhatsApp real `scenario-whatsapp-real-cadastro-email-refusal-por-aqui-mesmo-20260526T091846Z-10188` passaram para `por aqui mesmo`; logs confirmaram Router `pending_email_refused` e Workflow Manager `cadastro_and_tattoo_complete`.
 
 ## Decisões Em Aberto
 

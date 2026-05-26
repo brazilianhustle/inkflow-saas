@@ -1068,6 +1068,31 @@ restricoes: nao tocar preco, sinal, pagamento, agenda, secrets ou 4C
 proximo passo: rodar wave-health final e decidir entre terceira variacao da Wave 14 ou nova onda leve
 ```
 
+Wave 14 micro-slice 3 fechado:
+
+```text
+wave: level4b-wave-14-cadastro-email-refusal-variants
+status: micro-slice 3 PASS
+terceiro_micro_slice: "por aqui mesmo" quando email esta pendente
+objetivo: tratar terceira variacao natural de recusa de email opcional como email_recusado=true sem cair no LLM
+commit_funcional: cf58cba test: cover third natural email refusal
+tests_focados: bash -n scripts/smoke/run-scenario.sh scripts/smoke/run-inbound.sh scripts/smoke/run-real-whatsapp.sh scripts/smoke/render-report.sh PASS; node --test tests/_lib/conversation-router.test.mjs tests/_lib/whatsapp-pipeline.test.mjs PASS 122/122
+tests_local: npm test PASS 1198/1198
+ci: PASS
+deploy: PASS
+http_radar: scenario-cadastro-email-refusal-por-aqui-mesmo-20260526T091805Z-25672 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-email-refusal-por-aqui-mesmo-20260526T091846Z-10188 PASS
+cliente: "por aqui mesmo"
+bot: "Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho."
+estado: aguardando_tatuador
+orcid: orc_2ajuj4
+email: null
+email_recusado: true
+zona: verde/amarela
+restricoes: nao tocar preco, sinal, pagamento, agenda, secrets ou 4C
+proximo passo: rodar wave-health final e fechar Wave 14 ou declarar nova onda leve
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:
