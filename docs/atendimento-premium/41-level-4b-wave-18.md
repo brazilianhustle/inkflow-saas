@@ -55,3 +55,47 @@ Se FAIL por copy rigida:
 ```text
 decisao: corrigir na familia central de voz/handoff, com teste local e ciclo completo
 ```
+
+## Micro-Slice 1 - E-mail Valido Apos Midia
+
+PASS sem mudanca de codigo: a evidencia historica de fechamento pos-midia com e-mail valido tambem era antiga. O codigo atual ja usa a copy centralizada de handoff e nao voltou para `Fechado`, `valor certinho` ou `avaliar com calma`.
+
+Validacao:
+
+```text
+mudanca_de_codigo: nao
+wave_health_pre: PASS
+http_radar: scenario-cadastro-after-media-email-valido-handoff-20260526T202208Z-30399 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-after-media-email-valido-handoff-20260526T202325Z-13097 PASS
+estado_final: aguardando_tatuador
+orcid_http: orc_8pq2ko
+orcid_real: orc_0cse9z
+foto_local_msg_id: 12632
+refs_imagens_msg_ids: [11951]
+copy_risk: baixo
+observabilidade: Router pending_email_answered + Workflow Manager cadastro_and_tattoo_complete + handoff_package_v1
+```
+
+Auditoria de naturalidade:
+
+```text
+evidencia_nova: baixo
+amostra_expandida: 13 evidencias
+baixo: 9
+medio: 4
+alto: 0
+decisao: watchlist
+observacao: o medio adicional vem de `scenario-whatsapp-real-cadastro-handoff-20260525T222253Z-9952`, evidencia historica com `Fechado`/`valor certinho`; nao e regressao do fluxo pos-midia atual.
+```
+
+### Provas Conclusivas Reais - Micro-Slice 1
+
+Cliente: `joao@example.com`
+
+Bot: `Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`
+
+Estado final: `aguardando_tatuador`, `orcid=orc_0cse9z`, `copy_risk=baixo`.
+
+## Decisao Apos Micro-Slice 1
+
+Manter Level 4B. O caminho pos-midia com e-mail valido esta limpo na producao atual e passou no WhatsApp real definitivo pela `central`. Proximo ataque recomendado: revalidar a familia `cadastro-handoff` basica que ainda aparece com evidencia historica media, antes de qualquer nova mudanca de codigo. Nao subir para 4C.
