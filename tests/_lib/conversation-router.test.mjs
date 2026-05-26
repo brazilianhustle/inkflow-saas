@@ -772,6 +772,26 @@ test('ConversationRouter: idade menor explicita aciona humano sem inventar data'
   assert.match(out.resposta_cliente, /respons[aá]vel legal/i);
 });
 
+test('ConversationRouter: idade 17 anos aciona humano sem inventar data', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'tenho 17 anos',
+    conversa: { dados_coletados: {}, dados_cadastro: { nome: 'Joao Silva' } },
+    historico: [
+      { role: 'assistant', content: 'Me passa tua data de nascimento completa?' },
+    ],
+  });
+  assert.equal(out.intent, 'minor_age_explicit');
+  assert.equal(out.reason, 'explicit_minor_age');
+  assert.equal(out.estado_novo, 'aguardando_tatuador');
+  assert.equal(out.proxima_acao, 'erro');
+  assert.equal(out.escalation.reason_code, 'minor_age');
+  assert.equal(out.minor_age_resolution.age, 17);
+  assert.deepEqual(out.dados_persistidos, {});
+  assert.match(out.resposta_cliente, /menos de 18 anos/i);
+  assert.match(out.resposta_cliente, /respons[aá]vel legal/i);
+});
+
 test('ConversationRouter: menoridade explicita sem numero aciona humano sem inventar data', () => {
   const out = routeConversationTurn({
     estado_atual: 'cadastro',

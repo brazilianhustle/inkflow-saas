@@ -46,6 +46,10 @@ Bot: `Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador 
 
 Estado final: `aguardando_tatuador`, `orcid=null`, `data_nascimento=null`.
 
+## Micro-Slice 2
+
+Em implementacao: validar `tenho 17 anos` como variacao numerica diferente de menoridade, acionando humano sem inventar `data_nascimento` e sem criar `orcid`.
+
 ## Decisao
 
 Manter Level 4B. A Wave 14 fica encerrada pragmaticamente com tres variacoes reais de recusa de e-mail; a Wave 15 move para uma frente de risco maior e escopo estreito: menoridade declarada em linguagem natural. Proximo micro-slice recomendado: validar uma variacao numerica diferente (`tenho 17 anos`) ou fechar a onda se o objetivo for apenas cobrir declaracao natural sem numero.
