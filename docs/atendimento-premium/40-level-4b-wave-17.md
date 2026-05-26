@@ -116,3 +116,54 @@ risco: amarelo baixo
 validacao_obrigatoria: testes focados, CI/deploy, HTTP radar e WhatsApp real definitivo
 nao_atacar_agora: menoridade legal ampla, preco, agenda, pagamento, 4C
 ```
+
+## Micro-Slice 2 - Fechamento De Cadastro Mais Natural
+
+PASS: fechamento deterministico de cadastro/handoff de orcamento ficou menos rigido, sem alterar transicao de estado, ORCID, handoff package ou observabilidade.
+
+Mudanca principal:
+
+```text
+antes: Fechado, Joao! O tatuador vai avaliar com calma e eu te retorno em breve com o valor certinho.
+depois: Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.
+```
+
+Validacao:
+
+```text
+commit_funcional: 8de8f84 feat: soften cadastro handoff copy
+tests_focados: PASS 68/68
+tests_local: npm test PASS 1203/1203
+ci: PASS
+prompts_ci: PASS
+eval_gate: PASS
+deploy: PASS
+http_radar: scenario-cadastro-email-refusal-channel-handoff-20260526T180946Z-17880 PASS
+whatsapp_real: scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T181023Z-21959 PASS
+estado_final: aguardando_tatuador
+orcid: orc_fauvjm
+copy_risk: baixo
+naturalness_audit_new_evidence: PASS, 2 baixo, 0 medio, 0 alto
+```
+
+### Provas Conclusivas Reais - Micro-Slice 2
+
+Cliente: `prefiro falar por aqui`
+
+Bot: `Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`
+
+Estado final: `aguardando_tatuador`, `orcid=orc_fauvjm`, `email_recusado=true`, `copy_risk=baixo`.
+
+## Decisao Apos Micro-Slice 2
+
+Manter Level 4B. A primeira melhoria de linguagem passou em HTTP radar e WhatsApp real definitivo, sem regressao operacional. Proximo ataque recomendado: reexecutar `naturalness-audit.sh` incluindo as novas evidencias e escolher uma segunda familia pequena, provavelmente copy de midia/cadastro (`Pra liberar teu orcamento`) ou copy de menoridade legal, sem misturar as duas.
+
+Auditoria apos as novas evidencias:
+
+```text
+evidencias: scenario-cadastro-email-refusal-channel-handoff-20260526T180946Z-17880, scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T181023Z-21959
+baixo: 2
+medio: 0
+alto: 0
+decisao: pass
+```

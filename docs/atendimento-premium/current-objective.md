@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_17_naturalidade_audit_watchlist
+status: level4b_wave_17_cadastro_handoff_copy_pass
 branch: main
-ultimo_commit: 9dd12b2 test: add naturalness audit radar
+ultimo_commit: 8de8f84 feat: soften cadastro handoff copy
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit funcional validado
-tests: npm test PASS local 1202/1202; testes focados Wave 16 micro-slice 2 PASS 143/143; CI PASS no GitHub Actions
-prompts_ci: passou no GitHub Actions
+tests: npm test PASS local 1203/1203; testes focados Wave 17 micro-slice 2 PASS 68/68; CI PASS no GitHub Actions
+prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos closeout documental da Wave 17
-ultimo_commit_validado: 9dd12b2
+ultimo_commit_validado: 8de8f84
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -145,44 +145,46 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 16 micro-slice 1 passou: `minha mae autorizou` sai para humano como sinal indireto de menoridade por responsavel legal, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e passa HTTP radar + WhatsApp real definitivo.
 - Wave 16 micro-slice 2 passou: `tenho autorizacao dos meus pais` sai para humano como segunda variacao de menoridade indireta por responsavel legal, preserva `data_nascimento=null`, `orcid=null`, nao cria orcamento e passa HTTP radar + WhatsApp real definitivo.
 - Wave 17 iniciada como auditoria de naturalidade read-only: `naturalness-audit.sh` analisou 10 evidencias WhatsApp real ja aprovadas, encontrou 0 risco alto, 9 risco medio por rigidez/template ou multi-pergunta e 1 risco baixo; decisao `watchlist`, sem mudanca conversacional nesta primeira passada.
+- Wave 17 micro-slice 2 passou: fechamento deterministico de cadastro/handoff ficou menos rigido (`Boa, Joao. Deixei as infos separadas...`), com testes locais, CI, Prompts CI, eval gate, deploy, HTTP radar e WhatsApp real definitivo pela `central` todos PASS.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-menoridade-pais-handoff-humano-20260526T175054Z-4335
-run_id_real: scenario-whatsapp-real-cadastro-menoridade-pais-handoff-humano-20260526T175152Z-23494
-tipo: Scenario WhatsApp real de menoridade indireta por responsavel legal da Wave 16
+run_id_http: scenario-cadastro-email-refusal-channel-handoff-20260526T180946Z-17880
+run_id_real: scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T181023Z-21959
+tipo: Scenario WhatsApp real de fechamento de cadastro mais natural da Wave 17
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-menoridade-pais-handoff-humano-20260526T175152Z-23494/
+orcid: orc_fauvjm
+evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T181023Z-21959/
 ```
 
 Mensagem:
 
 ```text
-tenho autorizacao dos meus pais
+prefiro falar por aqui
 ```
 
 Resultado:
 
 ```text
 estado_agente: aguardando_tatuador
-resposta_ai: Como a pessoa que vai tatuar tem menos de 18 anos, vou acionar o tatuador para orientar com segurança sobre responsável legal.
-orcid: null
+resposta_ai: Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.
+orcid: orc_fauvjm
 dados_cadastro.nome: Joao Silva
-dados_cadastro.data_nascimento: null
+dados_cadastro.data_nascimento: 1995-03-12
+dados_cadastro.email_recusado: true
 copy_risk: baixo
-router: minor_age_explicit, guardian_consent_minor_age_signal, risk=high, can_mutate_state=true
-escalation: minor_age, high, requires_orcid=false
-decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router menoridade indireta -> Escalation Manager -> handoff humano
+router: cadastro_pending_answer, pending_email_refused, can_mutate_state=true
+workflow: cadastro_and_tattoo_complete, workflow_manager, handoff_package_v1
+decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router recusa de email -> Workflow Manager -> handoff de orcamento
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: manter Level 4B e continuar Wave 17 com micro-slice pequeno de linguagem, preferencialmente fechamento de cadastro/handoff de orcamento, validando com testes focados, CI/deploy, HTTP radar e WhatsApp real definitivo.
+Proximo passo recomendado: manter Level 4B, reexecutar auditoria de naturalidade incluindo as novas evidencias da Wave 17 e escolher uma segunda familia pequena de linguagem.
 ```
 
 Escopo recomendado:
@@ -194,6 +196,7 @@ Escopo recomendado:
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
 - Wave 16 fechou menoridade indireta por responsavel legal com duas variacoes validadas em WhatsApp real definitivo;
 - Wave 17 micro-slice 1 fechou apenas auditoria read-only sobre evidencias reais existentes; WhatsApp real novo nao foi exigido porque nao houve mudanca conversacional;
+- Wave 17 micro-slice 2 fechou mudanca conversacional com HTTP radar e WhatsApp real definitivo;
 - qualquer proximo micro-slice que altere linguagem do bot exige WhatsApp real definitivo;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
