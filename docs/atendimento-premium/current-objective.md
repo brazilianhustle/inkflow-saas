@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_19_closed_pass
+status: level4b_wave_20_declared
 branch: main
-ultimo_commit: closeout docs da Wave 19 em andamento
+ultimo_commit: 0db3016 docs: close wave 19 post handoff
 ultimo_commit_funcional: b94ca29 fix: escalate minor birthdate in router
-deploy: PASS no commit 1ed345c; closeout docs sem mudanca funcional
-tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 19 sem mudanca funcional; HTTP + WhatsApp real PASS
+deploy: PASS no commit 0db3016
+tests: npm test PASS local 1210/1210 no ultimo commit funcional; Wave 19 fechada PASS; Wave 20 declarada
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 1ed345c
+ultimo_commit_validado: 0db3016
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -192,8 +192,16 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: abrir nova onda funcional leve em Level 4B. Candidato preferencial: escolher familia conversacional pequena fora de preco/agenda/pagamento/secrets, com HTTP radar e WhatsApp real definitivo por micro-slice. A variacao texto+midia pos-handoff fica como candidato futuro, nao bloqueio atual.
+Proximo passo recomendado: executar Wave 20 micro-slice 1 com `cadastro-lateral-data-recovery` em HTTP radar e `whatsapp-real-cadastro-lateral-data-recovery` em WhatsApp real definitivo. Manter Level 4B; nao subir para 4C.
 ```
+
+Atualizacao 2026-05-26 21:15 UTC:
+
+- Wave 20 declarada: `level4b-wave-20-cadastro-lateral-recovery`.
+- Primeiro ataque: validar pergunta lateral durante cadastro pendente de data e, no turno seguinte, persistir a data sem repetir pergunta resolvida.
+- Cenarios: `cadastro-lateral-data-recovery` e `whatsapp-real-cadastro-lateral-data-recovery`.
+- Gates esperados: estado `coletando_cadastro`, `orcid=null`, nome preservado, data persistida apenas no segundo turno, e-mail pedido apenas depois da data, Workflow Manager preservando estado na lateral.
+- Fora de escopo: preco fechado, agenda, pagamento, sinal, secrets, mudanca ampla de linguagem, 4C.
 
 Atualizacao 2026-05-26 21:09 UTC:
 
