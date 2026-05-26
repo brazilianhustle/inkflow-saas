@@ -141,7 +141,7 @@ chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> respo
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar micro-slice `multiturn-scenario-contract` da onda `level4b-wave-1-multiturn-smoke`.
+Proximo passo recomendado: executar micro-slice `multiturn-http-runner` da onda `level4b-wave-1-multiturn-smoke`.
 ```
 
 Escopo recomendado:

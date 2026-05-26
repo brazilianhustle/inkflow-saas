@@ -512,6 +512,17 @@ primeiro micro-slice: multiturn-scenario-contract
 4C: bloqueado
 ```
 
+Ultimo micro-slice validado em Level 4B:
+
+```text
+Multiturn Smoke - Scenario Contract
+doc: docs/atendimento-premium/13-smoke-scenario-registry.md
+status: PASS
+contrato: STEP_COUNT, MESSAGE_N, gates por step e evidencia steps/<n>/
+runner: ainda nao implementado para http_multiturn/whatsapp_real_multiturn
+proximo micro-slice: multiturn-http-runner
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

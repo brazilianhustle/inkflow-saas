@@ -79,8 +79,9 @@ Parar a onda se ocorrer:
 ## Resultado Atual
 
 ```text
-status: declarada
-micro_slice_atual: multiturn-scenario-contract
+status: em-andamento
+micro_slice_1: multiturn-scenario-contract PASS
+micro_slice_atual: multiturn-http-runner
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
@@ -111,3 +112,20 @@ Bot 1: resposta de tempo + retomada de data
 Cliente 2: "12/03/1995"
 Bot 2: "E o e-mail? Se preferir seguir sem, me avisa"
 ```
+
+## Evidencia Micro-Slice 1
+
+```text
+micro_slice: multiturn-scenario-contract
+status: PASS
+alteracao: contrato multi-turn documentado em 13-smoke-scenario-registry.md
+runner_http_multiturn: ainda nao implementado
+runner_whatsapp_real_multiturn: ainda nao implementado
+decisao: seguir para multiturn-http-runner
+```
+
+Leitura:
+
+- O contrato define `STEP_COUNT`, `MESSAGE_N`, gates por step e evidencia em `steps/<n>/`.
+- `http_multiturn` e `whatsapp_real_multiturn` ainda nao contam como PASS ate o runner suportar esses tipos.
+- A regra preserva a metodologia: HTTP radar primeiro, WhatsApp real definitivo depois.

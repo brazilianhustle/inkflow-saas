@@ -135,6 +135,80 @@ SMOKE_BOT_NUMBER      somente via ambiente local/secret manager para whatsapp_re
 
 `EXPECTED_AGENT_LOG_JQ_TRUE` consulta `agent_turn_logs` desde o inicio do scenario e exige que o filtro `jq` retorne pelo menos uma row. Use para gates de observabilidade, por exemplo confirmar `agent_name=escalation_manager` e `reason_code` apos handoff humano. O runner faz polling curto porque logs fire-and-forget podem chegar alguns segundos depois da resposta; ajuste com `EXPECTED_AGENT_LOG_TIMEOUT_SECONDS` quando necessario.
 
+## Contrato Multi-Turn
+
+Scenarios multi-turn existem para validar uma conversa completa com duas ou mais mensagens humanas no mesmo setup. O objetivo e provar recuperacao entre turnos, nao apenas uma resposta isolada.
+
+Tipos planejados:
+
+```text
+SCENARIO_TYPE=http_multiturn
+SCENARIO_TYPE=whatsapp_real_multiturn
+```
+
+Campos planejados:
+
+```text
+STEP_COUNT
+MESSAGE_1
+MESSAGE_2
+...
+EXPECTED_STATE_1
+EXPECTED_STATE_2
+...
+EXPECTED_HUMAN_TEXT_1
+EXPECTED_HUMAN_TEXT_2
+...
+EXPECTED_BOT_REGEX_1
+EXPECTED_BOT_REGEX_2
+...
+FORBIDDEN_BOT_REGEX_1
+FORBIDDEN_BOT_REGEX_2
+...
+EXPECTED_POLL_JQ_TRUE_1
+EXPECTED_POLL_JQ_TRUE_2
+...
+EXPECTED_AGENT_LOG_JQ_TRUE_1
+EXPECTED_AGENT_LOG_JQ_TRUE_2
+...
+STEP_WAIT_SECONDS
+```
+
+Regras:
+
+- `STEP_COUNT` deve ser maior ou igual a 2.
+- cada step deve gerar evidencia propria em `steps/<n>/`;
+- o diretorio raiz do scenario deve conter indice consolidado dos steps;
+- a evidencia final deve preservar `summary.md`, `transcript.md`, `judgment.md`, `poll.json` e `agent-turn-logs.json` quando aplicavel;
+- em `whatsapp_real_multiturn`, cada step precisa provar envio pela Evolution e entrada real no webhook;
+- falha em qualquer step para o scenario inteiro;
+- WhatsApp real continua sendo validacao definitiva para comportamento conversacional.
+
+Dry-run multi-turn deve imprimir o plano completo sem tocar Supabase, Evolution ou Cloudflare:
+
+```bash
+SMOKE_SCENARIO_DRY_RUN=1 \
+  bash scripts/smoke/run-scenario.sh cadastro-lateral-data-recovery
+```
+
+Exemplo alvo da primeira onda 4B:
+
+```text
+SCENARIO_ID="cadastro-lateral-data-recovery"
+SCENARIO_TYPE="http_multiturn"
+SETUP="seed_cadastro_aguardando_data"
+STEP_COUNT="2"
+MESSAGE_1="quanto tempo demora?"
+EXPECTED_STATE_1="coletando_cadastro"
+EXPECTED_BOT_REGEX_1="tempo de sessão|tempo de sessao|data de nascimento"
+MESSAGE_2="12/03/1995"
+EXPECTED_STATE_2="coletando_cadastro"
+EXPECTED_BOT_REGEX_2="e-?mail|email"
+EXPECTED_POLL_JQ_TRUE_2='.conversas[0].dados_cadastro.data_nascimento == "1995-03-12" and .conversas[0].orcid == null'
+```
+
+Nota operacional: este contrato e a fonte canonica para implementar o runner multi-turn. Enquanto `http_multiturn` e `whatsapp_real_multiturn` nao estiverem implementados no runner, esses scenarios ficam declarativos e nao devem ser registrados como PASS.
+
 ## Cenarios Atuais
 
 `cadastro-handoff-email-recusado`
