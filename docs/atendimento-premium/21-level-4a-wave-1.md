@@ -65,5 +65,7 @@ Parar a onda se ocorrer:
 
 ```text
 status: em-andamento
-micro_slice_atual: security-gate
+micro_slice_1: security-gate PASS
+micro_slice_2: wave-health-summary PASS
+micro_slice_atual: smoke-evidence-index
 ```

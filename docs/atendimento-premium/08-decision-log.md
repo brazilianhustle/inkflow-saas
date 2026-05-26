@@ -569,6 +569,24 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `scripts/smoke/check-security-gate.sh` passa a validar `npm audit` na raiz e no `web`, alem de alertas Dependabot abertos via GitHub. Esta onda nao exige WhatsApp real enquanto nao alterar comportamento conversacional.
 
+## 2026-05-25 - Wave Health consolida saude da onda Level 4A
+
+**Status:** decidido.
+
+**Decisão:** criar `scripts/smoke/wave-health.sh` para consolidar Autonomy Gate, Security Gate e estado Git em um unico resumo.
+
+**Motivo:** Level 4A aumenta a janela de execucao. Quanto maior a janela, menor deve ser o custo de checar saude da onda entre micro-slices. Um comando unico reduz risco de esquecer security gate, autonomia ou worktree.
+
+**Alternativas rejeitadas:**
+
+- depender de varios comandos manuais separados;
+- colocar essa checagem dentro de smoke conversacional;
+- exigir WhatsApp real para uma mudanca puramente operacional.
+
+**Camada responsável:** Smoke Monitoring Process, Security Gate e Autonomy Gate.
+
+**Impacto:** a primeira onda Level 4A passa a ter um comando rapido de saude antes de continuar para o proximo micro-slice. Nao altera comportamento do bot.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
