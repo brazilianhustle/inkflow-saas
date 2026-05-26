@@ -659,6 +659,42 @@ test('ConversationRouter: idade isolada não resolve data pendente', () => {
   assert.equal(out, null);
 });
 
+test('ConversationRouter: cadastro persiste email pendente sem chamar LLM', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'joao@example.com',
+    conversa: {
+      dados_coletados: {},
+      dados_cadastro: { nome: 'Joao Silva', data_nascimento: '1995-03-12' },
+    },
+    historico: [
+      { role: 'assistant', content: 'E o e-mail? Se preferir seguir sem, me avisa' },
+    ],
+  });
+  assert.equal(out.intent, 'cadastro_pending_answer');
+  assert.equal(out.reason, 'pending_email_answered');
+  assert.equal(out.can_mutate_state, true);
+  assert.equal(out.agent_usado, 'cadastro');
+  assert.deepEqual(out.dados_persistidos, { email: 'joao@example.com' });
+  assert.match(out.resposta_cliente, /tatuador vai avaliar/i);
+  assert.doesNotMatch(out.resposta_cliente, /e-?mail/i);
+});
+
+test('ConversationRouter: texto sem email válido não resolve email pendente', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'prefiro passar depois',
+    conversa: {
+      dados_coletados: {},
+      dados_cadastro: { nome: 'Joao Silva', data_nascimento: '1995-03-12' },
+    },
+    historico: [
+      { role: 'assistant', content: 'E o e-mail? Se preferir seguir sem, me avisa' },
+    ],
+  });
+  assert.equal(out, null);
+});
+
 test('ConversationRouter: cadastro persiste nome e data pendentes antes de responder lateral', () => {
   const out = routeConversationTurn({
     estado_atual: 'cadastro',

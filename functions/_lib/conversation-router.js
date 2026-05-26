@@ -306,6 +306,7 @@ function shouldHandleCadastroPendingAnswer(pendingResolution) {
   const extracted = pendingResolution.extracted || {};
   if (pendingResolution.field === 'nome_completo') return hasValue(extracted.nome);
   if (pendingResolution.field === 'data_nascimento') return hasValue(extracted.data_nascimento);
+  if (pendingResolution.field === 'email') return hasValue(extracted.email);
   if (pendingResolution.field === 'cadastro_nome_data') {
     return hasValue(extracted.nome) && !hasValue(extracted.data_nascimento);
   }
