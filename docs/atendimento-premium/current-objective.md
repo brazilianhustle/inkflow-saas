@@ -213,6 +213,17 @@ Atualizacao 2026-05-26 22:10 UTC:
 - Validacao local PASS: `bash -n scripts/smoke/run-scenario.sh`, testes focados 129/129 e `npm test` 1211/1211.
 - Proximo passo obrigatorio antes do WhatsApp real: commit + push + CI/deploy PASS, depois rerodar HTTP radar da mesma jornada longa e somente entao WhatsApp real definitivo.
 
+Atualizacao 2026-05-26 22:22 UTC:
+
+- Commit funcional `cc77bba fix: track photo request after multi info` enviado.
+- CI `Tests` PASS run `26477883969`; deploy Pages PASS run `26477883967`.
+- HTTP radar da Wave 22 Jornada 1 PASS: `scenario-long-journey-lateral-media-cadastro-handoff-20260526T220704Z-29722`.
+- WhatsApp real definitivo da Wave 22 Jornada 1 PASS: `scenario-whatsapp-real-long-journey-lateral-media-cadastro-handoff-20260526T221935Z-11804`.
+- Estado final `aguardando_tatuador`, `orcid=orc_1480i5`, `foto_local_msg_id=12897`, `foto_local_file_id` persistido, `email_recusado=true`.
+- Workflow Manager confirmado com `cadastro_and_tattoo_complete`, `handoff_package_v1` e trace `hp_3243fc3083`.
+- Provas conclusivas reais: Cliente `como funciona o orçamento?` -> Bot explicou processo; Cliente `quero uma rosa fineline no antebraco, tenho 1.70` -> Bot pediu foto; Cliente `segue foto do local` + imagem -> Bot pediu nome; Cliente `Joao Silva` -> Bot pediu data; Cliente `12/03/1995` -> Bot pediu e-mail opcional; Cliente `pode seguir sem email` -> Bot `Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`
+- Decisao recomendada: manter Level 4B e rodar uma segunda jornada longa de contraste antes de fechar a Wave 22.
+
 Atualizacao 2026-05-26 21:44 UTC:
 
 - Wave 21 micro-slice 1 passou.

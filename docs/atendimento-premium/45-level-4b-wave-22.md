@@ -101,3 +101,54 @@ bash -n scripts/smoke/run-scenario.sh: PASS
 node --test tests/_lib/conversation-router.test.mjs tests/_lib/whatsapp-pipeline.test.mjs: PASS 129/129
 npm test: PASS 1211/1211
 ```
+
+## Jornada 1 - PASS
+
+Deploy:
+
+```text
+commit: cc77bba fix: track photo request after multi info
+tests_ci: PASS 26477883969
+deploy_pages: PASS 26477883967
+```
+
+Validacao definitiva:
+
+```text
+http_radar: scenario-long-journey-lateral-media-cadastro-handoff-20260526T220704Z-29722 PASS
+whatsapp_real: scenario-whatsapp-real-long-journey-lateral-media-cadastro-handoff-20260526T221935Z-11804 PASS
+estado_final: aguardando_tatuador
+orcid: orc_1480i5
+foto_local_msg_id: 12897
+foto_local_file_id: persistido
+email_recusado: true
+workflow_reason: cadastro_and_tattoo_complete
+handoff_package: handoff_package_v1
+copy_risk_final: baixo
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: como funciona o orçamento?
+Bot: Oii, tudo bem. Me chamo Assistente, muito prazer. Funciona assim: eu entendo tua ideia, junto as infos principais e o tatuador avalia pra passar valor e horário. Pra montar tua proposta certinho, como posso te chamar?
+
+Cliente: quero uma rosa fineline no antebraco, tenho 1.70
+Bot: Boa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?
+
+Cliente: segue foto do local + image/png
+Bot: Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro.
+
+Cliente: Joao Silva
+Bot: Me passa tua data de nascimento completa?
+
+Cliente: 12/03/1995
+Bot: E o e-mail? Se preferir seguir sem, me avisa
+
+Cliente: pode seguir sem email
+Bot: Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.
+```
+
+Leitura estrategica: a primeira jornada longa provou que micro-slices anteriores escondiam um gap real de encadeamento sem seed. A Wave 22 ja gerou valor estrutural: encontrou a falha, corrigiu a causa no Router, fortaleceu o runner multi-turn com midia por etapa e validou a conversa completa no WhatsApp real.
+
+Decisao: Jornada 1 PASS. Antes de encerrar a Wave 22, recomenda-se uma segunda jornada longa de contraste sem midia ou com pergunta lateral durante cadastro, para medir naturalidade e repeticao em outro caminho.
