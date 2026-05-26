@@ -301,6 +301,53 @@ function responseForIntent(intent, estado, conversa, context = {}) {
   return composeRouterResponse({ intent, estado, resume, nextField, context });
 }
 
+function shouldHandleCadastroPendingAnswer(pendingResolution) {
+  if (!pendingResolution?.answered) return false;
+  const extracted = pendingResolution.extracted || {};
+  if (pendingResolution.field === 'nome_completo') return hasValue(extracted.nome);
+  if (pendingResolution.field === 'cadastro_nome_data') {
+    return hasValue(extracted.nome) && !hasValue(extracted.data_nascimento);
+  }
+  return false;
+}
+
+function cadastroPendingAnswerOutput({ pendingResolution, estado_atual, conversa, historico }) {
+  const extracted = { ...(pendingResolution.extracted || {}) };
+  const conversaParaRetomada = {
+    ...conversa,
+    dados_cadastro: {
+      ...(conversa?.dados_cadastro || {}),
+      ...extracted,
+    },
+  };
+  return {
+    ok: true,
+    handled_by: 'conversation_router',
+    intent: 'cadastro_pending_answer',
+    confidence: pendingResolution.confidence || 0.8,
+    risk: 'low',
+    reason: `pending_${pendingResolution.field}_answered`,
+    can_mutate_state: true,
+    resposta_cliente: resumeQuestionForState(estado_atual, conversaParaRetomada),
+    estado_novo: estado_atual,
+    dados_persistidos: extracted,
+    dados_completos: false,
+    campos_faltando: [],
+    campos_conflitantes: [],
+    proxima_acao: 'pergunta',
+    agent_usado: 'cadastro',
+    side_effects: [],
+    urls_portfolio: [],
+    analise_imagens: null,
+    cobertura_suspeita: null,
+    pending_resolution: {
+      field: pendingResolution.field,
+      reason: pendingResolution.reason,
+      history_turns_n: historico?.length || 0,
+    },
+  };
+}
+
 function escalationOutput({ detected, estado_atual, intent }) {
   if (!['cobertura', 'human_requested', 'client_upset', 'tenant_handoff_trigger'].includes(intent)) return null;
   if (intent === 'human_requested') {
@@ -442,12 +489,18 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
     : null;
   const baseHasExplicitEscalation = ['human_requested', 'client_upset', 'cobertura'].includes(baseDetected?.intent);
   const detected = tenantDetected && !baseHasExplicitEscalation ? tenantDetected : baseDetected;
-  if (!detected) return null;
 
-  const escalation = escalationOutput({ detected, estado_atual, intent: detected.intent });
-  if (escalation) return escalation;
+  if (detected) {
+    const escalation = escalationOutput({ detected, estado_atual, intent: detected.intent });
+    if (escalation) return escalation;
+  }
 
   const pendingResolution = resolvePendingFormQuestion({ historico, mensagem });
+  if (!detected && estado_atual === 'cadastro' && shouldHandleCadastroPendingAnswer(pendingResolution)) {
+    return cadastroPendingAnswerOutput({ pendingResolution, estado_atual, conversa, historico });
+  }
+  if (!detected) return null;
+
   const extracted = estado_atual === 'tattoo'
     ? {
         ...extractTattooHints(mensagem, conversa?.dados_coletados || {}),

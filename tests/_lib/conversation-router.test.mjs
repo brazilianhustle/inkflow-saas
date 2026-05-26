@@ -581,6 +581,54 @@ test('ConversationRouter: cadastro retoma cadastro, não coleta tattoo', () => {
   assert.match(out.resposta_cliente, /data de nascimento/);
 });
 
+test('ConversationRouter: cadastro persiste nome pendente sem chamar LLM', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'Joao Silva',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    historico: [
+      { role: 'assistant', content: 'Me passa teu nome completo?' },
+    ],
+  });
+  assert.equal(out.intent, 'cadastro_pending_answer');
+  assert.equal(out.reason, 'pending_nome_completo_answered');
+  assert.equal(out.can_mutate_state, true);
+  assert.equal(out.agent_usado, 'cadastro');
+  assert.deepEqual(out.dados_persistidos, { nome: 'Joao Silva' });
+  assert.match(out.resposta_cliente, /data de nascimento/i);
+  assert.doesNotMatch(out.resposta_cliente, /nome completo/i);
+});
+
+test('ConversationRouter: cadastro combinado persiste só nome quando data ainda não veio', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'Maria Eduarda Carvalho',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    historico: [
+      { role: 'assistant', content: 'Pra liberar teu orçamento, me passa nome completo e data de nascimento?' },
+    ],
+  });
+  assert.equal(out.intent, 'cadastro_pending_answer');
+  assert.equal(out.reason, 'pending_cadastro_nome_data_answered');
+  assert.deepEqual(out.dados_persistidos, { nome: 'Maria Eduarda Carvalho' });
+  assert.match(out.resposta_cliente, /data de nascimento/i);
+  assert.doesNotMatch(out.resposta_cliente, /nome completo/i);
+});
+
+test('ConversationRouter: pedido humano tem prioridade sobre resposta pendente de cadastro', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'cadastro',
+    mensagem: 'quero falar com o tatuador',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    historico: [
+      { role: 'assistant', content: 'Me passa teu nome completo?' },
+    ],
+  });
+  assert.equal(out.intent, 'human_requested');
+  assert.equal(out.estado_novo, 'aguardando_tatuador');
+  assert.deepEqual(out.dados_persistidos, {});
+});
+
 test('ConversationRouter: cadastro persiste nome e data pendentes antes de responder lateral', () => {
   const out = routeConversationTurn({
     estado_atual: 'cadastro',
