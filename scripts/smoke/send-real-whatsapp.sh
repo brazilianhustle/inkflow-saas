@@ -94,12 +94,31 @@ if [[ ! "$status" =~ ^2 ]]; then
 fi
 
 response_raw="$(cat "$tmp")"
+response_summary="$(
+  printf '%s' "$response_raw" | jq -c '{
+    key,
+    status,
+    messageType,
+    messageTimestamp,
+    source,
+    instanceId,
+    media: (
+      if .message.imageMessage then {
+        mimetype: .message.imageMessage.mimetype,
+        caption: .message.imageMessage.caption,
+        width: .message.imageMessage.width,
+        height: .message.imageMessage.height,
+        fileLength: .message.imageMessage.fileLength
+      } else null end
+    )
+  }' 2>/dev/null || jq -nc --arg preview "${response_raw:0:500}" '{raw_preview:$preview}'
+)"
 jq -nc \
   --arg status "$status" \
   --arg instance "$SENDER_INSTANCE" \
   --arg to "$BOT_NUMBER" \
   --arg endpoint "$endpoint" \
   --arg media_mimetype "${SMOKE_MEDIA_MIMETYPE:-}" \
-  --arg response_raw "$response_raw" \
-  '{ok:true,http_status:$status,instance:$instance,to:$to,endpoint:$endpoint,media_mimetype:$media_mimetype,response_raw:$response_raw}'
+  --argjson response "$response_summary" \
+  '{ok:true,http_status:$status,instance:$instance,to:$to,endpoint:$endpoint,media_mimetype:$media_mimetype,response:$response}'
 rm -f "$tmp"
