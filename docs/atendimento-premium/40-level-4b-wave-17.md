@@ -195,3 +195,44 @@ validacao_minima: testes focados + npm test + CI/deploy
 ```
 
 Decisão: próximas melhorias de naturalidade não devem editar strings diretamente em router/pipeline quando pertencerem a uma família reutilizável. Primeiro entra na VoicePolicy, depois nos resolvedores.
+
+## Micro-Slice 4 - Mídia/Cadastro Mais Natural
+
+PASS: a família determinística de mídia/cadastro reduziu linguagem transacional rígida sem alterar persistência de mídia, transição de estado ou fluxo de cadastro.
+
+Mudança principal:
+
+```text
+antes: Recebi a foto do local. Pra liberar teu orçamento, preciso do teu nome completo.
+depois: Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro.
+```
+
+Também foram suavizadas as variações de referência recebida, foto ambígua confirmada como local e foto ambígua confirmada como referência, todas pela `VoicePolicy`.
+
+Validação:
+
+```text
+commit_funcional: 945f0e7 feat: soften media cadastro copy
+tests_focados: PASS 77/77
+tests_local: npm test PASS 1207/1207
+ci: PASS
+deploy: PASS
+http_radar: scenario-tattoo-media-local-photo-20260526T182841Z-30300 PASS
+whatsapp_real: scenario-whatsapp-real-tattoo-media-local-photo-20260526T182903Z-13172 PASS
+estado_final: coletando_cadastro
+orcid: null
+copy_risk: baixo
+naturalness_audit_new_evidence: PASS, 2 baixo, 0 medio, 0 alto
+```
+
+### Provas Conclusivas Reais - Micro-Slice 4
+
+Cliente: `segue foto do local`
+
+Bot: `Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro.`
+
+Estado final: `coletando_cadastro`, `foto_local_msg_id=12752`, `orcid=null`, `copy_risk=baixo`.
+
+## Decisão Apos Micro-Slice 4
+
+Manter Level 4B. A mudança conversacional passou em HTTP radar e WhatsApp real definitivo pela `central`, sem regressão de mídia nem avanço indevido para orçamento. Próximo ataque recomendado: reexecutar a auditoria de naturalidade incluindo as novas evidências e escolher entre uma segunda variação pequena de mídia/cadastro ou outro ponto de rigidez já mapeado, sem misturar com menoridade legal ampla.

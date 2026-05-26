@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_17_voice_policy_structural_pass
+status: level4b_wave_17_media_cadastro_copy_pass
 branch: main
-ultimo_commit: 776e3ad docs: close wave 17 cadastro copy slice
+ultimo_commit: 945f0e7 feat: soften media cadastro copy
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit funcional validado
-tests: npm test PASS local 1207/1207; testes focados Wave 17 micro-slice 3 PASS 130/130; CI pendente para commit estrutural
+tests: npm test PASS local 1207/1207; testes focados Wave 17 micro-slice 4 PASS 77/77; CI PASS
 prompts_ci: PASS no GitHub Actions
-worktree_esperado: limpo apos commit do micro-slice estrutural da Wave 17
-ultimo_commit_validado: 776e3ad
+worktree_esperado: limpo apos closeout documental da Wave 17 micro-slice 4
+ultimo_commit_validado: 945f0e7
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -147,39 +147,42 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 17 iniciada como auditoria de naturalidade read-only: `naturalness-audit.sh` analisou 10 evidencias WhatsApp real ja aprovadas, encontrou 0 risco alto, 9 risco medio por rigidez/template ou multi-pergunta e 1 risco baixo; decisao `watchlist`, sem mudanca conversacional nesta primeira passada.
 - Wave 17 micro-slice 2 passou: fechamento deterministico de cadastro/handoff ficou menos rigido (`Boa, Joao. Deixei as infos separadas...`), com testes locais, CI, Prompts CI, eval gate, deploy, HTTP radar e WhatsApp real definitivo pela `central` todos PASS.
 - Wave 17 micro-slice 3 iniciou a arquitetura escalavel de naturalidade: `conversation-voice-policy.js` centraliza familias deterministicas de cadastro e midia/cadastro; Router e Pipeline passaram a importar a policy sem alterar texto ao cliente; testes locais passaram.
+- Wave 17 micro-slice 4 passou: copy deterministica de mídia/cadastro deixou de usar `Pra liberar teu orçamento` e passou para `Agora me passa teu nome completo pra eu montar o cadastro`; testes locais, CI/deploy, HTTP radar e WhatsApp real definitivo pela `central` passaram com `copy_risk=baixo`.
 
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-email-refusal-channel-handoff-20260526T180946Z-17880
-run_id_real: scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T181023Z-21959
-tipo: Scenario WhatsApp real de fechamento de cadastro mais natural da Wave 17
+run_id_http: scenario-tattoo-media-local-photo-20260526T182841Z-30300
+run_id_real: scenario-whatsapp-real-tattoo-media-local-photo-20260526T182903Z-13172
+tipo: Scenario WhatsApp real de mídia/cadastro mais natural da Wave 17
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: aguardando_tatuador
-orcid: orc_fauvjm
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T181023Z-21959/
+expected_state: coletando_cadastro
+orcid: null
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-local-photo-20260526T182903Z-13172/
 ```
 
 Mensagem:
 
 ```text
-prefiro falar por aqui
+segue foto do local
 ```
 
 Resultado:
 
 ```text
-estado_agente: aguardando_tatuador
-resposta_ai: Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.
-orcid: orc_fauvjm
-dados_cadastro.nome: Joao Silva
-dados_cadastro.data_nascimento: 1995-03-12
-dados_cadastro.email_recusado: true
+estado_agente: coletando_cadastro
+resposta_ai: Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro.
+orcid: null
+dados_coletados.descricao_curta: rosa
+dados_coletados.estilo: fineline
+dados_coletados.local_corpo: antebraco
+dados_coletados.altura_cm: 170
+dados_coletados.foto_local_msg_id: 12752
 copy_risk: baixo
-router: cadastro_pending_answer, pending_email_refused, can_mutate_state=true
-workflow: cadastro_and_tattoo_complete, workflow_manager, handoff_package_v1
-decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Router recusa de email -> Workflow Manager -> handoff de orcamento
+router/pipeline: media deterministica, foto_local_msg_id persistido, sem orcamento automatico
+workflow: transicao segura para coletando_cadastro, sem handoff e sem orcid
+decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Pipeline media deterministica -> coleta de cadastro
 ```
 
 ## Proximo Ataque
