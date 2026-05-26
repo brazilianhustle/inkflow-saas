@@ -802,6 +802,29 @@ proximo passo: commit, CI/deploy, HTTP radar local-confirm e WhatsApp real local
 4c: bloqueado
 ```
 
+Wave 5 fechada:
+
+```text
+wave: level4b-wave-5-ambiguous-media-confirmation
+status: PASS
+commit_funcional: 6c900d2 fix: confirm ambiguous tattoo media
+tests_local: node --test tests/_lib/whatsapp-pipeline.test.mjs PASS 62/62; npm test PASS 1189/1189
+ci: PASS
+deploy: PASS
+http_local: scenario-tattoo-media-ambiguous-confirm-local-20260526T070539Z-16476 PASS
+real_local: scenario-whatsapp-real-tattoo-media-ambiguous-confirm-local-20260526T070618Z-15645 PASS
+http_referencia: scenario-tattoo-media-ambiguous-confirm-reference-20260526T070726Z-11122 PASS
+real_referencia: scenario-whatsapp-real-tattoo-media-ambiguous-confirm-reference-20260526T070803Z-28038 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+estado_local: coletando_cadastro, foto_local_msg_id=11951, refs_imagens_msg_ids=[11951], orcid=null, copy_risk=baixo
+estado_referencia: coletando_tattoo, foto_local_msg_id=null, refs_imagens_msg_ids=[11951], tentativas_foto_local=1, orcid=null, copy_risk=baixo
+provas_conclusivas_reais:
+  1. Cliente "é local do corpo" -> Bot "Perfeito, então vou usar essa imagem como foto do local. Pra liberar teu orçamento personalizado, me passa nome completo e data de nascimento?"
+  2. Cliente "é referência do desenho" -> Bot "Perfeito, deixei essa imagem como referência do desenho. Agora preciso da foto do local do corpo onde tu quer tatuar."
+decisao: manter Level 4B; 4C bloqueado
+proximo passo: declarar proxima onda funcional leve antes de editar codigo
+```
+
 ## Checklist De Fechamento De Sessão
 
 Antes de encerrar a sessão:

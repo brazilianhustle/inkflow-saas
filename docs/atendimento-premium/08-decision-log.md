@@ -1186,7 +1186,7 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Data:** 2026-05-26
 
-**Status:** decidido e iniciado.
+**Status:** decidido, implementado e validado.
 
 **Decisão:** resposta curta do cliente apos pergunta de foto ambigua deve ser resolvida deterministicamente no pipeline: `é local` promove a ultima imagem ambigua para `foto_local_msg_id`; `é referência` preserva a imagem em `refs_imagens_msg_ids` e pede a foto do local.
 
@@ -1202,7 +1202,28 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Camada responsável:** WhatsApp Pipeline, Workflow Manager e Smoke Scenario Registry.
 
-**Impacto:** criada `28-level-4b-wave-5.md`, setup `seed_tattoo_foto_ambigua_aguardando_confirmacao`, cenarios HTTP/WhatsApp real para confirmacao como local e referencia, e testes locais no pipeline. `npm test` passou `1189/1189`.
+**Impacto:** criada `28-level-4b-wave-5.md`, setup `seed_tattoo_foto_ambigua_aguardando_confirmacao`, cenarios HTTP/WhatsApp real para confirmacao como local e referencia, e testes locais no pipeline. `npm test` passou `1189/1189`, CI/deploy passaram no commit `6c900d2`, HTTP radar local `scenario-tattoo-media-ambiguous-confirm-local-20260526T070539Z-16476` passou, WhatsApp real local `scenario-whatsapp-real-tattoo-media-ambiguous-confirm-local-20260526T070618Z-15645` passou, HTTP radar referencia `scenario-tattoo-media-ambiguous-confirm-reference-20260526T070726Z-11122` passou e WhatsApp real referencia `scenario-whatsapp-real-tattoo-media-ambiguous-confirm-reference-20260526T070803Z-28038` passou.
+
+### Wave 5 - Closeout E Manutencao Do Level 4B
+
+**Data:** 2026-05-26
+
+**Status:** decidido e validado.
+
+**Decisão:** fechar `level4b-wave-5-ambiguous-media-confirmation` como PASS e manter autonomia em Level 4B, sem promocao para 4C.
+
+**Motivo:** os dois comportamentos conversacionais da onda passaram em HTTP radar e WhatsApp real definitivo. O fluxo local promove a imagem para `foto_local_msg_id=11951`, avanca para `coletando_cadastro` e mantem `orcid=null`. O fluxo referencia preserva `refs_imagens_msg_ids=[11951]`, mantem `foto_local_msg_id=null`, incrementa `tentativas_foto_local=1` e pede foto do local. Ambos tiveram `copy_risk=baixo`.
+
+**Alternativas rejeitadas:**
+
+- promover para 4C por apenas uma onda saudavel;
+- iniciar nova frente sem registrar evidencias reais;
+- tratar confirmacao curta como tarefa do LLM;
+- ampliar para leitura visual, preco, agenda ou pagamento nesta onda.
+
+**Camada responsável:** WhatsApp Pipeline, Smoke Scenario Registry, Workflow Manager e processo Level 4B.
+
+**Impacto:** a Wave 5 fecha o ciclo de midia ambigua aberto pela Wave 4: o bot pergunta, entende a resposta curta e segue o fluxo correto sem perder dados nem criar orcamento/handoff indevido.
 
 ## Decisões Em Aberto
 

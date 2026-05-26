@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_5_ambiguous_media_confirmation_declared
+status: level4b_wave_5_ambiguous_media_confirmation_closeout_pass
 branch: main
-ultimo_commit: 89b1a2a docs: close level 4b wave 4
+ultimo_commit: 6c900d2 fix: confirm ambiguous tattoo media
 deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit validado
 tests: node --test tests/**/*.test.mjs passou local e no GitHub Actions
 prompts_ci: passou no GitHub Actions
-worktree_esperado: limpo apos commit de docs
-ultimo_commit_validado: 89b1a2a
+worktree_esperado: limpo apos commit de docs de Wave 5
+ultimo_commit_validado: 6c900d2
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -95,6 +95,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Monitoramento media-only foi fortalecido: runners aceitam mensagem vazia com midia, polling exige IA nova posterior ao humano e evidencias da Evolution omitem base64/thumbnail grande.
 - Level 4B Wave 4 fechou closeout PASS: `wave-health` PASS, Autonomy Gate keep, Security Gate PASS, Dependabot 0, Evidence Orphan Gate PASS com WARNs historicos nao bloqueantes e decisao de manter Level 4B sem promover 4C.
 - Level 4B Wave 5 declarada: `level4b-wave-5-ambiguous-media-confirmation`, foco em confirmar foto ambigua como local ou referencia. A confirmacao curta agora e caminho deterministico no pipeline, sem LLM.
+- Level 4B Wave 5 fechou PASS: confirmacao de foto ambigua como local e como referencia passaram em HTTP radar e WhatsApp real definitivo. Provas reais: Cliente "é local do corpo" -> Bot "Perfeito, então vou usar essa imagem como foto do local. Pra liberar teu orçamento personalizado, me passa nome completo e data de nascimento?"; Cliente "é referência do desenho" -> Bot "Perfeito, deixei essa imagem como referência do desenho. Agora preciso da foto do local do corpo onde tu quer tatuar."
 - Governanca multi-agente oficializada: agentes podem acelerar analise, preparo, auditoria e triage, mas Level 4B mantem Commander unico, single-writer por micro-slice, WhatsApp real serial e 4C bloqueado.
 - Wave Runner v1 e Evidence Registrar implementados como ferramentas metodologicas: preflight seguro de onda e geracao revisavel de linha para `smoke-runs.md`, sem executar WhatsApp real, sem editar evidencias automaticamente e sem promover autonomia.
 - Evidence Orphan Gate integrado ao `wave-health`: registros quebrados passam a bloquear a saude da onda; evidencias completas recentes sem registro aparecem como `WARN` no modo padrao e bloqueiam somente no modo estrito de auditoria.
@@ -127,21 +128,20 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-tattoo-media-ambiguous-photo-clarification-20260526T064538Z-31035
-run_id_real: scenario-whatsapp-real-tattoo-media-ambiguous-photo-clarification-20260526T064904Z-10234
-tipo: Scenario WhatsApp real de midia da Wave 4
+run_id_http: scenario-tattoo-media-ambiguous-confirm-reference-20260526T070726Z-11122
+run_id_real: scenario-whatsapp-real-tattoo-media-ambiguous-confirm-reference-20260526T070803Z-28038
+tipo: Scenario WhatsApp real de confirmacao de midia ambigua da Wave 5
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_tattoo
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-ambiguous-photo-clarification-20260526T064904Z-10234/
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-ambiguous-confirm-reference-20260526T070803Z-28038/
 ```
 
 Mensagem:
 
 ```text
-image/png
-sem legenda
+é referência do desenho
 ```
 
 Resultado:
@@ -154,17 +154,18 @@ dados_coletados.descricao_curta: rosa
 dados_coletados.local_corpo: antebraco
 dados_coletados.altura_cm: 170
 dados_coletados.foto_local_msg_id: null
-dados_coletados.refs_imagens_msg_ids: 1 item
+dados_coletados.refs_imagens_msg_ids: [11951]
+dados_coletados.tentativas_foto_local: 1
 copy_risk: baixo
-copy: "Vi a imagem, mas fiquei em dúvida se ela é referência do desenho ou o local do corpo. Qual dos dois fica valendo?"
-decision_chain: foto sem legenda + sem foto local pendente -> classificacao deterministica -> dados preservados
+copy: "Perfeito, deixei essa imagem como referência do desenho. Agora preciso da foto do local do corpo onde tu quer tatuar."
+decision_chain: confirmacao curta como referencia -> dados preservados -> pedir foto do local sem LLM
 chain: Evolution central -> WhatsApp real -> bot -> webhook -> pipeline -> resposta -> poll por estado
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: executar Wave 5 micro-slice `tattoo-media-ambiguous-confirm-local`: HTTP radar e, se passar, WhatsApp real definitivo.
+Proximo passo recomendado: declarar proxima onda funcional leve em Level 4B. Candidatos: encadear referencia confirmada -> envio da foto local, ou retomar cadastro pos-midia confirmada.
 ```
 
 Escopo recomendado:
@@ -172,10 +173,10 @@ Escopo recomendado:
 - rodar `check-autonomy-gate.sh` antes de iniciar nova rodada;
 - rodar `wave-health.sh` e `check-security-gate.sh` antes de tocar codigo;
 - manter `CURRENT_LEVEL=4` e `MAX_BATCH_SIZE=8`;
-- usar `docs/atendimento-premium/27-level-4b-wave-4.md` como plano da onda atual;
+- usar `docs/atendimento-premium/28-level-4b-wave-5.md` como fechamento da onda atual;
 - validar comportamento conversacional com teste local relevante, HTTP radar e WhatsApp real definitivo;
-- Wave 4 iniciou a familia `tattoo-media-intake`;
-- proximo alvo funcional: validar confirmacao de foto ambigua como `local do corpo` em HTTP e WhatsApp real;
+- Wave 5 fechou a familia de confirmacao de midia ambigua;
+- proximo alvo funcional deve ser declarado antes de editar codigo;
 - manter Level 4B; nao promover 4C ate pelo menos mais uma onda 4B saudavel;
 - manter `workflow-manager` como gate obrigatorio para qualquer discussao futura de Level 4;
 - nao tocar preco, sinal, pagamento, agenda, secrets ou tenant real amplo;

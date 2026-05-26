@@ -106,9 +106,93 @@ bot: preserva referencia e pede foto do local
 ## Resultado Atual
 
 ```text
-status: wave declarada
-micro_slice_1: ambiguous-confirmation-wave-contract em andamento
+status: wave fechada
+micro_slice_1: ambiguous-confirmation-wave-contract PASS
+micro_slice_2: tattoo-media-ambiguous-confirm-local-http PASS
+micro_slice_3: tattoo-media-ambiguous-confirm-local-whatsapp-real PASS
+micro_slice_4: tattoo-media-ambiguous-confirm-reference-http PASS
+micro_slice_5: tattoo-media-ambiguous-confirm-reference-whatsapp-real PASS
+micro_slice_6: level4b-wave-5-closeout PASS
 autonomy_level: 4B
 max_batch_size: 8
 promocao_4c: bloqueada
 ```
+
+## Evidencias - Confirmar Como Local
+
+```text
+commit_fix: 6c900d2 fix: confirm ambiguous tattoo media
+tests_local: npm test PASS, 1189/1189
+ci: PASS
+deploy: PASS
+http_radar: scenario-tattoo-media-ambiguous-confirm-local-20260526T070539Z-16476 PASS
+whatsapp_real: scenario-whatsapp-real-tattoo-media-ambiguous-confirm-local-20260526T070618Z-15645 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "é local do corpo"
+bot: "Perfeito, então vou usar essa imagem como foto do local. Pra liberar teu orçamento personalizado, me passa nome completo e data de nascimento?"
+estado_final: coletando_cadastro
+orcid: null
+foto_local_msg_id: 11951
+refs_imagens_msg_ids: [11951]
+copy_risk: baixo
+```
+
+### Provas Conclusivas Reais
+
+```text
+Cliente: "é local do corpo"
+Bot: "Perfeito, então vou usar essa imagem como foto do local. Pra liberar teu orçamento personalizado, me passa nome completo e data de nascimento?"
+```
+
+## Evidencias - Confirmar Como Referencia
+
+```text
+commit_fix: 6c900d2 fix: confirm ambiguous tattoo media
+tests_local: npm test PASS, 1189/1189
+ci: PASS
+deploy: PASS
+http_radar: scenario-tattoo-media-ambiguous-confirm-reference-20260526T070726Z-11122 PASS
+whatsapp_real: scenario-whatsapp-real-tattoo-media-ambiguous-confirm-reference-20260526T070803Z-28038 PASS
+cadeia_real: Evolution central -> bot 5545999012357
+cliente: "é referência do desenho"
+bot: "Perfeito, deixei essa imagem como referência do desenho. Agora preciso da foto do local do corpo onde tu quer tatuar."
+estado_final: coletando_tattoo
+orcid: null
+foto_local_msg_id: null
+refs_imagens_msg_ids: [11951]
+tentativas_foto_local: 1
+copy_risk: baixo
+```
+
+### Provas Conclusivas Reais
+
+```text
+Cliente: "é referência do desenho"
+Bot: "Perfeito, deixei essa imagem como referência do desenho. Agora preciso da foto do local do corpo onde tu quer tatuar."
+```
+
+## Closeout
+
+```text
+micro_slice: level4b-wave-5-closeout
+status: PASS
+wave_health: PASS
+autonomy_gate: PASS, keep
+security_gate: PASS
+dependabot_open_alerts: 0
+evidence_orphan_gate: PASS com WARN historico nao bloqueante
+decisao_autonomia: manter Level 4B
+4c: bloqueado
+proximo_alvo: declarar proxima onda funcional leve
+```
+
+### Evidence Summary
+
+| Run ID | Tipo | Resultado | Estado Final | ORCID | Copy Risk |
+|---|---|---:|---|---|---|
+| `scenario-whatsapp-real-tattoo-media-ambiguous-confirm-local-20260526T070618Z-15645` | WhatsApp real | PASS | `coletando_cadastro` | `null` | `baixo` |
+| `scenario-whatsapp-real-tattoo-media-ambiguous-confirm-reference-20260526T070803Z-28038` | WhatsApp real | PASS | `coletando_tattoo` | `null` | `baixo` |
+
+### Decisao Estrategica
+
+Wave 5 fechou o ciclo aberto pela Wave 4. A classificacao ambigua agora tem ida e volta: imagem sem legenda pede classificacao, confirmacao como local promove para `foto_local_msg_id`, e confirmacao como referencia preserva a referencia e pede foto do local. A resposta curta e resolvida pelo pipeline sem LLM.
