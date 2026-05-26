@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_17_media_cadastro_copy_pass
+status: level4b_wave_17_cadastro_resume_copy_pending_prod_validation
 branch: main
-ultimo_commit: 945f0e7 feat: soften media cadastro copy
-deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit funcional validado
-tests: npm test PASS local 1207/1207; testes focados Wave 17 micro-slice 4 PASS 77/77; CI PASS
+ultimo_commit: 87af5c1 feat: soften cadastro resume copy
+deploy: GitHub Actions Deploy to Cloudflare Pages PASS no ultimo commit funcional, mas smoke de producao pendente
+tests: npm test PASS local 1208/1208; testes focados Wave 17 micro-slice 5 PASS 131/131; CI PASS
 prompts_ci: PASS no GitHub Actions
-worktree_esperado: limpo apos closeout documental da Wave 17 micro-slice 4
-ultimo_commit_validado: 945f0e7
+worktree_esperado: limpo; proximo passo deve repetir HTTP radar antes de WhatsApp real
+ultimo_commit_validado: 721d489
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -148,6 +148,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 17 micro-slice 2 passou: fechamento deterministico de cadastro/handoff ficou menos rigido (`Boa, Joao. Deixei as infos separadas...`), com testes locais, CI, Prompts CI, eval gate, deploy, HTTP radar e WhatsApp real definitivo pela `central` todos PASS.
 - Wave 17 micro-slice 3 iniciou a arquitetura escalavel de naturalidade: `conversation-voice-policy.js` centraliza familias deterministicas de cadastro e midia/cadastro; Router e Pipeline passaram a importar a policy sem alterar texto ao cliente; testes locais passaram.
 - Wave 17 micro-slice 4 passou: copy deterministica de mídia/cadastro deixou de usar `Pra liberar teu orçamento` e passou para `Agora me passa teu nome completo pra eu montar o cadastro`; testes locais, CI/deploy, HTTP radar e WhatsApp real definitivo pela `central` passaram com `copy_risk=baixo`.
+- Wave 17 micro-slice 5 iniciou: retomada deterministica de cadastro vazio mudou de `Pra liberar teu orçamento...` para `Pra montar teu cadastro...`; testes locais, CI e deploy passaram, mas HTTP radar nao concluiu por timeout/conectividade Supabase antes do processamento. WhatsApp real ainda NAO foi executado para este commit.
 
 ## Ultimo Smoke PASS De Referencia
 
@@ -188,7 +189,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> Pipeline
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: manter Level 4B, concluir CI/deploy do micro-slice estrutural de VoicePolicy e so entao escolher uma segunda familia pequena de linguagem.
+Proximo passo recomendado: repetir o HTTP radar `cadastro-resume-nome-data-natural` quando Supabase responder; se passar, rodar WhatsApp real `whatsapp-real-cadastro-resume-nome-data-natural`; so depois registrar closeout da micro-slice 5.
 ```
 
 Escopo recomendado:
