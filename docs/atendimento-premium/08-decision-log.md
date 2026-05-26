@@ -1417,6 +1417,28 @@ Misturar isso no router aumenta acoplamento e dificulta teste.
 
 **Impacto:** `resolveEmail` passou a aceitar linguagem de canal para recusa opcional. HTTP radar `scenario-cadastro-email-refusal-channel-handoff-20260526T090119Z-9662` e WhatsApp real `scenario-whatsapp-real-cadastro-email-refusal-channel-handoff-20260526T090215Z-18284` passaram para `prefiro falar por aqui`; HTTP radar `scenario-cadastro-email-refusal-melhor-falar-aqui-20260526T091028Z-10893` e WhatsApp real `scenario-whatsapp-real-cadastro-email-refusal-melhor-falar-aqui-20260526T091108Z-5886` passaram para `melhor falar por aqui`; HTTP radar `scenario-cadastro-email-refusal-por-aqui-mesmo-20260526T091805Z-25672` e WhatsApp real `scenario-whatsapp-real-cadastro-email-refusal-por-aqui-mesmo-20260526T091846Z-10188` passaram para `por aqui mesmo`; logs confirmaram Router `pending_email_refused` e Workflow Manager `cadastro_and_tattoo_complete`.
 
+### Wave 15 - Menoridade Natural Sem Numero
+
+**Data:** 2026-05-26
+
+**Status:** primeiro micro-slice validado.
+
+**Decisão:** iniciar `level4b-wave-15-minor-age-natural-variants` para tratar `sou menor de idade` como menoridade explicita, sem exigir idade numerica.
+
+**Motivo:** o fluxo ja cobria `tenho 16 anos`, mas clientes podem declarar menoridade sem numero. Como o risco operacional e alto, a resposta correta e acionar humano sem inventar `data_nascimento` e sem criar orcamento.
+
+**Alternativas rejeitadas:**
+
+- deixar o LLM interpretar a frase;
+- pedir data de nascimento mesmo apos declaracao explicita de menoridade;
+- persistir idade ou data inexistente;
+- criar `orcid`/orcamento automatico;
+- promover autonomia para 4C.
+
+**Camada responsável:** ConversationPolicy, ConversationRouter, Escalation Manager, Smoke Scenario Registry.
+
+**Impacto:** `resolveExplicitAge` passou a reconhecer `sou menor de idade` e a respeitar a negacao `nao sou menor de idade`. HTTP radar `scenario-cadastro-menoridade-natural-handoff-humano-20260526T165653Z-17022` passou; WhatsApp real `scenario-whatsapp-real-cadastro-menoridade-natural-handoff-humano-20260526T165811Z-26978` passou; logs confirmaram Router `minor_age_explicit` e Escalation Manager `minor_age`.
+
 ## Decisões Em Aberto
 
 ### Cadastro premium
