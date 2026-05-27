@@ -11,7 +11,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_32_lateral_tempo_processo_pass
+status: level4b_wave_33_portfolio_started
 branch: main
 ultimo_commit: docs: validate wave 32 lateral tempo processo
 ultimo_commit_funcional: 257f3cf fix: soften optional email prompt
@@ -60,6 +60,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Regra metodologica reforcada apos Wave 31: auditoria read-only pode reaproveitar evidencia WhatsApp real existente somente sem mudanca de comportamento e com validade declarada; qualquer mudanca funcional/conversacional ou duvida exige WhatsApp real novo `central -> bot`.
 - Wave 32 iniciada: revalidacao atual de lateral tempo/processo, porque evidencias antigas ainda mostram copy mecanica pre-Voice Policy e nao devem ser usadas para fechar comportamento atual.
 - Wave 32 validou lateral tempo/processo atual sem mudanca de codigo: HTTP radar e WhatsApp real novo passaram para os dois cenarios; Naturalness V2 teve 4 PASS/0 watchlist/0 rework/0 stop, estado `coletando_tattoo`, `orcid=null`, copy_risk=baixo e sem `Me chamo`/`muito prazer`.
+- Wave 33 iniciada: revalidacao atual de portfolio com HTTP radar e WhatsApp real novo, porque as evidencias principais sao de 2026-05-25 e nao devem fechar a familia atual sem novo envio real.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
@@ -227,7 +228,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: rodar `wave-health`, commitar Wave 32 e escolher a proxima familia lateral. Candidato pragmatico: portfolio/imagem/historia de vida, aplicando a regra de evidencia reaproveitada versus WhatsApp real novo.
+Proximo passo recomendado: rodar `lateral-portfolio-disponivel` em HTTP radar e `whatsapp-real-lateral-portfolio-disponivel` em WhatsApp real novo; depois Naturalness V2 e fechamento da Wave 33 se nao houver regressao.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:

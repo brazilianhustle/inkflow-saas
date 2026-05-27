@@ -60,6 +60,35 @@ test('ConversationRouter: classifica pergunta sobre imagem', () => {
   assert.equal(_test.detectIntent('dá pra ver a tattoo?')?.intent, 'pergunta_imagem');
 });
 
+test('ConversationRouter: portfolio disponível sai determinístico sem LLM', () => {
+  const detected = _test.detectIntent('tem exemplos de fineline?');
+  assert.equal(detected?.intent, 'portfolio_requested');
+  assert.equal(detected?.reason, 'portfolio_or_work_examples_requested');
+  assert.equal(detected?.can_mutate_state, false);
+
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'tem exemplos de fineline?',
+    conversa: CONVERSA_TATTOO,
+    clientContext: { portfolio_disponivel: true },
+  });
+  assert.equal(out.intent, 'portfolio_requested');
+  assert.equal(out.proxima_acao, 'enviar_portfolio');
+  assert.equal(out.can_mutate_state, false);
+  assert.equal(out.payload_portfolio.estilo, 'fineline');
+  assert.match(out.resposta_cliente, /exemplos de fineline/i);
+  assert.doesNotMatch(out.resposta_cliente, /https?:\/\//i);
+});
+
+test('ConversationRouter: portfolio indisponível cai para agent operacional', () => {
+  assert.equal(routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'tem exemplos de fineline?',
+    conversa: CONVERSA_TATTOO,
+    clientContext: { portfolio_disponivel: false },
+  }), null);
+});
+
 test('ConversationRouter: pedido explícito de humano aciona escalonamento sem coleta', () => {
   assert.equal(_test.detectIntent('quero falar com o tatuador')?.intent, 'human_requested');
   assert.equal(_test.detectIntent('me passa para um atendente')?.intent, 'human_requested');

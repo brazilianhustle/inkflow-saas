@@ -6,6 +6,7 @@
 // - tempo_sessao
 // - processo_tatuagem
 // - pergunta_imagem
+// - portfolio_requested
 //
 // O contrato retorna um output compatível com runAgent para o pipeline poder
 // persistir/enviar sem criar um segundo caminho de side effects.
@@ -257,6 +258,15 @@ function detectIntent(text) {
     confidence: 0.82,
     risk: 'medium',
     reason: 'image_interpretation_question_without_media_context',
+  });
+
+  const portfolio =
+    /\b(portfolio|portifolio|portf[oó]lio|trabalhos?|exemplos?|refer[eê]ncias?|fotos?|instagram|insta)\b/.test(s)
+    && /\b(tem|manda|mandar|mostra|mostrar|ver|vejo|quero|queria|pode|consegue|existe|algum|alguns|algumas)\b/.test(s);
+  if (portfolio) return intentDecision('portfolio_requested', {
+    confidence: 0.9,
+    risk: 'medium',
+    reason: 'portfolio_or_work_examples_requested',
   });
 
   const historiaVida =
@@ -514,6 +524,40 @@ function tattooPendingAnswerOutput({ extracted, estado_atual, conversa }) {
   };
 }
 
+function portfolioOutput({ detected, estado_atual, mensagem, conversa, clientContext }) {
+  if (!clientContext?.portfolio_disponivel) return null;
+  const extracted = extractTattooHints(mensagem, conversa?.dados_coletados || {});
+  const estilo = extracted.estilo || conversa?.dados_coletados?.estilo || null;
+  return {
+    ok: true,
+    handled_by: 'conversation_router',
+    intent: 'portfolio_requested',
+    confidence: detected.confidence,
+    risk: detected.risk,
+    reason: detected.reason,
+    can_mutate_state: false,
+    resposta_cliente: estilo
+      ? `Claro, te mando alguns exemplos de ${estilo}.`
+      : 'Claro, te mando alguns exemplos do portfolio.',
+    estado_novo: estado_atual,
+    dados_persistidos: {},
+    dados_completos: false,
+    campos_faltando: estado_atual === 'tattoo' ? missingTattooFields(conversa?.dados_coletados || {}) : [],
+    campos_conflitantes: [],
+    proxima_acao: 'enviar_portfolio',
+    agent_usado: estado_atual === 'cadastro' ? 'cadastro' : 'conversation_router',
+    side_effects: [],
+    urls_portfolio: [],
+    payload_portfolio: {
+      estilo,
+      max: null,
+      motivo: 'pedido deterministico de portfolio',
+    },
+    analise_imagens: null,
+    cobertura_suspeita: null,
+  };
+}
+
 function escalationOutput({ detected, estado_atual, intent }) {
   if (!['cobertura', 'human_requested', 'client_upset', 'tenant_handoff_trigger', 'minor_age_explicit'].includes(intent)) return null;
   if (intent === 'minor_age_explicit') {
@@ -710,6 +754,10 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
   if (detected) {
     const escalation = escalationOutput({ detected, estado_atual, intent: detected.intent });
     if (escalation) return escalation;
+    if (detected.intent === 'portfolio_requested') {
+      const portfolio = portfolioOutput({ detected, estado_atual, mensagem, conversa, clientContext });
+      if (portfolio) return portfolio;
+    }
   }
 
   const pendingResolution = resolvePendingFormQuestion({ historico, mensagem });

@@ -1283,6 +1283,34 @@ test('5. portfolio intent — Task 10 implementa', async () => {
   assert.equal(evoSpy.mock.calls[1].arguments[1].url, 'https://x/1.jpg');
 });
 
+test('5b. portfolio intent do router executa ferramenta e envia midias', async () => {
+  const evoSpy = mock.fn(async () => ({ ok: true }));
+  const toolSpy = mock.fn(async () => ({ ok: true, urls: ['https://x/fineline-1.jpg', 'https://x/fineline-2.jpg'] }));
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'tem exemplos de fineline?' }]),
+      tenant: { ...TENANT, portfolio_urls: ['https://x/fineline-1.jpg', 'https://x/fineline-2.jpg'] },
+    }),
+    runAgent: async () => { throw new Error('runAgent nao deve ser chamado para portfolio deterministico'); },
+    callTool: toolSpy,
+    evoSend: evoSpy,
+  });
+  await processBatch({}, baseBatch(), deps);
+  assert.equal(toolSpy.mock.callCount(), 1);
+  assert.equal(toolSpy.mock.calls[0].arguments[0], 'enviar-portfolio');
+  assert.deepEqual(toolSpy.mock.calls[0].arguments[1], {
+    tenant_id: TENANT.id,
+    estilo: 'fineline',
+    max: 5,
+  });
+  assert.equal(evoSpy.mock.callCount(), 3);
+  assert.equal(evoSpy.mock.calls[0].arguments[1].type, 'text');
+  assert.equal(evoSpy.mock.calls[1].arguments[1].type, 'media');
+  assert.equal(evoSpy.mock.calls[1].arguments[1].url, 'https://x/fineline-1.jpg');
+});
+
 test('6. conversa nova — Task 8 implementa', async () => {
   let postBody = null;
   const deps = mockDeps({

@@ -327,6 +327,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
       tenant_rules: deriveTenantRules(tenant),
       tenant_profile: deriveTenantProfile(tenant),
       tenant_assets: deriveTenantAssets(tenant),
+      portfolio_disponivel: Array.isArray(tenant.portfolio_urls) && tenant.portfolio_urls.length > 0,
     };
     const routerDisabled = String(env?.DISABLE_CONVERSATION_ROUTER || '').toLowerCase() === 'true';
     const fotoLocalCompletaTattoo = fotoLocalPendente && hasTattooCoreForCadastro(conversa.dados_coletados || {});
@@ -569,6 +570,25 @@ export async function processBatch(env, batch, depsOverride = {}) {
         dados_coletados: novoDadosColetados, dados_cadastro: novoDadosCadastro, updated_at: deps.now(),
       }),
     });
+
+    if (
+      agentOut.proxima_acao === 'enviar_portfolio'
+      && (!Array.isArray(agentOut.urls_portfolio) || agentOut.urls_portfolio.length === 0)
+      && agentOut.payload_portfolio
+    ) {
+      const payload = agentOut.payload_portfolio || {};
+      const portfolioResult = await deps.callTool('enviar-portfolio', {
+        tenant_id: tenant.id,
+        estilo: payload.estilo ?? null,
+        max: payload.max ?? 5,
+      });
+      if (portfolioResult?.ok && Array.isArray(portfolioResult.urls)) {
+        agentOut = {
+          ...agentOut,
+          urls_portfolio: portfolioResult.urls,
+        };
+      }
+    }
 
     // Etapa 4.5: rotear CADA foto do lote. Fonte de verdade = analise_imagens do
     // modelo (que VIU a foto). Fallback = foto-classifier heuristico quando a visao
