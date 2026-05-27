@@ -80,13 +80,21 @@ test('ConversationRouter: portfolio disponível sai determinístico sem LLM', ()
   assert.doesNotMatch(out.resposta_cliente, /https?:\/\//i);
 });
 
-test('ConversationRouter: portfolio indisponível cai para agent operacional', () => {
-  assert.equal(routeConversationTurn({
+test('ConversationRouter: portfolio indisponível responde limite honesto sem LLM', () => {
+  const out = routeConversationTurn({
     estado_atual: 'tattoo',
     mensagem: 'tem exemplos de fineline?',
     conversa: CONVERSA_TATTOO,
     clientContext: { portfolio_disponivel: false },
-  }), null);
+  });
+  assert.equal(out.intent, 'portfolio_requested');
+  assert.equal(out.reason, 'portfolio_unavailable_for_tenant');
+  assert.equal(out.proxima_acao, 'pergunta');
+  assert.equal(out.can_mutate_state, false);
+  assert.equal(out.payload_portfolio, null);
+  assert.deepEqual(out.urls_portfolio, []);
+  assert.match(out.resposta_cliente, /portfolio cadastrado/i);
+  assert.match(out.resposta_cliente, /qual parte do corpo/i);
 });
 
 test('ConversationRouter: pedido explícito de humano aciona escalonamento sem coleta', () => {

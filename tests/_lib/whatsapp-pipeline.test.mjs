@@ -1311,6 +1311,36 @@ test('5b. portfolio intent do router executa ferramenta e envia midias', async (
   assert.equal(evoSpy.mock.calls[1].arguments[1].url, 'https://x/fineline-1.jpg');
 });
 
+test('5c. portfolio indisponivel do tenant responde sem LLM e sem ferramenta', async () => {
+  const evoSpy = mock.fn(async () => ({ ok: true }));
+  const toolSpy = mock.fn(async () => ({ ok: true, urls: ['https://x/nao-deve.jpg'] }));
+  const runAgentSpy = mock.fn(async () => { throw new Error('runAgent nao deve ser chamado para portfolio indisponivel'); });
+  let aiInsert = null;
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'tem exemplos de fineline?' }]),
+      tenant: { ...TENANT, portfolio_urls: [] },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+    callTool: toolSpy,
+    evoSend: evoSpy,
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(toolSpy.mock.callCount(), 0);
+  assert.equal(evoSpy.mock.callCount(), 1);
+  assert.match(evoSpy.mock.calls[0].arguments[1].text, /portfolio cadastrado/i);
+  assert.equal(aiInsert.message.type, 'ai');
+  assert.match(aiInsert.message.content, /portfolio cadastrado/i);
+});
+
 test('6. conversa nova — Task 8 implementa', async () => {
   let postBody = null;
   const deps = mockDeps({

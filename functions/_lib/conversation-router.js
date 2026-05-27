@@ -525,9 +525,33 @@ function tattooPendingAnswerOutput({ extracted, estado_atual, conversa }) {
 }
 
 function portfolioOutput({ detected, estado_atual, mensagem, conversa, clientContext }) {
-  if (!clientContext?.portfolio_disponivel) return null;
   const extracted = extractTattooHints(mensagem, conversa?.dados_coletados || {});
   const estilo = extracted.estilo || conversa?.dados_coletados?.estilo || null;
+  const camposFaltando = estado_atual === 'tattoo' ? missingTattooFields(conversa?.dados_coletados || {}) : [];
+  if (!clientContext?.portfolio_disponivel) {
+    return {
+      ok: true,
+      handled_by: 'conversation_router',
+      intent: 'portfolio_requested',
+      confidence: detected.confidence,
+      risk: detected.risk,
+      reason: 'portfolio_unavailable_for_tenant',
+      can_mutate_state: false,
+      resposta_cliente: `Ainda nao tenho portfolio cadastrado aqui no chat. Mas posso seguir com teu atendimento: ${resumeQuestionForState(estado_atual, conversa)}`,
+      estado_novo: estado_atual,
+      dados_persistidos: {},
+      dados_completos: false,
+      campos_faltando: camposFaltando,
+      campos_conflitantes: [],
+      proxima_acao: 'pergunta',
+      agent_usado: estado_atual === 'cadastro' ? 'cadastro' : 'conversation_router',
+      side_effects: [],
+      urls_portfolio: [],
+      payload_portfolio: null,
+      analise_imagens: null,
+      cobertura_suspeita: null,
+    };
+  }
   return {
     ok: true,
     handled_by: 'conversation_router',
@@ -542,7 +566,7 @@ function portfolioOutput({ detected, estado_atual, mensagem, conversa, clientCon
     estado_novo: estado_atual,
     dados_persistidos: {},
     dados_completos: false,
-    campos_faltando: estado_atual === 'tattoo' ? missingTattooFields(conversa?.dados_coletados || {}) : [],
+    campos_faltando: camposFaltando,
     campos_conflitantes: [],
     proxima_acao: 'enviar_portfolio',
     agent_usado: estado_atual === 'cadastro' ? 'cadastro' : 'conversation_router',
