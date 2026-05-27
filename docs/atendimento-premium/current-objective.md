@@ -11,9 +11,9 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_29_cadastro_handoff_current_validation_pass
+status: level4b_wave_30_minor_risk_audit_pass
 branch: main
-ultimo_commit: docs: define premium operational chain
+ultimo_commit: docs: validate wave 30 minor risk audit
 ultimo_commit_funcional: 257f3cf fix: soften optional email prompt
 deploy: PASS no commit 4eef96e; Wave 28 HTTP radar + WhatsApp real PASS
 tests: npm test PASS local 1216/1216; CI PASS 26491494646; deploy PASS 26491494627
@@ -53,6 +53,8 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Cadeia operacional premium solidificada em `52-premium-operational-chain.md`: regra profissional de avanco/nao avanco, Definition of Done Premium, matriz de decisao e cadencia para impedir progresso sem HTTP/WhatsApp real/evidencia quando aplicavel.
 - Wave 29 iniciada: auditoria read-only da familia cadastro/handoff usando Naturalness Audit V2, sem mudanca de codigo antes de evidencia real apontar familia e severidade.
 - Wave 29 validou a familia cadastro/handoff atual sem mudanca de codigo: auditoria ampla teve 24 PASS/3 watchlist historicas/0 rework/0 stop; revalidacao atual passou em HTTP radar e WhatsApp real `central -> bot` com 7 steps, Naturalness V2 7 PASS/0 watchlist, estado final `aguardando_tatuador`, `orcid=orc_scfzj3` e pos-handoff sem nova IA.
+- Wave 30 iniciada: auditoria read-only da familia menoridade/risco, incluindo menoridade por data/texto, responsavel legal, cobertura, pedido humano, cliente irritado e gatilho tenant.
+- Wave 30 validou menoridade/risco: auditoria inicial achou 1 watchlist em cliente irritado, confirmada como falso positivo metodologico; `naturalness-audit-v2.sh` foi calibrado para diferenciar reclamacao de demora no atendimento de pergunta de tempo de sessao; HTTP radar e WhatsApp real `central -> bot` passaram para cliente irritado com `estado=aguardando_tatuador`, `orcid=null`, copy_risk=baixo e Naturalness V2 PASS. Familia final: 9 PASS/0 watchlist/0 rework/0 stop.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
@@ -220,7 +222,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: rodar `wave-health`, commitar o registro da Wave 29 e decidir a proxima familia somente se houver evidencia real atual. Candidato pragmatico: nova auditoria read-only por menoridade/risco ou pos-handoff, sem mudar codigo antes de watchlist atual.
+Proximo passo recomendado: rodar `wave-health`, commitar Wave 30 e escolher proxima familia read-only. Candidato pragmatico: pos-handoff texto/midia ou lateral de primeiro contato, sem mudar codigo antes de watchlist atual.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:

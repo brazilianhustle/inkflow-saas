@@ -101,6 +101,10 @@ natural_robotizado
 
 ## Interpretacao De Casos Especiais
 
+### Reclamacao De Demora No Atendimento
+
+Quando o cliente reclama que o estúdio/bot demora para responder, isso nao deve ser classificado como pergunta lateral sobre tempo de sessao. Se a resposta reconhece frustracao e aciona humano sem prometer preco, agenda, pagamento ou prazo, o comportamento e desescalada correta.
+
 ### Pos-Handoff Sem IA
 
 Se o estado final for `aguardando_tatuador` e o contrato esperado for encaminhar ao humano sem nova resposta AI, ausencia de IA apos o ultimo humano e sucesso operacional, nao falha de naturalidade.

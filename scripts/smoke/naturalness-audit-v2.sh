@@ -187,12 +187,18 @@ score_evidence() {
       tags="$(append_tag "$tags" "ignora_midia")"
     fi
 
+    local response_delay_complaint
+    response_delay_complaint=0
+    if has_any "$last_human" 'demoram demais|ningu[eé]m responde|demora.*responder|demorando.*responder|sem resposta|atendimento.*demora' && has_any "$last_bot" 'desculpa|frustra|pessoa do est[uú]dio|assumir|ajudar|humano|tatuador'; then
+      response_delay_complaint=1
+    fi
+
     if has_any "$last_human" 'quanto|valor|pre[cç]o|fica|or[cç]amento' && ! has_any "$last_bot" 'depende|avaliar|tatuador|tamanho|local|detalhe|foto|refer[eê]ncia|valor'; then
       resposta_lateral="$(score_min "$resposta_lateral" 1)"
       tags="$(append_tag "$tags" "avanca_sem_responder")"
     fi
 
-    if has_any "$last_human" 'tempo|demora|sess[aã]o|sessoes|sessões' && ! has_any "$last_bot" 'tempo|sess[aã]o|sessoes|sessões|depende|avaliar|tatuador'; then
+    if [ "$response_delay_complaint" -eq 0 ] && has_any "$last_human" 'tempo|demora|sess[aã]o|sessoes|sessões' && ! has_any "$last_bot" 'tempo|sess[aã]o|sessoes|sessões|depende|avaliar|tatuador'; then
       resposta_lateral="$(score_min "$resposta_lateral" 1)"
       tags="$(append_tag "$tags" "avanca_sem_responder")"
     fi

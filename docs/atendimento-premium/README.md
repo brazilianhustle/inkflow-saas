@@ -62,6 +62,7 @@ Depois disso o sistema decide se deve:
 - [25-multi-agent-governance.md](./25-multi-agent-governance.md): governanca para agentes paralelos com comandante unico, single-writer e WhatsApp real serial.
 - [52-premium-operational-chain.md](./52-premium-operational-chain.md): cadeia operacional profissional do bot premium, com regra de avanco, nao avanco, Definition of Done e cadencia correta.
 - [53-level-4b-wave-29.md](./53-level-4b-wave-29.md): auditoria da familia cadastro/handoff com Naturalness V2 e revalidacao atual HTTP + WhatsApp real.
+- [54-level-4b-wave-30.md](./54-level-4b-wave-30.md): auditoria da familia menoridade/risco e calibragem da Naturalness V2 para reclamacao de demora no atendimento.
 - [slice-gates/workflow-manager.env](./slice-gates/workflow-manager.env): gate formal da camada de transicao segura de estado.
 - [current-objective.md](./current-objective.md): estado vivo, proximo ataque e comandos de retomada.
 - [smoke-runs.md](./smoke-runs.md): indice versionado dos smokes relevantes.
