@@ -18,7 +18,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: organic_conversation_sentinel_continuous_pass_wave_47_liberada
+status: wave_47_replanejada_para_full_journey_validation
 branch: main
 ultimo_commit: 9c6f635 fix: keep organic burst conversations continuous
 ultimo_commit_funcional: 9c6f635 fix: keep organic burst conversations continuous
@@ -31,7 +31,7 @@ autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
 familia_midia_cadastro: fechada na cobertura atual
-proxima_frente: retomar Wave 47 - Novo Pedido Depois Do Handoff
+proxima_frente: criar jornada completa da Wave 47 desde o inicio ate novo pedido pos-handoff
 ```
 
 ## Ultimos Marcos
@@ -39,6 +39,7 @@ proxima_frente: retomar Wave 47 - Novo Pedido Depois Do Handoff
 - Organic Conversation Sentinel Pack fechado PASS apos falha util: primeira execucao real `scenario-whatsapp-real-organic-burst-3-bubbles-20260527T163151Z-11946` reproduziu regressao (`descricao_curta="fzr"`, bot "Qual tua altura?"). Fix `1374747` corrigiu parser/resposta multi-info; `npm test` passou 1226/1226; CI/deploy passaram.
 - Sentinel organico definitivo passou em WhatsApp real: 3 bolhas `scenario-whatsapp-real-organic-burst-3-bubbles-20260527T163643Z-11019` e 2 bolhas `scenario-whatsapp-real-organic-burst-2-bubbles-20260527T163821Z-10923` tiveram 1 resposta AI apos a ultima bolha, `estado=coletando_tattoo`, `orcid=null`, `descricao_curta` correta, `local_corpo=perna`, Naturalness V2 2 PASS/0 watchlist. Provas conclusivas reais: Cliente `opa` / `quero fzr uma tattoo` / `na perna um dragao bolado grandao` -> Bot `Oii, tudo bem. Boa, peguei a ideia do dragao bolado grandao na perna. Qual tua altura?`; Cliente `quero fzr uma tattoo` / `um dragao grandao na perna` -> Bot `Oii, tudo bem. Boa, peguei a ideia do dragao grandao na perna. Qual tua altura?`.
 - Revisao critica do Sentinel organico fechada PASS em conversa continua: commit `9c6f635` impede que briefing organico em conversa existente reabra saudacao; `npm test` passou 1227/1227; CI `26525526881` e deploy `26525526877` passaram; WhatsApp real sem cleanup passou para 3 bolhas `scenario-whatsapp-real-organic-continuous-burst-3-bubbles-20260527T165236Z-21063` e 2 bolhas `scenario-whatsapp-real-organic-continuous-burst-2-bubbles-20260527T165321Z-29744`; Naturalness V2 continuo 2 PASS/0 watchlist. Provas conclusivas reais: Cliente `opa` / `quero fzr uma tattoo` / `na perna um dragao bolado grandao` -> Bot `Boa, peguei a ideia do dragao bolado grandao na perna. Qual tua altura?`; Cliente `quero fzr uma tattoo` / `um dragao grandao na perna` -> Bot `Boa, peguei a ideia do dragao grandao na perna. Qual tua altura?`.
+- Metodologia replanejada para Full Journey Validation Gate: seeds de meio de fluxo continuam permitidos como radar tecnico/triage, mas nao fecham comportamento premium quando o risco depende de contexto acumulado. Wave 47 deixa de usar `seed_pos_handoff_aguardando_tatuador` como prova definitiva; o fechamento exige jornada WhatsApp real desde primeiro contato ate handoff real e so depois a mensagem "mudei de ideia, queria uma caveira na perna" no mesmo historico.
 - Replanejamento metodologico aberto apos regressao manual em WhatsApp real: conversa organica com `opa` / `tranquilo` / `quero fzr uma tattoo` / `na perna` / `um dragao bolado` / `grandao` foi tratada como formulario, sem reacao suficiente ao briefing. Decisao: pausar Wave 47 antes da execucao e rodar Organic Conversation Sentinel Pack com `whatsapp_real_burst` em variacoes de 3 bolhas e 2 bolhas.
 - Memoria operacional reorganizada para contexto controlado: `00-active-context.md` vira primeira fonte de retomada, `current-objective.md` fica como historico duravel, `smoke-runs.md` como indice de evidencia e wave docs como leitura sob demanda. `continuity-bundle.sh` passa a injetar o active context antes do historico.
 - Wave 43 fechada como limpeza final dos subcasos midia/cadastro: 8 subcasos passaram em HTTP radar e WhatsApp real definitivo, contratos foram endurecidos contra copy antiga (`Pra liberar teu orçamento`, `Fechado`, `valor certinho`, `avaliar com calma`) e Naturalness V2 retornou 8 PASS/0 watchlist/0 rework/0 stop.

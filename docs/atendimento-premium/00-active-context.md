@@ -5,13 +5,13 @@ Este e o primeiro arquivo a ler apos compactacao, troca de aba ou retomada. Ele 
 ## Estado De Comando
 
 ```text
-status: organic_conversation_sentinel_continuous_pass
+status: wave_47_replanejada_para_full_journey_validation
 branch: main
 autonomy_level: 4B
 level_4c: bloqueado
-onda_ativa: Wave 47 liberada para retomar
-proxima_acao: retomar Wave 47 - Novo Pedido Depois Do Handoff
-motivo: Organic Conversation Sentinel Pack passou em lead novo e em conversa continua sem cleanup, provando que o bot nao reabre saudacao em conversa existente
+onda_ativa: Wave 47 - Replanejamento E Novo Pedido
+proxima_acao: criar scenario full journey desde o inicio ate novo pedido pos-handoff
+motivo: validacao premium nao deve fechar com seed de meio de fluxo quando o risco depende de contexto acumulado
 ```
 
 ## Evidencia Que Travou A Frente
@@ -44,13 +44,15 @@ HTTP production smoke = radar inicial
 WhatsApp real central -> bot = validacao definitiva
 Organic Conversation Sentinel = obrigatorio quando a frente envolve experiencia conversacional, abertura, coleta organica, naturalidade ou regressao manual real
 Lead-new burst valida abertura; continuous burst sem cleanup valida conversa real
+Full Journey Validation Gate: seed de meio de fluxo pode ser radar tecnico, mas validacao definitiva deve comecar do inicio quando o comportamento depende de contexto acumulado
 ```
 
 ## Proximo Ataque
 
-1. Retomar `docs/atendimento-premium/72-level-4b-wave-47.md`.
-2. Executar Micro-Slice 1 - Novo Pedido Depois Do Handoff.
-3. Manter Organic Conversation Sentinel continuo como gate principal para novas frentes conversacionais.
+1. Criar scenario de jornada completa para Wave 47.
+2. A jornada deve iniciar em conversa nova, chegar ao handoff com ORCID e so entao enviar "mudei de ideia, queria uma caveira na perna".
+3. Usar seed terminal apenas como radar/triage se a jornada completa falhar.
+4. Fechar somente com WhatsApp real full journey, transcript, tail, poll, agent logs e judgment.
 
 ## Arquivos Para Ler
 
@@ -77,6 +79,7 @@ wave_docs: ler somente a onda ativa ou a onda citada no active context
 
 ```text
 WhatsApp real ausente em comportamento conversacional
+fechamento definitivo com seed de meio de fluxo quando o risco depende de contexto acumulado
 sentinel organico ausente apos nova regressao manual
 bot responder como formulario quando o cliente trouxe briefing organico
 bot ignorar fragmentos semanticamente relevantes em sequencia

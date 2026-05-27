@@ -124,6 +124,43 @@ falha: bot perguntou parte do corpo depois da intencao e depois perguntou altura
 classificacao: gap conversacional e gap metodologico
 ```
 
+## Full Journey Validation Gate
+
+Seeds de meio de fluxo continuam permitidos para radar tecnico, triage e isolamento rapido de uma camada. Eles nao fecham comportamento premium quando o risco depende da experiencia real do cliente.
+
+Para qualquer frente de produto, naturalidade, continuidade, replanejamento, handoff ou estado terminal, a validacao definitiva deve iniciar do comeco do fluxo e caminhar ate o ponto critico pelo WhatsApp real.
+
+```text
+radar_tecnico:
+  pode_usar_seed: sim
+  finalidade: isolar camada, reproduzir bug, acelerar diagnostico
+  status: nunca fecha sozinho comportamento premium
+
+validacao_definitiva:
+  pode_usar_seed: nao, salvo impossibilidade operacional justificada e registrada
+  origem: WhatsApp real central -> bot
+  inicio: primeiro contato ou abertura natural equivalente
+  caminho: cliente percorre os estados necessarios ate o ponto critico
+  fechamento: ponto critico validado no mesmo historico real, com transcript, poll, tail, agent logs e judgment
+```
+
+Regra pratica:
+
+```text
+se o comportamento depende de contexto acumulado, nao validar apenas com estado seedado
+se o bug apareceu em conversa real, a correcao deve passar em conversa real desde o inicio
+se o objetivo e "bot premium", a prova final deve representar a jornada que o cliente viveria
+```
+
+Exemplo aplicado:
+
+```text
+Wave 47 - novo pedido depois do handoff:
+  radar permitido: seed_pos_handoff_aguardando_tatuador + mensagem de mudanca de ideia
+  prova definitiva: iniciar conversa nova, coletar tattoo/cadastro/midia ate handoff real, depois enviar "mudei de ideia..." na mesma conversa
+  criterio: sem IA nova, sem novo ORCID, estado terminal preservado, mensagem encaminhada ao humano
+```
+
 ## Context-Controlled Memory Protocol
 
 Para nao consumir contexto lendo todo o historico, a memoria operacional passa a ter camadas.
