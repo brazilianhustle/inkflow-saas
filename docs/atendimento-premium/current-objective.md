@@ -520,3 +520,11 @@ Atualizar este arquivo quando:
 - uma compactacao/retomada exigir contexto que nao esta em nenhum outro arquivo.
 
 Nao registrar detalhes longos aqui. Detalhes longos ficam no evidence, decision log ou docs especificas.
+
+## Atualizacao 2026-05-27 - Wave 50
+
+- Regressao manual em WhatsApp real: resposta pura de nome curto apos `Como posso te chamar?` caiu no LLM e registrou latencia anormal (`agent_turn_logs.latency_total_ms=79593`).
+- Correção local: `ConversationRouter` agora trata `nome_curto` pendente no estado `tattoo` sem LLM, persiste `dados_coletados.nome_preferido` e retoma a proxima pergunta de tattoo.
+- `dados_cadastro.nome` permanece reservado para o cadastro formal.
+- Validacao local: router `73/73`, pipeline `73/73`, `npm test` `1251/1251`.
+- Status: pendente commit/deploy + WhatsApp real definitivo antes de marcar PASS final.

@@ -949,7 +949,7 @@ test('Pipeline: se chega mensagem humana mais nova durante processamento, difere
   });
 
   await assert.rejects(
-    () => processBatch({}, baseBatch({ msgRowIds: [101] }), deps),
+    () => processBatch({ DISABLE_CONVERSATION_ROUTER: 'true' }, baseBatch({ msgRowIds: [101] }), deps),
     /stale-batch/,
   );
 
@@ -1832,6 +1832,55 @@ test('ConversationRouter cadastro: lateral com nome/data pendentes grava em dado
     nome: 'Joao Silva',
     data_nascimento: '1995-03-12',
   });
+});
+
+test('ConversationRouter tattoo: nome curto pendente e puro nao chama LLM e salva nome_preferido', async () => {
+  const runAgentSpy = mock.fn(async () => {
+    throw new Error('runAgent nao deveria ser chamado');
+  });
+  let conversaPatch = null;
+  let aiPost = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'fechamento' },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'Macus' }]),
+      hist: [
+        {
+          id: 1,
+          message: {
+            type: 'ai',
+            content: 'Oii, tudo bem.\n\nComo posso te chamar?',
+          },
+        },
+      ],
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.estado_agente) {
+          conversaPatch = body;
+        }
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiPost = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
+  assert.deepEqual(conversaPatch.dados_coletados, {
+    descricao_curta: 'fechamento',
+    nome_preferido: 'Macus',
+  });
+  assert.deepEqual(conversaPatch.dados_cadastro, {});
+  assert.equal(aiPost.message.content, 'Boa, Macus. Tu imagina fazer em qual parte do corpo?');
 });
 
 test('ConversationRouter cadastro pos-midia preserva foto local e referencias ao preencher nome', async () => {

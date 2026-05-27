@@ -662,6 +662,22 @@ test('ConversationRouter: nome puro responde pendência e retoma após lateral',
   assert.match(out.resposta_cliente, /Boa, Joao\. Me diz tua altura\?/);
 });
 
+test('ConversationRouter: nome puro sem lateral nao chama LLM e retoma coleta tattoo', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'Macus',
+    conversa: { dados_coletados: { descricao_curta: 'fechamento' }, dados_cadastro: {} },
+    historico: [
+      { role: 'assistant', content: 'Oii, tudo bem.\n\nComo posso te chamar?' },
+    ],
+  });
+  assert.equal(out.intent, 'tattoo_name_pending_answer');
+  assert.equal(out.handled_by, 'conversation_router');
+  assert.equal(out.reason, 'pending_nome_curto_answered');
+  assert.deepEqual(out.dados_persistidos, { nome_preferido: 'Macus' });
+  assert.match(out.resposta_cliente, /^Boa, Macus\. Tu imagina fazer em qual parte do corpo\?/);
+});
+
 test('ConversationRouter: "me chama de" responde nome pendente e retoma após lateral', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',

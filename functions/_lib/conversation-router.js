@@ -378,6 +378,11 @@ function shouldHandleCadastroPendingAnswer(pendingResolution) {
   return false;
 }
 
+function shouldHandleTattooShortNamePendingAnswer(pendingResolution) {
+  if (!pendingResolution?.answered) return false;
+  return pendingResolution.field === 'nome_curto' && hasValue(pendingResolution.extracted?.nome_preferido);
+}
+
 function ageFromBirthDate(isoDate, now = new Date()) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(isoDate || ''))) return null;
   const [year, month, day] = isoDate.split('-').map(Number);
@@ -566,6 +571,44 @@ function tattooPendingAnswerOutput({ extracted, estado_atual, conversa }) {
     pending_answer_resolution: {
       answered_field: nextAnswered,
       next_field: nextField,
+    },
+  };
+}
+
+function tattooShortNamePendingAnswerOutput({ pendingResolution, estado_atual, conversa, historico }) {
+  const extracted = { ...(pendingResolution.extracted || {}) };
+  const conversaParaRetomada = {
+    ...conversa,
+    dados_coletados: {
+      ...(conversa?.dados_coletados || {}),
+      ...extracted,
+    },
+  };
+  const missing = missingTattooFields(conversaParaRetomada.dados_coletados || {});
+  return {
+    ok: true,
+    handled_by: 'conversation_router',
+    intent: 'tattoo_name_pending_answer',
+    confidence: pendingResolution.confidence || 0.8,
+    risk: 'low',
+    reason: 'pending_nome_curto_answered',
+    can_mutate_state: true,
+    resposta_cliente: `Boa, ${pendingResolution.displayName}. ${tattooResumeQuestion(conversaParaRetomada)}`,
+    estado_novo: estado_atual,
+    dados_persistidos: extracted,
+    dados_completos: false,
+    campos_faltando: missing,
+    campos_conflitantes: [],
+    proxima_acao: 'pergunta',
+    agent_usado: 'conversation_router',
+    side_effects: [],
+    urls_portfolio: [],
+    analise_imagens: null,
+    cobertura_suspeita: null,
+    pending_answer_resolution: {
+      answered_field: pendingResolution.field,
+      next_field: missing[0] || 'foto_local',
+      history_turns_n: historico?.length || 0,
     },
   };
 }
@@ -902,6 +945,9 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
   const pendingResolution = resolvePendingFormQuestion({ historico, mensagem });
   if (!detected && estado_atual === 'cadastro' && shouldHandleCadastroPendingAnswer(pendingResolution)) {
     return cadastroPendingAnswerOutput({ pendingResolution, estado_atual, conversa, historico });
+  }
+  if (!detected && estado_atual === 'tattoo' && shouldHandleTattooShortNamePendingAnswer(pendingResolution)) {
+    return tattooShortNamePendingAnswerOutput({ pendingResolution, estado_atual, conversa, historico });
   }
   if (!detected && estado_atual === 'tattoo') {
     const extracted = extractTattooHints(mensagem, conversa?.dados_coletados || {});

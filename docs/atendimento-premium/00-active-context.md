@@ -119,6 +119,19 @@ validacao_real: WhatsApp real `scenario-whatsapp-real-cadastro-handoff-20260527T
 provas_conclusivas_reais: Cliente "pode seguir sem email\nquanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho... Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor."; Tatuador "2 sessoes 500" -> Bot "Fala Joao, tudo bem? O tatuador acabou de me passar o seu orçamento.\nA ideia de leao no antebraco ficaria em 2 sessoes de R$ 500, totalizando R$ 1000.\nQuer que eu veja um horario pra gente agendar?"
 ```
 
+## Corte Atual - Wave 50
+
+```text
+origem: regressao observada em teste manual WhatsApp real
+problema: apos "Como posso te chamar?", resposta pura "Macus" caiu no LLM e demorou ~80-90s
+causa_raiz: ConversationRouter tratava nome_curto pendente com lateral, mas nao tratava nome puro no estado tattoo
+correcao: nome_curto em tattoo agora sai por router deterministico, salva dados_coletados.nome_preferido e retoma coleta sem chamar LLM
+cadastro_formal: dados_cadastro.nome continua reservado para nome completo na fase cadastro
+validacao_local: router PASS 73/73; pipeline PASS 73/73; npm test PASS 1251/1251
+status: aguardando commit/deploy + WhatsApp real definitivo antes de PASS final
+provas_locais: Cliente "Macus" -> Bot "Boa, Macus. Tu imagina fazer em qual parte do corpo?"; runAgent=0; nome_preferido="Macus"; dados_cadastro={}
+```
+
 ## Arquivos Para Ler
 
 ```text
@@ -126,6 +139,7 @@ docs/atendimento-premium/52-premium-operational-chain.md
 docs/atendimento-premium/73-organic-conversation-sentinel-pack.md
 docs/atendimento-premium/74-level-4b-wave-48.md
 docs/atendimento-premium/75-level-4b-wave-49.md
+docs/atendimento-premium/76-level-4b-wave-50.md
 docs/atendimento-premium/current-objective.md somente se precisar de historico amplo
 docs/atendimento-premium/smoke-runs.md somente se precisar de evidencia antiga
 scripts/smoke/continuity-bundle.sh

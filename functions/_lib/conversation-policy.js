@@ -322,6 +322,7 @@ function resultForResolvedField(field, resolved) {
   if (field === 'altura_cm' && value) extracted.altura_cm = value;
   if (field === 'estilo' && value) extracted.estilo = value;
   if (field === 'local_corpo' && value) extracted.local_corpo = value;
+  if (field === 'nome_curto' && value) extracted.nome_preferido = value;
   if (field === 'nome_completo' && value) extracted.nome = value;
   if (field === 'data_nascimento' && value) extracted.data_nascimento = value;
   if (field === 'email' && value) extracted.email = value;

@@ -427,6 +427,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
       tenant_profile: deriveTenantProfile(tenant),
       tenant_assets: deriveTenantAssets(tenant),
       portfolio_disponivel: Array.isArray(tenant.portfolio_urls) && tenant.portfolio_urls.length > 0,
+      nome_cliente: conversa.dados_cadastro?.nome || conversa.dados_coletados?.nome_preferido || null,
     };
     const routerDisabled = String(env?.DISABLE_CONVERSATION_ROUTER || '').toLowerCase() === 'true';
     const fotoLocalCompletaTattoo = fotoLocalPendente && hasTattooCoreForCadastro(conversa.dados_coletados || {});
