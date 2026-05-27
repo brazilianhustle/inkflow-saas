@@ -140,5 +140,35 @@ Status:
 ```text
 wave_health_inicial: PASS 2026-05-26T23:27:29Z
 scenario_files: declarados
-next_action: rodar HTTP radar; se PASS, rodar WhatsApp real definitivo
+http_radar: PASS scenario-long-journey-naturalidade-abertura-retomada-20260526T234615Z-4019
+whatsapp_real: PASS scenario-whatsapp-real-long-journey-naturalidade-abertura-retomada-20260527T001212Z-6052
+next_action: registrar e seguir para Jornada 2 de naturalidade/cadastro, mantendo Level 4B
 ```
+
+Achado e correcao:
+
+- O primeiro radar encontrou um gap real: respostas simples ao campo pendente de tattoo, como `quero uma frase pequena` ou `fineline`, podiam cair no LLM e repetir pergunta em vez de persistir o campo.
+- Correcao aplicada em `ConversationRouter`: quando o estado esta em coleta de tattoo e a mensagem responde exatamente o proximo campo pendente, o Router resolve deterministicamente como `tattoo_pending_answer`, persiste o campo e retoma o proximo passo.
+- Testes locais, CI, deploy, HTTP radar e WhatsApp real definitivo passaram.
+
+Provas conclusivas reais:
+
+```text
+Cliente: "quero uma frase pequena"
+Bot: "Tu imagina fazer em qual parte do corpo?"
+
+Cliente: "no antebraco, tenho 1.70
+como funciona o orçamento?"
+Bot: "Funciona assim: eu entendo tua ideia, junto as infos principais e o tatuador avalia pra passar valor e horário.
+
+Perfeito. Tu prefere qual estilo pra essa tattoo?"
+
+Cliente: "segue foto do local" + imagem
+Bot: "Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro."
+```
+
+Leitura estrategica:
+
+- PASS funcional e definitivo via WhatsApp real.
+- Contratos preservados: sem preco fechado, agenda, pagamento, sinal ou ORCID prematuro.
+- Sinal de naturalidade ainda em watchlist: abertura de primeiro contato respondeu corretamente, mas ainda usa apresentacao mecanica (`Me chamo Assistente`). Nao bloqueia esta jornada porque os gates funcionais e de continuidade passaram; deve entrar no backlog da propria Wave 23 como melhoria sistemica, nao remendo por frase.
