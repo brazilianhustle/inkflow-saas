@@ -144,6 +144,15 @@ validacao_definitiva:
   fechamento: ponto critico validado no mesmo historico real, com transcript, poll, tail, agent logs e judgment
 ```
 
+Regra de observabilidade por etapa:
+
+```text
+tail_continuo: permitido e recomendado para eficiencia
+tail_gate: deve validar apenas o delta gerado apos o inicio da etapa/cenario atual
+motivo: evitar falso PASS/FAIL por evento legitimo de etapa anterior
+quando_aplica: qualquer EXPECTED_TAIL_REGEX ou FORBIDDEN_TAIL_REGEX
+```
+
 Regra pratica:
 
 ```text

@@ -19,6 +19,7 @@ RUN_ID="${SMOKE_RUN_ID:-smoke-wa-$(date -u +%Y%m%dT%H%M%SZ)-$RANDOM}"
 EVIDENCE_ROOT="${SMOKE_EVIDENCE_ROOT:-.smoke-evidence}"
 EVIDENCE_DIR="${EVIDENCE_ROOT}/${RUN_ID}"
 TAIL_LOG="${SMOKE_TAIL_LOG:-/tmp/inkflow-smoke-tail.log}"
+TAIL_START_LINE="${SMOKE_SCENARIO_TAIL_START_LINE:-0}"
 SINCE_ISO="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 
 [ -n "$BOT_NUMBER" ] || { echo "ERRO: informe SMOKE_BOT_NUMBER ou passe <bot_number>." >&2; exit 1; }
@@ -63,7 +64,11 @@ EOF
 
 capture_tail_excerpt() {
   if [ -f "$TAIL_LOG" ]; then
-    tail -240 "$TAIL_LOG" > "$EVIDENCE_DIR/tail-excerpt.log" || true
+    if [[ "$TAIL_START_LINE" =~ ^[0-9]+$ ]] && [ "$TAIL_START_LINE" -gt 0 ]; then
+      sed -n "$((TAIL_START_LINE + 1)),\$p" "$TAIL_LOG" > "$EVIDENCE_DIR/tail-excerpt.log" || true
+    else
+      tail -240 "$TAIL_LOG" > "$EVIDENCE_DIR/tail-excerpt.log" || true
+    fi
   else
     printf 'tail log not found: %s\n' "$TAIL_LOG" > "$EVIDENCE_DIR/tail-excerpt.log"
   fi
@@ -111,6 +116,9 @@ echo "evidence_dir : $EVIDENCE_DIR"
 echo ""
 
 SMOKE_TAIL_LOG="$TAIL_LOG" bash scripts/smoke/tail.sh | tee "$EVIDENCE_DIR/tail-start.txt"
+if [ -f "$TAIL_LOG" ]; then
+  TAIL_START_LINE="$(wc -l < "$TAIL_LOG" | tr -d ' ')"
+fi
 
 echo ""
 echo "[1/4] Snapshot before"

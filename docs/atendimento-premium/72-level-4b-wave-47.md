@@ -7,9 +7,9 @@ Provar que o bot lida com mudanca de ideia, novo pedido ou complemento relevante
 ## Status
 
 ```text
-status: replanejada_para_full_journey_validation
-motivo: validacao premium de replanejamento nao pode fechar com seed de meio de fluxo; deve comecar do inicio e chegar ao handoff real antes da mudanca de ideia
-decisao: reconstruir Micro-Slice 1 como jornada completa do inicio ate novo pedido pos-handoff
+status: micro_slice_1_full_journey_pass
+motivo: validacao premium de replanejamento foi fechada por jornada completa no WhatsApp real, sem seed terminal
+decisao: cobertura terminal pos-handoff aprovada; proximo gap e replanejamento antes do handoff ou conversa antiga nao-terminal
 ```
 
 ## Nota De Replanejamento
@@ -92,11 +92,47 @@ responder com IA depois de handoff: fora neste primeiro corte
 ## Micro-Slice 1 - Novo Pedido Depois Do Handoff Via Jornada Completa
 
 ```text
-status: replanejado_para_criacao_de_scenario_full_journey
+status: PASS
 tipo: regressao forte + risco operacional
 setup: cleanup inicial apenas; sem seed terminal na validacao definitiva
 jornada: cliente inicia pedido de tattoo, entrega briefing, completa cadastro ate handoff, depois envia "mudei de ideia, queria uma caveira na perna"
 contrato: encaminhar a mudanca ao tatuador sem IA nova, manter aguardando_tatuador, preservar orcid criado na propria jornada, nao criar novo orcamento
+```
+
+## Resultado Micro-Slice 1
+
+```text
+whatsapp_real_full_journey: scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T172227Z-14895
+origem: Evolution central -> bot (*2357)
+telefone: 5521970789797
+estado_final: aguardando_tatuador
+orcid: orc_0atuaw preservado
+novo_orcid: nao
+ai_messages_after_last_human: 0
+tail_gate: PASS, pos-handoff-mensagem-encaminhada presente; enviar-orcamento/runAgent/openai ausentes no delta da etapa final
+naturalness_v2: PASS, media 2.88, tag pos_handoff_sem_ia_ok
+tests: node --test tests/**/*.test.mjs PASS 1227/1227
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: "prefiro falar por aqui"
+Bot: "Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor."
+
+Cliente: "mudei de ideia, queria uma caveira na perna"
+Bot: sem nova resposta automatica apos o humano
+```
+
+## Correcao Metodologica Do Tail
+
+Durante o primeiro rerun, o comportamento passou, mas o gate de tail bloqueou porque lia evento antigo da etapa 6 (`enviar-orcamento`) no log continuo da etapa 7. O runner foi corrigido para validar apenas o delta de tail gerado depois do inicio de cada etapa/cenario.
+
+```text
+risco_corrigido: falso bloqueio por tail contaminado entre etapas
+arquivos: scripts/smoke/run-scenario.sh, scripts/smoke/run-real-whatsapp.sh, scripts/smoke/run-inbound.sh
+regra: tail gate com EXPECTED_TAIL_REGEX/FORBIDDEN_TAIL_REGEX deve comparar apenas logs novos da etapa atual
+validacao: rerun full journey WhatsApp real PASS com tail text gate ativo na etapa 7
 ```
 
 ## Gates

@@ -5,13 +5,13 @@ Este e o primeiro arquivo a ler apos compactacao, troca de aba ou retomada. Ele 
 ## Estado De Comando
 
 ```text
-status: wave_47_replanejada_para_full_journey_validation
+status: wave_47_micro_slice_1_full_journey_pass
 branch: main
 autonomy_level: 4B
 level_4c: bloqueado
 onda_ativa: Wave 47 - Replanejamento E Novo Pedido
-proxima_acao: criar scenario full journey desde o inicio ate novo pedido pos-handoff
-motivo: validacao premium nao deve fechar com seed de meio de fluxo quando o risco depende de contexto acumulado
+proxima_acao: decidir proximo subcaso da Wave 47: replanejamento antes do handoff ou conversa antiga nao-terminal
+motivo: cobertura terminal pos-handoff passou em WhatsApp real full journey desde o inicio
 ```
 
 ## Evidencia Que Travou A Frente
@@ -35,6 +35,8 @@ pass_continuous_3_bolhas: scenario-whatsapp-real-organic-continuous-burst-3-bubb
 pass_continuous_2_bolhas: scenario-whatsapp-real-organic-continuous-burst-2-bubbles-20260527T165321Z-29744
 fix_continuous_commit: 9c6f635 fix: keep organic burst conversations continuous
 naturalness_v2_continuous: 2 PASS / 0 watchlist / 0 rework / 0 stop / media 2.88
+wave_47_full_journey_pos_handoff: scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T172227Z-14895
+wave_47_decisao: PASS; novo pedido pos-handoff foi encaminhado ao humano sem IA nova, sem novo ORCID, com tail delta limpo
 ```
 
 ## Regra Ativa
@@ -49,10 +51,10 @@ Full Journey Validation Gate: seed de meio de fluxo pode ser radar tecnico, mas 
 
 ## Proximo Ataque
 
-1. Criar scenario de jornada completa para Wave 47.
-2. A jornada deve iniciar em conversa nova, chegar ao handoff com ORCID e so entao enviar "mudei de ideia, queria uma caveira na perna".
-3. Usar seed terminal apenas como radar/triage se a jornada completa falhar.
-4. Fechar somente com WhatsApp real full journey, transcript, tail, poll, agent logs e judgment.
+1. Nao reabrir o subcaso terminal pos-handoff sem falha nova.
+2. Escolher o proximo subcaso da Wave 47: mudanca de ideia antes do handoff ou conversa antiga nao-terminal/retomada.
+3. Continuar exigindo jornada completa desde o inicio quando o comportamento depender de contexto acumulado.
+4. Manter tail delta por etapa como regra obrigatoria para gates de observabilidade.
 
 ## Arquivos Para Ler
 

@@ -120,11 +120,12 @@ EOF
     else
       echo "steps:"
     fi
-    local i msg state bot_regex poll_jq media_file media_mimetype
+    local i msg state bot_regex tail_regex poll_jq media_file media_mimetype
     for i in $(seq 1 "$STEP_COUNT"); do
       msg="$(step_value MESSAGE "$i")"
       state="$(step_value EXPECTED_STATE "$i")"
       bot_regex="$(step_value EXPECTED_BOT_REGEX "$i")"
+      tail_regex="$(step_value EXPECTED_TAIL_REGEX "$i")"
       poll_jq="$(step_value EXPECTED_POLL_JQ_TRUE "$i")"
       media_file="$(step_value SMOKE_MEDIA_FILE "$i")"
       media_mimetype="$(step_value SMOKE_MEDIA_MIMETYPE "$i")"
@@ -133,6 +134,7 @@ EOF
     message: ${msg:-"(empty)"}
     expected_state: ${state:-"(none)"}
     bot_regex: ${bot_regex:-"(none)"}
+    tail_regex: ${tail_regex:-"(none)"}
     poll_jq: ${poll_jq:-"(none)"}
     media: ${media_mimetype:-"(none)"} ${media_file:-""}
 EOF
@@ -355,8 +357,13 @@ refresh_poll_snapshot() {
 
 refresh_tail_excerpt() {
   local tail_log="${SMOKE_TAIL_LOG:-/tmp/inkflow-smoke-tail.log}"
+  local start_line="${SMOKE_SCENARIO_TAIL_START_LINE:-0}"
   if [ -f "$tail_log" ]; then
-    tail -240 "$tail_log" > "$EVIDENCE_DIR/tail-excerpt.log" || true
+    if [[ "$start_line" =~ ^[0-9]+$ ]] && [ "$start_line" -gt 0 ]; then
+      sed -n "$((start_line + 1)),\$p" "$tail_log" > "$EVIDENCE_DIR/tail-excerpt.log" || true
+    else
+      tail -240 "$tail_log" > "$EVIDENCE_DIR/tail-excerpt.log" || true
+    fi
   fi
 }
 
@@ -1074,7 +1081,7 @@ write_single_turn_step_env() {
   local step="$1"
   local path="$2"
   local scenario_type="${3:-http}"
-  local message expected_state expected_human expected_copy require_ai bot_regex forbidden_bot poll_jq agent_jq media_base64 media_file media_mimetype
+  local message expected_state expected_human expected_copy require_ai bot_regex forbidden_bot tail_regex forbidden_tail poll_jq agent_jq media_base64 media_file media_mimetype
   message="$(step_value MESSAGE "$step")"
   expected_state="$(step_value EXPECTED_STATE "$step")"
   expected_human="$(step_value EXPECTED_HUMAN_TEXT "$step")"
@@ -1082,6 +1089,8 @@ write_single_turn_step_env() {
   require_ai="$(step_value SMOKE_REQUIRE_AI_RESPONSE "$step")"
   bot_regex="$(step_value EXPECTED_BOT_REGEX "$step")"
   forbidden_bot="$(step_value FORBIDDEN_BOT_REGEX "$step")"
+  tail_regex="$(step_value EXPECTED_TAIL_REGEX "$step")"
+  forbidden_tail="$(step_value FORBIDDEN_TAIL_REGEX "$step")"
   poll_jq="$(step_value EXPECTED_POLL_JQ_TRUE "$step")"
   agent_jq="$(step_value EXPECTED_AGENT_LOG_JQ_TRUE "$step")"
   media_base64="$(step_value SMOKE_MEDIA_BASE64 "$step")"
@@ -1115,6 +1124,8 @@ write_single_turn_step_env() {
     [ -n "$media_mimetype" ] && printf 'SMOKE_MEDIA_MIMETYPE=%s\n' "$(shell_quote "$media_mimetype")"
     [ -n "$bot_regex" ] && printf 'EXPECTED_BOT_REGEX=%s\n' "$(shell_quote "$bot_regex")"
     [ -n "$forbidden_bot" ] && printf 'FORBIDDEN_BOT_REGEX=%s\n' "$(shell_quote "$forbidden_bot")"
+    [ -n "$tail_regex" ] && printf 'EXPECTED_TAIL_REGEX=%s\n' "$(shell_quote "$tail_regex")"
+    [ -n "$forbidden_tail" ] && printf 'FORBIDDEN_TAIL_REGEX=%s\n' "$(shell_quote "$forbidden_tail")"
     [ -n "$poll_jq" ] && printf 'EXPECTED_POLL_JQ_TRUE=%s\n' "$(shell_quote "$poll_jq")"
     [ -n "$agent_jq" ] && printf 'EXPECTED_AGENT_LOG_JQ_TRUE=%s\n' "$(shell_quote "$agent_jq")"
     true
@@ -1344,6 +1355,13 @@ run_scenario() {
 
   echo ""
   echo "[scenario] run"
+  SMOKE_SCENARIO_TAIL_START_LINE=0
+  if [ -n "${EXPECTED_TAIL_REGEX:-}" ] || [ -n "${FORBIDDEN_TAIL_REGEX:-}" ]; then
+    tail_log="${SMOKE_TAIL_LOG:-/tmp/inkflow-smoke-tail.log}"
+    if [ -f "$tail_log" ]; then
+      SMOKE_SCENARIO_TAIL_START_LINE="$(wc -l < "$tail_log" | tr -d ' ')"
+    fi
+  fi
   case "$SCENARIO_TYPE" in
     http_multiturn)
       run_http_multiturn
