@@ -11,9 +11,9 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_25_closed_pass
+status: level4b_wave_26_naturalness_audit_started
 branch: main
-ultimo_commit: 7fd063f fix: bypass llm for first contact image question
+ultimo_commit: a9a18bf docs: close wave 25 voice policy
 ultimo_commit_funcional: c519c52 fix: soften deterministic first contact intro
 deploy: PASS no commit 7fd063f; Wave 25 micro-slice 1 e 2 HTTP radar + WhatsApp real PASS
 tests: npm test PASS local 1216/1216; CI PASS 26486421860; eval gate PASS 26486421904; deploy PASS 26486421802
@@ -40,6 +40,8 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 25 micro-slice 2 iniciado: primeiro contato com pergunta sobre imagem e midia real, para validar que o backstop de imagem tambem nao reintroduz `Me chamo`/`muito prazer`.
 - Wave 25 micro-slice 2 passou: pergunta explicita sobre imagem com `image/png` validada em HTTP radar e WhatsApp real definitivo; falha util inicial por timeout/resposta generica virou bypass deterministico para referencia vs local.
 - Wave 25 fechada PASS: 2 micro-slices, 2 HTTP radar, 2 WhatsApp real, duas falhas uteis convertidas em melhoria estrutural, Level 4B mantido.
+- Wave 26 iniciada: auditoria estrategica de naturalidade. Baseline read-only v1 rodou em 10 evidencias WhatsApp real recentes e retornou 10 baixo/0 medio/0 alto, mas a leitura critica mostrou que a ferramenta atual ainda e rasa para naturalidade premium.
+- Wave 26 micro-slice 2 passou como mudanca metodologica: `naturalness-rubric-v2.md` oficializa eixos, scores, gates, taxonomia e formato de relatorio para julgar naturalidade premium antes de qualquer mudanca de copy/prompt/fluxo.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
@@ -207,7 +209,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: rodar `wave-health` final da Wave 25; se PASS, abrir proxima frente por auditoria de naturalidade/jornada ou outra watchlist com evidencia real recente. Manter Level 4B; 4C bloqueado.
+Proximo passo recomendado: Wave 26 micro-slice 3, implementar Auditor V2 read-only para aplicar a Rubrica V2 em evidencias existentes antes de qualquer nova mudanca de copy. Manter Level 4B; 4C bloqueado.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:
