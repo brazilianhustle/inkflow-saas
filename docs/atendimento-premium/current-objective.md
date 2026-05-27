@@ -13,13 +13,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ```text
 status: level4b_wave_23_closed_pass
 branch: main
-ultimo_commit: HEAD docs: validate wave 23 cadastro journey
+ultimo_commit: HEAD docs: close wave 23 naturalidade
 ultimo_commit_funcional: 82502d5 fix: route simple tattoo pending answers
-deploy: PASS no commit c6eaa2c; Wave 23 Jornadas 1 e 2 HTTP radar + WhatsApp real PASS
-tests: npm test PASS local 1213/1213; CI PASS 26483398824; deploy PASS 26483398796
+deploy: PASS no commit 191c73f; Wave 23 fechada com Jornadas 1 e 2 HTTP radar + WhatsApp real PASS
+tests: npm test PASS local 1213/1213; CI PASS 26483468925; deploy PASS 26483468810
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: HEAD docs: validate wave 23 cadastro journey + Wave 23 Jornada 2 por HTTP radar e WhatsApp real + wave-health PASS
+ultimo_commit_validado: HEAD docs: close wave 23 naturalidade + Wave 23 Jornada 2 por HTTP radar e WhatsApp real + wave-health PASS
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
