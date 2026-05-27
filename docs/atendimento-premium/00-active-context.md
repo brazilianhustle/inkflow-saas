@@ -5,13 +5,13 @@ Este e o primeiro arquivo a ler apos compactacao, troca de aba ou retomada. Ele 
 ## Estado De Comando
 
 ```text
-status: organic_conversation_sentinel_pass
+status: organic_conversation_sentinel_continuous_pass
 branch: main
 autonomy_level: 4B
 level_4c: bloqueado
 onda_ativa: Wave 47 liberada para retomar
 proxima_acao: retomar Wave 47 - Novo Pedido Depois Do Handoff
-motivo: Organic Conversation Sentinel Pack passou em WhatsApp real burst de 3 bolhas e 2 bolhas apos fix estrutural
+motivo: Organic Conversation Sentinel Pack passou em lead novo e em conversa continua sem cleanup, provando que o bot nao reabre saudacao em conversa existente
 ```
 
 ## Evidencia Que Travou A Frente
@@ -30,9 +30,11 @@ decisao: falha corrigida e sentinel organico definitivo passou
 ```text
 falha_inicial: scenario-whatsapp-real-organic-burst-3-bubbles-20260527T163151Z-11946
 fix_commit: 1374747 fix: handle organic tattoo burst briefing
-pass_3_bolhas: scenario-whatsapp-real-organic-burst-3-bubbles-20260527T163643Z-11019
-pass_2_bolhas: scenario-whatsapp-real-organic-burst-2-bubbles-20260527T163821Z-10923
-naturalness_v2: 2 PASS / 0 watchlist / 0 rework / 0 stop / media 2.88
+pass_lead_new_3_bolhas: scenario-whatsapp-real-organic-burst-3-bubbles-20260527T165145Z-10140
+pass_continuous_3_bolhas: scenario-whatsapp-real-organic-continuous-burst-3-bubbles-20260527T165236Z-21063
+pass_continuous_2_bolhas: scenario-whatsapp-real-organic-continuous-burst-2-bubbles-20260527T165321Z-29744
+fix_continuous_commit: 9c6f635 fix: keep organic burst conversations continuous
+naturalness_v2_continuous: 2 PASS / 0 watchlist / 0 rework / 0 stop / media 2.88
 ```
 
 ## Regra Ativa
@@ -41,13 +43,14 @@ naturalness_v2: 2 PASS / 0 watchlist / 0 rework / 0 stop / media 2.88
 HTTP production smoke = radar inicial
 WhatsApp real central -> bot = validacao definitiva
 Organic Conversation Sentinel = obrigatorio quando a frente envolve experiencia conversacional, abertura, coleta organica, naturalidade ou regressao manual real
+Lead-new burst valida abertura; continuous burst sem cleanup valida conversa real
 ```
 
 ## Proximo Ataque
 
 1. Retomar `docs/atendimento-premium/72-level-4b-wave-47.md`.
 2. Executar Micro-Slice 1 - Novo Pedido Depois Do Handoff.
-3. Manter Organic Conversation Sentinel como gate principal para novas frentes conversacionais.
+3. Manter Organic Conversation Sentinel continuo como gate principal para novas frentes conversacionais.
 
 ## Arquivos Para Ler
 

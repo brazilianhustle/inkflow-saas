@@ -87,7 +87,7 @@ ci: Tests PASS 26524748769
 deploy: Deploy PASS 26524751150
 ```
 
-Validacao definitiva:
+Validacao definitiva - lead novo:
 
 ```text
 3_bolhas: scenario-whatsapp-real-organic-burst-3-bubbles-20260527T163643Z-11019 PASS
@@ -106,6 +106,57 @@ Bot: "Oii, tudo bem. Boa, peguei a ideia do dragao bolado grandao na perna. Qual
 2 bolhas:
 Cliente: "quero fzr uma tattoo" / "um dragao grandao na perna"
 Bot: "Oii, tudo bem. Boa, peguei a ideia do dragao grandao na perna. Qual tua altura?"
+```
+
+## Revisão Crítica - Conversa Contínua
+
+O teste manual do usuario mostrou um gap metodologico: repetir 3 rounds com cleanup ou lead novo validava abertura de lead, mas nao validava continuidade de conversa. Em conversa real, a saudacao de primeiro contato deve aparecer no maximo uma vez.
+
+Fix:
+
+```text
+commit: 9c6f635 fix: keep organic burst conversations continuous
+mudanca: Router reclassifica briefing organico em conversa existente como continuidade e força is_first_contact=false no caminho deterministico
+testes: npm test PASS 1227/1227
+ci: Tests PASS 26525526881
+deploy: Deploy PASS 26525526877
+```
+
+Validacao definitiva - conversa continua:
+
+```text
+seed_3_bolhas: scenario-whatsapp-real-organic-burst-3-bubbles-20260527T165145Z-10140 PASS
+continuous_3_bolhas: scenario-whatsapp-real-organic-continuous-burst-3-bubbles-20260527T165236Z-21063 PASS
+continuous_2_bolhas: scenario-whatsapp-real-organic-continuous-burst-2-bubbles-20260527T165321Z-29744 PASS
+naturalness_v2_continuous: 2 PASS / 0 watchlist / 0 rework / 0 stop / media 2.88
+decisao: para frentes conversacionais, lead-new burst sozinho nao fecha qualidade premium; modo continuo sem cleanup e gate obrigatorio quando houver risco de reset de contexto
+```
+
+Provas conclusivas reais - conversa continua:
+
+```text
+3 bolhas continuo:
+Cliente: "opa" / "quero fzr uma tattoo" / "na perna um dragao bolado grandao"
+Bot: "Boa, peguei a ideia do dragao bolado grandao na perna. Qual tua altura?"
+
+2 bolhas continuo:
+Cliente: "quero fzr uma tattoo" / "um dragao grandao na perna"
+Bot: "Boa, peguei a ideia do dragao grandao na perna. Qual tua altura?"
+```
+
+## Regra Metodológica Atualizada
+
+```text
+lead_new_burst:
+  uso: validar abertura organica de primeiro contato
+  cleanup: permitido antes do scenario
+  saudacao: permitida uma vez
+
+continuous_burst:
+  uso: validar conversa real sem reset de contexto
+  cleanup: proibido antes do scenario
+  saudacao: proibida
+  obrigatorio_quando: houver regressao manual de continuidade, naturalidade de conversa, repeticao de briefing ou risco de tratar cliente antigo como lead novo
 ```
 
 ## Comandos
