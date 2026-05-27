@@ -13,13 +13,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ```text
 status: level4b_wave_43_limpeza_final_midia_cadastro_pass
 branch: main
-ultimo_commit: pendente commit Wave 43
+ultimo_commit: commit de status Wave 43 registrado no git log
 ultimo_commit_funcional: b54f085 fix: route portfolio requests deterministically
-deploy: nao requerido para Wave 43 antes do commit, sem mudanca de codigo do bot
+deploy: pendente CI/deploy do commit 68fe072; sem mudanca de codigo do bot
 tests: Wave 43 HTTP radar 8/8 PASS; WhatsApp real 8/8 PASS; Naturalness V2 8 PASS / 0 watchlist / 0 rework / 0 stop
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
-ultimo_commit_validado: 593ece0 docs: fix wave 42 evidence reference + CI PASS + deploy PASS + wave-health PASS
+ultimo_commit_validado: 68fe072 docs: close wave 43 media cadastro cleanup + Wave 43 HTTP/WhatsApp real/Naturalness V2 PASS + wave-health dirty PASS; CI/deploy pendentes
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
