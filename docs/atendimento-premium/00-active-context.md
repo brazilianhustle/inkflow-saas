@@ -5,13 +5,13 @@ Este e o primeiro arquivo a ler apos compactacao, troca de aba ou retomada. Ele 
 ## Estado De Comando
 
 ```text
-status: wave_47_budget_items_telegram_update_pass
+status: wave_48_multi_budget_proposal_implemented_local
 branch: main
 autonomy_level: 4B
 level_4c: bloqueado
-onda_ativa: Wave 47 - Replanejamento E Novo Pedido
-proxima_acao: escolher proxima onda funcional apos fechamento Wave 47
-motivo: silencio pos-handoff provou encaminhamento simples, mas nao atende objetivo premium de captar mais de uma tattoo/orcamento
+onda_ativa: Wave 48 - Proposta Consolidada Multi-Orcamento
+proxima_acao: commitar, deployar e validar WhatsApp real + Telegram para proposta consolidada
+motivo: Wave 47 provou N tattoos no mesmo ORCID; faltava consolidar N valores em uma unica resposta ao cliente
 ```
 
 ## Evidencia Que Travou A Frente
@@ -44,6 +44,9 @@ wave_47_falha_util_20260527: run `scenario-whatsapp-real-long-journey-post-hando
 wave_47_fix_persistencia_update: commit `b456c02` preserva `foto_local_file_id` apos upload Telegram antes de marcar item ativo como `sent_to_artist`
 wave_47_final_orcid: `orc_mnw4ro`
 wave_47_final_telegram: tail `fotos-orcamento-update-enviadas` com `itens_total=2`, `active_budget_item_id=item_2`, `enviadas=1`, `falhas=0`
+wave_48_codigo_local: Budget Proposal Manager parseia valores por item, persiste proposal por budget_item, total em valor_proposto e reentrada fechar_multi consolidada
+wave_48_tests_local: focused PASS 27/27; npm test PASS 1244/1244
+wave_48_gate_pendente: deploy + WhatsApp real full journey + Telegram valores por item + cliente recebe uma unica mensagem consolidada
 ```
 
 ## Regra Ativa
@@ -61,6 +64,7 @@ Full Journey Validation Gate: seed de meio de fluxo pode ser radar tecnico, mas 
 1. Definir proxima onda funcional com base em risco premium restante.
 2. Manter regra: HTTP radar primeiro quando util; WhatsApp real full journey fecha quando houver contexto acumulado.
 3. Nao subir para 4C sem nova decisao deliberada.
+4. Para Wave 48, nao tratar como PASS ate provar proposta consolidada real no WhatsApp e no Telegram.
 
 ## Corte Em Andamento
 
@@ -77,12 +81,25 @@ pass_final: WhatsApp real completo + Telegram update correto + persistencia fina
 provas_conclusivas_reais: Cliente "mudei de ideia, queria uma caveira na perna" -> Bot "Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?"; Cliente "as duas" -> Bot "Fechado, vou considerar as duas. Pra caveira na perna, qual estilo voce imagina?"; Cliente "blackwork" -> Bot "Consegue mandar uma foto do local onde tu quer tatuar?"; Cliente "segue foto do local" + imagem -> Bot "Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor."
 ```
 
+## Corte Atual - Wave 48
+
+```text
+budget_proposal_manager: implementado localmente
+contrato: se ha mais de um budget_item ativo, Telegram pede valores numerados no mesmo ORCID
+persistencia: cada item recebe proposal.status=priced + valor individual; proposal_summary registra total
+compatibilidade: valor_proposto recebe total dos itens
+resposta_cliente: evento fechar_multi monta uma unica mensagem com intro + valores itemizados + CTA
+validacao_local: npm test PASS 1244/1244
+pendente: deploy e prova real com tatuador informando valores no Telegram
+provas_conclusivas_reais: pendente
+```
+
 ## Arquivos Para Ler
 
 ```text
 docs/atendimento-premium/52-premium-operational-chain.md
 docs/atendimento-premium/73-organic-conversation-sentinel-pack.md
-docs/atendimento-premium/72-level-4b-wave-47.md
+docs/atendimento-premium/74-level-4b-wave-48.md
 docs/atendimento-premium/current-objective.md somente se precisar de historico amplo
 docs/atendimento-premium/smoke-runs.md somente se precisar de evidencia antiga
 scripts/smoke/continuity-bundle.sh
@@ -108,5 +125,7 @@ bot responder como formulario quando o cliente trouxe briefing organico
 bot ignorar fragmentos semanticamente relevantes em sequencia
 bot responder entre bolhas de um burst real antes da ultima mensagem humana
 mensagem duplicada, estado final errado ou IA depois de handoff humano
+proposta multi-orcamento enviada em duas respostas separadas
+Wave 48 marcada PASS sem Telegram real + WhatsApp real final
 compactacao sem active context ou continuity bundle
 ```

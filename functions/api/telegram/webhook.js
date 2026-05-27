@@ -1,3 +1,10 @@
+import {
+  applyBudgetItemValues,
+  buildMultiBudgetValuePrompt,
+  hasMultiBudgetItems,
+  parseBudgetItemValues,
+} from '../../_lib/budget-proposal-manager.js';
+
 // ── Telegram Bot Webhook ───────────────────────────────────────────────────
 // POST /api/telegram/webhook
 // Headers (do Telegram): X-Telegram-Bot-Api-Secret-Token
@@ -196,10 +203,10 @@ async function handleCallback(env, cb) {
       // o reply ao orcamento via regex orc_... na mensagem citada. Sem ele aqui a
       // captura de valor quebraria. Fica como footer "ref:" discreto.
       const nomeCliente = conv.dados_cadastro?.nome || 'cliente';
-      await sendMessage(env, cb.from.id,
-        `Qual valor pra *${escapeMarkdown(nomeCliente)}*? Manda so o numero (ex: 750)\n\nref: \`${orcid}\``,
-        { reply_markup: { force_reply: true, selective: false } }
-      );
+      const text = hasMultiBudgetItems(dc)
+        ? buildMultiBudgetValuePrompt(dc, orcid)
+        : `Qual valor pra *${escapeMarkdown(nomeCliente)}*? Manda so o numero (ex: 750)\n\nref: \`${orcid}\``;
+      await sendMessage(env, cb.from.id, text, { reply_markup: { force_reply: true, selective: false } });
       await answerCallbackQuery(env, cb.id);
       await removeInlineKeyboard(env, cb); // decisao tomada (informar valor) → botoes somem
       return tgJson({ ok: true, acao: 'aguardando_valor' });
@@ -291,16 +298,9 @@ async function handleText(env, message) {
   if (!orcidMatch) return tgJson({ ok: true, ignorado: 'reply-sem-orcid' });
   const orcid = orcidMatch[0];
 
-  // Parseia valor numerico do texto
-  const valor = Number(String(message.text).replace(/[^\d.,]/g, '').replace(',', '.'));
-  if (!Number.isFinite(valor) || valor <= 0) {
-    await sendMessage(env, message.chat.id, '❌ Valor invalido. Manda so o numero (ex: 750)');
-    return tgJson({ ok: false, error: 'valor-invalido' });
-  }
-
   // Busca conversa por orcid
   const r = await supaFetch(env,
-    `/rest/v1/conversas?orcid=eq.${encodeURIComponent(orcid)}&select=id,estado_agente,valor_proposto`
+    `/rest/v1/conversas?orcid=eq.${encodeURIComponent(orcid)}&select=id,estado_agente,valor_proposto,dados_coletados`
   );
   const rows = r.ok ? await r.json() : [];
   if (!rows || rows.length === 0) {
@@ -308,6 +308,37 @@ async function handleText(env, message) {
     return tgJson({ ok: false, error: 'orcid-nao-encontrado' });
   }
   const conv = rows[0];
+  const dc = conv.dados_coletados || {};
+
+  if (hasMultiBudgetItems(dc)) {
+    const items = Array.isArray(dc.budget_items) ? dc.budget_items.filter(item => item && item.status !== 'replaced' && item.status !== 'cancelled') : [];
+    const parsed = parseBudgetItemValues(message.text, items);
+    if (!parsed.ok) {
+      const missing = parsed.missing.length > 0 ? ` Faltou item ${parsed.missing.join(', ')}.` : '';
+      await sendMessage(env, message.chat.id, `❌ Nao consegui ler todos os valores.${missing}\n\nManda assim:\n1 200\n2 400`);
+      return tgJson({ ok: false, error: 'valores-multi-invalidos', missing: parsed.missing });
+    }
+    const dados = applyBudgetItemValues(dc, parsed);
+    await supaFetch(env, `/rest/v1/conversas?id=eq.${encodeURIComponent(conv.id)}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({
+        estado_agente: 'propondo_valor',
+        valor_proposto: parsed.total,
+        dados_coletados: dados,
+      }),
+    });
+    await sendMessage(env, message.chat.id, `✅ Valores salvos: ${parsed.total_text}. Bot ja avisou o cliente.`);
+    await disparaReentrada(env, conv.id, 'fechar_multi', { orcid, valor: parsed.total });
+    return tgJson({ ok: true, valor: parsed.total, multi_budget: true });
+  }
+
+  // Parseia valor numerico do texto apenas no caminho de orcamento unico.
+  const valor = Number(String(message.text).replace(/[^\d.,]/g, '').replace(',', '.'));
+  if (!Number.isFinite(valor) || valor <= 0) {
+    await sendMessage(env, message.chat.id, '❌ Valor invalido. Manda so o numero (ex: 750)');
+    return tgJson({ ok: false, error: 'valor-invalido' });
+  }
 
   // Idempotencia: mesmo valor ja registrado → no-op (nao re-notifica o cliente).
   // Informar um valor DIFERENTE e mudanca legitima e segue o fluxo normal.

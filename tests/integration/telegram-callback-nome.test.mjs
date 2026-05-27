@@ -62,6 +62,38 @@ test('callback "fechar": pergunta valor citando NOME do cliente', async () => {
   }
 });
 
+test('callback "fechar" multi-budget: pede valores por item no mesmo ORCID', async () => {
+  const mock = installMock({
+    conversa: {
+      ...CONV,
+      orcid: 'orc_abc123',
+      dados_coletados: {
+        budget_items: [
+          { item_id: 'item_1', descricao_curta: 'borboleta', local_corpo: 'perna', status: 'sent_to_artist' },
+          { item_id: 'item_2', descricao_curta: 'caveira', local_corpo: 'perna', status: 'sent_to_artist' },
+        ],
+      },
+    },
+  });
+  try {
+    const res = await onRequest({
+      request: makeReq({ callback_query: { id: 'cbm1', data: 'fechar:orc_abc123', from: { id: 555 } } }),
+      env: ENV,
+    });
+    assert.equal(res.status, 200);
+    const sm = mock.tg.find(c => c.method === 'sendMessage');
+    assert.ok(sm, 'sendMessage enviado');
+    const text = JSON.parse(sm.body).text;
+    assert.match(text, /Manda os valores por item/);
+    assert.match(text, /1\. borboleta na perna/);
+    assert.match(text, /2\. caveira na perna/);
+    assert.match(text, /1 200/);
+    assert.match(text, /orc_abc123/);
+  } finally {
+    mock.restore();
+  }
+});
+
 test('callback "recusar": cita NOME do cliente, nao o orcid', async () => {
   const mock = installMock({ conversa: CONV });
   try {
@@ -98,6 +130,50 @@ test('regressao handleText: reply ao prompt do fechar (com ref orcid) captura va
     const patch = mock.supa.find(c => c.method === 'PATCH' && c.body?.includes('valor_proposto'));
     assert.ok(patch, 'PATCH valor_proposto aconteceu');
     assert.equal(JSON.parse(patch.body).valor_proposto, 550);
+  } finally {
+    mock.restore();
+  }
+});
+
+test('handleText multi-budget: salva valores por item e dispara uma reentrada consolidada', async () => {
+  const mock = installMock({
+    conversa: {
+      id: 'c1',
+      estado_agente: 'aguardando_tatuador',
+      valor_proposto: null,
+      dados_coletados: {
+        budget_items: [
+          { item_id: 'item_1', descricao_curta: 'borboleta', local_corpo: 'perna', status: 'sent_to_artist' },
+          { item_id: 'item_2', descricao_curta: 'caveira', local_corpo: 'perna', status: 'sent_to_artist' },
+        ],
+      },
+    },
+  });
+  try {
+    const env = { ...ENV, INKFLOW_TOOL_SECRET: 'toolsec' };
+    const res = await onRequest({
+      request: makeReq({
+        message: {
+          text: '1 200\n2 400', chat: { id: 555 }, from: { id: 555 },
+          reply_to_message: { text: 'Manda os valores por item:\n\n1. borboleta na perna\n2. caveira na perna\n\nref: `orc_abc123`' },
+        },
+      }),
+      env,
+    });
+    const data = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(data.multi_budget, true);
+    assert.equal(data.valor, 600);
+    const patch = mock.supa.find(c => c.method === 'PATCH' && c.body?.includes('proposal_summary'));
+    assert.ok(patch, 'PATCH multi-budget aconteceu');
+    const body = JSON.parse(patch.body);
+    assert.equal(body.estado_agente, 'propondo_valor');
+    assert.equal(body.valor_proposto, 600);
+    assert.equal(body.dados_coletados.budget_items[0].proposal.valor, 200);
+    assert.equal(body.dados_coletados.budget_items[1].proposal.valor, 400);
+    const reentrada = mock.supa.find(c => c.url.includes('/api/telegram/reentrada'));
+    assert.ok(reentrada, 'reentrada disparada');
+    assert.equal(JSON.parse(reentrada.body).evento, 'fechar_multi');
   } finally {
     mock.restore();
   }

@@ -19,6 +19,7 @@
 // - 'manter_valor'     → "Ele preferiu manter R$ X. Tá fechado pra ti? Bora marcar?"
 // - 'recusar'          → "Infelizmente o tatuador não vai poder fazer essa peça. Posso te ajudar com outra ideia?"
 
+import { composeMultiBudgetProposal } from '../../_lib/budget-proposal-manager.js';
 import { evoSendTextBaloes } from '../../_lib/evolution-send.js';
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
@@ -137,6 +138,8 @@ function montarMensagem(evento, valor, valor_proposto, conv = {}) {
       const proposta = `${resumoTattoo(conv.dados_coletados)} ficaria por R$ ${fmtBRL(valor)}! O que me diz, vamos agendar?`;
       return `${intro}\n\n${proposta}`;
     }
+    case 'fechar_multi':
+      return composeMultiBudgetProposal(conv);
     case 'aceitar_desconto':
       return `Show! Ele topou em R$ ${fmtBRL(valor)}. Bora marcar?`;
     case 'manter_valor':
