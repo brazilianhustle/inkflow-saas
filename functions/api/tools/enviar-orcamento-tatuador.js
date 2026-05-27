@@ -376,6 +376,8 @@ async function handle({ env, input }) {
     console.log(JSON.stringify({
       evento: 'fotos-orcamento-update-enviadas',
       orcid: conv.orcid, tenant_id, telefone,
+      itens_total: Array.isArray(conv.dados_coletados?.budget_items) ? conv.dados_coletados.budget_items.length : 0,
+      active_budget_item_id: conv.dados_coletados?.active_budget_item_id || null,
       tentadas: resultadoFotos.tentadas || 0,
       enviadas: resultadoFotos.enviadas || 0,
       falhas: resultadoFotos.falhas || 0,
@@ -387,12 +389,13 @@ async function handle({ env, input }) {
       montarTextoOrcamento(conv, resultadoFotos),
       inlineKeyboard(conv.orcid),
     );
+    const convDepoisFotos = await carregarConversaPorPar(env, tenant_id, telefone);
     await supaFetch(env, `/rest/v1/conversas?id=eq.${encodeURIComponent(conversa_id)}`, {
       method: 'PATCH',
       headers: { Prefer: 'return=minimal' },
       body: JSON.stringify({
         estado_agente: 'aguardando_tatuador',
-        dados_coletados: markActiveBudgetItemSent(conv.dados_coletados || {}),
+        dados_coletados: markActiveBudgetItemSent(convDepoisFotos?.dados_coletados || conv.dados_coletados || {}),
       }),
     });
     return {

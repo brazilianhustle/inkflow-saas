@@ -145,6 +145,7 @@ test('enviar-orcamento: orcid existente com segundo budget item pendente envia u
   const origFetch = globalThis.fetch;
   let telegramText = '';
   let conversaPatch = null;
+  let conversaFetchCount = 0;
   const convMulti = {
     ...CONVERSA_COMPLETA,
     orcid: 'orc_abc123',
@@ -162,9 +163,17 @@ test('enviar-orcamento: orcid existente com segundo budget item pendente envia u
       ],
     },
   };
+  const convMultiDepoisFoto = {
+    ...convMulti,
+    dados_coletados: {
+      ...convMulti.dados_coletados,
+      foto_local_file_id: 'file_local',
+    },
+  };
   globalThis.fetch = async (url, opts) => {
     if (url.includes('/rest/v1/conversas?tenant_id=eq')) {
-      return new Response(JSON.stringify([convMulti]), { status: 200 });
+      conversaFetchCount++;
+      return new Response(JSON.stringify([conversaFetchCount >= 2 ? convMultiDepoisFoto : convMulti]), { status: 200 });
     }
     if (url.includes('/rest/v1/conversa_mensagens?id=in.')) {
       return new Response(JSON.stringify([{ id: 202, message: { media_base64: 'abc', media_mimetype: 'image/jpeg' } }]), { status: 200 });
@@ -197,6 +206,7 @@ test('enviar-orcamento: orcid existente com segundo budget item pendente envia u
     assert.match(telegramText, /dragao/);
     assert.match(telegramText, /caveira/);
     assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
+    assert.equal(conversaPatch.dados_coletados.foto_local_file_id, 'file_local');
     assert.equal(conversaPatch.dados_coletados.budget_items[1].status, 'sent_to_artist');
   } finally {
     globalThis.fetch = origFetch;
