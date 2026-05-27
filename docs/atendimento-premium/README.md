@@ -70,6 +70,7 @@ Depois disso o sistema decide se deve:
 - [59-level-4b-wave-35.md](./59-level-4b-wave-35.md): revalidacao atual de historia de vida/homenagem com equilibrio entre acolhimento, funcao e seguranca.
 - [60-level-4b-wave-36.md](./60-level-4b-wave-36.md): revalidacao atual de midia ambigua sem legenda com imagem real e preservacao de dados.
 - [61-level-4b-wave-37.md](./61-level-4b-wave-37.md): revalidacao atual dos caminhos de confirmacao de midia ambigua como local ou referencia.
+- [62-level-4b-wave-38.md](./62-level-4b-wave-38.md): revalidacao atual de jornada maior com lateral, midia, cadastro e handoff.
 - [slice-gates/workflow-manager.env](./slice-gates/workflow-manager.env): gate formal da camada de transicao segura de estado.
 - [current-objective.md](./current-objective.md): estado vivo, proximo ataque e comandos de retomada.
 - [smoke-runs.md](./smoke-runs.md): indice versionado dos smokes relevantes.
