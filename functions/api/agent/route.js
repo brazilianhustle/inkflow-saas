@@ -568,7 +568,9 @@ export async function runAgent({
     // runTattooAgent + Responses API + discriminated union strict. Sem
     // validator pos-parse — schema garante invariantes do handoff.
     let out;
-    if (mergedClientContext.is_first_contact && isGreetingOnly(mensagem)) {
+    if (mergedClientContext.is_first_contact && Array.isArray(imagens) && imagens.length > 0 && isImageQuestion(mensagem)) {
+      out = forceAmbiguousImageQuestion({}, tenant, mergedClientContext);
+    } else if (mergedClientContext.is_first_contact && isGreetingOnly(mensagem)) {
       out = forceFirstContactGreeting({}, tenant);
     } else {
       try {

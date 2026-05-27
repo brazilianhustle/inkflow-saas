@@ -11,7 +11,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_25_micro_slice_1_pass
+status: level4b_wave_25_micro_slice_2_started
 branch: main
 ultimo_commit: d5e8db8 fix: bypass llm for pure greeting
 ultimo_commit_funcional: c519c52 fix: soften deterministic first contact intro
@@ -37,6 +37,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 24 fechada PASS: CI, deploy e `wave-health` verdes em `5eacc49`; proxima decisao estrategica recomendada e abrir Wave 25 para saudacao pura/caminhos LLM ou outra watchlist de naturalidade com evidencia real recente.
 - Wave 25 iniciada: Voice Policy para saudacao pura no `runAgent`, sem editar prompts LLM; primeiro corte troca os backstops determinisiticos de `Me chamo Assistente, muito prazer` por `Oii, tudo bem.` + pedido direto de nome.
 - Wave 25 micro-slice 1 passou: saudacao pura `oi` validada em HTTP radar e WhatsApp real definitivo; falha util inicial por timeout mostrou dependencia desnecessaria de LLM, corrigida com bypass deterministico antes da validacao final.
+- Wave 25 micro-slice 2 iniciado: primeiro contato com pergunta sobre imagem e midia real, para validar que o backstop de imagem tambem nao reintroduz `Me chamo`/`muito prazer`.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
@@ -204,7 +205,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: rodar `wave-health` final da Wave 25; se PASS, fechar onda curta ou abrir micro-slice 2 para pergunta ambigua com imagem em primeiro contato. Manter Level 4B; 4C bloqueado.
+Proximo passo recomendado: rodar HTTP radar + WhatsApp real definitivo do micro-slice 2 de imagem em primeiro contato; depois fechar Wave 25 se `wave-health` passar. Manter Level 4B; 4C bloqueado.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:

@@ -77,3 +77,27 @@ Leitura estrategica:
 - A primeira tentativa HTTP revelou um gap operacional real: saudacao pura dependia do LLM antes de aplicar o backstop, gerando timeout.
 - A correcao removeu essa dependencia: primeiro contato com saudacao pura agora responde deterministicamente pela Voice Policy.
 - O bot manteve `estado=coletando_tattoo`, `orcid=null`, sem preco, agenda, pagamento ou sinal.
+
+## Micro-Slice 2 - Primeiro Contato Com Imagem
+
+```text
+http_radar: voice-policy-first-contact-image-question
+whatsapp_real: whatsapp-real-voice-policy-first-contact-image-question
+entrada: "o que você viu na imagem?" + image/png
+objetivo: responder pergunta visual sem "Me chamo"/"muito prazer"
+```
+
+Rubrica:
+
+- deve reconhecer a presença de imagem ou pedir classificacao referencia/local sem fallback de ausencia de midia;
+- deve manter intro curta quando houver saudacao de primeiro contato;
+- deve manter `estado=coletando_tattoo`;
+- deve preservar `orcid=null`;
+- deve bloquear `Me chamo`, `muito prazer`, preco fechado, agenda, pagamento e sinal.
+
+Status:
+
+```text
+scenario_files: declarados
+next_action: rodar HTTP radar; se PASS, rodar WhatsApp real definitivo
+```

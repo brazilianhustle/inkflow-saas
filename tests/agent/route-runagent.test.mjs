@@ -137,6 +137,32 @@ test('runAgent (tattoo): pergunta de imagem com midia nao expõe limitação vis
   assert.equal(r.analise_imagens[0].tipo, 'incerto');
 });
 
+test('runAgent (tattoo): primeiro contato com pergunta de imagem e midia nao chama OpenAI', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511',
+    mensagem: 'o que você viu na imagem?',
+    estado_atual: 'tattoo', dados_acumulados: {}, historico: [],
+    tenant: { ...TENANT_STUB, nome_agente: 'Assistente' },
+    conversa: CONVERSA_STUB,
+    clientContext: { is_first_contact: true },
+    imagens: [{ base64: 'ZZ', mimetype: 'image/png', msgRowId: 1 }],
+    openaiClient: {
+      responses: {
+        parse: async () => {
+          throw new Error('OpenAI nao deveria ser chamado para pergunta explicita de imagem em primeiro contato');
+        },
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.match(r.resposta_cliente, /^Oii, tudo bem\./);
+  assert.match(r.resposta_cliente, /referência do desenho|referencia do desenho/i);
+  assert.match(r.resposta_cliente, /local do corpo/i);
+  assert.doesNotMatch(r.resposta_cliente, /me chamo|muito prazer/i);
+  assert.equal(r.campos_faltando.includes('tipo_foto'), true);
+});
+
 test('runAgent (tattoo): primeiro contato com saudacao pura usa VoicePolicy sem apresentacao mecanica', async () => {
   const { runAgent } = await import('../../functions/api/agent/route.js');
   const r = await runAgent({
