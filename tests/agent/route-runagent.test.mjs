@@ -137,7 +137,7 @@ test('runAgent (tattoo): pergunta de imagem com midia nao expõe limitação vis
   assert.equal(r.analise_imagens[0].tipo, 'incerto');
 });
 
-test('runAgent (tattoo): primeiro contato com saudacao pura força 2 baloes canonicos', async () => {
+test('runAgent (tattoo): primeiro contato com saudacao pura usa VoicePolicy sem apresentacao mecanica', async () => {
   const { runAgent } = await import('../../functions/api/agent/route.js');
   const r = await runAgent({
     env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'oi',
@@ -166,7 +166,8 @@ test('runAgent (tattoo): primeiro contato com saudacao pura força 2 baloes cano
     },
   });
   assert.equal(r.ok, true);
-  assert.equal(r.resposta_cliente, 'Oii, tudo bem?\n\nMe chamo Assistente, muito prazer! Como posso te chamar?');
+  assert.equal(r.resposta_cliente, 'Oii, tudo bem.\n\nComo posso te chamar?');
+  assert.doesNotMatch(r.resposta_cliente, /me chamo|muito prazer/i);
   assert.deepEqual(r.campos_faltando, ['descricao_curta', 'local_corpo', 'altura_cm', 'estilo']);
 });
 
@@ -199,7 +200,8 @@ test('runAgent (tattoo): primeiro contato com "opa" tambem força saudacao canon
     },
   });
   assert.equal(r.ok, true);
-  assert.equal(r.resposta_cliente, 'Oii, tudo bem?\n\nMe chamo Assistente, muito prazer! Como posso te chamar?');
+  assert.equal(r.resposta_cliente, 'Oii, tudo bem.\n\nComo posso te chamar?');
+  assert.doesNotMatch(r.resposta_cliente, /me chamo|muito prazer/i);
 });
 
 test('runAgent (tattoo): primeiro contato misto preserva coleta mas garante apresentação', async () => {
@@ -240,7 +242,8 @@ test('runAgent (tattoo): primeiro contato misto preserva coleta mas garante apre
     },
   });
   assert.equal(r.ok, true);
-  assert.match(r.resposta_cliente, /^Oii, tudo bem\?\n\nMe chamo Assistente, muito prazer!/);
+  assert.match(r.resposta_cliente, /^Oii, tudo bem\.\n\n/);
+  assert.doesNotMatch(r.resposta_cliente, /me chamo|muito prazer/i);
   assert.match(r.resposta_cliente, /qual o tema ou ideia da tatuagem\?/i);
   assert.deepEqual(r.dados_persistidos.local_corpo, 'braço');
   assert.equal(r.campos_faltando.includes('descricao_curta'), true);

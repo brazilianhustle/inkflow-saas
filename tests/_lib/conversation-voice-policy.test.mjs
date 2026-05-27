@@ -5,6 +5,7 @@ import {
   cadastroHandoffReply,
   cadastroResumeQuestion,
   firstName,
+  firstContactNameQuestion,
   firstContactSoftIntro,
   fotoAmbiguaComoLocalCadastroQuestion,
   fotoAmbiguaComoReferenciaQuestion,
@@ -23,6 +24,12 @@ test('VoicePolicy: firstName extrai primeiro nome com fallback seguro', () => {
 test('VoicePolicy: saudacao curta de primeiro contato evita apresentacao mecanica', () => {
   const text = firstContactSoftIntro();
   assert.equal(text, 'Oii, tudo bem.');
+  assert.doesNotMatch(text, /me chamo|muito prazer/i);
+});
+
+test('VoicePolicy: pergunta de nome de primeiro contato evita apresentacao mecanica', () => {
+  const text = firstContactNameQuestion();
+  assert.equal(text, 'Oii, tudo bem.\n\nComo posso te chamar?');
   assert.doesNotMatch(text, /me chamo|muito prazer/i);
 });
 

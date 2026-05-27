@@ -16,6 +16,14 @@ export function firstContactSoftIntro() {
   return 'Oii, tudo bem.';
 }
 
+export function firstContactNameQuestion() {
+  return `${firstContactSoftIntro()}\n\nComo posso te chamar?`;
+}
+
+export function firstContactSoftPrefix() {
+  return `${firstContactSoftIntro()}\n\n`;
+}
+
 export function cadastroHandoffReply({ nome } = {}) {
   const primeiroNome = firstName(nome);
   const prefix = primeiroNome ? `Boa, ${primeiroNome}. ` : 'Boa. ';

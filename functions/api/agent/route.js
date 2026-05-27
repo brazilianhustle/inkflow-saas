@@ -23,6 +23,7 @@ import { calcularValorSinal } from './_lib/calcular-sinal.js';
 import { formatLinkSinalMessage, formatPixSinalMessage } from './_lib/format-link-sinal-msg.js';
 import { logAgentTurn } from '../../_lib/telemetry/agent-turn-logger.js';
 import { detectBodyLocation } from '../../_lib/conversation-policy.js';
+import { firstContactNameQuestion, firstContactSoftPrefix } from '../../_lib/conversation-voice-policy.js';
 
 const HEADERS = {
   'Content-Type': 'application/json',
@@ -143,9 +144,8 @@ function shouldForceAmbiguousImageQuestion(out, mensagem, imagens) {
 }
 
 function forceAmbiguousImageQuestion(out, tenant, clientContext = {}) {
-  const nomeAgente = tenant?.nome_agente || 'atendente';
   const intro = clientContext?.is_first_contact
-    ? `Oii, tudo bem?\n\nMe chamo ${nomeAgente}, muito prazer!\n\n`
+    ? firstContactSoftPrefix()
     : '';
   return {
     ...out,
@@ -161,11 +161,10 @@ function forceAmbiguousImageQuestion(out, tenant, clientContext = {}) {
 }
 
 function forceFirstContactGreeting(out, tenant) {
-  const nomeAgente = tenant?.nome_agente || 'atendente';
   return {
     ...out,
     proxima_acao: 'pergunta',
-    resposta_cliente: `Oii, tudo bem?\n\nMe chamo ${nomeAgente}, muito prazer! Como posso te chamar?`,
+    resposta_cliente: firstContactNameQuestion(),
     dados_persistidos: {
       descricao_curta: null,
       local_corpo: null,
@@ -197,12 +196,11 @@ function stripLeadingGenericGreeting(text) {
 
 function ensureFirstContactIntro(out, tenant) {
   if (!out?.resposta_cliente || hasFirstContactIntro(out.resposta_cliente)) return out;
-  const nomeAgente = tenant?.nome_agente || 'atendente';
   const body = stripLeadingGenericGreeting(out.resposta_cliente);
-  const intro = `Oii, tudo bem?\n\nMe chamo ${nomeAgente}, muito prazer!`;
+  const intro = firstContactSoftPrefix().trim();
   return {
     ...out,
-    resposta_cliente: body ? `${intro}\n\n${body}` : `${intro} Como posso te chamar?`,
+    resposta_cliente: body ? `${intro}\n\n${body}` : firstContactNameQuestion(),
   };
 }
 
@@ -589,6 +587,9 @@ export async function runAgent({
       out = isGreetingOnly(mensagem)
         ? forceFirstContactGreeting(out, tenant)
         : ensureFirstContactIntro(out, tenant);
+    }
+    if (shouldForceAmbiguousImageQuestion(out, mensagem, imagens)) {
+      out = forceAmbiguousImageQuestion(out, tenant, mergedClientContext);
     }
     // ─── Bug 1: trava leve foto do local pedida >=1x antes do handoff ───
     // Contador vive em dados_coletados.tentativas_foto_local (estado_extra
