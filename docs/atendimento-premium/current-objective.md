@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_40_telegram_media_package_pass
+status: level4b_wave_41_referencia_apos_foto_local_pass
 branch: main
 ultimo_commit: 650c0d2 docs: close wave 40 telegram media package
 ultimo_commit_funcional: b54f085 fix: route portfolio requests deterministically
-deploy: PASS no commit 650c0d2; Wave 40 HTTP + WhatsApp real PASS
-tests: CI PASS 26495482381; deploy PASS 26495482338; Wave 40 HTTP PASS; Wave 40 WhatsApp real PASS; Naturalness V2 PASS; wave-health PASS
+deploy: pendente apos commit documental da Wave 41; Wave 41 HTTP + WhatsApp real PASS
+tests: Wave 41 HTTP PASS; Wave 41 WhatsApp real PASS; Naturalness V2 PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
-ultimo_commit_validado: 650c0d2 docs: close wave 40 telegram media package + CI PASS + deploy PASS + wave-health PASS + Wave 40 HTTP/WhatsApp real PASS
+ultimo_commit_validado: Wave 41 validada em producao por HTTP radar + WhatsApp real definitivo; commit documental pendente
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -27,6 +27,8 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 
 ## Ultimos Marcos
 
+- Wave 41 fechada como revalidacao atual de referencia adicional apos foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `foto_local_msg_id=599`, adicionou 1 referencia e manteve `orcid=null`.
+- Wave 41 declarada como revalidacao atual de referencia apos foto local: evidencia antiga ainda aceitava/mostrava `Pra liberar teu orçamento`, entao o contrato sera fortalecido antes de HTTP radar e WhatsApp real.
 - Wave 40 fechada como revalidacao atual do pacote Telegram com midia fresca: HTTP radar e WhatsApp real definitivo passaram; tail confirmou `fotos-orcamento-enviadas`, estado final `aguardando_tatuador`, `orcid=orc_xkw5i5`, `foto_local_file_id` e `refs_imagens_file_ids` preservados.
 - Wave 40 declarada como proxima frente assertiva: revalidar pacote Telegram com midia fresca, porque o fluxo cliente ja passou por handoff/pos-handoff e o proximo risco premium e a entrega operacional ao tatuador.
 - Wave 39 fechada como validacao atual de pos-handoff apos jornada completa: HTTP radar e WhatsApp real definitivo passaram em 7 steps; o step final `lembrei que queria pequeno` manteve `estado_agente=aguardando_tatuador`, preservou `orcid=orc_n89aee` e teve `ai_messages_after_last_human=0`.
@@ -203,40 +205,38 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-after-media-telegram-media-package-20260527T064309Z-25394
-run_id_real: scenario-whatsapp-real-cadastro-after-media-telegram-media-package-20260527T064346Z-9484
-tipo: Scenario WhatsApp real da Wave 40
+run_id_http: scenario-tattoo-media-reference-after-local-20260527T065214Z-28690
+run_id_real: scenario-whatsapp-real-tattoo-media-reference-after-local-20260527T065246Z-14230
+tipo: Scenario WhatsApp real da Wave 41
 base_url: central -> bot (*2357)
 telefone: 5521970789797
-expected_state: aguardando_tatuador
-orcid: orc_xkw5i5
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-after-media-telegram-media-package-20260527T064346Z-9484/
+expected_state: coletando_cadastro
+orcid: null
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-reference-after-local-20260527T065246Z-14230/
 ```
 
 Mensagem:
 
 ```text
-foto local seed auditoria + imagem
-referencia seed auditoria + imagem
-joao@example.com
+essa é referência do desenho + imagem
 ```
 
 Resultado:
 
 ```text
-estado_agente: aguardando_tatuador
-resposta_ai_final: Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.
-orcid: orc_xkw5i5
+estado_agente: coletando_cadastro
+resposta_ai_final: Recebi essa referência também. Agora me passa teu nome completo pra eu montar o cadastro.
+orcid: null
 copy_risk: baixo
-workflow: email valido completou cadastro e promoveu para aguardando_tatuador com handoff_package_v1
-observabilidade: Workflow Manager cadastro_and_tattoo_complete + trace hp_66b1811db0; tail fotos-orcamento-enviadas
-decision_chain: seed com midia fresca -> Evolution central -> WhatsApp real -> bot -> webhook -> email valido -> Workflow Manager cria handoff -> Telegram recebe pacote com fotos
+workflow: foto local preservada e nova referencia adicionada sem criar orcamento
+observabilidade: poll/judgment confirmam estado, orcid null e resposta atual sem copy antiga
+decision_chain: seed com foto local existente -> Evolution central envia imagem como referencia -> bot preserva foto local -> adiciona referencia -> retoma cadastro
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: escolher nova frente pequena de cobertura restante, mantendo Level 4B e 4C bloqueado.
+Proximo passo recomendado: commitar Wave 41, aguardar CI/deploy e rodar wave-health; depois continuar auditoria de subcasos de midia/cadastro com evidencia antiga ou escolher nova frente pequena de cobertura restante.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:
