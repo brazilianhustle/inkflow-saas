@@ -13,13 +13,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ```text
 status: level4b_wave_39_pos_handoff_jornada_completa_pass
 branch: main
-ultimo_commit: docs: close wave 39 post handoff journey
+ultimo_commit: docs: update wave 39 validation status
 ultimo_commit_funcional: b54f085 fix: route portfolio requests deterministically
-deploy: pendente apos commit documental da Wave 39; Wave 39 HTTP multiturn + WhatsApp real multiturn PASS
-tests: Wave 39 HTTP PASS; Wave 39 WhatsApp real PASS; Naturalness V2 PASS; wave-health PASS
+deploy: PASS no commit 82803ed; Wave 39 HTTP multiturn + WhatsApp real multiturn PASS
+tests: CI PASS 26495211211; deploy PASS 26495211208; Wave 39 HTTP PASS; Wave 39 WhatsApp real PASS; Naturalness V2 PASS; wave-health PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
-ultimo_commit_validado: Wave 39 validada em producao por HTTP radar + WhatsApp real definitivo; commit documental pendente de CI/deploy
+ultimo_commit_validado: 82803ed docs: close wave 39 post handoff journey + CI PASS + deploy PASS + wave-health PASS + Wave 39 HTTP/WhatsApp real PASS
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -238,7 +238,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> briefing
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: commitar Wave 39 e aguardar CI/deploy; depois escolher proxima frente pequena com base na cobertura restante, mantendo Level 4B e 4C bloqueado.
+Proximo passo recomendado: escolher proxima frente pequena com base na cobertura restante, mantendo Level 4B e 4C bloqueado.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:
