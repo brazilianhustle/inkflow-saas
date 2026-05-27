@@ -11,20 +11,20 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_44_auditoria_final_jornada_premium_fechada_pass
+status: level4b_wave_45_naturalidade_por_familia_fechada_pass
 branch: main
-ultimo_commit: pendente commit documental Wave 44
+ultimo_commit: pendente commit documental Wave 45
 ultimo_commit_funcional: b54f085 fix: route portfolio requests deterministically
-deploy: sem mudanca de codigo do bot nesta Wave; pendente commit/CI documental
-tests: Wave 44 HTTP radar 3/3 PASS; WhatsApp real 3/3 PASS; Naturalness V2 3 PASS / 0 watchlist / 0 rework / 0 stop
+deploy: pendente CI/deploy do commit documental Wave 45
+tests: Wave 45 Naturalness V2 read-only 10 PASS / 0 watchlist / 0 rework / 0 stop; Wave 44 HTTP radar 3/3 PASS; WhatsApp real 3/3 PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
-ultimo_commit_validado: fb89118 docs: map final premium fronts + CI/deploy PASS + wave-health clean PASS antes da Wave 44
+ultimo_commit_validado: 6fb276f docs: close wave 44 premium journey audit + CI/deploy PASS + wave-health clean PASS
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
 familia_midia_cadastro: fechada na cobertura atual
-proxima_frente: Wave 45 - Naturalidade Premium por familia ou Tenant/Config modo produto
+proxima_frente: Wave 46 - Tenant/Config em modo produto
 ```
 
 ## Ultimos Marcos
@@ -35,6 +35,8 @@ proxima_frente: Wave 45 - Naturalidade Premium por familia ou Tenant/Config modo
 - Wave 44 declarada para auditoria final de jornada premium: 3 jornadas longas atuais, cada uma com HTTP radar antes do WhatsApp real e Naturalness V2 no pacote final.
 - Wave 44 fechada PASS: 3 jornadas HTTP radar e 3 jornadas WhatsApp real passaram, cobrindo lateral+midia+cadastro+handoff, cadastro+lateral+pos-handoff e abertura+retomada; Naturalness V2 retornou 3 PASS/0 watchlist/0 rework/0 stop, media 2.88.
 - Observacao da Wave 44: a abertura lateral "como funciona o orçamento?" ainda pode perguntar nome antes da ideia quando o cliente nao traz briefing. Como os gates funcionais e Naturalness V2 passaram, fica como radar para Naturalidade Premium por familia, nao regressao bloqueante.
+- Wave 45 fechada PASS em modo read-only: Naturalness V2 auditou 10 evidencias reais por familia funcional (abertura, retomada, lateral, pedido de midia, imagem, cadastro, e-mail opcional, handoff, risco/humano e pos-handoff) com 10 PASS/0 watchlist/0 rework/0 stop, media 2.87.
+- Decisao da Wave 45: nao mexer em copy agora; o risco maior seria ajuste subjetivo sem falha real. Proxima frente correta e Tenant/Config em modo produto.
 - Wave 42 fechada como revalidacao atual de referencia confirmada seguida de foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `refs_imagens_msg_ids=[11951]`, criou `foto_local_msg_id` e manteve `orcid=null`.
 - Wave 42 declarada para limpar a variacao irma da Wave 41: referencia confirmada seguida de foto local, com contrato anti-copy-antiga e WhatsApp real novo.
 - Wave 41 fechada como revalidacao atual de referencia adicional apos foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `foto_local_msg_id=599`, adicionou 1 referencia e manteve `orcid=null`.

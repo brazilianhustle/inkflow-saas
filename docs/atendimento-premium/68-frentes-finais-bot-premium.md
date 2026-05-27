@@ -137,12 +137,12 @@ Prioridade: baixa agora.
 ## Proximo Ataque Recomendado
 
 ```text
-wave: Wave 44
-frente: auditoria final de jornada premium
-tipo: read-only + WhatsApp real quando necessario
-objetivo: provar experiencia completa ponta a ponta depois da limpeza midia/cadastro
-escopo_maximo_4B: ate 3 jornadas longas ou 8 micro-slices equivalentes
-primeiro_passo: declarar Wave 44 e selecionar jornadas atuais com maior valor de cobertura
+wave: Wave 46
+frente: Tenant/Config em modo produto
+tipo: read-only + HTTP radar + WhatsApp real quando houver comportamento conversacional/produto
+objetivo: provar que o bot nao e apenas bom no tenant atual; ele respeita variacoes de estudio de forma segura
+escopo_maximo_4B: ate 8 micro-slices da mesma familia, com WhatsApp real serial
+primeiro_passo: declarar Wave 46 e escolher a primeira variacao de tenant/config com menor risco e maior valor de produto
 ```
 
 ## Definition Of Done Para Conclusao Do Bot Premium
@@ -164,6 +164,8 @@ primeiro_passo: declarar Wave 44 e selecionar jornadas atuais com maior valor de
 
 ```text
 familia_midia_cadastro: fechada na cobertura atual
-proxima_frente: Wave 44 - auditoria final de jornada premium
+frente_1_auditoria_final_jornada: fechada_pass_na_wave_44
+frente_2_naturalidade_por_familia: fechada_pass_na_wave_45
+proxima_frente: Wave 46 - Tenant/Config em modo produto
 nao_fazer_agora: financeiro/agenda/pagamento amplo
 ```
