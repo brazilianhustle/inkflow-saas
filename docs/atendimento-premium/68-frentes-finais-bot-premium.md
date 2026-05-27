@@ -85,7 +85,7 @@ Pontos faltantes ou ainda pouco provados:
 
 - tenant sem portfolio: fechado na Wave 46 micro-slice 1 com HTTP radar + WhatsApp real + restore automatico;
 - estilos aceitos vs estilo fora do escopo: fechado na Wave 46 micro-slice 2 com HTTP radar + WhatsApp real + Naturalness V2;
-- menoridade/cobertura por regra especifica do estudio;
+- menoridade/cobertura por regra especifica do estudio: cobertura nao aceita fechada na Wave 46 micro-slice 3 com HTTP radar + WhatsApp real + restore automatico;
 - vocabulario e identidade do estudio sem vazar configuracao;
 - multiplos perfis de estudio quando houver base para isso.
 
@@ -142,7 +142,7 @@ frente: Tenant/Config em modo produto
 tipo: read-only + HTTP radar + WhatsApp real quando houver comportamento conversacional/produto
 objetivo: provar que o bot nao e apenas bom no tenant atual; ele respeita variacoes de estudio de forma segura
 escopo_maximo_4B: ate 8 micro-slices da mesma familia, com WhatsApp real serial
-primeiro_passo: concluido na Wave 46 micro-slice 1; segundo corte concluido na Wave 46 micro-slice 2; proximo corte recomendado e regra especifica de menoridade/cobertura por estudio ou identidade/vocabulario do estudio
+primeiro_passo: concluido na Wave 46 micro-slice 1; segundo corte concluido na Wave 46 micro-slice 2; terceiro corte concluido na Wave 46 micro-slice 3; proximo corte recomendado e identidade/vocabulario do estudio ou modo atendimento
 ```
 
 ## Definition Of Done Para Conclusao Do Bot Premium

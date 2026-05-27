@@ -84,8 +84,8 @@ copy_risk: baixo
 ## Proximo Corte
 
 ```text
-proxima_variacao_recomendada: regra especifica de menoridade/cobertura por estudio ou identidade/vocabulario do estudio
-motivo: valida personalizacao por regra de estudio sem entrar ainda em financeiro/agenda amplo
+proxima_variacao_recomendada: identidade/vocabulario do estudio ou modo atendimento
+motivo: valida personalizacao perceptivel por estudio sem entrar ainda em financeiro/agenda amplo
 autonomy_level: manter 4B
 level_4c: segue bloqueado
 ```
@@ -129,5 +129,51 @@ router_reason: tenant_style_not_accepted
 router_can_mutate_state: false
 tenant_context_has_style_catalog: true
 tenant_context_has_accepted_styles: true
+copy_risk: baixo
+```
+
+## Micro-Slice 3 - Cobertura Nao Aceita Pelo Tenant
+
+```text
+status: fechado_pass
+commit_funcional: 1f9f561 fix: respect tenant cover up policy
+setup: tenant_cobertura_nao_aceita
+restore: tenant-restore.json + tenant-restore-status.txt
+decisao: cobertura textual em tenant com aceita_cobertura=false e recusada pelo Router, sem LLM, sem handoff e sem orcamento
+```
+
+O runner ganhou setup reversivel para alterar apenas `config_agente.aceita_cobertura=false` no tenant smoke controlado. O Router agora diferencia cobertura aceita de cobertura nao aceita pelo estudio: se o tenant nao aceita cobertura, a resposta preserva estado e orienta o cliente a seguir apenas com tattoo nova em outro local.
+
+## Evidencias Micro-Slice 3
+
+| Gate | Run ID | Resultado | Observacao |
+|---|---|---|---|
+| Testes locais | `npm test -- tests/_lib/conversation-router.test.mjs tests/_lib/whatsapp-pipeline.test.mjs` | PASS | 1224 pass / 0 fail |
+| CI | `26521712945` | PASS | commit `1f9f561` |
+| Deploy | `26521712944` | PASS | Cloudflare Pages deploy verde |
+| HTTP radar | `scenario-tenant-cover-up-not-accepted-20260527T154140Z-9998` | PASS | setup/restore ok; estado preservado; sem handoff/orcamento |
+| WhatsApp real | `scenario-whatsapp-real-tenant-cover-up-not-accepted-20260527T154546Z-7369` | PASS | Evolution `central -> bot (*2357)` |
+| Naturalness V2 | `.smoke-evidence/scenario-whatsapp-real-tenant-cover-up-not-accepted-20260527T154546Z-7369/` | PASS | 1 PASS / 0 watchlist / 0 rework / 0 stop, media 2.88 |
+
+## Provas Conclusivas Reais Micro-Slice 3
+
+```text
+Cliente: "quero cobrir uma tattoo antiga no braco"
+Bot: "Esse estudio nao faz cobertura por aqui. Se voce pensar em uma tattoo nova em outro local, posso seguir te ajudando."
+```
+
+## Garantias Observadas Micro-Slice 3
+
+```text
+estado_final: coletando_tattoo
+orcid: null
+dados_coletados: {}
+tenant_restore: ok
+router_intent: tenant_cover_up_not_accepted
+router_reason: tenant_cover_up_not_accepted
+router_can_mutate_state: false
+tenant_context_aceita_cobertura: false
+sem_handoff: true
+sem_telegram: true
 copy_risk: baixo
 ```
