@@ -99,5 +99,56 @@ Status:
 
 ```text
 scenario_files: declarados
-next_action: rodar HTTP radar; se PASS, rodar WhatsApp real definitivo
+tests_focused: PASS node --test tests/agent/route-runagent.test.mjs
+npm_test: PASS 1216/1216
+ci: PASS 26486421860
+eval_gate: PASS 26486421904
+deploy: PASS 26486421802
+http_radar_initial: FAIL util scenario-voice-policy-first-contact-image-question-20260527T020109Z-336 agent_no_response + resposta generica tardia
+fix_after_fail: 7fd063f fix: bypass llm for first contact image question
+http_radar: PASS scenario-voice-policy-first-contact-image-question-20260527T020803Z-31036
+whatsapp_real: PASS scenario-whatsapp-real-voice-policy-first-contact-image-question-20260527T020943Z-26087
+decision: micro-slice 2 PASS; manter Level 4B
+next_action: rodar wave-health final e fechar Wave 25
 ```
+
+Provas conclusivas reais:
+
+```text
+Cliente: "o que você viu na imagem?" + image/png
+Bot: "Oii, tudo bem.
+
+Vi a imagem, mas fiquei em dúvida se ela é referência do desenho ou o local do corpo.
+
+Qual dos dois fica valendo?"
+```
+
+Leitura estrategica:
+
+- PASS funcional e definitivo via WhatsApp real.
+- A primeira tentativa mostrou falha real: resposta tardia e genérica para pergunta visual com mídia.
+- A correcao tornou esse primeiro contato deterministico quando o cliente pergunta explicitamente sobre a imagem enviada.
+- O bot preservou `refs_imagens_msg_ids`, `estado=coletando_tattoo`, `orcid=null` e nao reintroduziu apresentacao mecanica.
+
+## Fechamento Da Wave 25
+
+Status final:
+
+```text
+decision: PASS
+closed_at_utc: 2026-05-27 02:10
+final_commit_funcional: 7fd063f fix: bypass llm for first contact image question
+ci: PASS 26486421860
+eval_gate: PASS 26486421904
+deploy: PASS 26486421802
+whatsapp_real_count_wave: 2
+level_4b: mantido
+level_4c: bloqueado
+```
+
+Veredito:
+
+- A Wave 25 removeu a apresentacao mecanica dos backstops determinisiticos de primeiro contato no `runAgent`.
+- Saudacao pura e pergunta explicita sobre imagem agora respondem sem depender do LLM.
+- Duas falhas uteis foram convertidas em melhorias estruturais de latencia e coerencia.
+- Proxima frente deve voltar para auditoria de naturalidade em jornadas ou escolher outra watchlist com evidencia real recente.
