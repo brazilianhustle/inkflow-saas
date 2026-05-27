@@ -134,7 +134,7 @@ test('applySingleBudgetValue + composeSingleBudgetProposal: monta proposta por s
     dados_coletados: dados,
   });
   assert.match(msg, /Fala Joao/);
-  assert.match(msg, /dragao na perna ficaria em 3 sessoes de R\$ 450, totalizando R\$ 1350/);
+  assert.match(msg, /A ideia de dragao na perna ficaria em 3 sessoes de R\$ 450, totalizando R\$ 1350/);
   assert.match(msg, /agendar/);
 });
 
@@ -158,8 +158,8 @@ test('applyBudgetItemValues + composeMultiBudgetProposal: monta proposta unica c
   });
   assert.match(msg, /Fala Joao/);
   assert.match(msg, /orçamento das 2 tattoos/);
-  assert.match(msg, /borboleta na perna ficaria por R\$ 200/);
-  assert.match(msg, /caveira na perna ficaria por R\$ 400/);
+  assert.match(msg, /A ideia de borboleta na perna ficaria por R\$ 200/);
+  assert.match(msg, /Ja a ideia de caveira na perna ficaria por R\$ 400/);
   assert.match(msg, /agendar/);
 });
 
@@ -180,8 +180,8 @@ test('applyBudgetItemValues + composeMultiBudgetProposal: monta proposta mista f
     dados_cadastro: { nome: 'Joao Silva' },
     dados_coletados: merged,
   });
-  assert.match(msg, /borboleta na perna ficaria por R\$ 400/);
-  assert.match(msg, /caveira na perna ficaria em 2 sessoes de R\$ 500, totalizando R\$ 1000/);
+  assert.match(msg, /A ideia de borboleta na perna ficaria por R\$ 400/);
+  assert.match(msg, /Ja a ideia de caveira na perna ficaria em 2 sessoes de R\$ 500, totalizando R\$ 1000/);
 });
 
 test('montarMensagem: evento desconhecido retorna null', () => {
@@ -297,8 +297,8 @@ test('reentrada fechar_multi: envia uma unica proposta consolidada em vez de uma
       { conversa_id: 'conv-1', evento: 'fechar_multi', orcid: 'orc_123', valor: 600 },
     );
     assert.equal(r.status, 200);
-    assert.match(r.body.mensagem_enviada, /borboleta na perna ficaria por R\$ 200/);
-    assert.match(r.body.mensagem_enviada, /caveira na perna ficaria por R\$ 400/);
+    assert.match(r.body.mensagem_enviada, /A ideia de borboleta na perna ficaria por R\$ 200/);
+    assert.match(r.body.mensagem_enviada, /Ja a ideia de caveira na perna ficaria por R\$ 400/);
     const sends = calls.filter(c => c.url.includes('evo.test/message/sendText'));
     assert.equal(sends.length, 1, 'multi-orcamento deve sair em uma unica mensagem consolidada');
     assert.match(sends[0].body.text, /orçamento das 2 tattoos/);

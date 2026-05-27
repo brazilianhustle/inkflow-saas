@@ -227,7 +227,7 @@ export function buildMultiBudgetValuePrompt(dados = {}, orcid) {
 function composeProposalLine(item, index = 0) {
   const proposal = item?.proposal || item;
   const desc = describeBudgetItem(item);
-  const prefix = index === 0 ? 'A' : 'Ja a';
+  const prefix = index === 0 ? 'A ideia de' : 'Ja a ideia de';
   if (proposal.pricing_mode === 'per_session') {
     const n = proposal.sessions_count;
     const plural = n === 1 ? 'sessao' : 'sessoes';
