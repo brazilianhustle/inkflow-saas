@@ -568,25 +568,27 @@ export async function runAgent({
     // runTattooAgent + Responses API + discriminated union strict. Sem
     // validator pos-parse — schema garante invariantes do handoff.
     let out;
-    try {
-      out = await runTattooAgent({
-        env, tenant, conversa, clientContext: mergedClientContext,
-        mensagem, historico, imagens,
-        openaiClient,
-      });
-    } catch (e) {
-      // Todos os retries falharam (network down, 401, context_length, etc).
-      // UX: cliente nao recebe HTTP 500 — recebe mensagem amigavel.
-      // Telemetria: erro detalhado logado pra ops investigar.
-      console.error('[agent/route] runTattooAgent exhausted retries:', {
-        message: e?.message, status: e?.status, code: e?.code,
-      });
-      out = buildFallbackOutput('tattoo');
-    }
-    if (mergedClientContext.is_first_contact) {
-      out = isGreetingOnly(mensagem)
-        ? forceFirstContactGreeting(out, tenant)
-        : ensureFirstContactIntro(out, tenant);
+    if (mergedClientContext.is_first_contact && isGreetingOnly(mensagem)) {
+      out = forceFirstContactGreeting({}, tenant);
+    } else {
+      try {
+        out = await runTattooAgent({
+          env, tenant, conversa, clientContext: mergedClientContext,
+          mensagem, historico, imagens,
+          openaiClient,
+        });
+      } catch (e) {
+        // Todos os retries falharam (network down, 401, context_length, etc).
+        // UX: cliente nao recebe HTTP 500 — recebe mensagem amigavel.
+        // Telemetria: erro detalhado logado pra ops investigar.
+        console.error('[agent/route] runTattooAgent exhausted retries:', {
+          message: e?.message, status: e?.status, code: e?.code,
+        });
+        out = buildFallbackOutput('tattoo');
+      }
+      if (mergedClientContext.is_first_contact) {
+        out = ensureFirstContactIntro(out, tenant);
+      }
     }
     if (shouldForceAmbiguousImageQuestion(out, mensagem, imagens)) {
       out = forceAmbiguousImageQuestion(out, tenant, mergedClientContext);

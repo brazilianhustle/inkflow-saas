@@ -147,21 +147,9 @@ test('runAgent (tattoo): primeiro contato com saudacao pura usa VoicePolicy sem 
     clientContext: { is_first_contact: true },
     openaiClient: {
       responses: {
-        parse: async () => ({
-          status: 'completed',
-          id: 'r',
-          output_parsed: { output: {
-            proxima_acao: 'pergunta',
-            resposta_cliente: 'Oii, tudo bem? Como posso te chamar?',
-            dados_persistidos: { estilo: null, tamanho_cm: null, altura_cm: null, local_corpo: null, cor_preferencia: null, descricao_curta: null, foto_local: null },
-            dados_completos: false,
-            campos_faltando: ['descricao_curta'],
-            campos_conflitantes: [],
-            payload_portfolio: null,
-            analise_imagens: null,
-            cobertura_suspeita: null,
-          } },
-        }),
+        parse: async () => {
+          throw new Error('OpenAI nao deveria ser chamado para saudacao pura');
+        },
       },
     },
   });
@@ -181,21 +169,9 @@ test('runAgent (tattoo): primeiro contato com "opa" tambem força saudacao canon
     clientContext: { is_first_contact: true },
     openaiClient: {
       responses: {
-        parse: async () => ({
-          status: 'completed',
-          id: 'r',
-          output_parsed: { output: {
-            proxima_acao: 'pergunta',
-            resposta_cliente: 'Opa, como posso ajudar?',
-            dados_persistidos: { estilo: null, tamanho_cm: null, altura_cm: null, local_corpo: null, cor_preferencia: null, descricao_curta: null, foto_local: null },
-            dados_completos: false,
-            campos_faltando: ['descricao_curta'],
-            campos_conflitantes: [],
-            payload_portfolio: null,
-            analise_imagens: null,
-            cobertura_suspeita: null,
-          } },
-        }),
+        parse: async () => {
+          throw new Error('OpenAI nao deveria ser chamado para saudacao pura');
+        },
       },
     },
   });
