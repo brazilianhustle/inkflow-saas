@@ -135,6 +135,45 @@ test('regressao handleText: reply ao prompt do fechar (com ref orcid) captura va
   }
 });
 
+test('handleText single-budget: salva proposta por sessoes com total compativel', async () => {
+  const mock = installMock({
+    conversa: {
+      id: 'c1',
+      estado_agente: 'aguardando_tatuador',
+      valor_proposto: null,
+      dados_coletados: { descricao_curta: 'dragao', local_corpo: 'perna' },
+    },
+  });
+  try {
+    const env = { ...ENV, INKFLOW_TOOL_SECRET: 'toolsec' };
+    const res = await onRequest({
+      request: makeReq({
+        message: {
+          text: '2 sessoes 500', chat: { id: 555 }, from: { id: 555 },
+          reply_to_message: { text: 'Qual valor pra *Maria*?\n\nValor fechado: 750\nPor sessoes: 2 sessoes 500\n\nref: `orc_abc123`' },
+        },
+      }),
+      env,
+    });
+    const data = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(data.valor, 1000);
+    const patch = mock.supa.find(c => c.method === 'PATCH' && c.body?.includes('proposal_summary'));
+    assert.ok(patch, 'PATCH proposta por sessoes aconteceu');
+    const body = JSON.parse(patch.body);
+    assert.equal(body.estado_agente, 'propondo_valor');
+    assert.equal(body.valor_proposto, 1000);
+    assert.equal(body.dados_coletados.proposal_summary.pricing_mode, 'per_session');
+    assert.equal(body.dados_coletados.proposal_summary.sessions_count, 2);
+    assert.equal(body.dados_coletados.proposal_summary.amount_per_session, 500);
+    const reentrada = mock.supa.find(c => c.url.includes('/api/telegram/reentrada'));
+    assert.ok(reentrada, 'reentrada disparada');
+    assert.equal(JSON.parse(reentrada.body).evento, 'fechar');
+  } finally {
+    mock.restore();
+  }
+});
+
 test('handleText multi-budget: salva valores por item e dispara uma reentrada consolidada', async () => {
   const mock = installMock({
     conversa: {

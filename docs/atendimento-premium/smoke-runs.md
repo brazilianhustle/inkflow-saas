@@ -312,6 +312,8 @@ Ao fim de smoke monitorado:
 
 ## Run De Referencia Atual
 
+| 2026-05-27 17:05 | Wave 49 local | Testes locais | local | n/a | PASS parcial | n/a | Orcamento por sessoes implementado localmente: focused `node --test tests/integration/telegram-callback-nome.test.mjs tests/tools/reentrada-helpers.test.mjs` PASS 28/28; `npm test` PASS 1249/1249. Pendente deploy + Telegram real + WhatsApp real final antes de PASS completo. |
+
 ### `scenario-whatsapp-real-cadastro-handoff-20260525T222253Z-9952`
 
 Mensagem:

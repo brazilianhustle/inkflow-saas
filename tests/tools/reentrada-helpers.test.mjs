@@ -5,8 +5,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   applyBudgetItemValues,
+  applySingleBudgetValue,
   composeMultiBudgetProposal,
+  composeSingleBudgetProposal,
   parseBudgetItemValues,
+  parseBudgetProposalValue,
 } from '../../functions/_lib/budget-proposal-manager.js';
 import { montarMensagem, fmtBRL, handle, resumoTattoo, rotuloTatuador } from '../../functions/api/telegram/reentrada.js';
 
@@ -85,6 +88,29 @@ test('parseBudgetItemValues: lê valores numerados para multiplas tattoos', () =
   ]);
 });
 
+test('parseBudgetItemValues: lê valores numerados na mesma linha', () => {
+  const items = [
+    { item_id: 'item_1', descricao_curta: 'borboleta', local_corpo: 'perna' },
+    { item_id: 'item_2', descricao_curta: 'caveira', local_corpo: 'perna' },
+  ];
+  const parsed = parseBudgetItemValues('1 400 2 500', items);
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.total, 900);
+  assert.deepEqual(parsed.priced_items.map(item => [item.item_id, item.valor]), [
+    ['item_1', 400],
+    ['item_2', 500],
+  ]);
+});
+
+test('parseBudgetProposalValue: lê orçamento por sessão', () => {
+  const parsed = parseBudgetProposalValue('2 sessoes 500');
+  assert.equal(parsed.pricing_mode, 'per_session');
+  assert.equal(parsed.sessions_count, 2);
+  assert.equal(parsed.amount_per_session, 500);
+  assert.equal(parsed.total_amount, 1000);
+  assert.equal(parsed.total_text, 'R$ 1000');
+});
+
 test('parseBudgetItemValues: falha se faltar valor de algum item', () => {
   const parsed = parseBudgetItemValues('1 200', [
     { item_id: 'item_1' },
@@ -92,6 +118,24 @@ test('parseBudgetItemValues: falha se faltar valor de algum item', () => {
   ]);
   assert.equal(parsed.ok, false);
   assert.deepEqual(parsed.missing, [2]);
+});
+
+test('applySingleBudgetValue + composeSingleBudgetProposal: monta proposta por sessoes', () => {
+  const dados = applySingleBudgetValue(
+    { descricao_curta: 'dragao', local_corpo: 'perna', estilo: 'blackwork' },
+    parseBudgetProposalValue('3 sessoes 450'),
+  );
+
+  assert.equal(dados.proposal_summary.pricing_mode, 'per_session');
+  assert.equal(dados.proposal_summary.total, 1350);
+
+  const msg = composeSingleBudgetProposal({
+    dados_cadastro: { nome: 'Joao Silva' },
+    dados_coletados: dados,
+  });
+  assert.match(msg, /Fala Joao/);
+  assert.match(msg, /dragao na perna ficaria em 3 sessoes de R\$ 450, totalizando R\$ 1350/);
+  assert.match(msg, /agendar/);
 });
 
 test('applyBudgetItemValues + composeMultiBudgetProposal: monta proposta unica consolidada', () => {
@@ -117,6 +161,27 @@ test('applyBudgetItemValues + composeMultiBudgetProposal: monta proposta unica c
   assert.match(msg, /borboleta na perna ficaria por R\$ 200/);
   assert.match(msg, /caveira na perna ficaria por R\$ 400/);
   assert.match(msg, /agendar/);
+});
+
+test('applyBudgetItemValues + composeMultiBudgetProposal: monta proposta mista fechado e sessoes', () => {
+  const dados = {
+    budget_items: [
+      { item_id: 'item_1', descricao_curta: 'borboleta', local_corpo: 'perna', estilo: 'fineline', status: 'sent_to_artist' },
+      { item_id: 'item_2', descricao_curta: 'caveira', local_corpo: 'perna', estilo: 'blackwork', status: 'sent_to_artist' },
+    ],
+  };
+  const parsed = parseBudgetItemValues('1 total 400\n2 2 sessoes 500', dados.budget_items);
+  const merged = applyBudgetItemValues(dados, parsed);
+  assert.equal(merged.proposal_summary.total, 1400);
+  assert.equal(merged.budget_items[0].proposal.pricing_mode, 'fixed_total');
+  assert.equal(merged.budget_items[1].proposal.pricing_mode, 'per_session');
+
+  const msg = composeMultiBudgetProposal({
+    dados_cadastro: { nome: 'Joao Silva' },
+    dados_coletados: merged,
+  });
+  assert.match(msg, /borboleta na perna ficaria por R\$ 400/);
+  assert.match(msg, /caveira na perna ficaria em 2 sessoes de R\$ 500, totalizando R\$ 1000/);
 });
 
 test('montarMensagem: evento desconhecido retorna null', () => {

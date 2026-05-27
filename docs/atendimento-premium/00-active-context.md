@@ -5,13 +5,13 @@ Este e o primeiro arquivo a ler apos compactacao, troca de aba ou retomada. Ele 
 ## Estado De Comando
 
 ```text
-status: wave_48_multi_budget_proposal_validated_partial
+status: wave_49_session_pricing_local_pass
 branch: main
 autonomy_level: 4B
 level_4c: bloqueado
-onda_ativa: Wave 48 - Proposta Consolidada Multi-Orcamento
-proxima_acao: fechar gate Telegram real do Wave 48 ou criar script autorizado com secret correto
-motivo: Wave 47 provou N tattoos no mesmo ORCID; faltava consolidar N valores em uma unica resposta ao cliente
+onda_ativa: Wave 49 - Orcamento Por Sessoes
+proxima_acao: validar em producao via Telegram real + WhatsApp real antes de PASS completo
+motivo: Wave 48 consolidou N tattoos; agora proposta precisa aceitar valor fechado ou valor por sessao sem perder compatibilidade com valor_proposto
 ```
 
 ## Evidencia Que Travou A Frente
@@ -49,7 +49,10 @@ wave_48_tests_local: focused PASS 27/27; npm test PASS 1244/1244
 wave_48_deploy: commit `0326956`; Tests PASS 26533581695; Deploy PASS 26533581490
 wave_48_whatsapp_real: `scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T192601Z-25886` PASS 10/10, `orcid=orc_jy5c9p`
 wave_48_reentrada_real: PASS via `/api/telegram/reentrada` com `fechar_multi`, cliente recebeu uma unica mensagem consolidada com R$ 200 + R$ 400 + CTA
-wave_48_gate_pendente: callback/reply Telegram real com secret correto; tentativa local retornou unauthorized
+wave_48_gate_real_manual: imagem do usuario confirmou Telegram real pedindo valores por item, erro seguro em formato ruim, resposta corrigida e WhatsApp com proposta consolidada unica
+wave_49_codigo_local: Budget Proposal Manager aceita `pricing_mode=fixed_total|per_session` para single e multi-budget; `valor_proposto` permanece total para compatibilidade
+wave_49_tests_local: focused PASS 28/28; npm test PASS 1249/1249
+wave_49_gate_pendente: deploy + Telegram real com valor por sessao + WhatsApp real final com mensagem unica
 ```
 
 ## Regra Ativa
@@ -64,10 +67,10 @@ Full Journey Validation Gate: seed de meio de fluxo pode ser radar tecnico, mas 
 
 ## Proximo Ataque
 
-1. Definir proxima onda funcional com base em risco premium restante.
-2. Manter regra: HTTP radar primeiro quando util; WhatsApp real full journey fecha quando houver contexto acumulado.
+1. Deployar Wave 49 e validar em Telegram real: single tattoo `2 sessoes 500`.
+2. Validar WhatsApp real final: proposta deve sair em uma unica mensagem com intro + sessoes/valor + CTA.
 3. Nao subir para 4C sem nova decisao deliberada.
-4. Para Wave 48, nao tratar como PASS ate provar proposta consolidada real no WhatsApp e no Telegram.
+4. Para Wave 49, nao tratar como PASS ate provar Telegram real + WhatsApp real final.
 
 ## Corte Em Andamento
 
@@ -95,7 +98,21 @@ resposta_cliente: evento fechar_multi monta uma unica mensagem com intro + valor
 validacao_local: npm test PASS 1244/1244
 validacao_real_parcial: WhatsApp real full journey PASS + reentrada consolidada real PASS
 pendente: prova real do callback/reply Telegram usando secret correto ou acao manual do tatuador
-provas_conclusivas_reais: Cliente "mudei de ideia, queria uma caveira na perna" -> Bot "Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?"; Cliente "as duas" -> Bot "Fechado, vou considerar as duas. Pra caveira na perna, qual estilo voce imagina?"; Reentrada -> Bot "Fala Joao, tudo bem? O tatuador acabou de me passar o orçamento das 2 tattoos que voce pediu.\nA borboleta na perna ficaria por R$ 200.\nJa a caveira na perna ficaria por R$ 400.\nQuer que eu veja um horario pra gente agendar?"
+provas_conclusivas_reais: Cliente "mudei de ideia, queria uma caveira na perna" -> Bot "Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?"; Cliente "as duas" -> Bot "Fechado, vou considerar as duas. Pra caveira na perna, qual estilo voce imagina?"; Telegram "Manda os valores por item..." -> Tatuador "1 400 2 500" -> Bot "Nao consegui ler todos os valores. Faltou item 2."; Tatuador "1 400\n2 500" -> Cliente recebeu uma unica mensagem consolidada com 2 valores + CTA
+```
+
+## Corte Atual - Wave 49
+
+```text
+budget_proposal_manager: pricing_mode implementado
+contrato: tatuador pode responder valor fechado (`750`) ou por sessoes (`2 sessoes 500`)
+multi_budget: aceita mistura de itens fechados e itens por sessao
+compatibilidade: valor_proposto recebe o total estimado para proposta/agendamento/sinal legados
+persistencia: single usa dados_coletados.proposal_summary; multi usa budget_items[].proposal
+resposta_cliente: composer monta intro + linha de valor fechado ou sessoes + CTA
+validacao_local: node --test tests/integration/telegram-callback-nome.test.mjs tests/tools/reentrada-helpers.test.mjs PASS 28/28; npm test PASS 1249/1249
+pendente: deploy + Telegram real + WhatsApp real final
+provas_conclusivas_reais: pendente
 ```
 
 ## Arquivos Para Ler
@@ -104,6 +121,7 @@ provas_conclusivas_reais: Cliente "mudei de ideia, queria uma caveira na perna" 
 docs/atendimento-premium/52-premium-operational-chain.md
 docs/atendimento-premium/73-organic-conversation-sentinel-pack.md
 docs/atendimento-premium/74-level-4b-wave-48.md
+docs/atendimento-premium/75-level-4b-wave-49.md
 docs/atendimento-premium/current-objective.md somente se precisar de historico amplo
 docs/atendimento-premium/smoke-runs.md somente se precisar de evidencia antiga
 scripts/smoke/continuity-bundle.sh
@@ -130,6 +148,6 @@ bot ignorar fragmentos semanticamente relevantes em sequencia
 bot responder entre bolhas de um burst real antes da ultima mensagem humana
 mensagem duplicada, estado final errado ou IA depois de handoff humano
 proposta multi-orcamento enviada em duas respostas separadas
-Wave 48 marcada PASS sem Telegram real + WhatsApp real final
+Wave 49 marcada PASS sem Telegram real + WhatsApp real final
 compactacao sem active context ou continuity bundle
 ```

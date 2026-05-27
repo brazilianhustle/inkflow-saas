@@ -19,7 +19,7 @@
 // - 'manter_valor'     → "Ele preferiu manter R$ X. Tá fechado pra ti? Bora marcar?"
 // - 'recusar'          → "Infelizmente o tatuador não vai poder fazer essa peça. Posso te ajudar com outra ideia?"
 
-import { composeMultiBudgetProposal } from '../../_lib/budget-proposal-manager.js';
+import { composeMultiBudgetProposal, composeSingleBudgetProposal } from '../../_lib/budget-proposal-manager.js';
 import { evoSendTextBaloes } from '../../_lib/evolution-send.js';
 
 const SUPABASE_URL = 'https://bfzuxxuscyplfoimvomh.supabase.co';
@@ -132,6 +132,9 @@ function resumoTattoo(dados = {}) {
 function montarMensagem(evento, valor, valor_proposto, conv = {}) {
   switch (evento) {
     case 'fechar': {
+      if (conv.dados_coletados?.proposal_summary?.pricing_mode) {
+        return composeSingleBudgetProposal(conv, valor);
+      }
       const nomeCliente = primeiroNome(conv.dados_cadastro?.nome);
       const abertura = nomeCliente ? `Fala ${nomeCliente}, tudo bem?` : 'Fala, tudo bem?';
       const intro = `${abertura} ${ucfirst(rotuloTatuador(conv.tenants))} acabou de me passar o seu orçamento`;

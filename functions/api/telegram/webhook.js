@@ -1,8 +1,10 @@
 import {
   applyBudgetItemValues,
+  applySingleBudgetValue,
   buildMultiBudgetValuePrompt,
   hasMultiBudgetItems,
   parseBudgetItemValues,
+  parseBudgetProposalValue,
 } from '../../_lib/budget-proposal-manager.js';
 
 // ── Telegram Bot Webhook ───────────────────────────────────────────────────
@@ -205,7 +207,7 @@ async function handleCallback(env, cb) {
       const nomeCliente = conv.dados_cadastro?.nome || 'cliente';
       const text = hasMultiBudgetItems(dc)
         ? buildMultiBudgetValuePrompt(dc, orcid)
-        : `Qual valor pra *${escapeMarkdown(nomeCliente)}*? Manda so o numero (ex: 750)\n\nref: \`${orcid}\``;
+        : `Qual valor pra *${escapeMarkdown(nomeCliente)}*?\n\nValor fechado: 750\nPor sessoes: 2 sessoes 500\n\nref: \`${orcid}\``;
       await sendMessage(env, cb.from.id, text, { reply_markup: { force_reply: true, selective: false } });
       await answerCallbackQuery(env, cb.id);
       await removeInlineKeyboard(env, cb); // decisao tomada (informar valor) → botoes somem
@@ -333,12 +335,13 @@ async function handleText(env, message) {
     return tgJson({ ok: true, valor: parsed.total, multi_budget: true });
   }
 
-  // Parseia valor numerico do texto apenas no caminho de orcamento unico.
-  const valor = Number(String(message.text).replace(/[^\d.,]/g, '').replace(',', '.'));
-  if (!Number.isFinite(valor) || valor <= 0) {
-    await sendMessage(env, message.chat.id, '❌ Valor invalido. Manda so o numero (ex: 750)');
+  // Parseia proposta do orcamento unico: valor fechado ou por sessoes.
+  const parsedSingle = parseBudgetProposalValue(message.text);
+  if (!parsedSingle) {
+    await sendMessage(env, message.chat.id, '❌ Valor invalido. Manda assim:\n750\n\nOu por sessoes:\n2 sessoes 500');
     return tgJson({ ok: false, error: 'valor-invalido' });
   }
+  const valor = parsedSingle.total_amount || parsedSingle.valor;
 
   // Idempotencia: mesmo valor ja registrado → no-op (nao re-notifica o cliente).
   // Informar um valor DIFERENTE e mudanca legitima e segue o fluxo normal.
@@ -350,10 +353,14 @@ async function handleText(env, message) {
   await supaFetch(env, `/rest/v1/conversas?id=eq.${encodeURIComponent(conv.id)}`, {
     method: 'PATCH',
     headers: { Prefer: 'return=minimal' },
-    body: JSON.stringify({ estado_agente: 'propondo_valor', valor_proposto: valor }),
+    body: JSON.stringify({
+      estado_agente: 'propondo_valor',
+      valor_proposto: valor,
+      dados_coletados: applySingleBudgetValue(dc, parsedSingle),
+    }),
   });
 
-  await sendMessage(env, message.chat.id, `✅ Valor R$ ${valor} salvo. Bot ja avisou o cliente.`);
+  await sendMessage(env, message.chat.id, `✅ Valor ${parsedSingle.total_text || parsedSingle.valor_text} salvo. Bot ja avisou o cliente.`);
   await disparaReentrada(env, conv.id, 'fechar', { orcid, valor });
   return tgJson({ ok: true, valor });
 }
