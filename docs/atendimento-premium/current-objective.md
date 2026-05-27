@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_23_jornada_2_pass_closeout_candidate
+status: level4b_wave_23_closed_pass
 branch: main
 ultimo_commit: HEAD docs: validate wave 23 cadastro journey
 ultimo_commit_funcional: 82502d5 fix: route simple tattoo pending answers
-deploy: PASS no commit 7bb511a; Wave 23 Jornadas 1 e 2 HTTP radar + WhatsApp real PASS
-tests: npm test PASS local 1213/1213; CI PASS 26481710164; deploy PASS 26481710163
+deploy: PASS no commit c6eaa2c; Wave 23 Jornadas 1 e 2 HTTP radar + WhatsApp real PASS
+tests: npm test PASS local 1213/1213; CI PASS 26483398824; deploy PASS 26483398796
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: HEAD docs: validate wave 23 cadastro journey + Wave 23 Jornada 2 por HTTP radar e WhatsApp real; deploy/CI do commit docs pendente
+ultimo_commit_validado: HEAD docs: validate wave 23 cadastro journey + Wave 23 Jornada 2 por HTTP radar e WhatsApp real + wave-health PASS
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -29,7 +29,8 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 
 - Wave 23 preparada como proxima frente estrategica: Naturalidade Premium em jornadas longas reais, com foco em abertura, retomada, cadastro e handoff sem remendos determinisiticos por frase.
 - Wave 23 Jornada 1 passou em HTTP radar e WhatsApp real definitivo: lateral inicial de tempo, descricao simples pendente, complemento com lateral de orcamento, estilo pendente e foto local real; estado final `coletando_cadastro`, `orcid=null`, dados de tattoo completos e `foto_local_msg_id` persistido.
-- Wave 23 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: foto local, cadastro, lateral de tempo durante cadastro, recusa natural de e-mail, handoff com `orcid`, `handoff_package_v1` e pos-handoff sem nova IA; Wave 23 agora e candidata a closeout apos `wave-health` final.
+- Wave 23 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: foto local, cadastro, lateral de tempo durante cadastro, recusa natural de e-mail, handoff com `orcid`, `handoff_package_v1` e pos-handoff sem nova IA.
+- Wave 23 fechou PASS: 2 jornadas HTTP, 2 jornadas WhatsApp real, `wave-health` final PASS, Security Gate PASS e nenhuma regressao funcional aberta; proxima frente recomendada e Voice Policy para reduzir apresentacao mecanica de primeiro contato.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.

@@ -197,7 +197,9 @@ Status:
 scenario_files: declarados
 http_radar: PASS scenario-long-journey-naturalidade-cadastro-handoff-20260527T002007Z-11644
 whatsapp_real: PASS scenario-whatsapp-real-long-journey-naturalidade-cadastro-handoff-20260527T002948Z-21390
-next_action: rodar wave-health final e decidir fechamento da Wave 23
+wave_health_final: PASS 2026-05-27T00:35:26Z
+decision: fechar Wave 23 PASS; manter Level 4B; 4C bloqueado
+next_action: preparar proxima frente leve para remover apresentacao mecanica de primeiro contato via Voice Policy, sem remendo por frase
 ```
 
 Provas conclusivas reais:
@@ -224,3 +226,24 @@ Leitura estrategica:
 - Contratos preservados: foto local, cadastro, ORCID apenas no handoff, Workflow Manager com `handoff_package_v1`, pos-handoff sem nova IA.
 - A Wave 23 ja atingiu o criterio minimo de duas jornadas longas reais PASS.
 - Ponto de watchlist mantido: abertura de primeiro contato ainda se apresenta como `Me chamo Assistente`; tratar como melhoria sistemica de voice policy em proxima onda leve, nao como bloqueio desta jornada.
+
+## Closeout
+
+```text
+status: PASS
+http_journeys: 2
+whatsapp_real_journeys: 2
+wave_health_final: PASS
+security_gate: PASS
+dependabot_open_alerts: 0
+autonomy_decision: keep Level 4B
+level_4c: bloqueado
+```
+
+Resumo:
+
+- Jornada 1 validou abertura, resposta simples a campo pendente, retomada lateral, estilo e foto local ate cadastro.
+- Jornada 2 validou cadastro natural, lateral durante cadastro, recusa de e-mail, handoff e pos-handoff sem nova IA.
+- Um bug funcional foi encontrado e corrigido: respostas simples ao campo pendente de tattoo agora sao resolvidas deterministicamente pelo Router.
+- Nenhuma regressao funcional ficou aberta.
+- Watchlist nao bloqueante: reduzir apresentacao mecanica de primeiro contato em uma proxima onda sistemica de Voice Policy.
