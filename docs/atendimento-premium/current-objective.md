@@ -13,7 +13,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ```text
 status: level4b_wave_27_long_journey_post_voice_policy_declared
 branch: main
-ultimo_commit: e42ee25 chore: add naturalness audit v2
+ultimo_commit: 4b35c39 docs: declare wave 27 long journey validation
 ultimo_commit_funcional: c519c52 fix: soften deterministic first contact intro
 deploy: PASS no commit 7fd063f; Wave 25 micro-slice 1 e 2 HTTP radar + WhatsApp real PASS
 tests: npm test PASS local 1216/1216; CI PASS 26486421860; eval gate PASS 26486421904; deploy PASS 26486421802
@@ -45,6 +45,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 26 micro-slice 3 passou como ferramenta read-only: `scripts/smoke/naturalness-audit-v2.sh` aplica a Rubrica V2 por eixos, diferencia pos-handoff sem IA como sucesso operacional e foi calibrado em 10 evidencias WhatsApp real recentes com 10 PASS, media geral 2.87, sem watchlist/rework/stop.
 - Wave 26 micro-slice 4 passou como reaudit read-only: evidencias finais das Waves 22-25 deram 8 PASS/0 watchlist; steps longos + finais deram 25 PASS/4 watchlist, todos em steps historicos com `Me chamo Assistente`, familia ja atacada nas Waves 24/25. Proxima acao correta e revalidar uma jornada longa atual pos-Voice Policy, nao mexer em copy agora.
 - Wave 27 declarada: revalidacao de jornada longa atual pos-Voice Policy. Objetivo e provar em HTTP radar + WhatsApp real que a apresentacao mecanica historica nao aparece mais no fluxo completo.
+- Wave 27 validou a jornada longa atual pos-Voice Policy: HTTP radar PASS e WhatsApp real `central -> bot` PASS em 5 steps, sem `Me chamo`/`muito prazer`, estado final `coletando_cadastro`, `orcid=null`, `copy_risk=baixo`; Naturalness Audit V2 nos steps finais retornou 5 PASS/0 watchlist.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
@@ -212,7 +213,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: Wave 27 micro-slice 1, rodar `wave-health` inicial e HTTP radar `long-journey-naturalidade-abertura-retomada`; se PASS, seguir para WhatsApp real definitivo. Manter Level 4B; 4C bloqueado.
+Proximo passo recomendado: rodar `wave-health` final da Wave 27 e fechar a revalidacao se PASS. Depois escolher nova familia de naturalidade fora de primeiro contato mecanico, pois essa frente ficou coberta. Manter Level 4B; 4C bloqueado.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:

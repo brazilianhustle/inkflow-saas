@@ -60,7 +60,12 @@ level_4c: bloqueado
 ```text
 scenario: long-journey-naturalidade-abertura-retomada
 objetivo: confirmar contrato atual sem gastar WhatsApp real se houver regressao basica
-status: pending
+status: PASS
+run_id: scenario-long-journey-naturalidade-abertura-retomada-20260527T043220Z-8605
+estado_final: coletando_cadastro
+orcid: null
+copy_risk: baixo
+me_chamo_muito_prazer: ausente
 ```
 
 ### Micro-Slice 2 - WhatsApp Real Definitivo
@@ -68,7 +73,13 @@ status: pending
 ```text
 scenario: whatsapp-real-long-journey-naturalidade-abertura-retomada
 objetivo: validar cadeia real central -> bot com midia e steps completos
-status: pending
+status: PASS
+run_id: scenario-whatsapp-real-long-journey-naturalidade-abertura-retomada-20260527T043349Z-9767
+estado_final: coletando_cadastro
+orcid: null
+copy_risk: baixo
+foto_local_msg_id: 13019
+me_chamo_muito_prazer: ausente
 ```
 
 ### Micro-Slice 3 - Auditoria V2 Dos Steps
@@ -76,7 +87,33 @@ status: pending
 ```text
 auditor: scripts/smoke/naturalness-audit-v2.sh
 objetivo: confirmar que os steps atuais nao repetem a watchlist historica
-status: pending
+status: PASS
+evidencias_analisadas: 5
+pass: 5
+watchlist: 0
+rework: 0
+stop: 0
+media_geral: 2.88
+```
+
+## Provas Conclusivas Reais
+
+```text
+Cliente: "quanto tempo demora uma tattoo pequena?"
+Bot: "Oii, tudo bem.
+
+O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
+
+Pra montar tua proposta certinho, como posso te chamar?"
+
+Cliente: "segue foto do local" + image/png
+Bot: "Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro."
+```
+
+## Leitura Estrategica
+
+```text
+A watchlist historica da Wave 26 foi resolvida no fluxo atual: a jornada longa real nao reintroduziu "Me chamo" ou "muito prazer". Nao ha motivo para novo corte de copy nesta familia agora.
 ```
 
 ## Criterio De Pronto
@@ -84,15 +121,15 @@ status: pending
 ```text
 http_radar: PASS
 whatsapp_real: PASS
-naturalness_v2_steps: PASS ou WATCHLIST justificada sem risco atual
+naturalness_v2_steps: PASS
 me_chamo_muito_prazer: ausente
 copy_risk_alto: ausente
-wave_health_final: PASS
-proxima_familia_recomendada: definida com evidencia
+wave_health_final: pending
+proxima_familia_recomendada: pending
 ```
 
 ## Proximo Passo
 
 ```text
-Rodar wave-health inicial e executar HTTP radar.
+Rodar wave-health final e decidir se fecha a Wave 27 como revalidacao concluida.
 ```
