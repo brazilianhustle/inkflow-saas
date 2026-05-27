@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_38_jornada_midia_cadastro_handoff_pass
+status: level4b_wave_39_pos_handoff_jornada_completa_pass
 branch: main
-ultimo_commit: cca4632 docs: close wave 38 media cadastro handoff journey
+ultimo_commit: docs: close wave 39 post handoff journey
 ultimo_commit_funcional: b54f085 fix: route portfolio requests deterministically
-deploy: PASS no commit cca4632; Wave 38 HTTP multiturn + WhatsApp real multiturn PASS
-tests: CI PASS 26494719322; deploy PASS 26494719288
+deploy: pendente apos commit documental da Wave 39; Wave 39 HTTP multiturn + WhatsApp real multiturn PASS
+tests: Wave 39 HTTP PASS; Wave 39 WhatsApp real PASS; Naturalness V2 PASS; wave-health PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
-ultimo_commit_validado: cca4632 docs: close wave 38 media cadastro handoff journey + CI PASS + deploy PASS + wave-health PASS + Wave 38 HTTP/WhatsApp real PASS
+ultimo_commit_validado: Wave 39 validada em producao por HTTP radar + WhatsApp real definitivo; commit documental pendente de CI/deploy
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -27,6 +27,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 
 ## Ultimos Marcos
 
+- Wave 39 fechada como validacao atual de pos-handoff apos jornada completa: HTTP radar e WhatsApp real definitivo passaram em 7 steps; o step final `lembrei que queria pequeno` manteve `estado_agente=aguardando_tatuador`, preservou `orcid=orc_n89aee` e teve `ai_messages_after_last_human=0`.
 - Wave 23 preparada como proxima frente estrategica: Naturalidade Premium em jornadas longas reais, com foco em abertura, retomada, cadastro e handoff sem remendos determinisiticos por frase.
 - Wave 23 Jornada 1 passou em HTTP radar e WhatsApp real definitivo: lateral inicial de tempo, descricao simples pendente, complemento com lateral de orcamento, estilo pendente e foto local real; estado final `coletando_cadastro`, `orcid=null`, dados de tattoo completos e `foto_local_msg_id` persistido.
 - Wave 23 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: foto local, cadastro, lateral de tempo durante cadastro, recusa natural de e-mail, handoff com `orcid`, `handoff_package_v1` e pos-handoff sem nova IA.
@@ -200,43 +201,44 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-long-journey-lateral-media-cadastro-handoff-20260527T062122Z-21860
-run_id_real: scenario-whatsapp-real-long-journey-lateral-media-cadastro-handoff-20260527T062318Z-27700
-tipo: Scenario WhatsApp real multi-turn da Wave 38
+run_id_http: scenario-long-journey-cadastro-lateral-handoff-20260527T063228Z-27950
+run_id_real: scenario-whatsapp-real-long-journey-cadastro-lateral-handoff-20260527T063442Z-29924
+tipo: Scenario WhatsApp real multi-turn da Wave 39
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: orc_2k8ryw
-evidence: .smoke-evidence/scenario-whatsapp-real-long-journey-lateral-media-cadastro-handoff-20260527T062318Z-27700/
+orcid: orc_n89aee
+evidence: .smoke-evidence/scenario-whatsapp-real-long-journey-cadastro-lateral-handoff-20260527T063442Z-29924/
 ```
 
 Mensagem:
 
 ```text
-como funciona o orçamento?
-quero uma rosa fineline no antebraco, tenho 1.70
+quero uma borboleta fineline na perna, tenho 1.70
 segue foto do local + imagem
 Joao Silva
+quanto tempo demora?
 12/03/1995
-pode seguir sem email
+prefiro falar por aqui
+lembrei que queria pequeno
 ```
 
 Resultado:
 
 ```text
 estado_agente: aguardando_tatuador
-resposta_ai_final: Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.
-orcid: orc_2k8ryw
+resposta_ai_final: sem nova resposta automatica apos o ultimo humano pos-handoff
+orcid: orc_n89aee
 copy_risk: baixo
-workflow: jornada lateral + midia + cadastro + email recusado promoveu para aguardando_tatuador com handoff_package_v1
-observabilidade: Workflow Manager cadastro_and_tattoo_complete + trace hp_*
-decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> lateral de orçamento -> briefing de tattoo -> foto local real -> cadastro -> recusa de email -> Workflow Manager cria handoff de orcamento -> fechamento ao cliente
+workflow: jornada completa promoveu para aguardando_tatuador com handoff_package_v1; complemento pos-handoff nao gerou IA
+observabilidade: Workflow Manager cadastro_and_tattoo_complete + ai_messages_after_last_human=0 no step pos-handoff
+decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> briefing de tattoo -> foto local real -> cadastro -> lateral de tempo -> recusa de email -> Workflow Manager cria handoff de orcamento -> complemento pos-handoff encaminhado sem IA
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: declarar Wave 39 pequena para validar pos-handoff apos jornada real completa, com HTTP radar e WhatsApp real, garantindo que em `aguardando_tatuador` texto/midia adicional nao reabre IA nem coleta.
+Proximo passo recomendado: commitar Wave 39 e aguardar CI/deploy; depois escolher proxima frente pequena com base na cobertura restante, mantendo Level 4B e 4C bloqueado.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:
