@@ -5,12 +5,12 @@ Este e o primeiro arquivo a ler apos compactacao, troca de aba ou retomada. Ele 
 ## Estado De Comando
 
 ```text
-status: wave_48_multi_budget_proposal_implemented_local
+status: wave_48_multi_budget_proposal_validated_partial
 branch: main
 autonomy_level: 4B
 level_4c: bloqueado
 onda_ativa: Wave 48 - Proposta Consolidada Multi-Orcamento
-proxima_acao: commitar, deployar e validar WhatsApp real + Telegram para proposta consolidada
+proxima_acao: fechar gate Telegram real do Wave 48 ou criar script autorizado com secret correto
 motivo: Wave 47 provou N tattoos no mesmo ORCID; faltava consolidar N valores em uma unica resposta ao cliente
 ```
 
@@ -46,7 +46,10 @@ wave_47_final_orcid: `orc_mnw4ro`
 wave_47_final_telegram: tail `fotos-orcamento-update-enviadas` com `itens_total=2`, `active_budget_item_id=item_2`, `enviadas=1`, `falhas=0`
 wave_48_codigo_local: Budget Proposal Manager parseia valores por item, persiste proposal por budget_item, total em valor_proposto e reentrada fechar_multi consolidada
 wave_48_tests_local: focused PASS 27/27; npm test PASS 1244/1244
-wave_48_gate_pendente: deploy + WhatsApp real full journey + Telegram valores por item + cliente recebe uma unica mensagem consolidada
+wave_48_deploy: commit `0326956`; Tests PASS 26533581695; Deploy PASS 26533581490
+wave_48_whatsapp_real: `scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T192601Z-25886` PASS 10/10, `orcid=orc_jy5c9p`
+wave_48_reentrada_real: PASS via `/api/telegram/reentrada` com `fechar_multi`, cliente recebeu uma unica mensagem consolidada com R$ 200 + R$ 400 + CTA
+wave_48_gate_pendente: callback/reply Telegram real com secret correto; tentativa local retornou unauthorized
 ```
 
 ## Regra Ativa
@@ -90,8 +93,9 @@ persistencia: cada item recebe proposal.status=priced + valor individual; propos
 compatibilidade: valor_proposto recebe total dos itens
 resposta_cliente: evento fechar_multi monta uma unica mensagem com intro + valores itemizados + CTA
 validacao_local: npm test PASS 1244/1244
-pendente: deploy e prova real com tatuador informando valores no Telegram
-provas_conclusivas_reais: pendente
+validacao_real_parcial: WhatsApp real full journey PASS + reentrada consolidada real PASS
+pendente: prova real do callback/reply Telegram usando secret correto ou acao manual do tatuador
+provas_conclusivas_reais: Cliente "mudei de ideia, queria uma caveira na perna" -> Bot "Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?"; Cliente "as duas" -> Bot "Fechado, vou considerar as duas. Pra caveira na perna, qual estilo voce imagina?"; Reentrada -> Bot "Fala Joao, tudo bem? O tatuador acabou de me passar o orçamento das 2 tattoos que voce pediu.\nA borboleta na perna ficaria por R$ 200.\nJa a caveira na perna ficaria por R$ 400.\nQuer que eu veja um horario pra gente agendar?"
 ```
 
 ## Arquivos Para Ler
