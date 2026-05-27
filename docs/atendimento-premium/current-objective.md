@@ -23,12 +23,15 @@ ultimo_commit_validado: 68fe072 docs: close wave 43 media cadastro cleanup + Wav
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
+familia_midia_cadastro: fechada na cobertura atual
+proxima_frente: Wave 44 - auditoria final de jornada premium
 ```
 
 ## Ultimos Marcos
 
 - Wave 43 fechada como limpeza final dos subcasos midia/cadastro: 8 subcasos passaram em HTTP radar e WhatsApp real definitivo, contratos foram endurecidos contra copy antiga (`Pra liberar teu orçamento`, `Fechado`, `valor certinho`, `avaliar com calma`) e Naturalness V2 retornou 8 PASS/0 watchlist/0 rework/0 stop.
 - Falha util controlada da Wave 43: o classificador deterministico marca pedido de e-mail opcional como `copy_risk=medio`; contrato aceitou `medio` apenas nesse step, mantendo bloqueio textual contra copy antiga e validacao Naturalness V2.
+- Familia midia/cadastro marcada como fechada na cobertura atual. Frentes finais mapeadas em `68-frentes-finais-bot-premium.md`: jornada premium final, naturalidade por familia, Tenant/Config modo produto, replanejamento/novo pedido, financeiro/agenda/pagamento como fase futura e prontidao 4C.
 - Wave 42 fechada como revalidacao atual de referencia confirmada seguida de foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `refs_imagens_msg_ids=[11951]`, criou `foto_local_msg_id` e manteve `orcid=null`.
 - Wave 42 declarada para limpar a variacao irma da Wave 41: referencia confirmada seguida de foto local, com contrato anti-copy-antiga e WhatsApp real novo.
 - Wave 41 fechada como revalidacao atual de referencia adicional apos foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `foto_local_msg_id=599`, adicionou 1 referencia e manteve `orcid=null`.
@@ -240,7 +243,7 @@ decision_chain: seed com midia fresca -> Evolution central envia email -> Router
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: marcar familia midia/cadastro como fechada na cobertura atual ou abrir nova frente premium fora dessa familia.
+Proximo passo recomendado: declarar Wave 44 para auditoria final de jornada premium, mantendo Level 4B.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:

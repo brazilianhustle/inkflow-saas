@@ -210,11 +210,11 @@ Para ondas read-only, o passo 7 so pode ser dispensado quando a onda declarar ex
 ## Proxima Frente Recomendada
 
 ```text
-frente: auditoria V2 por familia de cadastro/handoff
-objetivo: identificar watchlists reais atuais antes de nova mudanca de copy
-acao: read-only primeiro
+frente: auditoria final de jornada premium
+objetivo: provar experiencia ponta a ponta apos fechamento da familia midia/cadastro
+acao: declarar Wave 44, selecionar jornadas longas atuais e auditar com HTTP/WhatsApp real quando necessario
 mudanca_de_codigo: somente se evidencia atual justificar
-validacao_definitiva: WhatsApp real por comportamento conversacional alterado
+validacao_definitiva: WhatsApp real por jornada ou comportamento conversacional alterado
 autonomia: manter Level 4B
 level_4c: bloqueado
 ```
