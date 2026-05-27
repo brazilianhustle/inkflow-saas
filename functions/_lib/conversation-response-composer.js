@@ -3,6 +3,8 @@
 // Mantem o router focado em detectar intent/persistir dados, enquanto esta
 // camada cuida de variacao leve para evitar repeticao mecanica no atendimento.
 
+import { firstContactSoftIntro } from './conversation-voice-policy.js';
+
 function stripAccents(text) {
   return String(text || '')
     .toLowerCase()
@@ -15,11 +17,6 @@ function historyHasAssistant(historico = [], pattern) {
     if (turn?.role !== 'assistant') return false;
     return pattern.test(stripAccents(turn.content || ''));
   });
-}
-
-function firstContactIntro(tenant) {
-  const nomeAgente = tenant?.nome_agente || 'atendente';
-  return `Oii, tudo bem. Me chamo ${nomeAgente}, muito prazer.`;
 }
 
 function firstContactResumeQuestion() {
@@ -95,7 +92,7 @@ function resumeForState({ estado, resume, nextField, context = {} }) {
 export function composeRouterResponse({ intent, estado, resume, nextField, context = {} }) {
   const isFirstContact = context.clientContext?.is_first_contact === true;
   const intro = isFirstContact && estado === 'tattoo'
-    ? `${firstContactIntro(context.tenant)}\n\n`
+    ? `${firstContactSoftIntro()}\n\n`
     : '';
   const answer = answerForIntent(intent, context);
   if (!answer) return null;

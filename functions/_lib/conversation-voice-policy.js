@@ -12,6 +12,10 @@ export function firstName(name) {
   return String(name || '').trim().split(/\s+/)[0] || '';
 }
 
+export function firstContactSoftIntro() {
+  return 'Oii, tudo bem.';
+}
+
 export function cadastroHandoffReply({ nome } = {}) {
   const primeiroNome = firstName(nome);
   const prefix = primeiroNome ? `Boa, ${primeiroNome}. ` : 'Boa. ';

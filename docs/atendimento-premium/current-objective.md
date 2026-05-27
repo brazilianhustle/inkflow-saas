@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_23_closed_pass
+status: level4b_wave_24_started_voice_policy_first_contact
 branch: main
 ultimo_commit: HEAD docs: close wave 23 naturalidade
-ultimo_commit_funcional: 82502d5 fix: route simple tattoo pending answers
+ultimo_commit_funcional: working_tree voice policy first contact soft intro
 deploy: PASS no commit 191c73f; Wave 23 fechada com Jornadas 1 e 2 HTTP radar + WhatsApp real PASS
 tests: npm test PASS local 1213/1213; CI PASS 26483468925; deploy PASS 26483468810
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: HEAD docs: close wave 23 naturalidade + Wave 23 Jornada 2 por HTTP radar e WhatsApp real + wave-health PASS
+ultimo_commit_validado: fdd2a29 docs: update objective after wave 23 closeout + wave-health PASS
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -31,6 +31,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 23 Jornada 1 passou em HTTP radar e WhatsApp real definitivo: lateral inicial de tempo, descricao simples pendente, complemento com lateral de orcamento, estilo pendente e foto local real; estado final `coletando_cadastro`, `orcid=null`, dados de tattoo completos e `foto_local_msg_id` persistido.
 - Wave 23 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: foto local, cadastro, lateral de tempo durante cadastro, recusa natural de e-mail, handoff com `orcid`, `handoff_package_v1` e pos-handoff sem nova IA.
 - Wave 23 fechou PASS: 2 jornadas HTTP, 2 jornadas WhatsApp real, `wave-health` final PASS, Security Gate PASS e nenhuma regressao funcional aberta; proxima frente recomendada e Voice Policy para reduzir apresentacao mecanica de primeiro contato.
+- Wave 24 iniciada: Voice Policy de primeiro contato deterministico. Primeiro corte remove `Me chamo`/`muito prazer` dos caminhos Router/Composer quando o cliente ja trouxe contexto acionavel; saudacao pura via Agent fica fora deste micro-slice.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.

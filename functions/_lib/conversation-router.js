@@ -12,7 +12,7 @@
 
 import { extractLocalAnswer, extractStyleAnswer, resolveExplicitAge, resolveHeightCm, resolvePendingFormQuestion, resolveTattooSizeCm } from './conversation-policy.js';
 import { composeRouterResponse } from './conversation-response-composer.js';
-import { cadastroResumeQuestion, minorAgeHandoffReply } from './conversation-voice-policy.js';
+import { cadastroResumeQuestion, firstContactSoftIntro, minorAgeHandoffReply } from './conversation-voice-policy.js';
 
 const HANDLED_STATES = new Set(['tattoo', 'cadastro']);
 
@@ -428,7 +428,7 @@ function tattooMultiInfoOutput({ extracted, estado_atual, conversa, tenant, clie
   const missing = missingTattooFields(dadosAtualizados);
   const nextField = missing[0] || 'foto_local';
   const intro = clientContext?.is_first_contact === true
-    ? `Oii, tudo bem? Me chamo ${tenant?.nome_agente || 'atendente'}, muito prazer.\n\n`
+    ? `${firstContactSoftIntro()}\n\n`
     : '';
   const resposta = nextField === 'foto_local'
     ? `${intro}Boa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?`

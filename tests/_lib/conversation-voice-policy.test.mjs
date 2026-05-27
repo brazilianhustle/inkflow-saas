@@ -5,6 +5,7 @@ import {
   cadastroHandoffReply,
   cadastroResumeQuestion,
   firstName,
+  firstContactSoftIntro,
   fotoAmbiguaComoLocalCadastroQuestion,
   fotoAmbiguaComoReferenciaQuestion,
   fotoLocalRecebidaCadastroQuestion,
@@ -17,6 +18,12 @@ test('VoicePolicy: firstName extrai primeiro nome com fallback seguro', () => {
   assert.equal(firstName('  Maria  Costa  '), 'Maria');
   assert.equal(firstName(''), '');
   assert.equal(firstName(null), '');
+});
+
+test('VoicePolicy: saudacao curta de primeiro contato evita apresentacao mecanica', () => {
+  const text = firstContactSoftIntro();
+  assert.equal(text, 'Oii, tudo bem.');
+  assert.doesNotMatch(text, /me chamo|muito prazer/i);
 });
 
 test('VoicePolicy: cadastroResumeQuestion cobre familia de cadastro', () => {
