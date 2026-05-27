@@ -64,6 +64,7 @@ Depois disso o sistema decide se deve:
 - [53-level-4b-wave-29.md](./53-level-4b-wave-29.md): auditoria da familia cadastro/handoff com Naturalness V2 e revalidacao atual HTTP + WhatsApp real.
 - [54-level-4b-wave-30.md](./54-level-4b-wave-30.md): auditoria da familia menoridade/risco e calibragem da Naturalness V2 para reclamacao de demora no atendimento.
 - [55-level-4b-wave-31.md](./55-level-4b-wave-31.md): auditoria pos-handoff texto/midia e calibragem da Naturalness V2 para ignorar IA historica antes do ultimo humano.
+- [56-level-4b-wave-32.md](./56-level-4b-wave-32.md): revalidacao atual de lateral tempo/processo com WhatsApp real novo quando evidencia antiga nao e suficiente.
 - [slice-gates/workflow-manager.env](./slice-gates/workflow-manager.env): gate formal da camada de transicao segura de estado.
 - [current-objective.md](./current-objective.md): estado vivo, proximo ataque e comandos de retomada.
 - [smoke-runs.md](./smoke-runs.md): indice versionado dos smokes relevantes.

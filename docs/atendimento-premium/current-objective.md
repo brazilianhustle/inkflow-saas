@@ -11,9 +11,9 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_31_post_handoff_audit_pass
+status: level4b_wave_32_lateral_tempo_processo_pass
 branch: main
-ultimo_commit: docs: validate wave 31 post handoff audit
+ultimo_commit: docs: validate wave 32 lateral tempo processo
 ultimo_commit_funcional: 257f3cf fix: soften optional email prompt
 deploy: PASS no commit 4eef96e; Wave 28 HTTP radar + WhatsApp real PASS
 tests: npm test PASS local 1216/1216; CI PASS 26491494646; deploy PASS 26491494627
@@ -58,6 +58,8 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 31 iniciada: auditoria read-only da familia pos-handoff texto/midia, com foco em encaminhar ao humano sem nova IA e sem reabrir coleta.
 - Wave 31 validou pos-handoff texto/midia sem mudanca de bot: Naturalness V2 calibrado para avaliar apenas IA apos o ultimo humano quando `SMOKE_REQUIRE_AI_RESPONSE=0`; familia real auditada teve 7 PASS/0 watchlist/0 rework/0 stop, media 2.88 e tag `pos_handoff_sem_ia_ok`.
 - Regra metodologica reforcada apos Wave 31: auditoria read-only pode reaproveitar evidencia WhatsApp real existente somente sem mudanca de comportamento e com validade declarada; qualquer mudanca funcional/conversacional ou duvida exige WhatsApp real novo `central -> bot`.
+- Wave 32 iniciada: revalidacao atual de lateral tempo/processo, porque evidencias antigas ainda mostram copy mecanica pre-Voice Policy e nao devem ser usadas para fechar comportamento atual.
+- Wave 32 validou lateral tempo/processo atual sem mudanca de codigo: HTTP radar e WhatsApp real novo passaram para os dois cenarios; Naturalness V2 teve 4 PASS/0 watchlist/0 rework/0 stop, estado `coletando_tattoo`, `orcid=null`, copy_risk=baixo e sem `Me chamo`/`muito prazer`.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
@@ -225,7 +227,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: rodar `wave-health`, commitar Wave 31 e escolher a proxima familia read-only. Candidato pragmatico: lateral de primeiro contato ou familia de portfolio/processo, mantendo Level 4B.
+Proximo passo recomendado: rodar `wave-health`, commitar Wave 32 e escolher a proxima familia lateral. Candidato pragmatico: portfolio/imagem/historia de vida, aplicando a regra de evidencia reaproveitada versus WhatsApp real novo.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:
