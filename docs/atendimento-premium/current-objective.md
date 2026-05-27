@@ -13,13 +13,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ```text
 status: level4b_wave_38_jornada_midia_cadastro_handoff_pass
 branch: main
-ultimo_commit: b54f085 fix: route portfolio requests deterministically
+ultimo_commit: cca4632 docs: close wave 38 media cadastro handoff journey
 ultimo_commit_funcional: b54f085 fix: route portfolio requests deterministically
-deploy: PASS no commit b54f085; Wave 33 HTTP radar + WhatsApp real PASS
-tests: npm test PASS local 1219/1219; CI PASS 26493282715; deploy PASS 26493282734
+deploy: PASS no commit cca4632; Wave 38 HTTP multiturn + WhatsApp real multiturn PASS
+tests: CI PASS 26494719322; deploy PASS 26494719288
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
-ultimo_commit_validado: b54f085 fix: route portfolio requests deterministically + CI PASS + deploy PASS + HTTP radar PASS + WhatsApp real PASS
+ultimo_commit_validado: cca4632 docs: close wave 38 media cadastro handoff journey + CI PASS + deploy PASS + wave-health PASS + Wave 38 HTTP/WhatsApp real PASS
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -200,41 +200,43 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-cadastro-handoff-email-recusado-20260526T203228Z-29078
-run_id_real: scenario-whatsapp-real-cadastro-handoff-20260526T203258Z-19586
-tipo: Scenario WhatsApp real de cadastro-handoff basico da Wave 18
+run_id_http: scenario-long-journey-lateral-media-cadastro-handoff-20260527T062122Z-21860
+run_id_real: scenario-whatsapp-real-long-journey-lateral-media-cadastro-handoff-20260527T062318Z-27700
+tipo: Scenario WhatsApp real multi-turn da Wave 38
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: aguardando_tatuador
-orcid: orc_24av8g
-evidence: .smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260526T203258Z-19586/
+orcid: orc_2k8ryw
+evidence: .smoke-evidence/scenario-whatsapp-real-long-journey-lateral-media-cadastro-handoff-20260527T062318Z-27700/
 ```
 
 Mensagem:
 
 ```text
+como funciona o orçamento?
+quero uma rosa fineline no antebraco, tenho 1.70
+segue foto do local + imagem
+Joao Silva
+12/03/1995
 pode seguir sem email
-quanto tempo demora?
 ```
 
 Resultado:
 
 ```text
 estado_agente: aguardando_tatuador
-resposta_ai: O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
-
-Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.
-orcid: orc_24av8g
+resposta_ai_final: Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.
+orcid: orc_2k8ryw
 copy_risk: baixo
-workflow: cadastro completo com email recusado promoveu para aguardando_tatuador com handoff_package_v1
+workflow: jornada lateral + midia + cadastro + email recusado promoveu para aguardando_tatuador com handoff_package_v1
 observabilidade: Workflow Manager cadastro_and_tattoo_complete + trace hp_*
-decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa de email + lateral tempo -> Workflow Manager cria handoff de orcamento -> resposta lateral + fechamento ao cliente
+decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> lateral de orçamento -> briefing de tattoo -> foto local real -> cadastro -> recusa de email -> Workflow Manager cria handoff de orcamento -> fechamento ao cliente
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: rodar `wave-health`, commitar o fechamento documental da Wave 38 e decidir entre validar pos-handoff apos jornada real ou abrir auditoria curta de cobertura restante antes de nova frente funcional.
+Proximo passo recomendado: declarar Wave 39 pequena para validar pos-handoff apos jornada real completa, com HTTP radar e WhatsApp real, garantindo que em `aguardando_tatuador` texto/midia adicional nao reabre IA nem coleta.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:
