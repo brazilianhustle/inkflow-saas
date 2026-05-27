@@ -214,7 +214,7 @@ base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_cadastro
 orcid: null
-evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-reference-after-local-20260527T065246Z-14230/
+evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-reference-then-local-20260527T065936Z-25142/
 ```
 
 Mensagem:
