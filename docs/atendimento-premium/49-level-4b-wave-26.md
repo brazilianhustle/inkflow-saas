@@ -236,6 +236,55 @@ Objetivo:
 rodar Rubrica V2 nas evidencias das Waves 22, 23, 24 e 25 e escolher proxima familia de ataque
 ```
 
+Status:
+
+```text
+PASS metodologico com watchlist acionavel
+auditor: scripts/smoke/naturalness-audit-v2.sh
+smoke_executed: no
+whatsapp_sent: no
+mudanca_conversacional: nenhuma
+```
+
+Resultado em evidencias finais WhatsApp real das Waves 22 a 25:
+
+```text
+evidencias_analisadas: 8
+pass: 8
+watchlist: 0
+rework: 0
+stop: 0
+media_geral: 2.88
+decisao: PASS
+```
+
+Resultado expandido nos steps das jornadas longas + evidencias finais das Waves 24 e 25:
+
+```text
+evidencias_analisadas: 29
+pass: 25
+watchlist: 4
+rework: 0
+stop: 0
+media_geral: 2.82
+decisao: WATCHLIST
+```
+
+Watchlist encontrada:
+
+```text
+familia: primeiro_contato_em_jornadas_longas_historicas
+tags: natural_robotizado, excesso_de_perguntas
+evidencia: steps antigos das Waves 22 e 23 ainda tinham "Me chamo Assistente, muito prazer"
+risco_atual: moderado-baixo, porque Waves 24 e 25 ja corrigiram os caminhos de primeiro contato testados depois
+```
+
+Leitura estrategica:
+
+```text
+Nao abrir nova mudanca de copy agora. A proxima frente deve ser uma validacao atual de jornada longa com a Voice Policy ja aplicada, para provar que a apresentacao mecanica sumiu tambem no fluxo completo e nao apenas nos micro-slices isolados.
+```
+
 Familias candidatas:
 
 ```text
@@ -253,8 +302,8 @@ menoridade/responsavel legal
 baseline_v1_registrado: PASS
 rubrica_v2_documentada: PASS
 auditor_v2_read_only: PASS
-reaudit_recente: pending
-proxima_wave_recomendada_com_evidencia: pending
+reaudit_recente: PASS
+proxima_wave_recomendada_com_evidencia: PASS
 ```
 
 ## Stop Conditions
@@ -268,5 +317,5 @@ proxima_wave_recomendada_com_evidencia: pending
 ## Proximo Passo
 
 ```text
-Implementar Micro-Slice 4: rodar Auditor V2 nas evidencias das Waves 22, 23, 24 e 25 e escolher a proxima familia de ataque.
+Abrir proxima Wave curta: revalidacao de jornada longa atual pos-Voice Policy, com HTTP radar e WhatsApp real definitivo. Objetivo: confirmar que a correcao de apresentacao mecanica cobre conversa completa, nao so micro-slices de primeiro contato.
 ```

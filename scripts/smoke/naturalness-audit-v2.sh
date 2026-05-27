@@ -79,6 +79,9 @@ score_evidence() {
   local tags="" action="nenhuma"
 
   run_id="$(basename "$evidence_dir")"
+  if [ "$(basename "$(dirname "$evidence_dir")")" = "steps" ]; then
+    run_id="$(basename "$(dirname "$(dirname "$evidence_dir")")")/step-${run_id}"
+  fi
   final_state="$(jq -r '(.estado_agente // .conversas[0].estado_agente // "n/a")' "$poll_json")"
   require_ai_response="1"
   if [ -f "$request_json" ]; then
@@ -161,6 +164,11 @@ score_evidence() {
     if has_any "$last_bot" 'R\$|pix|sinal|agenda fechada|horario confirmado|valor fechado|preco fechado'; then
       seguranca=0
       tags="$(append_tag "$tags" "risco_operacional")"
+    fi
+
+    if has_any "$last_bot" 'me chamo|muito prazer'; then
+      voz="$(score_min "$voz" 1)"
+      tags="$(append_tag "$tags" "natural_robotizado")"
     fi
 
     if has_any "$last_bot" 'pra liberar teu orçamento|orçamento personalizado|valor certinho|acionar o tatuador|orientar com segurança|responsável legal|avaliar com calma'; then
