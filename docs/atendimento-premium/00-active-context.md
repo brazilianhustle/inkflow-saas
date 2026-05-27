@@ -159,6 +159,20 @@ status: pendente commit/deploy e WhatsApp real definitivo do zero
 provas_locais: Cliente "Nessa parte" + foto -> Bot "Recebi a foto do local. Só pra eu registrar certinho: qual parte do corpo é essa?"; foto_local_msg_id salvo; refs ausente; runAgent=0
 ```
 
+## Corte Atual - Wave 53
+
+```text
+origem: regressao manual WhatsApp real em leitura de foto sem caption + texto separado "nessa parte aqui"
+problema: foto de braco vazio recebeu resposta automatica "referencia ou local?", sem analise visual suficiente
+causa_raiz: pipeline tinha bypass pre-LLM para foto unica sem legenda, marcando como ambigua antes da visao analisar a imagem
+correcao_pipeline: foto sem legenda agora passa pela visao; pele vazia/sem tattoo vira foto_local; pergunta ambigua so quando a analise marcar tattoo existente
+correcao_agent: qualquer analise com corpo_tem_tattoo=true vira pergunta de cobertura/referencia, mesmo se o modelo rotular como referencia
+correcao_prompt: R4 reforca pele vazia = local; pele tatuada = pergunta cobertura/referencia
+validacao_local: pipeline PASS 75/75; route-runagent PASS 29/29; prompt contract PASS 1/1; integration pipeline-classifier PASS 11/11; npm test PASS 1255/1255
+status: pendente commit/deploy e WhatsApp real definitivo do zero
+provas_locais: Cliente envia foto de braco vazio -> visao recebe 1 imagem -> analise corpo sem tattoo -> foto_local_msg_id salvo; Bot nao pergunta "referencia ou local"
+```
+
 ## Arquivos Para Ler
 
 ```text
@@ -169,6 +183,7 @@ docs/atendimento-premium/75-level-4b-wave-49.md
 docs/atendimento-premium/76-level-4b-wave-50.md
 docs/atendimento-premium/77-level-4b-wave-51.md
 docs/atendimento-premium/78-level-4b-wave-52.md
+docs/atendimento-premium/79-level-4b-wave-53.md
 docs/atendimento-premium/current-objective.md somente se precisar de historico amplo
 docs/atendimento-premium/smoke-runs.md somente se precisar de evidencia antiga
 scripts/smoke/continuity-bundle.sh

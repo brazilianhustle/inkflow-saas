@@ -506,6 +506,65 @@ test('runAgent (tattoo): foto de corpo ja tatuado no turno atual vira pergunta d
   assert.ok(!r.pediu_foto_local);
 });
 
+test('runAgent (tattoo): foto marcada como referencia mas com tattoo existente tambem vira pergunta de cobertura/referencia', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const conversa = {
+    ...CONVERSA_STUB,
+    dados_coletados: {
+      descricao_curta: 'leao',
+      local_corpo: 'braco',
+      altura_cm: 181,
+      estilo: 'blackwork',
+    },
+  };
+  const r = await runAgent({
+    env: ENV, tenant_id: 't', telefone: '5511', mensagem: 'nessa parte aqui',
+    estado_atual: 'tattoo', dados_acumulados: conversa.dados_coletados, historico: [],
+    tenant: TENANT_STUB,
+    conversa,
+    clientContext: {},
+    imagens: [{ base64: 'ZZ', mimetype: 'image/jpeg', msgRowId: 11942 }],
+    openaiClient: {
+      responses: {
+        parse: async () => ({
+          status: 'completed',
+          id: 'r',
+          output_parsed: { output: {
+            proxima_acao: 'pergunta',
+            resposta_cliente: 'Essa tattoo antiga tem um estilo legal. Tu quer nesse caminho?',
+            dados_persistidos: {
+              descricao_curta: 'leao',
+              local_corpo: 'braco',
+              altura_cm: 181,
+              estilo: 'blackwork',
+              tamanho_cm: null,
+              cor_preferencia: null,
+              foto_local: null,
+            },
+            dados_completos: false,
+            campos_faltando: ['foto_local'],
+            campos_conflitantes: [],
+            payload_portfolio: null,
+            analise_imagens: [{
+              tipo: 'referencia',
+              descricao: 'braco com tatuagem existente',
+              corpo_tem_tattoo: true,
+              corpo_tem_marcacao: false,
+            }],
+            cobertura_suspeita: null,
+          } },
+        }),
+      },
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.proxima_acao, 'pergunta');
+  assert.deepEqual(r.campos_faltando, ['tipo_foto']);
+  assert.equal(r.analise_imagens[0].tipo, 'incerto');
+  assert.match(r.resposta_cliente, /refer[eê]ncia|local/i);
+  assert.equal(r.dados_persistidos.foto_local, null);
+});
+
 // ─── Bug 1: gate handoff só após foto pedida >=1x ──────────────────────
 const HANDOFF_OUT = {
   proxima_acao: 'handoff',

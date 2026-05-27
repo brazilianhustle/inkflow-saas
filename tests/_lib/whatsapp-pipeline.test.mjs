@@ -2558,9 +2558,9 @@ test('Etapa 4.5: foto posterior com foto local existente vira referencia sem cha
   assert.match(aiInsert.message.content, /nome completo/i);
 });
 
-test('Etapa 4.5: foto ambigua sem legenda pergunta classificacao sem chamar LLM', async () => {
+test('Etapa 4.5: foto sem legenda passa pela visao antes de classificar', async () => {
   let conversaPatches = [];
-  let runAgentCalled = false;
+  let runAgentArgs = null;
   let aiInsert = null;
   const conversa = {
     id: CONVERSA_ID,
@@ -2587,22 +2587,37 @@ test('Etapa 4.5: foto ambigua sem legenda pergunta classificacao sem chamar LLM'
         if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
       },
     }),
-    runAgent: async () => { runAgentCalled = true; throw new Error('nao deveria chamar LLM'); },
-    classificarFoto: classificarFotoReal,
+    runAgent: async (args) => {
+      runAgentArgs = args;
+      return {
+        ok: true,
+        resposta_cliente: 'Recebi a foto do braço. Qual estilo tu imagina pro leao?',
+        estado_novo: 'tattoo',
+        dados_persistidos: {},
+        dados_completos: false,
+        campos_faltando: ['estilo'],
+        campos_conflitantes: [],
+        proxima_acao: 'pergunta',
+        agent_usado: 'tattoo',
+        analise_imagens: [
+          { tipo: 'corpo', descricao: 'braco sem tatuagem aparente', corpo_tem_tattoo: false, corpo_tem_marcacao: false },
+        ],
+      };
+    },
+    classificarFoto: () => { throw new Error('classificarFoto nao devia rodar quando analise_imagens existe'); },
   });
 
   await processBatch({}, baseBatch({ msgRowIds: [603] }), deps);
 
-  assert.equal(runAgentCalled, false, 'foto ambigua sem legenda nao deve chamar LLM');
-  const refPatch = conversaPatches.find(p => Array.isArray(p.refs_imagens_msg_ids));
-  assert.ok(refPatch, 'foto ambigua fica rastreavel para confirmacao posterior');
-  assert.equal(refPatch.foto_local_msg_id, undefined);
-  assert.deepEqual(refPatch.refs_imagens_msg_ids, [603]);
-  assert.equal(refPatch.descricao_curta, 'rosa');
-  assert.equal(refPatch.local_corpo, 'antebraco');
-  assert.equal(refPatch.altura_cm, 170);
-  assert.match(aiInsert.message.content, /refer[eê]ncia/i);
-  assert.match(aiInsert.message.content, /local do corpo/i);
+  assert.equal(runAgentArgs?.imagens?.length, 1, 'foto sem legenda deve ir para a visao');
+  const localPatch = conversaPatches.find(p => p.foto_local_msg_id === 603);
+  assert.ok(localPatch, 'visao corpo sem tattoo deve virar foto_local');
+  assert.equal(localPatch.refs_imagens_msg_ids, undefined);
+  assert.equal(localPatch.descricao_curta, 'rosa');
+  assert.equal(localPatch.local_corpo, 'antebraco');
+  assert.equal(localPatch.altura_cm, 170);
+  assert.match(aiInsert.message.content, /foto do bra[cç]o/i);
+  assert.doesNotMatch(aiInsert.message.content, /refer[eê]ncia.*local do corpo|local do corpo.*refer[eê]ncia/i);
 });
 
 test('Etapa 5.1: confirmacao de foto ambigua como local promove ref sem chamar LLM', async () => {

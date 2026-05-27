@@ -546,3 +546,13 @@ Nao registrar detalhes longos aqui. Detalhes longos ficam no evidence, decision 
 - Correção local: pipeline evita LLM nesse caminho, salva `foto_local_msg_id` e pergunta a parte do corpo sem inventar a regiao.
 - Validacao local: pipeline `75/75`, router `74/74`, integration pipeline-classifier `11/11`, `npm test` `1254/1254`.
 - Status: pendente commit/deploy e WhatsApp real definitivo do zero.
+
+## Atualizacao 2026-05-27 - Wave 53
+
+- Incidente manual: foto clara de braço vazio + texto separado `nessa parte aqui` recebeu pergunta automatica `referencia ou local?`.
+- Causa raiz: `whatsapp-pipeline` tinha bypass pre-LLM para foto unica sem legenda; isso classificava como ambigua antes da visao analisar a imagem.
+- Correção local: foto sem legenda agora passa pela visao; se `analise_imagens.tipo=corpo` e `corpo_tem_tattoo=false`, a foto vira `foto_local_msg_id`.
+- Correção local: `runAgent` força pergunta de cobertura/referencia quando qualquer analise vier com `corpo_tem_tattoo=true`, mesmo se o modelo rotular como referencia.
+- Prompt R4 reforcado: pele vazia = local; pele tatuada = pergunta cobertura/referencia.
+- Validacao local: pipeline `75/75`, route-runagent `29/29`, prompt contract `1/1`, integration pipeline-classifier `11/11`, `npm test` `1255/1255`.
+- Status: pendente commit/deploy e WhatsApp real definitivo do zero.

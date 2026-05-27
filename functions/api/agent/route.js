@@ -355,14 +355,14 @@ function hasAmbiguousTattooBodyPhoto(out, imagens) {
   if (!Array.isArray(imagens) || imagens.length === 0) return false;
   if (out?.cobertura_suspeita) return false;
   const analise = Array.isArray(out?.analise_imagens) ? out.analise_imagens : [];
-  return analise.some(a => a?.tipo === 'corpo' && a?.corpo_tem_tattoo === true);
+  return analise.some(a => a?.corpo_tem_tattoo === true);
 }
 
 function forceAmbiguousTattooPhotoQuestion(out, dadosApos, conversa) {
   const local = String(dadosApos?.local_corpo || '').trim() || 'local do corpo';
   const analise = Array.isArray(out?.analise_imagens)
     ? out.analise_imagens.map(a => (
-      a?.tipo === 'corpo' && a?.corpo_tem_tattoo === true
+      a?.corpo_tem_tattoo === true
         ? { ...a, tipo: 'incerto' }
         : a
     ))

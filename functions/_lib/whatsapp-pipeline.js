@@ -85,10 +85,6 @@ function hasCadastroCompleto(dados = {}) {
   return Boolean(dados.nome && dados.data_nascimento && (dados.email || dados.email_recusado === true));
 }
 
-function isImagemSemLegendaClara(fotos = []) {
-  return fotos.length === 1 && !String(fotos[0]?.caption || '').trim();
-}
-
 function isFotoLocalIndicadaPorLegenda(fotos = []) {
   return fotos.length === 1 && isFotoLocalDeiticaCaption(fotos[0]?.caption || '');
 }
@@ -471,24 +467,6 @@ export async function processBatch(env, batch, depsOverride = {}) {
         proxima_acao: 'pergunta',
         agent_usado: 'tattoo',
         analise_imagens: null,
-      };
-    }
-    const fotoAmbiguaSemLegendaTattoo = !agentOut
-      && estadoAgente === 'tattoo'
-      && isImagemSemLegendaClara(fotos)
-      && !fotoLocalPendente;
-    if (fotoAmbiguaSemLegendaTattoo) {
-      agentOut = {
-        ok: true,
-        resposta_cliente: 'Vi a imagem, mas fiquei em dúvida se ela é referência do desenho ou o local do corpo. Qual dos dois fica valendo?',
-        estado_novo: 'tattoo',
-        dados_persistidos: {},
-        dados_completos: false,
-        campos_faltando: ['tipo_foto'],
-        campos_conflitantes: [],
-        proxima_acao: 'pergunta',
-        agent_usado: 'tattoo',
-        analise_imagens: [{ tipo: 'incerto', descricao: 'imagem ambigua', corpo_tem_tattoo: false, corpo_tem_marcacao: false }],
       };
     }
     const fotoLocalIndicadaPorLegenda = !agentOut
