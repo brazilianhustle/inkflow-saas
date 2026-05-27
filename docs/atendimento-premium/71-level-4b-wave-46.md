@@ -84,8 +84,50 @@ copy_risk: baixo
 ## Proximo Corte
 
 ```text
-proxima_variacao_recomendada: estilo fora do catalogo aceito do tenant
-motivo: valida personalizacao por regra de estudio sem entrar ainda em financeiro/agenda
+proxima_variacao_recomendada: regra especifica de menoridade/cobertura por estudio ou identidade/vocabulario do estudio
+motivo: valida personalizacao por regra de estudio sem entrar ainda em financeiro/agenda amplo
 autonomy_level: manter 4B
 level_4c: segue bloqueado
+```
+
+## Micro-Slice 2 - Estilo Fora Do Catalogo
+
+```text
+status: fechado_pass
+commit_funcional: c77bfdd fix: handle tenant unsupported tattoo styles
+decisao: estilo reconhecido fora do catalogo aceito do tenant e tratado pelo Router, sem LLM e sem mutacao de estado/dados
+```
+
+O bot agora identifica `old school` como estilo reconhecido, cruza com `tenant_rules.estilos_aceitos` e responde limite de escopo quando o estilo nao pertence ao catalogo aceito. A resposta preserva `coletando_tattoo`, nao persiste `estilo`, nao cria `orcid` e nao entra em financeiro/agenda.
+
+## Evidencias Micro-Slice 2
+
+| Gate | Run ID | Resultado | Observacao |
+|---|---|---|---|
+| Testes locais | `npm test -- tests/_lib/conversation-router.test.mjs tests/_lib/whatsapp-pipeline.test.mjs` | PASS | 1222 pass / 0 fail |
+| CI | `26499569403` | PASS | commit `c77bfdd` |
+| Deploy | `26499569488` | PASS | Cloudflare Pages deploy verde |
+| HTTP radar | `scenario-tenant-style-out-of-catalog-20260527T112003Z-6720` | PASS | estado preservado; sem persistir estilo; agent-log confirmou catalogo do tenant |
+| WhatsApp real | `scenario-whatsapp-real-tenant-style-out-of-catalog-20260527T153034Z-16310` | PASS | Evolution `central -> bot (*2357)` |
+| Naturalness V2 | `.smoke-evidence/scenario-whatsapp-real-tenant-style-out-of-catalog-20260527T153034Z-16310/` | PASS | 1 PASS / 0 watchlist / 0 rework / 0 stop, media 2.88 |
+
+## Provas Conclusivas Reais Micro-Slice 2
+
+```text
+Cliente: "voces fazem old school?"
+Bot: "Esse estilo nao esta no foco do estudio por aqui. Posso seguir se voce quiser adaptar pra outro estilo, ou acionar o estudio pra avaliar direto."
+```
+
+## Garantias Observadas Micro-Slice 2
+
+```text
+estado_final: coletando_tattoo
+orcid: null
+dados_coletados: {}
+router_intent: tenant_unsupported_style
+router_reason: tenant_style_not_accepted
+router_can_mutate_state: false
+tenant_context_has_style_catalog: true
+tenant_context_has_accepted_styles: true
+copy_risk: baixo
 ```
