@@ -79,6 +79,16 @@ export function localComPreposicao(local) {
 export function montarBriefing(conv) {
   const dc = conv?.dados_coletados || {};
   const nome = conv?.dados_cadastro?.nome || 'O cliente';
+  const budgetItems = Array.isArray(dc.budget_items)
+    ? dc.budget_items.filter(item => item && item.status !== 'replaced' && item.status !== 'cancelled')
+    : [];
+  if (budgetItems.length > 1) {
+    const linhas = [`${nome} tem ${budgetItems.length} tattoos no orcamento:`];
+    budgetItems.forEach((item, i) => {
+      linhas.push(`${i + 1}. ${montarBriefingItem(item, conv)}`);
+    });
+    return linhas.join('\n');
+  }
   // descricao_tattoo (tool dados_coletados) e descricao_curta (agente) sao o MESMO
   // campo logico (descricao da tattoo) — dual-read por robustez.
   const descricao = dc.descricao_tattoo || dc.descricao_curta;
@@ -99,6 +109,38 @@ export function montarBriefing(conv) {
   if (nRefs > 0) detalhes.push(`${nRefs} referência${nRefs > 1 ? 's' : ''}`);
   if (detalhes.length > 0) frase += ` Mandou ${detalhes.join(' + ')}.`;
   return frase;
+}
+
+function montarBriefingItem(item = {}, conv = {}) {
+  const partes = [];
+  const descricao = item.descricao_tattoo || item.descricao_curta;
+  if (descricao) partes.push(`tattoo de ${descricao}`);
+  if (item.estilo) partes.push(`estilo ${item.estilo}`);
+  if (item.local_corpo) partes.push(localComPreposicao(item.local_corpo));
+  if (item.tamanho_cm != null) partes.push(`~${item.tamanho_cm}cm`);
+  const altura = item.altura_cm ?? conv?.dados_coletados?.altura_cm;
+  const foto = item.foto_local_msg_id || item.foto_local ? ' foto do local recebida' : null;
+  const base = partes.length > 0 ? partes.join(', ') : 'tattoo sem briefing completo';
+  return `${base}${altura != null ? `. Altura do cliente: ${altura}cm` : ''}.${foto || ''}`;
+}
+
+function budgetUpdatePending(conv = {}) {
+  const dc = conv.dados_coletados || {};
+  const items = Array.isArray(dc.budget_items) ? dc.budget_items : [];
+  if (!conv.orcid || items.length < 2 || !dc.active_budget_item_id) return false;
+  const active = items.find(item => item?.item_id === dc.active_budget_item_id);
+  return Boolean(active && active.status !== 'sent_to_artist' && active.status !== 'replaced' && active.status !== 'cancelled');
+}
+
+function markActiveBudgetItemSent(dados = {}) {
+  const activeId = dados.active_budget_item_id;
+  const items = Array.isArray(dados.budget_items) ? dados.budget_items : [];
+  if (!activeId || items.length === 0) return dados;
+  return {
+    ...dados,
+    budget_items: items.map(item => item?.item_id === activeId ? { ...item, status: 'sent_to_artist' } : item),
+    budget_update_sent_at: new Date().toISOString(),
+  };
 }
 
 export function montarTextoOrcamento(conv, resultadoFotos = null, today = new Date()) {
@@ -307,6 +349,64 @@ async function handle({ env, input }) {
   // Idempotencia: se ja tem orcid, NAO reenvia o texto. Mas se as fotos ficaram
   // pendentes (msg_id sem file_id — upload falhou numa chamada anterior), roda SO
   // o upload das fotos faltantes (retry parcial).
+  if (conv.orcid && budgetUpdatePending(conv)) {
+    const dat = conv.dados_coletados || {};
+    const cad = conv.dados_cadastro || {};
+    const faltando = [];
+    if (!dat.descricao_tattoo && !dat.descricao_curta) faltando.push('descricao_tattoo');
+    if (!dat.local_corpo) faltando.push('local_corpo');
+    if (dat.altura_cm == null) faltando.push('altura_cm');
+    if (!dat.estilo) faltando.push('estilo');
+    if (!cad.nome) faltando.push('nome');
+    if (!cad.data_nascimento) faltando.push('data_nascimento');
+    if (faltando.length > 0) {
+      return {
+        status: 400,
+        body: { ok: false, error: 'campos-faltando', faltando, dica: 'colete os campos OBR antes de enviar update de orcamento' },
+      };
+    }
+
+    let resultadoFotos;
+    try {
+      resultadoFotos = await enviarFotosOrcamento(env, tenant.tatuador_telegram_chat_id, conv);
+    } catch (e) {
+      console.error(`[enviar-orcamento] enviarFotosOrcamento update crash: ${e.message}`);
+      resultadoFotos = { enviadas: 0, falhas_total: true, error: e.message };
+    }
+    console.log(JSON.stringify({
+      evento: 'fotos-orcamento-update-enviadas',
+      orcid: conv.orcid, tenant_id, telefone,
+      tentadas: resultadoFotos.tentadas || 0,
+      enviadas: resultadoFotos.enviadas || 0,
+      falhas: resultadoFotos.falhas || 0,
+      falhas_total: !!resultadoFotos.falhas_total,
+    }));
+    const tgResult = await enviarTelegram(
+      env,
+      tenant.tatuador_telegram_chat_id,
+      montarTextoOrcamento(conv, resultadoFotos),
+      inlineKeyboard(conv.orcid),
+    );
+    await supaFetch(env, `/rest/v1/conversas?id=eq.${encodeURIComponent(conversa_id)}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({
+        estado_agente: 'aguardando_tatuador',
+        dados_coletados: markActiveBudgetItemSent(conv.dados_coletados || {}),
+      }),
+    });
+    return {
+      status: 200,
+      body: {
+        ok: true,
+        orcid: conv.orcid,
+        budget_update: true,
+        telegram_message_id: tgResult.message_id,
+        estado_agente: 'aguardando_tatuador',
+      },
+    };
+  }
+
   if (conv.orcid) {
     const dc = conv.dados_coletados || {};
     const fotosPendentes =

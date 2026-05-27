@@ -157,3 +157,18 @@ export function composeBudgetConfirmationTelegram({ telefone, tenant, resolution
     'Bot retomou a coleta da nova ideia antes de montar novo pacote.',
   ].join('\n');
 }
+
+export function syncActiveBudgetItem(dados_coletados = {}) {
+  const activeId = dados_coletados?.active_budget_item_id;
+  const items = Array.isArray(dados_coletados?.budget_items) ? dados_coletados.budget_items : null;
+  if (!activeId || !items) return dados_coletados || {};
+  const fields = pickBudgetSnapshot(dados_coletados);
+  return {
+    ...dados_coletados,
+    budget_items: items.map((item) => (
+      item?.item_id === activeId
+        ? { ...item, ...fields, status: item.status || 'collecting' }
+        : item
+    )),
+  };
+}

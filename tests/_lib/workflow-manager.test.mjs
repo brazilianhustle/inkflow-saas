@@ -78,6 +78,41 @@ test('Workflow Manager: applyWorkflowTransition força payload seguro quando per
   assert.equal(result.agentOut.workflow_decision.reason, 'cadastro_and_tattoo_complete');
 });
 
+test('Workflow Manager: tattoo completa com cadastro existente vai direto para handoff', () => {
+  const result = applyWorkflowTransition({
+    estado_atual: 'tattoo',
+    agentOut: {
+      ok: true,
+      resposta_cliente: 'foto recebida',
+      proxima_acao: 'pergunta',
+      estado_novo: 'cadastro',
+      dados_completos: true,
+      campos_faltando: [],
+    },
+    dados_coletados: tattooComplete,
+    dados_cadastro: cadastroComplete,
+  });
+
+  assert.equal(result.agentOut.estado_novo, 'aguardando_tatuador');
+  assert.equal(result.agentOut.proxima_acao, 'handoff');
+  assert.equal(result.agentOut.workflow_decision.reason, 'tattoo_complete_with_existing_cadastro');
+  const metadata = summarizeWorkflowDecision(result.agentOut.workflow_decision);
+  assert.equal(metadata.workflow_handoff_package_required, true);
+});
+
+test('Workflow Manager: tattoo completa sem cadastro existente segue para cadastro', () => {
+  const decision = evaluateWorkflowTransition({
+    estado_atual: 'tattoo',
+    agentOut: { proxima_acao: 'pergunta', estado_novo: 'cadastro' },
+    dados_coletados: tattooComplete,
+    dados_cadastro: {},
+  });
+
+  assert.equal(decision.shouldTransition, false);
+  assert.equal(decision.reason, 'unsupported_state');
+  assert.equal(decision.toState, 'cadastro');
+});
+
 test('Workflow Manager: resumo observavel nao vaza dados pessoais', () => {
   const metadata = summarizeWorkflowDecision({
     shouldTransition: true,

@@ -7,9 +7,9 @@ Provar que o bot lida com mudanca de ideia, novo pedido ou complemento relevante
 ## Status
 
 ```text
-status: reaberta_por_correcao_de_contrato_produto
+status: budget_items_update_telegram_pendente_validacao_final
 motivo: a validacao anterior provou encaminhamento terminal simples, mas nao provou replanejamento/multiplos orcamentos
-decisao: separar cobertura pos-handoff simples de mudanca de ideia orcamentavel; abrir arquitetura de Budget Items antes de novo fechamento
+decisao: evoluir Budget Items ate coletar segundo item e enviar update Telegram multi-tattoo; PASS final exige WhatsApp real completo + Telegram correto
 ```
 
 ## Correcao De Contrato - 2026-05-27
@@ -79,7 +79,19 @@ nao_faz_ainda: coletar item 2 ate pronto, gerar pacote Telegram final com multip
 gate: nao fechar PASS de produto sem WhatsApp real organico completo + Telegram correto
 ```
 
-Contrato futuro:
+## Micro-Slice 3 - Segundo Item E Telegram Multi-Tattoo
+
+```text
+status: implementado_localmente_pendente_ci_deploy_whatsapp_real
+escopo: resolver confirmacao "as duas"/"somente essa", sincronizar o item ativo durante a coleta, concluir segundo item e enviar update Telegram usando o mesmo ORCID
+persistencia: dados_coletados.budget_items[], active_budget_item_id e status por item
+workflow: se cadastro ja estava completo, tattoo completa volta direto para aguardando_tatuador e exige pacote/update de orcamento
+telegram: briefing explicita N tattoos no orcamento e lista cada item; item ativo pendente e marcado como sent_to_artist apos envio
+cenario_definitivo: whatsapp-real-long-journey-post-handoff-new-request com 10 steps, do inicio ao update final
+gate: PASS bloqueado ate CI/deploy + WhatsApp real organico completo + chegada correta do Telegram final
+```
+
+Contrato atual:
 
 ```text
 se cliente disser "so essa": marcar item anterior como substituido/cancelado e coletar campos faltantes da nova tattoo
@@ -127,7 +139,7 @@ jornada_completa:
   origem: WhatsApp real central -> bot
   inicio: conversa nova com cleanup inicial
   caminho: abertura organica -> briefing tattoo -> foto/local quando aplicavel -> cadastro -> handoff/orcid -> novo pedido pos-handoff
-  fechamento: mensagem de mudanca de ideia encaminhada ao humano sem IA nova, sem novo ORCID e sem mudar estado terminal
+  fechamento: bot pergunta se substitui/adiciona; confirmacao "as duas" coleta segundo item; Telegram final lista as duas tattoos no mesmo ORCID
 ```
 
 ## Strategic Slice Gate
@@ -167,11 +179,12 @@ responder com IA depois de handoff: fora neste primeiro corte
 ## Micro-Slice 1 - Novo Pedido Depois Do Handoff Via Jornada Completa
 
 ```text
-status: PASS
+status: PASS reclassificado
 tipo: regressao forte + risco operacional
 setup: cleanup inicial apenas; sem seed terminal na validacao definitiva
 jornada: cliente inicia pedido de tattoo, entrega briefing, completa cadastro ate handoff, depois envia "mudei de ideia, queria uma caveira na perna"
-contrato: encaminhar a mudanca ao tatuador sem IA nova, manter aguardando_tatuador, preservar orcid criado na propria jornada, nao criar novo orcamento
+contrato_original: encaminhar a mudanca ao tatuador sem IA nova, manter aguardando_tatuador, preservar orcid criado na propria jornada, nao criar novo orcamento
+reclassificacao: prova encaminhamento terminal simples, nao prova replanejamento premium
 ```
 
 ## Resultado Micro-Slice 1
@@ -217,31 +230,25 @@ validacao: rerun full journey WhatsApp real PASS com tail text gate ativo na eta
 http_radar: permitido como preflight, preferencialmente full journey ou seed apenas para diagnostico
 whatsapp_real: obrigatorio em jornada completa desde o inicio
 expected_state: aguardando_tatuador
-require_ai_response: 0
+require_ai_response: variavel por etapa; mudanca de ideia exige resposta de confirmacao, pos-update final exige handoff correto
 orcid: criado uma vez na propria jornada e preservado apos a mudanca de ideia
 novo_orcid: proibido
-ai_messages_after_last_human: 0
-tail: pos-handoff-mensagem-encaminhada
-forbidden_tail: enviar-orcamento|runAgent|openai|pipeline batch failed|unhandled
-evidencia_obrigatoria: transcript completo mostrando inicio, handoff e mensagem final de mudanca de ideia
+tail: budget-change-confirmation-sent, budget-change-confirmation-resolved e fotos-orcamento-update-enviadas nas etapas corretas
+forbidden_tail: pipeline batch failed|unhandled; encaminhamento terminal silencioso proibido na etapa de nova ideia
+evidencia_obrigatoria: transcript completo mostrando inicio, primeiro handoff, pergunta de confirmacao, confirmacao "as duas", coleta do segundo item e Telegram final multi-tattoo
 ```
 
 ## Criterios De Parada
 
 ```text
-qualquer IA nova depois do humano
-estado sair de aguardando_tatuador
+silencio automatico na nova ideia orcamentavel
+novo item nao ser coletado apos "as duas"
+Telegram final nao listar multiplas tattoos quando houver mais de um item
 novo ORCID criado
-mensagem nao encaminhada ao humano
-tail com runAgent/openai/enviar-orcamento
 WhatsApp real ausente
 validacao definitiva usando seed terminal em vez de jornada completa
 ```
 
-## Proxima Decisao Apos Micro-Slice 1
+## Proxima Decisao
 
-Se a jornada completa passar, registrar como cobertura terminal de novo pedido pos-handoff e decidir:
-
-- atacar replanejamento antes do handoff, quando ainda ha coleta ativa;
-- ou atacar conversa antiga nao-terminal/retomada;
-- ou fechar a frente se o risco terminal era o principal alvo.
+So fechar a Wave 47 se a jornada real completa passar e o Telegram final chegar correto. Se falhar, corrigir o ponto estrutural antes de qualquer nova frente.

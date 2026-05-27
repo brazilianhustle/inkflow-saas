@@ -141,6 +141,68 @@ test('enviar-orcamento: idempotência via orcid existente', async () => {
   }
 });
 
+test('enviar-orcamento: orcid existente com segundo budget item pendente envia update ao Telegram', async () => {
+  const origFetch = globalThis.fetch;
+  let telegramText = '';
+  let conversaPatch = null;
+  const convMulti = {
+    ...CONVERSA_COMPLETA,
+    orcid: 'orc_abc123',
+    estado_agente: 'coletando_cadastro',
+    dados_coletados: {
+      descricao_curta: 'caveira',
+      local_corpo: 'perna',
+      altura_cm: 170,
+      estilo: 'blackwork',
+      foto_local_msg_id: 202,
+      active_budget_item_id: 'item_2',
+      budget_items: [
+        { item_id: 'item_1', descricao_curta: 'dragao', local_corpo: 'braco', altura_cm: 170, estilo: 'realismo', status: 'sent_to_artist' },
+        { item_id: 'item_2', descricao_curta: 'caveira', local_corpo: 'perna', altura_cm: 170, estilo: 'blackwork', foto_local_msg_id: 202, status: 'collecting' },
+      ],
+    },
+  };
+  globalThis.fetch = async (url, opts) => {
+    if (url.includes('/rest/v1/conversas?tenant_id=eq')) {
+      return new Response(JSON.stringify([convMulti]), { status: 200 });
+    }
+    if (url.includes('/rest/v1/conversa_mensagens?id=in.')) {
+      return new Response(JSON.stringify([{ id: 202, message: { media_base64: 'abc', media_mimetype: 'image/jpeg' } }]), { status: 200 });
+    }
+    if (url.includes('telegram.org/bot') && url.includes('sendPhoto')) {
+      return new Response(JSON.stringify({ ok: true, result: { photo: [{ file_id: 'file_local' }] } }), { status: 200 });
+    }
+    if (url.includes('telegram.org/bot') && url.includes('sendMessage')) {
+      telegramText = JSON.parse(opts.body).text;
+      return new Response(JSON.stringify({ ok: true, result: { message_id: 77 } }), { status: 200 });
+    }
+    if (opts?.method === 'PATCH' && url.includes('/rest/v1/conversas?id=')) {
+      conversaPatch = JSON.parse(opts.body);
+      return new Response(null, { status: 204 });
+    }
+    if (url.includes('tool_calls_log')) return new Response('', { status: 201 });
+    if (url.includes('/rest/v1/rpc/zerar_media_base64')) return new Response('[]', { status: 200 });
+    return new Response(JSON.stringify([]), { status: 200 });
+  };
+  try {
+    const ctx = buildContext({ tenant_id: TENANT_ID, telefone: TELEFONE });
+    const res = await onRequest(ctx);
+    const body = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(body.ok, true);
+    assert.equal(body.orcid, 'orc_abc123');
+    assert.equal(body.budget_update, true);
+    assert.equal(body.telegram_message_id, 77);
+    assert.match(telegramText, /tem 2 tattoos no orcamento/);
+    assert.match(telegramText, /dragao/);
+    assert.match(telegramText, /caveira/);
+    assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
+    assert.equal(conversaPatch.dados_coletados.budget_items[1].status, 'sent_to_artist');
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
 // ── Refator 4 OBR (altura_cm + estilo) ──────────────────────────────────────
 
 test('aceita payload com 4 OBR (altura_cm + estilo) — tamanho_cm null OK', async () => {

@@ -18,7 +18,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: wave_47_budget_items_manager_micro_slice_2_tecnico_pass
+status: wave_47_budget_items_telegram_update_pendente_validacao_final
 branch: main
 ultimo_commit: 9c6f635 fix: keep organic burst conversations continuous
 ultimo_commit_funcional: 9c6f635 fix: keep organic burst conversations continuous
@@ -31,7 +31,7 @@ autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
 familia_midia_cadastro: fechada na cobertura atual
-proxima_frente: resolver confirmacao "somente essa/as duas" no Budget Items Manager e montar pacote Telegram final com multiplas tattoos
+proxima_frente: validar em producao a jornada completa que confirma "as duas", coleta segundo item e envia update Telegram multi-tattoo no mesmo ORCID
 ```
 
 ## Ultimos Marcos
@@ -42,6 +42,7 @@ proxima_frente: resolver confirmacao "somente essa/as duas" no Budget Items Mana
 - Metodologia replanejada para Full Journey Validation Gate: seeds de meio de fluxo continuam permitidos como radar tecnico/triage, mas nao fecham comportamento premium quando o risco depende de contexto acumulado. Wave 47 deixa de usar `seed_pos_handoff_aguardando_tatuador` como prova definitiva; o fechamento exige jornada WhatsApp real desde primeiro contato ate handoff real e so depois a mensagem "mudei de ideia, queria uma caveira na perna" no mesmo historico.
 - Wave 47 micro-slice 1 reclassificado apos correcao de contrato de produto: `scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T172227Z-14895` provou apenas encaminhamento terminal simples, nao replanejamento/multiplos orcamentos. Novo contrato: quando cliente diz `mudei de ideia, queria uma caveira na perna`, o bot deve analisar como nova ideia orcamentavel e perguntar se e substituicao ou tattoo adicional, por exemplo `Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?`. Proxima frente correta e Budget Items Manager, nao regra pontual.
 - Wave 47 micro-slice 2 tecnico implementado localmente: `budget-items-manager` detecta nova ideia orcamentavel em `aguardando_tatuador`, persiste `dados_coletados.budget_change_pending`, pergunta se a nova tattoo substitui ou soma com a anterior e notifica Telegram como replanejamento pendente. Segundo corte tambem resolve `as duas`/`somente essa`, cria `budget_items`, marca item anterior como `sent_to_artist` ou `replaced` e reabre `coletando_tattoo` para a nova ideia sem novo ORCID imediato. Teste focado PASS: `node --test tests/_lib/budget-items-manager.test.mjs tests/_lib/whatsapp-pipeline.test.mjs` (77/77). Nao e PASS final de produto: ainda falta coletar segunda tattoo/fotos por item, gerar pacote Telegram final correto e provar jornada organica completa WhatsApp real + Telegram correto.
+- Wave 47 micro-slice 3 implementado localmente: sincronizacao do item ativo durante coleta, workflow direto de `tattoo` para `aguardando_tatuador` quando cadastro ja existe, e `enviar-orcamento-tatuador` agora envia update Telegram multi-tattoo quando ha ORCID existente e segundo item pendente. Cenario definitivo foi ampliado para 10 steps: jornada desde o inicio, primeiro pacote, mudanca de ideia, confirmacao `as duas`, estilo/foto do segundo item e Telegram final. PASS de produto segue bloqueado ate deploy + WhatsApp real completo + Telegram correto.
 - Correcao metodologica do monitoramento: `run-scenario.sh`, `run-real-whatsapp.sh` e `run-inbound.sh` agora validam gates de tail usando somente o delta do log da etapa atual. Isso evita falso bloqueio quando uma etapa posterior encontra eventos validos de etapas anteriores em tail continuo.
 - Replanejamento metodologico aberto apos regressao manual em WhatsApp real: conversa organica com `opa` / `tranquilo` / `quero fzr uma tattoo` / `na perna` / `um dragao bolado` / `grandao` foi tratada como formulario, sem reacao suficiente ao briefing. Decisao: pausar Wave 47 antes da execucao e rodar Organic Conversation Sentinel Pack com `whatsapp_real_burst` em variacoes de 3 bolhas e 2 bolhas.
 - Memoria operacional reorganizada para contexto controlado: `00-active-context.md` vira primeira fonte de retomada, `current-objective.md` fica como historico duravel, `smoke-runs.md` como indice de evidencia e wave docs como leitura sob demanda. `continuity-bundle.sh` passa a injetar o active context antes do historico.

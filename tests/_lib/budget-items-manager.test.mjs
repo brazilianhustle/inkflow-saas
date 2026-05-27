@@ -6,6 +6,7 @@ import {
   composeBudgetChangeTelegram,
   detectBudgetChangeRequest,
   resolveBudgetChangeConfirmation,
+  syncActiveBudgetItem,
 } from '../../functions/_lib/budget-items-manager.js';
 
 test('detecta mudanca de ideia orcamentavel em aguardando_tatuador sem apagar orcamento anterior', () => {
@@ -101,4 +102,23 @@ test('resolve "somente essa" marcando anterior como substituido', () => {
   assert.equal(resolution.next_dados_coletados.budget_items[0].status, 'replaced');
   assert.equal(resolution.next_dados_coletados.budget_items[1].status, 'collecting');
   assert.match(composeBudgetConfirmationTelegram({ telefone: '55', tenant: { nome_estudio: 'InkFlow' }, resolution }), /substituir tattoo anterior/);
+});
+
+test('sincroniza campos top-level no budget item ativo durante a coleta', () => {
+  const dados = syncActiveBudgetItem({
+    descricao_curta: 'caveira',
+    local_corpo: 'perna',
+    estilo: 'blackwork',
+    altura_cm: 170,
+    foto_local_msg_id: 456,
+    active_budget_item_id: 'item_2',
+    budget_items: [
+      { item_id: 'item_1', descricao_curta: 'dragao', status: 'sent_to_artist' },
+      { item_id: 'item_2', descricao_curta: 'caveira', local_corpo: 'perna', status: 'collecting' },
+    ],
+  });
+
+  assert.equal(dados.budget_items[0].descricao_curta, 'dragao');
+  assert.equal(dados.budget_items[1].estilo, 'blackwork');
+  assert.equal(dados.budget_items[1].foto_local_msg_id, 456);
 });

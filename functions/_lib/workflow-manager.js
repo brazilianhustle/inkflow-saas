@@ -82,6 +82,25 @@ export function evaluateWorkflowTransition({
     return preserveRouterStateDecision({ estado_atual, agentOut });
   }
 
+  const cadastroComplete = isCadastroComplete(dados_cadastro);
+  const tattooComplete = isTattooBriefComplete(dados_coletados);
+  const missingRequirements = {
+    cadastro: missingCadastroRequirements(dados_cadastro),
+    tattoo: missingTattooRequirements(dados_coletados),
+  };
+
+  if (estado_atual === 'tattoo' && (agentOut?.estado_novo === 'cadastro' || agentOut?.estado_novo === 'coletando_cadastro')) {
+    if (cadastroComplete && tattooComplete) {
+      return {
+        shouldTransition: true,
+        fromState: 'tattoo',
+        toState: 'aguardando_tatuador',
+        requestedState: agentOut?.estado_novo || null,
+        reason: 'tattoo_complete_with_existing_cadastro',
+      };
+    }
+  }
+
   if (estado_atual !== 'cadastro') {
     return {
       shouldTransition: false,
@@ -99,13 +118,6 @@ export function evaluateWorkflowTransition({
       reason: 'agent_requested_handoff',
     };
   }
-
-  const cadastroComplete = isCadastroComplete(dados_cadastro);
-  const tattooComplete = isTattooBriefComplete(dados_coletados);
-  const missingRequirements = {
-    cadastro: missingCadastroRequirements(dados_cadastro),
-    tattoo: missingTattooRequirements(dados_coletados),
-  };
 
   if (cadastroComplete && tattooComplete) {
     return {
@@ -140,7 +152,8 @@ export function summarizeWorkflowDecision(decision = {}) {
     : 0;
   const requiresOrcamentoHandoffPackage =
     decision.reason === 'cadastro_and_tattoo_complete'
-    || decision.reason === 'agent_requested_handoff';
+    || decision.reason === 'agent_requested_handoff'
+    || decision.reason === 'tattoo_complete_with_existing_cadastro';
 
   return {
     workflow_layer: 'workflow_manager',

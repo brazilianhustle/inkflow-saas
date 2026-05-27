@@ -27,8 +27,10 @@ import {
   composeBudgetChangeTelegram,
   detectBudgetChangeRequest,
   resolveBudgetChangeConfirmation,
+  syncActiveBudgetItem,
 } from './budget-items-manager.js';
 import {
+  cadastroHandoffReply,
   fotoAmbiguaComoLocalCadastroQuestion,
   fotoAmbiguaComoReferenciaQuestion,
   fotoLocalRecebidaCadastroQuestion,
@@ -77,6 +79,10 @@ function hasTattooCoreForCadastro(dados = {}) {
 
 function hasFotoLocal(dados = {}) {
   return Boolean(dados.foto_local || dados.foto_local_msg_id);
+}
+
+function hasCadastroCompleto(dados = {}) {
+  return Boolean(dados.nome && dados.data_nascimento && (dados.email || dados.email_recusado === true));
 }
 
 function isImagemSemLegendaClara(fotos = []) {
@@ -425,9 +431,12 @@ export async function processBatch(env, batch, depsOverride = {}) {
     const routerDisabled = String(env?.DISABLE_CONVERSATION_ROUTER || '').toLowerCase() === 'true';
     const fotoLocalCompletaTattoo = fotoLocalPendente && hasTattooCoreForCadastro(conversa.dados_coletados || {});
     if (fotoLocalCompletaTattoo) {
+      const cadastroJaCompleto = hasCadastroCompleto(conversa.dados_cadastro || {});
       agentOut = {
         ok: true,
-        resposta_cliente: fotoLocalRecebidaCadastroQuestion(),
+        resposta_cliente: cadastroJaCompleto
+          ? cadastroHandoffReply({ nome: conversa.dados_cadastro?.nome })
+          : fotoLocalRecebidaCadastroQuestion(),
         estado_novo: 'cadastro',
         dados_persistidos: { foto_local_msg_id: fotos[0].msgRowId },
         dados_completos: true,
@@ -443,9 +452,12 @@ export async function processBatch(env, batch, depsOverride = {}) {
       && hasFotoLocal(conversa.dados_coletados || {})
       && hasTattooCoreForCadastro(conversa.dados_coletados || {});
     if (fotoReferenciaAposLocalTattoo) {
+      const cadastroJaCompleto = hasCadastroCompleto(conversa.dados_cadastro || {});
       agentOut = {
         ok: true,
-        resposta_cliente: referenciaRecebidaCadastroQuestion(),
+        resposta_cliente: cadastroJaCompleto
+          ? cadastroHandoffReply({ nome: conversa.dados_cadastro?.nome })
+          : referenciaRecebidaCadastroQuestion(),
         estado_novo: 'cadastro',
         dados_persistidos: {},
         dados_completos: true,
@@ -587,13 +599,16 @@ export async function processBatch(env, batch, depsOverride = {}) {
 
     // Etapa 5: UPDATE conversa
     const isCadastro = agentOut.agent_usado === 'cadastro';
-    const novoDadosColetados = isCadastro
+    let novoDadosColetados = isCadastro
       ? (conversa.dados_coletados || {})
       : { ...(conversa.dados_coletados || {}), ...(agentOut.dados_persistidos || {}) };
     // Bug 1: incrementa contador de foto pedida. Persiste em dados_coletados
     // (estado_extra nao existe na tabela). route.js sinaliza via pediu_foto_local.
     if (agentOut.pediu_foto_local && !isCadastro) {
       novoDadosColetados.tentativas_foto_local = (conversa.dados_coletados?.tentativas_foto_local || 0) + 1;
+    }
+    if (!isCadastro) {
+      novoDadosColetados = syncActiveBudgetItem(novoDadosColetados);
     }
     const emailRecusado = agentOut.email_recusado === true || agentOut.dados_persistidos?.email_recusado === true;
     const dadosCadastroPersistidos = Object.fromEntries(
@@ -724,6 +739,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
             }
           }
         }
+        dadosAcc = syncActiveBudgetItem(dadosAcc);
         await deps.supaFetch(`/rest/v1/conversas?id=eq.${conversa.id}`, {
           method: 'PATCH', headers: { Prefer: 'return=minimal' },
           body: JSON.stringify({ dados_coletados: dadosAcc }),
@@ -768,7 +784,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
     }
 
     // Etapa 8: handoff cadastro → enviar-orcamento-tatuador
-    if (estadoAgente === 'cadastro' && agentOut.proxima_acao === 'handoff') {
+    if (agentOut.proxima_acao === 'handoff') {
       if (!tenant.tatuador_telegram_chat_id) {
         await deps.sendTelegramAdmin(`handoff sem tatuador_telegram_chat_id em ${tenant.id}`);
       } else {
