@@ -48,7 +48,7 @@ test('VoicePolicy: cadastroResumeQuestion cobre familia de cadastro', () => {
   );
   assert.equal(
     cadastroResumeQuestion({ dados_cadastro: { nome: 'Joao Silva', data_nascimento: '1995-03-12' } }),
-    'E o e-mail? Se preferir seguir sem, me avisa',
+    'Se quiser, me passa teu e-mail. Se preferir seguir só por aqui, tudo certo.',
   );
   assert.doesNotMatch(cadastroResumeQuestion({ dados_cadastro: {} }), /liberar teu orçamento|orçamento personalizado/i);
 });

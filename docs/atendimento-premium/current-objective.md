@@ -11,7 +11,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_27_closed_pass
+status: level4b_wave_28_email_optional_naturalness_started
 branch: main
 ultimo_commit: fdcbeb4 docs: validate wave 27 long journey
 ultimo_commit_funcional: c519c52 fix: soften deterministic first contact intro
@@ -47,6 +47,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 27 declarada: revalidacao de jornada longa atual pos-Voice Policy. Objetivo e provar em HTTP radar + WhatsApp real que a apresentacao mecanica historica nao aparece mais no fluxo completo.
 - Wave 27 validou a jornada longa atual pos-Voice Policy: HTTP radar PASS e WhatsApp real `central -> bot` PASS em 5 steps, sem `Me chamo`/`muito prazer`, estado final `coletando_cadastro`, `orcid=null`, `copy_risk=baixo`; Naturalness Audit V2 nos steps finais retornou 5 PASS/0 watchlist.
 - Wave 27 fechou PASS: `wave-health` final PASS com 198 scenarios PASS, 97 WhatsApp reais PASS, Security Gate PASS, Evidence Orphan Gate PASS e worktree limpo. Familia de primeiro contato mecanico esta coberta por micro-slices e jornada longa atual.
+- Wave 28 iniciada: naturalidade do e-mail opcional. Auditor V2 em cadastro/e-mail/handoff retornou 10 PASS/0 watchlist; alvo escolhido foi a frase central de e-mail opcional na `conversation-voice-policy`, sem mudar regra funcional. Testes locais focados PASS 138/138 e `npm test` PASS 1216/1216.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
@@ -214,7 +215,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: abrir proxima frente de naturalidade fora de primeiro contato mecanico, preferencialmente cadastro/e-mail opcional ou handoff, usando Auditor V2 para selecionar evidencia antes de qualquer copy change. Manter Level 4B; 4C bloqueado.
+Proximo passo recomendado: Wave 28, commitar a policy de e-mail opcional, aguardar CI/deploy e validar com HTTP radar + WhatsApp real `cadastro-lateral-data-recovery`. Manter Level 4B; 4C bloqueado.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:

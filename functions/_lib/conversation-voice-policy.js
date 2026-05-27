@@ -37,7 +37,7 @@ export function cadastroResumeQuestion(conversa = {}) {
   }
   if (!hasValue(dados.nome)) return 'Me passa teu nome completo?';
   if (!hasValue(dados.data_nascimento)) return 'Me passa tua data de nascimento completa?';
-  if (!hasValue(dados.email) && dados.email_recusado !== true) return 'E o e-mail? Se preferir seguir sem, me avisa';
+  if (!hasValue(dados.email) && dados.email_recusado !== true) return 'Se quiser, me passa teu e-mail. Se preferir seguir só por aqui, tudo certo.';
   return cadastroHandoffReply({ nome: dados.nome });
 }
 
