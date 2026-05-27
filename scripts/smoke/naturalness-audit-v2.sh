@@ -74,6 +74,7 @@ score_evidence() {
   local poll_json="$evidence_dir/poll.json"
   local request_json="$evidence_dir/request.json"
   local run_id final_state copy_risk require_ai_response last_human last_bot bot_count human_count
+  local last_human_at ai_after_last_human_count last_bot_after_human
   local dados_coletados dados_cadastro media_last_human
   local contexto=3 timing=3 resposta_lateral=3 progressao=3 voz=3 densidade=3 seguranca=3 personalizacao=2
   local tags="" action="nenhuma"
@@ -91,6 +92,13 @@ score_evidence() {
   last_bot="$(jq -r '[.mensagens[]? | select(.message.type=="ai") | .message.content] | last // ""' "$poll_json" | normalize_line)"
   bot_count="$(jq -r '[.mensagens[]? | select(.message.type=="ai")] | length' "$poll_json")"
   human_count="$(jq -r '[.mensagens[]? | select(.message.type=="human")] | length' "$poll_json")"
+  last_human_at="$(jq -r '[.mensagens[]? | select(.message.type=="human") | .created_at] | max // ""' "$poll_json")"
+  ai_after_last_human_count="$(jq -r --arg human_at "$last_human_at" 'if $human_at == "" then 0 else [.mensagens[]? | select(.message.type=="ai" and .created_at > $human_at)] | length end' "$poll_json")"
+  last_bot_after_human="$(jq -r --arg human_at "$last_human_at" 'if $human_at == "" then "" else [.mensagens[]? | select(.message.type=="ai" and .created_at > $human_at) | .message.content] | last // "" end' "$poll_json" | normalize_line)"
+  if [ "$final_state" = "aguardando_tatuador" ] && [ "$require_ai_response" = "0" ]; then
+    last_bot="$last_bot_after_human"
+    bot_count="$ai_after_last_human_count"
+  fi
   media_last_human="$(jq -r '[.mensagens[]? | select(.message.type=="human") | .message.media_mimetype] | last // ""' "$poll_json")"
   dados_coletados="$(jq -c '.conversas[0].dados_coletados // {}' "$poll_json")"
   dados_cadastro="$(jq -c '.conversas[0].dados_cadastro // {}' "$poll_json")"

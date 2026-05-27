@@ -109,6 +109,8 @@ Quando o cliente reclama que o estúdio/bot demora para responder, isso nao deve
 
 Se o estado final for `aguardando_tatuador` e o contrato esperado for encaminhar ao humano sem nova resposta AI, ausencia de IA apos o ultimo humano e sucesso operacional, nao falha de naturalidade.
 
+Em evidencias com seed, preparacao ou IA historica antes do handoff, o julgamento deve considerar somente mensagens AI criadas depois da ultima mensagem humana. IA anterior ao terminal humano nao pode contaminar o score pos-handoff.
+
 Resultado sugerido:
 
 ```text

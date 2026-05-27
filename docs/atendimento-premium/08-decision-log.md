@@ -1604,6 +1604,25 @@ Ainda falta decidir se estilos, locais e vocabulário de atendimento serão:
 
 **Status:** documentado e indexado no README; Level 4B mantido e 4C bloqueado.
 
+### 2026-05-27 - Auditor Pos-Handoff Avalia Apenas IA Depois Do Ultimo Humano
+
+**Decisão:** em casos pos-handoff com `estado=aguardando_tatuador` e contrato `SMOKE_REQUIRE_AI_RESPONSE=0`, a Naturalness V2 deve julgar apenas mensagens AI criadas depois da ultima mensagem humana.
+
+**Motivo:** evidencias reais de pos-handoff podem conter seed ou IA anterior ao terminal humano. Usar a ultima IA historica contaminava o julgamento e podia transformar um encaminhamento correto sem resposta AI em falso alerta metodologico.
+
+**Alternativas rejeitadas:**
+
+- exigir nova resposta AI em pos-handoff;
+- excluir evidencias com seed do corpus;
+- julgar pos-handoff pela ultima IA global da conversa;
+- tratar ausencia de bot como falha quando o contrato operacional e encaminhar ao humano.
+
+**Camada responsável:** Naturalness Audit V2, Smoke Monitoring Process, Escalation/Handoff.
+
+**Impacto:** auditorias de pos-handoff agora medem o contrato correto: depois do ultimo humano, nao deve haver nova IA. A Wave 31 fechou 7 evidencias reais com 7 PASS/0 watchlist/0 rework/0 stop.
+
+**Status:** implementado em `scripts/smoke/naturalness-audit-v2.sh`, documentado na rubrica e registrado na Wave 31.
+
 ## Regra De Atualização
 
 Toda vez que uma nova decisão mudar direção de arquitetura, fluxo, prompt, policy, router, composer, guardrails ou smoke, adicionar uma entrada aqui.
