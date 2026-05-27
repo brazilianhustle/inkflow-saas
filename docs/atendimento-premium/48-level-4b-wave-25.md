@@ -50,5 +50,30 @@ Status:
 ```text
 scenario_files: declarados
 tests_focused: PASS node --test tests/_lib/conversation-voice-policy.test.mjs tests/agent/route-runagent.test.mjs
-next_action: rodar npm test; se PASS, commit/deploy; depois HTTP radar + WhatsApp real definitivo
+npm_test: PASS 1215/1215
+ci: PASS 26486066442
+eval_gate: PASS 26486066454
+deploy: PASS 26486066456
+http_radar_initial: FAIL util scenario-voice-policy-pure-greeting-20260527T015219Z-26119 agent_no_response
+fix_after_fail: d5e8db8 fix: bypass llm for pure greeting
+http_radar: PASS scenario-voice-policy-pure-greeting-20260527T015635Z-7813
+whatsapp_real: PASS scenario-whatsapp-real-voice-policy-pure-greeting-20260527T015732Z-10191
+decision: micro-slice 1 PASS; manter Level 4B
+next_action: rodar wave-health final e decidir se fecha Wave 25 curta
 ```
+
+Provas conclusivas reais:
+
+```text
+Cliente: "oi"
+Bot: "Oii, tudo bem.
+
+Como posso te chamar?"
+```
+
+Leitura estrategica:
+
+- PASS funcional e definitivo via WhatsApp real.
+- A primeira tentativa HTTP revelou um gap operacional real: saudacao pura dependia do LLM antes de aplicar o backstop, gerando timeout.
+- A correcao removeu essa dependencia: primeiro contato com saudacao pura agora responde deterministicamente pela Voice Policy.
+- O bot manteve `estado=coletando_tattoo`, `orcid=null`, sem preco, agenda, pagamento ou sinal.

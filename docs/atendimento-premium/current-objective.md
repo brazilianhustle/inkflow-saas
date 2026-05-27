@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_25_micro_slice_1_started
+status: level4b_wave_25_micro_slice_1_pass
 branch: main
-ultimo_commit: 18ba091 docs: close wave 24 voice policy
+ultimo_commit: d5e8db8 fix: bypass llm for pure greeting
 ultimo_commit_funcional: c519c52 fix: soften deterministic first contact intro
-deploy: PASS no commit 5eacc49; Wave 24 micro-slice 1 e 2 HTTP radar + WhatsApp real PASS
-tests: npm test PASS local 1214/1214; CI PASS 26485724572; deploy PASS 26485724549
+deploy: PASS no commit d5e8db8; Wave 25 micro-slice 1 HTTP radar + WhatsApp real PASS
+tests: npm test PASS local 1215/1215; CI PASS 26486066442; eval gate PASS 26486066454; deploy PASS 26486066456
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo
-ultimo_commit_validado: 5eacc49 docs: validate wave 24 multi info voice + CI PASS + deploy PASS + wave-health PASS
+ultimo_commit_validado: d5e8db8 fix: bypass llm for pure greeting + CI PASS + eval gate PASS + deploy PASS + HTTP radar PASS + WhatsApp real PASS
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -36,6 +36,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 24 micro-slice 2 passou: primeiro contato com briefing multi-info validado em HTTP radar e WhatsApp real; resposta inicia com `Oii, tudo bem.`, persiste descricao/estilo/local/altura e pede somente foto do local, sem `Me chamo`/`muito prazer`.
 - Wave 24 fechada PASS: CI, deploy e `wave-health` verdes em `5eacc49`; proxima decisao estrategica recomendada e abrir Wave 25 para saudacao pura/caminhos LLM ou outra watchlist de naturalidade com evidencia real recente.
 - Wave 25 iniciada: Voice Policy para saudacao pura no `runAgent`, sem editar prompts LLM; primeiro corte troca os backstops determinisiticos de `Me chamo Assistente, muito prazer` por `Oii, tudo bem.` + pedido direto de nome.
+- Wave 25 micro-slice 1 passou: saudacao pura `oi` validada em HTTP radar e WhatsApp real definitivo; falha util inicial por timeout mostrou dependencia desnecessaria de LLM, corrigida com bypass deterministico antes da validacao final.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
@@ -203,7 +204,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: Wave 25 micro-slice 1 iniciado; rodar `npm test`, commitar/deployar e validar HTTP radar + WhatsApp real definitivo de saudacao pura. Manter Level 4B; 4C bloqueado.
+Proximo passo recomendado: rodar `wave-health` final da Wave 25; se PASS, fechar onda curta ou abrir micro-slice 2 para pergunta ambigua com imagem em primeiro contato. Manter Level 4B; 4C bloqueado.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:
