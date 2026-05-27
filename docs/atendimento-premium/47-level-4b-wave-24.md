@@ -49,5 +49,30 @@ Status:
 
 ```text
 scenario_files: declarados
-next_action: rodar testes locais; se PASS, commit/deploy; depois HTTP radar e WhatsApp real definitivo
+tests_local: PASS npm test 1214/1214
+ci: PASS 26485361502
+deploy: PASS 26485361503
+wave_health_inicial: PASS 2026-05-27T01:34:17Z
+http_radar: PASS scenario-voice-policy-first-contact-preco-20260527T013515Z-8588
+whatsapp_real: PASS scenario-whatsapp-real-voice-policy-first-contact-preco-20260527T013647Z-2248
+decision: micro-slice 1 PASS; manter Level 4B
+next_action: escolher micro-slice 2 da mesma familia ou fechar onda curta apos wave-health final
 ```
+
+Provas conclusivas reais:
+
+```text
+Cliente: "quanto fica uma rosa fineline no braco?"
+Bot: "Oii, tudo bem.
+
+O valor depende do tamanho, detalhe e local do corpo. O tatuador confirma certinho depois de avaliar tua ideia.
+
+Pra montar tua proposta certinho, como posso te chamar?"
+```
+
+Leitura estrategica:
+
+- PASS funcional e definitivo via WhatsApp real.
+- A apresentacao mecanica foi removida no caminho deterministico Router/Composer.
+- O bot manteve resposta segura de preco, `estado=coletando_tattoo`, `orcid=null` e observabilidade Router + Workflow Manager.
+- Fora de escopo proposital: saudacao pura e caminhos LLM continuam para uma proxima decisao, evitando blast radius grande.
