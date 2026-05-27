@@ -117,6 +117,18 @@ Nao abrir novos micro-slices do tipo "tenant nao aceita X" sem evidencia de risc
 - um ultimo slice positivo de identidade/modo, se houver contrato objetivo;
 - ou fechamento da Wave 46 e abertura de Replanejamento/Novo Pedido.
 
+## Decisao De Campanha
+
+```text
+status: campanha_restritiva_tenant_config_fechada
+decisao: nao executar novo slice positivo de identidade/modo agora
+motivo: ainda nao ha contrato objetivo forte o bastante para personalizacao positiva sem risco de ajuste cosmetico
+proxima_wave: Wave 47 - Replanejamento/Novo Pedido
+justificativa: maior risco premium atual e cliente mudar ideia, abrir novo pedido ou alterar briefing depois de handoff/conversa antiga sem duplicar orcamento, reabrir IA indevida ou perder contexto humano
+```
+
+Wave 46 permanece como prova suficiente de que o bot respeita limites configuraveis do estudio. Identidade/modo fica como candidato futuro quando houver contrato mensuravel de produto, nao como continuacao automatica desta onda.
+
 ## Micro-Slice 2 - Estilo Fora Do Catalogo
 
 ```text

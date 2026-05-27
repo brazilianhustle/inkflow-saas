@@ -11,7 +11,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_46_strategic_slice_gate_registered
+status: level4b_wave_47_replanejamento_novo_pedido_declarada
 branch: main
 ultimo_commit: 1f9f561 fix: respect tenant cover up policy
 ultimo_commit_funcional: 1f9f561 fix: respect tenant cover up policy
@@ -24,7 +24,7 @@ autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
 familia_midia_cadastro: fechada na cobertura atual
-proxima_frente: decidir via Strategic Slice Gate entre ultimo slice positivo de Tenant/Config ou fechamento da Wave 46 e abertura de Replanejamento/Novo Pedido
+proxima_frente: Wave 47 - Replanejamento/Novo Pedido, primeiro corte pos-handoff com mudanca de ideia/novo pedido
 ```
 
 ## Ultimos Marcos
@@ -42,6 +42,7 @@ proxima_frente: decidir via Strategic Slice Gate entre ultimo slice positivo de 
 - Wave 46 micro-slice 2 fechado PASS: estilo reconhecido fora do catalogo aceito do tenant agora responde limite de escopo pelo Router, sem LLM, sem persistir `estilo`, sem orcamento/agenda/sinal; HTTP radar e WhatsApp real `central -> bot` passaram, `estado=coletando_tattoo`, `orcid=null`, Naturalness V2 PASS. Provas conclusivas reais: Cliente "voces fazem old school?" -> Bot "Esse estilo nao esta no foco do estudio por aqui. Posso seguir se voce quiser adaptar pra outro estilo, ou acionar o estudio pra avaliar direto."
 - Wave 46 micro-slice 3 fechado PASS: tenant com `aceita_cobertura=false` agora recusa cobertura pelo Router, sem LLM, sem handoff/Telegram, sem orcamento e com restore automatico do tenant; HTTP radar e WhatsApp real `central -> bot` passaram, `estado=coletando_tattoo`, `orcid=null`, Naturalness V2 PASS. Provas conclusivas reais: Cliente "quero cobrir uma tattoo antiga no braco" -> Bot "Esse estudio nao faz cobertura por aqui. Se voce pensar em uma tattoo nova em outro local, posso seguir te ajudando."
 - Strategic Slice Gate oficializado: micro-slice deixa de ser "caso pequeno" e passa a ser "menor prova necessaria de uma hipotese estrategica". Wave 46 ja provou limites restritivos por tenant; nao abrir novas variacoes restritivas sem risco novo. Proxima decisao: ultimo slice positivo de identidade/modo se houver contrato objetivo, ou fechar Wave 46 e abrir Replanejamento/Novo Pedido.
+- Decisao pos-gate: fechar a campanha restritiva de Tenant/Config e abrir Wave 47 - Replanejamento/Novo Pedido. Motivo: identidade/modo ainda nao tem contrato objetivo forte; risco premium maior agora e novo pedido/mudanca de ideia depois de handoff ou conversa antiga sem duplicar ORCID, reabrir IA ou perder contexto humano.
 - Wave 42 fechada como revalidacao atual de referencia confirmada seguida de foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `refs_imagens_msg_ids=[11951]`, criou `foto_local_msg_id` e manteve `orcid=null`.
 - Wave 42 declarada para limpar a variacao irma da Wave 41: referencia confirmada seguida de foto local, com contrato anti-copy-antiga e WhatsApp real novo.
 - Wave 41 fechada como revalidacao atual de referencia adicional apos foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `foto_local_msg_id=599`, adicionou 1 referencia e manteve `orcid=null`.

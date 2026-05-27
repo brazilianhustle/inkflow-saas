@@ -168,6 +168,6 @@ familia_midia_cadastro: fechada na cobertura atual
 frente_1_auditoria_final_jornada: fechada_pass_na_wave_44
 frente_2_naturalidade_por_familia: fechada_pass_na_wave_45
 frente_3_tenant_config_limites: parcialmente_fechada_pass_na_wave_46
-proxima_frente: escolher via Strategic Slice Gate entre slice positivo de Tenant/Config ou Replanejamento/Novo Pedido
+proxima_frente: Wave 47 - Replanejamento/Novo Pedido
 nao_fazer_agora: financeiro/agenda/pagamento amplo
 ```
