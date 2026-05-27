@@ -529,7 +529,7 @@ function tattooMultiInfoOutput({ extracted, estado_atual, conversa, tenant, clie
   };
 }
 
-function tattooPendingAnswerOutput({ extracted, estado_atual, conversa }) {
+function tattooPendingAnswerOutput({ extracted, estado_atual, conversa, clientContext }) {
   const nextAnswered = nextTattooField(conversa);
   const dadosAtualizados = {
     ...(conversa?.dados_coletados || {}),
@@ -547,6 +547,11 @@ function tattooPendingAnswerOutput({ extracted, estado_atual, conversa }) {
         tentativas_foto_local: Math.max(Number(dadosAtualizados.tentativas_foto_local || 0), 1),
       }
     : extracted;
+  const intro = clientContext?.is_first_contact === true
+    ? `${firstContactSoftIntro()}\n\n`
+    : '';
+  const ack = tattooBriefAck(dadosAtualizados);
+  const resposta = `${intro}${ack ? `${ack}. ` : ''}${tattooResumeQuestion(conversaParaRetomada)}`;
 
   return {
     ok: true,
@@ -556,7 +561,7 @@ function tattooPendingAnswerOutput({ extracted, estado_atual, conversa }) {
     risk: 'medium',
     reason: `pending_${nextAnswered}_answered`,
     can_mutate_state: true,
-    resposta_cliente: tattooResumeQuestion(conversaParaRetomada),
+    resposta_cliente: resposta,
     estado_novo: estado_atual,
     dados_persistidos: dadosPersistidos,
     dados_completos: false,
@@ -956,7 +961,7 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
     }
     const coreFields = answeredTattooCoreFields(extracted);
     if (coreFields.length === 1 && shouldHandleTattooPendingAnswer(extracted, conversa)) {
-      return tattooPendingAnswerOutput({ extracted, estado_atual, conversa });
+      return tattooPendingAnswerOutput({ extracted, estado_atual, conversa, clientContext });
     }
     const freshExtracted = extractTattooHints(mensagem, {});
     const hasExistingTattooContext = Object.keys(conversa?.dados_coletados || {}).some(key => hasValue(conversa.dados_coletados?.[key]));

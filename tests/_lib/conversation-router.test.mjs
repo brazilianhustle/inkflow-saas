@@ -466,6 +466,26 @@ test('ConversationRouter: resposta simples ao campo descricao pendente persiste 
   assert.doesNotMatch(out.resposta_cliente, /me conta o que tu pensa em tatuar/i);
 });
 
+test('ConversationRouter: primeiro contato com ideia simples persiste sem chamar agente operacional', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'oi\nquero fazer um fechamento',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    tenant: { nome_agente: 'Assistente' },
+    clientContext: { is_first_contact: true },
+    historico: [],
+  });
+
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'tattoo_pending_answer');
+  assert.equal(out.reason, 'pending_descricao_curta_answered');
+  assert.equal(out.agent_usado, 'conversation_router');
+  assert.deepEqual(out.dados_persistidos, { descricao_curta: 'fechamento' });
+  assert.match(out.resposta_cliente, /^Oii, tudo bem\./);
+  assert.match(out.resposta_cliente, /fechamento/i);
+  assert.match(out.resposta_cliente, /parte do corpo\?/i);
+});
+
 test('ConversationRouter: resposta simples ao campo estilo pendente persiste e pede foto local', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',

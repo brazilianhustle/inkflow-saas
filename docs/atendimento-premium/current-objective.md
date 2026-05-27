@@ -528,3 +528,12 @@ Nao registrar detalhes longos aqui. Detalhes longos ficam no evidence, decision 
 - `dados_cadastro.nome` permanece reservado para o cadastro formal.
 - Validacao local: router `73/73`, pipeline `73/73`, `npm test` `1251/1251`.
 - Status: pendente commit/deploy + WhatsApp real definitivo antes de marcar PASS final.
+
+## Atualizacao 2026-05-27 - Wave 51
+
+- Incidente manual: bot respondeu cedo demais entre bolhas humanas e, em outro lote simples, pareceu parar por cair no LLM com latencia ~79.6s.
+- Diagnostico: conversa manual estava suja de estado antigo, mas a arquitetura tambem precisava tolerar melhor burst organico de 2-3 bolhas e evitar LLM em primeiro contato simples.
+- Correção local: `SessionQueue` passou para `DEBOUNCE_MS=12000` e `MAX_WAIT_MS=35000`.
+- Correção local: `ConversationRouter` agora trata primeiro contato com ideia simples (`oi` + `quero fazer um fechamento`) sem LLM, persiste `descricao_curta` e pergunta o local.
+- Validacao local: router `74/74`, pipeline `73/73`, session-queue `13/13`, `npm test` `1252/1252`.
+- Status: pendente commit/deploy e WhatsApp real definitivo do zero.

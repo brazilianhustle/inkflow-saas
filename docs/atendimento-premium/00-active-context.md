@@ -132,6 +132,20 @@ status: aguardando commit/deploy + WhatsApp real definitivo antes de PASS final
 provas_locais: Cliente "Macus" -> Bot "Boa, Macus. Tu imagina fazer em qual parte do corpo?"; runAgent=0; nome_preferido="Macus"; dados_cadastro={}
 ```
 
+## Corte Atual - Wave 51
+
+```text
+origem: regressao manual WhatsApp real em cadencia organica de bolhas
+problema_1: bot respondeu antes do cliente concluir 2-3 bolhas em ritmo humano
+problema_2: primeiro contato simples caiu no LLM e gerou latencia de ~79.6s, parecendo bot parado
+contaminacao: teste manual reaproveitou estado antigo; conversa nao estava limpa
+correcao_queue: SessionQueue DEBOUNCE_MS 8000->12000; MAX_WAIT_MS 20000->35000
+correcao_router: primeiro contato com ideia simples agora sai pelo ConversationRouter sem LLM
+validacao_local: router PASS 74/74; pipeline PASS 73/73; session-queue PASS 13/13; npm test PASS 1252/1252
+status: pendente commit/deploy e WhatsApp real definitivo do zero
+provas_locais: Cliente "oi" + "quero fazer um fechamento" -> Bot "Oii, tudo bem." + reconhece fechamento + pergunta local; runAgent=0
+```
+
 ## Arquivos Para Ler
 
 ```text
@@ -140,6 +154,7 @@ docs/atendimento-premium/73-organic-conversation-sentinel-pack.md
 docs/atendimento-premium/74-level-4b-wave-48.md
 docs/atendimento-premium/75-level-4b-wave-49.md
 docs/atendimento-premium/76-level-4b-wave-50.md
+docs/atendimento-premium/77-level-4b-wave-51.md
 docs/atendimento-premium/current-objective.md somente se precisar de historico amplo
 docs/atendimento-premium/smoke-runs.md somente se precisar de evidencia antiga
 scripts/smoke/continuity-bundle.sh
