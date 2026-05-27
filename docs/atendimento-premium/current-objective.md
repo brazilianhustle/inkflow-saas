@@ -11,7 +11,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_34_pergunta_imagem_pass
+status: level4b_wave_35_historia_vida_pass
 branch: main
 ultimo_commit: b54f085 fix: route portfolio requests deterministically
 ultimo_commit_funcional: b54f085 fix: route portfolio requests deterministically
@@ -63,6 +63,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 33 iniciada: revalidacao atual de portfolio com HTTP radar e WhatsApp real novo, porque as evidencias principais sao de 2026-05-25 e nao devem fechar a familia atual sem novo envio real.
 - Wave 33 validou portfolio atual apos falha util: HTTP inicial mostrou timeout e resposta tardia errada do LLM; Router ganhou `portfolio_requested` deterministico e pipeline executa `enviar-portfolio` nesse caminho; CI/deploy, HTTP radar final, WhatsApp real novo e Naturalness V2 passaram com estado `coletando_tattoo`, `orcid=null`, copy_risk=baixo e tail confirmando portfolio.
 - Wave 34 validou pergunta de imagem atual sem mudanca de codigo: sem midia e com midia passaram em HTTP radar e WhatsApp real novo; Naturalness V2 teve 4 PASS/0 watchlist/0 rework/0 stop, estado `coletando_tattoo`, `orcid=null`, copy_risk=baixo, sem apresentacao mecanica e com `refs_imagens_msg_ids` persistido no corte com midia.
+- Wave 35 validou historia de vida/homenagem atual sem mudanca de codigo: HTTP radar e WhatsApp real novo passaram; Naturalness V2 teve 2 PASS/0 watchlist/0 rework/0 stop, estado `coletando_tattoo`, `orcid=null`, copy_risk=baixo, Router `historia_vida` e Workflow Manager preservando estado por policy.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
@@ -230,7 +231,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: rodar `wave-health`, commitar o fechamento documental da Wave 34 e escolher proxima familia lateral. Candidato pragmatico: historia de vida/homenagem, com WhatsApp real novo se evidencia antiga nao for suficiente.
+Proximo passo recomendado: rodar `wave-health`, commitar o fechamento documental da Wave 35 e decidir se a frente lateral atual esta suficientemente coberta ou se ainda falta outra familia pequena antes de voltar para jornadas maiores.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:
