@@ -60,6 +60,7 @@ Depois disso o sistema decide se deve:
 - [24-level-4b-wave-2.md](./24-level-4b-wave-2.md): segunda onda Level 4B para multi-info de tattoo.
 - [26-level-4b-wave-3.md](./26-level-4b-wave-3.md): terceira onda Level 4B para respostas a campos pendentes de tattoo junto de duvidas laterais.
 - [25-multi-agent-governance.md](./25-multi-agent-governance.md): governanca para agentes paralelos com comandante unico, single-writer e WhatsApp real serial.
+- [52-premium-operational-chain.md](./52-premium-operational-chain.md): cadeia operacional profissional do bot premium, com regra de avanco, nao avanco, Definition of Done e cadencia correta.
 - [slice-gates/workflow-manager.env](./slice-gates/workflow-manager.env): gate formal da camada de transicao segura de estado.
 - [current-objective.md](./current-objective.md): estado vivo, proximo ataque e comandos de retomada.
 - [smoke-runs.md](./smoke-runs.md): indice versionado dos smokes relevantes.

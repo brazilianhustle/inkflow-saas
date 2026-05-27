@@ -1584,6 +1584,26 @@ Ainda falta decidir se estilos, locais e vocabulário de atendimento serão:
 - configuráveis por tenant;
 - híbridos com vocabulário base + override por tenant.
 
+### 2026-05-27 - Cadeia Operacional Premium Como Gate De Avanco
+
+**Decisão:** oficializar `52-premium-operational-chain.md` como documento canonico para decidir quando uma onda pode avancar, quando deve travar e qual Definition of Done minima define um slice premium.
+
+**Motivo:** apos Wave 28, ficou claro que o projeto ja tem muitas pecas fortes, mas precisava de uma regra unica conectando arquitetura, testes, WhatsApp real, naturalidade, observabilidade e autonomia. Sem essa cadeia, ha risco de avancar por sensacao, fechar comportamento apenas com HTTP radar ou transformar naturalidade em remendo de copy.
+
+**Alternativas rejeitadas:**
+
+- continuar decidindo avanco apenas pelo chat;
+- usar naturalidade subjetiva como criterio principal;
+- declarar comportamento conversacional fechado sem WhatsApp real;
+- promover 4C por volume de PASS sem nova decisao deliberada;
+- corrigir frases isoladas sem auditar familia e camada responsavel.
+
+**Camada responsável:** Governanca de Loop, Autonomy Gate, Smoke Monitoring Process, Naturalness Audit V2, arquitetura de atendimento premium.
+
+**Impacto:** proximas ondas devem declarar familia/escopo e respeitar a matriz de avanco/nao avanco. Mudanca conversacional continua exigindo HTTP radar + WhatsApp real; naturalidade exige evidencia real + Auditoria V2; falhas STOP/REWORK, divergencia de estado, evidencia incompleta ou WhatsApp real ausente travam a frente.
+
+**Status:** documentado e indexado no README; Level 4B mantido e 4C bloqueado.
+
 ## Regra De Atualização
 
 Toda vez que uma nova decisão mudar direção de arquitetura, fluxo, prompt, policy, router, composer, guardrails ou smoke, adicionar uma entrada aqui.
