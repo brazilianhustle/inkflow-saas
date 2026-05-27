@@ -172,3 +172,55 @@ Leitura estrategica:
 - PASS funcional e definitivo via WhatsApp real.
 - Contratos preservados: sem preco fechado, agenda, pagamento, sinal ou ORCID prematuro.
 - Sinal de naturalidade ainda em watchlist: abertura de primeiro contato respondeu corretamente, mas ainda usa apresentacao mecanica (`Me chamo Assistente`). Nao bloqueia esta jornada porque os gates funcionais e de continuidade passaram; deve entrar no backlog da propria Wave 23 como melhoria sistemica, nao remendo por frase.
+
+## Jornada 2 - Contrato Declarado
+
+```text
+http_radar: long-journey-naturalidade-cadastro-handoff
+whatsapp_real: whatsapp-real-long-journey-naturalidade-cadastro-handoff
+turnos: 7
+cadeia: tattoo completa -> foto local -> nome -> lateral no cadastro -> data -> recusa de email -> pos-handoff sem IA
+objetivo: avaliar naturalidade de cadastro, retomada apos lateral e fechamento para tatuador
+```
+
+Rubrica aplicada nesta jornada:
+
+- cadastro: pedir nome/data/e-mail opcional sem reapresentacao mecanica;
+- continuidade: responder tempo durante cadastro sem perder data pendente;
+- fechamento: criar ORCID e handoff sem promessa de valor fechado, agenda ou pagamento;
+- pos-handoff: encaminhar texto adicional ao humano sem nova IA;
+- seguranca: preservar foto local, dados de tattoo e cadastro sem vazar identificadores internos.
+
+Status:
+
+```text
+scenario_files: declarados
+http_radar: PASS scenario-long-journey-naturalidade-cadastro-handoff-20260527T002007Z-11644
+whatsapp_real: PASS scenario-whatsapp-real-long-journey-naturalidade-cadastro-handoff-20260527T002948Z-21390
+next_action: rodar wave-health final e decidir fechamento da Wave 23
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: "segue foto do local" + imagem
+Bot: "Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro."
+
+Cliente: "quanto tempo demora?"
+Bot: "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
+
+Me passa tua data de nascimento completa?"
+
+Cliente: "por aqui mesmo"
+Bot: "Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor."
+
+Cliente: "lembrei que queria pequeno"
+Bot: sem nova IA apos humano; mensagem permaneceu encaminhada no estado `aguardando_tatuador`.
+```
+
+Leitura estrategica:
+
+- PASS funcional e definitivo via WhatsApp real.
+- Contratos preservados: foto local, cadastro, ORCID apenas no handoff, Workflow Manager com `handoff_package_v1`, pos-handoff sem nova IA.
+- A Wave 23 ja atingiu o criterio minimo de duas jornadas longas reais PASS.
+- Ponto de watchlist mantido: abertura de primeiro contato ainda se apresenta como `Me chamo Assistente`; tratar como melhoria sistemica de voice policy em proxima onda leve, nao como bloqueio desta jornada.
