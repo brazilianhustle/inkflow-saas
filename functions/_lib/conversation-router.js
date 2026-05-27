@@ -65,7 +65,7 @@ function isWeakDescricao(value) {
     || /^(fazer|fzr|tatuagem|tattoo|tauagem|desenho|ideia)$/.test(desc);
 }
 
-function extractTattooHints(message, dados = {}) {
+export function extractTattooHints(message, dados = {}) {
   const s = normalize(message);
   const extracted = {};
 

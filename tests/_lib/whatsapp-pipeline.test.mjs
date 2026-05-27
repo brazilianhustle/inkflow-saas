@@ -995,6 +995,61 @@ test('2. terminal aguardando_tatuador — Task 8 implementa', async () => {
   assert.ok(patchCall, 'PATCH status=processed deve ter sido chamado');
 });
 
+test('2b. aguardando_tatuador com mudanca de ideia pergunta se substitui ou adiciona e notifica Telegram', async () => {
+  let conversaPatch = null;
+  let aiInsert = null;
+  let processedPatch = null;
+  const evoCalls = [];
+  const sendTelegramSpy = mock.fn(async () => ({ ok: true }));
+  const runAgentSpy = mock.fn();
+  const callToolSpy = mock.fn();
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'aguardando_tatuador',
+    orcid: 'orc_old',
+    dados_coletados: {
+      descricao_curta: 'dragao',
+      local_corpo: 'perna',
+      altura_cm: 170,
+      estilo: 'realismo',
+    },
+    dados_cadastro: { nome: 'Leandro' },
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'mudei de ideia, queria uma caveira na perna' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith('/rest/v1/conversas?id=')) conversaPatch = body;
+        if (path.startsWith('/rest/v1/conversa_mensagens?id=in.')) processedPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    sendTelegram: sendTelegramSpy,
+    runAgent: runAgentSpy,
+    callTool: callToolSpy,
+    evoSend: async (_tenant, payload) => { evoCalls.push(payload); return { ok: true }; },
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(callToolSpy.mock.callCount(), 0);
+  assert.equal(sendTelegramSpy.mock.callCount(), 1);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /mudanca\/novo orcamento/);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Anterior: dragao na perna/);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /Nova ideia: caveira na perna/);
+  assert.match(aiInsert.message.content, /somente essa ou a anterior tambem/);
+  assert.equal(evoCalls.length, 1);
+  assert.match(evoCalls[0].text, /somente essa ou a anterior tambem/);
+  assert.equal(conversaPatch.dados_coletados.descricao_curta, 'dragao');
+  assert.equal(conversaPatch.dados_coletados.budget_change_pending.status, 'awaiting_replace_or_add');
+  assert.equal(conversaPatch.dados_coletados.budget_change_pending.proposed_item.descricao_curta, 'caveira');
+  assert.deepEqual(processedPatch, { status: 'processed' });
+});
+
 test('3. terminal sem tatuador_telegram_chat_id — Task 8 implementa', async () => {
   const adminSpy = mock.fn(async () => ({ ok: true }));
   const tenantSemTatuador = { ...TENANT, tatuador_telegram_chat_id: null };

@@ -22,6 +22,11 @@ import { logAgentTurn } from './telemetry/agent-turn-logger.js';
 import { applyWorkflowTransition, summarizeWorkflowDecision } from './workflow-manager.js';
 import { buildEscalationHandoffPackage, composeEscalationTelegram, evaluateEscalation } from './escalation-manager.js';
 import {
+  applyBudgetChangePending,
+  composeBudgetChangeTelegram,
+  detectBudgetChangeRequest,
+} from './budget-items-manager.js';
+import {
   fotoAmbiguaComoLocalCadastroQuestion,
   fotoAmbiguaComoReferenciaQuestion,
   fotoLocalRecebidaCadastroQuestion,
@@ -253,6 +258,47 @@ export async function processBatch(env, batch, depsOverride = {}) {
 
     // Etapa 2: EARLY-RETURN estado terminal
     if (TERMINAL_STATES.has(conversa.estado_agente)) {
+      const budgetChange = fotos.length === 0
+        ? detectBudgetChangeRequest({
+            estado_agente: conversa.estado_agente,
+            mensagem: texto,
+            dados_coletados: conversa.dados_coletados || {},
+          })
+        : { matched: false };
+      if (budgetChange.matched) {
+        const dadosColetados = applyBudgetChangePending(conversa.dados_coletados || {}, budgetChange);
+        await deps.supaFetch(`/rest/v1/conversas?id=eq.${conversa.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ dados_coletados: dadosColetados, updated_at: deps.now() }),
+        });
+        await deps.supaFetch('/rest/v1/conversa_mensagens', {
+          method: 'POST',
+          body: JSON.stringify({ session_id, message: { type: 'ai', content: budgetChange.response }, status: 'processed', created_at: deps.now() }),
+        });
+        if (tenant.tatuador_telegram_chat_id) {
+          await deps.sendTelegram(
+            tenant.tatuador_telegram_chat_id,
+            composeBudgetChangeTelegram({ telefone, tenant, detection: budgetChange }),
+          );
+        } else {
+          await deps.sendTelegramAdmin(`tenant ${tenant.id} sem tatuador_telegram_chat_id para budget_change_pending`);
+        }
+        const baloes = splitBaloes(budgetChange.response);
+        for (let i = 0; i < baloes.length; i++) {
+          await deps.sleep(TYPING_DELAY_MS);
+          const sendRes = await deps.evoSend(tenant, { type: 'text', to: telefone, text: baloes[i] });
+          if (!sendRes.ok) throw new Error(`evo sendText falhou budget_change balão ${i + 1}/${baloes.length}: ${sendRes.error || 'unknown'} (tenant=${tenant.id})`);
+        }
+        console.log(JSON.stringify({
+          evento: 'budget-change-confirmation-sent',
+          tenant_id: tenant.id,
+          telefone,
+          estado_agente: conversa.estado_agente,
+          reason: budgetChange.reason,
+        }));
+        await markStatus(deps, msgRowIds, 'processed');
+        return;
+      }
       if (tenant.tatuador_telegram_chat_id) {
         await deps.sendTelegram(
           tenant.tatuador_telegram_chat_id,

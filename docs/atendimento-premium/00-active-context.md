@@ -10,7 +10,7 @@ branch: main
 autonomy_level: 4B
 level_4c: bloqueado
 onda_ativa: Wave 47 - Replanejamento E Novo Pedido
-proxima_acao: implementar primeiro corte estrutural de Budget Items Manager para mudanca de ideia orcamentavel
+proxima_acao: validar primeiro corte estrutural de Budget Items Manager e depois implementar resposta "somente essa/as duas"
 motivo: silencio pos-handoff provou encaminhamento simples, mas nao atende objetivo premium de captar mais de uma tattoo/orcamento
 ```
 
@@ -57,6 +57,17 @@ Full Journey Validation Gate: seed de meio de fluxo pode ser radar tecnico, mas 
 3. Primeiro corte: detectar nova ideia orcamentavel e perguntar se substitui a anterior ou se e adicional.
 4. Depois: coletar segunda tattoo, fotos por item e Telegram explicito com multiplos itens.
 5. Continuar exigindo jornada completa desde o inicio quando o comportamento depender de contexto acumulado.
+
+## Corte Em Andamento
+
+```text
+budget_items_manager_micro_slice_2: em teste tecnico
+contrato: mensagem nova ideia em aguardando_tatuador nao pode cair no encaminhamento terminal silencioso
+resposta_cliente: "Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?"
+persistencia: dados_coletados.budget_change_pending
+telegram_atual: aviso de replanejamento pendente
+pass_final: bloqueado ate jornada WhatsApp real completa + Telegram correto
+```
 
 ## Arquivos Para Ler
 

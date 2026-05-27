@@ -66,6 +66,18 @@ saida_esperada: bot responde confirmando ambiguidade entre substituir ou adicion
 proibido: silencio automatico, novo ORCID imediato, chamar enviar-orcamento, sobrescrever briefing antigo antes da confirmacao, tratar como cobertura/risco sem gatilho real
 ```
 
+## Micro-Slice 2 - Budget Change Pending
+
+```text
+status: em_implementacao
+escopo: detectar nova ideia orcamentavel em aguardando_tatuador antes do terminal silencioso
+saida_cliente: pergunta se a nova ideia substitui a anterior ou se e adicional
+persistencia: dados_coletados.budget_change_pending com snapshot anterior e proposed_item
+telegram: aviso operacional de mudanca/novo orcamento pendente, nao pacote final multi-item
+nao_faz_ainda: resolver resposta "as duas"/"somente essa", coletar item 2, gerar pacote Telegram final com multiplas tattoos
+gate: nao fechar PASS de produto sem WhatsApp real organico completo + Telegram correto
+```
+
 Contrato futuro:
 
 ```text
