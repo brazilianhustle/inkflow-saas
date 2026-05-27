@@ -77,6 +77,7 @@ Depois disso o sistema decide se deve:
 - [66-level-4b-wave-42.md](./66-level-4b-wave-42.md): revalidacao atual de referencia confirmada seguida de foto local.
 - [67-level-4b-wave-43.md](./67-level-4b-wave-43.md): limpeza final sequencial dos subcasos de midia/cadastro com contrato anti-copy-antiga.
 - [68-frentes-finais-bot-premium.md](./68-frentes-finais-bot-premium.md): mapa das frentes restantes para conclusao do bot premium apos fechamento da familia midia/cadastro.
+- [69-level-4b-wave-44.md](./69-level-4b-wave-44.md): auditoria final de jornadas premium completas em HTTP radar e WhatsApp real.
 - [slice-gates/workflow-manager.env](./slice-gates/workflow-manager.env): gate formal da camada de transicao segura de estado.
 - [current-objective.md](./current-objective.md): estado vivo, proximo ataque e comandos de retomada.
 - [smoke-runs.md](./smoke-runs.md): indice versionado dos smokes relevantes.

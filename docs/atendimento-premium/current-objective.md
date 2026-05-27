@@ -11,20 +11,20 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_43_limpeza_final_midia_cadastro_pass
+status: level4b_wave_44_auditoria_final_jornada_premium_fechada_pass
 branch: main
-ultimo_commit: commit de status Wave 43 registrado no git log
+ultimo_commit: pendente commit documental Wave 44
 ultimo_commit_funcional: b54f085 fix: route portfolio requests deterministically
-deploy: pendente CI/deploy do commit 68fe072; sem mudanca de codigo do bot
-tests: Wave 43 HTTP radar 8/8 PASS; WhatsApp real 8/8 PASS; Naturalness V2 8 PASS / 0 watchlist / 0 rework / 0 stop
+deploy: sem mudanca de codigo do bot nesta Wave; pendente commit/CI documental
+tests: Wave 44 HTTP radar 3/3 PASS; WhatsApp real 3/3 PASS; Naturalness V2 3 PASS / 0 watchlist / 0 rework / 0 stop
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
-ultimo_commit_validado: 68fe072 docs: close wave 43 media cadastro cleanup + Wave 43 HTTP/WhatsApp real/Naturalness V2 PASS + wave-health dirty PASS; CI/deploy pendentes
+ultimo_commit_validado: fb89118 docs: map final premium fronts + CI/deploy PASS + wave-health clean PASS antes da Wave 44
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
 familia_midia_cadastro: fechada na cobertura atual
-proxima_frente: Wave 44 - auditoria final de jornada premium
+proxima_frente: Wave 45 - Naturalidade Premium por familia ou Tenant/Config modo produto
 ```
 
 ## Ultimos Marcos
@@ -32,6 +32,9 @@ proxima_frente: Wave 44 - auditoria final de jornada premium
 - Wave 43 fechada como limpeza final dos subcasos midia/cadastro: 8 subcasos passaram em HTTP radar e WhatsApp real definitivo, contratos foram endurecidos contra copy antiga (`Pra liberar teu orçamento`, `Fechado`, `valor certinho`, `avaliar com calma`) e Naturalness V2 retornou 8 PASS/0 watchlist/0 rework/0 stop.
 - Falha util controlada da Wave 43: o classificador deterministico marca pedido de e-mail opcional como `copy_risk=medio`; contrato aceitou `medio` apenas nesse step, mantendo bloqueio textual contra copy antiga e validacao Naturalness V2.
 - Familia midia/cadastro marcada como fechada na cobertura atual. Frentes finais mapeadas em `68-frentes-finais-bot-premium.md`: jornada premium final, naturalidade por familia, Tenant/Config modo produto, replanejamento/novo pedido, financeiro/agenda/pagamento como fase futura e prontidao 4C.
+- Wave 44 declarada para auditoria final de jornada premium: 3 jornadas longas atuais, cada uma com HTTP radar antes do WhatsApp real e Naturalness V2 no pacote final.
+- Wave 44 fechada PASS: 3 jornadas HTTP radar e 3 jornadas WhatsApp real passaram, cobrindo lateral+midia+cadastro+handoff, cadastro+lateral+pos-handoff e abertura+retomada; Naturalness V2 retornou 3 PASS/0 watchlist/0 rework/0 stop, media 2.88.
+- Observacao da Wave 44: a abertura lateral "como funciona o orçamento?" ainda pode perguntar nome antes da ideia quando o cliente nao traz briefing. Como os gates funcionais e Naturalness V2 passaram, fica como radar para Naturalidade Premium por familia, nao regressao bloqueante.
 - Wave 42 fechada como revalidacao atual de referencia confirmada seguida de foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `refs_imagens_msg_ids=[11951]`, criou `foto_local_msg_id` e manteve `orcid=null`.
 - Wave 42 declarada para limpar a variacao irma da Wave 41: referencia confirmada seguida de foto local, com contrato anti-copy-antiga e WhatsApp real novo.
 - Wave 41 fechada como revalidacao atual de referencia adicional apos foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `foto_local_msg_id=599`, adicionou 1 referencia e manteve `orcid=null`.
