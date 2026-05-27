@@ -639,7 +639,36 @@ function unsupportedStyleOutput({ unsupportedStyle, estado_atual, conversa }) {
   };
 }
 
-function escalationOutput({ detected, estado_atual, intent }) {
+function coverUpNotAcceptedOutput({ detected, estado_atual, conversa }) {
+  return {
+    ok: true,
+    handled_by: 'conversation_router',
+    intent: 'tenant_cover_up_not_accepted',
+    confidence: detected.confidence,
+    risk: 'medium',
+    reason: 'tenant_cover_up_not_accepted',
+    can_mutate_state: false,
+    resposta_cliente: 'Esse estudio nao faz cobertura por aqui. Se voce pensar em uma tattoo nova em outro local, posso seguir te ajudando.',
+    estado_novo: estado_atual,
+    dados_persistidos: {},
+    dados_completos: false,
+    campos_faltando: estado_atual === 'tattoo' ? missingTattooFields(conversa?.dados_coletados || {}) : [],
+    campos_conflitantes: [],
+    proxima_acao: 'pergunta',
+    agent_usado: estado_atual === 'cadastro' ? 'cadastro' : 'conversation_router',
+    side_effects: [],
+    urls_portfolio: [],
+    payload_portfolio: null,
+    analise_imagens: null,
+    cobertura_suspeita: null,
+    tenant_cover_up_resolution: {
+      aceita_cobertura: false,
+      source: 'tenant_rules',
+    },
+  };
+}
+
+function escalationOutput({ detected, estado_atual, intent, conversa, clientContext }) {
   if (!['cobertura', 'human_requested', 'client_upset', 'tenant_handoff_trigger', 'minor_age_explicit'].includes(intent)) return null;
   if (intent === 'minor_age_explicit') {
     return {
@@ -774,6 +803,10 @@ function escalationOutput({ detected, estado_atual, intent }) {
     };
   }
 
+  if (intent === 'cobertura' && clientContext?.tenant_rules?.aceita_cobertura === false) {
+    return coverUpNotAcceptedOutput({ detected, estado_atual, conversa });
+  }
+
   return {
     ok: true,
     handled_by: 'conversation_router',
@@ -833,7 +866,7 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
   const detected = tenantDetected && !baseHasExplicitEscalation ? tenantDetected : baseDetected;
 
   if (detected) {
-    const escalation = escalationOutput({ detected, estado_atual, intent: detected.intent });
+    const escalation = escalationOutput({ detected, estado_atual, intent: detected.intent, conversa, clientContext });
     if (escalation) return escalation;
     if (detected.intent === 'portfolio_requested') {
       const portfolio = portfolioOutput({ detected, estado_atual, mensagem, conversa, clientContext });

@@ -179,6 +179,31 @@ test('ConversationRouter: cobertura textual aciona escalonamento humano sem cole
   assert.doesNotMatch(out.resposta_cliente, /Qual tua altura|parte do corpo|estilo/i);
 });
 
+test('ConversationRouter: tenant que nao aceita cobertura recusa sem escalonamento', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quero cobrir uma tattoo antiga no braço',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    clientContext: {
+      tenant_rules: {
+        aceita_cobertura: false,
+      },
+    },
+  });
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'tenant_cover_up_not_accepted');
+  assert.equal(out.reason, 'tenant_cover_up_not_accepted');
+  assert.equal(out.proxima_acao, 'pergunta');
+  assert.equal(out.estado_novo, 'tattoo');
+  assert.equal(out.can_mutate_state, false);
+  assert.equal(out.cobertura_suspeita, null);
+  assert.equal(out.escalation, undefined);
+  assert.deepEqual(out.dados_persistidos, {});
+  assert.equal(out.tenant_cover_up_resolution.aceita_cobertura, false);
+  assert.match(out.resposta_cliente, /nao faz cobertura/i);
+  assert.doesNotMatch(out.resposta_cliente, /tatuador precisa avaliar|acionar|or[cç]amento|R\$|sinal/i);
+});
+
 test('ConversationRouter: gatilho de handoff do tenant aciona humano antes de coleta', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',

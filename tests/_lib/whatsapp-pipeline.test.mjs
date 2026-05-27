@@ -1391,6 +1391,61 @@ test('5d. estilo fora do catalogo do tenant responde sem LLM e preserva estado',
   assert.equal(workflowLog.context_metadata.workflow_reason, 'state_preserved_by_router_policy');
 });
 
+test('5e. tenant que nao aceita cobertura recusa sem LLM e sem handoff', async () => {
+  const evoSpy = mock.fn(async () => ({ ok: true }));
+  const sendTelegramSpy = mock.fn(async () => ({ ok: true }));
+  const runAgentSpy = mock.fn(async () => { throw new Error('runAgent nao deve ser chamado para cobertura recusada por tenant'); });
+  const logAgentTurnSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const tenant = {
+    ...TENANT,
+    config_agente: { aceita_cobertura: false },
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      tenant,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'quero cobrir uma tattoo antiga no braço' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.estado_agente) {
+          conversaPatch = body;
+        }
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+    evoSend: evoSpy,
+    sendTelegram: sendTelegramSpy,
+    logAgentTurn: logAgentTurnSpy,
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(sendTelegramSpy.mock.callCount(), 0);
+  assert.equal(evoSpy.mock.callCount(), 1);
+  assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
+  assert.deepEqual(conversaPatch.dados_coletados, {});
+  assert.match(aiInsert.message.content, /nao faz cobertura/i);
+  assert.doesNotMatch(aiInsert.message.content, /acionar|tatuador precisa avaliar|or[cç]amento|R\$|sinal/i);
+  const logs = logAgentTurnSpy.mock.calls.map(call => call.arguments[0]);
+  const routerLog = logs.find(payload => payload.agent_name === 'conversation_router');
+  assert.ok(routerLog, 'ConversationRouter deve registrar cobertura recusada por tenant');
+  assert.equal(routerLog.context_metadata.router_intent, 'tenant_cover_up_not_accepted');
+  assert.equal(routerLog.context_metadata.router_reason, 'tenant_cover_up_not_accepted');
+  assert.equal(routerLog.context_metadata.router_can_mutate_state, false);
+  assert.equal(routerLog.context_metadata.tenant_context_aceita_cobertura, false);
+  const workflowLog = logs.find(payload => payload.agent_name === 'workflow_manager');
+  assert.ok(workflowLog, 'Workflow Manager deve registrar preservacao de estado');
+  assert.equal(workflowLog.context_metadata.workflow_reason, 'state_preserved_by_router_policy');
+  const escalationLog = logs.find(payload => payload.agent_name === 'escalation_manager');
+  assert.equal(escalationLog, undefined);
+});
+
 test('6. conversa nova — Task 8 implementa', async () => {
   let postBody = null;
   const deps = mockDeps({

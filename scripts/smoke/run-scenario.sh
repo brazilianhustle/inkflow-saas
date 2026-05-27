@@ -287,6 +287,16 @@ setup_tenant_portfolio_indisponivel() {
   echo "tenant setup ok: portfolio_urls=[] tenant=$TENANT_ID"
 }
 
+setup_tenant_cobertura_nao_aceita() {
+  load_devvars
+  snapshot_tenant_for_restore
+  local restore_file body
+  restore_file="$EVIDENCE_DIR/tenant-restore.json"
+  body="$(jq -c '{config_agente: ((.config_agente // {}) + {aceita_cobertura:false})}' "$restore_file")"
+  supa_patch "tenants?id=eq.${TENANT_ID}" "$body" >/dev/null
+  echo "tenant setup ok: config_agente.aceita_cobertura=false tenant=$TENANT_ID"
+}
+
 supa_get_agent_turn_logs_since_run() {
   load_devvars
   supabase_curl --get "${SUPABASE_URL}/rest/v1/agent_turn_logs" \
@@ -1038,6 +1048,7 @@ run_setup() {
     seed_cadastro_pos_midia_aguardando_email_media_fresca) seed_cadastro_pos_midia_aguardando_email_media_fresca ;;
     seed_pos_handoff_aguardando_tatuador) seed_pos_handoff_aguardando_tatuador ;;
     tenant_portfolio_indisponivel) setup_tenant_portfolio_indisponivel ;;
+    tenant_cobertura_nao_aceita) setup_tenant_cobertura_nao_aceita ;;
     *) echo "ERRO: setup desconhecido: $SETUP" >&2; exit 1 ;;
   esac
 }
