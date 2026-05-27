@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_33_portfolio_started
+status: level4b_wave_33_portfolio_pass
 branch: main
-ultimo_commit: docs: validate wave 32 lateral tempo processo
-ultimo_commit_funcional: 257f3cf fix: soften optional email prompt
-deploy: PASS no commit 4eef96e; Wave 28 HTTP radar + WhatsApp real PASS
-tests: npm test PASS local 1216/1216; CI PASS 26491494646; deploy PASS 26491494627
+ultimo_commit: b54f085 fix: route portfolio requests deterministically
+ultimo_commit_funcional: b54f085 fix: route portfolio requests deterministically
+deploy: PASS no commit b54f085; Wave 33 HTTP radar + WhatsApp real PASS
+tests: npm test PASS local 1219/1219; CI PASS 26493282715; deploy PASS 26493282734
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
-ultimo_commit_validado: 257f3cf fix: soften optional email prompt + CI PASS + deploy PASS + HTTP radar PASS + WhatsApp real PASS
+ultimo_commit_validado: b54f085 fix: route portfolio requests deterministically + CI PASS + deploy PASS + HTTP radar PASS + WhatsApp real PASS
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -61,6 +61,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 32 iniciada: revalidacao atual de lateral tempo/processo, porque evidencias antigas ainda mostram copy mecanica pre-Voice Policy e nao devem ser usadas para fechar comportamento atual.
 - Wave 32 validou lateral tempo/processo atual sem mudanca de codigo: HTTP radar e WhatsApp real novo passaram para os dois cenarios; Naturalness V2 teve 4 PASS/0 watchlist/0 rework/0 stop, estado `coletando_tattoo`, `orcid=null`, copy_risk=baixo e sem `Me chamo`/`muito prazer`.
 - Wave 33 iniciada: revalidacao atual de portfolio com HTTP radar e WhatsApp real novo, porque as evidencias principais sao de 2026-05-25 e nao devem fechar a familia atual sem novo envio real.
+- Wave 33 validou portfolio atual apos falha util: HTTP inicial mostrou timeout e resposta tardia errada do LLM; Router ganhou `portfolio_requested` deterministico e pipeline executa `enviar-portfolio` nesse caminho; CI/deploy, HTTP radar final, WhatsApp real novo e Naturalness V2 passaram com estado `coletando_tattoo`, `orcid=null`, copy_risk=baixo e tail confirmando portfolio.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
@@ -228,7 +229,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: rodar `lateral-portfolio-disponivel` em HTTP radar e `whatsapp-real-lateral-portfolio-disponivel` em WhatsApp real novo; depois Naturalness V2 e fechamento da Wave 33 se nao houver regressao.
+Proximo passo recomendado: rodar `wave-health`, commitar o fechamento documental da Wave 33 e escolher proxima familia lateral. Candidato pragmatico: pergunta de imagem ou historia de vida, com WhatsApp real novo se evidencia antiga nao for suficiente.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:

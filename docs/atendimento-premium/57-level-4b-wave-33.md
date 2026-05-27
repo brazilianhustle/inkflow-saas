@@ -38,9 +38,28 @@ Portfolio tem evidencias reais aprovadas, mas a familia principal e de 2026-05-2
 ## Micro-Slice 1 - Portfolio Atual
 
 ```text
-status: fix_ready_for_deploy
+status: PASS
 http_radar: scenario-lateral-portfolio-disponivel-20260527T053411Z-14040 FAIL util
-whatsapp_real_novo: required
+http_radar_final: scenario-lateral-portfolio-disponivel-20260527T054628Z-21697
+whatsapp_real_novo: scenario-whatsapp-real-lateral-portfolio-disponivel-20260527T054656Z-28618
+estado_final: coletando_tattoo
+orcid: null
+copy_risk: baixo
+naturalness_v2: PASS
+```
+
+## Validacao Final
+
+```text
+commit_funcional: b54f085 fix: route portfolio requests deterministically
+ci: PASS 26493282715
+deploy: PASS 26493282734
+http_radar: PASS
+whatsapp_real_novo: executado
+whatsapp_real_final: PASS
+tail: PASS
+agent_log_gate: PASS
+naturalness_v2: 2 PASS / 0 watchlist / 0 rework / 0 stop
 ```
 
 ### Falha Util Inicial
@@ -85,6 +104,24 @@ node --test tests/_lib/conversation-router.test.mjs: PASS
 node --test tests/_lib/whatsapp-pipeline.test.mjs: PASS
 npm test: 1219 PASS / 0 FAIL
 npm run build: nao aplicavel no root; script inexistente
+```
+
+## Provas Conclusivas Reais
+
+```text
+Cliente: "tem exemplos de fineline?"
+Bot: "Claro, te mando alguns exemplos de fineline."
+Side effect: tail confirmou portfolio/enviar-portfolio e envio de midias.
+```
+
+## Decisao
+
+```text
+status: PASS
+decisao: familia portfolio atual validada em HTTP radar e WhatsApp real novo
+codigo_alterado: sim
+motivo: remover dependencia do LLM em intent operacional clara
+proximo_ataque_sugerido: pergunta de imagem ou historia de vida com WhatsApp real novo se evidencia antiga nao for suficiente
 ```
 
 ## Gates
