@@ -27,7 +27,7 @@ handoff_orcamento: coberto com orcid, Workflow Manager e handoff_package_v1
 telegram_handoff_midia: coberto com file_ids e tail fotos-orcamento-enviadas
 pos_handoff: coberto para texto e midia sem reabrir IA
 menoridade_risco: coberto para data, texto natural, responsavel, cobertura, pedido humano e cliente irritado
-tenant_context: coberto para portfolio, estilos, identidade, modo atendimento e cobertura
+tenant_context: coberto para limites operacionais de portfolio, estilos e cobertura; identidade/modo ainda exige contrato positivo se for atacado
 observabilidade_smoke: coberta com tail, transcript, judgment, agent logs e wave-health
 ```
 
@@ -86,7 +86,7 @@ Pontos faltantes ou ainda pouco provados:
 - tenant sem portfolio: fechado na Wave 46 micro-slice 1 com HTTP radar + WhatsApp real + restore automatico;
 - estilos aceitos vs estilo fora do escopo: fechado na Wave 46 micro-slice 2 com HTTP radar + WhatsApp real + Naturalness V2;
 - menoridade/cobertura por regra especifica do estudio: cobertura nao aceita fechada na Wave 46 micro-slice 3 com HTTP radar + WhatsApp real + restore automatico;
-- vocabulario e identidade do estudio sem vazar configuracao;
+- vocabulario e identidade do estudio sem vazar configuracao: so atacar se houver contrato objetivo de personalizacao positiva;
 - multiplos perfis de estudio quando houver base para isso.
 
 Prioridade: media-alta.
@@ -137,12 +137,13 @@ Prioridade: baixa agora.
 ## Proximo Ataque Recomendado
 
 ```text
-wave: Wave 46
-frente: Tenant/Config em modo produto
-tipo: read-only + HTTP radar + WhatsApp real quando houver comportamento conversacional/produto
-objetivo: provar que o bot nao e apenas bom no tenant atual; ele respeita variacoes de estudio de forma segura
-escopo_maximo_4B: ate 8 micro-slices da mesma familia, com WhatsApp real serial
-primeiro_passo: concluido na Wave 46 micro-slice 1; segundo corte concluido na Wave 46 micro-slice 2; terceiro corte concluido na Wave 46 micro-slice 3; proximo corte recomendado e identidade/vocabulario do estudio ou modo atendimento
+wave: decisao pos-Wave 46
+frente: Strategic Slice Gate antes de novo ataque
+tipo: metodologia + decisao de campanha
+objetivo: evitar micro-slices repetitivos e escolher a proxima hipotese premium com maior impacto
+status_tenant_config: limites restritivos provados em 3 micro-slices
+opcao_a: ultimo slice positivo de identidade/modo se houver contrato objetivo
+opcao_b: fechar Wave 46 e abrir Replanejamento/Novo Pedido
 ```
 
 ## Definition Of Done Para Conclusao Do Bot Premium
@@ -166,6 +167,7 @@ primeiro_passo: concluido na Wave 46 micro-slice 1; segundo corte concluido na W
 familia_midia_cadastro: fechada na cobertura atual
 frente_1_auditoria_final_jornada: fechada_pass_na_wave_44
 frente_2_naturalidade_por_familia: fechada_pass_na_wave_45
-proxima_frente: Wave 46 - Tenant/Config em modo produto
+frente_3_tenant_config_limites: parcialmente_fechada_pass_na_wave_46
+proxima_frente: escolher via Strategic Slice Gate entre slice positivo de Tenant/Config ou Replanejamento/Novo Pedido
 nao_fazer_agora: financeiro/agenda/pagamento amplo
 ```

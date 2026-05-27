@@ -84,11 +84,38 @@ copy_risk: baixo
 ## Proximo Corte
 
 ```text
-proxima_variacao_recomendada: identidade/vocabulario do estudio ou modo atendimento
-motivo: valida personalizacao perceptivel por estudio sem entrar ainda em financeiro/agenda amplo
+decisao_metodologica: nao abrir nova variacao restritiva de tenant sem nova hipotese
+proxima_variacao_possivel: identidade/vocabulario do estudio ou modo atendimento
+condicao: somente se houver contrato objetivo de personalizacao positiva
+alternativa_recomendada: fechar Wave 46 e abrir Replanejamento/Novo Pedido
 autonomy_level: manter 4B
 level_4c: segue bloqueado
 ```
+
+## Strategic Slice Gate Da Wave 46
+
+```text
+hipotese_estrategica_original: bot respeita variacoes reais de configuracao do estudio, sem funcionar apenas no tenant atual
+tipo: produto + risco
+risco_principal: resposta generica ou operacionalmente errada quando a configuracao do estudio muda
+evidencia_minima: pelo menos 2 variacoes com HTTP radar, WhatsApp real, telemetria tenant_context e restore quando houver mutacao
+criterio_de_fechamento: limites por tenant provados sem LLM indevido, sem orcamento indevido e sem estado inseguro
+decisao_liberada_se_passar: nao continuar abrindo restricoes equivalentes; escolher personalizacao positiva ou mudar de frente
+```
+
+Leitura critica apos tres micro-slices:
+
+```text
+tenant_sem_portfolio: provou ativo ausente
+estilo_fora_catalogo: provou catalogo/restricao de estilo
+cobertura_nao_aceita: provou regra operacional negativa com setup/restore
+veredito: hipotese de limites restritivos por tenant esta suficientemente provada
+```
+
+Nao abrir novos micro-slices do tipo "tenant nao aceita X" sem evidencia de risco novo. Essa familia agora deve sair de micro-slices restritivos para uma destas decisoes:
+
+- um ultimo slice positivo de identidade/modo, se houver contrato objetivo;
+- ou fechamento da Wave 46 e abertura de Replanejamento/Novo Pedido.
 
 ## Micro-Slice 2 - Estilo Fora Do Catalogo
 

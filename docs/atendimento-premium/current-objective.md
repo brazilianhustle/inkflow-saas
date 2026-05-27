@@ -11,12 +11,12 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_46_micro_slice_3_cobertura_nao_aceita_pass
+status: level4b_wave_46_strategic_slice_gate_registered
 branch: main
 ultimo_commit: 1f9f561 fix: respect tenant cover up policy
 ultimo_commit_funcional: 1f9f561 fix: respect tenant cover up policy
 deploy: commit 1f9f561 com Tests PASS 26521712945 e Deploy PASS 26521712944
-tests: Wave 46 micro-slice 3 PASS; local 1224/1224, HTTP radar PASS, WhatsApp real PASS, tenant restore ok, Naturalness V2 PASS
+tests: Wave 46 micro-slice 3 PASS; local 1224/1224, HTTP radar PASS, WhatsApp real PASS, tenant restore ok, Naturalness V2 PASS; Strategic Slice Gate registrado sem mudanca de codigo
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
 ultimo_commit_validado: 6fb276f docs: close wave 44 premium journey audit + CI/deploy PASS + wave-health clean PASS
@@ -24,7 +24,7 @@ autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
 familia_midia_cadastro: fechada na cobertura atual
-proxima_frente: Wave 46 - proxima variacao Tenant/Config, recomendada: identidade/vocabulario do estudio ou modo atendimento
+proxima_frente: decidir via Strategic Slice Gate entre ultimo slice positivo de Tenant/Config ou fechamento da Wave 46 e abertura de Replanejamento/Novo Pedido
 ```
 
 ## Ultimos Marcos
@@ -41,6 +41,7 @@ proxima_frente: Wave 46 - proxima variacao Tenant/Config, recomendada: identidad
 - Wave 46 micro-slice 1 fechado PASS: tenant sem portfolio agora responde limite honesto pelo Router, sem LLM e sem ferramenta `enviar-portfolio`; HTTP radar e WhatsApp real `central -> bot` passaram, `tenant_restore=ok`, `estado=coletando_tattoo`, `orcid=null`, Naturalness V2 PASS. Provas conclusivas reais: Cliente "tem exemplos de fineline?" -> Bot "Ainda nao tenho portfolio cadastrado aqui no chat. Mas posso seguir com teu atendimento: Me conta o que tu pensa em tatuar?"
 - Wave 46 micro-slice 2 fechado PASS: estilo reconhecido fora do catalogo aceito do tenant agora responde limite de escopo pelo Router, sem LLM, sem persistir `estilo`, sem orcamento/agenda/sinal; HTTP radar e WhatsApp real `central -> bot` passaram, `estado=coletando_tattoo`, `orcid=null`, Naturalness V2 PASS. Provas conclusivas reais: Cliente "voces fazem old school?" -> Bot "Esse estilo nao esta no foco do estudio por aqui. Posso seguir se voce quiser adaptar pra outro estilo, ou acionar o estudio pra avaliar direto."
 - Wave 46 micro-slice 3 fechado PASS: tenant com `aceita_cobertura=false` agora recusa cobertura pelo Router, sem LLM, sem handoff/Telegram, sem orcamento e com restore automatico do tenant; HTTP radar e WhatsApp real `central -> bot` passaram, `estado=coletando_tattoo`, `orcid=null`, Naturalness V2 PASS. Provas conclusivas reais: Cliente "quero cobrir uma tattoo antiga no braco" -> Bot "Esse estudio nao faz cobertura por aqui. Se voce pensar em uma tattoo nova em outro local, posso seguir te ajudando."
+- Strategic Slice Gate oficializado: micro-slice deixa de ser "caso pequeno" e passa a ser "menor prova necessaria de uma hipotese estrategica". Wave 46 ja provou limites restritivos por tenant; nao abrir novas variacoes restritivas sem risco novo. Proxima decisao: ultimo slice positivo de identidade/modo se houver contrato objetivo, ou fechar Wave 46 e abrir Replanejamento/Novo Pedido.
 - Wave 42 fechada como revalidacao atual de referencia confirmada seguida de foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `refs_imagens_msg_ids=[11951]`, criou `foto_local_msg_id` e manteve `orcid=null`.
 - Wave 42 declarada para limpar a variacao irma da Wave 41: referencia confirmada seguida de foto local, com contrato anti-copy-antiga e WhatsApp real novo.
 - Wave 41 fechada como revalidacao atual de referencia adicional apos foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `foto_local_msg_id=599`, adicionou 1 referencia e manteve `orcid=null`.

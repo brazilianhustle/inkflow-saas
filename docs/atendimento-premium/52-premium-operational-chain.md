@@ -51,6 +51,47 @@ worktree: limpo no fechamento
 
 Se uma dessas condicoes falhar, nao existe PASS profissional. Existe triage pendente.
 
+## Strategic Slice Gate
+
+Antes de abrir qualquer novo micro-slice, a frente deve passar por um gate estrategico curto. O objetivo e impedir que o processo vire uma sequencia de cenarios pequenos sem nova hipotese premium.
+
+```text
+1. hipotese_estrategica:
+2. tipo: arquitetura|produto|risco|regressao
+3. risco_principal:
+4. evidencia_minima:
+5. whatsapp_real_obrigatorio: sim|nao + motivo
+6. criterio_de_fechamento:
+7. decisao_liberada_se_passar:
+```
+
+Classificacao operacional:
+
+```text
+arquitetura: prova camada, contrato central, runner, workflow ou observabilidade.
+produto: prova experiencia percebida pelo cliente/tatuador.
+risco: protege menoridade, handoff, orcamento, agenda, pagamento ou estado terminal.
+regressao: confirma que algo ja provado continua funcionando.
+```
+
+Regra de corte:
+
+```text
+micro_slice != caso pequeno
+micro_slice = menor prova necessaria de uma hipotese estrategica
+```
+
+Se a hipotese ja foi provada por 1 a 3 micro-slices equivalentes, a frente deve fechar, declarar novo gap ou mudar de frente. Nao abrir nova variacao apenas porque ela e tecnicamente facil de testar.
+
+Regras de validacao por tipo:
+
+```text
+arquitetura/produto/risco: HTTP radar + WhatsApp real quando houver comportamento conversacional ou impacto operacional.
+regressao: pode usar auditoria/read-only/evidencia reaproveitada se nao houve mudanca recente e a evidencia for aderente.
+```
+
+Um slice que nao libera decisao de produto, nao reduz risco novo e nao fecha parte do mapa deve ser tratado como regressao/auditoria, nao como micro-slice completo.
+
 ## Regra De Nao Avanco
 
 Parar imediatamente e nao abrir nova frente quando ocorrer qualquer item:
@@ -193,16 +234,17 @@ Se alguma resposta estiver vazia, o slice ainda nao esta profissionalmente fecha
 
 ```text
 1. Declarar onda pequena.
-2. Auditar evidencia real existente.
-3. Escolher uma familia, nao uma frase solta.
-4. Implementar menor mudanca coerente.
-5. Validar local/CI/deploy.
-6. Rodar HTTP radar.
-7. Rodar WhatsApp real definitivo.
-8. Rodar auditoria V2 quando houver linguagem.
-9. Registrar prova curta Cliente/Bot.
-10. Rodar wave-health.
-11. Fechar ou travar com triage.
+2. Passar pelo Strategic Slice Gate.
+3. Auditar evidencia real existente.
+4. Escolher uma familia/hipotese, nao uma frase solta.
+5. Implementar menor mudanca coerente.
+6. Validar local/CI/deploy.
+7. Rodar HTTP radar.
+8. Rodar WhatsApp real definitivo.
+9. Rodar auditoria V2 quando houver linguagem.
+10. Registrar prova curta Cliente/Bot.
+11. Rodar wave-health.
+12. Fechar, declarar novo gap ou mudar de frente.
 ```
 
 Para ondas read-only, o passo 7 so pode ser dispensado quando a onda declarar explicitamente que nao houve mudanca funcional/conversacional e que a evidencia reaproveitada e WhatsApp real, recente o bastante e aderente a familia auditada. Qualquer duvida volta para WhatsApp real novo.
