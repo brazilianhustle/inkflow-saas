@@ -53,9 +53,16 @@ function cleanDescricao(raw) {
     .replace(/\bme\s+passa\s+(o\s+)?preco.*$/i, '')
     .replace(/\b(no|na|em)\s+(braco|antebraco|perna|costas|peito|ombro|pulso|mao|pescoco|panturrilha|coxa|canela|barriga|costela|virilha|bunda|gluteo|gluteos|nadega|nadegas)\b.*$/i, '')
     .replace(/\b(realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto e cinza|preto e branco)\b/gi, '')
-    .replace(/\b(uma?|uns|umas|de|do|da|tatuagem|tattoo|tauagem)\b/gi, ' ')
+    .replace(/\b(uma?|uns|umas|de|do|da|fazer|fzr|tatuagem|tattoo|tauagem)\b/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function isWeakDescricao(value) {
+  const desc = normalize(value);
+  return !desc
+    || desc.length < 3
+    || /^(fazer|fzr|tatuagem|tattoo|tauagem|desenho|ideia)$/.test(desc);
 }
 
 function extractTattooHints(message, dados = {}) {
@@ -82,16 +89,17 @@ function extractTattooHints(message, dados = {}) {
     if (tamanho.answered && tamanho.value) extracted.tamanho_cm = tamanho.value;
   }
 
-  if (!hasValue(dados.descricao_curta)) {
+  if (!hasValue(dados.descricao_curta) || isWeakDescricao(dados.descricao_curta)) {
     const patterns = [
+      /\b(?:no|na|em)\s+(?:braco|antebraco|perna|costas|peito|ombro|pulso|mao|pescoco|panturrilha|coxa|canela|barriga|costela|virilha|bunda|gluteo|gluteos|nadega|nadegas)\s+(?:um|uma|uns|umas)\s+([a-z0-9 ]+?)(?=\b(?:com|realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto|quanto|quantop|qnto|qual|me passa|$))/,
       /\b(?:tatuagem|tattoo|tauagem)\s+de\s+(?:um|uma|uns|umas)?\s*([a-z0-9 ]+?)(?=\b(?:no|na|em|com|realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto|quanto|quantop|qnto|qual|me passa|$))/,
-      /\b(?:quero|queria|penso em|pretendo)\s+(?:fazer\s+)?(?:uma?\s+)?(?:tatuagem|tattoo|tauagem)?\s*(?:de\s+)?(?:um|uma)?\s*([a-z0-9 ]+?)(?=\b(?:no|na|em|realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto|quanto|quantop|qnto|qual|me passa|$))/,
+      /\b(?:quero|queria|penso em|pretendo)\s+(?:(?:fazer|fzr)\s+)?(?:uma?\s+)?(?:tatuagem|tattoo|tauagem)?\s*(?:de\s+)?(?:um|uma)?\s*([a-z0-9 ]+?)(?=\b(?:no|na|em|realismo|realista|fineline|fine line|blackwork|old school|minimalista|colorida|colorido|preto|quanto|quantop|qnto|qual|me passa|$))/,
       /\b(?:um|uma)\s+([a-z0-9 ]+?)(?=\s+\b(?:no|na|em)\b)/,
     ];
     for (const re of patterns) {
       const m = s.match(re);
       const desc = cleanDescricao(m?.[1]);
-      if (desc && desc.length >= 3 && !/^(fazer|tatuagem|tattoo|tauagem)$/.test(desc)) {
+      if (desc && desc.length >= 3 && !isWeakDescricao(desc)) {
         extracted.descricao_curta = desc;
         break;
       }
@@ -112,6 +120,15 @@ function extractTattooHints(message, dados = {}) {
   }
 
   return extracted;
+}
+
+function tattooBriefAck(dados = {}) {
+  const desc = String(dados.descricao_curta || '').trim();
+  const local = String(dados.local_corpo || '').trim();
+  if (desc && local) return `Boa, peguei a ideia do ${desc} na ${local}`;
+  if (desc) return `Boa, peguei a ideia do ${desc}`;
+  if (local) return `Boa, peguei o local: ${local}`;
+  return '';
 }
 
 function shouldHandleTattooMultiInfo(extracted = {}) {
@@ -468,9 +485,10 @@ function tattooMultiInfoOutput({ extracted, estado_atual, conversa, tenant, clie
   const intro = clientContext?.is_first_contact === true
     ? `${firstContactSoftIntro()}\n\n`
     : '';
+  const ack = tattooBriefAck(dadosAtualizados);
   const resposta = nextField === 'foto_local'
-    ? `${intro}Boa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?`
-    : `${intro}${tattooResumeQuestion(conversaParaRetomada)}`;
+    ? `${intro}${ack || 'Boa, ja peguei a ideia principal'}. Consegue mandar uma foto do local onde tu quer tatuar?`
+    : `${intro}${ack ? `${ack}. ` : ''}${tattooResumeQuestion(conversaParaRetomada)}`;
   const dadosPersistidos = nextField === 'foto_local'
     ? {
         ...extracted,

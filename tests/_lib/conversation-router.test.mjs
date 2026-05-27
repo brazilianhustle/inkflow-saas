@@ -510,6 +510,44 @@ test('ConversationRouter: multi-info separa tamanho da tattoo e altura da pessoa
   assert.doesNotMatch(out.resposta_cliente, /qual tua altura|parte do corpo|qual estilo|me conta o que tu quer tatuar/i);
 });
 
+test('ConversationRouter: burst orgânico não grava verbo como descrição e reage ao briefing', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'opa\nquero fzr uma tattoo\nna perna um dragao bolado grandao',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    tenant: { nome_agente: 'Assistente' },
+    clientContext: { is_first_contact: true },
+    historico: [],
+  });
+
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'multi_info');
+  assert.equal(out.dados_persistidos.descricao_curta, 'dragao bolado grandao');
+  assert.equal(out.dados_persistidos.local_corpo, 'perna');
+  assert.match(out.resposta_cliente, /dragao bolado grandao/i);
+  assert.match(out.resposta_cliente, /perna/i);
+  assert.match(out.resposta_cliente, /Qual tua altura\?/);
+  assert.doesNotMatch(out.resposta_cliente, /^Qual tua altura\?$/);
+});
+
+test('ConversationRouter: descrição fraca é substituída por briefing real', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'na perna um dragao bolado grandao',
+    conversa: { dados_coletados: { descricao_curta: 'fzr' }, dados_cadastro: {} },
+    tenant: { nome_agente: 'Assistente' },
+    clientContext: { is_first_contact: false },
+    historico: [],
+  });
+
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'multi_info');
+  assert.equal(out.dados_persistidos.descricao_curta, 'dragao bolado grandao');
+  assert.equal(out.dados_persistidos.local_corpo, 'perna');
+  assert.match(out.resposta_cliente, /dragao bolado grandao/i);
+  assert.doesNotMatch(out.resposta_cliente, /^Qual tua altura\?$/);
+});
+
 test('ConversationRouter: recupera multi-info em resposta ao local pendente', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',
