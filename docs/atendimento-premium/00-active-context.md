@@ -40,6 +40,7 @@ wave_47_reclassificacao: PASS apenas para encaminhamento terminal simples; insuf
 wave_47_novo_contrato: cliente com nova ideia deve receber confirmacao "somente essa ou a anterior tambem?" antes de substituir/adicionar item
 wave_47_codigo_atual: Budget Items Manager resolve "as duas"/"somente essa", coleta segundo item, sincroniza item ativo e envia update Telegram com multiplas tattoos usando o mesmo ORCID
 wave_47_pass_final: bloqueado ate WhatsApp real organico completo + Telegram final correto
+wave_47_falha_util_20260527: run `scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T180425Z-10038` falhou no step 9 porque `item_2` herdou `estilo=fineline` do topo legado; correcao limpa campos legados da tattoo anterior quando novo item fica ativo
 ```
 
 ## Regra Ativa
@@ -63,13 +64,14 @@ Full Journey Validation Gate: seed de meio de fluxo pode ser radar tecnico, mas 
 ## Corte Em Andamento
 
 ```text
-budget_items_manager_micro_slice_3: implementado_localmente_pendente_validacao_final
+budget_items_manager_micro_slice_3: correcao_topo_legado_testada_localmente_pendente_deploy_whatsapp_real
 contrato: mensagem nova ideia em aguardando_tatuador nao pode cair no encaminhamento terminal silencioso
 resposta_cliente: "Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?"
 persistencia: dados_coletados.budget_change_pending
 confirmacao: "as duas" reabre coleta do segundo item; "somente essa" marca anterior como substituido
 telegram_atual: aviso de replanejamento pendente + update final com multiplas tattoos quando segundo item fica completo
 workflow: tattoo completa com cadastro existente vai direto para aguardando_tatuador e aciona pacote
+correcao_atual: ao ativar item novo, top-level descricao/local/estilo/foto passa a representar o item novo; campos antigos nao podem contaminar `item_2`
 pass_final: bloqueado ate jornada WhatsApp real completa + Telegram correto
 ```
 

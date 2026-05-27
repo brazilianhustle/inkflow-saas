@@ -63,9 +63,9 @@ test('resolve "as duas" criando segundo item ativo sem perder snapshot anterior'
   const detection = detectBudgetChangeRequest({
     estado_agente: 'aguardando_tatuador',
     mensagem: 'mudei de ideia, queria uma caveira na perna',
-    dados_coletados: { descricao_curta: 'dragao', local_corpo: 'braco', altura_cm: 170, estilo: 'realismo' },
+    dados_coletados: { descricao_curta: 'dragao', local_corpo: 'braco', altura_cm: 170, estilo: 'realismo', foto_local_msg_id: 123, foto_local_file_id: 'file_old' },
   });
-  const dados = applyBudgetChangePending({ descricao_curta: 'dragao', local_corpo: 'braco', altura_cm: 170, estilo: 'realismo' }, detection);
+  const dados = applyBudgetChangePending({ descricao_curta: 'dragao', local_corpo: 'braco', altura_cm: 170, estilo: 'realismo', foto_local_msg_id: 123, foto_local_file_id: 'file_old' }, detection);
 
   const resolution = resolveBudgetChangeConfirmation({
     mensagem: 'as duas',
@@ -80,6 +80,10 @@ test('resolve "as duas" criando segundo item ativo sem perder snapshot anterior'
   assert.equal(resolution.next_dados_coletados.budget_items[1].descricao_curta, 'caveira');
   assert.equal(resolution.next_dados_coletados.active_budget_item_id, 'item_2');
   assert.equal(resolution.next_dados_coletados.descricao_curta, 'caveira');
+  assert.equal(resolution.next_dados_coletados.local_corpo, 'perna');
+  assert.equal(resolution.next_dados_coletados.estilo, null);
+  assert.equal(resolution.next_dados_coletados.foto_local_msg_id, null);
+  assert.equal(resolution.next_dados_coletados.foto_local_file_id, null);
   assert.match(resolution.response, /considerar as duas/);
   assert.match(resolution.response, /qual estilo/);
 });

@@ -91,6 +91,17 @@ cenario_definitivo: whatsapp-real-long-journey-post-handoff-new-request com 10 s
 gate: PASS bloqueado ate CI/deploy + WhatsApp real organico completo + chegada correta do Telegram final
 ```
 
+Falha util inicial:
+
+```text
+run: scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T180425Z-10038
+resultado: FAIL no step 9
+ponto_que_passou: jornada inicial, primeiro ORCID, pergunta "somente essa/anterior tambem" e confirmacao "as duas"
+falha: mensagem "blackwork" foi recebida, mas o item 2 herdou estilo fineline do topo legado da tattoo anterior; Router nao captou estilo pendente e caiu em fallback tardio
+correcao: ao ativar um novo budget item, o top-level legado passa a representar o item ativo e limpa estilo/fotos antigos
+status_pos_correcao: npm test PASS 1238/1238; falta deploy + WhatsApp real completo + Telegram final
+```
+
 Contrato atual:
 
 ```text

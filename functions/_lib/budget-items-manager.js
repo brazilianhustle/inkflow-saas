@@ -122,9 +122,13 @@ export function resolveBudgetChangeConfirmation({ mensagem, dados_coletados = {}
   const budgetItems = action === 'add' ? [previousItem, proposedItem] : [previousItem, proposedItem];
   const nextDados = {
     ...dados_coletados,
-    ...pending.proposed_item,
+    descricao_curta: pending.proposed_item?.descricao_curta || null,
+    local_corpo: pending.proposed_item?.local_corpo || null,
+    estilo: pending.proposed_item?.estilo || null,
+    tamanho_cm: pending.proposed_item?.tamanho_cm || null,
     altura_cm: proposedItem.altura_cm || dados_coletados.altura_cm || null,
     foto_local_msg_id: pending.proposed_item?.foto_local_msg_id || null,
+    foto_local_file_id: pending.proposed_item?.foto_local_file_id || null,
     refs_imagens_msg_ids: pending.proposed_item?.refs_imagens_msg_ids || [],
     budget_items: budgetItems,
     active_budget_item_id: proposedItem.item_id,
