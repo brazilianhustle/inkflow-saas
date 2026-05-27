@@ -7,9 +7,71 @@ Provar que o bot lida com mudanca de ideia, novo pedido ou complemento relevante
 ## Status
 
 ```text
-status: micro_slice_1_full_journey_pass
-motivo: validacao premium de replanejamento foi fechada por jornada completa no WhatsApp real, sem seed terminal
-decisao: cobertura terminal pos-handoff aprovada; proximo gap e replanejamento antes do handoff ou conversa antiga nao-terminal
+status: reaberta_por_correcao_de_contrato_produto
+motivo: a validacao anterior provou encaminhamento terminal simples, mas nao provou replanejamento/multiplos orcamentos
+decisao: separar cobertura pos-handoff simples de mudanca de ideia orcamentavel; abrir arquitetura de Budget Items antes de novo fechamento
+```
+
+## Correcao De Contrato - 2026-05-27
+
+A leitura anterior tratou toda mensagem em `aguardando_tatuador` como terminal: encaminhar ao humano, nao responder ao cliente e nao reabrir IA. Isso e correto apenas para complemento simples ou midia adicional depois que o humano assumiu.
+
+Nao e suficiente para replanejamento orcamentavel. Quando o cliente diz:
+
+```text
+mudei de ideia, queria uma caveira na perna
+```
+
+o comportamento premium esperado e o bot entender que existe uma nova ideia de tattoo e confirmar a intencao:
+
+```text
+Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?
+```
+
+Essa pergunta nao deve ser implementada como regra pontual para "caveira". Ela pertence a uma nova camada/contrato: Budget Items Manager.
+
+```text
+problema_estrutural_atual: conversas tem um unico dados_coletados e um unico orcid
+risco: nao representa dois orcamentos/tattoos na mesma conversa
+novo_contrato: conversa pode conter N itens de tattoo, cada um com briefing, local, estilo, altura/tamanho, fotos e status
+telegram: precisa deixar explicito se ha 1 ou mais tattoos no pacote do tatuador
+workflow: mudanca de ideia apos handoff pode significar substituir item anterior ou adicionar novo item, e o bot deve perguntar antes de decidir
+```
+
+## Micro-Slice 1 - Reclassificacao
+
+```text
+status: PASS parcial / reclassificado
+o_que_provou: texto pos-handoff simples e encaminhado ao humano sem IA nova
+o_que_nao_provou: capacidade de analisar nova ideia, perguntar se substitui/adiciona, coletar segunda tattoo e montar pacote multi-orcamento
+decisao: manter evidencia como cobertura de encaminhamento terminal simples; nao usar como fechamento da Wave 47
+```
+
+## Novo Plano Estrutural - Budget Items Manager
+
+```text
+camada: Budget Items Manager
+posicao: entre ConversationRouter/Policy e WorkflowManager
+missao: modelar uma conversa como 1..N itens de tattoo orcamentaveis
+estado_do_item: em_coleta | aguardando_confirmacao | pronto_para_handoff | enviado_ao_tatuador | substituido | cancelado
+active_item_id: item atualmente em coleta
+legacy_bridge: manter campos atuais de dados_coletados espelhados para compatibilidade ate migrar totalmente
+```
+
+Contrato minimo do primeiro corte:
+
+```text
+entrada: cliente em jornada completa ja enviada ao tatuador manda nova ideia de tattoo
+saida_esperada: bot responde confirmando ambiguidade entre substituir ou adicionar
+proibido: silencio automatico, novo ORCID imediato, chamar enviar-orcamento, sobrescrever briefing antigo antes da confirmacao, tratar como cobertura/risco sem gatilho real
+```
+
+Contrato futuro:
+
+```text
+se cliente disser "so essa": marcar item anterior como substituido/cancelado e coletar campos faltantes da nova tattoo
+se cliente disser "as duas": criar segundo item ativo e coletar briefing/foto desse item
+se item novo ficar completo: Telegram deve explicitar "Orcamento com 2 tattoos" e listar cada item com suas fotos
 ```
 
 ## Nota De Replanejamento
@@ -112,6 +174,7 @@ ai_messages_after_last_human: 0
 tail_gate: PASS, pos-handoff-mensagem-encaminhada presente; enviar-orcamento/runAgent/openai ausentes no delta da etapa final
 naturalness_v2: PASS, media 2.88, tag pos_handoff_sem_ia_ok
 tests: node --test tests/**/*.test.mjs PASS 1227/1227
+reclassificacao: evidencia valida para encaminhamento terminal simples, insuficiente para replanejamento/multiplos orcamentos
 ```
 
 Provas conclusivas reais:

@@ -5,13 +5,13 @@ Este e o primeiro arquivo a ler apos compactacao, troca de aba ou retomada. Ele 
 ## Estado De Comando
 
 ```text
-status: wave_47_micro_slice_1_full_journey_pass
+status: wave_47_reaberta_budget_items_manager
 branch: main
 autonomy_level: 4B
 level_4c: bloqueado
 onda_ativa: Wave 47 - Replanejamento E Novo Pedido
-proxima_acao: decidir proximo subcaso da Wave 47: replanejamento antes do handoff ou conversa antiga nao-terminal
-motivo: cobertura terminal pos-handoff passou em WhatsApp real full journey desde o inicio
+proxima_acao: implementar primeiro corte estrutural de Budget Items Manager para mudanca de ideia orcamentavel
+motivo: silencio pos-handoff provou encaminhamento simples, mas nao atende objetivo premium de captar mais de uma tattoo/orcamento
 ```
 
 ## Evidencia Que Travou A Frente
@@ -36,7 +36,8 @@ pass_continuous_2_bolhas: scenario-whatsapp-real-organic-continuous-burst-2-bubb
 fix_continuous_commit: 9c6f635 fix: keep organic burst conversations continuous
 naturalness_v2_continuous: 2 PASS / 0 watchlist / 0 rework / 0 stop / media 2.88
 wave_47_full_journey_pos_handoff: scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T172227Z-14895
-wave_47_decisao: PASS; novo pedido pos-handoff foi encaminhado ao humano sem IA nova, sem novo ORCID, com tail delta limpo
+wave_47_reclassificacao: PASS apenas para encaminhamento terminal simples; insuficiente para mudanca de ideia orcamentavel/multiplos orcamentos
+wave_47_novo_contrato: cliente com nova ideia deve receber confirmacao "somente essa ou a anterior tambem?" antes de substituir/adicionar item
 ```
 
 ## Regra Ativa
@@ -51,10 +52,11 @@ Full Journey Validation Gate: seed de meio de fluxo pode ser radar tecnico, mas 
 
 ## Proximo Ataque
 
-1. Nao reabrir o subcaso terminal pos-handoff sem falha nova.
-2. Escolher o proximo subcaso da Wave 47: mudanca de ideia antes do handoff ou conversa antiga nao-terminal/retomada.
-3. Continuar exigindo jornada completa desde o inicio quando o comportamento depender de contexto acumulado.
-4. Manter tail delta por etapa como regra obrigatoria para gates de observabilidade.
+1. Nao tratar toda mensagem em `aguardando_tatuador` como terminal silenciosa.
+2. Criar Budget Items Manager: conversa pode ter 1..N tattoos/orcamentos.
+3. Primeiro corte: detectar nova ideia orcamentavel e perguntar se substitui a anterior ou se e adicional.
+4. Depois: coletar segunda tattoo, fotos por item e Telegram explicito com multiplos itens.
+5. Continuar exigindo jornada completa desde o inicio quando o comportamento depender de contexto acumulado.
 
 ## Arquivos Para Ler
 
