@@ -219,6 +219,74 @@ supa_post() {
   rm -f "$tmp"
 }
 
+supa_patch() {
+  local path="$1"
+  local body="$2"
+  local tmp status
+  tmp="$(mktemp)"
+  status="$(
+    supabase_curl -o "$tmp" -w "%{http_code}" \
+      -X PATCH "${SUPABASE_URL}/rest/v1/${path}" \
+      -H "apikey: $SUPA_KEY" \
+      -H "Authorization: Bearer $SUPA_KEY" \
+      -H "Content-Type: application/json" \
+      -H "Prefer: return=representation" \
+      --data "$body"
+  )"
+  if [[ ! "$status" =~ ^2 ]]; then
+    echo "ERRO: Supabase PATCH $path falhou HTTP $status" >&2
+    cat "$tmp" >&2
+    rm -f "$tmp"
+    exit 1
+  fi
+  cat "$tmp"
+  rm -f "$tmp"
+}
+
+assert_tenant_mutation_allowed() {
+  if [ "$TENANT_ID" != "db686ef2-ca42-43e4-a831-808984d8d6c6" ] && [ "${SMOKE_ALLOW_ANY_TENANT_MUTATION:-0}" != "1" ]; then
+    echo "ERRO: setup com mutacao de tenant bloqueado fora do tenant smoke controlado: $TENANT_ID" >&2
+    exit 1
+  fi
+}
+
+snapshot_tenant_for_restore() {
+  load_devvars
+  assert_tenant_mutation_allowed
+  local restore_file
+  restore_file="$EVIDENCE_DIR/tenant-restore.json"
+  [ -f "$restore_file" ] && return 0
+  supabase_curl --get "${SUPABASE_URL}/rest/v1/tenants" \
+    --data-urlencode "id=eq.${TENANT_ID}" \
+    --data-urlencode "select=id,portfolio_urls,config_agente,gatilhos_handoff" \
+    --data-urlencode "limit=1" \
+    -H "apikey: $SUPA_KEY" \
+    -H "Authorization: Bearer $SUPA_KEY" \
+    | jq '.[0]' > "$restore_file"
+  if [ ! -s "$restore_file" ] || [ "$(cat "$restore_file")" = "null" ]; then
+    echo "ERRO: nao foi possivel criar snapshot de restore do tenant." >&2
+    exit 1
+  fi
+}
+
+restore_tenant_snapshot() {
+  local restore_file body
+  restore_file="$EVIDENCE_DIR/tenant-restore.json"
+  [ -f "$restore_file" ] || return 0
+  [ "${SMOKE_SKIP_TENANT_RESTORE:-0}" = "1" ] && return 0
+  load_devvars
+  body="$(jq -c '{portfolio_urls,config_agente,gatilhos_handoff}' "$restore_file")"
+  supa_patch "tenants?id=eq.${TENANT_ID}" "$body" >/dev/null
+  echo "tenant restore ok: $TENANT_ID" > "$EVIDENCE_DIR/tenant-restore-status.txt"
+}
+
+setup_tenant_portfolio_indisponivel() {
+  load_devvars
+  snapshot_tenant_for_restore
+  supa_patch "tenants?id=eq.${TENANT_ID}" '{"portfolio_urls":[]}' >/dev/null
+  echo "tenant setup ok: portfolio_urls=[] tenant=$TENANT_ID"
+}
+
 supa_get_agent_turn_logs_since_run() {
   load_devvars
   supabase_curl --get "${SUPABASE_URL}/rest/v1/agent_turn_logs" \
@@ -969,6 +1037,7 @@ run_setup() {
     seed_cadastro_pos_midia_aguardando_email) seed_cadastro_pos_midia_aguardando_email ;;
     seed_cadastro_pos_midia_aguardando_email_media_fresca) seed_cadastro_pos_midia_aguardando_email_media_fresca ;;
     seed_pos_handoff_aguardando_tatuador) seed_pos_handoff_aguardando_tatuador ;;
+    tenant_portfolio_indisponivel) setup_tenant_portfolio_indisponivel ;;
     *) echo "ERRO: setup desconhecido: $SETUP" >&2; exit 1 ;;
   esac
 }
@@ -1306,6 +1375,9 @@ run_scenario() {
 
 on_exit() {
   local status=$?
+  if [ -d "$EVIDENCE_DIR" ]; then
+    restore_tenant_snapshot || true
+  fi
   if [ "$status" -ne 0 ] && [ -d "$EVIDENCE_DIR" ] && [ "$TRIAGE_RENDERED" = "0" ]; then
     TRIAGE_RENDERED=1
     bash scripts/smoke/render-triage.sh "$EVIDENCE_DIR" "$status" || true

@@ -79,6 +79,7 @@ Depois disso o sistema decide se deve:
 - [68-frentes-finais-bot-premium.md](./68-frentes-finais-bot-premium.md): mapa das frentes restantes para conclusao do bot premium apos fechamento da familia midia/cadastro.
 - [69-level-4b-wave-44.md](./69-level-4b-wave-44.md): auditoria final de jornadas premium completas em HTTP radar e WhatsApp real.
 - [70-level-4b-wave-45.md](./70-level-4b-wave-45.md): auditoria read-only de naturalidade premium por familias funcionais.
+- [71-level-4b-wave-46.md](./71-level-4b-wave-46.md): validacao de Tenant/Config em modo produto com setup reversivel.
 - [slice-gates/workflow-manager.env](./slice-gates/workflow-manager.env): gate formal da camada de transicao segura de estado.
 - [current-objective.md](./current-objective.md): estado vivo, proximo ataque e comandos de retomada.
 - [smoke-runs.md](./smoke-runs.md): indice versionado dos smokes relevantes.

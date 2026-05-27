@@ -83,7 +83,7 @@ Objetivo: garantir que o bot muda corretamente por estudio, sem ficar generico.
 
 Pontos faltantes ou ainda pouco provados:
 
-- tenant sem portfolio;
+- tenant sem portfolio: fechado na Wave 46 micro-slice 1 com HTTP radar + WhatsApp real + restore automatico;
 - estilos aceitos vs estilo fora do escopo;
 - menoridade/cobertura por regra especifica do estudio;
 - vocabulario e identidade do estudio sem vazar configuracao;
@@ -142,7 +142,7 @@ frente: Tenant/Config em modo produto
 tipo: read-only + HTTP radar + WhatsApp real quando houver comportamento conversacional/produto
 objetivo: provar que o bot nao e apenas bom no tenant atual; ele respeita variacoes de estudio de forma segura
 escopo_maximo_4B: ate 8 micro-slices da mesma familia, com WhatsApp real serial
-primeiro_passo: declarar Wave 46 e escolher a primeira variacao de tenant/config com menor risco e maior valor de produto
+primeiro_passo: concluido na Wave 46 micro-slice 1; proximo corte recomendado e estilo fora do catalogo aceito
 ```
 
 ## Definition Of Done Para Conclusao Do Bot Premium
