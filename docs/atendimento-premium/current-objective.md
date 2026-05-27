@@ -11,7 +11,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: premium_operational_chain_solidified
+status: level4b_wave_29_cadastro_handoff_current_validation_pass
 branch: main
 ultimo_commit: docs: define premium operational chain
 ultimo_commit_funcional: 257f3cf fix: soften optional email prompt
@@ -51,6 +51,8 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 28 validada em producao: HTTP radar `cadastro-lateral-data-recovery` PASS e WhatsApp real `central -> bot` PASS; nova frase `Se quiser, me passa teu e-mail. Se preferir seguir só por aqui, tudo certo.` manteve e-mail opcional, `estado=coletando_cadastro`, `orcid=null` e Naturalness Audit V2 2 PASS/0 watchlist.
 - Wave 28 fechou PASS: CI e deploy do registro documental passaram, `wave-health` final PASS com 200 scenarios PASS, 98 WhatsApp reais PASS, Security Gate PASS, Evidence Orphan Gate PASS e Level 4B mantido.
 - Cadeia operacional premium solidificada em `52-premium-operational-chain.md`: regra profissional de avanco/nao avanco, Definition of Done Premium, matriz de decisao e cadencia para impedir progresso sem HTTP/WhatsApp real/evidencia quando aplicavel.
+- Wave 29 iniciada: auditoria read-only da familia cadastro/handoff usando Naturalness Audit V2, sem mudanca de codigo antes de evidencia real apontar familia e severidade.
+- Wave 29 validou a familia cadastro/handoff atual sem mudanca de codigo: auditoria ampla teve 24 PASS/3 watchlist historicas/0 rework/0 stop; revalidacao atual passou em HTTP radar e WhatsApp real `central -> bot` com 7 steps, Naturalness V2 7 PASS/0 watchlist, estado final `aguardando_tatuador`, `orcid=orc_scfzj3` e pos-handoff sem nova IA.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
@@ -218,7 +220,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: abrir a proxima onda somente apos declarar familia/escopo usando `52-premium-operational-chain.md`. Candidato pragmatico: auditoria V2 read-only por familia de cadastro/handoff e atacar apenas watchlists reais, mantendo Level 4B e 4C bloqueado.
+Proximo passo recomendado: rodar `wave-health`, commitar o registro da Wave 29 e decidir a proxima familia somente se houver evidencia real atual. Candidato pragmatico: nova auditoria read-only por menoridade/risco ou pos-handoff, sem mudar codigo antes de watchlist atual.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:
