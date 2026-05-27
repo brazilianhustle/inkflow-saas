@@ -104,7 +104,7 @@ Bot: "Se quiser, me passa teu e-mail. Se preferir seguir só por aqui, tudo cert
 ## Resultado
 
 ```text
-status: PASS
+status: CLOSED PASS
 http_radar: PASS
 whatsapp_real_definitivo: PASS
 estado_final: coletando_cadastro
@@ -112,4 +112,21 @@ orcid: null
 copy_risk: medio esperado por mencao a e-mail
 dados_cadastro: {"nome":"Joao Silva","data_nascimento":"1995-03-12"}
 decisao: frase opcional mais natural validada sem mudar regra funcional
+```
+
+## Closeout
+
+```text
+closed_at_utc: 2026-05-27 04:51
+commit_funcional: 257f3cf fix: soften optional email prompt
+commit_validacao: 4eef96e docs: validate wave 28 optional email
+ci_commit_validacao: PASS 26491494646
+deploy_commit_validacao: PASS 26491494627
+wave_health_final: PASS
+scenario_pass_count: 200
+real_whatsapp_pass_count: 98
+security_gate: PASS
+evidence_orphan_gate: PASS
+autonomy_decision: keep Level 4B
+level_4c: bloqueado
 ```

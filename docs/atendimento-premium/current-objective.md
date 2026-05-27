@@ -11,14 +11,14 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_28_email_optional_naturalness_validated
+status: level4b_wave_28_email_optional_naturalness_closed
 branch: main
-ultimo_commit: 257f3cf fix: soften optional email prompt
-ultimo_commit_funcional: c519c52 fix: soften deterministic first contact intro
-deploy: PASS no commit 257f3cf; Wave 28 HTTP radar + WhatsApp real PASS
-tests: npm test PASS local 1216/1216; CI PASS 26491342498; deploy PASS 26491342501
+ultimo_commit: 4eef96e docs: validate wave 28 optional email
+ultimo_commit_funcional: 257f3cf fix: soften optional email prompt
+deploy: PASS no commit 4eef96e; Wave 28 HTTP radar + WhatsApp real PASS
+tests: npm test PASS local 1216/1216; CI PASS 26491494646; deploy PASS 26491494627
 prompts_ci: PASS no GitHub Actions
-worktree_esperado: docs de validacao da Wave 28 pendentes de commit
+worktree_esperado: limpo apos commit de closeout da Wave 28
 ultimo_commit_validado: 257f3cf fix: soften optional email prompt + CI PASS + deploy PASS + HTTP radar PASS + WhatsApp real PASS
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
@@ -49,6 +49,7 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 - Wave 27 fechou PASS: `wave-health` final PASS com 198 scenarios PASS, 97 WhatsApp reais PASS, Security Gate PASS, Evidence Orphan Gate PASS e worktree limpo. Familia de primeiro contato mecanico esta coberta por micro-slices e jornada longa atual.
 - Wave 28 iniciada: naturalidade do e-mail opcional. Auditor V2 em cadastro/e-mail/handoff retornou 10 PASS/0 watchlist; alvo escolhido foi a frase central de e-mail opcional na `conversation-voice-policy`, sem mudar regra funcional. Testes locais focados PASS 138/138 e `npm test` PASS 1216/1216.
 - Wave 28 validada em producao: HTTP radar `cadastro-lateral-data-recovery` PASS e WhatsApp real `central -> bot` PASS; nova frase `Se quiser, me passa teu e-mail. Se preferir seguir só por aqui, tudo certo.` manteve e-mail opcional, `estado=coletando_cadastro`, `orcid=null` e Naturalness Audit V2 2 PASS/0 watchlist.
+- Wave 28 fechou PASS: CI e deploy do registro documental passaram, `wave-health` final PASS com 200 scenarios PASS, 98 WhatsApp reais PASS, Security Gate PASS, Evidence Orphan Gate PASS e Level 4B mantido.
 - Bug corrigido durante a Jornada 1: respostas simples ao proximo campo pendente de tattoo agora sao roteadas deterministicamente por `tattoo_pending_answer`, evitando queda no LLM e repeticao de pergunta.
 - Level 4B Wave 22 Jornada 2 passou em HTTP radar e WhatsApp real definitivo: jornada longa com foto local, pergunta lateral durante cadastro, handoff e texto pos-handoff sem nova IA. O runner agora suporta `SMOKE_REQUIRE_AI_RESPONSE_N` por etapa em multi-turn.
 - Workflow Manager implementado para promover cadastro completo para `aguardando_tatuador`.
@@ -216,7 +217,7 @@ decision_chain: Evolution central -> WhatsApp real -> bot -> webhook -> recusa d
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: commitar o registro documental da Wave 28, rodar `wave-health` final e fechar a onda se continuar verde. Depois escolher a proxima frente leve de naturalidade/validacao mantendo Level 4B; 4C bloqueado.
+Proximo passo recomendado: escolher a proxima frente leve de naturalidade/validacao mantendo Level 4B; 4C bloqueado. Candidato pragmatico: continuar auditoria V2 por familia de cadastro/handoff e atacar apenas watchlists reais, sem regras pontuais desnecessarias.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:
