@@ -105,7 +105,7 @@ origem: WhatsApp real central -> bot
 formato: conversa multi-bolha, nao apenas uma mensagem sintetica
 entrada: saudacao + intencao + local + ideia + tamanho/detalhe em mensagens separadas
 obrigatorio: resposta humanizada de primeiro contato, reacao ao briefing, consolidacao dos fragmentos e proxima pergunta coerente
-proibido: ignorar briefing relevante, repetir pergunta ja respondida, soar como formulario bruto, perder estado, criar orcamento prematuro
+proibido: responder entre bolhas antes da ultima mensagem, ignorar briefing relevante, repetir pergunta ja respondida, soar como formulario bruto, perder estado, criar orcamento prematuro
 evidencia: transcript real, resposta Cliente/Bot curta, tail, agent_turn_logs, estado final, julgamento Naturalness V2 quando houver linguagem
 ```
 
@@ -113,6 +113,7 @@ Regra de parada:
 
 ```text
 falha manual organica bloqueia a proxima onda conversacional ate virar sentinel versionado e passar
+2 ou 3 bolhas reais em burst passam a ser a prova principal de atendimento premium organico
 ```
 
 Exemplo de gap que exige sentinel:

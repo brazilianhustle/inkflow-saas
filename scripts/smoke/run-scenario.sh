@@ -17,6 +17,7 @@ SCENARIO_TITLE="$SCENARIO_NAME"
 SCENARIO_TYPE="http"
 STEP_COUNT="0"
 STEP_WAIT_SECONDS="${STEP_WAIT_SECONDS:-2}"
+BURST_INTERVAL_SECONDS="${BURST_INTERVAL_SECONDS:-1}"
 BASE_URL="${BASE_URL:-https://inkflowbrasil.com}"
 TENANT_ID="${SMOKE_TENANT_ID:-db686ef2-ca42-43e4-a831-808984d8d6c6}"
 PHONE="5521970789797"
@@ -53,9 +54,20 @@ is_multiturn_type() {
   esac
 }
 
-if is_multiturn_type; then
+is_burst_type() {
+  case "$SCENARIO_TYPE" in
+    whatsapp_real_burst) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+is_step_sequence_type() {
+  is_multiturn_type || is_burst_type
+}
+
+if is_step_sequence_type; then
   [[ "$STEP_COUNT" =~ ^[0-9]+$ ]] && [ "$STEP_COUNT" -ge 2 ] || {
-    echo "ERRO: scenario multi-turn exige STEP_COUNT >= 2." >&2
+    echo "ERRO: scenario por etapas exige STEP_COUNT >= 2." >&2
     exit 1
   }
 else
@@ -66,7 +78,7 @@ else
 fi
 [[ "$PHONE" =~ ^[0-9]{10,15}$ ]] || { echo "ERRO: PHONE invalido: $PHONE" >&2; exit 1; }
 case "$SCENARIO_TYPE" in
-  http|whatsapp_real|http_multiturn|whatsapp_real_multiturn) ;;
+  http|whatsapp_real|http_multiturn|whatsapp_real_multiturn|whatsapp_real_burst) ;;
   *) echo "ERRO: SCENARIO_TYPE invalido: $SCENARIO_TYPE" >&2; exit 1 ;;
 esac
 
@@ -100,9 +112,14 @@ run_id        : $RUN_ID
 evidence_dir  : $EVIDENCE_DIR
 EOF
 
-  if is_multiturn_type; then
+  if is_step_sequence_type; then
     echo ""
-    echo "steps:"
+    if is_burst_type; then
+      echo "burst:"
+      echo "  interval_seconds: ${BURST_INTERVAL_SECONDS}"
+    else
+      echo "steps:"
+    fi
     local i msg state bot_regex poll_jq media_file media_mimetype
     for i in $(seq 1 "$STEP_COUNT"); do
       msg="$(step_value MESSAGE "$i")"
@@ -1212,6 +1229,98 @@ run_whatsapp_real_multiturn() {
   bash scripts/smoke/render-report.sh "$EVIDENCE_DIR" | tee -a "$EVIDENCE_DIR/report-render.txt"
 }
 
+run_whatsapp_real_burst() {
+  local step message messages_json last_message tail_log since_iso
+  load_devvars
+  [ -n "${SMOKE_BOT_NUMBER:-}" ] || { echo "ERRO: whatsapp_real_burst exige SMOKE_BOT_NUMBER." >&2; exit 1; }
+  tail_log="${SMOKE_TAIL_LOG:-/tmp/inkflow-smoke-tail.log}"
+  since_iso="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+  messages_json="[]"
+
+  for step in $(seq 1 "$STEP_COUNT"); do
+    message="$(step_value MESSAGE "$step")"
+    [ -n "$message" ] || { echo "ERRO: whatsapp_real_burst exige MESSAGE_${step}." >&2; exit 1; }
+    messages_json="$(printf '%s' "$messages_json" | jq -c --arg step "$step" --arg text "$message" '. + [{step:($step|tonumber),text:$text}]')"
+    last_message="$message"
+  done
+
+  jq -nc \
+    --arg run_id "$RUN_ID" \
+    --arg base_url "$BASE_URL" \
+    --arg sender_phone "$PHONE" \
+    --arg bot_number "$SMOKE_BOT_NUMBER" \
+    --arg since "$since_iso" \
+    --arg expected_state "$EXPECTED_STATE" \
+    --arg require_orcid "${SMOKE_REQUIRE_ORCID:-0}" \
+    --arg require_ai_response "${SMOKE_REQUIRE_AI_RESPONSE:-1}" \
+    --argjson messages "$messages_json" \
+    '{run_id:$run_id,base_url:$base_url,sender_phone:$sender_phone,bot_number:$bot_number,since:$since,expected_state:$expected_state,require_orcid:$require_orcid,require_ai_response:$require_ai_response,burst:true,messages:$messages,text:($messages|map(.text)|join("\n"))}' \
+    > "$EVIDENCE_DIR/request.json"
+
+  cat > "$EVIDENCE_DIR/summary.md" <<EOF
+# Real WhatsApp Burst Smoke Evidence
+
+- status: running
+- run_id: ${RUN_ID}
+- base_url: ${BASE_URL}
+- sender_phone: ${PHONE}
+- bot_number: ${SMOKE_BOT_NUMBER}
+- since: ${since_iso}
+- expected_state: ${EXPECTED_STATE:-"(none)"}
+- step_count: ${STEP_COUNT}
+- burst_interval_seconds: ${BURST_INTERVAL_SECONDS}
+
+## Messages
+EOF
+  for step in $(seq 1 "$STEP_COUNT"); do
+    printf '\n### Bubble %s\n\n```text\n%s\n```\n' "$step" "$(step_value MESSAGE "$step")" >> "$EVIDENCE_DIR/summary.md"
+  done
+
+  echo "=== Smoke WhatsApp real burst ==="
+  echo "run_id       : $RUN_ID"
+  echo "sender_phone : $PHONE"
+  echo "bot_number   : $SMOKE_BOT_NUMBER"
+  echo "step_count   : $STEP_COUNT"
+  echo "interval     : ${BURST_INTERVAL_SECONDS}s"
+  echo "evidence_dir : $EVIDENCE_DIR"
+  echo ""
+
+  SMOKE_TAIL_LOG="$tail_log" bash scripts/smoke/tail.sh | tee "$EVIDENCE_DIR/tail-start.txt"
+
+  echo ""
+  echo "[1/5] Snapshot before"
+  bash scripts/smoke-verify.sh "$PHONE" 20 | tee "$EVIDENCE_DIR/verify-before.txt"
+
+  echo ""
+  echo "[2/5] Enviando bolhas WhatsApp reais via Evolution"
+  for step in $(seq 1 "$STEP_COUNT"); do
+    message="$(step_value MESSAGE "$step")"
+    echo ""
+    echo "bubble $step/$STEP_COUNT"
+    SMOKE_RUN_ID="${RUN_ID}-bubble${step}" bash scripts/smoke/send-real-whatsapp.sh "$message" "$SMOKE_BOT_NUMBER" \
+      | tee "$EVIDENCE_DIR/evolution-send-${step}.json"
+    if [ "$step" -lt "$STEP_COUNT" ] && [ "${BURST_INTERVAL_SECONDS:-0}" -gt 0 ]; then
+      sleep "$BURST_INTERVAL_SECONDS"
+    fi
+  done
+
+  echo ""
+  echo "[3/5] Polling de processamento do webhook real apos ultima bolha"
+  SMOKE_EXPECT_HUMAN_TEXT="$last_message" bash scripts/smoke/poll.sh "$PHONE" "$since_iso" "$EXPECTED_STATE" \
+    | tee "$EVIDENCE_DIR/poll.json"
+
+  echo ""
+  echo "[4/5] Snapshot after"
+  bash scripts/smoke-verify.sh "$PHONE" 30 | tee "$EVIDENCE_DIR/verify-after.txt"
+
+  echo ""
+  echo "[5/5] Transcript e julgamento"
+  bash scripts/smoke/render-report.sh "$EVIDENCE_DIR" | tee "$EVIDENCE_DIR/report-render.txt"
+
+  refresh_tail_excerpt
+  sed -i.bak 's/^- status: running$/- status: pass/' "$EVIDENCE_DIR/summary.md" && rm -f "$EVIDENCE_DIR/summary.md.bak"
+}
+
 run_scenario() {
   mkdir -p "$EVIDENCE_DIR"
   print_plan | tee "$EVIDENCE_DIR/scenario-plan.txt"
@@ -1243,6 +1352,9 @@ run_scenario() {
     whatsapp_real_multiturn)
       run_whatsapp_real_multiturn
       return 0
+      ;;
+    whatsapp_real_burst)
+      run_whatsapp_real_burst
       ;;
     http)
       SMOKE_RUN_ID="$RUN_ID" \

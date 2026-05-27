@@ -9,7 +9,7 @@ Provar que o bot lida com mudanca de ideia, novo pedido ou complemento relevante
 ```text
 status: pausada_antes_da_execucao
 motivo: regressao organica identificada em teste manual WhatsApp real antes do primeiro micro-slice
-decisao: executar Organic Conversation Sentinel Pack antes de qualquer smoke conversacional novo desta Wave
+decisao: executar Organic Conversation Sentinel Pack com 2 e 3 bolhas reais antes de qualquer smoke conversacional novo desta Wave
 ```
 
 ## Nota De Replanejamento
@@ -19,8 +19,8 @@ O teste manual real mostrou que a conversa organica pode degradar para coleta de
 Proxima acao antes do Micro-Slice 1:
 
 ```text
-1. criar sentinel versionado para conversa organica multi-bolha;
-2. validar em WhatsApp real central -> bot;
+1. rodar `whatsapp-real-organic-burst-3-bubbles`;
+2. rodar `whatsapp-real-organic-burst-2-bubbles`;
 3. registrar transcript, tail, agent logs, estado final e julgamento;
 4. atualizar active context;
 5. so entao retomar o contrato pos-handoff desta Wave.

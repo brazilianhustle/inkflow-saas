@@ -10,7 +10,7 @@ branch: main
 autonomy_level: 4B
 level_4c: bloqueado
 onda_ativa: Wave 47 pausada antes da execucao
-proxima_acao: criar Organic Conversation Sentinel Pack antes de retomar Wave 47
+proxima_acao: rodar Organic Conversation Sentinel Pack em WhatsApp real burst antes de retomar Wave 47
 motivo: teste manual WhatsApp real mostrou regressao organica nao coberta por micro-slices controlados
 ```
 
@@ -35,15 +35,16 @@ Organic Conversation Sentinel = obrigatorio quando a frente envolve experiencia 
 
 ## Proximo Ataque
 
-1. Oficializar Organic Conversation Sentinel Pack.
-2. Cobrir conversa organica multi-bolha de primeiro contato com slang/fragmentos.
-3. Exigir transcript real, tail, agent logs, estado final e julgamento de naturalidade.
-4. So depois retomar Wave 47 - Replanejamento/Novo Pedido.
+1. Rodar `whatsapp-real-organic-burst-3-bubbles`.
+2. Rodar `whatsapp-real-organic-burst-2-bubbles`.
+3. Se qualquer um falhar, parar plano funcional e corrigir a camada estrutural causal.
+4. Se os dois passarem, retomar Wave 47 - Replanejamento/Novo Pedido.
 
 ## Arquivos Para Ler
 
 ```text
 docs/atendimento-premium/52-premium-operational-chain.md
+docs/atendimento-premium/73-organic-conversation-sentinel-pack.md
 docs/atendimento-premium/72-level-4b-wave-47.md
 docs/atendimento-premium/current-objective.md somente se precisar de historico amplo
 docs/atendimento-premium/smoke-runs.md somente se precisar de evidencia antiga
@@ -67,6 +68,7 @@ WhatsApp real ausente em comportamento conversacional
 sentinel organico ausente apos regressao manual
 bot responder como formulario quando o cliente trouxe briefing organico
 bot ignorar fragmentos semanticamente relevantes em sequencia
+bot responder entre bolhas de um burst real antes da ultima mensagem humana
 mensagem duplicada, estado final errado ou IA depois de handoff humano
 compactacao sem active context ou continuity bundle
 ```
