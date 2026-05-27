@@ -13,13 +13,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ```text
 status: level4b_wave_40_telegram_media_package_pass
 branch: main
-ultimo_commit: docs: close wave 40 telegram media package
+ultimo_commit: 650c0d2 docs: close wave 40 telegram media package
 ultimo_commit_funcional: b54f085 fix: route portfolio requests deterministically
-deploy: pendente apos commit documental da Wave 40; Wave 40 HTTP + WhatsApp real PASS
-tests: Wave 40 HTTP PASS; Wave 40 WhatsApp real PASS; Naturalness V2 PASS; wave-health PASS
+deploy: PASS no commit 650c0d2; Wave 40 HTTP + WhatsApp real PASS
+tests: CI PASS 26495482381; deploy PASS 26495482338; Wave 40 HTTP PASS; Wave 40 WhatsApp real PASS; Naturalness V2 PASS; wave-health PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
-ultimo_commit_validado: Wave 40 validada em producao por HTTP radar + WhatsApp real definitivo; commit documental pendente
+ultimo_commit_validado: 650c0d2 docs: close wave 40 telegram media package + CI PASS + deploy PASS + wave-health PASS + Wave 40 HTTP/WhatsApp real PASS
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -236,7 +236,7 @@ decision_chain: seed com midia fresca -> Evolution central -> WhatsApp real -> b
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: commitar Wave 40 e aguardar CI/deploy; depois escolher nova frente pequena de cobertura restante, mantendo Level 4B e 4C bloqueado.
+Proximo passo recomendado: escolher nova frente pequena de cobertura restante, mantendo Level 4B e 4C bloqueado.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:
