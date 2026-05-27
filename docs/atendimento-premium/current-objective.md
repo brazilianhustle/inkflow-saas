@@ -11,15 +11,15 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_41_referencia_apos_foto_local_pass
+status: level4b_wave_42_referencia_confirmada_depois_foto_local_pass
 branch: main
 ultimo_commit: be86741 docs: close wave 41 reference after local
 ultimo_commit_funcional: b54f085 fix: route portfolio requests deterministically
-deploy: PASS no commit be86741; Wave 41 HTTP + WhatsApp real PASS
-tests: CI PASS 26495840422; deploy PASS 26495840414; Wave 41 HTTP PASS; Wave 41 WhatsApp real PASS; Naturalness V2 PASS; wave-health PASS
+deploy: pendente apos commit documental da Wave 42; Wave 42 HTTP + WhatsApp real PASS
+tests: Wave 42 HTTP PASS; Wave 42 WhatsApp real PASS; Naturalness V2 PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
-ultimo_commit_validado: be86741 docs: close wave 41 reference after local + CI PASS + deploy PASS + wave-health PASS + Wave 41 HTTP/WhatsApp real PASS
+ultimo_commit_validado: Wave 42 validada em producao por HTTP radar + WhatsApp real definitivo; commit documental pendente
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -27,6 +27,8 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 
 ## Ultimos Marcos
 
+- Wave 42 fechada como revalidacao atual de referencia confirmada seguida de foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `refs_imagens_msg_ids=[11951]`, criou `foto_local_msg_id` e manteve `orcid=null`.
+- Wave 42 declarada para limpar a variacao irma da Wave 41: referencia confirmada seguida de foto local, com contrato anti-copy-antiga e WhatsApp real novo.
 - Wave 41 fechada como revalidacao atual de referencia adicional apos foto local: HTTP radar e WhatsApp real definitivo passaram; resposta atual bloqueou copy antiga `Pra liberar teu orçamento`, preservou `foto_local_msg_id=599`, adicionou 1 referencia e manteve `orcid=null`.
 - Wave 41 declarada como revalidacao atual de referencia apos foto local: evidencia antiga ainda aceitava/mostrava `Pra liberar teu orçamento`, entao o contrato sera fortalecido antes de HTTP radar e WhatsApp real.
 - Wave 40 fechada como revalidacao atual do pacote Telegram com midia fresca: HTTP radar e WhatsApp real definitivo passaram; tail confirmou `fotos-orcamento-enviadas`, estado final `aguardando_tatuador`, `orcid=orc_xkw5i5`, `foto_local_file_id` e `refs_imagens_file_ids` preservados.
@@ -205,9 +207,9 @@ autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao delibera
 ## Ultimo Smoke PASS De Referencia
 
 ```text
-run_id_http: scenario-tattoo-media-reference-after-local-20260527T065214Z-28690
-run_id_real: scenario-whatsapp-real-tattoo-media-reference-after-local-20260527T065246Z-14230
-tipo: Scenario WhatsApp real da Wave 41
+run_id_http: scenario-tattoo-media-reference-then-local-20260527T065904Z-7743
+run_id_real: scenario-whatsapp-real-tattoo-media-reference-then-local-20260527T065936Z-25142
+tipo: Scenario WhatsApp real da Wave 42
 base_url: central -> bot (*2357)
 telefone: 5521970789797
 expected_state: coletando_cadastro
@@ -218,25 +220,25 @@ evidence: .smoke-evidence/scenario-whatsapp-real-tattoo-media-reference-after-lo
 Mensagem:
 
 ```text
-essa é referência do desenho + imagem
+segue foto do local + imagem
 ```
 
 Resultado:
 
 ```text
 estado_agente: coletando_cadastro
-resposta_ai_final: Recebi essa referência também. Agora me passa teu nome completo pra eu montar o cadastro.
+resposta_ai_final: Recebi a foto do local. Agora me passa teu nome completo pra eu montar o cadastro.
 orcid: null
 copy_risk: baixo
-workflow: foto local preservada e nova referencia adicionada sem criar orcamento
+workflow: referencia anterior preservada e nova foto local criada sem criar orcamento
 observabilidade: poll/judgment confirmam estado, orcid null e resposta atual sem copy antiga
-decision_chain: seed com foto local existente -> Evolution central envia imagem como referencia -> bot preserva foto local -> adiciona referencia -> retoma cadastro
+decision_chain: seed com referencia confirmada -> Evolution central envia imagem como foto local -> bot preserva referencia -> cria foto local -> retoma cadastro
 ```
 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: continuar auditoria de subcasos de midia/cadastro com evidencia antiga ou escolher nova frente pequena de cobertura restante.
+Proximo passo recomendado: commitar Wave 42, aguardar CI/deploy e rodar wave-health; depois continuar limpeza de subcasos de midia/cadastro com evidencia antiga ou revisar cobertura restante.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:

@@ -74,6 +74,7 @@ Depois disso o sistema decide se deve:
 - [63-level-4b-wave-39.md](./63-level-4b-wave-39.md): revalidacao atual de pos-handoff apos jornada completa, garantindo complemento sem nova IA.
 - [64-level-4b-wave-40.md](./64-level-4b-wave-40.md): revalidacao atual do pacote Telegram com midia fresca no handoff.
 - [65-level-4b-wave-41.md](./65-level-4b-wave-41.md): revalidacao atual de referencia adicional depois de foto local ja existente.
+- [66-level-4b-wave-42.md](./66-level-4b-wave-42.md): revalidacao atual de referencia confirmada seguida de foto local.
 - [slice-gates/workflow-manager.env](./slice-gates/workflow-manager.env): gate formal da camada de transicao segura de estado.
 - [current-objective.md](./current-objective.md): estado vivo, proximo ataque e comandos de retomada.
 - [smoke-runs.md](./smoke-runs.md): indice versionado dos smokes relevantes.
