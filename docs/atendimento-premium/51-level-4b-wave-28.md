@@ -64,7 +64,22 @@ npm_test: PASS 1216/1216
 ```text
 http_radar: cadastro-lateral-data-recovery
 whatsapp_real: whatsapp-real-cadastro-lateral-data-recovery
-status: pending
+status: PASS
+http_run_id: scenario-cadastro-lateral-data-recovery-20260527T044756Z-25243
+whatsapp_real_run_id: scenario-whatsapp-real-cadastro-lateral-data-recovery-20260527T044838Z-22189
+naturalness_v2: PASS 2/2, watchlist=0, rework=0, stop=0, media=2.81
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: "quanto tempo demora?"
+Bot: "O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
+
+Me passa tua data de nascimento completa?"
+
+Cliente: "12/03/1995"
+Bot: "Se quiser, me passa teu e-mail. Se preferir seguir só por aqui, tudo certo."
 ```
 
 ## Gates
@@ -85,3 +100,16 @@ status: pending
 - handoff quebrado;
 - `copy_risk=alto`;
 - WhatsApp real FAIL.
+
+## Resultado
+
+```text
+status: PASS
+http_radar: PASS
+whatsapp_real_definitivo: PASS
+estado_final: coletando_cadastro
+orcid: null
+copy_risk: medio esperado por mencao a e-mail
+dados_cadastro: {"nome":"Joao Silva","data_nascimento":"1995-03-12"}
+decisao: frase opcional mais natural validada sem mudar regra funcional
+```
