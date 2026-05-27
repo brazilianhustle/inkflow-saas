@@ -26,6 +26,14 @@ whatsapp-real-organic-burst-3-bubbles:
 whatsapp-real-organic-burst-2-bubbles:
   bolhas: "quero fzr uma tattoo" / "um dragao grandao na perna"
   prova: intencao + briefing condensado em 2 bolhas reais
+
+whatsapp-real-organic-continuous-burst-3-bubbles:
+  bolhas: repeticao organica em conversa existente, sem cleanup
+  prova: nao pode reabrir com "Oii, tudo bem"; deve agir como continuidade
+
+whatsapp-real-organic-continuous-burst-2-bubbles:
+  bolhas: repeticao curta em conversa existente, sem cleanup
+  prova: continuidade sem saudacao e sem tratar como lead novo
 ```
 
 ## Gates
@@ -40,6 +48,7 @@ orcid: null
 dados_obrigatorios: descricao_curta contem dragao; local_corpo contem perna
 resposta_obrigatoria: mencionar/reagir a dragao, perna ou grandao
 proibido: perguntar parte do corpo ja informada, perguntar apenas altura como resposta inteira, preco, agenda, sinal, ORCID ou apresentacao mecanica
+proibido_em_modo_continuo: "Oii", "tudo bem", "me chamo", qualquer saudacao de primeiro contato
 ```
 
 ## Decisão Operacional
@@ -104,4 +113,6 @@ Bot: "Oii, tudo bem. Boa, peguei a ideia do dragao grandao na perna. Qual tua al
 ```bash
 BASE_URL=https://inkflowbrasil.com bash scripts/smoke/run-scenario.sh whatsapp-real-organic-burst-3-bubbles
 BASE_URL=https://inkflowbrasil.com bash scripts/smoke/run-scenario.sh whatsapp-real-organic-burst-2-bubbles
+BASE_URL=https://inkflowbrasil.com bash scripts/smoke/run-scenario.sh whatsapp-real-organic-continuous-burst-3-bubbles
+BASE_URL=https://inkflowbrasil.com bash scripts/smoke/run-scenario.sh whatsapp-real-organic-continuous-burst-2-bubbles
 ```

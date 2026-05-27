@@ -548,6 +548,33 @@ test('ConversationRouter: descrição fraca é substituída por briefing real', 
   assert.doesNotMatch(out.resposta_cliente, /^Qual tua altura\?$/);
 });
 
+test('ConversationRouter: briefing repetido em conversa existente não reabre saudação', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'opa\nquero fzr uma tattoo\nna perna um dragao bolado grandao',
+    conversa: {
+      dados_coletados: {
+        descricao_curta: 'dragao bolado grandao',
+        local_corpo: 'perna',
+      },
+      dados_cadastro: {},
+    },
+    tenant: { nome_agente: 'Assistente' },
+    clientContext: { is_first_contact: false },
+    historico: [
+      { role: 'assistant', content: 'Oii, tudo bem.\n\nBoa, peguei a ideia do dragao bolado grandao na perna. Qual tua altura?' },
+    ],
+  });
+
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'multi_info');
+  assert.equal(out.dados_persistidos.descricao_curta, 'dragao bolado grandao');
+  assert.equal(out.dados_persistidos.local_corpo, 'perna');
+  assert.match(out.resposta_cliente, /dragao bolado grandao/i);
+  assert.match(out.resposta_cliente, /Qual tua altura\?/);
+  assert.doesNotMatch(out.resposta_cliente, /^Oii, tudo bem/i);
+});
+
 test('ConversationRouter: recupera multi-info em resposta ao local pendente', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',

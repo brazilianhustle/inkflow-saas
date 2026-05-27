@@ -912,6 +912,18 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
     if (coreFields.length === 1 && shouldHandleTattooPendingAnswer(extracted, conversa)) {
       return tattooPendingAnswerOutput({ extracted, estado_atual, conversa });
     }
+    const freshExtracted = extractTattooHints(mensagem, {});
+    const hasExistingTattooContext = Object.keys(conversa?.dados_coletados || {}).some(key => hasValue(conversa.dados_coletados?.[key]));
+    if (hasExistingTattooContext && shouldHandleTattooMultiInfo(freshExtracted)) {
+      return tattooMultiInfoOutput({
+        extracted: freshExtracted,
+        estado_atual,
+        conversa,
+        tenant,
+        clientContext: { ...(clientContext || {}), is_first_contact: false },
+        historico,
+      });
+    }
   }
   if (!detected) return null;
 
