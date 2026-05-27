@@ -119,3 +119,48 @@ Leitura estrategica:
 - O bot persistiu descricao, estilo, local e altura sem repetir perguntas ja respondidas.
 - A apresentacao mecanica seguiu removida no segundo caminho deterministico de primeiro contato.
 - O estado ficou `coletando_tattoo`, `orcid=null` e a proxima acao correta foi pedir foto do local.
+
+## Fechamento Da Wave 24
+
+Status final:
+
+```text
+decision: PASS
+closed_at_utc: 2026-05-27 01:45
+final_commit: 5eacc49 docs: validate wave 24 multi info voice
+ci: PASS 26485724572
+deploy: PASS 26485724549
+wave_health: PASS 2026-05-27T01:45:44Z
+whatsapp_real_count_wave: 2
+level_4b: mantido
+level_4c: bloqueado
+```
+
+Veredito:
+
+- A Wave 24 removeu a apresentacao mecanica dos dois caminhos determinisiticos de primeiro contato com contexto acionavel ja validados: preco e multi-info.
+- A mudanca ficou centralizada na Voice Policy, sem abrir regra pontual por frase.
+- Nao houve regressao de estado, ORCID, preco, agenda, pagamento, handoff ou observabilidade.
+- O escopo propositalmente nao mexeu em saudacao pura ou prompt LLM; isso deve virar uma onda propria se a auditoria futura mostrar ganho claro.
+
+Provas conclusivas reais da onda:
+
+```text
+Cliente: "quanto fica uma rosa fineline no braco?"
+Bot: "Oii, tudo bem.
+
+O valor depende do tamanho, detalhe e local do corpo. O tatuador confirma certinho depois de avaliar tua ideia.
+
+Pra montar tua proposta certinho, como posso te chamar?"
+
+Cliente: "quero uma borboleta fineline na perna, tenho 1.70"
+Bot: "Oii, tudo bem.
+
+Boa, ja peguei a ideia principal. Consegue mandar uma foto do local onde tu quer tatuar?"
+```
+
+Proximo ataque recomendado:
+
+```text
+abrir Wave 25 com auditoria leve de caminhos LLM/saudacao pura ou selecionar outra watchlist de naturalidade com evidencia real recente.
+```
