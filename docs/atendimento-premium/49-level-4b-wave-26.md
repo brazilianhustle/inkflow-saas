@@ -190,6 +190,17 @@ Objetivo:
 evoluir naturalness-audit.sh ou criar wrapper complementar para produzir tabela por eixos
 ```
 
+Status:
+
+```text
+PASS metodologico
+script: scripts/smoke/naturalness-audit-v2.sh
+modo: read-only
+smoke_executed: no
+whatsapp_sent: no
+mudanca_conversacional: nenhuma
+```
+
 Regras:
 
 - read-only;
@@ -198,6 +209,24 @@ Regras:
 - nao edita evidencias;
 - aceita lista de evidence dirs;
 - trata `sem_resposta_ai` como sucesso quando estado final e terminal pos-handoff sem nova IA esperada.
+
+Resultado de calibragem na mesma amostra de 10 evidencias WhatsApp real recentes:
+
+```text
+evidencias_analisadas: 10
+pass: 10
+watchlist: 0
+rework: 0
+stop: 0
+media_geral: 2.87
+decisao: PASS
+```
+
+Observacao:
+
+```text
+O primeiro corte gerou falsos REWORK ao confundir mencao explicativa a local do corpo e pedido de foto do local com pergunta repetida. A heuristica foi calibrada para distinguir pedido de campo textual de pedido de midia.
+```
 
 ### Micro-Slice 4 - Reaudit Das Jornadas Longas
 
@@ -223,7 +252,7 @@ menoridade/responsavel legal
 ```text
 baseline_v1_registrado: PASS
 rubrica_v2_documentada: PASS
-auditor_v2_read_only: pending
+auditor_v2_read_only: PASS
 reaudit_recente: pending
 proxima_wave_recomendada_com_evidencia: pending
 ```
@@ -239,5 +268,5 @@ proxima_wave_recomendada_com_evidencia: pending
 ## Proximo Passo
 
 ```text
-Implementar Micro-Slice 3: criar Auditor V2 read-only ou wrapper complementar para aplicar a Rubrica V2 em evidencias existentes.
+Implementar Micro-Slice 4: rodar Auditor V2 nas evidencias das Waves 22, 23, 24 e 25 e escolher a proxima familia de ataque.
 ```
