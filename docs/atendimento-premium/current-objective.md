@@ -13,13 +13,13 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ```text
 status: level4b_wave_41_referencia_apos_foto_local_pass
 branch: main
-ultimo_commit: 650c0d2 docs: close wave 40 telegram media package
+ultimo_commit: be86741 docs: close wave 41 reference after local
 ultimo_commit_funcional: b54f085 fix: route portfolio requests deterministically
-deploy: pendente apos commit documental da Wave 41; Wave 41 HTTP + WhatsApp real PASS
-tests: Wave 41 HTTP PASS; Wave 41 WhatsApp real PASS; Naturalness V2 PASS
+deploy: PASS no commit be86741; Wave 41 HTTP + WhatsApp real PASS
+tests: CI PASS 26495840422; deploy PASS 26495840414; Wave 41 HTTP PASS; Wave 41 WhatsApp real PASS; Naturalness V2 PASS; wave-health PASS
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
-ultimo_commit_validado: Wave 41 validada em producao por HTTP radar + WhatsApp real definitivo; commit documental pendente
+ultimo_commit_validado: be86741 docs: close wave 41 reference after local + CI PASS + deploy PASS + wave-health PASS + Wave 41 HTTP/WhatsApp real PASS
 autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
@@ -236,7 +236,7 @@ decision_chain: seed com foto local existente -> Evolution central envia imagem 
 ## Proximo Ataque
 
 ```text
-Proximo passo recomendado: commitar Wave 41, aguardar CI/deploy e rodar wave-health; depois continuar auditoria de subcasos de midia/cadastro com evidencia antiga ou escolher nova frente pequena de cobertura restante.
+Proximo passo recomendado: continuar auditoria de subcasos de midia/cadastro com evidencia antiga ou escolher nova frente pequena de cobertura restante.
 ```
 
 Atualizacao 2026-05-26 21:58 UTC:
