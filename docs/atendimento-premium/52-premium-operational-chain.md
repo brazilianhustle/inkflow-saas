@@ -161,6 +161,8 @@ Promocao futura so pode ser discutida com evidencia versionada de multiplas onda
 | Falha de infra comprovada antes de envio real | Rerun controlado apos preflight; nao contar como regressao do bot. |
 | Falha depois do webhook/processamento | Tratar como falha do bot/processo ate triage provar o contrario. |
 | Mudanca sem codigo, apenas docs/metodologia | CI/deploy podem passar como check final; WhatsApp real nao e obrigatorio. |
+| Auditoria read-only sem mudanca de comportamento, usando evidencia WhatsApp real ja aprovada e exatamente aderente a familia auditada | Pode fechar sem novo envio real, desde que declare a validade da evidencia reaproveitada. |
+| Auditoria read-only com duvida de validade da evidencia, mudanca recente no comportamento ou familia incompleta | Rodar WhatsApp real novo antes de fechar. |
 | Mudanca de comportamento conversacional | HTTP radar + WhatsApp real obrigatorios. |
 | Proximo passo fora da onda declarada | Parar e declarar nova onda antes de executar. |
 
@@ -176,6 +178,7 @@ Qual camada decidiu?
 Qual estado final ficou?
 Qual evidencia HTTP prova o radar?
 Qual evidencia WhatsApp real prova a cadeia real?
+Se a evidencia WhatsApp real foi reaproveitada, por que ela ainda e valida?
 Qual transcript mostra a conversa?
 Qual judgment avaliou a resposta?
 Qual log explica router/policy/workflow/handoff?
@@ -202,6 +205,8 @@ Se alguma resposta estiver vazia, o slice ainda nao esta profissionalmente fecha
 11. Fechar ou travar com triage.
 ```
 
+Para ondas read-only, o passo 7 so pode ser dispensado quando a onda declarar explicitamente que nao houve mudanca funcional/conversacional e que a evidencia reaproveitada e WhatsApp real, recente o bastante e aderente a familia auditada. Qualquer duvida volta para WhatsApp real novo.
+
 ## Proxima Frente Recomendada
 
 ```text
@@ -219,4 +224,3 @@ level_4c: bloqueado
 ```text
 Velocidade profissional vem de gates claros, nao de pular etapas.
 ```
-

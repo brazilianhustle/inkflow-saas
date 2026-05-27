@@ -51,6 +51,8 @@ WhatsApp real e validacao definitiva. Todo slice que muda comportamento de atend
 
 Sem PASS de WhatsApp real, o slice nao pode ser chamado de concluido; ele fica como WIP validado parcialmente por HTTP.
 
+Excecao controlada: auditoria read-only sem mudanca de comportamento pode reaproveitar evidencia WhatsApp real ja aprovada, desde que o documento da onda declare validade, aderencia da evidencia e motivo para nao disparar novo envio. Essa excecao nao vale para comportamento novo, copy nova, prompt, policy, router, composer, workflow, handoff ou guardrail.
+
 ## Padrao Obrigatorio
 
 Todo slice premium que alterar comportamento de atendimento precisa ter gate versionado antes de ser declarado concluido.

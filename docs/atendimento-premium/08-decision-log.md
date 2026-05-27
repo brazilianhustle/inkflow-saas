@@ -1623,6 +1623,25 @@ Ainda falta decidir se estilos, locais e vocabulário de atendimento serão:
 
 **Status:** implementado em `scripts/smoke/naturalness-audit-v2.sh`, documentado na rubrica e registrado na Wave 31.
 
+### 2026-05-27 - Evidencia Real Reaproveitada So Vale Para Auditoria Read-Only
+
+**Decisão:** formalizar que evidencia WhatsApp real existente pode fechar somente auditoria read-only sem mudanca funcional/conversacional, desde que a onda declare por que a evidencia segue valida. Qualquer mudanca de comportamento ou duvida exige novo WhatsApp real `central -> bot`.
+
+**Motivo:** a Wave 31 mostrou risco de interpretacao: usar evidencia real ja aprovada para calibrar auditor nao pode ser confundido com validar comportamento novo sem conversa real. A metodologia precisa impedir esse salto.
+
+**Alternativas rejeitadas:**
+
+- exigir novo WhatsApp real para qualquer documento ou auditoria read-only;
+- permitir fechamento conversacional apenas com HTTP radar;
+- reaproveitar evidencia real sem declarar validade;
+- acumular WhatsApp real apenas para o final de blocos grandes quando ha comportamento alterado.
+
+**Camada responsável:** Slice Completion Gate, Real WhatsApp Smoke, Premium Operational Chain, Naturalness Audit V2.
+
+**Impacto:** fechamento agora deve declarar uma das duas rotas: `whatsapp_real_novo` para mudanca de comportamento, ou `evidencia_real_reaproveitada` para auditoria read-only sem mudanca. Em caso de duvida, prevalece novo WhatsApp real.
+
+**Status:** documentado nos gates e no objetivo corrente.
+
 ## Regra De Atualização
 
 Toda vez que uma nova decisão mudar direção de arquitetura, fluxo, prompt, policy, router, composer, guardrails ou smoke, adicionar uma entrada aqui.

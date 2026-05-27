@@ -151,3 +151,15 @@ validacao humana = julgamento de experiencia
 ```
 
 Rodar WhatsApp real por micro-slice assim que o HTTP passar. Nao acumular ate o fim de um bloco grande, exceto quando o bloco for puramente documental ou refactor interno sem mudanca no comportamento do atendimento.
+
+## Reaproveitamento De Evidencia Real
+
+E permitido fechar uma auditoria read-only sem novo envio WhatsApp somente quando todos os criterios abaixo forem verdadeiros:
+
+- nao houve mudanca de codigo, prompt, policy, router, composer, workflow, handoff, guardrail ou linguagem do bot;
+- a evidencia reaproveitada veio de WhatsApp real, nao de HTTP;
+- a evidencia cobre exatamente a familia auditada;
+- a onda declara por escrito por que aquela evidencia continua valida;
+- nao ha duvida sobre comportamento atual.
+
+Se qualquer criterio falhar, o fechamento exige novo WhatsApp real `central -> bot`.
