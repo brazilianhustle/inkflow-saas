@@ -18,12 +18,12 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: replanejamento_metodologico_organic_sentinel
+status: organic_conversation_sentinel_pass_wave_47_liberada
 branch: main
-ultimo_commit: 1f9f561 fix: respect tenant cover up policy
-ultimo_commit_funcional: 1f9f561 fix: respect tenant cover up policy
-deploy: commit 1f9f561 com Tests PASS 26521712945 e Deploy PASS 26521712944
-tests: Wave 46 micro-slice 3 PASS; local 1224/1224, HTTP radar PASS, WhatsApp real PASS, tenant restore ok, Naturalness V2 PASS; Strategic Slice Gate registrado sem mudanca de codigo
+ultimo_commit: 1374747 fix: handle organic tattoo burst briefing
+ultimo_commit_funcional: 1374747 fix: handle organic tattoo burst briefing
+deploy: commit 1374747 com Tests PASS 26524748769 e Deploy PASS 26524751150
+tests: npm test PASS 1226/1226; Organic Conversation Sentinel PASS em WhatsApp real burst 3 bolhas e 2 bolhas; Naturalness V2 PASS 2/2
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
 ultimo_commit_validado: 6fb276f docs: close wave 44 premium journey audit + CI/deploy PASS + wave-health clean PASS
@@ -31,11 +31,13 @@ autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
 familia_midia_cadastro: fechada na cobertura atual
-proxima_frente: rodar Organic Conversation Sentinel Pack com WhatsApp real burst de 3 bolhas e 2 bolhas antes de retomar Wave 47
+proxima_frente: retomar Wave 47 - Novo Pedido Depois Do Handoff
 ```
 
 ## Ultimos Marcos
 
+- Organic Conversation Sentinel Pack fechado PASS apos falha util: primeira execucao real `scenario-whatsapp-real-organic-burst-3-bubbles-20260527T163151Z-11946` reproduziu regressao (`descricao_curta="fzr"`, bot "Qual tua altura?"). Fix `1374747` corrigiu parser/resposta multi-info; `npm test` passou 1226/1226; CI/deploy passaram.
+- Sentinel organico definitivo passou em WhatsApp real: 3 bolhas `scenario-whatsapp-real-organic-burst-3-bubbles-20260527T163643Z-11019` e 2 bolhas `scenario-whatsapp-real-organic-burst-2-bubbles-20260527T163821Z-10923` tiveram 1 resposta AI apos a ultima bolha, `estado=coletando_tattoo`, `orcid=null`, `descricao_curta` correta, `local_corpo=perna`, Naturalness V2 2 PASS/0 watchlist. Provas conclusivas reais: Cliente `opa` / `quero fzr uma tattoo` / `na perna um dragao bolado grandao` -> Bot `Oii, tudo bem. Boa, peguei a ideia do dragao bolado grandao na perna. Qual tua altura?`; Cliente `quero fzr uma tattoo` / `um dragao grandao na perna` -> Bot `Oii, tudo bem. Boa, peguei a ideia do dragao grandao na perna. Qual tua altura?`.
 - Replanejamento metodologico aberto apos regressao manual em WhatsApp real: conversa organica com `opa` / `tranquilo` / `quero fzr uma tattoo` / `na perna` / `um dragao bolado` / `grandao` foi tratada como formulario, sem reacao suficiente ao briefing. Decisao: pausar Wave 47 antes da execucao e rodar Organic Conversation Sentinel Pack com `whatsapp_real_burst` em variacoes de 3 bolhas e 2 bolhas.
 - Memoria operacional reorganizada para contexto controlado: `00-active-context.md` vira primeira fonte de retomada, `current-objective.md` fica como historico duravel, `smoke-runs.md` como indice de evidencia e wave docs como leitura sob demanda. `continuity-bundle.sh` passa a injetar o active context antes do historico.
 - Wave 43 fechada como limpeza final dos subcasos midia/cadastro: 8 subcasos passaram em HTTP radar e WhatsApp real definitivo, contratos foram endurecidos contra copy antiga (`Pra liberar teu orçamento`, `Fechado`, `valor certinho`, `avaliar com calma`) e Naturalness V2 retornou 8 PASS/0 watchlist/0 rework/0 stop.

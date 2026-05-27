@@ -55,6 +55,50 @@ FAIL em qualquer cenario:
   corrigir a camada causal e repetir o mesmo sentinel antes de qualquer nova onda.
 ```
 
+## Resultado - 2026-05-27
+
+Primeira execucao real falhou e validou o valor do sentinel:
+
+```text
+run_id: scenario-whatsapp-real-organic-burst-3-bubbles-20260527T163151Z-11946
+resultado: FAIL
+cliente: "opa" / "quero fzr uma tattoo" / "na perna um dragao bolado grandao"
+bot: "Oii, tudo bem.\n\nQual tua altura?"
+causa: Router gravou descricao_curta="fzr" e nao substituiu por "dragao bolado grandao"; resposta nao reagiu ao briefing
+decisao: parar testes, corrigir parser/resposta estrutural e repetir sentinel
+```
+
+Fix:
+
+```text
+commit: 1374747 fix: handle organic tattoo burst briefing
+mudanca: parser deixa de aceitar "fzr" como descricao, extrai descricao apos local ("na perna um dragao...") e resposta multi-info reconhece briefing antes da proxima pergunta
+testes: npm test PASS 1226/1226
+ci: Tests PASS 26524748769
+deploy: Deploy PASS 26524751150
+```
+
+Validacao definitiva:
+
+```text
+3_bolhas: scenario-whatsapp-real-organic-burst-3-bubbles-20260527T163643Z-11019 PASS
+2_bolhas: scenario-whatsapp-real-organic-burst-2-bubbles-20260527T163821Z-10923 PASS
+naturalness_v2: 2 PASS / 0 watchlist / 0 rework / 0 stop / media 2.88
+decisao: sentinel organico vira linha principal para validar experiencia real; Wave 47 pode ser retomada
+```
+
+Provas conclusivas reais:
+
+```text
+3 bolhas:
+Cliente: "opa" / "quero fzr uma tattoo" / "na perna um dragao bolado grandao"
+Bot: "Oii, tudo bem. Boa, peguei a ideia do dragao bolado grandao na perna. Qual tua altura?"
+
+2 bolhas:
+Cliente: "quero fzr uma tattoo" / "um dragao grandao na perna"
+Bot: "Oii, tudo bem. Boa, peguei a ideia do dragao grandao na perna. Qual tua altura?"
+```
+
 ## Comandos
 
 ```bash

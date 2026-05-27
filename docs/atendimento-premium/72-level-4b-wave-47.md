@@ -7,14 +7,14 @@ Provar que o bot lida com mudanca de ideia, novo pedido ou complemento relevante
 ## Status
 
 ```text
-status: pausada_antes_da_execucao
-motivo: regressao organica identificada em teste manual WhatsApp real antes do primeiro micro-slice
-decisao: executar Organic Conversation Sentinel Pack com 2 e 3 bolhas reais antes de qualquer smoke conversacional novo desta Wave
+status: liberada_apos_organic_sentinel
+motivo: regressao organica corrigida e revalidada em WhatsApp real burst antes do primeiro micro-slice
+decisao: retomar Micro-Slice 1 - Novo Pedido Depois Do Handoff
 ```
 
 ## Nota De Replanejamento
 
-O teste manual real mostrou que a conversa organica pode degradar para coleta de formulario mesmo quando os micro-slices controlados passam. Esta Wave continua correta como frente de risco operacional, mas nao deve iniciar enquanto a metodologia nao provar o comportamento organico basico de primeiro contato e consolidacao multi-bolha.
+O teste manual real mostrou que a conversa organica podia degradar para coleta de formulario mesmo quando os micro-slices controlados passavam. A metodologia foi corrigida com `whatsapp_real_burst`, e o pacote organico passou antes desta Wave ser retomada.
 
 Proxima acao antes do Micro-Slice 1:
 
@@ -24,6 +24,16 @@ Proxima acao antes do Micro-Slice 1:
 3. registrar transcript, tail, agent logs, estado final e julgamento;
 4. atualizar active context;
 5. so entao retomar o contrato pos-handoff desta Wave.
+```
+
+Resultado:
+
+```text
+falha_inicial: scenario-whatsapp-real-organic-burst-3-bubbles-20260527T163151Z-11946
+fix_commit: 1374747 fix: handle organic tattoo burst briefing
+pass_3_bolhas: scenario-whatsapp-real-organic-burst-3-bubbles-20260527T163643Z-11019
+pass_2_bolhas: scenario-whatsapp-real-organic-burst-2-bubbles-20260527T163821Z-10923
+decisao: Wave 47 liberada
 ```
 
 ## Strategic Slice Gate
@@ -63,7 +73,7 @@ responder com IA depois de handoff: fora neste primeiro corte
 ## Micro-Slice 1 - Novo Pedido Depois Do Handoff
 
 ```text
-status: bloqueado_ate_organic_sentinel_passar
+status: pronto_para_execucao
 tipo: regressao forte + risco operacional
 setup: seed_pos_handoff_aguardando_tatuador
 mensagem: "mudei de ideia, queria uma caveira na perna"
