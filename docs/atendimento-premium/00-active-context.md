@@ -173,6 +173,18 @@ status: pendente commit/deploy e WhatsApp real definitivo do zero
 provas_locais: Cliente envia foto de braco vazio -> visao recebe 1 imagem -> analise corpo sem tattoo -> foto_local_msg_id salvo; Bot nao pergunta "referencia ou local"
 ```
 
+## Corte Atual - Wave 54
+
+```text
+origem: regressao manual WhatsApp real apos cliente responder estilo "realismo"
+problema: bot respondeu "Esse estilo nao esta no foco do estudio..." e bloqueou a coleta, embora estilo deva ir para avaliacao do tatuador/painel
+causa_raiz: Router tratava estilos_aceitos como catalogo rigido; na pratica e foco/preferencia, nao lista exaustiva de permissao
+correcao: estilos_aceitos nao bloqueia por padrao; somente estilos_recusados ou bloqueia_estilos_fora_catalogo=true geram restricao automatica
+validacao_local: router PASS 75/75; pipeline+router PASS 151/151; tenant-context PASS 9/9; npm test PASS 1257/1257
+status: pendente commit/deploy e WhatsApp real definitivo do zero
+provas_locais: Cliente "realismo" apos pergunta de estilo -> Router persiste estilo=realismo, pede foto/local pendente, nao envia "nao esta no foco"
+```
+
 ## Arquivos Para Ler
 
 ```text
@@ -184,6 +196,7 @@ docs/atendimento-premium/76-level-4b-wave-50.md
 docs/atendimento-premium/77-level-4b-wave-51.md
 docs/atendimento-premium/78-level-4b-wave-52.md
 docs/atendimento-premium/79-level-4b-wave-53.md
+docs/atendimento-premium/80-level-4b-wave-54.md
 docs/atendimento-premium/current-objective.md somente se precisar de historico amplo
 docs/atendimento-premium/smoke-runs.md somente se precisar de evidencia antiga
 scripts/smoke/continuity-bundle.sh

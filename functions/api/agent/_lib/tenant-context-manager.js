@@ -76,6 +76,9 @@ export function deriveTenantRules(tenant = {}) {
     estilos_aceitos: explicitAcceptedStyles.length ? explicitAcceptedStyles : legacyAcceptedStyles,
     estilos_recusados: normalizeList(tenant.config_agente?.estilos_recusados),
     uses_legacy_style_catalog: explicitAcceptedStyles.length === 0 && legacyAcceptedStyles.length > 0,
+    ...(tenant.config_agente?.bloqueia_estilos_fora_catalogo === true
+      ? { bloqueia_estilos_fora_catalogo: true }
+      : {}),
     modo_atendimento: normalizeText(tenant.config_agente?.modo_atendimento),
   };
 }

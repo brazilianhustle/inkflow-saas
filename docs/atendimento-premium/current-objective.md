@@ -556,3 +556,11 @@ Nao registrar detalhes longos aqui. Detalhes longos ficam no evidence, decision 
 - Prompt R4 reforcado: pele vazia = local; pele tatuada = pergunta cobertura/referencia.
 - Validacao local: pipeline `75/75`, route-runagent `29/29`, prompt contract `1/1`, integration pipeline-classifier `11/11`, `npm test` `1255/1255`.
 - Status: pendente commit/deploy e WhatsApp real definitivo do zero.
+
+## Atualizacao 2026-05-27 - Wave 54
+
+- Incidente manual: cliente respondeu `realismo` e o bot bloqueou como estilo fora do foco do estudio.
+- Causa raiz: Router interpretava `estilos_aceitos` como lista rigida de permissao. Para o produto premium, ela e foco/preferencia; decisao final fica no tatuador/painel.
+- Correção local: `estilos_aceitos` nao bloqueia por padrao; apenas `estilos_recusados` ou `bloqueia_estilos_fora_catalogo=true` geram restricao automatica.
+- Validacao local: router `75/75`, pipeline+router `151/151`, tenant-context `9/9`, `npm test` `1257/1257`.
+- Status: pendente commit/deploy e WhatsApp real definitivo do zero.

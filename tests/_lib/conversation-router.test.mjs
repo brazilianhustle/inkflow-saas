@@ -97,7 +97,26 @@ test('ConversationRouter: portfolio indisponível responde limite honesto sem LL
   assert.match(out.resposta_cliente, /qual parte do corpo/i);
 });
 
-test('ConversationRouter: estilo fora do catalogo do tenant preserva estado sem LLM', () => {
+test('ConversationRouter: estilos_aceitos nao bloqueia estilo fora do foco por padrao', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'realismo',
+    historico: [{ role: 'assistant', content: 'Tu prefere qual estilo pra essa tattoo?' }],
+    conversa: { estado_agente: 'tattoo', dados_coletados: { descricao_curta: 'leao', local_corpo: 'braco', altura_cm: 180 }, dados_cadastro: {} },
+    clientContext: {
+      tenant_rules: {
+        estilos_aceitos: ['fineline', 'blackwork'],
+        estilos_recusados: [],
+      },
+    },
+  });
+  assert.equal(out.intent, 'tattoo_pending_answer');
+  assert.equal(out.reason, 'pending_estilo_answered');
+  assert.deepEqual(out.dados_persistidos, { estilo: 'realismo', tentativas_foto_local: 1 });
+  assert.doesNotMatch(out.resposta_cliente, /nao esta no foco do estudio/i);
+});
+
+test('ConversationRouter: estilo fora do catalogo so bloqueia com flag rigida', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',
     mensagem: 'voces fazem old school?',
@@ -106,6 +125,7 @@ test('ConversationRouter: estilo fora do catalogo do tenant preserva estado sem 
       tenant_rules: {
         estilos_aceitos: ['fineline', 'blackwork'],
         estilos_recusados: [],
+        bloqueia_estilos_fora_catalogo: true,
       },
     },
   });

@@ -1451,7 +1451,63 @@ test('5c. portfolio indisponivel do tenant responde sem LLM e sem ferramenta', a
   assert.match(aiInsert.message.content, /portfolio cadastrado/i);
 });
 
-test('5d. estilo fora do catalogo do tenant responde sem LLM e preserva estado', async () => {
+test('5d. estilos_aceitos nao bloqueia estilo fora do foco por padrao', async () => {
+  const evoSpy = mock.fn(async () => ({ ok: true }));
+  const runAgentSpy = mock.fn(async () => { throw new Error('runAgent nao deve ser chamado para resposta pendente de estilo'); });
+  const logAgentTurnSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'leao', local_corpo: 'braco', altura_cm: 180 },
+    dados_cadastro: {},
+  };
+  const tenant = {
+    ...TENANT,
+    config_agente: { estilos_aceitos: ['fineline', 'blackwork'], estilos_recusados: [] },
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      tenant,
+      historyRows: [
+        { autor: 'ai', message: { content: 'Tu prefere qual estilo pra essa tattoo?' }, created_at: '2026-01-01T00:00:00Z' },
+      ],
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'realismo' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.estado_agente) {
+          conversaPatch = body;
+        }
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+    evoSend: evoSpy,
+    logAgentTurn: logAgentTurnSpy,
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(evoSpy.mock.callCount(), 1);
+  assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
+  assert.equal(conversaPatch.dados_coletados.estilo, 'realismo');
+  assert.equal(conversaPatch.dados_coletados.tentativas_foto_local, 1);
+  assert.doesNotMatch(aiInsert.message.content, /nao esta no foco do estudio/i);
+  assert.match(aiInsert.message.content, /foto|local/i);
+  const logs = logAgentTurnSpy.mock.calls.map(call => call.arguments[0]);
+  const routerLog = logs.find(payload => payload.agent_name === 'conversation_router');
+  assert.ok(routerLog, 'ConversationRouter deve registrar resposta pendente de estilo');
+  assert.equal(routerLog.context_metadata.router_intent, 'tattoo_pending_answer');
+  assert.equal(routerLog.context_metadata.router_reason, 'pending_estilo_answered');
+  assert.equal(routerLog.context_metadata.tenant_context_has_style_catalog, true);
+  assert.equal(routerLog.context_metadata.tenant_context_has_accepted_styles, true);
+});
+
+test('5d. estilo fora do catalogo com flag rigida responde sem LLM e preserva estado', async () => {
   const evoSpy = mock.fn(async () => ({ ok: true }));
   const runAgentSpy = mock.fn(async () => { throw new Error('runAgent nao deve ser chamado para estilo fora do catalogo'); });
   const logAgentTurnSpy = mock.fn();
@@ -1460,7 +1516,7 @@ test('5d. estilo fora do catalogo do tenant responde sem LLM e preserva estado',
   const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
   const tenant = {
     ...TENANT,
-    config_agente: { estilos_aceitos: ['fineline', 'blackwork'], estilos_recusados: [] },
+    config_agente: { estilos_aceitos: ['fineline', 'blackwork'], estilos_recusados: [], bloqueia_estilos_fora_catalogo: true },
   };
   const deps = mockDeps({
     supaFetch: batchSupaFetch({

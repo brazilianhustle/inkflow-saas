@@ -351,13 +351,14 @@ function detectTenantUnsupportedStyle(text, clientContext = {}) {
   const tenantRules = clientContext?.tenant_rules || {};
   const accepted = normalizedList(tenantRules.estilos_aceitos);
   const rejected = normalizedList(tenantRules.estilos_recusados);
+  const hardCatalog = tenantRules.bloqueia_estilos_fora_catalogo === true;
   if (rejected.includes(styleNorm)) {
     return {
       style,
       reason: 'tenant_style_rejected',
     };
   }
-  if (accepted.length > 0 && !accepted.includes(styleNorm)) {
+  if (hardCatalog && accepted.length > 0 && !accepted.includes(styleNorm)) {
     return {
       style,
       reason: 'tenant_style_not_accepted',
