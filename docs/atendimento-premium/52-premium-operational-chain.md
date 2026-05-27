@@ -92,6 +92,59 @@ regressao: pode usar auditoria/read-only/evidencia reaproveitada se nao houve mu
 
 Um slice que nao libera decisao de produto, nao reduz risco novo e nao fecha parte do mapa deve ser tratado como regressao/auditoria, nao como micro-slice completo.
 
+## Organic Conversation Sentinel Gate
+
+O teste manual real mostrou que micro-slices controlados podem passar enquanto a conversa organica degrada para formulario. Por isso, qualquer frente que toque abertura, coleta, naturalidade, multi-mensagem, retomada, slang, experiencia percebida ou regressao conversacional real deve passar tambem por um sentinel organico.
+
+O sentinel nao substitui HTTP radar nem contratos de estado. Ele prova que a cadeia continua funcionando quando o cliente fala como cliente real, em bolhas curtas e contexto acumulado.
+
+Contrato minimo:
+
+```text
+origem: WhatsApp real central -> bot
+formato: conversa multi-bolha, nao apenas uma mensagem sintetica
+entrada: saudacao + intencao + local + ideia + tamanho/detalhe em mensagens separadas
+obrigatorio: resposta humanizada de primeiro contato, reacao ao briefing, consolidacao dos fragmentos e proxima pergunta coerente
+proibido: ignorar briefing relevante, repetir pergunta ja respondida, soar como formulario bruto, perder estado, criar orcamento prematuro
+evidencia: transcript real, resposta Cliente/Bot curta, tail, agent_turn_logs, estado final, julgamento Naturalness V2 quando houver linguagem
+```
+
+Regra de parada:
+
+```text
+falha manual organica bloqueia a proxima onda conversacional ate virar sentinel versionado e passar
+```
+
+Exemplo de gap que exige sentinel:
+
+```text
+cliente: "opa" / "tranquilo" / "quero fzr uma tattoo" / "na perna" / "um dragao bolado" / "grandao"
+falha: bot perguntou parte do corpo depois da intencao e depois perguntou altura sem reagir ao dragao/tamanho
+classificacao: gap conversacional e gap metodologico
+```
+
+## Context-Controlled Memory Protocol
+
+Para nao consumir contexto lendo todo o historico, a memoria operacional passa a ter camadas.
+
+```text
+camada_0_comando: docs/atendimento-premium/00-active-context.md
+camada_1_estado_historico: docs/atendimento-premium/current-objective.md
+camada_2_evidencias: docs/atendimento-premium/smoke-runs.md e artifacts
+camada_3_doutrina: docs/atendimento-premium/52-premium-operational-chain.md
+camada_4_ondas: wave docs especificos, lidos somente quando citados
+```
+
+Regras:
+
+```text
+apos compactacao: ler primeiro 00-active-context.md ou rodar continuity-bundle
+nao ler todos os wave docs por padrao
+current-objective.md continua sendo historico duravel, mas nao deve ser a primeira fonte extensa de retomada
+smoke-runs.md e indice de evidencia, nao memoria de planejamento
+todo bloqueio metodologico ativo deve aparecer no 00-active-context.md
+```
+
 ## Regra De Nao Avanco
 
 Parar imediatamente e nao abrir nova frente quando ocorrer qualquer item:
@@ -114,6 +167,8 @@ evidencia sem run_id/artifacts/registro
 smoke rodado contra commit diferente do deploy validado
 risco de preco fechado, agenda, pagamento, sinal ou menoridade sem plano especifico
 compactacao/contexto inseguro sem continuity bundle
+active-context ausente ou desatualizado apos replanejamento metodologico
+falha organica manual sem sentinel versionado e revalidado
 ```
 
 Nesses casos, a proxima acao obrigatoria e diagnostico, nao novo slice.
@@ -205,6 +260,7 @@ Promocao futura so pode ser discutida com evidencia versionada de multiplas onda
 | Auditoria read-only sem mudanca de comportamento, usando evidencia WhatsApp real ja aprovada e exatamente aderente a familia auditada | Pode fechar sem novo envio real, desde que declare a validade da evidencia reaproveitada. |
 | Auditoria read-only com duvida de validade da evidencia, mudanca recente no comportamento ou familia incompleta | Rodar WhatsApp real novo antes de fechar. |
 | Mudanca de comportamento conversacional | HTTP radar + WhatsApp real obrigatorios. |
+| Regressao manual organica em WhatsApp real | Trava a frente, cria Organic Conversation Sentinel e so depois retoma ondas conversacionais. |
 | Proximo passo fora da onda declarada | Parar e declarar nova onda antes de executar. |
 
 ## Definition Of Done Premium
@@ -235,16 +291,18 @@ Se alguma resposta estiver vazia, o slice ainda nao esta profissionalmente fecha
 ```text
 1. Declarar onda pequena.
 2. Passar pelo Strategic Slice Gate.
-3. Auditar evidencia real existente.
-4. Escolher uma familia/hipotese, nao uma frase solta.
-5. Implementar menor mudanca coerente.
-6. Validar local/CI/deploy.
-7. Rodar HTTP radar.
-8. Rodar WhatsApp real definitivo.
-9. Rodar auditoria V2 quando houver linguagem.
-10. Registrar prova curta Cliente/Bot.
-11. Rodar wave-health.
-12. Fechar, declarar novo gap ou mudar de frente.
+3. Passar pelo Organic Conversation Sentinel quando a frente for conversacional/organica.
+4. Auditar evidencia real existente.
+5. Escolher uma familia/hipotese, nao uma frase solta.
+6. Implementar menor mudanca coerente.
+7. Validar local/CI/deploy.
+8. Rodar HTTP radar.
+9. Rodar WhatsApp real definitivo.
+10. Rodar auditoria V2 quando houver linguagem.
+11. Registrar prova curta Cliente/Bot.
+12. Atualizar 00-active-context.md quando o estado de comando mudar.
+13. Rodar wave-health.
+14. Fechar, declarar novo gap ou mudar de frente.
 ```
 
 Para ondas read-only, o passo 7 so pode ser dispensado quando a onda declarar explicitamente que nao houve mudanca funcional/conversacional e que a evidencia reaproveitada e WhatsApp real, recente o bastante e aderente a familia auditada. Qualquer duvida volta para WhatsApp real novo.

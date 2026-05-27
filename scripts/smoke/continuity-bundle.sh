@@ -14,6 +14,7 @@
 # Adaptado a realidade multi-cliente:
 #   - no hook, dispara so em clear/compact/resume;
 #   - no modo --force, dispara sempre;
+#   - injeta primeiro o contexto ativo curto, quando existir;
 #   - so injeta quando docs/atendimento-premium/current-objective.md existe
 #     (frente ativa neste repo/worktree);
 #   - melhor-esforco: nunca derruba o SessionStart, sempre sai 0.
@@ -42,6 +43,7 @@ case "$source_kind" in
   *) exit 0 ;;   # startup ou desconhecido: nao injeta nada
 esac
 
+ACTIVE="docs/atendimento-premium/00-active-context.md"
 OBJ="docs/atendimento-premium/current-objective.md"
 RUNS="docs/atendimento-premium/smoke-runs.md"
 [ -f "$OBJ" ] || exit 0   # frente nao ativa aqui
@@ -54,13 +56,18 @@ bundle="$(
     echo "abaixo esta o estado vivo. Protocolo completo:"
     echo "docs/atendimento-premium/12-loop-continuity-protocol.md"
     echo
+    if [ -f "$ACTIVE" ]; then
+      echo "### active-context.md"
+      sed -n '1,180p' "$ACTIVE" 2>/dev/null
+      echo
+    fi
     echo "### git"
     git status --short 2>/dev/null | head -20
     echo "---"
     git log --oneline -5 2>/dev/null
     echo
-    echo "### current-objective.md (topo)"
-    sed -n '1,80p' "$OBJ" 2>/dev/null
+    echo "### current-objective.md (topo historico)"
+    sed -n '1,45p' "$OBJ" 2>/dev/null
     if [ -f "$RUNS" ]; then
       echo
       echo "### smoke-runs.md (topo)"

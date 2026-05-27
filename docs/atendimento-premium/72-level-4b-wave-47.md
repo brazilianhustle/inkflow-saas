@@ -4,6 +4,28 @@
 
 Provar que o bot lida com mudanca de ideia, novo pedido ou complemento relevante depois de conversa avancada/terminal sem grudar no orcamento antigo, sem criar duplicidade e sem reabrir IA quando o humano ja assumiu.
 
+## Status
+
+```text
+status: pausada_antes_da_execucao
+motivo: regressao organica identificada em teste manual WhatsApp real antes do primeiro micro-slice
+decisao: executar Organic Conversation Sentinel Pack antes de qualquer smoke conversacional novo desta Wave
+```
+
+## Nota De Replanejamento
+
+O teste manual real mostrou que a conversa organica pode degradar para coleta de formulario mesmo quando os micro-slices controlados passam. Esta Wave continua correta como frente de risco operacional, mas nao deve iniciar enquanto a metodologia nao provar o comportamento organico basico de primeiro contato e consolidacao multi-bolha.
+
+Proxima acao antes do Micro-Slice 1:
+
+```text
+1. criar sentinel versionado para conversa organica multi-bolha;
+2. validar em WhatsApp real central -> bot;
+3. registrar transcript, tail, agent logs, estado final e julgamento;
+4. atualizar active context;
+5. so entao retomar o contrato pos-handoff desta Wave.
+```
+
 ## Strategic Slice Gate
 
 ```text
@@ -41,7 +63,7 @@ responder com IA depois de handoff: fora neste primeiro corte
 ## Micro-Slice 1 - Novo Pedido Depois Do Handoff
 
 ```text
-status: planejado
+status: bloqueado_ate_organic_sentinel_passar
 tipo: regressao forte + risco operacional
 setup: seed_pos_handoff_aguardando_tatuador
 mensagem: "mudei de ideia, queria uma caveira na perna"

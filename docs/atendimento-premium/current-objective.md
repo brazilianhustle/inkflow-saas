@@ -1,5 +1,12 @@
 # Current Objective - Atendimento Premium
 
+## Memoria Rapida
+
+```text
+primeira_fonte_de_retomada: docs/atendimento-premium/00-active-context.md
+regra: leia este arquivo completo somente quando precisar de historico amplo; para continuidade diaria, use active-context + continuity-bundle
+```
+
 Este arquivo e o estado vivo da frente. Ele existe para permitir retomada apos compactacao de contexto, troca de aba ou pausa longa sem depender da memoria do chat.
 
 ## Objetivo Ativo
@@ -11,7 +18,7 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: level4b_wave_47_replanejamento_novo_pedido_declarada
+status: replanejamento_metodologico_organic_sentinel
 branch: main
 ultimo_commit: 1f9f561 fix: respect tenant cover up policy
 ultimo_commit_funcional: 1f9f561 fix: respect tenant cover up policy
@@ -24,11 +31,13 @@ autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
 familia_midia_cadastro: fechada na cobertura atual
-proxima_frente: Wave 47 - Replanejamento/Novo Pedido, primeiro corte pos-handoff com mudanca de ideia/novo pedido
+proxima_frente: Organic Conversation Sentinel Pack antes de retomar Wave 47 - Replanejamento/Novo Pedido
 ```
 
 ## Ultimos Marcos
 
+- Replanejamento metodologico aberto apos regressao manual em WhatsApp real: conversa organica com `opa` / `tranquilo` / `quero fzr uma tattoo` / `na perna` / `um dragao bolado` / `grandao` foi tratada como formulario, sem reacao suficiente ao briefing. Decisao: pausar Wave 47 antes da execucao e criar Organic Conversation Sentinel Pack para multi-bolha, primeiro contato humanizado e consolidacao de contexto real.
+- Memoria operacional reorganizada para contexto controlado: `00-active-context.md` vira primeira fonte de retomada, `current-objective.md` fica como historico duravel, `smoke-runs.md` como indice de evidencia e wave docs como leitura sob demanda. `continuity-bundle.sh` passa a injetar o active context antes do historico.
 - Wave 43 fechada como limpeza final dos subcasos midia/cadastro: 8 subcasos passaram em HTTP radar e WhatsApp real definitivo, contratos foram endurecidos contra copy antiga (`Pra liberar teu orçamento`, `Fechado`, `valor certinho`, `avaliar com calma`) e Naturalness V2 retornou 8 PASS/0 watchlist/0 rework/0 stop.
 - Falha util controlada da Wave 43: o classificador deterministico marca pedido de e-mail opcional como `copy_risk=medio`; contrato aceitou `medio` apenas nesse step, mantendo bloqueio textual contra copy antiga e validacao Naturalness V2.
 - Familia midia/cadastro marcada como fechada na cobertura atual. Frentes finais mapeadas em `68-frentes-finais-bot-premium.md`: jornada premium final, naturalidade por familia, Tenant/Config modo produto, replanejamento/novo pedido, financeiro/agenda/pagamento como fase futura e prontidao 4C.
