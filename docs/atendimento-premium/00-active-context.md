@@ -61,11 +61,12 @@ Full Journey Validation Gate: seed de meio de fluxo pode ser radar tecnico, mas 
 ## Corte Em Andamento
 
 ```text
-budget_items_manager_micro_slice_2: em teste tecnico
+budget_items_manager_micro_slice_2: tecnico_pass_local
 contrato: mensagem nova ideia em aguardando_tatuador nao pode cair no encaminhamento terminal silencioso
 resposta_cliente: "Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?"
 persistencia: dados_coletados.budget_change_pending
 telegram_atual: aviso de replanejamento pendente
+confirmacao: "as duas" reabre coleta do segundo item; "somente essa" marca anterior como substituido
 pass_final: bloqueado ate jornada WhatsApp real completa + Telegram correto
 ```
 

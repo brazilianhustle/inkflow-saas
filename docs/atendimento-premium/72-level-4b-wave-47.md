@@ -69,12 +69,13 @@ proibido: silencio automatico, novo ORCID imediato, chamar enviar-orcamento, sob
 ## Micro-Slice 2 - Budget Change Pending
 
 ```text
-status: em_implementacao
+status: tecnico_pass_local
 escopo: detectar nova ideia orcamentavel em aguardando_tatuador antes do terminal silencioso
 saida_cliente: pergunta se a nova ideia substitui a anterior ou se e adicional
 persistencia: dados_coletados.budget_change_pending com snapshot anterior e proposed_item
 telegram: aviso operacional de mudanca/novo orcamento pendente, nao pacote final multi-item
-nao_faz_ainda: resolver resposta "as duas"/"somente essa", coletar item 2, gerar pacote Telegram final com multiplas tattoos
+resolve_agora: resposta "as duas" reabre coleta do segundo item; "somente essa" marca anterior como substituido e reabre coleta da nova ideia
+nao_faz_ainda: coletar item 2 ate pronto, gerar pacote Telegram final com multiplas tattoos
 gate: nao fechar PASS de produto sem WhatsApp real organico completo + Telegram correto
 ```
 

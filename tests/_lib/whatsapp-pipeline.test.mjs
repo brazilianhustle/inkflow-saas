@@ -1050,6 +1050,68 @@ test('2b. aguardando_tatuador com mudanca de ideia pergunta se substitui ou adic
   assert.deepEqual(processedPatch, { status: 'processed' });
 });
 
+test('2c. aguardando_tatuador com budget_change_pending e "as duas" reabre coleta do segundo item', async () => {
+  let conversaPatch = null;
+  let aiInsert = null;
+  let processedPatch = null;
+  const evoCalls = [];
+  const sendTelegramSpy = mock.fn(async () => ({ ok: true }));
+  const runAgentSpy = mock.fn();
+  const callToolSpy = mock.fn();
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'aguardando_tatuador',
+    orcid: 'orc_old',
+    dados_coletados: {
+      descricao_curta: 'dragao',
+      local_corpo: 'braco',
+      altura_cm: 170,
+      estilo: 'realismo',
+      budget_change_pending: {
+        status: 'awaiting_replace_or_add',
+        source: 'budget_items_manager',
+        previous_item_snapshot: { descricao_curta: 'dragao', local_corpo: 'braco', altura_cm: 170, estilo: 'realismo' },
+        proposed_item: { descricao_curta: 'caveira', local_corpo: 'perna' },
+        client_text: 'mudei de ideia, queria uma caveira na perna',
+      },
+    },
+    dados_cadastro: { nome: 'Leandro' },
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'as duas' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith('/rest/v1/conversas?id=')) conversaPatch = body;
+        if (path.startsWith('/rest/v1/conversa_mensagens?id=in.')) processedPatch = body;
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    sendTelegram: sendTelegramSpy,
+    runAgent: runAgentSpy,
+    callTool: callToolSpy,
+    evoSend: async (_tenant, payload) => { evoCalls.push(payload); return { ok: true }; },
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(callToolSpy.mock.callCount(), 0);
+  assert.equal(sendTelegramSpy.mock.callCount(), 1);
+  assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /adicionar nova tattoo/);
+  assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
+  assert.equal(conversaPatch.dados_coletados.budget_items.length, 2);
+  assert.equal(conversaPatch.dados_coletados.budget_items[0].status, 'sent_to_artist');
+  assert.equal(conversaPatch.dados_coletados.budget_items[1].descricao_curta, 'caveira');
+  assert.equal(conversaPatch.dados_coletados.active_budget_item_id, 'item_2');
+  assert.equal(conversaPatch.dados_coletados.descricao_curta, 'caveira');
+  assert.match(aiInsert.message.content, /considerar as duas/);
+  assert.match(evoCalls[0].text, /qual estilo/);
+  assert.deepEqual(processedPatch, { status: 'processed' });
+});
+
 test('3. terminal sem tatuador_telegram_chat_id — Task 8 implementa', async () => {
   const adminSpy = mock.fn(async () => ({ ok: true }));
   const tenantSemTatuador = { ...TENANT, tatuador_telegram_chat_id: null };
