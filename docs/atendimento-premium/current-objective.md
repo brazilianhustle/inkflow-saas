@@ -537,3 +537,12 @@ Nao registrar detalhes longos aqui. Detalhes longos ficam no evidence, decision 
 - Correção local: `ConversationRouter` agora trata primeiro contato com ideia simples (`oi` + `quero fazer um fechamento`) sem LLM, persiste `descricao_curta` e pergunta o local.
 - Validacao local: router `74/74`, pipeline `73/73`, session-queue `13/13`, `npm test` `1252/1252`.
 - Status: pendente commit/deploy e WhatsApp real definitivo do zero.
+
+## Atualizacao 2026-05-27 - Wave 52
+
+- Incidente manual: `Nessa parte` + foto chegou ao banco, mas foi classificada como referencia e o bot respondeu sem reconhecer foto local.
+- Evidencia real: msg `13512` tinha `image/jpeg` e base64; `agent_turn_logs` registrou latencia ~87s, `analise_imagens=null`; `dados_coletados.refs_imagens_msg_ids=[13512]`.
+- Correção local: `foto-classifier` reconhece captions deiticas de local (`nessa parte`, `esse local`, `aqui`, `minha pele`, `meu corpo`).
+- Correção local: pipeline evita LLM nesse caminho, salva `foto_local_msg_id` e pergunta a parte do corpo sem inventar a regiao.
+- Validacao local: pipeline `75/75`, router `74/74`, integration pipeline-classifier `11/11`, `npm test` `1254/1254`.
+- Status: pendente commit/deploy e WhatsApp real definitivo do zero.

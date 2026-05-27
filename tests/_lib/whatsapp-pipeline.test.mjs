@@ -1,7 +1,7 @@
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { processBatch, TERMINAL_STATES, TYPING_DELAY_MS } from '../../functions/_lib/whatsapp-pipeline.js';
-import { classificarFoto as classificarFotoReal } from '../../functions/_lib/foto-classifier.js';
+import { classificarFoto as classificarFotoReal, isFotoLocalCaption } from '../../functions/_lib/foto-classifier.js';
 
 const TENANT = {
   id: '00000000-0000-0000-0000-000000000001',
@@ -2270,6 +2270,58 @@ test('Etapa 4.5: classificador REAL — keyword na caption de UMA foto nao vaza 
   const fotoPatch = conversaPatches.find(p => p.foto_local_msg_id || p.refs_imagens_msg_ids);
   assert.equal(fotoPatch.foto_local_msg_id, 201, 'a foto cuja caption tem keyword e a local');
   assert.deepEqual(fotoPatch.refs_imagens_msg_ids, [202], 'a outra vira ref, nao e dropada');
+});
+
+test('Etapa 4.5: classificador REAL — legenda deitica "Nessa parte" indica foto local', () => {
+  assert.equal(isFotoLocalCaption('Nessa parte'), true);
+  assert.equal(classificarFotoReal({
+    tentativas_foto_local: 0,
+    foto_local_atual: null,
+    texto_turno: 'Nessa parte',
+  }), 'local');
+});
+
+test('Etapa 4.5: foto com legenda deitica vira local sem LLM e sem alucinar regiao', async () => {
+  let conversaPatches = [];
+  let aiInsert = null;
+  let runAgentCalled = false;
+  const conversa = {
+    id: CONVERSA_ID,
+    estado_agente: 'coletando_tattoo',
+    dados_coletados: { descricao_curta: 'leao' },
+    dados_cadastro: {},
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      rows: rowsFor([
+        { id: 901, content: 'Nessa parte', media_base64: 'img-local', media_mimetype: 'image/jpeg' },
+      ]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.dados_coletados) {
+          conversaPatches.push(body.dados_coletados);
+        }
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: async () => {
+      runAgentCalled = true;
+      throw new Error('nao deveria chamar LLM para caption de local');
+    },
+    classificarFoto: classificarFotoReal,
+  });
+
+  await processBatch({}, baseBatch({ msgRowIds: [901] }), deps);
+
+  assert.equal(runAgentCalled, false);
+  const fotoPatch = conversaPatches.find(p => p.foto_local_msg_id === 901);
+  assert.ok(fotoPatch, 'foto indicada por legenda deitica deve ser foto_local');
+  assert.equal(fotoPatch.refs_imagens_msg_ids, undefined, 'foto local nao deve virar referencia');
+  assert.equal(fotoPatch.local_corpo, undefined, 'nao deve alucinar a regiao do corpo');
+  assert.match(aiInsert.message.content, /recebi a foto do local/i);
+  assert.match(aiInsert.message.content, /qual parte do corpo/i);
 });
 
 test('Etapa 4.5: classificador REAL — 2 fotos ambas com keyword → 1ª local, 2ª ref (nao dropa)', async () => {

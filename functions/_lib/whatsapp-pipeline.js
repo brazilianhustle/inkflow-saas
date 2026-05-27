@@ -15,7 +15,7 @@ import {
   deriveTenantRules,
   summarizeTenantContext,
 } from '../api/agent/_lib/tenant-context-manager.js';
-import { classificarFoto } from './foto-classifier.js';
+import { classificarFoto, isFotoLocalDeiticaCaption } from './foto-classifier.js';
 import { enviarMidia } from './telegram-media.js';
 import { routeConversationTurn } from './conversation-router.js';
 import { logAgentTurn } from './telemetry/agent-turn-logger.js';
@@ -87,6 +87,10 @@ function hasCadastroCompleto(dados = {}) {
 
 function isImagemSemLegendaClara(fotos = []) {
   return fotos.length === 1 && !String(fotos[0]?.caption || '').trim();
+}
+
+function isFotoLocalIndicadaPorLegenda(fotos = []) {
+  return fotos.length === 1 && isFotoLocalDeiticaCaption(fotos[0]?.caption || '');
 }
 
 function getUltimaReferenciaImagem(dados = {}) {
@@ -485,6 +489,27 @@ export async function processBatch(env, batch, depsOverride = {}) {
         proxima_acao: 'pergunta',
         agent_usado: 'tattoo',
         analise_imagens: [{ tipo: 'incerto', descricao: 'imagem ambigua', corpo_tem_tattoo: false, corpo_tem_marcacao: false }],
+      };
+    }
+    const fotoLocalIndicadaPorLegenda = !agentOut
+      && estadoAgente === 'tattoo'
+      && isFotoLocalIndicadaPorLegenda(fotos)
+      && !hasFotoLocal(conversa.dados_coletados || {});
+    if (fotoLocalIndicadaPorLegenda) {
+      agentOut = {
+        ok: true,
+        resposta_cliente: 'Recebi a foto do local. Só pra eu registrar certinho: qual parte do corpo é essa?',
+        estado_novo: 'tattoo',
+        dados_persistidos: {
+          foto_local_msg_id: fotos[0].msgRowId,
+          tentativas_foto_local: Math.max(Number((conversa.dados_coletados || {}).tentativas_foto_local || 0), 1),
+        },
+        dados_completos: false,
+        campos_faltando: ['local_corpo'],
+        campos_conflitantes: [],
+        proxima_acao: 'pergunta',
+        agent_usado: 'tattoo',
+        analise_imagens: [{ tipo: 'corpo', descricao: 'foto do local indicada pela legenda', corpo_tem_tattoo: false, corpo_tem_marcacao: false }],
       };
     }
     const dadosColetadosAtuais = conversa.dados_coletados || {};

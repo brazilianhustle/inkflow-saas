@@ -146,6 +146,19 @@ status: pendente commit/deploy e WhatsApp real definitivo do zero
 provas_locais: Cliente "oi" + "quero fazer um fechamento" -> Bot "Oii, tudo bem." + reconhece fechamento + pergunta local; runAgent=0
 ```
 
+## Corte Atual - Wave 52
+
+```text
+origem: regressao manual WhatsApp real em foto do local com legenda deitica
+problema: Cliente "Nessa parte" + foto foi salvo como refs_imagens_msg_ids e bot perguntou "Em qual parte..." sem reconhecer foto local
+causa_raiz: fallback de foto nao reconhecia captions como "Nessa parte"; LLM demorou ~87s e retornou analise_imagens=null
+correcao: foto-classifier reconhece captions de local ("nessa parte", "esse local", "aqui", "minha pele", "meu corpo")
+correcao_pipeline: caption de local em tattoo sem foto_local evita LLM, salva foto_local_msg_id e pergunta a regiao sem alucinar
+validacao_local: pipeline PASS 75/75; router PASS 74/74; integration pipeline-classifier PASS 11/11; npm test PASS 1254/1254
+status: pendente commit/deploy e WhatsApp real definitivo do zero
+provas_locais: Cliente "Nessa parte" + foto -> Bot "Recebi a foto do local. Só pra eu registrar certinho: qual parte do corpo é essa?"; foto_local_msg_id salvo; refs ausente; runAgent=0
+```
+
 ## Arquivos Para Ler
 
 ```text
@@ -155,6 +168,7 @@ docs/atendimento-premium/74-level-4b-wave-48.md
 docs/atendimento-premium/75-level-4b-wave-49.md
 docs/atendimento-premium/76-level-4b-wave-50.md
 docs/atendimento-premium/77-level-4b-wave-51.md
+docs/atendimento-premium/78-level-4b-wave-52.md
 docs/atendimento-premium/current-objective.md somente se precisar de historico amplo
 docs/atendimento-premium/smoke-runs.md somente se precisar de evidencia antiga
 scripts/smoke/continuity-bundle.sh
