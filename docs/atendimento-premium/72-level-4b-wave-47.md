@@ -7,9 +7,9 @@ Provar que o bot lida com mudanca de ideia, novo pedido ou complemento relevante
 ## Status
 
 ```text
-status: budget_items_update_telegram_pendente_validacao_final
-motivo: a validacao anterior provou encaminhamento terminal simples, mas nao provou replanejamento/multiplos orcamentos
-decisao: evoluir Budget Items ate coletar segundo item e enviar update Telegram multi-tattoo; PASS final exige WhatsApp real completo + Telegram correto
+status: PASS
+motivo: WhatsApp real full journey provou replanejamento/multiplos orcamentos desde o inicio do fluxo, com update Telegram multi-tattoo no mesmo ORCID
+decisao: Wave 47 fechada; proximas variacoes de replanejamento so entram se houver risco novo ou contrato diferente
 ```
 
 ## Correcao De Contrato - 2026-05-27
@@ -82,13 +82,13 @@ gate: nao fechar PASS de produto sem WhatsApp real organico completo + Telegram 
 ## Micro-Slice 3 - Segundo Item E Telegram Multi-Tattoo
 
 ```text
-status: implementado_localmente_pendente_ci_deploy_whatsapp_real
+status: PASS
 escopo: resolver confirmacao "as duas"/"somente essa", sincronizar o item ativo durante a coleta, concluir segundo item e enviar update Telegram usando o mesmo ORCID
 persistencia: dados_coletados.budget_items[], active_budget_item_id e status por item
 workflow: se cadastro ja estava completo, tattoo completa volta direto para aguardando_tatuador e exige pacote/update de orcamento
 telegram: briefing explicita N tattoos no orcamento e lista cada item; item ativo pendente e marcado como sent_to_artist apos envio
 cenario_definitivo: whatsapp-real-long-journey-post-handoff-new-request com 10 steps, do inicio ao update final
-gate: PASS bloqueado ate CI/deploy + WhatsApp real organico completo + chegada correta do Telegram final
+gate: PASS fechado apos CI/deploy + WhatsApp real completo + chegada correta do Telegram final
 ```
 
 Falha util inicial:
@@ -99,7 +99,51 @@ resultado: FAIL no step 9
 ponto_que_passou: jornada inicial, primeiro ORCID, pergunta "somente essa/anterior tambem" e confirmacao "as duas"
 falha: mensagem "blackwork" foi recebida, mas o item 2 herdou estilo fineline do topo legado da tattoo anterior; Router nao captou estilo pendente e caiu em fallback tardio
 correcao: ao ativar um novo budget item, o top-level legado passa a representar o item ativo e limpa estilo/fotos antigos
-status_pos_correcao: npm test PASS 1238/1238; falta deploy + WhatsApp real completo + Telegram final
+status_pos_correcao: npm test PASS 1238/1238; CI/deploy passaram; WhatsApp real completo passou no run definitivo
+```
+
+Falha residual encontrada antes do fechamento:
+
+```text
+run_funcional_superseded: scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T181411Z-26512
+resultado: PASS funcional, mas superseded
+falha: update Telegram enviava a foto, mas o PATCH final podia sobrescrever `foto_local_file_id` gravado pelo upload de midia
+correcao: commit `b456c02 fix: preserve media ids in budget update`
+teste: npm test PASS 1238/1238; CI PASS 26530216616; Deploy PASS 26530216614
+```
+
+Fechamento definitivo:
+
+```text
+run: scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T182057Z-3182
+tipo: WhatsApp real full journey
+origem: Evolution central -> bot (*2357)
+telefone: 5521970789797
+orcid: orc_mnw4ro
+estado_final: aguardando_tatuador
+budget_items_total: 2
+item_1: borboleta / fineline / perna / sent_to_artist
+item_2: caveira / blackwork / perna / sent_to_artist
+telegram_update: fotos-orcamento-update-enviadas
+telegram_update_payload: itens_total=2, active_budget_item_id=item_2, enviadas=1, falhas=0
+persistencia_midia: foto_local_file_id preservado apos update
+resultado: PASS
+```
+
+Provas conclusivas reais:
+
+```text
+Cliente: "mudei de ideia, queria uma caveira na perna"
+Bot: "Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?"
+
+Cliente: "as duas"
+Bot: "Fechado, vou considerar as duas. Pra caveira na perna, qual estilo voce imagina?"
+
+Cliente: "blackwork"
+Bot: "Consegue mandar uma foto do local onde tu quer tatuar?"
+
+Cliente: "segue foto do local" + imagem
+Bot: "Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor."
 ```
 
 Contrato atual:

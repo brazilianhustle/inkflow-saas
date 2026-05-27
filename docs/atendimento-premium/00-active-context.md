@@ -5,12 +5,12 @@ Este e o primeiro arquivo a ler apos compactacao, troca de aba ou retomada. Ele 
 ## Estado De Comando
 
 ```text
-status: wave_47_budget_items_telegram_update_em_validacao
+status: wave_47_budget_items_telegram_update_pass
 branch: main
 autonomy_level: 4B
 level_4c: bloqueado
 onda_ativa: Wave 47 - Replanejamento E Novo Pedido
-proxima_acao: fechar corte tecnico, deployar e validar jornada WhatsApp real completa com update Telegram multi-tattoo
+proxima_acao: escolher proxima onda funcional apos fechamento Wave 47
 motivo: silencio pos-handoff provou encaminhamento simples, mas nao atende objetivo premium de captar mais de uma tattoo/orcamento
 ```
 
@@ -39,8 +39,11 @@ wave_47_full_journey_pos_handoff: scenario-whatsapp-real-long-journey-post-hando
 wave_47_reclassificacao: PASS apenas para encaminhamento terminal simples; insuficiente para mudanca de ideia orcamentavel/multiplos orcamentos
 wave_47_novo_contrato: cliente com nova ideia deve receber confirmacao "somente essa ou a anterior tambem?" antes de substituir/adicionar item
 wave_47_codigo_atual: Budget Items Manager resolve "as duas"/"somente essa", coleta segundo item, sincroniza item ativo e envia update Telegram com multiplas tattoos usando o mesmo ORCID
-wave_47_pass_final: bloqueado ate WhatsApp real organico completo + Telegram final correto
+wave_47_pass_final: PASS em `scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T182057Z-3182`
 wave_47_falha_util_20260527: run `scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T180425Z-10038` falhou no step 9 porque `item_2` herdou `estilo=fineline` do topo legado; correcao limpa campos legados da tattoo anterior quando novo item fica ativo
+wave_47_fix_persistencia_update: commit `b456c02` preserva `foto_local_file_id` apos upload Telegram antes de marcar item ativo como `sent_to_artist`
+wave_47_final_orcid: `orc_mnw4ro`
+wave_47_final_telegram: tail `fotos-orcamento-update-enviadas` com `itens_total=2`, `active_budget_item_id=item_2`, `enviadas=1`, `falhas=0`
 ```
 
 ## Regra Ativa
@@ -55,16 +58,14 @@ Full Journey Validation Gate: seed de meio de fluxo pode ser radar tecnico, mas 
 
 ## Proximo Ataque
 
-1. Rodar suite local completa apos cortes atuais.
-2. Commitar/pushar `feat: send multi-budget telegram updates`.
-3. Aguardar CI/deploy.
-4. Rodar `whatsapp-real-long-journey-post-handoff-new-request` desde o inicio, sem seed terminal.
-5. So fechar PASS se o Telegram final listar corretamente as duas tattoos no mesmo ORCID.
+1. Definir proxima onda funcional com base em risco premium restante.
+2. Manter regra: HTTP radar primeiro quando util; WhatsApp real full journey fecha quando houver contexto acumulado.
+3. Nao subir para 4C sem nova decisao deliberada.
 
 ## Corte Em Andamento
 
 ```text
-budget_items_manager_micro_slice_3: correcao_topo_legado_testada_localmente_pendente_deploy_whatsapp_real
+budget_items_manager_micro_slice_3: PASS final em producao
 contrato: mensagem nova ideia em aguardando_tatuador nao pode cair no encaminhamento terminal silencioso
 resposta_cliente: "Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?"
 persistencia: dados_coletados.budget_change_pending
@@ -72,7 +73,8 @@ confirmacao: "as duas" reabre coleta do segundo item; "somente essa" marca anter
 telegram_atual: aviso de replanejamento pendente + update final com multiplas tattoos quando segundo item fica completo
 workflow: tattoo completa com cadastro existente vai direto para aguardando_tatuador e aciona pacote
 correcao_atual: ao ativar item novo, top-level descricao/local/estilo/foto passa a representar o item novo; campos antigos nao podem contaminar `item_2`
-pass_final: bloqueado ate jornada WhatsApp real completa + Telegram correto
+pass_final: WhatsApp real completo + Telegram update correto + persistencia final OK
+provas_conclusivas_reais: Cliente "mudei de ideia, queria uma caveira na perna" -> Bot "Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?"; Cliente "as duas" -> Bot "Fechado, vou considerar as duas. Pra caveira na perna, qual estilo voce imagina?"; Cliente "blackwork" -> Bot "Consegue mandar uma foto do local onde tu quer tatuar?"; Cliente "segue foto do local" + imagem -> Bot "Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor."
 ```
 
 ## Arquivos Para Ler
