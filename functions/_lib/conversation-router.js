@@ -321,6 +321,34 @@ function responseForIntent(intent, estado, conversa, context = {}) {
   return composeRouterResponse({ intent, estado, resume, nextField, context });
 }
 
+function normalizedList(values = []) {
+  return Array.isArray(values)
+    ? values.map(value => normalize(value)).filter(Boolean)
+    : [];
+}
+
+function detectTenantUnsupportedStyle(text, clientContext = {}) {
+  const style = extractStyleAnswer(text);
+  if (!style) return null;
+  const styleNorm = normalize(style);
+  const tenantRules = clientContext?.tenant_rules || {};
+  const accepted = normalizedList(tenantRules.estilos_aceitos);
+  const rejected = normalizedList(tenantRules.estilos_recusados);
+  if (rejected.includes(styleNorm)) {
+    return {
+      style,
+      reason: 'tenant_style_rejected',
+    };
+  }
+  if (accepted.length > 0 && !accepted.includes(styleNorm)) {
+    return {
+      style,
+      reason: 'tenant_style_not_accepted',
+    };
+  }
+  return null;
+}
+
 function shouldHandleCadastroPendingAnswer(pendingResolution) {
   if (!pendingResolution?.answered) return false;
   const extracted = pendingResolution.extracted || {};
@@ -582,6 +610,35 @@ function portfolioOutput({ detected, estado_atual, mensagem, conversa, clientCon
   };
 }
 
+function unsupportedStyleOutput({ unsupportedStyle, estado_atual, conversa }) {
+  return {
+    ok: true,
+    handled_by: 'conversation_router',
+    intent: 'tenant_unsupported_style',
+    confidence: 0.86,
+    risk: 'medium',
+    reason: unsupportedStyle.reason,
+    can_mutate_state: false,
+    resposta_cliente: `Esse estilo nao esta no foco do estudio por aqui. Posso seguir se voce quiser adaptar pra outro estilo, ou acionar o estudio pra avaliar direto.`,
+    estado_novo: estado_atual,
+    dados_persistidos: {},
+    dados_completos: false,
+    campos_faltando: estado_atual === 'tattoo' ? missingTattooFields(conversa?.dados_coletados || {}) : [],
+    campos_conflitantes: [],
+    proxima_acao: 'pergunta',
+    agent_usado: estado_atual === 'cadastro' ? 'cadastro' : 'conversation_router',
+    side_effects: [],
+    urls_portfolio: [],
+    payload_portfolio: null,
+    analise_imagens: null,
+    cobertura_suspeita: null,
+    tenant_style_resolution: {
+      style: unsupportedStyle.style,
+      reason: unsupportedStyle.reason,
+    },
+  };
+}
+
 function escalationOutput({ detected, estado_atual, intent }) {
   if (!['cobertura', 'human_requested', 'client_upset', 'tenant_handoff_trigger', 'minor_age_explicit'].includes(intent)) return null;
   if (intent === 'minor_age_explicit') {
@@ -784,6 +841,13 @@ export function routeConversationTurn({ estado_atual, mensagem, conversa, tenant
     }
   }
 
+  if (estado_atual === 'tattoo' && !baseHasExplicitEscalation) {
+    const unsupportedStyle = detectTenantUnsupportedStyle(mensagem, clientContext);
+    if (unsupportedStyle) {
+      return unsupportedStyleOutput({ unsupportedStyle, estado_atual, conversa });
+    }
+  }
+
   const pendingResolution = resolvePendingFormQuestion({ historico, mensagem });
   if (!detected && estado_atual === 'cadastro' && shouldHandleCadastroPendingAnswer(pendingResolution)) {
     return cadastroPendingAnswerOutput({ pendingResolution, estado_atual, conversa, historico });
@@ -857,4 +921,5 @@ export const _test = {
   resumeQuestionForState,
   nextTattooField,
   extractTattooHints,
+  detectTenantUnsupportedStyle,
 };

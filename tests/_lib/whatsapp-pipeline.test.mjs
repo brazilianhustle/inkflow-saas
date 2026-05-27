@@ -1341,6 +1341,56 @@ test('5c. portfolio indisponivel do tenant responde sem LLM e sem ferramenta', a
   assert.match(aiInsert.message.content, /portfolio cadastrado/i);
 });
 
+test('5d. estilo fora do catalogo do tenant responde sem LLM e preserva estado', async () => {
+  const evoSpy = mock.fn(async () => ({ ok: true }));
+  const runAgentSpy = mock.fn(async () => { throw new Error('runAgent nao deve ser chamado para estilo fora do catalogo'); });
+  const logAgentTurnSpy = mock.fn();
+  let conversaPatch = null;
+  let aiInsert = null;
+  const conversa = { id: CONVERSA_ID, estado_agente: 'coletando_tattoo', dados_coletados: {}, dados_cadastro: {} };
+  const tenant = {
+    ...TENANT,
+    config_agente: { estilos_aceitos: ['fineline', 'blackwork'], estilos_recusados: [] },
+  };
+  const deps = mockDeps({
+    supaFetch: batchSupaFetch({
+      conversa,
+      tenant,
+      rows: rowsFor([{ id: MSG_ROW_ID, content: 'voces fazem old school?' }]),
+      onPatch: (path, body) => {
+        if (path.startsWith(`/rest/v1/conversas?id=eq.${CONVERSA_ID}`) && body.estado_agente) {
+          conversaPatch = body;
+        }
+      },
+      onPost: (path, body) => {
+        if (path === '/rest/v1/conversa_mensagens') aiInsert = body;
+      },
+    }),
+    runAgent: runAgentSpy,
+    evoSend: evoSpy,
+    logAgentTurn: logAgentTurnSpy,
+  });
+
+  await processBatch({}, baseBatch(), deps);
+
+  assert.equal(runAgentSpy.mock.callCount(), 0);
+  assert.equal(evoSpy.mock.callCount(), 1);
+  assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
+  assert.deepEqual(conversaPatch.dados_coletados, {});
+  assert.match(aiInsert.message.content, /nao esta no foco do estudio/i);
+  const logs = logAgentTurnSpy.mock.calls.map(call => call.arguments[0]);
+  const routerLog = logs.find(payload => payload.agent_name === 'conversation_router');
+  assert.ok(routerLog, 'ConversationRouter deve registrar estilo fora do catalogo');
+  assert.equal(routerLog.context_metadata.router_intent, 'tenant_unsupported_style');
+  assert.equal(routerLog.context_metadata.router_reason, 'tenant_style_not_accepted');
+  assert.equal(routerLog.context_metadata.router_can_mutate_state, false);
+  assert.equal(routerLog.context_metadata.tenant_context_has_style_catalog, true);
+  assert.equal(routerLog.context_metadata.tenant_context_has_accepted_styles, true);
+  const workflowLog = logs.find(payload => payload.agent_name === 'workflow_manager');
+  assert.ok(workflowLog, 'Workflow Manager deve registrar preservacao de estado');
+  assert.equal(workflowLog.context_metadata.workflow_reason, 'state_preserved_by_router_policy');
+});
+
 test('6. conversa nova — Task 8 implementa', async () => {
   let postBody = null;
   const deps = mockDeps({

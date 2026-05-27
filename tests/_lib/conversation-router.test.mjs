@@ -97,6 +97,29 @@ test('ConversationRouter: portfolio indisponível responde limite honesto sem LL
   assert.match(out.resposta_cliente, /qual parte do corpo/i);
 });
 
+test('ConversationRouter: estilo fora do catalogo do tenant preserva estado sem LLM', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'voces fazem old school?',
+    conversa: { estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} },
+    clientContext: {
+      tenant_rules: {
+        estilos_aceitos: ['fineline', 'blackwork'],
+        estilos_recusados: [],
+      },
+    },
+  });
+  assert.equal(out.intent, 'tenant_unsupported_style');
+  assert.equal(out.reason, 'tenant_style_not_accepted');
+  assert.equal(out.proxima_acao, 'pergunta');
+  assert.equal(out.can_mutate_state, false);
+  assert.equal(out.estado_novo, 'tattoo');
+  assert.deepEqual(out.dados_persistidos, {});
+  assert.equal(out.tenant_style_resolution.style, 'old school');
+  assert.match(out.resposta_cliente, /nao esta no foco do estudio/i);
+  assert.doesNotMatch(out.resposta_cliente, /R\$|agendar|pagar sinal|orc_/i);
+});
+
 test('ConversationRouter: pedido explícito de humano aciona escalonamento sem coleta', () => {
   assert.equal(_test.detectIntent('quero falar com o tatuador')?.intent, 'human_requested');
   assert.equal(_test.detectIntent('me passa para um atendente')?.intent, 'human_requested');
