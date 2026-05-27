@@ -124,12 +124,31 @@ whatsapp_real: PASS
 naturalness_v2_steps: PASS
 me_chamo_muito_prazer: ausente
 copy_risk_alto: ausente
-wave_health_final: pending
-proxima_familia_recomendada: pending
+wave_health_final: PASS
+proxima_familia_recomendada: PASS
 ```
 
 ## Proximo Passo
 
 ```text
-Rodar wave-health final e decidir se fecha a Wave 27 como revalidacao concluida.
+Fechar a Wave 27 como PASS. Proxima frente recomendada: auditoria naturalidade de cadastro/e-mail opcional ou handoff, fora da familia de primeiro contato mecanico.
 ```
+
+## Fechamento
+
+```text
+decision: PASS
+final_commit_docs: fdcbeb4 docs: validate wave 27 long journey
+wave_health_final: PASS
+scenario_pass_count: 198
+real_whatsapp_pass_count: 97
+level_4b: mantido
+level_4c: bloqueado
+```
+
+Veredito:
+
+- A apresentacao mecanica historica nao apareceu na jornada longa atual.
+- A cadeia real WhatsApp validou 5 turns com midia.
+- O fluxo preservou estado, dados coletados e seguranca operacional.
+- Nao ha necessidade de novo corte de copy em primeiro contato agora.
