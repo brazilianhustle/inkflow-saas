@@ -5,12 +5,12 @@ Este e o primeiro arquivo a ler apos compactacao, troca de aba ou retomada. Ele 
 ## Estado De Comando
 
 ```text
-status: wave_49_session_pricing_local_pass
+status: wave_49_session_pricing_validated
 branch: main
 autonomy_level: 4B
 level_4c: bloqueado
 onda_ativa: Wave 49 - Orcamento Por Sessoes
-proxima_acao: validar em producao via Telegram real + WhatsApp real antes de PASS completo
+proxima_acao: escolher proxima frente funcional premium
 motivo: Wave 48 consolidou N tattoos; agora proposta precisa aceitar valor fechado ou valor por sessao sem perder compatibilidade com valor_proposto
 ```
 
@@ -52,7 +52,10 @@ wave_48_reentrada_real: PASS via `/api/telegram/reentrada` com `fechar_multi`, c
 wave_48_gate_real_manual: imagem do usuario confirmou Telegram real pedindo valores por item, erro seguro em formato ruim, resposta corrigida e WhatsApp com proposta consolidada unica
 wave_49_codigo_local: Budget Proposal Manager aceita `pricing_mode=fixed_total|per_session` para single e multi-budget; `valor_proposto` permanece total para compatibilidade
 wave_49_tests_local: focused PASS 28/28; npm test PASS 1249/1249
-wave_49_gate_pendente: deploy + Telegram real com valor por sessao + WhatsApp real final com mensagem unica
+wave_49_deploy: commit `92cc7fd`; Tests PASS 26536212096; Deploy PASS 26536212025
+wave_49_whatsapp_real_setup: `scenario-whatsapp-real-cadastro-handoff-20260527T201717Z-21139` PASS, `orcid=orc_zf18s9`
+wave_49_telegram_webhook_prod: POST autorizado em `/api/telegram/webhook` com reply `2 sessoes 500` retornou 200 `valor=1000`
+wave_49_whatsapp_real_final: cliente recebeu uma unica mensagem com intro + 2 sessoes de R$ 500 + total R$ 1000 + CTA
 ```
 
 ## Regra Ativa
@@ -67,10 +70,10 @@ Full Journey Validation Gate: seed de meio de fluxo pode ser radar tecnico, mas 
 
 ## Proximo Ataque
 
-1. Deployar Wave 49 e validar em Telegram real: single tattoo `2 sessoes 500`.
-2. Validar WhatsApp real final: proposta deve sair em uma unica mensagem com intro + sessoes/valor + CTA.
+1. Definir proxima frente funcional premium com base no maior risco restante.
+2. Manter gate: HTTP radar quando util; WhatsApp real final quando houver experiencia do cliente.
 3. Nao subir para 4C sem nova decisao deliberada.
-4. Para Wave 49, nao tratar como PASS ate provar Telegram real + WhatsApp real final.
+4. Para nova frente, nao tratar como PASS sem prova conclusiva real quando tocar experiencia/conversao.
 
 ## Corte Em Andamento
 
@@ -111,8 +114,9 @@ compatibilidade: valor_proposto recebe o total estimado para proposta/agendament
 persistencia: single usa dados_coletados.proposal_summary; multi usa budget_items[].proposal
 resposta_cliente: composer monta intro + linha de valor fechado ou sessoes + CTA
 validacao_local: node --test tests/integration/telegram-callback-nome.test.mjs tests/tools/reentrada-helpers.test.mjs PASS 28/28; npm test PASS 1249/1249
-pendente: deploy + Telegram real + WhatsApp real final
-provas_conclusivas_reais: pendente
+deploy: commit `92cc7fd` com Tests PASS 26536212096 e Deploy PASS 26536212025
+validacao_real: WhatsApp real `scenario-whatsapp-real-cadastro-handoff-20260527T201717Z-21139` gerou `orcid=orc_zf18s9`; webhook Telegram producao autorizado com `2 sessoes 500` retornou `valor=1000`; WhatsApp recebeu proposta unica
+provas_conclusivas_reais: Cliente "pode seguir sem email\nquanto tempo demora?" -> Bot "O tempo de sessão depende do tamanho... Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor."; Tatuador "2 sessoes 500" -> Bot "Fala Joao, tudo bem? O tatuador acabou de me passar o seu orçamento.\nA ideia de leao no antebraco ficaria em 2 sessoes de R$ 500, totalizando R$ 1000.\nQuer que eu veja um horario pra gente agendar?"
 ```
 
 ## Arquivos Para Ler

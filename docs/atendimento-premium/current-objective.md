@@ -18,12 +18,12 @@ Fortalecer o processo de smoke premium ate cobrir envio WhatsApp real, monitoram
 ## Estado Atual
 
 ```text
-status: wave_49_session_pricing_local_pass
+status: wave_49_session_pricing_validated
 branch: main
-ultimo_commit: pendente
-ultimo_commit_funcional: pendente
-deploy: pendente para Wave 49
-tests: npm test PASS 1249/1249; Wave 49 validada localmente
+ultimo_commit: 92cc7fd fix: neutralize budget proposal item wording
+ultimo_commit_funcional: 92cc7fd fix: neutralize budget proposal item wording
+deploy: commit 92cc7fd com Tests PASS 26536212096 e Deploy PASS 26536212025
+tests: npm test PASS 1249/1249; Wave 49 validada em producao
 prompts_ci: PASS no GitHub Actions
 worktree_esperado: limpo apos commit da cadeia operacional premium
 ultimo_commit_validado: 6fb276f docs: close wave 44 premium journey audit + CI/deploy PASS + wave-health clean PASS
@@ -31,7 +31,7 @@ autonomy_level: 4B
 autonomy_limit: ate 8 micro-slices da mesma onda declarada
 autonomy_recommendation: manter 4B; 4C segue bloqueado ate nova decisao deliberada
 familia_midia_cadastro: fechada na cobertura atual
-proxima_frente: validar Wave 49 em producao com Telegram real + WhatsApp real final
+proxima_frente: escolher proxima frente funcional premium
 ```
 
 ## Ultimos Marcos
@@ -47,7 +47,7 @@ proxima_frente: validar Wave 49 em producao com Telegram real + WhatsApp real fi
 - Wave 47 fechada PASS definitivo: apos commit `b456c02`, `npm test` passou 1238/1238, CI `26530216616` e deploy `26530216614` passaram, e o WhatsApp real full journey `scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T182057Z-3182` passou do zero ate update Telegram. Resultado: `orcid=orc_mnw4ro`, 2 `budget_items` enviados ao tatuador (`borboleta/fineline/perna` e `caveira/blackwork/perna`), tail `fotos-orcamento-update-enviadas` com `itens_total=2`, `active_budget_item_id=item_2`, `enviadas=1`, `falhas=0`, e `foto_local_file_id` preservado. Provas conclusivas reais: Cliente `mudei de ideia, queria uma caveira na perna` -> Bot `Beleza! Mas so pra eu entender certinho, voce quer fazer somente essa ou a anterior tambem?`; Cliente `as duas` -> Bot `Fechado, vou considerar as duas. Pra caveira na perna, qual estilo voce imagina?`; Cliente `blackwork` -> Bot `Consegue mandar uma foto do local onde tu quer tatuar?`; Cliente `segue foto do local` + imagem -> Bot `Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.`
 - Wave 48 validada parcialmente em producao: commit `0326956` passou CI/deploy; WhatsApp real full journey `scenario-whatsapp-real-long-journey-post-handoff-new-request-20260527T192601Z-25886` passou 10/10 desde o inicio ate 2 `budget_items` no mesmo `orcid=orc_jy5c9p`; reentrada real `/api/telegram/reentrada` com `fechar_multi` enviou uma unica mensagem consolidada ao cliente: `Fala Joao... orçamento das 2 tattoos... borboleta na perna R$ 200... caveira na perna R$ 400... agendar?`. Persistencia confirmou `valor_proposto=600`, `proposal_summary.total=600` e `proposal` por item. Gate ainda pendente: callback/reply real do Telegram, porque os secrets locais disponiveis retornaram `unauthorized` no endpoint `/api/telegram/webhook`.
 - Wave 48 fechada funcionalmente por evidencia manual real: usuario mostrou Telegram real pedindo valores por item, falha segura quando o tatuador respondeu `1 400 2 500`, correcao aceita com `1 400` / `2 500`, e WhatsApp real recebeu uma unica proposta consolidada com intro, valores separados e CTA.
-- Wave 49 iniciada e validada localmente: proposta agora possui `pricing_mode=fixed_total|per_session`; single tattoo aceita `750` ou `2 sessoes 500`; multi-budget aceita itens mistos como `1 total 400` / `2 2 sessoes 500`; `valor_proposto` continua recebendo o total para compatibilidade. Testes focados passaram 28/28 e `npm test` passou 1249/1249. Pendente: deploy + Telegram real + WhatsApp real final antes de PASS.
+- Wave 49 fechada PASS em producao: proposta agora possui `pricing_mode=fixed_total|per_session`; single tattoo aceita `750` ou `2 sessoes 500`; multi-budget aceita itens mistos como `1 total 400` / `2 2 sessoes 500`; `valor_proposto` continua recebendo o total para compatibilidade. Testes focados passaram 28/28, `npm test` passou 1249/1249, CI/deploy passaram em `92cc7fd`, WhatsApp real `scenario-whatsapp-real-cadastro-handoff-20260527T201717Z-21139` gerou `orcid=orc_zf18s9`, webhook Telegram producao autorizado aceitou `2 sessoes 500` e WhatsApp recebeu uma unica proposta: `A ideia de leao no antebraco ficaria em 2 sessoes de R$ 500, totalizando R$ 1000...`.
 - Correcao metodologica do monitoramento: `run-scenario.sh`, `run-real-whatsapp.sh` e `run-inbound.sh` agora validam gates de tail usando somente o delta do log da etapa atual. Isso evita falso bloqueio quando uma etapa posterior encontra eventos validos de etapas anteriores em tail continuo.
 - Replanejamento metodologico aberto apos regressao manual em WhatsApp real: conversa organica com `opa` / `tranquilo` / `quero fzr uma tattoo` / `na perna` / `um dragao bolado` / `grandao` foi tratada como formulario, sem reacao suficiente ao briefing. Decisao: pausar Wave 47 antes da execucao e rodar Organic Conversation Sentinel Pack com `whatsapp_real_burst` em variacoes de 3 bolhas e 2 bolhas.
 - Memoria operacional reorganizada para contexto controlado: `00-active-context.md` vira primeira fonte de retomada, `current-objective.md` fica como historico duravel, `smoke-runs.md` como indice de evidencia e wave docs como leitura sob demanda. `continuity-bundle.sh` passa a injetar o active context antes do historico.

@@ -313,6 +313,7 @@ Ao fim de smoke monitorado:
 ## Run De Referencia Atual
 
 | 2026-05-27 17:05 | Wave 49 local | Testes locais | local | n/a | PASS parcial | n/a | Orcamento por sessoes implementado localmente: focused `node --test tests/integration/telegram-callback-nome.test.mjs tests/tools/reentrada-helpers.test.mjs` PASS 28/28; `npm test` PASS 1249/1249. Pendente deploy + Telegram real + WhatsApp real final antes de PASS completo. |
+| 2026-05-27 17:17 | `scenario-whatsapp-real-cadastro-handoff-20260527T201717Z-21139` + Telegram webhook `orc_zf18s9` | WhatsApp real + Telegram webhook prod | `central -> bot (*2357)` | `5521970789797` | PASS | `.smoke-evidence/scenario-whatsapp-real-cadastro-handoff-20260527T201717Z-21139/` | Wave 49 fechada: WhatsApp real gerou ORCID unico, webhook Telegram producao autorizado aceitou `2 sessoes 500`, persistiu `valor_proposto=1000` e `proposal_summary.pricing_mode=per_session`, e WhatsApp recebeu uma unica proposta: `A ideia de leao no antebraco ficaria em 2 sessoes de R$ 500, totalizando R$ 1000...`. |
 
 ### `scenario-whatsapp-real-cadastro-handoff-20260525T222253Z-9952`
 

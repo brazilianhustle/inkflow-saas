@@ -79,12 +79,38 @@ PASS 1249/1249
 ## Gate Definitivo
 
 ```text
-status: pendente
-exige:
-  1. deploy da Wave 49
-  2. Telegram real com resposta por sessao
-  3. WhatsApp real recebendo uma unica mensagem de proposta
-  4. persistencia com valor_proposto=total e proposal_summary.pricing_mode=per_session
+status: PASS
+deploy:
+  commit 92cc7fd
+  Tests PASS 26536212096
+  Deploy PASS 26536212025
+evidencia:
+  WhatsApp real setup PASS: scenario-whatsapp-real-cadastro-handoff-20260527T201717Z-21139
+  ORCID: orc_zf18s9
+  Telegram webhook producao autorizado: 2 sessoes 500 -> valor=1000
+  Persistencia: valor_proposto=1000, proposal_summary.pricing_mode=per_session
+  WhatsApp final: uma unica mensagem de proposta por sessoes
+```
+
+## Provas Conclusivas Reais
+
+```text
+Cliente:
+pode seguir sem email
+quanto tempo demora?
+
+Bot:
+O tempo de sessão depende do tamanho, detalhe e local do corpo. Pode ser uma sessão ou mais, e o tatuador confirma melhor depois de avaliar tua ideia.
+
+Boa, Joao. Deixei as infos separadas pro tatuador avaliar e te retorno por aqui com o valor.
+
+Tatuador:
+2 sessoes 500
+
+Bot para cliente:
+Fala Joao, tudo bem? O tatuador acabou de me passar o seu orçamento.
+A ideia de leao no antebraco ficaria em 2 sessoes de R$ 500, totalizando R$ 1000.
+Quer que eu veja um horario pra gente agendar?
 ```
 
 ## Stop Conditions
