@@ -190,6 +190,13 @@
 - Escopo: modela conexoes Evolution, Telegram, Mercado Pago, OpenAI, email e Supabase com metadata segura; aceita apenas `secret_binding_id` opaco; rejeita campos/valores de segredo bruto; public view e summary nunca expoem binding ID.
 - Limites: sem leitura de env, Cloudflare secrets, Supabase Vault, arquivos, rede, providers reais, staging, deploy ou sync de secrets.
 - Validacoes atuais do novo repo: `npm test` PASS 305/305, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Conectados summaries publicos de provider-connections ao admin shell local-only no novo repo.
+- Commit do novo repo: `21da8f0 feat: expose provider summaries in admin`.
+- Escopo: `apps/admin` recebe provider connections internas, converte para summary publico, renderiza secao/rota read-only `/providers` com `providers.view`, mostra label/provider/redacted identifier/health/readiness e bloqueia `secret_binding_id`/`secbind_` no view-model e HTML.
+- Ajuste de seguranca: scanner de secrets passou a permitir o metadado booleano seguro `requires_secret_manager`, sem liberar campos ou valores de segredo bruto.
+- Double check: HTML renderizado contem `href="#providers"` e `id="providers"`, mas nao contem `secret_binding_id` nem `secbind_`; `can_connect_real_providers=false`.
+- Limites: sem env, Cloudflare secrets, Supabase Vault, providers reais, Evolution, Telegram, Mercado Pago, OpenAI real, rede, staging, deploy ou sync de secrets.
+- Validacoes atuais do novo repo: `npm test` PASS 306/306, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -249,7 +256,8 @@
 - `apps/admin` agora consome `auth-session` localmente; papel declarado nao pode abrir rotas se nao bater com `studio_users`.
 - Actions administrativas agora tem gate central de autorizacao; nenhuma mutacao local de painel deve ocorrer sem sessao/permissao/audit quando aplicavel.
 - Provider connection boundary define que admin/browser ve apenas status, label, provider e identificador redigido; binding de segredo fica interno e opaco.
+- Admin provider summary e uma superficie read-only; cadastro/edicao de metadata de provider deve ser implementado como modulo/action local-only com auth-session/audit antes de qualquer provider real.
 
 ### Proximo Passo
 
-- Conectar summaries publicos de provider-connections ao admin shell em modo local-only, sem expor `secret_binding_id` no browser/admin view-model e sem conectar providers reais.
+- Criar modulo/action local-only de administracao de provider metadata, ainda sem segredo real, com auth-session/audit e sem conectar providers reais.

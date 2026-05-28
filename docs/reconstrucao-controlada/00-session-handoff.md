@@ -2005,6 +2005,65 @@ Objetivo do proximo artefato:
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
 - validar por unit/contract antes de qualquer adapter real.
 
+## Admin Provider Summaries Local-Only
+
+Commit do novo repo:
+
+```text
+21da8f0 feat: expose provider summaries in admin
+```
+
+Escopo:
+
+- `apps/admin` injeta fixtures internas de provider connections somente em modo local;
+- `createAdminViewModel` converte provider connections internas para summaries publicos via `summarizeProviderConnections`;
+- `apps/admin` renderiza secao `providers` e rota read-only `/providers`;
+- matriz de acesso ganhou permissao `providers.view`;
+- admin mostra apenas label, provider, identificador redigido, health status, readiness e contadores;
+- `secret_binding_id` e `secbind_` ficam fora do view-model publico e fora do HTML;
+- checkpoint registrado em `docs/architecture/admin-provider-summary-checkpoint.md`.
+
+Limites:
+
+- sem ler `.env`;
+- sem Cloudflare Secrets;
+- sem Supabase Vault;
+- sem provider real;
+- sem Evolution/Telegram/Mercado Pago/OpenAI real;
+- sem rede;
+- sem staging;
+- sem deploy;
+- sem sync de secrets.
+
+Double check de seguranca:
+
+- `npm test` PASS, 306/306;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- render direto confirmou `href="#providers"` e `id="providers"`;
+- render direto confirmou `hasSecretBindingId=false` e `hasSecbind=false`;
+- readiness manteve `can_connect_real_providers=false`;
+- varredura focada em admin encontrou apenas checks negativos nos testes e guard no view-model.
+
+Decisao:
+
+```text
+admin pode exibir readiness/metadata de providers, mas nao pode receber segredo real nem conectar provider real
+```
+
+Proximo passo correto:
+
+```text
+criar modulo/action local-only para administrar metadata de provider connection com auth-session/audit
+```
+
+Regras do proximo passo:
+
+- manter secrets fora do browser e fora dos fixtures publicos;
+- aceitar apenas binding opaco como referencia interna;
+- qualquer write precisa passar por auth-session, permissao e audit quando aplicavel;
+- ainda nao conectar Evolution, Telegram, Mercado Pago, OpenAI, Supabase remoto, staging ou deploy.
+
 ## Regra Anti-Poluicao
 
 Enquanto a reconstrucao estiver em fase de arquitetura e extracao:
