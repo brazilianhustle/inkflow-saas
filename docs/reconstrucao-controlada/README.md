@@ -43,9 +43,29 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: arquitetura total, plano de acao, matriz de extracao, contratos base, Tenant Config Contract, Data Governance Contract, Test Strategy Contract, decisao de stack e checklist do primeiro slice registrados antes de qualquer repo novo.
+Status: novo repo `inkflow-platform` criado localmente como scaffold isolado, sem produto funcional, sem secrets, sem deploy e sem migracao de codigo legado.
 
-Proxima decisao: aprovar ou ajustar a criacao do novo repo `inkflow-platform`.
+Local:
+
+```text
+/Users/brazilianhustler/Documents/inkflow-platform
+```
+
+Commit inicial:
+
+```text
+b815ccb chore: scaffold inkflow platform monorepo
+```
+
+Validacoes do scaffold:
+
+- `npm test` PASS;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no repo novo;
+- git limpo no repo atual antes do registro.
+
+Proxima decisao: iniciar o primeiro dominio implementavel no novo repo: `packages/tenant-config`.
 
 ## Limite De Ambiente
 

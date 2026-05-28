@@ -17,6 +17,9 @@
 - Criado Test Strategy Contract com niveis de teste, matriz por mudanca, gates, evidencias e stop conditions.
 - Criada decisao de stack para o novo repo: monorepo TypeScript, npm workspaces, React/Vite para apps, Cloudflare Workers para APIs/runtime e Supabase Postgres/RLS.
 - Criado checklist do primeiro slice do novo repo, com escopo permitido, arquivos iniciais, CI minimo, gate e rollback.
+- Criado scaffold local do novo repo `inkflow-platform` em `/Users/brazilianhustler/Documents/inkflow-platform`.
+- Commit inicial do novo repo: `b815ccb chore: scaffold inkflow platform monorepo`.
+- Validacoes do scaffold: `npm test`, `npm run typecheck` e `npm run lint` passaram.
 
 ### Decisoes
 
@@ -25,7 +28,8 @@
 - Bot premium vira modulo/vault dentro da plataforma, nao repo inteiro.
 - Durante fase de arquitetura, apenas docs da frente podem ser alterados.
 - Nenhum deploy, secret, smoke real, migration ou codigo funcional sera alterado nesta frente sem plano aprovado.
+- O primeiro dominio implementavel no novo repo sera `packages/tenant-config`, ainda sem bot runtime, painel, deploy ou secrets.
 
 ### Proximo Passo
 
-- Aprovar ou ajustar a criacao do novo repo `inkflow-platform` antes de executar qualquer scaffold.
+- Implementar o primeiro dominio `packages/tenant-config` no novo repo com schema, defaults, fixtures e unit/contract tests.

@@ -88,16 +88,56 @@ Sequencia obrigatoria:
 14. Checar `git status --short`.
 15. So entao propor ou executar o proximo passo.
 
+## Novo Repo Criado
+
+Local:
+
+```text
+/Users/brazilianhustler/Documents/inkflow-platform
+```
+
+Commit inicial:
+
+```text
+b815ccb chore: scaffold inkflow platform monorepo
+```
+
+Escopo executado:
+
+- scaffold monorepo TypeScript/npm workspaces;
+- estrutura de apps, services, packages, infra, vault, docs e tests;
+- `packages/domain` placeholder;
+- `packages/tenant-config` placeholder;
+- CI minimo sem deploy;
+- README e docs base;
+- sem secrets;
+- sem codigo legado;
+- sem deploy;
+- sem Supabase/Evolution;
+- sem smoke real.
+
+Validacoes:
+
+- `npm test` PASS no novo repo;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
-Decidir com o usuario se vamos executar a criacao do novo repo `inkflow-platform`.
+Iniciar o primeiro dominio implementavel no novo repo:
+
+```text
+packages/tenant-config
+```
 
 Objetivo do proximo artefato:
 
-- se aprovado, criar repo/pasta novo fora do repo atual;
-- scaffold vazio, sem produto e sem secrets;
-- commit inicial;
-- atualizar handoff no repo atual apontando para o novo repo.
+- transformar `07-tenant-config-contract.md` em schema inicial;
+- implementar defaults;
+- implementar fixtures;
+- implementar unit/contract tests;
+- manter sem bot runtime, sem painel, sem deploy e sem secrets.
 
 ## Regra Anti-Poluicao
 
