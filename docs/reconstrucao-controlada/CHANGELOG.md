@@ -115,6 +115,9 @@
 - Implementado dry-run local do Supabase policy harness no novo repo.
 - Commit do novo repo: `f11af8c feat: add local policy harness dry run`.
 - Validacoes atuais do novo repo: `npm test` PASS 213/213, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:dry-run` PASS com 11 cenarios.
+- Implementado detector de ferramentas locais do Supabase policy harness no novo repo.
+- Commit do novo repo: `a080bc5 feat: add local policy harness tool detection`.
+- Validacoes atuais do novo repo: `npm test` PASS 218/218, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:detect-tools` PASS com `static-only-fallback`.
 
 ### Decisoes
 
@@ -156,7 +159,8 @@
 - Supabase policy harness checkpoint autoriza apenas desenho/guard local; nenhuma execucao Supabase local ou producao foi feita.
 - Local policy harness guard foi implementado antes de qualquer execucao Supabase, bloqueando URL/chaves de producao e provider secrets.
 - Local policy harness dry-run foi implementado sem executar banco; ele valida guard, schema, rollback e manifesto antes de qualquer Supabase local real.
+- Detector confirmou ambiente sem `supabase`, `docker` e `psql`; execucao real do policy harness depende de instalar/habilitar tooling local ou seguir com fallback estatico aprimorado.
 
 ### Proximo Passo
 
-- Detectar ferramenta local para executor real do policy harness: Supabase CLI local preferencial, fallback Postgres/container ou teste estatico aprimorado.
+- Decidir entre instalar/habilitar Supabase CLI + Docker ou seguir temporariamente com fallback estatico aprimorado.

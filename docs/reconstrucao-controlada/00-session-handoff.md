@@ -1192,6 +1192,44 @@ Validacoes:
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:dry-run` PASS com 11 cenarios;
 - git limpo no novo repo apos commit.
 
+## Local Policy Harness Tool Detection Implementado
+
+Artefatos no novo repo:
+
+```text
+infra/supabase/local-policy-harness/detect-tools.mjs
+infra/supabase/local-policy-harness/run-detect-tools.mjs
+```
+
+Commit:
+
+```text
+a080bc5 feat: add local policy harness tool detection
+```
+
+Escopo:
+
+- comando `npm run supabase:policy:detect-tools`;
+- detector faz double check de guard, dry-run e presenca de ferramentas locais;
+- recomendacao automatica entre `supabase-cli-local`, `postgres-container-fallback` e `static-only-fallback`;
+- nao inicia Supabase, Docker, Postgres nem executa SQL;
+- corrigido warning tecnico do detector e bloqueada entrada insegura em nome de comando.
+
+Resultado local:
+
+```text
+strategy: static-only-fallback
+tools: supabase=false docker=false psql=false
+```
+
+Validacoes:
+
+- `npm test` PASS, 218/218;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:detect-tools` PASS;
+- git limpo no novo repo apos commit.
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1236,7 +1274,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo estrutural: detectar/decidir ferramenta de execucao local real do policy harness;
+- implementar proximo fluxo estrutural: decidir se instalamos/habilitamos Supabase CLI + Docker ou seguimos temporariamente com fallback estatico aprimorado;
 - manter tudo local e desconectado de producao;
 - introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
