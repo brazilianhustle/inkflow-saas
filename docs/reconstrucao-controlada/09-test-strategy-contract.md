@@ -242,6 +242,37 @@ Obrigatorio para:
 
 ## Gates De Promocao
 
+### Strategic Review Gate - Autoanalise Leve
+
+Objetivo: revisar coerencia estrutural e proximos passos sem transformar o processo em burocracia.
+
+Este gate e obrigatorio somente em gates naturais:
+
+- depois de fechar um bloco funcional com commit e validacoes;
+- antes de trocar de frente estrutural;
+- antes de promover nivel de automacao, ambiente ou provider real;
+- quando houver regressao, falha de teste, comportamento estranho ou duvida de arquitetura;
+- quando 3 ou mais micro slices parecerem repetitivos ou tocarem o mesmo contrato.
+
+Formato maximo:
+
+```text
+O que fechou:
+O que esta provado:
+O que continua simulado/bloqueado:
+Gaps reais:
+Proximo passo:
+Decisao: seguir / ajustar / travar
+```
+
+Regra anti-burocracia:
+
+- se o bloco e docs-only, local-only ou dominio puro, a autoanalise deve caber no handoff/changelog;
+- se todos os gates estao verdes e o proximo passo pertence a mesma frente, nao abrir documento separado;
+- se nao ha gap real, regressao, troca de frente ou promocao de risco, a decisao padrao e seguir;
+- nao repetir autoanalise apos cada micro slice pequeno quando eles pertencem ao mesmo bloco e usam o mesmo gate;
+- criar documento proprio apenas quando a revisao mudar plano, revelar gap estrutural ou autorizar/rejeitar promocao.
+
 ### Gate A - Docs/Arquitetura
 
 Pode fechar com:
@@ -389,6 +420,8 @@ Nao agrupar quando:
 - envolver Telegram/orcamento novo;
 - conversa real ainda nao foi provada.
 
+Ao fechar um grupo de micro slices, aplicar o Strategic Review Gate antes de abrir nova frente.
+
 ## Politica Para Reconstrucao Controlada
 
 Enquanto estiver em fase docs/contratos:
@@ -447,4 +480,3 @@ Objetivo:
 - comparar opcoes;
 - definir primeiro slice mecanico;
 - garantir que criar repo novo seja reversivel e sem impacto na producao atual.
-

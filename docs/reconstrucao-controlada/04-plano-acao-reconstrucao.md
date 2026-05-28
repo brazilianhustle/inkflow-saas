@@ -16,6 +16,8 @@ inventariar -> decidir contratos -> criar novo repo -> importar vault curado -> 
 
 Cada fase deve produzir um artefato versionado. Nenhuma fase avanca por sensacao.
 
+Autoanalise nao e reuniao permanente. A revisao estrategica acontece nos gates naturais: fechamento de bloco com commit, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Fora desses pontos, com gates verdes e sem decisao humana pendente, o processo continua para o proximo passo logico.
+
 ## Fase 0 - Controle Do Terreno
 
 Status: em andamento.
@@ -106,6 +108,8 @@ Gate de saida:
 PASS se cada frente tiver origem, destino, decisao, risco, teste e pronto.
 ```
 
+Antes de sair da fase, aplicar autoanalise leve: confirmar o que foi fechado, o que continua simulado, gaps reais, proximo passo e decisao seguir/ajustar/travar.
+
 ## Fase 2 - Contratos Da Plataforma
 
 Objetivo: definir os contratos antes de implementar.
@@ -145,6 +149,8 @@ Gate de saida:
 ```text
 PASS se seria possivel criar testes de contrato sem UI.
 ```
+
+Antes de sair da fase, aplicar autoanalise leve para evitar contratos soltos ou nomes divergentes entre bot, painel, banco e testes.
 
 ## Fase 3 - Decisao De Stack E Repo Novo
 
@@ -290,6 +296,8 @@ Gate de saida:
 PASS se o dominio for usavel por bot e painel sem depender de UI.
 ```
 
+Depois de cada bloco implementado e commitado, aplicar autoanalise leve somente se houver troca de frente, promocao de risco, falha/gap ou repeticao de micro slices no mesmo contrato.
+
 ## Fase 7 - Migracao Por Dominios
 
 Objetivo: migrar partes reais apenas depois da fundacao.
@@ -313,6 +321,8 @@ Regra:
 ```text
 cada dominio precisa de tests + docs + migration note + rollback antes do proximo
 ```
+
+Quando uma sequencia de dominios locais estiver verde, nao parar por rotina. Parar apenas para Strategic Review Gate quando o proximo dominio mudar risco, envolver provider real, ambiente real, dados sensiveis, UI com auth/RBAC ou comportamento conversacional.
 
 ## Fase 8 - Validacao Profissional
 
@@ -383,4 +393,3 @@ docs/reconstrucao-controlada/
 ```
 
 Qualquer excecao precisa de decisao registrada antes.
-

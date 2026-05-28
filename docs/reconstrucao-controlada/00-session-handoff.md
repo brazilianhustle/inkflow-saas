@@ -52,6 +52,8 @@ Validacoes do ultimo bloco:
 
 Proximo passo seguro: consolidar o contrato de proposal/orcamento com notifications ou preparar runbook de promocao real-provider sem execucao. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
 
+Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
+
 ## Terreno Confirmado
 
 Inventario observado no repo atual:

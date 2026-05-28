@@ -243,6 +243,9 @@
 - Segurança: notifications continuam sem provider real; resultados/snapshots/audit nao expoem `secret_binding_id`, `secbind_*`, `vaultref_*` ou `runtime_handle_*`; workflow/policy seguem como autoridade de estado, preco, handoff e resposta ao cliente.
 - Limites: sem Evolution real, Telegram real, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
 - Validacoes atuais do novo repo: `npm test` PASS 350/350, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
+- Oficializado Strategic Review Gate na metodologia da reconstrucao controlada.
+- Escopo: autoanalise leve obrigatoria em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices; proibida como pausa generica quando os gates estao verdes e o proximo passo continua na mesma frente.
+- Limites: sem codigo, sem provider real, sem staging, sem deploy, sem secrets e sem novos testes obrigatorios para docs-only.
 
 ### Decisoes
 
@@ -309,6 +312,7 @@
 - Bot-orchestrator ja prova o caminho provider-aware local completo; isso ainda nao autoriza delivery real, segredo real, staging ou producao.
 - Notification service vira a fronteira local para mensagens operacionais de bot, handoff e orcamento; isso ainda nao autoriza delivery real, segredo real, staging ou producao.
 - Bot-orchestrator pode acionar notifications locais como side effects, mas isso ainda nao autoriza delivery real, segredo real, staging ou producao.
+- Strategic Review Gate entra como freio inteligente, nao burocracia: se nao revelar gap real nem mudar plano, a decisao padrao e seguir.
 
 ### Proximo Passo
 
