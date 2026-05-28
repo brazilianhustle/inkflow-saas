@@ -44,7 +44,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, auth-session runtime local-only, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
 
 Local:
 
@@ -70,6 +70,7 @@ Commits principais do novo repo:
 9e37a63 docs: add staging package plan
 fcb13d1 feat: add staging readiness checker
 a68a9be feat: add staging execution gate
+360d249 feat: add auth session runtime
 0ffa38f feat: add knowledge service
 110624b feat: wire knowledge context into bot runtime
 354a288 docs: add policy harness operational plan
@@ -110,7 +111,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 288/288;
+- `npm test` PASS, 296/296;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
@@ -124,9 +125,10 @@ Validacoes atuais:
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:execution-gate` PASS, ready_for_manual_review=true, staging_execution_authorized=false, production_execution_authorized=false;
 - `packages/knowledge-service` PASS em retrieval local tenant-scoped, published-only, fallback, redaction, source trace e authority consultative-only;
 - knowledge context integrado ao runtime/orchestrator como resposta lateral consultiva, sem mutar estado, preco, handoff ou safety;
+- auth-session runtime local-only resolve sessao por `studio_users`, bloqueia identidade inativa/cross-tenant, aplica matriz de permissoes do admin e exige evidencia de auditoria para acoes sensiveis;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: seguir para o bloco `auth/session/access runtime` local-only para consolidar identidade, tenant ativo, roles e audit de acoes sensiveis antes de Supabase Auth real ou UI framework. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
+Proxima decisao: conectar `auth-session` ao shell/view-model do admin em modo local-only, para que os modulos do painel consumam uma superficie de sessao/acesso sem acoplar Supabase Auth real, cookies, JWT, staging ou UI framework final. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

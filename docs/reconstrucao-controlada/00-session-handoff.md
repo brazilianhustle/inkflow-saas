@@ -1794,10 +1794,53 @@ Decisao:
 knowledge pode enriquecer resposta lateral, mas workflow/policy/pricing continuam autoridades
 ```
 
+## Auth Session Runtime Local-Only
+
+Commit do novo repo:
+
+```text
+360d249 feat: add auth session runtime
+```
+
+Escopo:
+
+- adiciona `packages/auth-session`;
+- adiciona `docs/architecture/auth-session-runtime-checkpoint.md`;
+- resolve sessao local por `studio_users` via persistence contracts;
+- bloqueia identidades `invited`, `disabled` e `revoked`;
+- bloqueia acesso cross-tenant;
+- deriva permissoes e rotas pela matriz canonica `admin-access`;
+- autoriza rotas e acoes administrativas;
+- exige evidencia de auditoria para acoes sensiveis/perigosas;
+- rejeita role claim diferente do papel salvo no tenant;
+- rejeita metadata secret-like.
+
+Limites:
+
+- sem Supabase Auth real;
+- sem JWT/cookies/browser storage;
+- sem staging remoto;
+- sem migration real;
+- sem WhatsApp/Telegram/Evolution;
+- sem secrets;
+- sem deploy.
+
+Validacoes:
+
+- `npm test` PASS, 296/296;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder.
+
+Decisao:
+
+```text
+provider auth pode identificar a pessoa no futuro; permissao vem de studio_users tenant-scoped
+```
+
 Proximo passo correto:
 
 ```text
-implementar auth/session/access runtime local-only
+conectar auth-session ao shell/view-model do admin em modo local-only
 ```
 
 Recomendacao:
@@ -1808,7 +1851,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar auth/session/access runtime local-only;
+- fazer o admin consumir uma superficie de sessao/acesso local;
 - manter tudo local e desconectado de producao;
 - manter Supabase/staging real bloqueados sem aprovacao explicita;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
