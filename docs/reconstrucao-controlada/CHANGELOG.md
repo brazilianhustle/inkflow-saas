@@ -62,6 +62,9 @@
 - Integrado `services/bot-orchestrator` com `packages/integrations/local-audit-store`.
 - Commit do novo repo: `a75b7df feat: record orchestrator runs in local audit store`.
 - Validacoes atuais do novo repo: `npm test` PASS 115/115, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado pacote de contratos de persistencia no novo repo: `packages/persistence-contracts`.
+- Commit do novo repo: `ec76454 feat: implement persistence contracts`.
+- Validacoes atuais do novo repo: `npm test` PASS 125/125, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -85,7 +88,8 @@
 - `packages/integrations/local-audit-store` foi implementado sem Supabase, banco, arquivo, rede, secrets, storage real, deploy ou provider real.
 - Frente futura obrigatoria registrada: `knowledge-service`/RAG por tenant para informacoes personalizadas de estudio, como biblioteca consultiva e nao autoridade de workflow.
 - Integracao do audit store local ao orchestrator foi implementada sem Supabase, banco real, arquivo, rede, secrets, storage real, provider real ou deploy.
-- Proximo passo recomendado: checkpoint antes de qualquer adapter real; escolher entre `apps/admin` skeleton ou contratos de persistencia real sem Supabase conectado.
+- `packages/persistence-contracts` foi implementado sem Supabase, banco real, arquivo, rede, secrets, storage real, provider real ou deploy.
+- Proximo passo recomendado: checkpoint antes de qualquer adapter real; iniciar `apps/admin` skeleton usando persistence contracts como base local.
 
 ### Proximo Passo
 

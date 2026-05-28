@@ -583,6 +583,43 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Persistence Contracts Implementado
+
+Pacote:
+
+```text
+packages/persistence-contracts
+```
+
+Commit:
+
+```text
+ec76454 feat: implement persistence contracts
+```
+
+Escopo:
+
+- contratos local-only de persistencia;
+- repository contracts com `tenant_scoped`, required methods e forbidden behaviors;
+- repositorios em memoria para tenants, tenant config, conversations, messages, audit records e knowledge documents;
+- isolamento por tenant;
+- tenant config validado antes de salvar;
+- messages exigem conversation do mesmo tenant;
+- audit records reaproveitam contrato do local audit store;
+- knowledge documents preparados para RAG/knowledge-service futuro;
+- versionamento de knowledge documents;
+- filtro de published knowledge documents por tenant;
+- bloqueio de valores com cara de secret;
+- snapshot sem IO externo;
+- sem Supabase, banco real, arquivo, rede, secrets, storage real, provider real ou deploy.
+
+Validacoes:
+
+- `npm test` PASS, 125/125;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Checkpoint antes de qualquer adapter real.
@@ -626,13 +663,14 @@ Limites:
 Recomendacao:
 
 ```text
-apps/admin skeleton ou persistence contracts sem Supabase real
+apps/admin skeleton usando persistence contracts como base
 ```
 
 Objetivo do proximo artefato:
 
-- se seguir por painel: criar skeleton admin sem dados reais;
-- se seguir por dados: preparar contratos de persistencia real sem conectar Supabase ainda;
+- criar skeleton admin sem dados reais;
+- usar contratos/repositories em memoria como fonte de desenvolvimento;
+- evitar acoplamento do painel ao Supabase real nesta fase;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
 - validar por unit/contract antes de qualquer adapter real.
 
