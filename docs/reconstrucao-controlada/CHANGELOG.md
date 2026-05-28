@@ -151,6 +151,11 @@
 - Commit do novo repo: `9e37a63 docs: add staging package plan`.
 - Escopo: inputs obrigatorios, boundary contra credenciais/endpoints de producao, backup/export, smoke RLS staging, readiness checklist e stop conditions, sem conectar staging.
 - Validacoes atuais do novo repo: `npm test` PASS 265/265, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado checker local de staging readiness no novo repo.
+- Commit do novo repo: `fcb13d1 feat: add staging readiness checker`.
+- Escopo: `npm run supabase:staging:readiness`, valida package id, secret source names, backup/export, rollback/forward-fix, fixtures fake, smoke RLS, approval record e boundaries de execucao sempre false.
+- Evidencia: ready_for_operator_review=true, staging_execution_authorized=false, production_execution_authorized=false, smoke_count=9, secret_source_count=3.
+- Validacoes atuais do novo repo: `npm test` PASS 271/271, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:readiness` PASS.
 
 ### Decisoes
 
@@ -202,7 +207,8 @@
 - Policy de promocao confirma que staging e producao exigem package revisado, backup/rollback/forward-fix e aprovacao explicita; local runner nunca autoriza producao automaticamente.
 - Checker de package transforma o draft em artefato review-ready, mas mantem staging/producao bloqueados e nao cria arquivo de migration produtiva.
 - Plano de staging foi registrado como checkpoint nao executavel; proximo passo ainda e checker local de readiness, nao staging real.
+- Checker de staging readiness autoriza somente revisao operacional, nao execucao. Staging real continua bloqueado sem aprovacao explicita.
 
 ### Proximo Passo
 
-- Implementar staging readiness checker local sem conectar staging.
+- Decidir entre hardening local adicional ou preparar runbook manual de execucao staging com aprovacao explicita.

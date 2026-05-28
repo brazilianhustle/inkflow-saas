@@ -1566,6 +1566,56 @@ Proximo passo correto:
 implementar staging readiness checker local sem conectar staging
 ```
 
+## Supabase Staging Readiness Checker
+
+Commit do novo repo:
+
+```text
+fcb13d1 feat: add staging readiness checker
+```
+
+Escopo:
+
+- adiciona `infra/supabase/staging-readiness/readiness-checker.mjs`;
+- adiciona `npm run supabase:staging:readiness`;
+- cria checkpoint `docs/architecture/supabase-staging-readiness-checkpoint.md`;
+- valida package id, staging label, nomes de secret sources, backup/export, rollback/forward-fix, fixtures fake, smoke RLS, post-checks e approval record;
+- rejeita ambiente/valores production-like;
+- rejeita valores com cara de segredo real;
+- mantem `staging_execution_authorized=false`;
+- mantem `production_execution_authorized=false`;
+- nao conecta staging, nao conecta producao, nao sincroniza secrets, nao executa SQL e nao faz deploy.
+
+Evidencia:
+
+```text
+Supabase staging readiness plan supabase_20260528_initial_platform_schema is ready for operator review.
+ready_for_operator_review: true
+staging_execution_authorized: false
+production_execution_authorized: false
+smoke_count: 9
+secret_source_count: 3
+```
+
+Validacoes:
+
+- `npm test` PASS, 271/271;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:readiness` PASS.
+
+Decisao:
+
+```text
+staging readiness esta pronto para revisao operacional, mas staging real continua bloqueado
+```
+
+Proximo passo correto:
+
+```text
+decidir entre hardening local adicional ou runbook manual de execucao staging com aprovacao explicita
+```
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
