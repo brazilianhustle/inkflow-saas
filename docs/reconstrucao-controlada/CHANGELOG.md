@@ -89,6 +89,9 @@
 - Implementado modulo local de billing/entitlements no novo repo: `apps/admin/src/modules/billing-admin`, com `Payment`/`Entitlement` no dominio e `payments`/`entitlements` nos persistence contracts.
 - Commit do novo repo: `c393f7c feat: add admin billing module`.
 - Validacoes atuais do novo repo: `npm test` PASS 177/177, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado modulo local de Legal/LGPD no novo repo: `apps/admin/src/modules/legal-admin`, com `ConsentRecord`/`DataSubjectRequest` no dominio e `consentRecords`/`dataSubjectRequests` nos persistence contracts.
+- Commit do novo repo: `c3178bf feat: add admin legal module`.
+- Validacoes atuais do novo repo: `npm test` PASS 187/187, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -121,8 +124,9 @@
 - `apps/admin` renderiza modulos locais na UI estatica respeitando `admin-access`, sem React/Vite, auth real, Supabase, rede, providers reais, secrets ou deploy.
 - `apps/admin/src/modules/team-admin` foi implementado como modulo local-only de equipe/usuarios, convites, mudanca de papel/status e audit events, sem auth real, email real, Supabase, rede, secrets, deploy ou runtime real.
 - `apps/admin/src/modules/billing-admin` foi implementado como modulo local-only de billing/entitlements, plano, status de cobranca, bloqueios operacionais e audit events, sem Mercado Pago, provider real, Supabase, rede, secrets, deploy ou runtime real.
-- Proximo passo recomendado: implementar `legal-contract` local-only antes de framework visual.
+- `apps/admin/src/modules/legal-admin` foi implementado como modulo local-only de Legal/LGPD, consentimentos, retencao, solicitações de titular e audit events, sem email real, automacao externa, Supabase, rede, secrets, deploy ou runtime real.
+- Proximo passo recomendado: checkpoint estrutural do admin antes de framework visual ou Supabase real.
 
 ### Proximo Passo
 
-- Implementar `legal-contract` local-only: LGPD, consentimentos, retencao, solicitações de titular e governanca de dados.
+- Fazer checkpoint estrutural do admin: avaliar modulos locais, lacunas restantes, criterios para React/Vite e criterios para Supabase/RLS.

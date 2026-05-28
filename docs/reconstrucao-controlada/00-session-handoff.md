@@ -895,16 +895,52 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Admin Legal/LGPD Implementado
+
+Modulo:
+
+```text
+apps/admin/src/modules/legal-admin
+```
+
+Commit:
+
+```text
+c3178bf feat: add admin legal module
+```
+
+Escopo:
+
+- `createConsentRecord` e `createDataSubjectRequest` adicionados ao dominio;
+- `consentRecords` e `dataSubjectRequests` adicionados aos persistence contracts locais;
+- modulo local-only de Legal/LGPD no admin;
+- schema `legal_admin_v1` com health, consents, data subject requests, retention e policy versions;
+- comandos para registrar consentimento, criar solicitação de titular e atualizar status de solicitação;
+- audit event local para consentimento e DSR;
+- resumo de readiness legal baseado em versao de politica, termos e retencao;
+- view model integrado ao admin principal;
+- renderizacao estatica da secao Legal/LGPD;
+- testes de dominio, persistencia, resumo, comandos, audit, tenant mismatch e render;
+- sem email real, automacao externa, Supabase, rede, secrets, deploy ou runtime real.
+
+Validacoes:
+
+- `npm test` PASS, 187/187;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Evoluir o painel em slices funcionais locais antes de qualquer adapter real.
 
 Opcoes coerentes para o proximo slice:
 
-- `legal-contract`: estruturar LGPD, consentimento, retencao e solicitações de titular.
-- `admin-app-shell-framework`: iniciar shell React/Vite somente depois de checkpoint explicito.
+- `admin-platform-checkpoint`: revisar se a base estrutural do painel esta completa antes de framework visual;
+- `admin-app-shell-framework`: iniciar shell React/Vite somente depois de checkpoint explicito;
+- `supabase-local-contract`: desenhar persistencia real/RLS sem migrar ainda.
 
-Decisao recomendada: atacar `legal-contract` antes de framework visual. Motivo: agora ja existem acesso/equipe e billing; falta a autoridade estrutural de dados, consentimento, retencao e solicitações LGPD.
+Decisao recomendada: fazer checkpoint estrategico do painel antes de qualquer framework visual ou Supabase real. Motivo: os pilares locais principais ja existem e precisam ser avaliados como conjunto.
 
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
@@ -950,7 +986,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo funcional do painel: legal/LGPD contract local-only;
+- implementar proximo fluxo funcional do painel: checkpoint estrutural do admin;
 - manter dados locais via persistence contracts;
 - evitar acoplamento do painel ao Supabase real nesta fase;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;

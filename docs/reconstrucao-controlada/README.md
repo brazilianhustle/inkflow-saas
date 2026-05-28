@@ -43,7 +43,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios e billing/entitlements, sem canais reais, sem Supabase real, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements e legal/LGPD, sem canais reais, sem Supabase real, sem secrets e sem deploy.
 
 Local:
 
@@ -60,6 +60,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+c3178bf feat: add admin legal module
 c393f7c feat: add admin billing module
 d7ae443 feat: add admin team module
 52276de feat: render admin local modules
@@ -88,7 +89,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 177/177;
+- `npm test` PASS, 187/187;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - git limpo no repo novo.
