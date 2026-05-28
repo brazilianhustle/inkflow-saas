@@ -86,6 +86,9 @@
 - Implementado modulo local de equipe/usuarios no novo repo: `apps/admin/src/modules/team-admin`, com `StudioUser` no dominio e `studioUsers` nos persistence contracts.
 - Commit do novo repo: `d7ae443 feat: add admin team module`.
 - Validacoes atuais do novo repo: `npm test` PASS 167/167, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado modulo local de billing/entitlements no novo repo: `apps/admin/src/modules/billing-admin`, com `Payment`/`Entitlement` no dominio e `payments`/`entitlements` nos persistence contracts.
+- Commit do novo repo: `c393f7c feat: add admin billing module`.
+- Validacoes atuais do novo repo: `npm test` PASS 177/177, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -117,8 +120,9 @@
 - `apps/admin/src/modules/admin-access` foi implementado como contrato local-only de rotas, papeis, permissoes, acoes perigosas e audit-required actions, sem auth real, Supabase, rede, secrets, deploy, UI final ou runtime real.
 - `apps/admin` renderiza modulos locais na UI estatica respeitando `admin-access`, sem React/Vite, auth real, Supabase, rede, providers reais, secrets ou deploy.
 - `apps/admin/src/modules/team-admin` foi implementado como modulo local-only de equipe/usuarios, convites, mudanca de papel/status e audit events, sem auth real, email real, Supabase, rede, secrets, deploy ou runtime real.
-- Proximo passo recomendado: implementar `billing-contract` local-only antes de framework visual.
+- `apps/admin/src/modules/billing-admin` foi implementado como modulo local-only de billing/entitlements, plano, status de cobranca, bloqueios operacionais e audit events, sem Mercado Pago, provider real, Supabase, rede, secrets, deploy ou runtime real.
+- Proximo passo recomendado: implementar `legal-contract` local-only antes de framework visual.
 
 ### Proximo Passo
 
-- Implementar `billing-contract` local-only: planos, status de cobranca, entitlements, bloqueios e eventos.
+- Implementar `legal-contract` local-only: LGPD, consentimentos, retencao, solicitações de titular e governanca de dados.
