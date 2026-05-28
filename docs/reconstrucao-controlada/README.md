@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+692930e feat: add supabase staging evidence package
 645e407 feat: add stage readiness package
 13f1d27 feat: add provider delivery promotion gate
 95da063 test: use persisted quote context in roundtrip
@@ -133,9 +134,10 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 391/391;
+- `npm test` PASS, 396/396;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:evidence-package` PASS;
 - `INKFLOW_ENV=local STAGE_ENV=local npm run stage:readiness-package` PASS;
 - `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:delivery:promotion-gate` PASS;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
@@ -171,9 +173,10 @@ Validacoes atuais:
 - roundtrip local agora busca o contexto persistido por `quote_request_ref` antes do Telegram adapter;
 - runbook/gate local de promocao para provider real agora prepara revisao humana sem autorizar execucao: `REAL_PROVIDER_EXECUTION_AUTHORIZED=false`, `STAGING_EXECUTION_AUTHORIZED=false`, `PRODUCTION_EXECUTION_AUTHORIZED=false`, `connects_to_provider=false`, bloqueando production-like env, comandos executaveis de provider e secrets crus;
 - stage readiness package agora consolida as tres lacunas restantes com Definition of Done: Supabase staging, Provider staging e SaaS runtime staging, mantendo `STAGE_EXECUTION_AUTHORIZED=false`, `PRODUCTION_EXECUTION_AUTHORIZED=false`, `REAL_PROVIDER_EXECUTION_AUTHORIZED=false`, `DEPLOY_EXECUTION_AUTHORIZED=false`, `connects_to_staging=false`, `connects_to_provider=false` e `deploys_now=false`;
+- Supabase staging operational evidence package agora consolida migration package, readiness e execution gate em uma evidencia local unica, mantendo `SUPABASE_STAGING_EXECUTION_AUTHORIZED=false`, `SUPABASE_PRODUCTION_EXECUTION_AUTHORIZED=false`, `SUPABASE_SECRET_SYNC_AUTHORIZED=false`, `connects_to_staging=false` e blockers humanos explicitos;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: atacar o primeiro item da ladder do Stage Readiness Package sem execucao real, com pacote/evidencia operacional de Supabase staging ou checkpoint de aprovacao humana. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
+Proxima decisao: seguir para Provider staging package/gate ou parar para checkpoint de aprovacao humana antes de qualquer execucao Supabase real. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

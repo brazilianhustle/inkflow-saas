@@ -30,30 +30,30 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-645e407 feat: add stage readiness package
+692930e feat: add supabase staging evidence package
 ```
 
 Bloco fechado:
 
-- criado `docs/architecture/stage-readiness-package.md` como pacote unico de prontidao para Stage;
-- criado gate local `stage:readiness-package`;
-- as tres lacunas agora tem Definition of Done antes de execucao: Supabase staging, Provider staging e SaaS runtime staging;
-- pacote define ladder de execucao: Supabase staging -> Provider staging -> SaaS runtime staging -> smoke fake end-to-end -> decisao humana;
-- gate bloqueia autorizacao automatica com `STAGE_EXECUTION_AUTHORIZED=false`, `PRODUCTION_EXECUTION_AUTHORIZED=false`, `REAL_PROVIDER_EXECUTION_AUTHORIZED=false` e `DEPLOY_EXECUTION_AUTHORIZED=false`;
-- gate rejeita ambiente production-like, comandos executaveis de Supabase/provider/deploy, secrets crus e package sem as tres lacunas;
-- sem WhatsApp real, Telegram real, Evolution real, Supabase remoto, migration real, secrets, staging ou deploy.
+- criado `docs/architecture/supabase-staging-operational-evidence-package.md`;
+- criado gate local `supabase:staging:evidence-package`;
+- pacote consolida migration package, staging readiness e staging execution gate em uma unica evidencia operacional;
+- resultado explicita blockers esperados: aprovacao humana ausente, backup/export staging ausente, migration staging nao executada, smoke RLS staging nao executado e producao bloqueada;
+- gate bloqueia autorizacao automatica com `SUPABASE_STAGING_EXECUTION_AUTHORIZED=false`, `SUPABASE_PRODUCTION_EXECUTION_AUTHORIZED=false` e `SUPABASE_SECRET_SYNC_AUTHORIZED=false`;
+- gate rejeita ambiente production-like, comandos executaveis de Supabase/secrets, secrets crus e pacote sem blockers/evidencias;
+- sem Supabase remoto, migration real, secret sync, staging, producao, provider real ou deploy.
 
 Validacoes do ultimo bloco:
 
-- `node --test tests/architecture/stage-readiness-package.test.mjs` PASS 5/5;
-- `INKFLOW_ENV=local STAGE_ENV=local npm run stage:readiness-package` PASS, com stage/provider/producao/deploy false;
-- `npm test` PASS 391/391;
+- `node --test tests/architecture/supabase-staging-evidence-package.test.mjs` PASS 5/5;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:evidence-package` PASS, com staging/producao/secret sync false;
+- `npm test` PASS 396/396;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
 - `git diff --check` PASS;
 - scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate, sem credencial real, comando executavel ou autorizacao real.
 
-Proximo passo seguro: atacar o primeiro item da ladder sem execucao real, criando o pacote/evidencia operacional de Supabase staging ou preparando o checkpoint de aprovacao humana. Nao executar staging/provider/deploy automaticamente.
+Proximo passo seguro: Supabase staging esta pronto para revisao operacional local. Seguir para Provider staging package/gate ou parar para checkpoint de aprovacao humana antes de qualquer execucao Supabase real. Nao executar staging/provider/deploy automaticamente.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 
