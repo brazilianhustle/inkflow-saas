@@ -118,6 +118,9 @@
 - Implementado detector de ferramentas locais do Supabase policy harness no novo repo.
 - Commit do novo repo: `a080bc5 feat: add local policy harness tool detection`.
 - Validacoes atuais do novo repo: `npm test` PASS 218/218, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:detect-tools` PASS com `static-only-fallback`.
+- Registrado plano operacional do Supabase policy harness no novo repo.
+- Commit do novo repo: `354a288 docs: add policy harness operational plan`.
+- Validacoes atuais do novo repo: `npm test` PASS 222/222, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -160,7 +163,9 @@
 - Local policy harness guard foi implementado antes de qualquer execucao Supabase, bloqueando URL/chaves de producao e provider secrets.
 - Local policy harness dry-run foi implementado sem executar banco; ele valida guard, schema, rollback e manifesto antes de qualquer Supabase local real.
 - Detector confirmou ambiente sem `supabase`, `docker` e `psql`; execucao real do policy harness depende de instalar/habilitar tooling local ou seguir com fallback estatico aprimorado.
+- Plano operacional definiu checkpoints para validacao real local: tooling readiness, boundary local, bootstrap DB, seed fixtures, cenarios RLS, rollback drill e evidence report.
+- Regra de double check oficializada para informacoes que podem quebrar a reconstrucao.
 
 ### Proximo Passo
 
-- Decidir entre instalar/habilitar Supabase CLI + Docker ou seguir temporariamente com fallback estatico aprimorado.
+- Executar tooling readiness checkpoint antes de instalar/habilitar Supabase CLI + Docker ou optar por fallback estatico aprimorado.

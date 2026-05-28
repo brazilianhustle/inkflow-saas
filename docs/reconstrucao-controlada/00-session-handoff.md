@@ -1230,6 +1230,42 @@ Validacoes:
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:detect-tools` PASS;
 - git limpo no novo repo apos commit.
 
+## Policy Harness Operational Plan Registrado
+
+Artefatos no novo repo:
+
+```text
+docs/architecture/supabase-policy-harness-operational-plan.md
+tests/architecture/supabase-policy-harness-operational-plan.test.mjs
+```
+
+Commit:
+
+```text
+354a288 docs: add policy harness operational plan
+```
+
+Escopo:
+
+- plano de ataque para validar RLS/auth local de verdade;
+- checkpoints operacionais por fase;
+- regra de double check para informacoes capazes de quebrar a reconstrucao;
+- fase de tooling readiness;
+- ambiente local boundary;
+- bootstrap de DB local;
+- fixture seed;
+- cenarios RLS reais;
+- rollback drill;
+- evidence report;
+- regras de promocao e stop conditions.
+
+Validacoes:
+
+- `npm test` PASS, 222/222;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1274,7 +1310,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo estrutural: decidir se instalamos/habilitamos Supabase CLI + Docker ou seguimos temporariamente com fallback estatico aprimorado;
+- implementar proximo fluxo estrutural: tooling readiness checkpoint para Supabase CLI + Docker ou fallback estatico aprimorado;
 - manter tudo local e desconectado de producao;
 - introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
