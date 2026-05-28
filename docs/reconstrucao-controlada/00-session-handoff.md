@@ -30,27 +30,26 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-3ae484c feat: wire provider runtime to simulated adapters
+d66180e test: cover provider-aware bot delivery
 ```
 
 Bloco fechado:
 
-- `provider-runtime` integrado a adapters simulados em `packages/integrations/channel-adapters`;
-- WhatsApp mapeia para provider futuro Evolution; Telegram mapeia para provider futuro Telegram;
-- envio simulado resolve credencial runtime antes de enviar;
-- browser/admin/client sao bloqueados antes do envio simulado;
-- missing binding, mismatch e connection disabled falham antes do envio simulado;
-- receipts/snapshots/audit nao expoem `secret_binding_id`, `secbind_*`, `vaultref_*`, `binding_*` ou `runtime_handle_*`;
-- checkpoint `provider-runtime-adapter-checkpoint` registrado e testado.
+- `bot-orchestrator` validado com adapter provider-aware em fluxo local-only;
+- caminho provado: bot turn -> outbox -> provider-aware adapter -> provider runtime resolution -> simulated delivery -> redacted receipt/audit;
+- sucesso simulado registra receipt/audit sem `secret_binding_id`, `secbind_*`, `vaultref_*`, `binding_*` ou `runtime_handle_*`;
+- falha de provider runtime vira failed delivery redigido, sem rollback de estado;
+- turn invalido continua sem chamar adapter;
+- checkpoint `bot-orchestrator-provider-delivery-checkpoint` registrado e testado.
 
 Validacoes do ultimo bloco:
 
-- `npm test` PASS 331/331;
+- `npm test` PASS 336/336;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
-- scan focado de seguranca em provider-runtime/channel-adapters/checkpoints PASS sem hits.
+- scan focado de seguranca em bot-orchestrator/provider-runtime/channel-adapters/checkpoints PASS sem hits.
 
-Proximo passo seguro: integrar o adapter provider-aware ao `bot-orchestrator` local-only ou consolidar um notification service local para Telegram/Evolution simulado. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
+Proximo passo seguro: consolidar notification service local para Telegram/Evolution simulado ou preparar runbook de promocao real-provider sem execucao. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
 
 ## Terreno Confirmado
 

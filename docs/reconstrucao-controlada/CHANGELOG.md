@@ -225,6 +225,12 @@
 - Segurança: browser/admin/client bloqueados antes do envio; missing binding, mismatch e disabled connection falham antes do envio; receipt/snapshot/audit nao expoem `secret_binding_id`, `secbind_*`, `vaultref_*`, `binding_*` ou `runtime_handle_*`.
 - Limites: sem Evolution real, Telegram real, email real, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
 - Validacoes atuais do novo repo: `npm test` PASS 331/331, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
+- Validado bot-orchestrator com delivery provider-aware local-only no novo repo.
+- Commit do novo repo: `d66180e test: cover provider-aware bot delivery`.
+- Escopo: testes do `services/bot-orchestrator` cobrem sucesso provider-aware com audit store, falha provider-runtime como failed delivery redigido e garantia de que turn invalido nao chama adapter.
+- Segurança: snapshots/result/audit nao expoem `secret_binding_id`, `secbind_*`, `vaultref_*`, `binding_*`, `runtime_handle_*` ou segredo bruto.
+- Limites: sem Evolution real, Telegram real, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
+- Validacoes atuais do novo repo: `npm test` PASS 336/336, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
 
 ### Decisoes
 
@@ -288,7 +294,8 @@
 - Provider metadata agora pode ser administrada localmente, mas isso ainda nao autoriza provider real nem secret manager real.
 - Provider runtime boundary existe para uso server-side futuro, mas ainda nao autoriza Cloudflare Secrets, Supabase Vault, Evolution, Telegram, Mercado Pago, OpenAI real, staging ou producao.
 - Adapter provider-aware prova a rota operacional simulada, mas ainda nao autoriza delivery real, segredo real, staging ou producao.
+- Bot-orchestrator ja prova o caminho provider-aware local completo; isso ainda nao autoriza delivery real, segredo real, staging ou producao.
 
 ### Proximo Passo
 
-- Integrar adapter provider-aware ao `bot-orchestrator` local-only ou consolidar notification service local para Telegram/Evolution simulado, sem secrets reais, staging, producao ou provider real.
+- Consolidar notification service local para Telegram/Evolution simulado ou preparar runbook de promocao real-provider sem execucao, sem secrets reais, staging, producao ou provider real.
