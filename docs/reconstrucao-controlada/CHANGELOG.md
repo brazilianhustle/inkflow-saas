@@ -9,6 +9,7 @@
 - Criado mapa inicial de extracao do repo atual.
 - Criada arquitetura total alvo da plataforma InkFlow.
 - Criada governanca de versionamento e regra anti-poluicao.
+- Criado plano de acao faseado da reconstrucao controlada.
 
 ### Decisoes
 
@@ -21,4 +22,3 @@
 ### Proximo Passo
 
 - Completar o mapa de extracao com matriz por frente: origem, destino, risco, teste obrigatorio e criterio de pronto.
-

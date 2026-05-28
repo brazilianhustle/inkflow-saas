@@ -76,21 +76,33 @@ Sequencia obrigatoria:
 2. Ler `01-mapa-extracao-repo-atual.md`.
 3. Ler `02-arquitetura-total-alvo.md`.
 4. Ler `03-governanca-versionamento.md`.
-5. Ler `CHANGELOG.md`.
-6. Checar `git status --short`.
-7. So entao propor ou executar o proximo passo.
+5. Ler `04-plano-acao-reconstrucao.md`.
+6. Ler `CHANGELOG.md`.
+7. Checar `git status --short`.
+8. So entao propor ou executar o proximo passo.
 
 ## Proximo Passo Logico
 
-Validar e expandir o mapa de extracao em uma tabela operacional por diretorio/arquivo, com destino:
+Completar `05-matriz-extracao-operacional.md` com origem, destino, decisao, risco, teste obrigatorio e criterio de pronto para cada frente:
 
-- copiar;
-- reescrever;
-- arquivar;
-- referenciar;
-- investigar.
+- Bot Premium;
+- Tenant Config;
+- Painel do Estudio;
+- Onboarding;
+- Admin;
+- Billing;
+- Dados/LGPD;
+- Observabilidade/Auditoria;
+- Media Intelligence;
+- Orcamento/Proposta;
+- WhatsApp/Evolution;
+- Telegram;
+- Supabase;
+- CI/CD;
+- Smoke real;
+- Vault/Docs.
 
-Depois disso, montar o plano de acao da reconstrucao.
+Depois disso, iniciar os contratos da plataforma.
 
 ## Regra Anti-Poluicao
 
@@ -101,4 +113,3 @@ Enquanto a reconstrucao estiver em fase de arquitetura e extracao:
 - nenhum smoke real deve ser rodado para esta frente, porque ainda nao ha mudanca funcional;
 - nenhum deploy deve ser feito;
 - commits desta frente devem usar escopo `docs(reconstrucao)` ou equivalente.
-

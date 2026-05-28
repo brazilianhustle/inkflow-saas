@@ -12,9 +12,10 @@ Ler nesta ordem:
 2. `01-mapa-extracao-repo-atual.md`
 3. `02-arquitetura-total-alvo.md`
 4. `03-governanca-versionamento.md`
-5. `CHANGELOG.md`
-6. `docs/canonical/stack.md`
-7. `docs/atendimento-premium/09-session-handoff.md`
+5. `04-plano-acao-reconstrucao.md`
+6. `CHANGELOG.md`
+7. `docs/canonical/stack.md`
+8. `docs/atendimento-premium/09-session-handoff.md`
 
 Depois rodar:
 
@@ -35,9 +36,9 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: arquitetura total em mapeamento antes do plano de acao.
+Status: arquitetura total e plano de acao inicial registrados antes de qualquer repo novo.
 
-Proxima decisao: validar o mapa de extracao e, depois, criar o plano de acao da reconstrucao.
+Proxima decisao: completar a matriz de extracao operacional por frente.
 
 ## Limite De Ambiente
 
