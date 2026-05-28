@@ -1528,6 +1528,44 @@ Proximo passo correto:
 planejar staging package checkpoint sem executar staging ainda
 ```
 
+## Supabase Staging Package Plan
+
+Commit do novo repo:
+
+```text
+9e37a63 docs: add staging package plan
+```
+
+Escopo:
+
+- adiciona `docs/architecture/supabase-staging-package-plan.md`;
+- adiciona teste de arquitetura do plano;
+- define inputs obrigatorios antes de qualquer staging;
+- define boundary contra producao: sem service-role key de producao, URL de producao, Evolution de producao, Telegram token de producao, dados reais ou webhook produtivo;
+- exige backup/export antes de migration staging;
+- define smoke RLS staging com fixtures fake;
+- exige evidence storage e aprovacao operacional;
+- lista stop conditions;
+- nao conecta staging, nao roda SQL remoto, nao sincroniza secrets e nao faz deploy.
+
+Validacoes:
+
+- `npm test` PASS, 265/265;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder.
+
+Decisao:
+
+```text
+staging ainda esta bloqueado; agora existe plano testado para preparar readiness
+```
+
+Proximo passo correto:
+
+```text
+implementar staging readiness checker local sem conectar staging
+```
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:

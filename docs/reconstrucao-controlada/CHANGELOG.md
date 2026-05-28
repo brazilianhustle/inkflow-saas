@@ -147,6 +147,10 @@
 - Escopo: `npm run supabase:migration:package-check`, package review-only, inventario de tabelas/policies/functions/grants, evidencias local runner, staging bloqueado, checklist producao falso, scanner de secrets e garantia de zero conexao staging/producao.
 - Evidencia: package `supabase_20260528_initial_platform_schema` review-ready, 25 tabelas, 49 policies, `connects_to_staging=false`, `connects_to_production=false`, `production_ready=false`.
 - Validacoes atuais do novo repo: `npm test` PASS 260/260, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:migration:package-check` PASS.
+- Registrado plano de staging package no novo repo: `docs/architecture/supabase-staging-package-plan.md`.
+- Commit do novo repo: `9e37a63 docs: add staging package plan`.
+- Escopo: inputs obrigatorios, boundary contra credenciais/endpoints de producao, backup/export, smoke RLS staging, readiness checklist e stop conditions, sem conectar staging.
+- Validacoes atuais do novo repo: `npm test` PASS 265/265, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -197,7 +201,8 @@
 - Runner real local de RLS passou; isso valida comportamento de policies em Supabase local, mas ainda nao autoriza migration/producao.
 - Policy de promocao confirma que staging e producao exigem package revisado, backup/rollback/forward-fix e aprovacao explicita; local runner nunca autoriza producao automaticamente.
 - Checker de package transforma o draft em artefato review-ready, mas mantem staging/producao bloqueados e nao cria arquivo de migration produtiva.
+- Plano de staging foi registrado como checkpoint nao executavel; proximo passo ainda e checker local de readiness, nao staging real.
 
 ### Proximo Passo
 
-- Planejar staging package checkpoint sem executar staging ainda: regras do projeto staging, backup/export, nomes de secret source e plano de smoke RLS staging.
+- Implementar staging readiness checker local sem conectar staging.
