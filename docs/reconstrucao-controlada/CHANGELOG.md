@@ -166,6 +166,10 @@
 - Escopo: retrieval deterministico local por tenant, published-only, source trace, confidence, redaction, fallback seguro, bloqueio de query com secret-like value e autoridade `consultative_only`.
 - Limites: sem LLM, embeddings, vector DB, Supabase, storage, WhatsApp, Telegram, Evolution, rede, secrets ou deploy; nao decide workflow, preco, menoridade, cobertura, handoff, pagamento, agenda ou conclusao de orcamento.
 - Validacoes atuais do novo repo: `npm test` PASS 285/285, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Integrado knowledge context ao bot runtime e orchestrator no novo repo.
+- Commit do novo repo: `110624b feat: wire knowledge context into bot runtime`.
+- Escopo: `planBotTurn` aceita `knowledge_context`, resposta lateral pode usar `answer_text`, plano preserva source trace e runtime rejeita knowledge que tenta mudar workflow/preco/handoff.
+- Validacoes atuais do novo repo: `npm test` PASS 288/288, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -220,7 +224,8 @@
 - Checker de staging readiness autoriza somente revisao operacional, nao execucao. Staging real continua bloqueado sem aprovacao explicita.
 - Runbook/gate de execucao staging esta pronto para revisao manual; ele nao armazena comando executavel de staging enquanto autorizacao for false.
 - `knowledge-service` passa a ser a biblioteca consultiva local do bot/painel; o proximo passo e integracao controlada ao runtime sem entregar autoridade de estado/preco/handoff.
+- Knowledge context agora esta integrado ao runtime/orchestrator apenas como contexto consultivo; workflow/policy/pricing seguem como autoridades.
 
 ### Proximo Passo
 
-- Integrar `knowledge-service` ao bot runtime como contexto consultivo opcional, mantendo workflow/policy/pricing como autoridades.
+- Implementar `auth/session/access runtime` local-only para consolidar identidade, tenant ativo, roles e audit de acoes sensiveis antes de Supabase Auth real ou UI framework.

@@ -1763,6 +1763,43 @@ Proximo passo correto:
 integrar knowledge-service ao bot runtime como contexto consultivo opcional
 ```
 
+## Knowledge Runtime Integration
+
+Commit do novo repo:
+
+```text
+110624b feat: wire knowledge context into bot runtime
+```
+
+Escopo:
+
+- `packages/bot-runtime-contract` passa a aceitar `knowledge_context`;
+- `services/bot-orchestrator` repassa `knowledge_context` opcional ao runtime;
+- respostas laterais podem usar `knowledge_context.answer_text`;
+- planos preservam source trace no `knowledge_context`;
+- runtime valida que knowledge continua `consultative_only`;
+- runtime bloqueia resposta se knowledge tentar `can_mutate_workflow`, `can_set_price` ou `can_trigger_handoff`;
+- sem retrieval direto no runtime;
+- sem Supabase, LLM, embeddings, vector DB, rede, storage, secrets, WhatsApp, Telegram, Evolution ou deploy.
+
+Validacoes:
+
+- `npm test` PASS, 288/288;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder.
+
+Decisao:
+
+```text
+knowledge pode enriquecer resposta lateral, mas workflow/policy/pricing continuam autoridades
+```
+
+Proximo passo correto:
+
+```text
+implementar auth/session/access runtime local-only
+```
+
 Recomendacao:
 
 ```text
@@ -1771,7 +1808,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- integrar knowledge-service ao bot runtime como contexto consultivo opcional;
+- implementar auth/session/access runtime local-only;
 - manter tudo local e desconectado de producao;
 - manter Supabase/staging real bloqueados sem aprovacao explicita;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;

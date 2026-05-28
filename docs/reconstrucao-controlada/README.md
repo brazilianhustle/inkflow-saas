@@ -44,7 +44,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
 
 Local:
 
@@ -71,6 +71,7 @@ Commits principais do novo repo:
 fcb13d1 feat: add staging readiness checker
 a68a9be feat: add staging execution gate
 0ffa38f feat: add knowledge service
+110624b feat: wire knowledge context into bot runtime
 354a288 docs: add policy harness operational plan
 a080bc5 feat: add local policy harness tool detection
 f11af8c feat: add local policy harness dry run
@@ -109,7 +110,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 285/285;
+- `npm test` PASS, 288/288;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
@@ -122,13 +123,14 @@ Validacoes atuais:
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:readiness` PASS, ready_for_operator_review=true, staging_execution_authorized=false, production_execution_authorized=false;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:execution-gate` PASS, ready_for_manual_review=true, staging_execution_authorized=false, production_execution_authorized=false;
 - `packages/knowledge-service` PASS em retrieval local tenant-scoped, published-only, fallback, redaction, source trace e authority consultative-only;
+- knowledge context integrado ao runtime/orchestrator como resposta lateral consultiva, sem mutar estado, preco, handoff ou safety;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: integrar `knowledge-service` ao bot runtime como contexto consultivo opcional, sem permitir mutacao de workflow, preco, handoff, safety ou conclusao de orcamento. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
+Proxima decisao: seguir para o bloco `auth/session/access runtime` local-only para consolidar identidade, tenant ativo, roles e audit de acoes sensiveis antes de Supabase Auth real ou UI framework. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 
-Frente `knowledge-service`/RAG por tenant: implementada em modo local-only como biblioteca consultiva. Ainda falta integrar ao bot runtime como contexto opcional e, futuramente, evoluir para RAG real com embeddings/vector store somente depois de contratos, staging e secrets apropriados.
+Frente `knowledge-service`/RAG por tenant: implementada em modo local-only como biblioteca consultiva e integrada ao bot runtime como contexto opcional. Futuramente pode evoluir para RAG real com embeddings/vector store somente depois de contratos, staging e secrets apropriados.
 
 ## Limite De Ambiente
 
