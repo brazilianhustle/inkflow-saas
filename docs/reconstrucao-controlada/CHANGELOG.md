@@ -80,6 +80,9 @@
 - Implementado contrato local de rotas e permissoes do painel no novo repo: `apps/admin/src/modules/admin-access`.
 - Commit do novo repo: `244fa4d feat: add admin access contract`.
 - Validacoes atuais do novo repo: `npm test` PASS 157/157, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementada renderizacao estatica inicial dos modulos locais no novo repo: `apps/admin`.
+- Commit do novo repo: `52276de feat: render admin local modules`.
+- Validacoes atuais do novo repo: `npm test` PASS 158/158, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -109,8 +112,9 @@
 - `apps/admin/src/modules/bot-control` foi implementado como modulo local-only de schema/view-model/actions para controle operacional do bot premium, sem WhatsApp, Telegram, Evolution, Supabase, auth real, rede, secrets, deploy ou runtime real.
 - `apps/admin/src/modules/knowledge-admin` foi implementado como modulo local-only de schema/view-model/actions para governanca de conhecimento por tenant e futuro RAG consultivo, sem embeddings, vector store, LLM, WhatsApp, Telegram, Evolution, Supabase, auth real, rede, secrets, deploy ou runtime real.
 - `apps/admin/src/modules/admin-access` foi implementado como contrato local-only de rotas, papeis, permissoes, acoes perigosas e audit-required actions, sem auth real, Supabase, rede, secrets, deploy, UI final ou runtime real.
-- Proximo passo recomendado: renderizar os modulos locais na UI estatica respeitando o contrato de rotas/permissoes, antes de React/Vite.
+- `apps/admin` renderiza modulos locais na UI estatica respeitando `admin-access`, sem React/Vite, auth real, Supabase, rede, providers reais, secrets ou deploy.
+- Proximo passo recomendado: checkpoint estrategico para escolher proximo contrato estrutural faltante: billing, legal/LGPD ou team.
 
 ### Proximo Passo
 
-- Renderizar os modulos locais na UI estatica respeitando rotas/permissoes, sem iniciar React/Vite ainda.
+- Fazer checkpoint estrategico e escolher o proximo contrato local-only: billing, legal/LGPD ou team.

@@ -792,19 +792,50 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Admin Static Modules Render Implementado
+
+App:
+
+```text
+apps/admin
+```
+
+Commit:
+
+```text
+52276de feat: render admin local modules
+```
+
+Escopo:
+
+- renderizacao estatica inicial baseada em `admin_access.routes`;
+- sidebar usa rotas permitidas pelo papel atual;
+- renderizacao de `studio-settings`, `bot-control` e `knowledge-admin`;
+- secoes estruturais para billing, legal/LGPD e team sem modulo funcional ainda;
+- status, flags, gates, readiness e tabelas locais exibidos a partir dos view models;
+- `main.mjs` ficou testavel em Node ao proteger boot dependente de `document`;
+- teste de render estatico garantindo rotas e modulos locais no HTML;
+- sem React/Vite, auth real, Supabase, rede, providers reais, secrets ou deploy.
+
+Validacoes:
+
+- `npm test` PASS, 158/158;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Evoluir o painel em slices funcionais locais antes de qualquer adapter real.
 
 Opcoes coerentes para o proximo slice:
 
-- `studio-settings-ui`: renderizar o modulo de configuracao na tela estatica atual antes de avançar para novos modulos.
-- `bot-control-ui`: renderizar controle operacional na tela estatica atual antes de novos modulos.
-- `knowledge-admin-ui`: renderizar biblioteca, fila de publicacao e readiness na tela estatica atual.
-- `admin-shell-static`: aplicar rotas/permissoes na tela estatica atual antes de React/Vite.
+- `billing-contract`: estruturar plano, status de cobranca, entitlements e eventos antes de UI real.
+- `legal-contract`: estruturar LGPD, consentimento, retencao e solicitações de titular.
+- `team-contract`: estruturar usuarios, papeis, convites e auditoria de acesso.
 - `admin-app-shell-framework`: iniciar shell React/Vite somente depois de checkpoint explicito.
 
-Decisao recomendada: renderizar primeiro os modulos locais na UI estatica com base no contrato de permissoes. Ainda nao iniciar React/Vite, auth real, Supabase real, canais reais ou deploy.
+Decisao recomendada: fazer checkpoint estrategico. A base do painel ja tem modulos locais renderizados; o proximo passo deve escolher qual frente estrutural faltante entra antes de framework visual: billing, legal/LGPD ou team.
 
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
@@ -850,7 +881,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo funcional do painel: renderizacao estatica dos modulos locais respeitando rotas/permissoes;
+- implementar proximo fluxo funcional do painel: billing, legal/LGPD ou team contract local-only;
 - manter dados locais via persistence contracts;
 - evitar acoplamento do painel ao Supabase real nesta fase;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
