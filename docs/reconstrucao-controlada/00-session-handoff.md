@@ -30,26 +30,26 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-1d39a6d test: prove local artist quote roundtrip
+d113c19 feat: persist quote request contexts locally
 ```
 
 Bloco fechado:
 
-- checkpoint `artist-quote-roundtrip-local` criado;
-- prova local completa: bot-orchestrator quote_request -> quote_request_context/ref -> telegram quote adapter -> artist quote intake -> notifications service -> provider-aware whatsapp adapter -> simulated quote_response delivery -> redacted audit;
-- o contexto/ref gerado no pedido ao tatuador foi reutilizado diretamente pelo adapter Telegram;
-- uma resposta estrita do tatuador gerou uma unica `quote_response` com dois valores em uma mensagem;
-- receipts de Telegram request e WhatsApp quote_response ficam separados e auditados localmente;
-- Telegram real, Evolution real, parser amplo, secrets, staging, producao e deploy continuam bloqueados.
+- `QuoteRequestContextRepository` adicionado a `packages/persistence-contracts`;
+- `quote_request_ref` e `quote_request_context` agora tem contrato local tenant-scoped;
+- valida ref/contexto, tenant/conversation, budget items, status e bloqueio secret-like;
+- inclui `getByRef`, `listByConversation` e `listPendingByTenant`;
+- snapshot local passa a expor `quote_request_contexts`;
+- sem Supabase real, migration real, provider real, secrets, staging ou deploy.
 
 Validacoes do ultimo bloco:
 
-- `npm test` PASS 376/376;
+- `npm test` PASS 379/379;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
-- scan focado de seguranca no roundtrip PASS apenas com guards e fixtures de teste, sem credencial real.
+- scan focado de seguranca em persistence-contracts PASS apenas com guards/fixtures, sem credencial real.
 
-Proximo passo seguro: definir o proximo bloco estrutural local-only entre persistencia do quote context/ref em `persistence-contracts` ou runbook/gate de promocao real-provider, ainda sem provider real, staging ou secrets.
+Proximo passo seguro: conectar o bot-orchestrator ao `QuoteRequestContextRepository` local para salvar o contexto quando emitir `quote_request`, ainda sem Supabase real, provider real, staging ou secrets.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 

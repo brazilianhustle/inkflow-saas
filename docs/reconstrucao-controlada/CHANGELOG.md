@@ -276,6 +276,11 @@
 - Segurança: sem provider real, sem parser amplo, sem secrets; scan focado encontrou apenas guards/fixtures.
 - Limites: sem Telegram real, Evolution real, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
 - Validacoes atuais do novo repo: `npm test` PASS 376/376, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
+- Adicionado contrato local de persistencia para quote request contexts no novo repo.
+- Commit do novo repo: `d113c19 feat: persist quote request contexts locally`.
+- Escopo: `QuoteRequestContextRepository` salva `quote_request_ref`/`quote_request_context` tenant-scoped, valida tenant/conversation/ref/budget items/status, bloqueia metadata secret-like e oferece `getByRef`, `listByConversation` e `listPendingByTenant`.
+- Segurança: sem Supabase real, migration real, provider real, secrets, staging ou deploy.
+- Validacoes atuais do novo repo: `npm test` PASS 379/379, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS com apenas guards/fixtures.
 
 ### Decisoes
 
@@ -348,7 +353,8 @@
 - Telegram quote adapter resolve o gap de normalizacao local sem liberar parser amplo nem provider real; o proximo gap estrutural e gerar/persistir o contexto/ref de quote_request localmente no fluxo do orchestrator/notifications.
 - Quote request context fecha a preparacao da ida; o proximo gap estrutural e uma prova local de ida-e-volta completa usando esse contexto como input do Telegram adapter.
 - Roundtrip local prova a cadeia funcional sem provider real; o proximo gap estrutural e decidir se o contexto/ref deve ser persistido agora ou se a frente deve preparar runbook/gate de provider real.
+- Quote request context agora tem contrato de persistencia local; o proximo gap estrutural e o orchestrator gravar esse contexto no repositorio local quando emitir `quote_request`.
 
 ### Proximo Passo
 
-- Escolher entre persistir quote context/ref em `persistence-contracts` ou preparar runbook/gate de promocao real-provider, sem secrets reais, staging, producao ou provider real.
+- Conectar o bot-orchestrator ao `QuoteRequestContextRepository` local para salvar contexto ao emitir `quote_request`, sem secrets reais, staging, producao ou provider real.
