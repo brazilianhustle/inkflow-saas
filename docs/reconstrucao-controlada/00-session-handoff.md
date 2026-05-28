@@ -1374,6 +1374,72 @@ tooling pronto, runner real ainda nao implementado
 
 Proximo passo correto e implementar `supabase-cli-local-runner` com guard-first, workspace local isolado, schema apply local, fixtures locais, cenarios RLS, rollback drill e evidence report. Ainda nao promover migrations, nao usar Supabase remoto e nao tocar secrets.
 
+## Supabase Local Runner PASS
+
+Commit no novo repo:
+
+```text
+8b1d729 feat: add supabase local policy runner
+```
+
+Escopo:
+
+- adiciona `infra/supabase/local-policy-harness/local-runner.mjs`;
+- adiciona `npm run supabase:policy:local-runner`;
+- executa guard, dry-run, static coverage e tool detection antes de SQL real;
+- cria workspace temporario isolado;
+- inicia Supabase local via Docker/Colima;
+- aplica schema draft statement-by-statement;
+- aplica seed fake local;
+- executa cenarios RLS reais;
+- executa rollback drill;
+- para Supabase local com `--no-backup`;
+- sanitiza ambiente dos subprocessos para nao herdar tokens/secrets nao relacionados.
+
+Falha real encontrada:
+
+```text
+query error: ERROR: stack depth limit exceeded
+```
+
+Causa:
+
+```text
+active_tenant_ids/active_tenant_role consultavam studio_user_identities enquanto policies da propria tabela dependiam desses helpers.
+```
+
+Correcao:
+
+```text
+helpers agora usam security definer com search_path = public
+```
+
+Evidencia real final:
+
+```text
+Supabase CLI local policy runner executed 142 steps.
+RLS scenarios and rollback drill passed in local Supabase.
+```
+
+Validacoes:
+
+- `npm test` PASS, 249/249;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:dry-run` PASS;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:static-coverage` PASS;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:detect-tools` PASS com `supabase-cli-local`;
+- `INKFLOW_ENV=local SUPABASE_ENV=local SUPABASE_POLICY_RUNNER_EXECUTE=1 npm run supabase:policy:local-runner` PASS.
+
+Decisao:
+
+```text
+RLS local validado, producao ainda bloqueada
+```
+
+Antes de qualquer migration real ainda falta definir policy de empacotamento de migrations, staging/prod backup, rollback operacional e manuseio de secrets.
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1418,7 +1484,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo estrutural: `supabase-cli-local-runner` com guard-first e evidence report;
+- implementar proximo fluxo estrutural: policy de empacotamento de migrations/staging/rollback antes de qualquer producao;
 - manter tudo local e desconectado de producao;
 - introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;

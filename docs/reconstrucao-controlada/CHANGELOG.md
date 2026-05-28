@@ -132,6 +132,12 @@
 - Commit do novo repo: `4042732 docs: record supabase local tooling enabled`.
 - Detector atual do novo repo: `supabase-cli-local`, com `supabase=true docker=true psql=false`.
 - Validacoes atuais do novo repo: `npm test` PASS 235/235, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, guard/dry-run/static-coverage PASS.
+- Implementado e executado runner real local do Supabase policy harness.
+- Commit do novo repo: `8b1d729 feat: add supabase local policy runner`.
+- Evidencia real: `Supabase CLI local policy runner executed 142 steps. RLS scenarios and rollback drill passed in local Supabase.`
+- Falha real encontrada e corrigida: recursao RLS em `active_tenant_ids/active_tenant_role`, corrigida com `security definer` e `search_path = public`.
+- Hardening adicional: subprocessos do runner agora recebem ambiente sanitizado, sem herdar tokens/secrets nao relacionados.
+- Validacoes atuais do novo repo: `npm test` PASS 249/249, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, runner real local PASS.
 
 ### Decisoes
 
@@ -179,7 +185,8 @@
 - Tooling readiness checkpoint confirmou o caminho correto: Supabase CLI + Docker local. Ambiente atual permanece bloqueado por ausencia de `supabase`, `docker` e `psql`.
 - Static policy coverage foi implementado como protecao temporaria enquanto o ambiente nao tem Supabase CLI/Docker/psql; ele nao substitui validacao real de RLS.
 - Ambiente local agora tem Supabase CLI + Docker via Colima, mas o runner real de RLS ainda nao existe; proximo passo correto e implementar `supabase-cli-local-runner` com guard-first.
+- Runner real local de RLS passou; isso valida comportamento de policies em Supabase local, mas ainda nao autoriza migration/producao.
 
 ### Proximo Passo
 
-- Implementar `supabase-cli-local-runner` com guard-first, workspace local isolado, schema apply local, fixtures locais, cenarios RLS, rollback drill e evidence report.
+- Preparar policy de empacotamento de migrations/staging/rollback para futura promocao, sem tocar producao ainda.

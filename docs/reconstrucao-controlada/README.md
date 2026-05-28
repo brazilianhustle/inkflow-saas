@@ -44,7 +44,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint e static policy coverage gate do policy harness, com Supabase CLI + Docker local habilitados via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate e runner real local do policy harness, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
 
 Local:
 
@@ -64,6 +64,7 @@ Commits principais do novo repo:
 00a4dba docs: add supabase tooling readiness checkpoint
 4304223 feat: add supabase static policy coverage
 4042732 docs: record supabase local tooling enabled
+8b1d729 feat: add supabase local policy runner
 354a288 docs: add policy harness operational plan
 a080bc5 feat: add local policy harness tool detection
 f11af8c feat: add local policy harness dry run
@@ -102,16 +103,17 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 235/235;
+- `npm test` PASS, 249/249;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:dry-run` PASS com 11 cenarios;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:detect-tools` PASS com `supabase-cli-local`;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:static-coverage` PASS;
+- `INKFLOW_ENV=local SUPABASE_ENV=local SUPABASE_POLICY_RUNNER_EXECUTE=1 npm run supabase:policy:local-runner` PASS com 142 etapas, cenarios RLS e rollback drill;
 - git limpo no repo novo.
 
-Proxima decisao: implementar `supabase-cli-local-runner` com guard-first antes de qualquer SQL execution. Nao iniciar adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem checkpoint explicito.
+Proxima decisao: preparar policy de empacotamento de migrations/staging/rollback para futura promocao. Nao iniciar adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem checkpoint explicito.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 
