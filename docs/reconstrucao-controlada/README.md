@@ -44,7 +44,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package e checker local de staging readiness, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
 
 Local:
 
@@ -69,6 +69,7 @@ Commits principais do novo repo:
 9003d02 feat: add migration package checker
 9e37a63 docs: add staging package plan
 fcb13d1 feat: add staging readiness checker
+a68a9be feat: add staging execution gate
 354a288 docs: add policy harness operational plan
 a080bc5 feat: add local policy harness tool detection
 f11af8c feat: add local policy harness dry run
@@ -107,7 +108,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 271/271;
+- `npm test` PASS, 277/277;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
@@ -118,9 +119,10 @@ Validacoes atuais:
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:migration:package-check` PASS, review-ready com 25 tabelas, 49 policies, staging bloqueado e producao nao pronta;
 - plano de staging package registrado e testado, sem executar staging;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:readiness` PASS, ready_for_operator_review=true, staging_execution_authorized=false, production_execution_authorized=false;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:execution-gate` PASS, ready_for_manual_review=true, staging_execution_authorized=false, production_execution_authorized=false;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: decidir entre continuar hardening local ou preparar runbook manual de execucao staging com aprovacao explicita. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem checkpoint explicito.
+Proxima decisao: pausar para decisao operacional antes de qualquer staging real ou preparar um checkpoint de aprovacao humana para staging. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

@@ -1616,6 +1616,64 @@ Proximo passo correto:
 decidir entre hardening local adicional ou runbook manual de execucao staging com aprovacao explicita
 ```
 
+## Supabase Staging Execution Runbook/Gate
+
+Commit do novo repo:
+
+```text
+a68a9be feat: add staging execution gate
+```
+
+Escopo:
+
+- adiciona `docs/architecture/supabase-staging-execution-runbook.md`;
+- adiciona `infra/supabase/staging-execution-gate/execution-gate.mjs`;
+- adiciona `npm run supabase:staging:execution-gate`;
+- adiciona checkpoint `docs/architecture/supabase-staging-execution-gate-checkpoint.md`;
+- valida que o runbook e staging-only;
+- valida que producao e proibida;
+- exige package check, staging readiness e execution gate como precondicoes;
+- exige backup antes de migration;
+- exige rollback ou forward-fix;
+- exige smoke RLS staging;
+- exige aprovacao humana explicita;
+- exige stop conditions;
+- exige `STAGING_EXECUTION_AUTHORIZED=false`;
+- exige `PRODUCTION_EXECUTION_AUTHORIZED=false`;
+- bloqueia `supabase db push`, `supabase link`, secrets inline e URLs production-like no runbook.
+
+Evidencia:
+
+```text
+Supabase staging execution runbook is ready for manual review.
+ready_for_manual_review: true
+staging_execution_authorized: false
+production_execution_authorized: false
+connects_to_staging: false
+connects_to_production: false
+```
+
+Validacoes:
+
+- `npm test` PASS, 277/277;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:migration:package-check` PASS;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:readiness` PASS;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:execution-gate` PASS.
+
+Decisao:
+
+```text
+runbook esta pronto para revisao manual; staging real segue bloqueado
+```
+
+Proximo passo correto:
+
+```text
+pausar para decisao operacional antes de qualquer staging real ou preparar checkpoint de aprovacao humana
+```
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:

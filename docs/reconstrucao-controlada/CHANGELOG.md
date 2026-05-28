@@ -156,6 +156,11 @@
 - Escopo: `npm run supabase:staging:readiness`, valida package id, secret source names, backup/export, rollback/forward-fix, fixtures fake, smoke RLS, approval record e boundaries de execucao sempre false.
 - Evidencia: ready_for_operator_review=true, staging_execution_authorized=false, production_execution_authorized=false, smoke_count=9, secret_source_count=3.
 - Validacoes atuais do novo repo: `npm test` PASS 271/271, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:readiness` PASS.
+- Implementado runbook manual e gate local de execucao staging no novo repo.
+- Commit do novo repo: `a68a9be feat: add staging execution gate`.
+- Escopo: `docs/architecture/supabase-staging-execution-runbook.md`, `npm run supabase:staging:execution-gate`, validacao do runbook, precondicoes, backup, rollback/forward-fix, smoke RLS, aprovacao humana, stop conditions e bloqueios contra comando executavel/secret/production-like.
+- Evidencia: ready_for_manual_review=true, staging_execution_authorized=false, production_execution_authorized=false, connects_to_staging=false, connects_to_production=false.
+- Validacoes atuais do novo repo: `npm test` PASS 277/277, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, package-check PASS, staging-readiness PASS, staging-execution-gate PASS.
 
 ### Decisoes
 
@@ -208,7 +213,8 @@
 - Checker de package transforma o draft em artefato review-ready, mas mantem staging/producao bloqueados e nao cria arquivo de migration produtiva.
 - Plano de staging foi registrado como checkpoint nao executavel; proximo passo ainda e checker local de readiness, nao staging real.
 - Checker de staging readiness autoriza somente revisao operacional, nao execucao. Staging real continua bloqueado sem aprovacao explicita.
+- Runbook/gate de execucao staging esta pronto para revisao manual; ele nao armazena comando executavel de staging enquanto autorizacao for false.
 
 ### Proximo Passo
 
-- Decidir entre hardening local adicional ou preparar runbook manual de execucao staging com aprovacao explicita.
+- Pausar para decisao operacional antes de qualquer staging real ou preparar checkpoint de aprovacao humana para staging.
