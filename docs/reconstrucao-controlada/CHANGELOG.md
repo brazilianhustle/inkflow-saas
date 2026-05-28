@@ -246,6 +246,12 @@
 - Oficializado Strategic Review Gate na metodologia da reconstrucao controlada.
 - Escopo: autoanalise leve obrigatoria em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices; proibida como pausa generica quando os gates estao verdes e o proximo passo continua na mesma frente.
 - Limites: sem codigo, sem provider real, sem staging, sem deploy, sem secrets e sem novos testes obrigatorios para docs-only.
+- Implementado artist quote intake service local-only no novo repo.
+- Commit do novo repo: `86b1641 feat: add artist quote intake service`.
+- Escopo: novo `services/artist-quote-intake` aceita resposta de orcamento normalizada do tatuador, valida cobertura via pricing, compoe proposta unica via response-composer e cria notification `quote_response` para WhatsApp simulado.
+- Segurança: rejeita metadata secret-like; nao expoe `secret_binding_id`, `secbind_*`, `vaultref_*` ou `runtime_handle_*`; raw Telegram free-text parser fica explicitamente fora do service.
+- Limites: sem Evolution real, Telegram real, parser bruto, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
+- Validacoes atuais do novo repo: `npm test` PASS 358/358, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
 
 ### Decisoes
 
@@ -313,7 +319,8 @@
 - Notification service vira a fronteira local para mensagens operacionais de bot, handoff e orcamento; isso ainda nao autoriza delivery real, segredo real, staging ou producao.
 - Bot-orchestrator pode acionar notifications locais como side effects, mas isso ainda nao autoriza delivery real, segredo real, staging ou producao.
 - Strategic Review Gate entra como freio inteligente, nao burocracia: se nao revelar gap real nem mudar plano, a decisao padrao e seguir.
+- Artist quote intake separa o contrato de orcamento normalizado do parser Telegram futuro; isso evita acoplar texto bruto de chat ao pricing/proposal.
 
 ### Proximo Passo
 
-- Consolidar o contrato de proposal/orcamento com notifications ou preparar runbook de promocao real-provider sem execucao, sem secrets reais, staging, producao ou provider real.
+- Integrar artist-quote-intake ao fluxo local de quote response ou preparar runbook de promocao real-provider sem execucao, sem secrets reais, staging, producao ou provider real.

@@ -30,27 +30,27 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-2115aa1 feat: dispatch operational notifications locally
+86b1641 feat: add artist quote intake service
 ```
 
 Bloco fechado:
 
-- `bot-orchestrator` integrado ao `services/notifications` como side effect operacional local-only;
-- caminho provado: bot turn -> client outbound delivery attempt -> operational side effect -> notifications service -> provider-aware telegram adapter -> provider runtime resolution -> simulated telegram delivery -> redacted receipt/audit;
-- transicao para `waiting_artist` dispara `quote_request` local para Telegram simulado;
-- `create_handoff_package` dispara `handoff_alert` local para Telegram simulado;
-- turn invalido nao entrega resposta ao cliente nem dispara notificacao;
-- notification result/audit nao expoem `secret_binding_id`, `secbind_*`, `vaultref_*` ou `runtime_handle_*`;
-- checkpoint `bot-orchestrator-notifications-checkpoint` registrado e testado.
+- `services/artist-quote-intake` criado como boundary local-only de resposta normalizada do tatuador;
+- caminho provado: normalized artist quote reply -> pricing contract -> proposal composer -> quote_response notification request -> notifications service -> simulated whatsapp delivery;
+- multiplos itens viram uma proposta unica ao cliente, nao mensagens separadas;
+- orcamento por sessao vira linhas de sessao, sem valor flat indevido;
+- item/sessao sem valor falha antes de criar notificacao ao cliente;
+- raw Telegram free-text parsing continua fora do service, como preocupacao futura de adapter;
+- checkpoint `artist-quote-intake-checkpoint` registrado e testado.
 
 Validacoes do ultimo bloco:
 
-- `npm test` PASS 350/350;
+- `npm test` PASS 358/358;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
-- scan focado de seguranca em bot-orchestrator/notifications/provider-runtime/channel-adapters/checkpoint PASS sem hits.
+- scan focado de seguranca em artist-quote-intake/notifications/pricing/response-composer/checkpoint PASS sem hits.
 
-Proximo passo seguro: consolidar o contrato de proposal/orcamento com notifications ou preparar runbook de promocao real-provider sem execucao. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
+Proximo passo seguro: integrar artist-quote-intake ao fluxo local de quote response ou preparar runbook de promocao real-provider sem execucao. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 
