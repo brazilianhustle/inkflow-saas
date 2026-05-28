@@ -553,6 +553,36 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Audit Store Integrado Ao Orchestrator
+
+Area:
+
+```text
+services/bot-orchestrator -> packages/integrations/local-audit-store
+```
+
+Commit:
+
+```text
+a75b7df feat: record orchestrator runs in local audit store
+```
+
+Escopo:
+
+- `services/bot-orchestrator` agora aceita `auditStore` opcional;
+- `receiveTurnAndDeliver` registra bot run no audit store;
+- turno valido com entrega registra decision trace e delivery receipt;
+- turno invalido registra tentativa/run sem receipt e sem chamar adapter;
+- comportamento sem audit store permanece compativel;
+- sem Supabase, banco real, arquivo, rede, secrets, storage real, provider real ou deploy.
+
+Validacoes:
+
+- `npm test` PASS, 115/115;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Checkpoint antes de qualquer adapter real.
@@ -596,13 +626,13 @@ Limites:
 Recomendacao:
 
 ```text
-integrar audit store local ao bot-orchestrator ou iniciar apps/admin skeleton
+apps/admin skeleton ou persistence contracts sem Supabase real
 ```
 
 Objetivo do proximo artefato:
 
-- se seguir por dados: gravar run, trace e receipt no audit store local durante `receiveTurnAndDeliver`;
 - se seguir por painel: criar skeleton admin sem dados reais;
+- se seguir por dados: preparar contratos de persistencia real sem conectar Supabase ainda;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
 - validar por unit/contract antes de qualquer adapter real.
 

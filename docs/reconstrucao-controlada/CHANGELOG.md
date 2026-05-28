@@ -59,6 +59,9 @@
 - Implementado audit store local em memoria no novo repo: `packages/integrations/local-audit-store`.
 - Commit do novo repo: `115025f feat: implement local audit store`.
 - Validacoes atuais do novo repo: `npm test` PASS 113/113, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Integrado `services/bot-orchestrator` com `packages/integrations/local-audit-store`.
+- Commit do novo repo: `a75b7df feat: record orchestrator runs in local audit store`.
+- Validacoes atuais do novo repo: `npm test` PASS 115/115, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -81,7 +84,8 @@
 - Integracao simulada outbox->adapter->receipt foi implementada sem rede, provider real, storage, secrets ou deploy.
 - `packages/integrations/local-audit-store` foi implementado sem Supabase, banco, arquivo, rede, secrets, storage real, deploy ou provider real.
 - Frente futura obrigatoria registrada: `knowledge-service`/RAG por tenant para informacoes personalizadas de estudio, como biblioteca consultiva e nao autoridade de workflow.
-- Proximo passo recomendado: checkpoint antes de qualquer adapter real; escolher entre integrar audit store local ao orchestrator ou iniciar `apps/admin` skeleton.
+- Integracao do audit store local ao orchestrator foi implementada sem Supabase, banco real, arquivo, rede, secrets, storage real, provider real ou deploy.
+- Proximo passo recomendado: checkpoint antes de qualquer adapter real; escolher entre `apps/admin` skeleton ou contratos de persistencia real sem Supabase conectado.
 
 ### Proximo Passo
 

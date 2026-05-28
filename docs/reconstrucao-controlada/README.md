@@ -43,7 +43,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt e audit store local em memoria, sem canais reais, sem painel, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt e audit store local integrado, sem canais reais, sem painel, sem secrets e sem deploy.
 
 Local:
 
@@ -60,6 +60,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+a75b7df feat: record orchestrator runs in local audit store
 115025f feat: implement local audit store
 87d2310 feat: wire orchestrator to simulated channel adapter
 73e18d2 feat: implement simulated channel adapters
@@ -78,12 +79,12 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 113/113;
+- `npm test` PASS, 115/115;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - git limpo no repo novo.
 
-Proxima decisao: integrar audit store local ao `services/bot-orchestrator` ou iniciar skeleton de `apps/admin`. Nao iniciar adapter real de WhatsApp/Supabase/Telegram sem checkpoint explicito.
+Proxima decisao: iniciar skeleton de `apps/admin` ou preparar contratos de persistence real sem conectar Supabase ainda. Nao iniciar adapter real de WhatsApp/Supabase/Telegram sem checkpoint explicito.
 
 Frente futura obrigatoria: `knowledge-service`/RAG por tenant para informacoes personalizadas de cada estudio. Esta frente deve entrar como biblioteca consultiva do bot premium, nao como autoridade de workflow. Deve servir FAQ, politicas, portfolio textual, cuidados, regras comerciais e contexto curado do estudio, com fontes versionadas, escopo por tenant, observabilidade, redacao segura e fallback quando a confianca for baixa. Nao deve decidir estado, preco, menoridade, cobertura, handoff ou conclusao de orcamento.
 
