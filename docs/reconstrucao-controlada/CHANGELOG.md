@@ -316,6 +316,11 @@
 - Escopo: `docs/architecture/saas-runtime-staging-operational-evidence-package.md`, `npm run saas:runtime:staging:evidence-package`, consolidando runtime target, admin smoke, bot smoke, audit, provider boundary, tenant config, legal, billing, observabilidade e rollback.
 - Evidencia: `saas_runtime_staging_execution_authorized=false`, `saas_runtime_production_execution_authorized=false`, `saas_runtime_deploy_authorized=false`, `saas_runtime_secret_sync_authorized=false`, `connects_to_staging=false`, `connects_to_provider=false`, `deploys_now=false`, blockers esperados registrados.
 - Validacoes atuais do novo repo: `node --test tests/architecture/saas-runtime-staging-evidence-package.test.mjs` PASS 5/5, `INKFLOW_ENV=local SAAS_RUNTIME_ENV=local npm run saas:runtime:staging:evidence-package` PASS, `npm test` PASS 406/406, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate.
+- Implementado pacote final local de end-to-end fake staging smoke no novo repo.
+- Commit do novo repo: `8302ebe feat: add e2e fake staging package`.
+- Escopo: `docs/architecture/end-to-end-fake-staging-smoke-package.md`, `npm run e2e:fake-staging:package`, consolidando Stage readiness, Supabase staging evidence, Provider staging evidence e SaaS runtime staging evidence em uma decisao humana final.
+- Evidencia: `ready_for_human_stage_decision=true`, `e2e_fake_staging_smoke_authorized=false`, `stage_execution_authorized=false`, `production_execution_authorized=false`, `real_provider_execution_authorized=false`, `deploy_execution_authorized=false`, `secret_sync_authorized=false`, gates todos true e blockers esperados registrados.
+- Validacoes atuais do novo repo: `node --test tests/architecture/e2e-fake-staging-package.test.mjs` PASS 5/5, `INKFLOW_ENV=local E2E_FAKE_STAGE_ENV=local npm run e2e:fake-staging:package` PASS, `npm test` PASS 411/411, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate.
 
 ### Decisoes
 
@@ -396,7 +401,8 @@
 - Supabase staging agora tem evidencia operacional local consolidada; execucao real ainda depende de aprovacao humana, backup/export staging real e smoke RLS staging real.
 - Provider staging agora tem evidencia operacional local consolidada; execucao real ainda depende de aprovacao humana, health check, secret sync, webhook isolation e smoke real com atores fake.
 - SaaS runtime staging agora tem evidencia operacional local consolidada; execucao real ainda depende de aprovacao humana, runtime route, bindings de staging, deploy staging e smoke runtime.
+- End-to-end fake staging package e o checkpoint local final antes de qualquer Stage real; a proxima acao e decisao humana entre manter bloqueado ou aprovar execucao Stage ordenada com checkpoints explicitos.
 
 ### Proximo Passo
 
-- Abrir Strategic Review Gate para decidir se paramos para aprovacao humana de Stage real ou se criamos um pacote final end-to-end fake staging smoke, ainda sem secrets reais, staging, producao, provider real ou deploy automatico.
+- Parar para decisao humana de Stage: manter bloqueado, aprovar apenas Supabase staging, aprovar apenas Provider staging, aprovar apenas SaaS runtime staging ou aprovar execucao Stage ordenada com checkpoints explicitos. Nao executar secrets reais, staging, producao, provider real ou deploy automatico sem aprovacao explicita.

@@ -30,30 +30,32 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-3e9e9e9 feat: add saas runtime staging evidence package
+8302ebe feat: add e2e fake staging package
 ```
 
 Bloco fechado:
 
-- criado `docs/architecture/saas-runtime-staging-operational-evidence-package.md`;
-- criado gate local `saas:runtime:staging:evidence-package`;
-- pacote consolida runtime target, admin smoke, bot smoke, audit smoke, provider boundary, tenant config seed, legal seed, billing seed, observabilidade e rollback;
-- resultado explicita blockers esperados: aprovacao humana ausente, runtime route ausente, bindings de staging nao confirmados, deploy staging nao executado, runtime smoke nao executado e producao bloqueada;
-- gate bloqueia autorizacao automatica com `SAAS_RUNTIME_STAGING_EXECUTION_AUTHORIZED=false`, `SAAS_RUNTIME_PRODUCTION_EXECUTION_AUTHORIZED=false`, `SAAS_RUNTIME_DEPLOY_AUTHORIZED=false` e `SAAS_RUNTIME_SECRET_SYNC_AUTHORIZED=false`;
-- gate rejeita ambiente production-like, comandos executaveis de deploy/staging/provider/secrets, secrets crus e pacote sem runtime smoke;
+- criado `docs/architecture/end-to-end-fake-staging-smoke-package.md`;
+- criado gate local `e2e:fake-staging:package`;
+- pacote final consolida Stage readiness, Supabase staging evidence, Provider staging evidence e SaaS runtime staging evidence;
+- fake smoke story cobre admin tenant, provider readiness sem secrets, turno WhatsApp fake, quote request, persistencia de `quote_request_ref`, resposta Telegram fake, resposta unica ao cliente, audit redigido, provider boundary, legal/billing tenant-scoped e opcoes de decisao;
+- atores fake definidos: tenant `tenant_stage_inkflow`, client `fake_staging_client_whatsapp` e artist `fake_staging_artist_telegram`;
+- resultado explicita `ready_for_human_stage_decision=true` e blockers esperados: aprovacao humana ausente, Supabase staging real nao executado, provider staging real nao executado, runtime staging real nao deployado, smoke Stage real nao executado e producao bloqueada;
+- gate bloqueia autorizacao automatica com `E2E_FAKE_STAGING_SMOKE_AUTHORIZED=false`, `STAGE_EXECUTION_AUTHORIZED=false`, `PRODUCTION_EXECUTION_AUTHORIZED=false`, `REAL_PROVIDER_EXECUTION_AUTHORIZED=false`, `DEPLOY_EXECUTION_AUTHORIZED=false` e `SECRET_SYNC_AUTHORIZED=false`;
+- gate rejeita ambiente production-like, comandos executaveis de deploy/staging/provider/secrets, secrets crus e pacote sem fake smoke story;
 - sem deploy real, public traffic, provider traffic, secret sync, database migration, staging ou producao.
 
 Validacoes do ultimo bloco:
 
-- `node --test tests/architecture/saas-runtime-staging-evidence-package.test.mjs` PASS 5/5;
-- `INKFLOW_ENV=local SAAS_RUNTIME_ENV=local npm run saas:runtime:staging:evidence-package` PASS, com staging/producao/deploy/secret sync false;
-- `npm test` PASS 406/406;
+- `node --test tests/architecture/e2e-fake-staging-package.test.mjs` PASS 5/5;
+- `INKFLOW_ENV=local E2E_FAKE_STAGE_ENV=local npm run e2e:fake-staging:package` PASS, com `ready_for_human_stage_decision=true` e todas as flags de execucao false;
+- `npm test` PASS 411/411;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
 - `git diff --check` PASS;
 - scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate, sem credencial real, comando executavel ou autorizacao real.
 
-Proximo passo seguro: as tres lacunas de Stage Readiness estao fechadas em modo local-review. Abrir Strategic Review Gate para decidir se paramos para aprovacao humana de Stage real ou se criamos um pacote final end-to-end fake staging smoke, ainda sem execucao real.
+Proximo passo seguro: a onda local de Stage Readiness esta fechada. Parar para decisao humana antes de qualquer Stage real: manter bloqueado, aprovar apenas Supabase staging, aprovar apenas Provider staging, aprovar apenas SaaS runtime staging ou aprovar execucao Stage ordenada com checkpoints explicitos. Nao executar staging, provider real, deploy, secret sync ou producao automaticamente.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 
