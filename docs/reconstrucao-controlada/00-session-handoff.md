@@ -30,26 +30,27 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-c2cac5f feat: add local notification service
+2115aa1 feat: dispatch operational notifications locally
 ```
 
 Bloco fechado:
 
-- `services/notifications` consolidado como boundary local-only de notificacoes operacionais;
-- caminho provado: operational service -> notifications service -> provider-aware adapter -> provider runtime resolution -> simulated delivery -> redacted receipt/audit;
-- WhatsApp/Evolution simulado e Telegram simulado passam pelo mesmo runtime provider-aware;
-- request invalido, adapter ausente e binding ausente falham seguro;
+- `bot-orchestrator` integrado ao `services/notifications` como side effect operacional local-only;
+- caminho provado: bot turn -> client outbound delivery attempt -> operational side effect -> notifications service -> provider-aware telegram adapter -> provider runtime resolution -> simulated telegram delivery -> redacted receipt/audit;
+- transicao para `waiting_artist` dispara `quote_request` local para Telegram simulado;
+- `create_handoff_package` dispara `handoff_alert` local para Telegram simulado;
+- turn invalido nao entrega resposta ao cliente nem dispara notificacao;
 - notification result/audit nao expoem `secret_binding_id`, `secbind_*`, `vaultref_*` ou `runtime_handle_*`;
-- checkpoint `notifications-local-service-checkpoint` registrado e testado.
+- checkpoint `bot-orchestrator-notifications-checkpoint` registrado e testado.
 
 Validacoes do ultimo bloco:
 
-- `npm test` PASS 344/344;
+- `npm test` PASS 350/350;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
-- scan focado de seguranca em notifications/provider-runtime/channel-adapters/checkpoint PASS sem hits.
+- scan focado de seguranca em bot-orchestrator/notifications/provider-runtime/channel-adapters/checkpoint PASS sem hits.
 
-Proximo passo seguro: integrar o notification service aos fluxos locais de handoff/orcamento ou preparar runbook de promocao real-provider sem execucao. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
+Proximo passo seguro: consolidar o contrato de proposal/orcamento com notifications ou preparar runbook de promocao real-provider sem execucao. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
 
 ## Terreno Confirmado
 

@@ -237,6 +237,12 @@
 - Segurança: request metadata rejeita segredo bruto; result/audit nao expoem `secret_binding_id`, `secbind_*`, `vaultref_*` ou `runtime_handle_*`; adapter ausente e binding ausente falham seguro.
 - Limites: sem Evolution real, Telegram real, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
 - Validacoes atuais do novo repo: `npm test` PASS 344/344, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
+- Integrado bot-orchestrator ao notification service local-only no novo repo.
+- Commit do novo repo: `2115aa1 feat: dispatch operational notifications locally`.
+- Escopo: `receiveTurnAndDeliver` agora pode disparar side effects via `services/notifications`; `waiting_artist` emite `quote_request` para Telegram simulado e `create_handoff_package` emite `handoff_alert`; invalid turn nao dispara notificacao.
+- Segurança: notifications continuam sem provider real; resultados/snapshots/audit nao expoem `secret_binding_id`, `secbind_*`, `vaultref_*` ou `runtime_handle_*`; workflow/policy seguem como autoridade de estado, preco, handoff e resposta ao cliente.
+- Limites: sem Evolution real, Telegram real, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
+- Validacoes atuais do novo repo: `npm test` PASS 350/350, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
 
 ### Decisoes
 
@@ -302,7 +308,8 @@
 - Adapter provider-aware prova a rota operacional simulada, mas ainda nao autoriza delivery real, segredo real, staging ou producao.
 - Bot-orchestrator ja prova o caminho provider-aware local completo; isso ainda nao autoriza delivery real, segredo real, staging ou producao.
 - Notification service vira a fronteira local para mensagens operacionais de bot, handoff e orcamento; isso ainda nao autoriza delivery real, segredo real, staging ou producao.
+- Bot-orchestrator pode acionar notifications locais como side effects, mas isso ainda nao autoriza delivery real, segredo real, staging ou producao.
 
 ### Proximo Passo
 
-- Integrar notification service aos fluxos locais de handoff/orcamento ou preparar runbook de promocao real-provider sem execucao, sem secrets reais, staging, producao ou provider real.
+- Consolidar o contrato de proposal/orcamento com notifications ou preparar runbook de promocao real-provider sem execucao, sem secrets reais, staging, producao ou provider real.
