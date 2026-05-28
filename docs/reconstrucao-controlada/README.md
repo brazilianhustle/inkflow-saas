@@ -43,7 +43,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com `packages/tenant-config`, `packages/domain`, `packages/workflow` e `packages/pricing` implementados como pacotes funcionais isolados, sem bot runtime, sem painel, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com `packages/tenant-config`, `packages/domain`, `packages/workflow`, `packages/pricing` e `packages/observability` implementados como pacotes funcionais isolados, sem bot runtime, sem painel, sem secrets e sem deploy.
 
 Local:
 
@@ -60,6 +60,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+9c1e812 feat: implement observability contracts
 daf54f3 feat: implement pricing foundation
 23a00ef feat: implement workflow transitions
 266fb02 feat: implement domain contracts
@@ -69,12 +70,12 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 45/45;
+- `npm test` PASS, 54/54;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - git limpo no repo novo.
 
-Proxima decisao: definir o proximo dominio implementavel no novo repo. Recomendacao: `packages/observability`, para registrar DecisionEvent/AuditEvent e preparar rastreabilidade antes de runtime/integracoes.
+Proxima decisao: definir o proximo dominio implementavel no novo repo. Recomendacao: `packages/media-intelligence`, como contrato puro de classificacao de midia antes de qualquer modelo/vision/runtime.
 
 ## Limite De Ambiente
 

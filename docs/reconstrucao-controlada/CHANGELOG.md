@@ -32,6 +32,9 @@
 - Implementado quarto dominio funcional no novo repo: `packages/pricing`.
 - Commit do novo repo: `daf54f3 feat: implement pricing foundation`.
 - Validacoes atuais do novo repo: `npm test` PASS 45/45, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado quinto dominio funcional no novo repo: `packages/observability`.
+- Commit do novo repo: `9c1e812 feat: implement observability contracts`.
+- Validacoes atuais do novo repo: `npm test` PASS 54/54, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -44,8 +47,9 @@
 - `packages/domain` foi implementado sem banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/workflow` foi implementado sem banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/pricing` foi implementado sem calculo automatico final, Telegram, WhatsApp, banco, APIs, runtime, painel, deploy ou secrets.
-- Proximo dominio recomendado: `packages/observability`.
+- `packages/observability` foi implementado sem log provider, banco, APIs, runtime, painel, deploy ou secrets.
+- Proximo dominio recomendado: `packages/media-intelligence`.
 
 ### Proximo Passo
 
-- Implementar `packages/observability` no novo repo para padronizar DecisionEvent, AuditEvent e evidence summaries antes de runtime/integracoes.
+- Implementar `packages/media-intelligence` no novo repo como contrato puro de classificacao de midia antes de qualquer modelo/vision/runtime.

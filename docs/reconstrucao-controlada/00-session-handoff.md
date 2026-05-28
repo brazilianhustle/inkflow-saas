@@ -249,6 +249,37 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo.
 
+## Quinto Dominio Implementado
+
+Dominio:
+
+```text
+packages/observability
+```
+
+Commit:
+
+```text
+9c1e812 feat: implement observability contracts
+```
+
+Escopo:
+
+- builders/validators de DecisionEvent;
+- builders/validators de AuditEvent;
+- evidence summary para gates;
+- exigencia de prova WhatsApp real quando gate=`whatsapp_real`;
+- exigencia de prova Telegram real quando gate=`telegram_real`;
+- redaction de telefone, email e secrets;
+- sem log provider, banco, API, runtime, deploy ou secrets.
+
+Validacoes:
+
+- `npm test` PASS, 54/54;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo.
+
 ## Proximo Passo Logico
 
 Definir e implementar o proximo dominio no novo repo.
@@ -256,14 +287,15 @@ Definir e implementar o proximo dominio no novo repo.
 Recomendacao:
 
 ```text
-packages/observability
+packages/media-intelligence
 ```
 
 Objetivo do proximo artefato:
 
-- criar builders/validators para DecisionEvent e AuditEvent;
-- padronizar evidence summary interno;
-- permitir que futuros runtime/integracoes expliquem decisoes;
+- criar contrato puro de classificacao de midia;
+- representar categorias `body_location_clean`, `body_location_with_existing_tattoo`, `tattoo_reference`, `possible_cover_up`, `ambiguous`, `irrelevant`;
+- validar confianca e proxima pergunta/acao esperada;
+- manter sem modelo/vision, WhatsApp, Telegram, banco, APIs, secrets e deploy.
 - manter pacote sem side effects, sem banco, sem APIs, sem secrets e sem deploy.
 
 ## Regra Anti-Poluicao
