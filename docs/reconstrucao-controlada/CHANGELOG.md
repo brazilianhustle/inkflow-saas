@@ -185,6 +185,11 @@
 - Escopo: helper central `admin-action-auth`, protecao de writes de studio settings, bot control, knowledge, billing, legal e team; exige `auth-session`, permissao correta, tenant match e evidencia de auditoria para acoes sensiveis antes de mutar persistence contracts.
 - Limites: sem Supabase Auth real, JWT, cookies, browser storage, staging, deploy, secrets, providers reais ou UI framework final.
 - Validacoes atuais do novo repo: `npm test` PASS 299/299, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado pacote local-only `packages/provider-connections` no novo repo.
+- Commit do novo repo: `edd0551 feat: add provider secret boundary`.
+- Escopo: modela conexoes Evolution, Telegram, Mercado Pago, OpenAI, email e Supabase com metadata segura; aceita apenas `secret_binding_id` opaco; rejeita campos/valores de segredo bruto; public view e summary nunca expoem binding ID.
+- Limites: sem leitura de env, Cloudflare secrets, Supabase Vault, arquivos, rede, providers reais, staging, deploy ou sync de secrets.
+- Validacoes atuais do novo repo: `npm test` PASS 305/305, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -243,7 +248,8 @@
 - `packages/auth-session` consolida a regra de acesso: provider auth pode identificar a pessoa no futuro, mas quem decide permissao e a identidade tenant-scoped persistida em `studio_users`.
 - `apps/admin` agora consome `auth-session` localmente; papel declarado nao pode abrir rotas se nao bater com `studio_users`.
 - Actions administrativas agora tem gate central de autorizacao; nenhuma mutacao local de painel deve ocorrer sem sessao/permissao/audit quando aplicavel.
+- Provider connection boundary define que admin/browser ve apenas status, label, provider e identificador redigido; binding de segredo fica interno e opaco.
 
 ### Proximo Passo
 
-- Modelar provider connection settings/secrets boundary local-only para Evolution, Telegram, pagamento e LLM, sem expor secrets ao browser/admin view-model e sem conectar providers reais.
+- Conectar summaries publicos de provider-connections ao admin shell em modo local-only, sem expor `secret_binding_id` no browser/admin view-model e sem conectar providers reais.

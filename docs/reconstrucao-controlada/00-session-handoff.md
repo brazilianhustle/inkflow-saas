@@ -1938,6 +1938,59 @@ Proximo passo correto:
 modelar provider connection settings/secrets boundary local-only
 ```
 
+## Provider Connections Secret Boundary Local-Only
+
+Commit do novo repo:
+
+```text
+edd0551 feat: add provider secret boundary
+```
+
+Escopo:
+
+- adiciona `packages/provider-connections`;
+- modela providers `evolution`, `telegram`, `mercado_pago`, `openai`, `email` e `supabase`;
+- aceita apenas `secret_binding_id` opaco (`secbind_*`, `binding_*`, `vaultref_*`);
+- rejeita campos/valores de segredo bruto como API key, token, bot token, service-role, access token, refresh token, password e webhook secret;
+- public view nunca expoe `secret_binding_id`;
+- readiness summary e tenant-scoped e nunca inclui binding ID;
+- real provider connection segue bloqueado por `can_connect_real_providers=false`.
+
+Limites:
+
+- sem leitura de `.env`;
+- sem Cloudflare Secrets;
+- sem Supabase Vault;
+- sem arquivos;
+- sem rede;
+- sem Evolution/Telegram/Mercado Pago/OpenAI/email real;
+- sem staging;
+- sem deploy;
+- sem sync de secrets.
+
+Double check de seguranca:
+
+- scanner local encontrou apenas nomes bloqueados dentro da denylist e testes negativos ficticios;
+- `npm test` PASS valida rejeicao de segredo bruto e ausencia de binding ID em public views/summaries.
+
+Validacoes:
+
+- `npm test` PASS, 305/305;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder.
+
+Decisao:
+
+```text
+tenant/admin ve metadata segura; segredo real fica fora do produto ate existir secret manager aprovado
+```
+
+Proximo passo correto:
+
+```text
+conectar summaries publicos de provider-connections ao admin shell local-only
+```
+
 Recomendacao:
 
 ```text
@@ -1946,7 +1999,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- modelar providers/secrets sem expor credenciais ao browser ou admin view-model;
+- expor apenas provider public summaries no admin, sem binding ID ou segredo bruto;
 - manter tudo local e desconectado de producao;
 - manter Supabase/staging real bloqueados sem aprovacao explicita;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;

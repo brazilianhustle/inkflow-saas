@@ -44,7 +44,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, auth-session runtime local-only, admin conectado a auth-session local, actions administrativas protegidas por auth-session/audit, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, auth-session runtime local-only, admin conectado a auth-session local, actions administrativas protegidas por auth-session/audit, provider secret boundary local-only, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
 
 Local:
 
@@ -73,6 +73,7 @@ a68a9be feat: add staging execution gate
 360d249 feat: add auth session runtime
 1c4a142 feat: connect admin to auth session
 8fbf682 feat: require auth for admin actions
+edd0551 feat: add provider secret boundary
 0ffa38f feat: add knowledge service
 110624b feat: wire knowledge context into bot runtime
 354a288 docs: add policy harness operational plan
@@ -113,7 +114,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 299/299;
+- `npm test` PASS, 305/305;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
@@ -130,9 +131,10 @@ Validacoes atuais:
 - auth-session runtime local-only resolve sessao por `studio_users`, bloqueia identidade inativa/cross-tenant, aplica matriz de permissoes do admin e exige evidencia de auditoria para acoes sensiveis;
 - admin shell/view-model consome `auth-session`, nega role claim divergente e zera rotas/permissoes para sessao invalida;
 - actions administrativas local-only exigem sessao, permissao e evidencia de auditoria antes de mutar persistence contracts;
+- provider-connections local-only aceita apenas `secret_binding_id` opaco, rejeita segredo bruto e gera public views sem binding ID;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: modelar provider connection settings/secrets boundary local-only para Evolution, Telegram, pagamento e LLM, sem expor secrets ao browser/admin view-model e sem conectar providers reais. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
+Proxima decisao: conectar summaries publicos de provider-connections ao admin shell em modo local-only, sem expor `secret_binding_id` no browser/admin view-model e sem conectar providers reais. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 
