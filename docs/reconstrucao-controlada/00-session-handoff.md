@@ -82,20 +82,22 @@ Sequencia obrigatoria:
 8. Ler `07-tenant-config-contract.md`.
 9. Ler `08-data-governance-contract.md`.
 10. Ler `09-test-strategy-contract.md`.
-11. Ler `CHANGELOG.md`.
-12. Checar `git status --short`.
-13. So entao propor ou executar o proximo passo.
+11. Ler `10-decisao-stack-novo-repo.md`.
+12. Ler `CHANGELOG.md`.
+13. Checar `git status --short`.
+14. So entao propor ou executar o proximo passo.
 
 ## Proximo Passo Logico
 
-Criar `10-decisao-stack-novo-repo.md`.
+Criar `11-primeiro-slice-novo-repo.md`.
 
 Objetivo do proximo artefato:
 
-- decidir stack e formato do novo repo;
-- comparar opcoes;
-- definir primeiro slice mecanico;
-- garantir que criar repo novo seja reversivel e sem impacto na producao atual.
+- transformar a decisao de stack em checklist executavel;
+- definir comandos permitidos;
+- definir arquivos iniciais;
+- definir criterio de commit;
+- garantir criacao reversivel e isolada.
 
 ## Regra Anti-Poluicao
 

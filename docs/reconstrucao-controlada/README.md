@@ -18,9 +18,10 @@ Ler nesta ordem:
 8. `07-tenant-config-contract.md`
 9. `08-data-governance-contract.md`
 10. `09-test-strategy-contract.md`
-11. `CHANGELOG.md`
-12. `docs/canonical/stack.md`
-13. `docs/atendimento-premium/09-session-handoff.md`
+11. `10-decisao-stack-novo-repo.md`
+12. `CHANGELOG.md`
+13. `docs/canonical/stack.md`
+14. `docs/atendimento-premium/09-session-handoff.md`
 
 Depois rodar:
 
@@ -41,9 +42,9 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: arquitetura total, plano de acao, matriz de extracao, contratos base, Tenant Config Contract, Data Governance Contract e Test Strategy Contract registrados antes de qualquer repo novo.
+Status: arquitetura total, plano de acao, matriz de extracao, contratos base, Tenant Config Contract, Data Governance Contract, Test Strategy Contract e decisao de stack registrados antes de qualquer repo novo.
 
-Proxima decisao: decidir stack e formato do novo repo.
+Proxima decisao: criar o checklist do primeiro slice mecanico do novo repo.
 
 ## Limite De Ambiente
 
