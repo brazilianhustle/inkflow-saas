@@ -688,17 +688,52 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Admin Bot Control Implementado
+
+Modulo:
+
+```text
+apps/admin/src/modules/bot-control
+```
+
+Commit:
+
+```text
+836fbef feat: add admin bot control module
+```
+
+Escopo:
+
+- modulo local-only de controle operacional do bot premium por tenant;
+- schema `bot_control_v1` com secoes de runtime, automation flags, production gates, carga operacional e audit health;
+- comandos estruturados para habilitar/desabilitar bot, auto handoff, agregacao de resposta do tatuador, exigir validacao WhatsApp real e travar auto quote/auto booking;
+- view model derivado de tenant, tenant config, conversations, messages e audit records locais;
+- gates explicitos para tenant ativo, billing ok, bot enabled, validacao WhatsApp real obrigatoria e artist reply aggregation;
+- action que prepara comando validado sem tocar em provider real;
+- action que aplica comando em `tenant-config` local e registra `audit_event`;
+- protecao contra mismatch de tenant e valores com cara de secret;
+- integracao do modulo no view model principal do admin;
+- testes de secoes, runtime, blockers, comando, aplicacao, audit e isolamento;
+- sem WhatsApp, Telegram, Evolution, Supabase, auth real, rede, secrets, deploy ou runtime real.
+
+Validacoes:
+
+- `npm test` PASS, 142/142;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Evoluir o painel em slices funcionais locais antes de qualquer adapter real.
 
 Opcoes coerentes para o proximo slice:
 
-- `bot-control`: controle operacional do bot premium por tenant usando tenant config e audit local;
 - `knowledge-admin`: CRUD local de documentos do futuro RAG por tenant;
 - `studio-settings-ui`: renderizar o modulo de configuracao na tela estatica atual antes de avançar para novos modulos.
+- `bot-control-ui`: renderizar controle operacional na tela estatica atual antes de novos modulos.
 
-Decisao recomendada: implementar `bot-control` local-only, porque ele liga configuracao do estudio ao funcionamento operacional do bot premium sem tocar em WhatsApp, Supabase, Telegram, Evolution, secrets ou deploy.
+Decisao recomendada: implementar `knowledge-admin` local-only, porque o RAG por tenant ja foi definido como frente futura obrigatoria e precisa de governanca antes de qualquer runtime real.
 
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
@@ -744,7 +779,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo funcional do painel: controle operacional do bot premium, knowledge ou renderizacao completa de settings;
+- implementar proximo fluxo funcional do painel: knowledge admin, renderizacao completa de settings ou renderizacao de bot control;
 - manter dados locais via persistence contracts;
 - evitar acoplamento do painel ao Supabase real nesta fase;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;

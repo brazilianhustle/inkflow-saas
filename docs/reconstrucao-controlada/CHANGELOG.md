@@ -71,6 +71,9 @@
 - Implementado primeiro modulo funcional do painel no novo repo: `apps/admin/src/modules/studio-settings`.
 - Commit do novo repo: `d098d1f feat: add admin studio settings module`.
 - Validacoes atuais do novo repo: `npm test` PASS 136/136, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado modulo de controle operacional do bot premium no novo repo: `apps/admin/src/modules/bot-control`.
+- Commit do novo repo: `836fbef feat: add admin bot control module`.
+- Validacoes atuais do novo repo: `npm test` PASS 142/142, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -97,8 +100,9 @@
 - `packages/persistence-contracts` foi implementado sem Supabase, banco real, arquivo, rede, secrets, storage real, provider real ou deploy.
 - `apps/admin` foi implementado como app estatico/skeleton sem React/Vite, Supabase, auth real, rede, secrets, canais reais, deploy ou design final.
 - `apps/admin/src/modules/studio-settings` foi implementado como modulo local-only de schema/view-model/actions para configuracao do estudio, sem React/Vite obrigatorio, Supabase, auth real, rede, secrets, canais reais, deploy ou design final.
-- Proximo passo recomendado: implementar `bot-control` local-only no painel, preservando isolamento antes de qualquer adapter real.
+- `apps/admin/src/modules/bot-control` foi implementado como modulo local-only de schema/view-model/actions para controle operacional do bot premium, sem WhatsApp, Telegram, Evolution, Supabase, auth real, rede, secrets, deploy ou runtime real.
+- Proximo passo recomendado: implementar `knowledge-admin` local-only no painel, preservando isolamento antes de qualquer adapter real.
 
 ### Proximo Passo
 
-- Implementar `bot-control` local-only em `apps/admin`, preservando isolamento sem producao, secrets ou canais reais.
+- Implementar `knowledge-admin` local-only em `apps/admin`, preservando isolamento sem producao, secrets ou canais reais.
