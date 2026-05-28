@@ -30,27 +30,28 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-86b1641 feat: add artist quote intake service
+3c784c9 feat: send artist quote responses locally
 ```
 
 Bloco fechado:
 
-- `services/artist-quote-intake` criado como boundary local-only de resposta normalizada do tatuador;
-- caminho provado: normalized artist quote reply -> pricing contract -> proposal composer -> quote_response notification request -> notifications service -> simulated whatsapp delivery;
+- `services/artist-quote-intake` integrado ao `services/notifications` para envio local de `quote_response`;
+- caminho provado: artist quote intake service -> processAndNotify -> notifications service -> provider-aware whatsapp adapter -> provider runtime resolution -> simulated whatsapp delivery -> redacted receipt/audit;
 - multiplos itens viram uma proposta unica ao cliente, nao mensagens separadas;
 - orcamento por sessao vira linhas de sessao, sem valor flat indevido;
-- item/sessao sem valor falha antes de criar notificacao ao cliente;
+- item/sessao sem valor falha e nao chama notifications;
+- notification service ausente falha de forma segura sem provider real;
 - raw Telegram free-text parsing continua fora do service, como preocupacao futura de adapter;
 - checkpoint `artist-quote-intake-checkpoint` registrado e testado.
 
 Validacoes do ultimo bloco:
 
-- `npm test` PASS 358/358;
+- `npm test` PASS 361/361;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
 - scan focado de seguranca em artist-quote-intake/notifications/pricing/response-composer/checkpoint PASS sem hits.
 
-Proximo passo seguro: integrar artist-quote-intake ao fluxo local de quote response ou preparar runbook de promocao real-provider sem execucao. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
+Proximo passo seguro: decidir entre parser/adaptador normalizador de resposta Telegram local-only ou preparar runbook de promocao real-provider sem execucao. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 

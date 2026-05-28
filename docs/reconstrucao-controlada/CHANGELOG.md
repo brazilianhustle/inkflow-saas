@@ -252,6 +252,12 @@
 - Segurança: rejeita metadata secret-like; nao expoe `secret_binding_id`, `secbind_*`, `vaultref_*` ou `runtime_handle_*`; raw Telegram free-text parser fica explicitamente fora do service.
 - Limites: sem Evolution real, Telegram real, parser bruto, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
 - Validacoes atuais do novo repo: `npm test` PASS 358/358, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
+- Integrado artist quote intake ao notification service local-only no novo repo.
+- Commit do novo repo: `3c784c9 feat: send artist quote responses locally`.
+- Escopo: `createInMemoryArtistQuoteIntakeService` com `processAndNotify` processa quote normalizado e envia uma unica notification `quote_response` por WhatsApp simulado provider-aware; falhas de quote ou notification service ausente nao acionam provider real.
+- Segurança: snapshots/result/audit nao expoem `secret_binding_id`, `secbind_*`, `vaultref_*` ou `runtime_handle_*`; nenhum parser bruto, provider real, rede, staging, producao ou secrets.
+- Limites: sem Evolution real, Telegram real, parser bruto, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
+- Validacoes atuais do novo repo: `npm test` PASS 361/361, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
 
 ### Decisoes
 
@@ -320,7 +326,8 @@
 - Bot-orchestrator pode acionar notifications locais como side effects, mas isso ainda nao autoriza delivery real, segredo real, staging ou producao.
 - Strategic Review Gate entra como freio inteligente, nao burocracia: se nao revelar gap real nem mudar plano, a decisao padrao e seguir.
 - Artist quote intake separa o contrato de orcamento normalizado do parser Telegram futuro; isso evita acoplar texto bruto de chat ao pricing/proposal.
+- Fluxo local de quote response esta provado ate delivery simulado provider-aware; o proximo gap estrutural e normalizar a resposta Telegram antes do intake ou preparar runbook real-provider sem executar.
 
 ### Proximo Passo
 
-- Integrar artist-quote-intake ao fluxo local de quote response ou preparar runbook de promocao real-provider sem execucao, sem secrets reais, staging, producao ou provider real.
+- Decidir entre parser/adaptador normalizador de resposta Telegram local-only ou preparar runbook de promocao real-provider sem execucao, sem secrets reais, staging, producao ou provider real.
