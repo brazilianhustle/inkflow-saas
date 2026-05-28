@@ -175,6 +175,11 @@
 - Escopo: resolucao de sessao por `studio_users`, bloqueio de identidades `invited/disabled/revoked`, bloqueio cross-tenant, derivacao de permissoes pela matriz `admin-access`, autorizacao de rotas/acoes, exigencia de evidencia de auditoria para acoes sensiveis e bloqueio de metadata secret-like.
 - Limites: sem Supabase Auth real, JWT, cookies, browser storage, RLS remoto, staging migration, deploy, secrets, WhatsApp, Telegram ou Evolution.
 - Validacoes atuais do novo repo: `npm test` PASS 296/296, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Conectado admin shell/view-model ao `packages/auth-session` no novo repo.
+- Commit do novo repo: `1c4a142 feat: connect admin to auth session`.
+- Escopo: `createAdminViewModel` resolve `auth_session`, expoe `access_control`, deriva papel/permissoes da identidade salva, nega identidade inativa, nega role claim divergente e remove rotas/permissoes quando a sessao e invalida.
+- Limites: sem Supabase Auth real, JWT, cookies, browser storage, staging, deploy, secrets ou UI framework final.
+- Validacoes atuais do novo repo: `npm test` PASS 298/298, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -231,7 +236,8 @@
 - `knowledge-service` passa a ser a biblioteca consultiva local do bot/painel; o proximo passo e integracao controlada ao runtime sem entregar autoridade de estado/preco/handoff.
 - Knowledge context agora esta integrado ao runtime/orchestrator apenas como contexto consultivo; workflow/policy/pricing seguem como autoridades.
 - `packages/auth-session` consolida a regra de acesso: provider auth pode identificar a pessoa no futuro, mas quem decide permissao e a identidade tenant-scoped persistida em `studio_users`.
+- `apps/admin` agora consome `auth-session` localmente; papel declarado nao pode abrir rotas se nao bater com `studio_users`.
 
 ### Proximo Passo
 
-- Conectar `auth-session` ao shell/view-model do admin em modo local-only, sem Supabase Auth real, JWT, cookies, staging, deploy ou UI framework final.
+- Adicionar wrappers de autorizacao em actions administrativas local-only, exigindo permissao `auth-session` e evidencia de auditoria antes de mutacao.

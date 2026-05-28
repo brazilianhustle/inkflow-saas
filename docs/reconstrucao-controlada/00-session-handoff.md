@@ -1843,6 +1843,52 @@ Proximo passo correto:
 conectar auth-session ao shell/view-model do admin em modo local-only
 ```
 
+## Admin Auth Session Integration Local-Only
+
+Commit do novo repo:
+
+```text
+1c4a142 feat: connect admin to auth session
+```
+
+Escopo:
+
+- `apps/admin/src/view-model.mjs` resolve `auth_session` antes de expor access surface;
+- `access_control` fica explicito no model do admin;
+- papel e permissoes passam a vir da identidade persistida em `studio_users`;
+- role claim divergente e negada;
+- identidade inativa nao recebe rotas nem permissoes;
+- fixture local inclui usuario viewer para cobrir matriz de acesso;
+- testes cobrem sessao viewer valida, usuario inativo negado e role claim negada.
+
+Limites:
+
+- sem Supabase Auth real;
+- sem JWT/cookies/browser storage;
+- sem staging remoto;
+- sem migration real;
+- sem UI framework final;
+- sem secrets;
+- sem deploy.
+
+Validacoes:
+
+- `npm test` PASS, 298/298;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder.
+
+Decisao:
+
+```text
+admin pode renderizar sessao/acesso local, mas nao autentica usuario; provider futuro deve passar pelo auth-session
+```
+
+Proximo passo correto:
+
+```text
+adicionar wrappers de autorizacao em actions administrativas local-only
+```
+
 Recomendacao:
 
 ```text
@@ -1851,7 +1897,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- fazer o admin consumir uma superficie de sessao/acesso local;
+- fazer writes administrativos exigirem permissao auth-session e evidencia de auditoria;
 - manter tudo local e desconectado de producao;
 - manter Supabase/staging real bloqueados sem aprovacao explicita;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
