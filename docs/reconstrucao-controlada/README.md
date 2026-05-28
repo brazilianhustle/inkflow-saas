@@ -44,7 +44,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, auth-session runtime local-only, admin conectado a auth-session local, actions administrativas protegidas por auth-session/audit, provider secret boundary local-only, summaries publicos de providers no admin com rota read-only, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, auth-session runtime local-only, admin conectado a auth-session local, actions administrativas protegidas por auth-session/audit, provider secret boundary local-only, summaries publicos de providers no admin, modulo/action local-only de provider metadata com auth-session/audit, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
 
 Local:
 
@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+f73d496 feat: add provider metadata admin module
 21da8f0 feat: expose provider summaries in admin
 00a4dba docs: add supabase tooling readiness checkpoint
 4304223 feat: add supabase static policy coverage
@@ -115,7 +116,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 306/306;
+- `npm test` PASS, 314/314;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
@@ -134,9 +135,10 @@ Validacoes atuais:
 - actions administrativas local-only exigem sessao, permissao e evidencia de auditoria antes de mutar persistence contracts;
 - provider-connections local-only aceita apenas `secret_binding_id` opaco, rejeita segredo bruto e gera public views sem binding ID;
 - admin shell renderiza summaries publicos de providers em `/providers`, com rota read-only `providers.view`, sem expor `secret_binding_id`/`secbind_` no view-model ou HTML;
+- admin providers agora tem persistence local `providerConnections`, permissao `providers.manage`, actions auditadas para upsert/disable/health e audit payload sem binding ID;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: criar o modulo/action local-only de administracao de provider metadata, ainda sem segredo real, para preparar cadastro/edicao de conexoes por tenant com auth-session/audit. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
+Proxima decisao: atualizar schema draft/checkers Supabase para refletir a colecao `providerConnections` e a policy de provider metadata sem criar migration real, mantendo staging/producao bloqueados. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

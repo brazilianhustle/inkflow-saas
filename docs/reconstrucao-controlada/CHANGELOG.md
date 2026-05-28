@@ -197,6 +197,13 @@
 - Double check: HTML renderizado contem `href="#providers"` e `id="providers"`, mas nao contem `secret_binding_id` nem `secbind_`; `can_connect_real_providers=false`.
 - Limites: sem env, Cloudflare secrets, Supabase Vault, providers reais, Evolution, Telegram, Mercado Pago, OpenAI real, rede, staging, deploy ou sync de secrets.
 - Validacoes atuais do novo repo: `npm test` PASS 306/306, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado modulo/action local-only de administracao de provider metadata no novo repo.
+- Commit do novo repo: `f73d496 feat: add provider metadata admin module`.
+- Escopo: adiciona `providerConnections` aos persistence contracts, modulo `apps/admin/src/modules/providers`, permissao `providers.manage`, actions auditadas para upsert/disable/mark health, view-model publico e checkpoint `provider-admin-local-metadata-checkpoint`.
+- Segurança: `secret_binding_id` continua apenas como referencia interna opaca; view-model, HTML e audit payload nao expoem `secret_binding_id` nem `secbind_`; payload usa `binding_configured` e `real_provider_connected=false`.
+- Double check: render direto confirmou `htmlHasSecretBindingId=false`, `htmlHasSecbind=false`; action auditada confirmou `auditHasSecretBindingId=false`, `auditHasSecbind=false` e `realConnected=false`.
+- Limites: sem env, Cloudflare secrets, Supabase Vault, providers reais, Evolution, Telegram, Mercado Pago, OpenAI real, rede, staging, deploy ou sync de secrets.
+- Validacoes atuais do novo repo: `npm test` PASS 314/314, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -257,7 +264,8 @@
 - Actions administrativas agora tem gate central de autorizacao; nenhuma mutacao local de painel deve ocorrer sem sessao/permissao/audit quando aplicavel.
 - Provider connection boundary define que admin/browser ve apenas status, label, provider e identificador redigido; binding de segredo fica interno e opaco.
 - Admin provider summary e uma superficie read-only; cadastro/edicao de metadata de provider deve ser implementado como modulo/action local-only com auth-session/audit antes de qualquer provider real.
+- Provider metadata agora pode ser administrada localmente, mas isso ainda nao autoriza provider real nem secret manager real.
 
 ### Proximo Passo
 
-- Criar modulo/action local-only de administracao de provider metadata, ainda sem segredo real, com auth-session/audit e sem conectar providers reais.
+- Atualizar schema draft/checkers Supabase para refletir provider metadata e policies, sem criar migration real nem executar staging.

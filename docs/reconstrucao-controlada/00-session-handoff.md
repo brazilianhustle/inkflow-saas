@@ -2064,6 +2064,68 @@ Regras do proximo passo:
 - qualquer write precisa passar por auth-session, permissao e audit quando aplicavel;
 - ainda nao conectar Evolution, Telegram, Mercado Pago, OpenAI, Supabase remoto, staging ou deploy.
 
+## Provider Metadata Admin Local-Only
+
+Commit do novo repo:
+
+```text
+f73d496 feat: add provider metadata admin module
+```
+
+Escopo:
+
+- adiciona `providerConnections` aos persistence contracts locais;
+- salva provider metadata por tenant com `getById`, `listByTenant` e bloqueio cross-tenant;
+- rejeita segredo bruto e aceita apenas `secret_binding_id` opaco;
+- adiciona permissao `providers.manage`;
+- cria modulo `apps/admin/src/modules/providers`;
+- cria actions para `upsert_provider_connection`, `disable_provider_connection` e `mark_provider_health`;
+- actions exigem auth-session, tenant match, permissao e audit evidence;
+- audit payload nao inclui `secret_binding_id` nem valor `secbind_*`;
+- admin view-model consome provider metadata do store local;
+- checkpoint registrado em `docs/architecture/provider-admin-local-metadata-checkpoint.md`.
+
+Limites:
+
+- sem ler `.env`;
+- sem Cloudflare Secrets;
+- sem Supabase Vault;
+- sem provider real;
+- sem Evolution/Telegram/Mercado Pago/OpenAI real;
+- sem rede;
+- sem staging;
+- sem deploy;
+- sem sync de secrets.
+
+Double check de seguranca:
+
+- `npm test` PASS, 314/314;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- render direto confirmou `htmlHasSecretBindingId=false` e `htmlHasSecbind=false`;
+- action auditada confirmou `auditHasSecretBindingId=false`, `auditHasSecbind=false` e `realConnected=false`;
+- varredura focada encontrou `secret_binding_id` apenas em contratos internos, testes negativos/fixtures internas e docs de boundary, nao em HTML/audit publico.
+
+Decisao:
+
+```text
+provider metadata pode ser administrada localmente, mas provider real e secret manager real seguem bloqueados
+```
+
+Proximo passo correto:
+
+```text
+atualizar schema draft/checkers Supabase para refletir provider metadata e policies, sem migration real nem staging
+```
+
+Regras do proximo passo:
+
+- alterar apenas artefatos locais/review-only de schema/checker;
+- nao executar Supabase remoto;
+- nao criar migration produtiva;
+- nao inserir secrets;
+- manter browser grants e RLS coerentes com provider metadata.
+
 ## Regra Anti-Poluicao
 
 Enquanto a reconstrucao estiver em fase de arquitetura e extracao:
