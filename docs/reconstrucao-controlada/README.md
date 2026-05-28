@@ -44,7 +44,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, auth-session runtime local-only, admin conectado a auth-session local, actions administrativas protegidas por auth-session/audit, provider secret boundary local-only, summaries publicos de providers no admin, modulo/action local-only de provider metadata com auth-session/audit, schema draft/checkers Supabase alinhados a provider metadata com RLS owner/admin para tabela interna, provider runtime boundary local-only para resolver bindings apenas em runtime server-side, adapter simulado provider-aware com receipts/audit redigidos, bot-orchestrator validado com delivery provider-aware local-only, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `services/notifications` local-only para WhatsApp/Evolution simulado e Telegram simulado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, auth-session runtime local-only, admin conectado a auth-session local, actions administrativas protegidas por auth-session/audit, provider secret boundary local-only, summaries publicos de providers no admin, modulo/action local-only de provider metadata com auth-session/audit, schema draft/checkers Supabase alinhados a provider metadata com RLS owner/admin para tabela interna, provider runtime boundary local-only para resolver bindings apenas em runtime server-side, adapter simulado provider-aware com receipts/audit redigidos, bot-orchestrator validado com delivery provider-aware local-only, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
 
 Local:
 
@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+c2cac5f feat: add local notification service
 d66180e test: cover provider-aware bot delivery
 3ae484c feat: wire provider runtime to simulated adapters
 9270f5d feat: add provider runtime boundary
@@ -121,7 +122,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 336/336;
+- `npm test` PASS, 344/344;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
@@ -145,9 +146,10 @@ Validacoes atuais:
 - provider-runtime local-only resolve binding apenas para runtime server-side, retorna `runtime_handle_*` para adapters e registra auditoria sem `secret_binding_id`, `secbind_*`, credential handle ou segredo bruto;
 - channel-adapters agora tem adapter simulado provider-aware: resolve runtime antes de enviar, bloqueia browser/admin/client antes do envio, falha seguro em missing binding/disabled e nao expoe binding/handle em receipt/snapshot/audit;
 - bot-orchestrator agora tem cobertura local-only do caminho provider-aware completo, com success/failure receipts e audit store redigidos;
+- notifications service agora roteia notificacoes operacionais locais por WhatsApp/Evolution simulado e Telegram simulado usando adapter provider-aware, com request validation, receipt/audit redigidos e falha segura para adapter/binding ausente;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: consolidar notification service local para Telegram/Evolution simulado ou preparar runbook de promocao real-provider sem execucao, mantendo staging/producao bloqueados. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
+Proxima decisao: integrar notification service aos fluxos locais de handoff/orcamento ou preparar runbook de promocao real-provider sem execucao, mantendo staging/producao bloqueados. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

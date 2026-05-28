@@ -30,26 +30,26 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-d66180e test: cover provider-aware bot delivery
+c2cac5f feat: add local notification service
 ```
 
 Bloco fechado:
 
-- `bot-orchestrator` validado com adapter provider-aware em fluxo local-only;
-- caminho provado: bot turn -> outbox -> provider-aware adapter -> provider runtime resolution -> simulated delivery -> redacted receipt/audit;
-- sucesso simulado registra receipt/audit sem `secret_binding_id`, `secbind_*`, `vaultref_*`, `binding_*` ou `runtime_handle_*`;
-- falha de provider runtime vira failed delivery redigido, sem rollback de estado;
-- turn invalido continua sem chamar adapter;
-- checkpoint `bot-orchestrator-provider-delivery-checkpoint` registrado e testado.
+- `services/notifications` consolidado como boundary local-only de notificacoes operacionais;
+- caminho provado: operational service -> notifications service -> provider-aware adapter -> provider runtime resolution -> simulated delivery -> redacted receipt/audit;
+- WhatsApp/Evolution simulado e Telegram simulado passam pelo mesmo runtime provider-aware;
+- request invalido, adapter ausente e binding ausente falham seguro;
+- notification result/audit nao expoem `secret_binding_id`, `secbind_*`, `vaultref_*` ou `runtime_handle_*`;
+- checkpoint `notifications-local-service-checkpoint` registrado e testado.
 
 Validacoes do ultimo bloco:
 
-- `npm test` PASS 336/336;
+- `npm test` PASS 344/344;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
-- scan focado de seguranca em bot-orchestrator/provider-runtime/channel-adapters/checkpoints PASS sem hits.
+- scan focado de seguranca em notifications/provider-runtime/channel-adapters/checkpoint PASS sem hits.
 
-Proximo passo seguro: consolidar notification service local para Telegram/Evolution simulado ou preparar runbook de promocao real-provider sem execucao. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
+Proximo passo seguro: integrar o notification service aos fluxos locais de handoff/orcamento ou preparar runbook de promocao real-provider sem execucao. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
 
 ## Terreno Confirmado
 
