@@ -43,7 +43,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com `packages/tenant-config`, `packages/domain`, `packages/workflow`, `packages/pricing`, `packages/observability`, `packages/media-intelligence`, `packages/conversation-engine` e `packages/response-composer` implementados como pacotes funcionais isolados, sem bot runtime, sem painel, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com `packages/tenant-config`, `packages/domain`, `packages/workflow`, `packages/pricing`, `packages/observability`, `packages/media-intelligence`, `packages/conversation-engine`, `packages/response-composer` e `packages/bot-runtime-contract` implementados como pacotes funcionais isolados, sem canais reais, sem painel, sem secrets e sem deploy.
 
 Local:
 
@@ -60,6 +60,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+2e49930 feat: implement bot runtime contract
 4dcb87b feat: implement response composer contracts
 2aa9cb0 feat: implement conversation engine contracts
 9fb7fac feat: implement media classification contract
@@ -73,12 +74,12 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 83/83;
+- `npm test` PASS, 91/91;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - git limpo no repo novo.
 
-Proxima decisao: checkpoint antes de iniciar integracao de runtime. Recomendacao: implementar `packages/bot-runtime-contract` ou equivalente como contrato fino de orquestracao entre conversation-engine, response-composer, pricing, media-intelligence, workflow e observability, ainda sem canais reais.
+Proxima decisao: checkpoint estrutural antes de sair dos pacotes puros para apps/services. Recomendacao: desenhar e implementar um `services/bot-orchestrator` local-only ou `apps/admin` skeleton apenas se mantiver isolamento sem prod, sem secrets e sem canais reais.
 
 ## Limite De Ambiente
 

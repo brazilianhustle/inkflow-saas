@@ -382,22 +382,56 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
-## Proximo Passo Logico
+## Nono Dominio Implementado
 
-Checkpoint antes de iniciar integracao de runtime.
-
-Recomendacao:
+Dominio:
 
 ```text
 packages/bot-runtime-contract
 ```
 
+Commit:
+
+```text
+2e49930 feat: implement bot runtime contract
+```
+
+Escopo:
+
+- contrato fino de orquestracao de turno;
+- liga turn context, router, policy, response composer, pricing e observability trace;
+- decide `can_send_response` e `can_persist_state`;
+- lateral responde sem persistir estado;
+- mudanca de ideia confirma escopo sem mutar estado;
+- proposta multi-item renderiza uma unica resposta;
+- handoff cria side effect logico `create_handoff_package`, sem acionar canal externo;
+- contexto invalido bloqueia envio e persistencia;
+- transicao bloqueada pelo workflow nao persiste estado;
+- sem LLM, WhatsApp, Telegram, Supabase, Evolution, banco, API, storage, deploy ou secrets.
+
+Validacoes:
+
+- `npm test` PASS, 91/91;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
+## Proximo Passo Logico
+
+Checkpoint estrutural antes de sair dos pacotes puros para apps/services.
+
+Recomendacao:
+
+```text
+services/bot-orchestrator ou apps/admin skeleton
+```
+
 Objetivo do proximo artefato:
 
-- criar contrato fino de orquestracao de turno;
-- ligar conversation-engine, response-composer, pricing, media-intelligence, workflow e observability;
-- manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM;
-- validar por unit/contract antes de qualquer runtime real.
+- definir primeira integracao local-only sem producao;
+- manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
+- preservar isolamento entre plataforma nova e legado atual;
+- validar por unit/contract antes de qualquer adapter real.
 - manter pacote sem side effects, sem banco, sem APIs, sem secrets e sem deploy.
 
 ## Regra Anti-Poluicao

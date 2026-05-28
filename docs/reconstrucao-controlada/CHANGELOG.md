@@ -44,6 +44,9 @@
 - Implementado oitavo dominio funcional no novo repo: `packages/response-composer`.
 - Commit do novo repo: `4dcb87b feat: implement response composer contracts`.
 - Validacoes atuais do novo repo: `npm test` PASS 83/83, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado nono dominio funcional no novo repo: `packages/bot-runtime-contract`.
+- Commit do novo repo: `2e49930 feat: implement bot runtime contract`.
+- Validacoes atuais do novo repo: `npm test` PASS 91/91, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -60,8 +63,9 @@
 - `packages/media-intelligence` foi implementado sem modelo vision, WhatsApp, Telegram, banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/conversation-engine` foi implementado sem LLM, WhatsApp, Telegram, banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/response-composer` foi implementado sem LLM, WhatsApp, Telegram, banco, APIs, runtime, painel, deploy ou secrets.
-- Proximo passo recomendado: checkpoint antes de `packages/bot-runtime-contract`.
+- `packages/bot-runtime-contract` foi implementado sem LLM, WhatsApp, Telegram, Supabase, Evolution, banco, APIs, runtime real, painel, deploy ou secrets.
+- Proximo passo recomendado: checkpoint antes de sair dos pacotes puros para `services/bot-orchestrator` local-only ou `apps/admin` skeleton.
 
 ### Proximo Passo
 
-- Fazer checkpoint estrategico e, se mantido o caminho, implementar um contrato fino de runtime que ligue os pacotes puros sem acionar canais reais.
+- Fazer checkpoint estrutural antes de iniciar apps/services, preservando isolamento sem producao, secrets ou canais reais.
