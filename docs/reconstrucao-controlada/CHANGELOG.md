@@ -212,6 +212,13 @@
 - Double check: scan final encontrou apenas testes negativos/guardrails para secrets e comandos proibidos; nenhum secret real, staging/prod ou comando executavel de migration foi adicionado.
 - Limites: sem migration real, staging, producao, Supabase remoto, providers reais, rede, deploy ou secrets.
 - Validacoes atuais do novo repo: `npm test` PASS 315/315, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:dry-run` PASS com 13 cenarios, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:static-coverage` PASS com 25 tabelas/13 cenarios, `INKFLOW_ENV=local SUPABASE_ENV=local SUPABASE_POLICY_RUNNER_EXECUTE=1 npm run supabase:policy:local-runner` PASS com 142 etapas/cenarios RLS/rollback drill, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:migration:package-check` PASS review-ready com staging/producao false.
+- Implementado provider runtime boundary local-only no novo repo.
+- Commit do novo repo: `9270f5d feat: add provider runtime boundary`.
+- Escopo: novo `packages/provider-runtime`, checkpoint `provider-runtime-boundary-checkpoint`, testes de contrato para resolucao server-side, bloqueio browser/admin/client, match tenant/provider/connection/binding, disabled connection, handle opaco para adapter e auditoria redigida.
+- Segurança: `secret_binding_id` continua metadata opaca; runtime recebe apenas `runtime_handle_*`; audit event nao expoe `secret_binding_id`, `secbind_*`, binding opaco, credential handle ou segredo bruto; real secret manager segue bloqueado.
+- Double check: scan focado em provider-runtime/checkpoint nao encontrou secrets, comandos staging/prod ou tokens estaticos.
+- Limites: sem env, Cloudflare Secrets, Supabase Vault, provider real, rede, staging, producao, deploy ou secrets.
+- Validacoes atuais do novo repo: `npm test` PASS 325/325, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
 
 ### Decisoes
 
@@ -273,7 +280,8 @@
 - Provider connection boundary define que admin/browser ve apenas status, label, provider e identificador redigido; binding de segredo fica interno e opaco.
 - Admin provider summary e uma superficie read-only; cadastro/edicao de metadata de provider deve ser implementado como modulo/action local-only com auth-session/audit antes de qualquer provider real.
 - Provider metadata agora pode ser administrada localmente, mas isso ainda nao autoriza provider real nem secret manager real.
+- Provider runtime boundary existe para uso server-side futuro, mas ainda nao autoriza Cloudflare Secrets, Supabase Vault, Evolution, Telegram, Mercado Pago, OpenAI real, staging ou producao.
 
 ### Proximo Passo
 
-- Atualizar schema draft/checkers Supabase para refletir provider metadata e policies, sem criar migration real nem executar staging.
+- Integrar `provider-runtime` a adapter simulado/notification service local-only ou consolidar runbook de promocao para providers reais, sem secrets reais, staging, producao ou provider real.

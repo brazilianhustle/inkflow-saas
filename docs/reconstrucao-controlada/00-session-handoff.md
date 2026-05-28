@@ -30,29 +30,28 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-865caae docs: record provider metadata rls evidence
+9270f5d feat: add provider runtime boundary
 ```
 
 Bloco fechado:
 
-- schema draft/checkers Supabase alinhados a provider metadata;
-- commit funcional `6153ff9 feat: harden provider metadata policies`;
-- `provider_connections` com provider enum, health enum, `updated_at`, binding opaco `secbind|binding|vaultref` e unique por tenant/provider/label;
-- cenarios de policy harness agora cobrem owner autorizado e viewer bloqueado para mutation de provider metadata;
-- RLS de select da tabela interna `provider_connections` limitado a owner/admin/service_role, porque RLS nao redige colunas;
-- summaries seguros para leitura ampla ficam na camada de view-model/read model redigido, nao em SELECT direto da tabela interna.
+- provider runtime boundary local-only implementado em `packages/provider-runtime`;
+- `secret_binding_id` continua sendo metadata opaca, nao segredo;
+- browser/admin/client nao conseguem resolver binding;
+- apenas runtime server-side (`worker`, `server_service`, `background_job`) pode pedir credencial;
+- resolucao exige match de tenant, provider, connection e binding;
+- adapters recebem `runtime_handle_*`, nao `secret_binding_id`, `secbind_*` ou token bruto;
+- eventos de auditoria registram provider, connection, purpose, actor, trace e resultado sem binding id nem credential handle;
+- checkpoint `provider-runtime-boundary-checkpoint` registrado e testado.
 
 Validacoes do ultimo bloco:
 
-- `npm test` PASS 315/315;
+- `npm test` PASS 325/325;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
-- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:dry-run` PASS com 13 cenarios;
-- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:static-coverage` PASS com 25 tabelas/13 cenarios;
-- `INKFLOW_ENV=local SUPABASE_ENV=local SUPABASE_POLICY_RUNNER_EXECUTE=1 npm run supabase:policy:local-runner` PASS com 142 etapas, cenarios RLS e rollback drill em Supabase local isolado;
-- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:migration:package-check` PASS review-ready, `connects_to_staging=false`, `connects_to_production=false`.
+- scan focado de seguranca em provider-runtime/checkpoint PASS sem hits.
 
-Proximo passo seguro: seguir para o proximo bloco local-only de maior prioridade funcional ou revisar package/staging docs apenas em modo review. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
+Proximo passo seguro: escolher entre integrar `provider-runtime` a um adapter simulado/notification service local-only ou consolidar o runbook de promocao para providers reais. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
 
 ## Terreno Confirmado
 
