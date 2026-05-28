@@ -79,20 +79,21 @@ Sequencia obrigatoria:
 5. Ler `04-plano-acao-reconstrucao.md`.
 6. Ler `05-matriz-extracao-operacional.md`.
 7. Ler `06-contratos-plataforma.md`.
-8. Ler `CHANGELOG.md`.
-9. Checar `git status --short`.
-10. So entao propor ou executar o proximo passo.
+8. Ler `07-tenant-config-contract.md`.
+9. Ler `CHANGELOG.md`.
+10. Checar `git status --short`.
+11. So entao propor ou executar o proximo passo.
 
 ## Proximo Passo Logico
 
-Criar `07-tenant-config-contract.md`.
+Criar `08-data-governance-contract.md`.
 
 Objetivo do proximo artefato:
 
-- detalhar o contrato de configuracao do estudio;
-- preparar o primeiro dominio implementavel no novo repo;
-- garantir que bot e painel usem a mesma fonte de verdade;
-- cobrir identidade, voz, servicos, estilos, pricing, agenda, handoff, canais, legal, flags e observabilidade.
+- definir inventario de dados;
+- mapear finalidade, retencao e direitos do titular;
+- separar dado de atendimento, billing, observabilidade e marketing;
+- preparar base legal/LGPD antes do novo repo.
 
 ## Regra Anti-Poluicao
 

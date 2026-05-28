@@ -12,6 +12,7 @@
 - Criado plano de acao faseado da reconstrucao controlada.
 - Criada matriz de extracao operacional por frente, com origem, decisao, destino, risco, teste, pronto e dependencias.
 - Criados contratos base da plataforma: entidades canonicas, estados, relacoes entre modulos e validacoes obrigatorias.
+- Criado Tenant Config Contract com blocos, defaults, snapshots, invariantes, fixtures e testes obrigatorios.
 
 ### Decisoes
 
@@ -23,4 +24,4 @@
 
 ### Proximo Passo
 
-- Criar `07-tenant-config-contract.md` para detalhar a configuracao do estudio como primeira fonte de verdade compartilhada entre bot e painel.
+- Criar `08-data-governance-contract.md` para mapear dados, finalidade, retencao e direitos LGPD antes do repo novo.
