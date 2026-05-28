@@ -11,6 +11,7 @@
 - Criada governanca de versionamento e regra anti-poluicao.
 - Criado plano de acao faseado da reconstrucao controlada.
 - Criada matriz de extracao operacional por frente, com origem, decisao, destino, risco, teste, pronto e dependencias.
+- Criados contratos base da plataforma: entidades canonicas, estados, relacoes entre modulos e validacoes obrigatorias.
 
 ### Decisoes
 
@@ -22,4 +23,4 @@
 
 ### Proximo Passo
 
-- Criar `06-contratos-plataforma.md` para definir entidades e contratos compartilhados antes de qualquer repo novo.
+- Criar `07-tenant-config-contract.md` para detalhar a configuracao do estudio como primeira fonte de verdade compartilhada entre bot e painel.
