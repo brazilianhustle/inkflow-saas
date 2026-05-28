@@ -84,9 +84,10 @@ Sequencia obrigatoria:
 10. Ler `09-test-strategy-contract.md`.
 11. Ler `10-decisao-stack-novo-repo.md`.
 12. Ler `11-primeiro-slice-novo-repo.md`.
-13. Ler `CHANGELOG.md`.
-14. Checar `git status --short`.
-15. So entao propor ou executar o proximo passo.
+13. Ler `12-crosswalk-repo-original-arquitetura.md`.
+14. Ler `CHANGELOG.md`.
+15. Checar `git status --short`.
+16. So entao propor ou executar o proximo passo.
 
 ## Novo Repo Criado
 
@@ -1072,6 +1073,23 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Crosswalk Repo Original x Arquitetura Alvo Registrado
+
+Documento:
+
+```text
+docs/reconstrucao-controlada/12-crosswalk-repo-original-arquitetura.md
+```
+
+Escopo:
+
+- cruzamento do repo original com a arquitetura alvo atual do novo repo;
+- classificacao por frente: bot premium, Evolution, SessionQueue, tenant config, media, orcamento, Telegram, observabilidade, Supabase, auth/RBAC, painel, billing, legal, smoke real, CI/CD e vault;
+- identificacao do que ja esta coberto no novo repo;
+- gaps que ainda nao podem ser ignorados;
+- stop conditions para evitar copiar divida tecnica;
+- decisao de seguir para checkpoint do `supabase-policy-test-harness`.
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1116,7 +1134,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo estrutural: `supabase-policy-test-harness` local-only ou um checkpoint antes dele;
+- implementar proximo fluxo estrutural: checkpoint do `supabase-policy-test-harness`;
 - manter tudo local e desconectado de producao;
 - introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;

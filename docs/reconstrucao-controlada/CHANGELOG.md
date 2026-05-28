@@ -105,6 +105,7 @@
 - Implementado contrato auth identity no novo repo: convite, login, revogacao, service boundary e alinhamento de roles entre domain/admin/schema.
 - Commit do novo repo: `0549802 feat: add auth identity contract`.
 - Validacoes atuais do novo repo: `npm test` PASS 199/199, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Registrado crosswalk repo original x arquitetura alvo em `docs/reconstrucao-controlada/12-crosswalk-repo-original-arquitetura.md`.
 
 ### Decisoes
 
@@ -142,6 +143,7 @@
 - `supabase-local-contract` foi registrado como contrato local-only; nao iniciar SQL executavel, Supabase real, auth real, providers, deploy ou design visual sem checkpoint dedicado.
 - `supabase-schema-draft` foi implementado como artefato local-only; nao executar SQL contra Supabase real nem promover migration sem harness local, RLS tests, rollback exercitado e plano de backup/producao.
 - `auth-identity-contract` detectou gap estrutural de roles antigas e alinhou `support/readonly` para `assistant/viewer` no domain/admin-access/schema draft.
+- Crosswalk confirmou que o proximo risco estrutural e provar RLS/auth local antes de UI framework, Evolution real, Telegram real ou migrations reais.
 
 ### Proximo Passo
 

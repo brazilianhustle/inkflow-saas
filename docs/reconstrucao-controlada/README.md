@@ -20,9 +20,10 @@ Ler nesta ordem:
 10. `09-test-strategy-contract.md`
 11. `10-decisao-stack-novo-repo.md`
 12. `11-primeiro-slice-novo-repo.md`
-13. `CHANGELOG.md`
-14. `docs/canonical/stack.md`
-15. `docs/atendimento-premium/09-session-handoff.md`
+13. `12-crosswalk-repo-original-arquitetura.md`
+14. `CHANGELOG.md`
+15. `docs/canonical/stack.md`
+16. `docs/atendimento-premium/09-session-handoff.md`
 
 Depois rodar:
 
@@ -98,7 +99,7 @@ Validacoes atuais:
 - `npm run lint` PASS placeholder;
 - git limpo no repo novo.
 
-Proxima decisao: avaliar `supabase-policy-test-harness` local-only. Como isso introduz Supabase local/CLI/Docker ou equivalente, precisa de checkpoint antes de executar. Nao iniciar adapter real de WhatsApp/Supabase/Telegram, migration real, deploy ou secrets sem checkpoint explicito.
+Proxima decisao: checkpoint do `supabase-policy-test-harness` local-only. O crosswalk repo original x arquitetura alvo confirma que o proximo risco real e provar RLS/auth local antes de UI framework, Evolution real ou Telegram real. Nao iniciar adapter real de WhatsApp/Supabase/Telegram, migration real, deploy ou secrets sem checkpoint explicito.
 
 Frente futura obrigatoria: `knowledge-service`/RAG por tenant para informacoes personalizadas de cada estudio. Esta frente deve entrar como biblioteca consultiva do bot premium, nao como autoridade de workflow. Deve servir FAQ, politicas, portfolio textual, cuidados, regras comerciais e contexto curado do estudio, com fontes versionadas, escopo por tenant, observabilidade, redacao segura e fallback quando a confianca for baixa. Nao deve decidir estado, preco, menoridade, cobertura, handoff ou conclusao de orcamento.
 
