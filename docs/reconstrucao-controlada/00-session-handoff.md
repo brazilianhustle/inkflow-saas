@@ -1440,6 +1440,43 @@ RLS local validado, producao ainda bloqueada
 
 Antes de qualquer migration real ainda falta definir policy de empacotamento de migrations, staging/prod backup, rollback operacional e manuseio de secrets.
 
+## Supabase Migration Promotion Policy
+
+Commit do novo repo:
+
+```text
+8f392c9 docs: add migration promotion policy
+```
+
+Escopo:
+
+- registra `docs/architecture/supabase-migration-promotion-policy.md`;
+- adiciona teste de arquitetura para o checkpoint;
+- define ladder obrigatorio de promocao;
+- exige package de migration com forward SQL, rollback/forward-fix, impacto tenant/auth/grants, evidencias local/staging e checklist de producao;
+- torna staging obrigatorio antes de producao;
+- bloqueia producao ate backup/export, rollback/forward-fix, aprovacao explicita e pos-checks;
+- reforca boundary de secrets por ambiente;
+- exige revisao de grants caso browser clients acessem tabelas diretamente.
+
+Validacoes:
+
+- `npm test` PASS, 254/254;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder.
+
+Decisao:
+
+```text
+runner local prova RLS, mas promocao exige package + staging + rollback + aprovacao explicita
+```
+
+Proximo passo correto:
+
+```text
+implementar checker/gerador local de package de migration, sem conectar staging/producao
+```
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1484,7 +1521,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo estrutural: policy de empacotamento de migrations/staging/rollback antes de qualquer producao;
+- implementar checker/gerador local de package de migration antes de qualquer producao;
 - manter tudo local e desconectado de producao;
 - introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;

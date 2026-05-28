@@ -138,6 +138,10 @@
 - Falha real encontrada e corrigida: recursao RLS em `active_tenant_ids/active_tenant_role`, corrigida com `security definer` e `search_path = public`.
 - Hardening adicional: subprocessos do runner agora recebem ambiente sanitizado, sem herdar tokens/secrets nao relacionados.
 - Validacoes atuais do novo repo: `npm test` PASS 249/249, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, runner real local PASS.
+- Registrada policy de promocao de migrations/staging/rollback no novo repo: `docs/architecture/supabase-migration-promotion-policy.md`.
+- Commit do novo repo: `8f392c9 docs: add migration promotion policy`.
+- Escopo da policy: ladder de promocao, package obrigatorio, staging gate, production gate, rollback doctrine, boundary de secrets, revisao de grants para browser e stop conditions.
+- Validacoes atuais do novo repo: `npm test` PASS 254/254, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -186,7 +190,8 @@
 - Static policy coverage foi implementado como protecao temporaria enquanto o ambiente nao tem Supabase CLI/Docker/psql; ele nao substitui validacao real de RLS.
 - Ambiente local agora tem Supabase CLI + Docker via Colima, mas o runner real de RLS ainda nao existe; proximo passo correto e implementar `supabase-cli-local-runner` com guard-first.
 - Runner real local de RLS passou; isso valida comportamento de policies em Supabase local, mas ainda nao autoriza migration/producao.
+- Policy de promocao confirma que staging e producao exigem package revisado, backup/rollback/forward-fix e aprovacao explicita; local runner nunca autoriza producao automaticamente.
 
 ### Proximo Passo
 
-- Preparar policy de empacotamento de migrations/staging/rollback para futura promocao, sem tocar producao ainda.
+- Implementar checker/gerador local de package de migration, sem conectar staging/producao.
