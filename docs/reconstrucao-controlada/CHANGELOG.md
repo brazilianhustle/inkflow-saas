@@ -311,6 +311,11 @@
 - Escopo: `docs/architecture/provider-staging-operational-evidence-package.md`, `npm run provider:staging:evidence-package`, consolidando fake tenant/client/artist, promotion gate, secret source names, smoke coverage, rollback e blockers.
 - Evidencia: `provider_staging_execution_authorized=false`, `provider_production_execution_authorized=false`, `provider_secret_sync_authorized=false`, `provider_webhook_update_authorized=false`, `connects_to_provider=false`, `deploys_now=false`, blockers esperados registrados.
 - Validacoes atuais do novo repo: `node --test tests/architecture/provider-staging-evidence-package.test.mjs` PASS 5/5, `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:staging:evidence-package` PASS, `npm test` PASS 401/401, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate.
+- Implementado pacote operacional de evidencia local para SaaS runtime staging no novo repo.
+- Commit do novo repo: `3e9e9e9 feat: add saas runtime staging evidence package`.
+- Escopo: `docs/architecture/saas-runtime-staging-operational-evidence-package.md`, `npm run saas:runtime:staging:evidence-package`, consolidando runtime target, admin smoke, bot smoke, audit, provider boundary, tenant config, legal, billing, observabilidade e rollback.
+- Evidencia: `saas_runtime_staging_execution_authorized=false`, `saas_runtime_production_execution_authorized=false`, `saas_runtime_deploy_authorized=false`, `saas_runtime_secret_sync_authorized=false`, `connects_to_staging=false`, `connects_to_provider=false`, `deploys_now=false`, blockers esperados registrados.
+- Validacoes atuais do novo repo: `node --test tests/architecture/saas-runtime-staging-evidence-package.test.mjs` PASS 5/5, `INKFLOW_ENV=local SAAS_RUNTIME_ENV=local npm run saas:runtime:staging:evidence-package` PASS, `npm test` PASS 406/406, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate.
 
 ### Decisoes
 
@@ -390,7 +395,8 @@
 - Stage Readiness Package fecha a definicao das tres lacunas restantes sem executar nada real; a proxima acao deve seguir a ladder: Supabase staging primeiro, depois Provider staging, depois SaaS runtime staging.
 - Supabase staging agora tem evidencia operacional local consolidada; execucao real ainda depende de aprovacao humana, backup/export staging real e smoke RLS staging real.
 - Provider staging agora tem evidencia operacional local consolidada; execucao real ainda depende de aprovacao humana, health check, secret sync, webhook isolation e smoke real com atores fake.
+- SaaS runtime staging agora tem evidencia operacional local consolidada; execucao real ainda depende de aprovacao humana, runtime route, bindings de staging, deploy staging e smoke runtime.
 
 ### Proximo Passo
 
-- Seguir para SaaS runtime staging package/gate ou parar para checkpoint de aprovacao humana antes de qualquer execucao real, sem secrets reais, staging, producao, provider real ou deploy automatico.
+- Abrir Strategic Review Gate para decidir se paramos para aprovacao humana de Stage real ou se criamos um pacote final end-to-end fake staging smoke, ainda sem secrets reais, staging, producao, provider real ou deploy automatico.

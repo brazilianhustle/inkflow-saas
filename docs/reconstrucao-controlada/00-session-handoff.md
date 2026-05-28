@@ -30,30 +30,30 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-5ea6001 feat: add provider staging evidence package
+3e9e9e9 feat: add saas runtime staging evidence package
 ```
 
 Bloco fechado:
 
-- criado `docs/architecture/provider-staging-operational-evidence-package.md`;
-- criado gate local `provider:staging:evidence-package`;
-- pacote consolida fake tenant/client/artist, secret source names, gates locais, smoke coverage, rollback e blockers de provider staging;
-- resultado explicita blockers esperados: aprovacao humana ausente, provider health ausente, secret values nao sincronizados, webhook isolation nao confirmado, smoke real nao executado e producao bloqueada;
-- gate bloqueia autorizacao automatica com `PROVIDER_STAGING_EXECUTION_AUTHORIZED=false`, `PROVIDER_PRODUCTION_EXECUTION_AUTHORIZED=false`, `PROVIDER_SECRET_SYNC_AUTHORIZED=false` e `PROVIDER_WEBHOOK_UPDATE_AUTHORIZED=false`;
-- gate rejeita ambiente production-like, comandos executaveis de provider/secrets/deploy, secrets crus e pacote sem fake actors/evidencias;
-- sem Evolution real, WhatsApp real, Telegram real, provider traffic, secret sync, staging, producao ou deploy.
+- criado `docs/architecture/saas-runtime-staging-operational-evidence-package.md`;
+- criado gate local `saas:runtime:staging:evidence-package`;
+- pacote consolida runtime target, admin smoke, bot smoke, audit smoke, provider boundary, tenant config seed, legal seed, billing seed, observabilidade e rollback;
+- resultado explicita blockers esperados: aprovacao humana ausente, runtime route ausente, bindings de staging nao confirmados, deploy staging nao executado, runtime smoke nao executado e producao bloqueada;
+- gate bloqueia autorizacao automatica com `SAAS_RUNTIME_STAGING_EXECUTION_AUTHORIZED=false`, `SAAS_RUNTIME_PRODUCTION_EXECUTION_AUTHORIZED=false`, `SAAS_RUNTIME_DEPLOY_AUTHORIZED=false` e `SAAS_RUNTIME_SECRET_SYNC_AUTHORIZED=false`;
+- gate rejeita ambiente production-like, comandos executaveis de deploy/staging/provider/secrets, secrets crus e pacote sem runtime smoke;
+- sem deploy real, public traffic, provider traffic, secret sync, database migration, staging ou producao.
 
 Validacoes do ultimo bloco:
 
-- `node --test tests/architecture/provider-staging-evidence-package.test.mjs` PASS 5/5;
-- `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:staging:evidence-package` PASS, com provider/producao/secret sync/webhook false;
-- `npm test` PASS 401/401;
+- `node --test tests/architecture/saas-runtime-staging-evidence-package.test.mjs` PASS 5/5;
+- `INKFLOW_ENV=local SAAS_RUNTIME_ENV=local npm run saas:runtime:staging:evidence-package` PASS, com staging/producao/deploy/secret sync false;
+- `npm test` PASS 406/406;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
 - `git diff --check` PASS;
 - scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate, sem credencial real, comando executavel ou autorizacao real.
 
-Proximo passo seguro: Provider staging tambem esta pronto para revisao operacional local. Seguir para SaaS runtime staging package/gate ou parar para checkpoint de aprovacao humana antes de qualquer execucao real. Nao executar staging/provider/deploy automaticamente.
+Proximo passo seguro: as tres lacunas de Stage Readiness estao fechadas em modo local-review. Abrir Strategic Review Gate para decidir se paramos para aprovacao humana de Stage real ou se criamos um pacote final end-to-end fake staging smoke, ainda sem execucao real.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 
