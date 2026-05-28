@@ -121,6 +121,9 @@
 - Registrado plano operacional do Supabase policy harness no novo repo.
 - Commit do novo repo: `354a288 docs: add policy harness operational plan`.
 - Validacoes atuais do novo repo: `npm test` PASS 222/222, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Registrado Supabase tooling readiness checkpoint no novo repo.
+- Commit do novo repo: `00a4dba docs: add supabase tooling readiness checkpoint`.
+- Validacoes atuais do novo repo: `npm test` PASS 226/226, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -165,7 +168,8 @@
 - Detector confirmou ambiente sem `supabase`, `docker` e `psql`; execucao real do policy harness depende de instalar/habilitar tooling local ou seguir com fallback estatico aprimorado.
 - Plano operacional definiu checkpoints para validacao real local: tooling readiness, boundary local, bootstrap DB, seed fixtures, cenarios RLS, rollback drill e evidence report.
 - Regra de double check oficializada para informacoes que podem quebrar a reconstrucao.
+- Tooling readiness checkpoint confirmou o caminho correto: Supabase CLI + Docker local. Ambiente atual permanece bloqueado por ausencia de `supabase`, `docker` e `psql`.
 
 ### Proximo Passo
 
-- Executar tooling readiness checkpoint antes de instalar/habilitar Supabase CLI + Docker ou optar por fallback estatico aprimorado.
+- Se tooling puder ser habilitado, preparar Supabase CLI + Docker local com guard; se nao, implementar `static-policy-coverage-plus` temporario.

@@ -1266,6 +1266,39 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Supabase Tooling Readiness Checkpoint Registrado
+
+Artefatos no novo repo:
+
+```text
+docs/architecture/supabase-tooling-readiness-checkpoint.md
+tests/architecture/supabase-tooling-readiness-checkpoint.test.mjs
+```
+
+Commit:
+
+```text
+00a4dba docs: add supabase tooling readiness checkpoint
+```
+
+Escopo:
+
+- decisao operacional para habilitar validacao real local do policy harness;
+- caminho correto definido: Supabase CLI local + Docker;
+- registro do bloqueio atual: `supabase=false docker=false psql=false`;
+- classificacao do bloqueio como ambiente, nao arquitetura;
+- paths aprovados: Supabase CLI + Docker, fallback estatico temporario, Postgres fallback apenas se necessario;
+- checklist de habilitacao de tooling;
+- comandos proibidos ate runner explicito existir;
+- stop conditions.
+
+Validacoes:
+
+- `npm test` PASS, 226/226;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1310,7 +1343,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo estrutural: tooling readiness checkpoint para Supabase CLI + Docker ou fallback estatico aprimorado;
+- implementar proximo fluxo estrutural: se tooling nao puder ser habilitado agora, `static-policy-coverage-plus`; se puder, habilitar Supabase CLI + Docker com guard antes de qualquer execucao;
 - manter tudo local e desconectado de producao;
 - introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
