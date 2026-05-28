@@ -654,9 +654,51 @@ Validacoes:
 - app estatico: abrir `apps/admin/index.html` no navegador e suficiente nesta fase;
 - git limpo no novo repo apos commit.
 
+## Admin Studio Settings Implementado
+
+Modulo:
+
+```text
+apps/admin/src/modules/studio-settings
+```
+
+Commit:
+
+```text
+d098d1f feat: add admin studio settings module
+```
+
+Escopo:
+
+- primeiro modulo funcional do painel admin;
+- schema `studio_settings_v1` com secoes de identidade, voz, servicos, estilos, pricing, handoff, canais, legal e flags de automacao;
+- view model derivado de `packages/persistence-contracts` e `packages/tenant-config`;
+- actions para salvar draft validado sem persistir automaticamente;
+- action de publish que persiste somente draft validado;
+- merge estrutural de patch em configuracao atual;
+- rejeicao de enum invalido e valores com cara de secret;
+- isolamento por tenant via repositorios locais;
+- testes de leitura, draft, publish, validacao e isolamento;
+- sem React/Vite ainda, Supabase, auth real, rede, secrets, canais reais, deploy ou design final.
+
+Validacoes:
+
+- `npm test` PASS, 136/136;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
-Checkpoint antes de qualquer adapter real.
+Evoluir o painel em slices funcionais locais antes de qualquer adapter real.
+
+Opcoes coerentes para o proximo slice:
+
+- `bot-control`: controle operacional do bot premium por tenant usando tenant config e audit local;
+- `knowledge-admin`: CRUD local de documentos do futuro RAG por tenant;
+- `studio-settings-ui`: renderizar o modulo de configuracao na tela estatica atual antes de avançar para novos modulos.
+
+Decisao recomendada: implementar `bot-control` local-only, porque ele liga configuracao do estudio ao funcionamento operacional do bot premium sem tocar em WhatsApp, Supabase, Telegram, Evolution, secrets ou deploy.
 
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
@@ -702,7 +744,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- definir primeiro fluxo funcional do painel: configuracao do estudio, bot premium, knowledge ou auditoria;
+- implementar proximo fluxo funcional do painel: controle operacional do bot premium, knowledge ou renderizacao completa de settings;
 - manter dados locais via persistence contracts;
 - evitar acoplamento do painel ao Supabase real nesta fase;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;

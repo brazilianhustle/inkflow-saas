@@ -43,7 +43,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts` e skeleton inicial de `apps/admin`, sem canais reais, sem Supabase real, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin` e primeiro modulo funcional de configuracao do estudio, sem canais reais, sem Supabase real, sem secrets e sem deploy.
 
 Local:
 
@@ -60,6 +60,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+d098d1f feat: add admin studio settings module
 7434586 feat: scaffold admin app shell
 ec76454 feat: implement persistence contracts
 a75b7df feat: record orchestrator runs in local audit store
@@ -81,12 +82,12 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 129/129;
+- `npm test` PASS, 136/136;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - git limpo no repo novo.
 
-Proxima decisao: evoluir `apps/admin` em slices funcionais de painel usando persistence contracts locais. Nao iniciar adapter real de WhatsApp/Supabase/Telegram nem Supabase real sem checkpoint explicito.
+Proxima decisao: evoluir `apps/admin` em slices funcionais de painel usando persistence contracts locais. O primeiro modulo funcional ja existe em `apps/admin/src/modules/studio-settings`. Nao iniciar adapter real de WhatsApp/Supabase/Telegram nem Supabase real sem checkpoint explicito.
 
 Frente futura obrigatoria: `knowledge-service`/RAG por tenant para informacoes personalizadas de cada estudio. Esta frente deve entrar como biblioteca consultiva do bot premium, nao como autoridade de workflow. Deve servir FAQ, politicas, portfolio textual, cuidados, regras comerciais e contexto curado do estudio, com fontes versionadas, escopo por tenant, observabilidade, redacao segura e fallback quando a confianca for baixa. Nao deve decidir estado, preco, menoridade, cobertura, handoff ou conclusao de orcamento.
 
