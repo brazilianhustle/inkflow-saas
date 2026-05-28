@@ -1,0 +1,24 @@
+# Changelog - Reconstrucao Controlada
+
+## 2026-05-27
+
+### Adicionado
+
+- Criada trilha `docs/reconstrucao-controlada/`.
+- Registrado handoff oficial da frente.
+- Criado mapa inicial de extracao do repo atual.
+- Criada arquitetura total alvo da plataforma InkFlow.
+- Criada governanca de versionamento e regra anti-poluicao.
+
+### Decisoes
+
+- Repo atual continua como legado operacional, vault e fonte de extracao.
+- Novo repo futuro sera a fonte da verdade da plataforma SaaS.
+- Bot premium vira modulo/vault dentro da plataforma, nao repo inteiro.
+- Durante fase de arquitetura, apenas docs da frente podem ser alterados.
+- Nenhum deploy, secret, smoke real, migration ou codigo funcional sera alterado nesta frente sem plano aprovado.
+
+### Proximo Passo
+
+- Completar o mapa de extracao com matriz por frente: origem, destino, risco, teste obrigatorio e criterio de pronto.
+
