@@ -47,6 +47,9 @@
 - Implementado nono dominio funcional no novo repo: `packages/bot-runtime-contract`.
 - Commit do novo repo: `2e49930 feat: implement bot runtime contract`.
 - Validacoes atuais do novo repo: `npm test` PASS 91/91, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado primeiro service local-only no novo repo: `services/bot-orchestrator`.
+- Commit do novo repo: `2de30cb feat: implement local bot orchestrator`.
+- Validacoes atuais do novo repo: `npm test` PASS 97/97, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -64,8 +67,9 @@
 - `packages/conversation-engine` foi implementado sem LLM, WhatsApp, Telegram, banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/response-composer` foi implementado sem LLM, WhatsApp, Telegram, banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/bot-runtime-contract` foi implementado sem LLM, WhatsApp, Telegram, Supabase, Evolution, banco, APIs, runtime real, painel, deploy ou secrets.
-- Proximo passo recomendado: checkpoint antes de sair dos pacotes puros para `services/bot-orchestrator` local-only ou `apps/admin` skeleton.
+- `services/bot-orchestrator` foi implementado como service local-only em memoria, sem LLM, WhatsApp, Telegram, Supabase, Evolution, banco, API externa, deploy ou secrets.
+- Proximo passo recomendado: checkpoint antes de qualquer adapter real; escolher entre `packages/integrations/*` simulados ou `apps/admin` skeleton.
 
 ### Proximo Passo
 
-- Fazer checkpoint estrutural antes de iniciar apps/services, preservando isolamento sem producao, secrets ou canais reais.
+- Fazer checkpoint antes de qualquer adapter real, preservando isolamento sem producao, secrets ou canais reais.

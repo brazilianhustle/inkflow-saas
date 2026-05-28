@@ -416,23 +416,60 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Primeiro Service Local-Only Implementado
+
+Service:
+
+```text
+services/bot-orchestrator
+```
+
+Commit:
+
+```text
+2de30cb feat: implement local bot orchestrator
+```
+
+Escopo:
+
+- orquestrador local-only em memoria;
+- recebe turno com multiplas bolhas;
+- usa `packages/bot-runtime-contract`;
+- cria outbox local quando `can_send_response=true`;
+- persiste estado apenas em memoria quando `can_persist_state=true`;
+- preserva estado em pergunta lateral;
+- confirma mudanca de ideia sem mutar estado;
+- mantem proposta multi-tattoo em uma unica mensagem de outbox;
+- bloqueia outbox e state mutation quando o turno e invalido;
+- gera resumo de execucao local;
+- root `npm test` agora inclui `services/*/tests/**/*.test.mjs`;
+- sem LLM, WhatsApp, Telegram, Supabase, Evolution, banco, API externa, storage, deploy ou secrets.
+
+Validacoes:
+
+- primeira execucao acusou erro de import relativo no service novo;
+- corrigido import de `services/bot-orchestrator` para `../../../packages/...`;
+- `npm test` PASS, 97/97;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
-Checkpoint estrutural antes de sair dos pacotes puros para apps/services.
+Checkpoint antes de qualquer adapter real.
 
 Recomendacao:
 
 ```text
-services/bot-orchestrator ou apps/admin skeleton
+packages/integrations/* simulados ou apps/admin skeleton
 ```
 
 Objetivo do proximo artefato:
 
-- definir primeira integracao local-only sem producao;
+- se seguir por integracoes: criar adapters simulados para canais/storage, ainda sem credenciais;
+- se seguir por painel: criar skeleton admin sem dados reais;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
-- preservar isolamento entre plataforma nova e legado atual;
 - validar por unit/contract antes de qualquer adapter real.
-- manter pacote sem side effects, sem banco, sem APIs, sem secrets e sem deploy.
 
 ## Regra Anti-Poluicao
 

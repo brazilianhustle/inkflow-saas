@@ -43,7 +43,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com `packages/tenant-config`, `packages/domain`, `packages/workflow`, `packages/pricing`, `packages/observability`, `packages/media-intelligence`, `packages/conversation-engine`, `packages/response-composer` e `packages/bot-runtime-contract` implementados como pacotes funcionais isolados, sem canais reais, sem painel, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados e primeiro service local-only `services/bot-orchestrator`, sem canais reais, sem painel, sem secrets e sem deploy.
 
 Local:
 
@@ -60,6 +60,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+2de30cb feat: implement local bot orchestrator
 2e49930 feat: implement bot runtime contract
 4dcb87b feat: implement response composer contracts
 2aa9cb0 feat: implement conversation engine contracts
@@ -74,12 +75,12 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 91/91;
+- `npm test` PASS, 97/97;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - git limpo no repo novo.
 
-Proxima decisao: checkpoint estrutural antes de sair dos pacotes puros para apps/services. Recomendacao: desenhar e implementar um `services/bot-orchestrator` local-only ou `apps/admin` skeleton apenas se mantiver isolamento sem prod, sem secrets e sem canais reais.
+Proxima decisao: continuar integracao local-only com adapters simulados (`packages/integrations/*`) ou iniciar skeleton de `apps/admin`. Nao iniciar adapter real de WhatsApp/Supabase/Telegram sem checkpoint explicito.
 
 ## Limite De Ambiente
 
