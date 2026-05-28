@@ -56,6 +56,9 @@
 - Integrado `services/bot-orchestrator` com `packages/integrations/channel-adapters` em modo simulado.
 - Commit do novo repo: `87d2310 feat: wire orchestrator to simulated channel adapter`.
 - Validacoes atuais do novo repo: `npm test` PASS 107/107, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado audit store local em memoria no novo repo: `packages/integrations/local-audit-store`.
+- Commit do novo repo: `115025f feat: implement local audit store`.
+- Validacoes atuais do novo repo: `npm test` PASS 113/113, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -76,7 +79,8 @@
 - `services/bot-orchestrator` foi implementado como service local-only em memoria, sem LLM, WhatsApp, Telegram, Supabase, Evolution, banco, API externa, deploy ou secrets.
 - `packages/integrations/channel-adapters` foi implementado como adapter simulado em memoria, sem Evolution, Telegram API, WhatsApp real, Supabase, rede, secrets, storage, deploy ou provider real.
 - Integracao simulada outbox->adapter->receipt foi implementada sem rede, provider real, storage, secrets ou deploy.
-- Proximo passo recomendado: checkpoint antes de qualquer adapter real; escolher entre storage/audit log local-only ou iniciar `apps/admin` skeleton.
+- `packages/integrations/local-audit-store` foi implementado sem Supabase, banco, arquivo, rede, secrets, storage real, deploy ou provider real.
+- Proximo passo recomendado: checkpoint antes de qualquer adapter real; escolher entre integrar audit store local ao orchestrator ou iniciar `apps/admin` skeleton.
 
 ### Proximo Passo
 

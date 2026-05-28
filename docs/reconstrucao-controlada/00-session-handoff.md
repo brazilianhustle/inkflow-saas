@@ -521,6 +521,38 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Audit Store Local Implementado
+
+Pacote:
+
+```text
+packages/integrations/local-audit-store
+```
+
+Commit:
+
+```text
+115025f feat: implement local audit store
+```
+
+Escopo:
+
+- store/audit log em memoria;
+- contratos de audit record;
+- registros para `bot_run`, `decision_trace`, `delivery_receipt` e `audit_event`;
+- append de bot run, decision trace e delivery receipt;
+- filtros por tenant, conversa e tipo de registro;
+- summary de contagens e escopos;
+- bloqueio de payload com cara de secret;
+- sem Supabase, banco, arquivo, rede, secrets, storage real, deploy ou provider real.
+
+Validacoes:
+
+- `npm test` PASS, 113/113;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Checkpoint antes de qualquer adapter real.
@@ -528,12 +560,12 @@ Checkpoint antes de qualquer adapter real.
 Recomendacao:
 
 ```text
-storage/audit log local-only ou apps/admin skeleton
+integrar audit store local ao bot-orchestrator ou iniciar apps/admin skeleton
 ```
 
 Objetivo do proximo artefato:
 
-- se seguir por dados: criar storage/audit log em memoria para runs e receipts;
+- se seguir por dados: gravar run, trace e receipt no audit store local durante `receiveTurnAndDeliver`;
 - se seguir por painel: criar skeleton admin sem dados reais;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
 - validar por unit/contract antes de qualquer adapter real.
