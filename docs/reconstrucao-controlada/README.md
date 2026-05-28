@@ -43,7 +43,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente e primeiro dominio `packages/tenant-config` implementado como pacote funcional isolado, sem bot runtime, sem painel, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com `packages/tenant-config` e `packages/domain` implementados como pacotes funcionais isolados, sem bot runtime, sem painel, sem secrets e sem deploy.
 
 Local:
 
@@ -57,20 +57,22 @@ Commit inicial:
 b815ccb chore: scaffold inkflow platform monorepo
 ```
 
-Ultimo commit do novo repo:
+Commits principais do novo repo:
 
 ```text
+266fb02 feat: implement domain contracts
 2dbccef feat: implement tenant config contract
+b815ccb chore: scaffold inkflow platform monorepo
 ```
 
 Validacoes atuais:
 
-- `npm test` PASS, 12/12;
+- `npm test` PASS, 22/22;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - git limpo no repo novo.
 
-Proxima decisao: definir o proximo dominio implementavel no novo repo. Recomendacao: `packages/domain` para consolidar entidades canonicas usadas por tenant-config, budget, conversation, payment e audit.
+Proxima decisao: definir o proximo dominio implementavel no novo repo. Recomendacao: `packages/workflow`, porque estado e transicoes devem ser autoridade antes de budget, bot runtime ou painel.
 
 ## Limite De Ambiente
 

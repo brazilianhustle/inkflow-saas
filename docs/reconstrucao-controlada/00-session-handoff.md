@@ -155,6 +155,35 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo.
 
+## Segundo Dominio Implementado
+
+Dominio:
+
+```text
+packages/domain
+```
+
+Commit:
+
+```text
+266fb02 feat: implement domain contracts
+```
+
+Escopo:
+
+- constantes canonicas de estados e enums;
+- builders side-effect-free para Tenant, ClientContact, Conversation, Message, MediaAsset, BudgetRequest, BudgetItem, BudgetSession, BudgetQuote e DecisionEvent;
+- validacao basica de campos obrigatorios e enums;
+- helper de transicao conhecida;
+- testes unit/contract.
+
+Validacoes:
+
+- `npm test` PASS, 22/22;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo.
+
 ## Proximo Passo Logico
 
 Definir e implementar o proximo dominio no novo repo.
@@ -162,13 +191,14 @@ Definir e implementar o proximo dominio no novo repo.
 Recomendacao:
 
 ```text
-packages/domain
+packages/workflow
 ```
 
 Objetivo do proximo artefato:
 
-- consolidar entidades canonicas de `06-contratos-plataforma.md`;
-- criar tipos/constantes para Tenant, ClientContact, Conversation, Message, MediaAsset, BudgetRequest, BudgetItem, BudgetSession, BudgetQuote, Proposal, Payment, Entitlement, AuditEvent e DecisionEvent;
+- implementar tabela de transicoes canonicas;
+- garantir que estados mudem apenas por WorkflowManager;
+- validar transicoes de conversa e budget;
 - manter pacote sem side effects, sem banco, sem APIs, sem secrets e sem deploy.
 
 ## Regra Anti-Poluicao

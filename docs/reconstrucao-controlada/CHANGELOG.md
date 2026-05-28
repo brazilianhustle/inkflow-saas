@@ -23,6 +23,9 @@
 - Implementado primeiro dominio funcional no novo repo: `packages/tenant-config`.
 - Commit do novo repo: `2dbccef feat: implement tenant config contract`.
 - Validacoes atuais do novo repo: `npm test` PASS 12/12, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado segundo dominio funcional no novo repo: `packages/domain`.
+- Commit do novo repo: `266fb02 feat: implement domain contracts`.
+- Validacoes atuais do novo repo: `npm test` PASS 22/22, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -32,8 +35,9 @@
 - Durante fase de arquitetura, apenas docs da frente podem ser alterados.
 - Nenhum deploy, secret, smoke real, migration ou codigo funcional sera alterado nesta frente sem plano aprovado.
 - `packages/tenant-config` foi implementado sem bot runtime, painel, deploy ou secrets.
-- Proximo dominio recomendado: `packages/domain`.
+- `packages/domain` foi implementado sem banco, APIs, runtime, painel, deploy ou secrets.
+- Proximo dominio recomendado: `packages/workflow`.
 
 ### Proximo Passo
 
-- Implementar `packages/domain` no novo repo para consolidar entidades canonicas compartilhadas.
+- Implementar `packages/workflow` no novo repo para consolidar transicoes canonicas antes de budget, bot runtime ou painel.
