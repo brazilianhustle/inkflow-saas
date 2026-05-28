@@ -128,6 +128,10 @@
 - Commit do novo repo: `4304223 feat: add supabase static policy coverage`.
 - Escopo: gate local nao executavel para checar cobertura estatica de policies, boundaries tenant, roles/status, service_role em writes runtime, audit append-only, provider secret boundary, rollback e cenarios.
 - Validacoes atuais do novo repo: `npm test` PASS 234/234, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:static-coverage` PASS.
+- Habilitado tooling local para Supabase policy harness no ambiente: Supabase CLI, Docker CLI, Docker Compose e Colima.
+- Commit do novo repo: `4042732 docs: record supabase local tooling enabled`.
+- Detector atual do novo repo: `supabase-cli-local`, com `supabase=true docker=true psql=false`.
+- Validacoes atuais do novo repo: `npm test` PASS 235/235, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, guard/dry-run/static-coverage PASS.
 
 ### Decisoes
 
@@ -174,7 +178,8 @@
 - Regra de double check oficializada para informacoes que podem quebrar a reconstrucao.
 - Tooling readiness checkpoint confirmou o caminho correto: Supabase CLI + Docker local. Ambiente atual permanece bloqueado por ausencia de `supabase`, `docker` e `psql`.
 - Static policy coverage foi implementado como protecao temporaria enquanto o ambiente nao tem Supabase CLI/Docker/psql; ele nao substitui validacao real de RLS.
+- Ambiente local agora tem Supabase CLI + Docker via Colima, mas o runner real de RLS ainda nao existe; proximo passo correto e implementar `supabase-cli-local-runner` com guard-first.
 
 ### Proximo Passo
 
-- Se tooling puder ser habilitado, preparar Supabase CLI + Docker local com guard; se nao, seguir apenas com protecoes estaticas e manter o gate real de RLS bloqueado.
+- Implementar `supabase-cli-local-runner` com guard-first, workspace local isolado, schema apply local, fixtures locais, cenarios RLS, rollback drill e evidence report.

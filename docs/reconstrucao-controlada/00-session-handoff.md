@@ -1331,6 +1331,49 @@ static coverage e protecao temporaria, nao gate final
 
 O gate real continua sendo Supabase CLI local + Docker, com RLS executado em banco local. Enquanto `supabase=false docker=false psql=false`, nao promover migrations nem chamar isso de validacao final.
 
+## Supabase Local Tooling Enabled
+
+Commit no novo repo:
+
+```text
+4042732 docs: record supabase local tooling enabled
+```
+
+Tooling habilitado no ambiente local:
+
+```text
+supabase CLI: 2.101.0
+docker CLI: 29.5.2
+docker daemon: 29.2.1 on Colima / Ubuntu 24.04.4 LTS
+docker-compose: 5.1.4
+```
+
+Detector atual:
+
+```text
+strategy: supabase-cli-local
+reason: supabase_cli_and_docker_available
+tools: supabase=true docker=true psql=false
+```
+
+Validacoes:
+
+- `npm test` PASS, 235/235;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:dry-run` PASS;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:static-coverage` PASS;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:detect-tools` PASS com `supabase-cli-local`.
+
+Decisao:
+
+```text
+tooling pronto, runner real ainda nao implementado
+```
+
+Proximo passo correto e implementar `supabase-cli-local-runner` com guard-first, workspace local isolado, schema apply local, fixtures locais, cenarios RLS, rollback drill e evidence report. Ainda nao promover migrations, nao usar Supabase remoto e nao tocar secrets.
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1375,7 +1418,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo estrutural: se tooling puder ser habilitado, Supabase CLI + Docker local; se nao, manter apenas protecoes estaticas e gate real bloqueado;
+- implementar proximo fluxo estrutural: `supabase-cli-local-runner` com guard-first e evidence report;
 - manter tudo local e desconectado de producao;
 - introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
