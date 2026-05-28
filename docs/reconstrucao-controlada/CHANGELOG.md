@@ -95,6 +95,10 @@
 - Registrado checkpoint estrutural do admin no novo repo: `docs/architecture/admin-structural-checkpoint.md`.
 - Commit do novo repo: `06d8f97 docs: add admin structural checkpoint`.
 - Validacoes atuais do novo repo: `npm test` PASS 187/187, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Registrado contrato Supabase local no novo repo: `docs/architecture/supabase-local-contract.md`.
+- Commit do novo repo: `ba87e55 docs: add supabase local contract`.
+- Escopo do contrato: tenancy, auth identity, RLS, tabelas de bot/admin, audit, secrets boundary, storage, migrations, rollback, fixtures e gates de teste, sem Supabase real.
+- Validacoes atuais do novo repo: `npm test` PASS 187/187, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -129,8 +133,8 @@
 - `apps/admin/src/modules/billing-admin` foi implementado como modulo local-only de billing/entitlements, plano, status de cobranca, bloqueios operacionais e audit events, sem Mercado Pago, provider real, Supabase, rede, secrets, deploy ou runtime real.
 - `apps/admin/src/modules/legal-admin` foi implementado como modulo local-only de Legal/LGPD, consentimentos, retencao, solicitações de titular e audit events, sem email real, automacao externa, Supabase, rede, secrets, deploy ou runtime real.
 - Checkpoint estrutural do admin aprovado como local-only; nao iniciar React/Vite, Supabase real, auth real, providers, deploy ou design visual sem checkpoint dedicado.
-- Proximo passo recomendado: implementar `supabase-local-contract` como design/contract slice apenas.
+- `supabase-local-contract` foi registrado como contrato local-only; nao iniciar SQL executavel, Supabase real, auth real, providers, deploy ou design visual sem checkpoint dedicado.
 
 ### Proximo Passo
 
-- Implementar `supabase-local-contract`: tabelas, tenant scoping, RLS, auth mapping, audit guarantees, secrets boundary, migrations e rollback, sem conectar Supabase real.
+- Implementar `supabase-schema-draft`: SQL draft, fixtures locais e testes de politica ainda desconectados de producao.

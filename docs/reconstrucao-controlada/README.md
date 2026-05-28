@@ -43,7 +43,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements e legal/LGPD, sem canais reais, sem Supabase real, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, checkpoint estrutural do admin e contrato Supabase local, sem canais reais, sem Supabase real, sem secrets e sem deploy.
 
 Local:
 
@@ -60,6 +60,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+ba87e55 docs: add supabase local contract
 06d8f97 docs: add admin structural checkpoint
 c3178bf feat: add admin legal module
 c393f7c feat: add admin billing module
@@ -95,7 +96,7 @@ Validacoes atuais:
 - `npm run lint` PASS placeholder;
 - git limpo no repo novo.
 
-Proxima decisao: evoluir `apps/admin` em slices funcionais de painel usando persistence contracts locais. Ja existem `apps/admin/src/modules/studio-settings`, `apps/admin/src/modules/bot-control`, `apps/admin/src/modules/knowledge-admin` e `apps/admin/src/modules/admin-access`. Nao iniciar adapter real de WhatsApp/Supabase/Telegram nem Supabase real sem checkpoint explicito.
+Proxima decisao: implementar `supabase-schema-draft` local-only, transformando `docs/architecture/supabase-local-contract.md` em SQL draft, fixtures e testes de politica sem conectar Supabase real. Nao iniciar adapter real de WhatsApp/Supabase/Telegram, migration real, deploy ou secrets sem checkpoint explicito.
 
 Frente futura obrigatoria: `knowledge-service`/RAG por tenant para informacoes personalizadas de cada estudio. Esta frente deve entrar como biblioteca consultiva do bot premium, nao como autoridade de workflow. Deve servir FAQ, politicas, portfolio textual, cuidados, regras comerciais e contexto curado do estudio, com fontes versionadas, escopo por tenant, observabilidade, redacao segura e fallback quando a confianca for baixa. Nao deve decidir estado, preco, menoridade, cobertura, handoff ou conclusao de orcamento.
 

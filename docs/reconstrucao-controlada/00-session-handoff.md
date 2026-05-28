@@ -965,15 +965,47 @@ Validacoes:
 
 ## Proximo Passo Logico
 
-Evoluir o painel em slices funcionais locais antes de qualquer adapter real.
+Evoluir a persistencia local em contrato de schema/testes antes de qualquer adapter real.
 
 Opcoes coerentes para o proximo slice:
 
-- `supabase-local-contract`: desenhar persistencia real/RLS sem migrar ainda.
-- `admin-app-shell-framework`: iniciar shell React/Vite somente depois de checkpoint explicito;
-- `admin-visual-design`: iniciar design visual somente depois de shell/framework e persistencia terem gates claros.
+- `supabase-schema-draft`: criar SQL draft, fixtures locais e testes de politica ainda desconectados de producao.
+- `auth-identity-contract`: aprofundar fluxo de convite/login/roles antes de SQL executavel.
+- `admin-app-shell-framework`: iniciar shell React/Vite somente depois de checkpoint explicito.
 
-Decisao recomendada: implementar `supabase-local-contract` como design/contract slice apenas. Nao conectar Supabase real nem rodar migrations ainda.
+Decisao recomendada: implementar `supabase-schema-draft` como slice local-only, sem conectar Supabase real, sem rodar migration de producao e sem adicionar secrets.
+
+## Supabase Local Contract Registrado
+
+Documento no novo repo:
+
+```text
+docs/architecture/supabase-local-contract.md
+```
+
+Commit:
+
+```text
+ba87e55 docs: add supabase local contract
+```
+
+Escopo:
+
+- contrato de tenancy, auth identity e RLS;
+- mapa de tabelas para conversas, mensagens, midias, budget request, budget items, sessoes, quotes e proposals;
+- contrato de admin para knowledge, audit, billing, legal/LGPD e retencao;
+- boundary de secrets para impedir tokens em tabelas tenant-facing;
+- contrato de storage para midias e knowledge assets;
+- gates de migration, rollback, fixtures e testes;
+- mapeamento dos modulos locais atuais para futuras tabelas;
+- sem Supabase real, migration real, secrets, deploy, provider real ou UI visual.
+
+Validacoes:
+
+- `npm test` PASS, 187/187;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
 
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
@@ -1019,9 +1051,9 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo funcional do painel: supabase-local-contract;
-- manter dados locais via persistence contracts;
-- evitar acoplamento do painel ao Supabase real nesta fase;
+- implementar proximo fluxo funcional do painel/persistencia: `supabase-schema-draft`;
+- manter tudo local e desconectado de producao;
+- transformar o contrato Supabase em SQL draft, fixtures e testes de politica;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
 - validar por unit/contract antes de qualquer adapter real.
 
