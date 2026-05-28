@@ -215,6 +215,40 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo.
 
+## Quarto Dominio Implementado
+
+Dominio:
+
+```text
+packages/pricing
+```
+
+Commit:
+
+```text
+daf54f3 feat: implement pricing foundation
+```
+
+Escopo:
+
+- foundation de orcamento/pricing;
+- suporte a quote de uma tattoo;
+- suporte a multiplos BudgetItems;
+- suporte a BudgetSessions por item;
+- validacao de cobertura de valores por item/sessao;
+- totalizacao estruturada;
+- summary agregado para futuro composer;
+- formatacao BRL;
+- sem calculo automatico de preco final;
+- sem Telegram, WhatsApp, banco, API, deploy ou secrets.
+
+Validacoes:
+
+- `npm test` PASS, 45/45;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo.
+
 ## Proximo Passo Logico
 
 Definir e implementar o proximo dominio no novo repo.
@@ -222,14 +256,14 @@ Definir e implementar o proximo dominio no novo repo.
 Recomendacao:
 
 ```text
-packages/pricing
+packages/observability
 ```
 
 Objetivo do proximo artefato:
 
-- iniciar foundation de orcamento/pricing;
-- representar BudgetRequest/BudgetItem/BudgetSession/BudgetQuote com helpers de avaliacao;
-- preparar suporte nativo a multiplas tattoos e multiplas sessoes;
+- criar builders/validators para DecisionEvent e AuditEvent;
+- padronizar evidence summary interno;
+- permitir que futuros runtime/integracoes expliquem decisoes;
 - manter pacote sem side effects, sem banco, sem APIs, sem secrets e sem deploy.
 
 ## Regra Anti-Poluicao

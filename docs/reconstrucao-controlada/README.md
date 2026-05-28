@@ -43,7 +43,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com `packages/tenant-config`, `packages/domain` e `packages/workflow` implementados como pacotes funcionais isolados, sem bot runtime, sem painel, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com `packages/tenant-config`, `packages/domain`, `packages/workflow` e `packages/pricing` implementados como pacotes funcionais isolados, sem bot runtime, sem painel, sem secrets e sem deploy.
 
 Local:
 
@@ -60,6 +60,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+daf54f3 feat: implement pricing foundation
 23a00ef feat: implement workflow transitions
 266fb02 feat: implement domain contracts
 2dbccef feat: implement tenant config contract
@@ -68,12 +69,12 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 35/35;
+- `npm test` PASS, 45/45;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - git limpo no repo novo.
 
-Proxima decisao: definir o proximo dominio implementavel no novo repo. Recomendacao: `packages/pricing`/budget foundation ou `packages/observability`; a rota mais coerente agora e budget/pricing, porque tenant-config, domain e workflow ja sustentam orcamentos multi-item/multi-session.
+Proxima decisao: definir o proximo dominio implementavel no novo repo. Recomendacao: `packages/observability`, para registrar DecisionEvent/AuditEvent e preparar rastreabilidade antes de runtime/integracoes.
 
 ## Limite De Ambiente
 

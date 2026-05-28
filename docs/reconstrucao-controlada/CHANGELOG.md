@@ -29,6 +29,9 @@
 - Implementado terceiro dominio funcional no novo repo: `packages/workflow`.
 - Commit do novo repo: `23a00ef feat: implement workflow transitions`.
 - Validacoes atuais do novo repo: `npm test` PASS 35/35, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado quarto dominio funcional no novo repo: `packages/pricing`.
+- Commit do novo repo: `daf54f3 feat: implement pricing foundation`.
+- Validacoes atuais do novo repo: `npm test` PASS 45/45, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -40,8 +43,9 @@
 - `packages/tenant-config` foi implementado sem bot runtime, painel, deploy ou secrets.
 - `packages/domain` foi implementado sem banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/workflow` foi implementado sem banco, APIs, runtime, painel, deploy ou secrets.
-- Proximo dominio recomendado: `packages/pricing`.
+- `packages/pricing` foi implementado sem calculo automatico final, Telegram, WhatsApp, banco, APIs, runtime, painel, deploy ou secrets.
+- Proximo dominio recomendado: `packages/observability`.
 
 ### Proximo Passo
 
-- Implementar `packages/pricing` no novo repo para iniciar foundation de orcamento multi-item/multi-session.
+- Implementar `packages/observability` no novo repo para padronizar DecisionEvent, AuditEvent e evidence summaries antes de runtime/integracoes.
