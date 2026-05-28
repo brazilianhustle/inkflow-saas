@@ -85,6 +85,8 @@ Validacoes atuais:
 
 Proxima decisao: integrar audit store local ao `services/bot-orchestrator` ou iniciar skeleton de `apps/admin`. Nao iniciar adapter real de WhatsApp/Supabase/Telegram sem checkpoint explicito.
 
+Frente futura obrigatoria: `knowledge-service`/RAG por tenant para informacoes personalizadas de cada estudio. Esta frente deve entrar como biblioteca consultiva do bot premium, nao como autoridade de workflow. Deve servir FAQ, politicas, portfolio textual, cuidados, regras comerciais e contexto curado do estudio, com fontes versionadas, escopo por tenant, observabilidade, redacao segura e fallback quando a confianca for baixa. Nao deve decidir estado, preco, menoridade, cobertura, handoff ou conclusao de orcamento.
+
 ## Limite De Ambiente
 
 Enquanto esta frente estiver em fase de arquitetura:

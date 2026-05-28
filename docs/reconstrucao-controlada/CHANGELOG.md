@@ -80,6 +80,7 @@
 - `packages/integrations/channel-adapters` foi implementado como adapter simulado em memoria, sem Evolution, Telegram API, WhatsApp real, Supabase, rede, secrets, storage, deploy ou provider real.
 - Integracao simulada outbox->adapter->receipt foi implementada sem rede, provider real, storage, secrets ou deploy.
 - `packages/integrations/local-audit-store` foi implementado sem Supabase, banco, arquivo, rede, secrets, storage real, deploy ou provider real.
+- Frente futura obrigatoria registrada: `knowledge-service`/RAG por tenant para informacoes personalizadas de estudio, como biblioteca consultiva e nao autoridade de workflow.
 - Proximo passo recomendado: checkpoint antes de qualquer adapter real; escolher entre integrar audit store local ao orchestrator ou iniciar `apps/admin` skeleton.
 
 ### Proximo Passo

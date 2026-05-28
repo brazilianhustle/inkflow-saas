@@ -557,6 +557,42 @@ Validacoes:
 
 Checkpoint antes de qualquer adapter real.
 
+## Frente Futura Obrigatoria - Knowledge Service / RAG
+
+Status:
+
+```text
+registrado, nao implementar agora
+```
+
+Motivo:
+
+- o produto precisa ter informacoes personalizadas por estudio;
+- RAG e util para conhecimento variavel e consultivo;
+- a arquitetura deve prever isso antes de fechar painel, tenant config final e bot premium runtime.
+
+Escopo futuro:
+
+- `knowledge-service` por tenant;
+- base de FAQ do estudio;
+- politicas de sinal, remarcacao, no-show, pagamento e cuidados;
+- portfolio textual/curado;
+- regras comerciais e operacionais do estudio;
+- conteudo de suporte para perguntas laterais;
+- fontes versionadas e rastreaveis;
+- escopo por tenant;
+- redacao/privacidade;
+- observabilidade de consulta, fonte usada e confianca;
+- fallback seguro quando nao houver resposta confiavel.
+
+Limites:
+
+- RAG nao deve decidir workflow;
+- RAG nao deve definir preco;
+- RAG nao deve decidir menoridade, cobertura, handoff ou conclusao de orcamento;
+- RAG nao deve substituir `tenant-config`, `workflow`, `policy`, `pricing` ou `guardrails`;
+- RAG entra como biblioteca consultiva, nao como comandante do fluxo.
+
 Recomendacao:
 
 ```text
