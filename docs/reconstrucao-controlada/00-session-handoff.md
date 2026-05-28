@@ -312,20 +312,56 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo.
 
-## Proximo Passo Logico
+## Setimo Dominio Implementado
 
-Checkpoint estrategico antes de iniciar runtime/integracoes.
-
-Recomendacao:
+Dominio:
 
 ```text
 packages/conversation-engine
 ```
 
+Commit:
+
+```text
+2aa9cb0 feat: implement conversation engine contracts
+```
+
+Escopo:
+
+- contrato puro de TurnContext/Router/Policy;
+- preservacao de multiplas bolhas reais de WhatsApp no turno;
+- validacao de bubble_count para impedir drift entre coleta e processamento;
+- router result com intent, familia, confianca, resolver, risco e permissao de mutar estado;
+- policy decision com action, estado atual, proximo estado, side effects e response_kind;
+- lateral answer preserva estado;
+- mudanca de ideia pede confirmacao de escopo antes de alterar fluxo;
+- handoff passa pelo Workflow Manager;
+- transicao bloqueada vira `reject_turn`, sem salto indevido de estado;
+- decision trace expoe router, policy, workflow e midia para observabilidade;
+- sem LLM, WhatsApp, Telegram, banco, API, storage, deploy ou secrets.
+
+Validacoes:
+
+- `npm test` PASS, 74/74;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
+## Proximo Passo Logico
+
+Implementar a camada de composicao de resposta antes de runtime/integracoes.
+
+Recomendacao:
+
+```text
+packages/response-composer
+```
+
 Objetivo do proximo artefato:
 
-- criar contrato puro de TurnContext/Router/Policy;
-- usar domain, tenant-config, workflow, pricing, observability e media-intelligence como fundacao;
+- criar contrato puro para estrutura de resposta premium;
+- proteger continuidade, saudacao repetida, intro curta, corpo objetivo e CTA;
+- suportar proposta de uma tattoo, multiplas tattoos e sessoes;
 - manter sem LLM, WhatsApp, Telegram, banco, APIs, secrets e deploy;
 - validar por unit/contract antes de qualquer runtime real.
 - manter pacote sem side effects, sem banco, sem APIs, sem secrets e sem deploy.

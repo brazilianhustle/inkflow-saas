@@ -38,6 +38,9 @@
 - Implementado sexto dominio funcional no novo repo: `packages/media-intelligence`.
 - Commit do novo repo: `9fb7fac feat: implement media classification contract`.
 - Validacoes atuais do novo repo: `npm test` PASS 62/62, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado setimo dominio funcional no novo repo: `packages/conversation-engine`.
+- Commit do novo repo: `2aa9cb0 feat: implement conversation engine contracts`.
+- Validacoes atuais do novo repo: `npm test` PASS 74/74, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -52,8 +55,9 @@
 - `packages/pricing` foi implementado sem calculo automatico final, Telegram, WhatsApp, banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/observability` foi implementado sem log provider, banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/media-intelligence` foi implementado sem modelo vision, WhatsApp, Telegram, banco, APIs, runtime, painel, deploy ou secrets.
-- Proximo passo recomendado: checkpoint estrategico e depois `packages/conversation-engine`.
+- `packages/conversation-engine` foi implementado sem LLM, WhatsApp, Telegram, banco, APIs, runtime, painel, deploy ou secrets.
+- Proximo passo recomendado: `packages/response-composer`.
 
 ### Proximo Passo
 
-- Fazer checkpoint estrategico e, se mantido o caminho, implementar `packages/conversation-engine` como contrato puro de TurnContext/Router/Policy.
+- Implementar `packages/response-composer` como contrato puro de estrutura de resposta premium antes de qualquer LLM/runtime.
