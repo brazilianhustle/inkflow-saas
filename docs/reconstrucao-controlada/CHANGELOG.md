@@ -16,6 +16,7 @@
 - Criado Data Governance Contract com inventario de dados, papeis, direitos do titular, retencao, suboperadores, incidentes e testes obrigatorios.
 - Criado Test Strategy Contract com niveis de teste, matriz por mudanca, gates, evidencias e stop conditions.
 - Criada decisao de stack para o novo repo: monorepo TypeScript, npm workspaces, React/Vite para apps, Cloudflare Workers para APIs/runtime e Supabase Postgres/RLS.
+- Criado checklist do primeiro slice do novo repo, com escopo permitido, arquivos iniciais, CI minimo, gate e rollback.
 
 ### Decisoes
 
@@ -27,4 +28,4 @@
 
 ### Proximo Passo
 
-- Criar `11-primeiro-slice-novo-repo.md` para transformar a decisao em checklist executavel antes da criacao do repo.
+- Aprovar ou ajustar a criacao do novo repo `inkflow-platform` antes de executar qualquer scaffold.

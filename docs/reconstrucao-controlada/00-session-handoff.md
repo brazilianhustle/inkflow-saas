@@ -83,21 +83,21 @@ Sequencia obrigatoria:
 9. Ler `08-data-governance-contract.md`.
 10. Ler `09-test-strategy-contract.md`.
 11. Ler `10-decisao-stack-novo-repo.md`.
-12. Ler `CHANGELOG.md`.
-13. Checar `git status --short`.
-14. So entao propor ou executar o proximo passo.
+12. Ler `11-primeiro-slice-novo-repo.md`.
+13. Ler `CHANGELOG.md`.
+14. Checar `git status --short`.
+15. So entao propor ou executar o proximo passo.
 
 ## Proximo Passo Logico
 
-Criar `11-primeiro-slice-novo-repo.md`.
+Decidir com o usuario se vamos executar a criacao do novo repo `inkflow-platform`.
 
 Objetivo do proximo artefato:
 
-- transformar a decisao de stack em checklist executavel;
-- definir comandos permitidos;
-- definir arquivos iniciais;
-- definir criterio de commit;
-- garantir criacao reversivel e isolada.
+- se aprovado, criar repo/pasta novo fora do repo atual;
+- scaffold vazio, sem produto e sem secrets;
+- commit inicial;
+- atualizar handoff no repo atual apontando para o novo repo.
 
 ## Regra Anti-Poluicao
 

@@ -19,9 +19,10 @@ Ler nesta ordem:
 9. `08-data-governance-contract.md`
 10. `09-test-strategy-contract.md`
 11. `10-decisao-stack-novo-repo.md`
-12. `CHANGELOG.md`
-13. `docs/canonical/stack.md`
-14. `docs/atendimento-premium/09-session-handoff.md`
+12. `11-primeiro-slice-novo-repo.md`
+13. `CHANGELOG.md`
+14. `docs/canonical/stack.md`
+15. `docs/atendimento-premium/09-session-handoff.md`
 
 Depois rodar:
 
@@ -42,9 +43,9 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: arquitetura total, plano de acao, matriz de extracao, contratos base, Tenant Config Contract, Data Governance Contract, Test Strategy Contract e decisao de stack registrados antes de qualquer repo novo.
+Status: arquitetura total, plano de acao, matriz de extracao, contratos base, Tenant Config Contract, Data Governance Contract, Test Strategy Contract, decisao de stack e checklist do primeiro slice registrados antes de qualquer repo novo.
 
-Proxima decisao: criar o checklist do primeiro slice mecanico do novo repo.
+Proxima decisao: aprovar ou ajustar a criacao do novo repo `inkflow-platform`.
 
 ## Limite De Ambiente
 
