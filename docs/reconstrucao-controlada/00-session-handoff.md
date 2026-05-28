@@ -758,6 +758,40 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Admin Access Contract Implementado
+
+Modulo:
+
+```text
+apps/admin/src/modules/admin-access
+```
+
+Commit:
+
+```text
+244fa4d feat: add admin access contract
+```
+
+Escopo:
+
+- contrato local-only de rotas, papeis e permissoes do painel;
+- schema `admin_access_v1`;
+- rotas canonicas: overview, studio settings, bot control, knowledge, audit, billing, legal/LGPD e team;
+- papeis canonicos reaproveitados de `packages/domain`: `owner`, `admin`, `artist`, `support`, `readonly`;
+- matriz de permissoes por papel;
+- diferenciacao entre permissao de leitura, escrita, acao perigosa e acao que exige audit;
+- decisoes `canAccessRoute` e `canPerformAdminAction`;
+- view model integrado ao admin principal para expor rotas permitidas por papel;
+- testes de contrato, owner, artist, readonly, dangerous actions e view model;
+- sem auth real, Supabase, rede, secrets, deploy, UI final ou runtime real.
+
+Validacoes:
+
+- `npm test` PASS, 157/157;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Evoluir o painel em slices funcionais locais antes de qualquer adapter real.
@@ -767,9 +801,10 @@ Opcoes coerentes para o proximo slice:
 - `studio-settings-ui`: renderizar o modulo de configuracao na tela estatica atual antes de avançar para novos modulos.
 - `bot-control-ui`: renderizar controle operacional na tela estatica atual antes de novos modulos.
 - `knowledge-admin-ui`: renderizar biblioteca, fila de publicacao e readiness na tela estatica atual.
-- `admin-shell-contract`: definir contrato de rotas/permissoes antes de migrar para React/Vite.
+- `admin-shell-static`: aplicar rotas/permissoes na tela estatica atual antes de React/Vite.
+- `admin-app-shell-framework`: iniciar shell React/Vite somente depois de checkpoint explicito.
 
-Decisao recomendada: fazer checkpoint estrategico antes do proximo slice, porque os tres pilares locais do painel ja existem: configuracao, controle operacional e knowledge. O proximo ataque deve decidir entre renderizar esses modulos na UI estatica ou criar contrato de rotas/permissoes do painel antes de React/Vite.
+Decisao recomendada: renderizar primeiro os modulos locais na UI estatica com base no contrato de permissoes. Ainda nao iniciar React/Vite, auth real, Supabase real, canais reais ou deploy.
 
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
@@ -815,7 +850,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo funcional do painel: renderizacao dos modulos locais ou contrato de rotas/permissoes do admin;
+- implementar proximo fluxo funcional do painel: renderizacao estatica dos modulos locais respeitando rotas/permissoes;
 - manter dados locais via persistence contracts;
 - evitar acoplamento do painel ao Supabase real nesta fase;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
