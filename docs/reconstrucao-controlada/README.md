@@ -44,7 +44,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity e checkpoint Supabase policy harness, sem canais reais, sem Supabase real, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness e guard local do policy harness, sem canais reais, sem Supabase real, sem secrets e sem deploy.
 
 Local:
 
@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+33a5cb4 feat: add local policy harness guard
 4696121 docs: add supabase policy harness checkpoint
 0549802 feat: add auth identity contract
 8f21329 feat: add supabase schema draft
@@ -95,12 +96,13 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 203/203;
+- `npm test` PASS, 209/209;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
 - git limpo no repo novo.
 
-Proxima decisao: implementar `infra/supabase/local-policy-harness` com environment guard antes de qualquer execucao Supabase local. O crosswalk repo original x arquitetura alvo confirma que o proximo risco real e provar RLS/auth local antes de UI framework, Evolution real ou Telegram real. Nao iniciar adapter real de WhatsApp/Supabase/Telegram, migration real, deploy ou secrets sem checkpoint explicito.
+Proxima decisao: escolher o executor local do policy harness. O guard ja existe; agora falta decidir se usaremos Supabase CLI local ou fallback Postgres/container/teste estatico aprimorado. Nao iniciar adapter real de WhatsApp/Supabase/Telegram, migration real, deploy ou secrets sem checkpoint explicito.
 
 Frente futura obrigatoria: `knowledge-service`/RAG por tenant para informacoes personalizadas de cada estudio. Esta frente deve entrar como biblioteca consultiva do bot premium, nao como autoridade de workflow. Deve servir FAQ, politicas, portfolio textual, cuidados, regras comerciais e contexto curado do estudio, com fontes versionadas, escopo por tenant, observabilidade, redacao segura e fallback quando a confianca for baixa. Nao deve decidir estado, preco, menoridade, cobertura, handoff ou conclusao de orcamento.
 

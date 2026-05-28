@@ -1121,6 +1121,45 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Local Policy Harness Guard Implementado
+
+Artefatos no novo repo:
+
+```text
+infra/supabase/local-policy-harness/README.md
+infra/supabase/local-policy-harness/guard.mjs
+infra/supabase/local-policy-harness/run-guard.mjs
+infra/supabase/local-policy-harness/policy-scenarios.json
+tests/architecture/supabase-local-policy-harness.test.mjs
+```
+
+Commit:
+
+```text
+33a5cb4 feat: add local policy harness guard
+```
+
+Escopo:
+
+- environment guard para `supabase-policy-harness`;
+- bloqueio de URL HTTPS de projeto Supabase;
+- bloqueio de `SUPABASE_SERVICE_ROLE_KEY`;
+- exigencia de ambiente `local` ou `test`;
+- exigencia de anon key marcada como local quando existir;
+- bloqueio de caminhos de migrations de producao;
+- scan de env files contra provider secrets;
+- manifesto de cenarios RLS/auth obrigatorios;
+- script `npm run supabase:policy:guard`;
+- sem execucao Supabase, sem Docker/CLI, sem SQL real, sem secrets, sem provider real e sem deploy.
+
+Validacoes:
+
+- `npm test` PASS, 209/209;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
+- git limpo no novo repo apos commit.
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1165,7 +1204,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo estrutural: `infra/supabase/local-policy-harness` com environment guard;
+- implementar proximo fluxo estrutural: executor local do policy harness ou checkpoint tecnico da ferramenta local;
 - manter tudo local e desconectado de producao;
 - introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;

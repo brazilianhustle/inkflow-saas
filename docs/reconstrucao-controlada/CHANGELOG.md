@@ -109,6 +109,9 @@
 - Registrado checkpoint Supabase policy harness no novo repo: `docs/architecture/supabase-policy-harness-checkpoint.md`.
 - Commit do novo repo: `4696121 docs: add supabase policy harness checkpoint`.
 - Validacoes atuais do novo repo: `npm test` PASS 203/203, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado guard local do Supabase policy harness no novo repo: `infra/supabase/local-policy-harness`.
+- Commit do novo repo: `33a5cb4 feat: add local policy harness guard`.
+- Validacoes atuais do novo repo: `npm test` PASS 209/209, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS.
 
 ### Decisoes
 
@@ -148,7 +151,8 @@
 - `auth-identity-contract` detectou gap estrutural de roles antigas e alinhou `support/readonly` para `assistant/viewer` no domain/admin-access/schema draft.
 - Crosswalk confirmou que o proximo risco estrutural e provar RLS/auth local antes de UI framework, Evolution real, Telegram real ou migrations reais.
 - Supabase policy harness checkpoint autoriza apenas desenho/guard local; nenhuma execucao Supabase local ou producao foi feita.
+- Local policy harness guard foi implementado antes de qualquer execucao Supabase, bloqueando URL/chaves de producao e provider secrets.
 
 ### Proximo Passo
 
-- Implementar `infra/supabase/local-policy-harness` com environment guard antes de qualquer execucao Supabase local/CLI/Docker ou equivalente.
+- Decidir executor local do policy harness: Supabase CLI local preferencial, fallback Postgres/container ou teste estatico aprimorado.
