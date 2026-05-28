@@ -106,6 +106,9 @@
 - Commit do novo repo: `0549802 feat: add auth identity contract`.
 - Validacoes atuais do novo repo: `npm test` PASS 199/199, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 - Registrado crosswalk repo original x arquitetura alvo em `docs/reconstrucao-controlada/12-crosswalk-repo-original-arquitetura.md`.
+- Registrado checkpoint Supabase policy harness no novo repo: `docs/architecture/supabase-policy-harness-checkpoint.md`.
+- Commit do novo repo: `4696121 docs: add supabase policy harness checkpoint`.
+- Validacoes atuais do novo repo: `npm test` PASS 203/203, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -144,7 +147,8 @@
 - `supabase-schema-draft` foi implementado como artefato local-only; nao executar SQL contra Supabase real nem promover migration sem harness local, RLS tests, rollback exercitado e plano de backup/producao.
 - `auth-identity-contract` detectou gap estrutural de roles antigas e alinhou `support/readonly` para `assistant/viewer` no domain/admin-access/schema draft.
 - Crosswalk confirmou que o proximo risco estrutural e provar RLS/auth local antes de UI framework, Evolution real, Telegram real ou migrations reais.
+- Supabase policy harness checkpoint autoriza apenas desenho/guard local; nenhuma execucao Supabase local ou producao foi feita.
 
 ### Proximo Passo
 
-- Fazer checkpoint para decidir `supabase-policy-test-harness` local-only antes de introduzir Supabase local/CLI/Docker ou equivalente.
+- Implementar `infra/supabase/local-policy-harness` com environment guard antes de qualquer execucao Supabase local/CLI/Docker ou equivalente.

@@ -1090,6 +1090,37 @@ Escopo:
 - stop conditions para evitar copiar divida tecnica;
 - decisao de seguir para checkpoint do `supabase-policy-test-harness`.
 
+## Supabase Policy Harness Checkpoint Registrado
+
+Artefatos no novo repo:
+
+```text
+docs/architecture/supabase-policy-harness-checkpoint.md
+tests/architecture/supabase-policy-harness-checkpoint.test.mjs
+```
+
+Commit:
+
+```text
+4696121 docs: add supabase policy harness checkpoint
+```
+
+Escopo:
+
+- decisao segura para provar RLS/auth local sem tocar producao;
+- comparacao de opcoes Supabase CLI local, Postgres container e testes estaticos;
+- environment guard obrigatorio contra URL/chaves de producao;
+- cenarios obrigatorios: tenant isolation, revoked/disabled/invited denial, viewer/artist restrictions, audit append-only e backend-only service boundary;
+- stop conditions antes de qualquer comando Supabase local;
+- sem Supabase executado, sem Docker/CLI rodado, sem secrets, sem deploy e sem provider real.
+
+Validacoes:
+
+- `npm test` PASS, 203/203;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1134,7 +1165,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo estrutural: checkpoint do `supabase-policy-test-harness`;
+- implementar proximo fluxo estrutural: `infra/supabase/local-policy-harness` com environment guard;
 - manter tudo local e desconectado de producao;
 - introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
