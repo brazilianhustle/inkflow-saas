@@ -41,6 +41,9 @@
 - Implementado setimo dominio funcional no novo repo: `packages/conversation-engine`.
 - Commit do novo repo: `2aa9cb0 feat: implement conversation engine contracts`.
 - Validacoes atuais do novo repo: `npm test` PASS 74/74, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado oitavo dominio funcional no novo repo: `packages/response-composer`.
+- Commit do novo repo: `4dcb87b feat: implement response composer contracts`.
+- Validacoes atuais do novo repo: `npm test` PASS 83/83, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -56,8 +59,9 @@
 - `packages/observability` foi implementado sem log provider, banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/media-intelligence` foi implementado sem modelo vision, WhatsApp, Telegram, banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/conversation-engine` foi implementado sem LLM, WhatsApp, Telegram, banco, APIs, runtime, painel, deploy ou secrets.
-- Proximo passo recomendado: `packages/response-composer`.
+- `packages/response-composer` foi implementado sem LLM, WhatsApp, Telegram, banco, APIs, runtime, painel, deploy ou secrets.
+- Proximo passo recomendado: checkpoint antes de `packages/bot-runtime-contract`.
 
 ### Proximo Passo
 
-- Implementar `packages/response-composer` como contrato puro de estrutura de resposta premium antes de qualquer LLM/runtime.
+- Fazer checkpoint estrategico e, se mantido o caminho, implementar um contrato fino de runtime que ligue os pacotes puros sem acionar canais reais.

@@ -347,22 +347,56 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
-## Proximo Passo Logico
+## Oitavo Dominio Implementado
 
-Implementar a camada de composicao de resposta antes de runtime/integracoes.
-
-Recomendacao:
+Dominio:
 
 ```text
 packages/response-composer
 ```
 
+Commit:
+
+```text
+4dcb87b feat: implement response composer contracts
+```
+
+Escopo:
+
+- contrato puro de estrutura de resposta premium;
+- controle de saudacao apenas no primeiro contato;
+- preservacao de continuidade em conversa ativa;
+- resposta de pergunta com acknowledgement + proxima pergunta;
+- resposta de mudanca de ideia perguntando se adiciona ou troca a tattoo anterior;
+- proposta de uma tattoo com intro, valor e CTA;
+- proposta de multiplas tattoos em uma unica resposta;
+- proposta por sessoes em uma unica resposta;
+- detector de regressao de saudacao repetida;
+- formatter basico de local para evitar `no perna`;
+- sem LLM, WhatsApp, Telegram, banco, API, storage, deploy ou secrets.
+
+Validacoes:
+
+- `npm test` PASS, 83/83;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
+## Proximo Passo Logico
+
+Checkpoint antes de iniciar integracao de runtime.
+
+Recomendacao:
+
+```text
+packages/bot-runtime-contract
+```
+
 Objetivo do proximo artefato:
 
-- criar contrato puro para estrutura de resposta premium;
-- proteger continuidade, saudacao repetida, intro curta, corpo objetivo e CTA;
-- suportar proposta de uma tattoo, multiplas tattoos e sessoes;
-- manter sem LLM, WhatsApp, Telegram, banco, APIs, secrets e deploy;
+- criar contrato fino de orquestracao de turno;
+- ligar conversation-engine, response-composer, pricing, media-intelligence, workflow e observability;
+- manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM;
 - validar por unit/contract antes de qualquer runtime real.
 - manter pacote sem side effects, sem banco, sem APIs, sem secrets e sem deploy.
 

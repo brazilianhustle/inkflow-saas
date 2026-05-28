@@ -43,7 +43,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com `packages/tenant-config`, `packages/domain`, `packages/workflow`, `packages/pricing`, `packages/observability`, `packages/media-intelligence` e `packages/conversation-engine` implementados como pacotes funcionais isolados, sem bot runtime, sem painel, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com `packages/tenant-config`, `packages/domain`, `packages/workflow`, `packages/pricing`, `packages/observability`, `packages/media-intelligence`, `packages/conversation-engine` e `packages/response-composer` implementados como pacotes funcionais isolados, sem bot runtime, sem painel, sem secrets e sem deploy.
 
 Local:
 
@@ -60,6 +60,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+4dcb87b feat: implement response composer contracts
 2aa9cb0 feat: implement conversation engine contracts
 9fb7fac feat: implement media classification contract
 9c1e812 feat: implement observability contracts
@@ -72,12 +73,12 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 74/74;
+- `npm test` PASS, 83/83;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - git limpo no repo novo.
 
-Proxima decisao: implementar `packages/response-composer` como contrato puro de estrutura de resposta, continuidade, proposta de valores e CTA, sem LLM e sem WhatsApp real ainda.
+Proxima decisao: checkpoint antes de iniciar integracao de runtime. Recomendacao: implementar `packages/bot-runtime-contract` ou equivalente como contrato fino de orquestracao entre conversation-engine, response-composer, pricing, media-intelligence, workflow e observability, ainda sem canais reais.
 
 ## Limite De Ambiente
 
