@@ -92,6 +92,9 @@
 - Implementado modulo local de Legal/LGPD no novo repo: `apps/admin/src/modules/legal-admin`, com `ConsentRecord`/`DataSubjectRequest` no dominio e `consentRecords`/`dataSubjectRequests` nos persistence contracts.
 - Commit do novo repo: `c3178bf feat: add admin legal module`.
 - Validacoes atuais do novo repo: `npm test` PASS 187/187, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Registrado checkpoint estrutural do admin no novo repo: `docs/architecture/admin-structural-checkpoint.md`.
+- Commit do novo repo: `06d8f97 docs: add admin structural checkpoint`.
+- Validacoes atuais do novo repo: `npm test` PASS 187/187, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -125,8 +128,9 @@
 - `apps/admin/src/modules/team-admin` foi implementado como modulo local-only de equipe/usuarios, convites, mudanca de papel/status e audit events, sem auth real, email real, Supabase, rede, secrets, deploy ou runtime real.
 - `apps/admin/src/modules/billing-admin` foi implementado como modulo local-only de billing/entitlements, plano, status de cobranca, bloqueios operacionais e audit events, sem Mercado Pago, provider real, Supabase, rede, secrets, deploy ou runtime real.
 - `apps/admin/src/modules/legal-admin` foi implementado como modulo local-only de Legal/LGPD, consentimentos, retencao, solicitações de titular e audit events, sem email real, automacao externa, Supabase, rede, secrets, deploy ou runtime real.
-- Proximo passo recomendado: checkpoint estrutural do admin antes de framework visual ou Supabase real.
+- Checkpoint estrutural do admin aprovado como local-only; nao iniciar React/Vite, Supabase real, auth real, providers, deploy ou design visual sem checkpoint dedicado.
+- Proximo passo recomendado: implementar `supabase-local-contract` como design/contract slice apenas.
 
 ### Proximo Passo
 
-- Fazer checkpoint estrutural do admin: avaliar modulos locais, lacunas restantes, criterios para React/Vite e criterios para Supabase/RLS.
+- Implementar `supabase-local-contract`: tabelas, tenant scoping, RLS, auth mapping, audit guarantees, secrets boundary, migrations e rollback, sem conectar Supabase real.

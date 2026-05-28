@@ -930,17 +930,50 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Admin Structural Checkpoint Registrado
+
+Documento:
+
+```text
+docs/architecture/admin-structural-checkpoint.md
+```
+
+Commit:
+
+```text
+06d8f97 docs: add admin structural checkpoint
+```
+
+Veredito:
+
+- a base do admin esta coerente para continuar;
+- ainda deve permanecer local-only;
+- nao iniciar React/Vite, Supabase real, auth real, provider real, deploy ou design visual sem checkpoint dedicado;
+- proximo ataque recomendado: `supabase-local-contract`.
+
+Motivo:
+
+- o painel ja possui modulos locais para configuracao, bot control, knowledge, equipe, billing, legal/LGPD, rotas/permissoes e renderizacao estatica;
+- o proximo risco estrutural nao e visual, e sim persistencia real, RLS, auth identity mapping, audit guarantees e migracao.
+
+Validacoes:
+
+- `npm test` PASS, 187/187;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Evoluir o painel em slices funcionais locais antes de qualquer adapter real.
 
 Opcoes coerentes para o proximo slice:
 
-- `admin-platform-checkpoint`: revisar se a base estrutural do painel esta completa antes de framework visual;
-- `admin-app-shell-framework`: iniciar shell React/Vite somente depois de checkpoint explicito;
 - `supabase-local-contract`: desenhar persistencia real/RLS sem migrar ainda.
+- `admin-app-shell-framework`: iniciar shell React/Vite somente depois de checkpoint explicito;
+- `admin-visual-design`: iniciar design visual somente depois de shell/framework e persistencia terem gates claros.
 
-Decisao recomendada: fazer checkpoint estrategico do painel antes de qualquer framework visual ou Supabase real. Motivo: os pilares locais principais ja existem e precisam ser avaliados como conjunto.
+Decisao recomendada: implementar `supabase-local-contract` como design/contract slice apenas. Nao conectar Supabase real nem rodar migrations ainda.
 
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
@@ -986,7 +1019,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo funcional do painel: checkpoint estrutural do admin;
+- implementar proximo fluxo funcional do painel: supabase-local-contract;
 - manter dados locais via persistence contracts;
 - evitar acoplamento do painel ao Supabase real nesta fase;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;

@@ -60,6 +60,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+06d8f97 docs: add admin structural checkpoint
 c3178bf feat: add admin legal module
 c393f7c feat: add admin billing module
 d7ae443 feat: add admin team module
