@@ -1477,6 +1477,57 @@ Proximo passo correto:
 implementar checker/gerador local de package de migration, sem conectar staging/producao
 ```
 
+## Supabase Migration Package Checker
+
+Commit do novo repo:
+
+```text
+9003d02 feat: add migration package checker
+```
+
+Escopo:
+
+- adiciona `infra/supabase/migration-package/package-checker.mjs`;
+- adiciona `npm run supabase:migration:package-check`;
+- cria checkpoint `docs/architecture/supabase-migration-package-checkpoint.md`;
+- le draft SQL, rollback SQL e policy scenarios;
+- roda guard local e static coverage;
+- cria package review-only com inventario de tabelas, functions, policies e grants;
+- registra evidencias do local runner;
+- mantem staging como `blocked_until_staging_checkpoint`;
+- mantem checklist de producao falso;
+- valida rollback strategy, browser grant review e scanner de secrets;
+- nao conecta staging, nao conecta producao, nao executa SQL remoto e nao cria migration produtiva.
+
+Evidencia:
+
+```text
+Supabase migration package supabase_20260528_initial_platform_schema is review-ready.
+table_count: 25
+policy_count: 49
+staging_status: blocked_until_staging_checkpoint
+production_ready: false
+```
+
+Validacoes:
+
+- `npm test` PASS, 260/260;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:migration:package-check` PASS.
+
+Decisao:
+
+```text
+package local esta pronto para revisao; staging/producao continuam bloqueados
+```
+
+Proximo passo correto:
+
+```text
+planejar staging package checkpoint sem executar staging ainda
+```
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:

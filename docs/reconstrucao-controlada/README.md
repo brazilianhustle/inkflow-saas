@@ -44,7 +44,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness e policy de promocao de migrations/staging/rollback, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback e checker local de package de migration, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
 
 Local:
 
@@ -66,6 +66,7 @@ Commits principais do novo repo:
 4042732 docs: record supabase local tooling enabled
 8b1d729 feat: add supabase local policy runner
 8f392c9 docs: add migration promotion policy
+9003d02 feat: add migration package checker
 354a288 docs: add policy harness operational plan
 a080bc5 feat: add local policy harness tool detection
 f11af8c feat: add local policy harness dry run
@@ -104,7 +105,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 254/254;
+- `npm test` PASS, 260/260;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
@@ -112,10 +113,10 @@ Validacoes atuais:
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:detect-tools` PASS com `supabase-cli-local`;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:static-coverage` PASS;
 - `INKFLOW_ENV=local SUPABASE_ENV=local SUPABASE_POLICY_RUNNER_EXECUTE=1 npm run supabase:policy:local-runner` PASS com 142 etapas, cenarios RLS e rollback drill;
-- policy de promocao de migrations/staging/rollback registrada e testada;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:migration:package-check` PASS, review-ready com 25 tabelas, 49 policies, staging bloqueado e producao nao pronta;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: implementar checker/gerador local de package de migration, sem conectar staging/producao. Nao iniciar adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem checkpoint explicito.
+Proxima decisao: planejar staging package checkpoint sem executar staging ainda: regras do projeto staging, backup/export, nomes de secret source e plano de smoke RLS staging. Nao iniciar adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem checkpoint explicito.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

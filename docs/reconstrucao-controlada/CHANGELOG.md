@@ -142,6 +142,11 @@
 - Commit do novo repo: `8f392c9 docs: add migration promotion policy`.
 - Escopo da policy: ladder de promocao, package obrigatorio, staging gate, production gate, rollback doctrine, boundary de secrets, revisao de grants para browser e stop conditions.
 - Validacoes atuais do novo repo: `npm test` PASS 254/254, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado checker/gerador local de package de migration no novo repo.
+- Commit do novo repo: `9003d02 feat: add migration package checker`.
+- Escopo: `npm run supabase:migration:package-check`, package review-only, inventario de tabelas/policies/functions/grants, evidencias local runner, staging bloqueado, checklist producao falso, scanner de secrets e garantia de zero conexao staging/producao.
+- Evidencia: package `supabase_20260528_initial_platform_schema` review-ready, 25 tabelas, 49 policies, `connects_to_staging=false`, `connects_to_production=false`, `production_ready=false`.
+- Validacoes atuais do novo repo: `npm test` PASS 260/260, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:migration:package-check` PASS.
 
 ### Decisoes
 
@@ -191,7 +196,8 @@
 - Ambiente local agora tem Supabase CLI + Docker via Colima, mas o runner real de RLS ainda nao existe; proximo passo correto e implementar `supabase-cli-local-runner` com guard-first.
 - Runner real local de RLS passou; isso valida comportamento de policies em Supabase local, mas ainda nao autoriza migration/producao.
 - Policy de promocao confirma que staging e producao exigem package revisado, backup/rollback/forward-fix e aprovacao explicita; local runner nunca autoriza producao automaticamente.
+- Checker de package transforma o draft em artefato review-ready, mas mantem staging/producao bloqueados e nao cria arquivo de migration produtiva.
 
 ### Proximo Passo
 
-- Implementar checker/gerador local de package de migration, sem conectar staging/producao.
+- Planejar staging package checkpoint sem executar staging ainda: regras do projeto staging, backup/export, nomes de secret source e plano de smoke RLS staging.
