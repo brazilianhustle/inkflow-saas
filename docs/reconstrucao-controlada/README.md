@@ -13,9 +13,10 @@ Ler nesta ordem:
 3. `02-arquitetura-total-alvo.md`
 4. `03-governanca-versionamento.md`
 5. `04-plano-acao-reconstrucao.md`
-6. `CHANGELOG.md`
-7. `docs/canonical/stack.md`
-8. `docs/atendimento-premium/09-session-handoff.md`
+6. `05-matriz-extracao-operacional.md`
+7. `CHANGELOG.md`
+8. `docs/canonical/stack.md`
+9. `docs/atendimento-premium/09-session-handoff.md`
 
 Depois rodar:
 
@@ -36,9 +37,9 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: arquitetura total e plano de acao inicial registrados antes de qualquer repo novo.
+Status: arquitetura total, plano de acao e matriz de extracao operacional registrados antes de qualquer repo novo.
 
-Proxima decisao: completar a matriz de extracao operacional por frente.
+Proxima decisao: criar os contratos da plataforma.
 
 ## Limite De Ambiente
 

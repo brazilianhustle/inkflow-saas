@@ -10,6 +10,7 @@
 - Criada arquitetura total alvo da plataforma InkFlow.
 - Criada governanca de versionamento e regra anti-poluicao.
 - Criado plano de acao faseado da reconstrucao controlada.
+- Criada matriz de extracao operacional por frente, com origem, decisao, destino, risco, teste, pronto e dependencias.
 
 ### Decisoes
 
@@ -21,4 +22,4 @@
 
 ### Proximo Passo
 
-- Completar o mapa de extracao com matriz por frente: origem, destino, risco, teste obrigatorio e criterio de pronto.
+- Criar `06-contratos-plataforma.md` para definir entidades e contratos compartilhados antes de qualquer repo novo.

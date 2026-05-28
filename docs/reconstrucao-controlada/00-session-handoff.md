@@ -77,32 +77,21 @@ Sequencia obrigatoria:
 3. Ler `02-arquitetura-total-alvo.md`.
 4. Ler `03-governanca-versionamento.md`.
 5. Ler `04-plano-acao-reconstrucao.md`.
-6. Ler `CHANGELOG.md`.
-7. Checar `git status --short`.
-8. So entao propor ou executar o proximo passo.
+6. Ler `05-matriz-extracao-operacional.md`.
+7. Ler `CHANGELOG.md`.
+8. Checar `git status --short`.
+9. So entao propor ou executar o proximo passo.
 
 ## Proximo Passo Logico
 
-Completar `05-matriz-extracao-operacional.md` com origem, destino, decisao, risco, teste obrigatorio e criterio de pronto para cada frente:
+Criar `06-contratos-plataforma.md`.
 
-- Bot Premium;
-- Tenant Config;
-- Painel do Estudio;
-- Onboarding;
-- Admin;
-- Billing;
-- Dados/LGPD;
-- Observabilidade/Auditoria;
-- Media Intelligence;
-- Orcamento/Proposta;
-- WhatsApp/Evolution;
-- Telegram;
-- Supabase;
-- CI/CD;
-- Smoke real;
-- Vault/Docs.
+Objetivo do proximo artefato:
 
-Depois disso, iniciar os contratos da plataforma.
+- definir entidades de dominio;
+- definir contratos compartilhados entre bot, painel, banco, billing e legal;
+- preparar `07-tenant-config-contract.md`;
+- impedir que o novo repo nasca antes da modelagem.
 
 ## Regra Anti-Poluicao
 
