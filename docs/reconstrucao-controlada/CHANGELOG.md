@@ -306,6 +306,11 @@
 - Escopo: `docs/architecture/supabase-staging-operational-evidence-package.md`, `npm run supabase:staging:evidence-package`, consolidando migration package, staging readiness e staging execution gate.
 - Evidencia: `staging_execution_authorized=false`, `production_execution_authorized=false`, `secret_sync_authorized=false`, `connects_to_staging=false`, `executable_database_commands=false`, blockers esperados registrados.
 - Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-evidence-package.test.mjs` PASS 5/5, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:evidence-package` PASS, `npm test` PASS 396/396, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate.
+- Implementado pacote operacional de evidencia local para Provider staging no novo repo.
+- Commit do novo repo: `5ea6001 feat: add provider staging evidence package`.
+- Escopo: `docs/architecture/provider-staging-operational-evidence-package.md`, `npm run provider:staging:evidence-package`, consolidando fake tenant/client/artist, promotion gate, secret source names, smoke coverage, rollback e blockers.
+- Evidencia: `provider_staging_execution_authorized=false`, `provider_production_execution_authorized=false`, `provider_secret_sync_authorized=false`, `provider_webhook_update_authorized=false`, `connects_to_provider=false`, `deploys_now=false`, blockers esperados registrados.
+- Validacoes atuais do novo repo: `node --test tests/architecture/provider-staging-evidence-package.test.mjs` PASS 5/5, `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:staging:evidence-package` PASS, `npm test` PASS 401/401, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate.
 
 ### Decisoes
 
@@ -384,7 +389,8 @@
 - Provider real promotion gate esta pronto para revisao manual, mas nao autoriza execucao. O proximo passo exige decisao explicita entre pacote de evidencias local para revisao operacional ou aprovacao humana antes de qualquer staging/provider real.
 - Stage Readiness Package fecha a definicao das tres lacunas restantes sem executar nada real; a proxima acao deve seguir a ladder: Supabase staging primeiro, depois Provider staging, depois SaaS runtime staging.
 - Supabase staging agora tem evidencia operacional local consolidada; execucao real ainda depende de aprovacao humana, backup/export staging real e smoke RLS staging real.
+- Provider staging agora tem evidencia operacional local consolidada; execucao real ainda depende de aprovacao humana, health check, secret sync, webhook isolation e smoke real com atores fake.
 
 ### Proximo Passo
 
-- Seguir para Provider staging package/gate ou parar para checkpoint de aprovacao humana antes de qualquer execucao Supabase real, sem secrets reais, staging, producao, provider real ou deploy automatico.
+- Seguir para SaaS runtime staging package/gate ou parar para checkpoint de aprovacao humana antes de qualquer execucao real, sem secrets reais, staging, producao, provider real ou deploy automatico.
