@@ -35,6 +35,9 @@
 - Implementado quinto dominio funcional no novo repo: `packages/observability`.
 - Commit do novo repo: `9c1e812 feat: implement observability contracts`.
 - Validacoes atuais do novo repo: `npm test` PASS 54/54, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado sexto dominio funcional no novo repo: `packages/media-intelligence`.
+- Commit do novo repo: `9fb7fac feat: implement media classification contract`.
+- Validacoes atuais do novo repo: `npm test` PASS 62/62, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -48,8 +51,9 @@
 - `packages/workflow` foi implementado sem banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/pricing` foi implementado sem calculo automatico final, Telegram, WhatsApp, banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/observability` foi implementado sem log provider, banco, APIs, runtime, painel, deploy ou secrets.
-- Proximo dominio recomendado: `packages/media-intelligence`.
+- `packages/media-intelligence` foi implementado sem modelo vision, WhatsApp, Telegram, banco, APIs, runtime, painel, deploy ou secrets.
+- Proximo passo recomendado: checkpoint estrategico e depois `packages/conversation-engine`.
 
 ### Proximo Passo
 
-- Implementar `packages/media-intelligence` no novo repo como contrato puro de classificacao de midia antes de qualquer modelo/vision/runtime.
+- Fazer checkpoint estrategico e, se mantido o caminho, implementar `packages/conversation-engine` como contrato puro de TurnContext/Router/Policy.

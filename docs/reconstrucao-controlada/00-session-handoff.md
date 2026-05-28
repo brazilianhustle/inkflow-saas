@@ -280,22 +280,54 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo.
 
-## Proximo Passo Logico
+## Sexto Dominio Implementado
 
-Definir e implementar o proximo dominio no novo repo.
-
-Recomendacao:
+Dominio:
 
 ```text
 packages/media-intelligence
 ```
 
+Commit:
+
+```text
+9fb7fac feat: implement media classification contract
+```
+
+Escopo:
+
+- contrato puro de classificacao de midia;
+- categorias `body_location_clean`, `body_location_with_existing_tattoo`, `tattoo_reference`, `possible_cover_up`, `ambiguous`, `irrelevant`;
+- derivacao de next_action;
+- regra critica: local limpo com confianca alta vira `accept_as_local_photo`, nao pergunta generica;
+- tattoo existente/cobertura pede esclarecimento entre cobertura/referencia;
+- referencia vira `accept_as_reference`;
+- validacao de confianca e acoes;
+- sem modelo vision, WhatsApp, Telegram, banco, API, storage, deploy ou secrets.
+
+Validacoes:
+
+- `npm test` PASS, 62/62;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo.
+
+## Proximo Passo Logico
+
+Checkpoint estrategico antes de iniciar runtime/integracoes.
+
+Recomendacao:
+
+```text
+packages/conversation-engine
+```
+
 Objetivo do proximo artefato:
 
-- criar contrato puro de classificacao de midia;
-- representar categorias `body_location_clean`, `body_location_with_existing_tattoo`, `tattoo_reference`, `possible_cover_up`, `ambiguous`, `irrelevant`;
-- validar confianca e proxima pergunta/acao esperada;
-- manter sem modelo/vision, WhatsApp, Telegram, banco, APIs, secrets e deploy.
+- criar contrato puro de TurnContext/Router/Policy;
+- usar domain, tenant-config, workflow, pricing, observability e media-intelligence como fundacao;
+- manter sem LLM, WhatsApp, Telegram, banco, APIs, secrets e deploy;
+- validar por unit/contract antes de qualquer runtime real.
 - manter pacote sem side effects, sem banco, sem APIs, sem secrets e sem deploy.
 
 ## Regra Anti-Poluicao
