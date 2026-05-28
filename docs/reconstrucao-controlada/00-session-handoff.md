@@ -184,6 +184,37 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo.
 
+## Terceiro Dominio Implementado
+
+Dominio:
+
+```text
+packages/workflow
+```
+
+Commit:
+
+```text
+23a00ef feat: implement workflow transitions
+```
+
+Escopo:
+
+- tabela de transicoes canonicas para conversation, budget e tenant;
+- bloqueio seguro de estados desconhecidos;
+- transicao idempotente para retries;
+- `applyTransition` sem side effects;
+- `preserveState` para intents que nao podem mutar estado;
+- razoes estruturadas para observabilidade;
+- testes unit/contract.
+
+Validacoes:
+
+- `npm test` PASS, 35/35;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo.
+
 ## Proximo Passo Logico
 
 Definir e implementar o proximo dominio no novo repo.
@@ -191,14 +222,14 @@ Definir e implementar o proximo dominio no novo repo.
 Recomendacao:
 
 ```text
-packages/workflow
+packages/pricing
 ```
 
 Objetivo do proximo artefato:
 
-- implementar tabela de transicoes canonicas;
-- garantir que estados mudem apenas por WorkflowManager;
-- validar transicoes de conversa e budget;
+- iniciar foundation de orcamento/pricing;
+- representar BudgetRequest/BudgetItem/BudgetSession/BudgetQuote com helpers de avaliacao;
+- preparar suporte nativo a multiplas tattoos e multiplas sessoes;
 - manter pacote sem side effects, sem banco, sem APIs, sem secrets e sem deploy.
 
 ## Regra Anti-Poluicao

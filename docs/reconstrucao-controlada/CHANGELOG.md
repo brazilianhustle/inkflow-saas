@@ -26,6 +26,9 @@
 - Implementado segundo dominio funcional no novo repo: `packages/domain`.
 - Commit do novo repo: `266fb02 feat: implement domain contracts`.
 - Validacoes atuais do novo repo: `npm test` PASS 22/22, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado terceiro dominio funcional no novo repo: `packages/workflow`.
+- Commit do novo repo: `23a00ef feat: implement workflow transitions`.
+- Validacoes atuais do novo repo: `npm test` PASS 35/35, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -36,8 +39,9 @@
 - Nenhum deploy, secret, smoke real, migration ou codigo funcional sera alterado nesta frente sem plano aprovado.
 - `packages/tenant-config` foi implementado sem bot runtime, painel, deploy ou secrets.
 - `packages/domain` foi implementado sem banco, APIs, runtime, painel, deploy ou secrets.
-- Proximo dominio recomendado: `packages/workflow`.
+- `packages/workflow` foi implementado sem banco, APIs, runtime, painel, deploy ou secrets.
+- Proximo dominio recomendado: `packages/pricing`.
 
 ### Proximo Passo
 
-- Implementar `packages/workflow` no novo repo para consolidar transicoes canonicas antes de budget, bot runtime ou painel.
+- Implementar `packages/pricing` no novo repo para iniciar foundation de orcamento multi-item/multi-session.
