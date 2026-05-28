@@ -16,9 +16,10 @@ Ler nesta ordem:
 6. `05-matriz-extracao-operacional.md`
 7. `06-contratos-plataforma.md`
 8. `07-tenant-config-contract.md`
-9. `CHANGELOG.md`
-10. `docs/canonical/stack.md`
-11. `docs/atendimento-premium/09-session-handoff.md`
+9. `08-data-governance-contract.md`
+10. `CHANGELOG.md`
+11. `docs/canonical/stack.md`
+12. `docs/atendimento-premium/09-session-handoff.md`
 
 Depois rodar:
 
@@ -39,9 +40,9 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: arquitetura total, plano de acao, matriz de extracao, contratos base e Tenant Config Contract registrados antes de qualquer repo novo.
+Status: arquitetura total, plano de acao, matriz de extracao, contratos base, Tenant Config Contract e Data Governance Contract registrados antes de qualquer repo novo.
 
-Proxima decisao: criar o contrato de governanca de dados/LGPD.
+Proxima decisao: criar o contrato de estrategia de testes.
 
 ## Limite De Ambiente
 

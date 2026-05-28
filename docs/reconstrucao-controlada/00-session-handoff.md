@@ -80,20 +80,21 @@ Sequencia obrigatoria:
 6. Ler `05-matriz-extracao-operacional.md`.
 7. Ler `06-contratos-plataforma.md`.
 8. Ler `07-tenant-config-contract.md`.
-9. Ler `CHANGELOG.md`.
-10. Checar `git status --short`.
-11. So entao propor ou executar o proximo passo.
+9. Ler `08-data-governance-contract.md`.
+10. Ler `CHANGELOG.md`.
+11. Checar `git status --short`.
+12. So entao propor ou executar o proximo passo.
 
 ## Proximo Passo Logico
 
-Criar `08-data-governance-contract.md`.
+Criar `09-test-strategy-contract.md`.
 
 Objetivo do proximo artefato:
 
-- definir inventario de dados;
-- mapear finalidade, retencao e direitos do titular;
-- separar dado de atendimento, billing, observabilidade e marketing;
-- preparar base legal/LGPD antes do novo repo.
+- definir estrategia de testes da plataforma;
+- preservar WhatsApp real como validacao definitiva para comportamento conversacional;
+- separar unit, contract, integration, eval, real smoke e security gate;
+- definir criterios de promocao antes do repo novo.
 
 ## Regra Anti-Poluicao
 

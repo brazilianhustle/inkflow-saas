@@ -13,6 +13,7 @@
 - Criada matriz de extracao operacional por frente, com origem, decisao, destino, risco, teste, pronto e dependencias.
 - Criados contratos base da plataforma: entidades canonicas, estados, relacoes entre modulos e validacoes obrigatorias.
 - Criado Tenant Config Contract com blocos, defaults, snapshots, invariantes, fixtures e testes obrigatorios.
+- Criado Data Governance Contract com inventario de dados, papeis, direitos do titular, retencao, suboperadores, incidentes e testes obrigatorios.
 
 ### Decisoes
 
@@ -24,4 +25,4 @@
 
 ### Proximo Passo
 
-- Criar `08-data-governance-contract.md` para mapear dados, finalidade, retencao e direitos LGPD antes do repo novo.
+- Criar `09-test-strategy-contract.md` para definir validacao profissional da plataforma antes do repo novo.
