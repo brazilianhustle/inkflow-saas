@@ -270,6 +270,12 @@
 - Segurança: metadata continua bloqueando valores secret-like; scan focado encontrou apenas guards/fixtures, sem credencial real.
 - Limites: sem Telegram real, Evolution real, parser amplo, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
 - Validacoes atuais do novo repo: `npm test` PASS 372/372, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
+- Criado checkpoint de roundtrip local de orcamento do tatuador no novo repo.
+- Commit do novo repo: `1d39a6d test: prove local artist quote roundtrip`.
+- Escopo: prova local completa une bot-orchestrator `quote_request`, `quote_request_context/ref`, Telegram quote adapter, artist quote intake, notifications service e WhatsApp `quote_response` simulada, com recibos separados e auditoria redigida.
+- Segurança: sem provider real, sem parser amplo, sem secrets; scan focado encontrou apenas guards/fixtures.
+- Limites: sem Telegram real, Evolution real, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
+- Validacoes atuais do novo repo: `npm test` PASS 376/376, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
 
 ### Decisoes
 
@@ -341,7 +347,8 @@
 - Fluxo local de quote response esta provado ate delivery simulado provider-aware; o proximo gap estrutural e normalizar a resposta Telegram antes do intake ou preparar runbook real-provider sem executar.
 - Telegram quote adapter resolve o gap de normalizacao local sem liberar parser amplo nem provider real; o proximo gap estrutural e gerar/persistir o contexto/ref de quote_request localmente no fluxo do orchestrator/notifications.
 - Quote request context fecha a preparacao da ida; o proximo gap estrutural e uma prova local de ida-e-volta completa usando esse contexto como input do Telegram adapter.
+- Roundtrip local prova a cadeia funcional sem provider real; o proximo gap estrutural e decidir se o contexto/ref deve ser persistido agora ou se a frente deve preparar runbook/gate de provider real.
 
 ### Proximo Passo
 
-- Criar teste local de ida-e-volta completo unindo quote_request context -> Telegram adapter -> artist quote intake -> WhatsApp quote_response, sem secrets reais, staging, producao ou provider real.
+- Escolher entre persistir quote context/ref em `persistence-contracts` ou preparar runbook/gate de promocao real-provider, sem secrets reais, staging, producao ou provider real.

@@ -30,26 +30,26 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-1e42140 feat: attach quote request context locally
+1d39a6d test: prove local artist quote roundtrip
 ```
 
 Bloco fechado:
 
-- `bot-orchestrator` agora anexa `quote_request_context` e `quote_request_ref` no `quote_request` local quando recebe dados de orcamento;
-- `notifications` preserva metadata segura no result e encaminha metadata segura ao envelope simulado;
-- texto do pedido ao tatuador traz instrucoes estritas por item ou por sessao, com `ref` explicita;
-- caminho de ida e volta fica estruturalmente conectado: quote_request local -> contexto/ref -> Telegram adapter local -> intake -> quote_response local;
-- checkpoints de bot-orchestrator notifications e notifications local service atualizados e testados;
+- checkpoint `artist-quote-roundtrip-local` criado;
+- prova local completa: bot-orchestrator quote_request -> quote_request_context/ref -> telegram quote adapter -> artist quote intake -> notifications service -> provider-aware whatsapp adapter -> simulated quote_response delivery -> redacted audit;
+- o contexto/ref gerado no pedido ao tatuador foi reutilizado diretamente pelo adapter Telegram;
+- uma resposta estrita do tatuador gerou uma unica `quote_response` com dois valores em uma mensagem;
+- receipts de Telegram request e WhatsApp quote_response ficam separados e auditados localmente;
 - Telegram real, Evolution real, parser amplo, secrets, staging, producao e deploy continuam bloqueados.
 
 Validacoes do ultimo bloco:
 
-- `npm test` PASS 372/372;
+- `npm test` PASS 376/376;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
-- scan focado de seguranca em bot-orchestrator/notifications PASS apenas com guards e fixtures de teste, sem credencial real.
+- scan focado de seguranca no roundtrip PASS apenas com guards e fixtures de teste, sem credencial real.
 
-Proximo passo seguro: criar um teste local de ida-e-volta completo unindo quote_request context -> Telegram adapter -> artist quote intake -> WhatsApp quote_response, ainda sem provider real, staging ou secrets.
+Proximo passo seguro: definir o proximo bloco estrutural local-only entre persistencia do quote context/ref em `persistence-contracts` ou runbook/gate de promocao real-provider, ainda sem provider real, staging ou secrets.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 
