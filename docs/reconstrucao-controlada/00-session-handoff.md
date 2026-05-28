@@ -123,21 +123,53 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
-## Proximo Passo Logico
+## Primeiro Dominio Implementado
 
-Iniciar o primeiro dominio implementavel no novo repo:
+Dominio:
 
 ```text
 packages/tenant-config
 ```
 
+Commit:
+
+```text
+2dbccef feat: implement tenant config contract
+```
+
+Escopo:
+
+- defaults canonicos `tenant_config_v1`;
+- validacao de enum/campos obrigatorios;
+- regra de estilo: `accepted_styles` vazio significa sem restricao;
+- `focus_styles` nao bloqueia estilo;
+- `rejected_styles` bloqueia;
+- snapshots seguros para bot e observabilidade;
+- redaction de notas privadas, telefone, instance e chat ids;
+- testes unit/contract.
+
+Validacoes:
+
+- `npm test` PASS, 12/12;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo.
+
+## Proximo Passo Logico
+
+Definir e implementar o proximo dominio no novo repo.
+
+Recomendacao:
+
+```text
+packages/domain
+```
+
 Objetivo do proximo artefato:
 
-- transformar `07-tenant-config-contract.md` em schema inicial;
-- implementar defaults;
-- implementar fixtures;
-- implementar unit/contract tests;
-- manter sem bot runtime, sem painel, sem deploy e sem secrets.
+- consolidar entidades canonicas de `06-contratos-plataforma.md`;
+- criar tipos/constantes para Tenant, ClientContact, Conversation, Message, MediaAsset, BudgetRequest, BudgetItem, BudgetSession, BudgetQuote, Proposal, Payment, Entitlement, AuditEvent e DecisionEvent;
+- manter pacote sem side effects, sem banco, sem APIs, sem secrets e sem deploy.
 
 ## Regra Anti-Poluicao
 

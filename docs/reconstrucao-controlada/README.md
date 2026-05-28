@@ -43,7 +43,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente como scaffold isolado, sem produto funcional, sem secrets, sem deploy e sem migracao de codigo legado.
+Status: novo repo `inkflow-platform` criado localmente e primeiro dominio `packages/tenant-config` implementado como pacote funcional isolado, sem bot runtime, sem painel, sem secrets e sem deploy.
 
 Local:
 
@@ -57,15 +57,20 @@ Commit inicial:
 b815ccb chore: scaffold inkflow platform monorepo
 ```
 
-Validacoes do scaffold:
+Ultimo commit do novo repo:
 
-- `npm test` PASS;
+```text
+2dbccef feat: implement tenant config contract
+```
+
+Validacoes atuais:
+
+- `npm test` PASS, 12/12;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
-- git limpo no repo novo;
-- git limpo no repo atual antes do registro.
+- git limpo no repo novo.
 
-Proxima decisao: iniciar o primeiro dominio implementavel no novo repo: `packages/tenant-config`.
+Proxima decisao: definir o proximo dominio implementavel no novo repo. Recomendacao: `packages/domain` para consolidar entidades canonicas usadas por tenant-config, budget, conversation, payment e audit.
 
 ## Limite De Ambiente
 

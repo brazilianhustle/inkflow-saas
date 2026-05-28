@@ -20,6 +20,9 @@
 - Criado scaffold local do novo repo `inkflow-platform` em `/Users/brazilianhustler/Documents/inkflow-platform`.
 - Commit inicial do novo repo: `b815ccb chore: scaffold inkflow platform monorepo`.
 - Validacoes do scaffold: `npm test`, `npm run typecheck` e `npm run lint` passaram.
+- Implementado primeiro dominio funcional no novo repo: `packages/tenant-config`.
+- Commit do novo repo: `2dbccef feat: implement tenant config contract`.
+- Validacoes atuais do novo repo: `npm test` PASS 12/12, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -28,8 +31,9 @@
 - Bot premium vira modulo/vault dentro da plataforma, nao repo inteiro.
 - Durante fase de arquitetura, apenas docs da frente podem ser alterados.
 - Nenhum deploy, secret, smoke real, migration ou codigo funcional sera alterado nesta frente sem plano aprovado.
-- O primeiro dominio implementavel no novo repo sera `packages/tenant-config`, ainda sem bot runtime, painel, deploy ou secrets.
+- `packages/tenant-config` foi implementado sem bot runtime, painel, deploy ou secrets.
+- Proximo dominio recomendado: `packages/domain`.
 
 ### Proximo Passo
 
-- Implementar o primeiro dominio `packages/tenant-config` no novo repo com schema, defaults, fixtures e unit/contract tests.
+- Implementar `packages/domain` no novo repo para consolidar entidades canonicas compartilhadas.
