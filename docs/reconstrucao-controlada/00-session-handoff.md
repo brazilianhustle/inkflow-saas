@@ -19,6 +19,41 @@ repo atual = legado operacional + vault + fonte de extracao
 novo repo = fonte da verdade futura da plataforma
 ```
 
+## Estado Executivo Atual
+
+Novo repo:
+
+```text
+/Users/brazilianhustler/Documents/inkflow-platform
+```
+
+Ultimo commit validado:
+
+```text
+865caae docs: record provider metadata rls evidence
+```
+
+Bloco fechado:
+
+- schema draft/checkers Supabase alinhados a provider metadata;
+- commit funcional `6153ff9 feat: harden provider metadata policies`;
+- `provider_connections` com provider enum, health enum, `updated_at`, binding opaco `secbind|binding|vaultref` e unique por tenant/provider/label;
+- cenarios de policy harness agora cobrem owner autorizado e viewer bloqueado para mutation de provider metadata;
+- RLS de select da tabela interna `provider_connections` limitado a owner/admin/service_role, porque RLS nao redige colunas;
+- summaries seguros para leitura ampla ficam na camada de view-model/read model redigido, nao em SELECT direto da tabela interna.
+
+Validacoes do ultimo bloco:
+
+- `npm test` PASS 315/315;
+- `npm run lint` PASS placeholder;
+- `npm run typecheck` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:dry-run` PASS com 13 cenarios;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:static-coverage` PASS com 25 tabelas/13 cenarios;
+- `INKFLOW_ENV=local SUPABASE_ENV=local SUPABASE_POLICY_RUNNER_EXECUTE=1 npm run supabase:policy:local-runner` PASS com 142 etapas, cenarios RLS e rollback drill em Supabase local isolado;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:migration:package-check` PASS review-ready, `connects_to_staging=false`, `connects_to_production=false`.
+
+Proximo passo seguro: seguir para o proximo bloco local-only de maior prioridade funcional ou revisar package/staging docs apenas em modo review. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
+
 ## Terreno Confirmado
 
 Inventario observado no repo atual:

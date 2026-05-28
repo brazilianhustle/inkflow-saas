@@ -204,6 +204,14 @@
 - Double check: render direto confirmou `htmlHasSecretBindingId=false`, `htmlHasSecbind=false`; action auditada confirmou `auditHasSecretBindingId=false`, `auditHasSecbind=false` e `realConnected=false`.
 - Limites: sem env, Cloudflare secrets, Supabase Vault, providers reais, Evolution, Telegram, Mercado Pago, OpenAI real, rede, staging, deploy ou sync de secrets.
 - Validacoes atuais do novo repo: `npm test` PASS 314/314, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Alinhado schema draft/checkers Supabase com provider metadata no novo repo.
+- Commit do novo repo: `6153ff9 feat: harden provider metadata policies`.
+- Commit de evidencia do novo repo: `865caae docs: record provider metadata rls evidence`.
+- Escopo: `provider_connections` agora tem provider enum, health enum, `updated_at`, binding opaco `secbind|binding|vaultref`, unique por tenant/provider/label, cenarios RLS para owner/viewer em mutation e checkpoint `supabase-provider-metadata-policy-checkpoint`.
+- Segurança: RLS de select da tabela interna ficou limitado a owner/admin/service_role porque RLS nao redige colunas; summaries seguros para leitura ampla devem vir por view-model/read model redigido, nao por SELECT direto em `provider_connections`.
+- Double check: scan final encontrou apenas testes negativos/guardrails para secrets e comandos proibidos; nenhum secret real, staging/prod ou comando executavel de migration foi adicionado.
+- Limites: sem migration real, staging, producao, Supabase remoto, providers reais, rede, deploy ou secrets.
+- Validacoes atuais do novo repo: `npm test` PASS 315/315, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:dry-run` PASS com 13 cenarios, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:static-coverage` PASS com 25 tabelas/13 cenarios, `INKFLOW_ENV=local SUPABASE_ENV=local SUPABASE_POLICY_RUNNER_EXECUTE=1 npm run supabase:policy:local-runner` PASS com 142 etapas/cenarios RLS/rollback drill, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:migration:package-check` PASS review-ready com staging/producao false.
 
 ### Decisoes
 
