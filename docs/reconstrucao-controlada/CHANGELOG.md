@@ -281,6 +281,11 @@
 - Escopo: `QuoteRequestContextRepository` salva `quote_request_ref`/`quote_request_context` tenant-scoped, valida tenant/conversation/ref/budget items/status, bloqueia metadata secret-like e oferece `getByRef`, `listByConversation` e `listPendingByTenant`.
 - Segurança: sem Supabase real, migration real, provider real, secrets, staging ou deploy.
 - Validacoes atuais do novo repo: `npm test` PASS 379/379, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS com apenas guards/fixtures.
+- Integrado bot-orchestrator ao contrato local de quote request contexts no novo repo.
+- Commit do novo repo: `6b99dbb feat: persist quote context from orchestrator`.
+- Escopo: apos `quote_request` enviado com sucesso, o orchestrator salva `quote_request_context` em `QuoteRequestContextRepository`; falha de persistencia e registrada no snapshot sem rollback da notificacao.
+- Segurança: sem Supabase real, migration real, provider real, secrets, staging ou deploy.
+- Validacoes atuais do novo repo: `npm test` PASS 381/381, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS com apenas guards/fixtures.
 
 ### Decisoes
 
@@ -354,7 +359,8 @@
 - Quote request context fecha a preparacao da ida; o proximo gap estrutural e uma prova local de ida-e-volta completa usando esse contexto como input do Telegram adapter.
 - Roundtrip local prova a cadeia funcional sem provider real; o proximo gap estrutural e decidir se o contexto/ref deve ser persistido agora ou se a frente deve preparar runbook/gate de provider real.
 - Quote request context agora tem contrato de persistencia local; o proximo gap estrutural e o orchestrator gravar esse contexto no repositorio local quando emitir `quote_request`.
+- Orchestrator agora grava o contexto/ref localmente; o proximo gap estrutural e provar o roundtrip usando busca por `quote_request_ref` persistido, nao apenas metadata em memoria.
 
 ### Proximo Passo
 
-- Conectar o bot-orchestrator ao `QuoteRequestContextRepository` local para salvar contexto ao emitir `quote_request`, sem secrets reais, staging, producao ou provider real.
+- Atualizar o roundtrip local para buscar contexto persistido por `quote_request_ref` antes do Telegram adapter, sem secrets reais, staging, producao ou provider real.

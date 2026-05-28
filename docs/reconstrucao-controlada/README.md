@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+6b99dbb feat: persist quote context from orchestrator
 d113c19 feat: persist quote request contexts locally
 1d39a6d test: prove local artist quote roundtrip
 1e42140 feat: attach quote request context locally
@@ -129,7 +130,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 379/379;
+- `npm test` PASS, 381/381;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
@@ -161,9 +162,10 @@ Validacoes atuais:
 - bot-orchestrator/notifications agora anexam e preservam `quote_request_context`/`quote_request_ref` seguros no pedido ao tatuador, com instrucoes estritas por item/sessao;
 - roundtrip local de orcamento do tatuador provado ponta a ponta: quote_request context/ref -> Telegram adapter -> artist quote intake -> WhatsApp quote_response simulada;
 - persistence-contracts agora tem `QuoteRequestContextRepository` local tenant-scoped para salvar e buscar `quote_request_ref`/contexto seguro;
+- bot-orchestrator agora persiste `quote_request_context` local apos `quote_request` enviado com sucesso, expondo resultado no snapshot sem rollback da notificacao;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: conectar o bot-orchestrator ao `QuoteRequestContextRepository` local para salvar contexto ao emitir `quote_request`, mantendo staging/producao bloqueados. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
+Proxima decisao: atualizar o roundtrip local para buscar contexto persistido por `quote_request_ref` antes do Telegram adapter, mantendo staging/producao bloqueados. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

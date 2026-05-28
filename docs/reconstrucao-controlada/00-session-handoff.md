@@ -30,26 +30,25 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-d113c19 feat: persist quote request contexts locally
+6b99dbb feat: persist quote context from orchestrator
 ```
 
 Bloco fechado:
 
-- `QuoteRequestContextRepository` adicionado a `packages/persistence-contracts`;
-- `quote_request_ref` e `quote_request_context` agora tem contrato local tenant-scoped;
-- valida ref/contexto, tenant/conversation, budget items, status e bloqueio secret-like;
-- inclui `getByRef`, `listByConversation` e `listPendingByTenant`;
-- snapshot local passa a expor `quote_request_contexts`;
+- `bot-orchestrator` agora grava `quote_request_context` no `QuoteRequestContextRepository` local apos `quote_request` enviado com sucesso;
+- snapshot do orchestrator expoe `quote_request_persistence_results`;
+- falha de persistencia local fica visivel, mas nao desfaz a notificacao local ja enviada;
+- checkpoint de bot-orchestrator notifications atualizado com a nova responsabilidade;
 - sem Supabase real, migration real, provider real, secrets, staging ou deploy.
 
 Validacoes do ultimo bloco:
 
-- `npm test` PASS 379/379;
+- `npm test` PASS 381/381;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
-- scan focado de seguranca em persistence-contracts PASS apenas com guards/fixtures, sem credencial real.
+- scan focado de seguranca em bot-orchestrator PASS apenas com guards/fixtures, sem credencial real.
 
-Proximo passo seguro: conectar o bot-orchestrator ao `QuoteRequestContextRepository` local para salvar o contexto quando emitir `quote_request`, ainda sem Supabase real, provider real, staging ou secrets.
+Proximo passo seguro: atualizar o roundtrip local para buscar o contexto persistido por `quote_request_ref` antes de acionar o Telegram adapter, ainda sem Supabase real, provider real, staging ou secrets.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 
