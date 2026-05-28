@@ -102,6 +102,9 @@
 - Implementado schema draft Supabase local no novo repo: SQL draft inicial, rollback, fixtures e teste estatico em `tests/architecture/supabase-schema-draft.test.mjs`.
 - Commit do novo repo: `8f21329 feat: add supabase schema draft`.
 - Validacoes atuais do novo repo: `npm test` PASS 193/193, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado contrato auth identity no novo repo: convite, login, revogacao, service boundary e alinhamento de roles entre domain/admin/schema.
+- Commit do novo repo: `0549802 feat: add auth identity contract`.
+- Validacoes atuais do novo repo: `npm test` PASS 199/199, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -138,7 +141,8 @@
 - Checkpoint estrutural do admin aprovado como local-only; nao iniciar React/Vite, Supabase real, auth real, providers, deploy ou design visual sem checkpoint dedicado.
 - `supabase-local-contract` foi registrado como contrato local-only; nao iniciar SQL executavel, Supabase real, auth real, providers, deploy ou design visual sem checkpoint dedicado.
 - `supabase-schema-draft` foi implementado como artefato local-only; nao executar SQL contra Supabase real nem promover migration sem harness local, RLS tests, rollback exercitado e plano de backup/producao.
+- `auth-identity-contract` detectou gap estrutural de roles antigas e alinhou `support/readonly` para `assistant/viewer` no domain/admin-access/schema draft.
 
 ### Proximo Passo
 
-- Implementar `auth-identity-contract` antes de rodar SQL local, ou `supabase-policy-test-harness` se houver decisao explicita para introduzir Supabase local.
+- Fazer checkpoint para decidir `supabase-policy-test-harness` local-only antes de introduzir Supabase local/CLI/Docker ou equivalente.

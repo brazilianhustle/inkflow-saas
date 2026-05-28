@@ -1040,6 +1040,38 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Auth Identity Contract Implementado
+
+Artefatos no novo repo:
+
+```text
+docs/architecture/auth-identity-contract.md
+tests/architecture/auth-identity-contract.test.mjs
+```
+
+Commit:
+
+```text
+0549802 feat: add auth identity contract
+```
+
+Escopo:
+
+- contrato de identidade separando Supabase Auth de autorizacao InkFlow;
+- fluxo de convite, login, revogacao e service boundary;
+- regras para roles `owner`, `admin`, `artist`, `assistant`, `viewer`;
+- regras para statuses `invited`, `active`, `disabled`, `revoked`;
+- teste alinhando contrato, domain roles, admin-access e schema draft;
+- correcao estrutural de roles antigas no repo novo: `support/readonly` foi alinhado para `assistant/viewer`;
+- sem auth real, sem Supabase local/producao, sem email real, sem secrets, sem deploy e sem provider real.
+
+Validacoes:
+
+- `npm test` PASS, 199/199;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1084,9 +1116,9 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo estrutural: `auth-identity-contract` ou `supabase-policy-test-harness`;
+- implementar proximo fluxo estrutural: `supabase-policy-test-harness` local-only ou um checkpoint antes dele;
 - manter tudo local e desconectado de producao;
-- decidir convite/login/roles antes de executar SQL, ou introduzir harness Supabase local somente com autorizacao explicita;
+- introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
 - validar por unit/contract antes de qualquer adapter real.
 
