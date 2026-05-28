@@ -321,6 +321,11 @@
 - Escopo: `docs/architecture/end-to-end-fake-staging-smoke-package.md`, `npm run e2e:fake-staging:package`, consolidando Stage readiness, Supabase staging evidence, Provider staging evidence e SaaS runtime staging evidence em uma decisao humana final.
 - Evidencia: `ready_for_human_stage_decision=true`, `e2e_fake_staging_smoke_authorized=false`, `stage_execution_authorized=false`, `production_execution_authorized=false`, `real_provider_execution_authorized=false`, `deploy_execution_authorized=false`, `secret_sync_authorized=false`, gates todos true e blockers esperados registrados.
 - Validacoes atuais do novo repo: `node --test tests/architecture/e2e-fake-staging-package.test.mjs` PASS 5/5, `INKFLOW_ENV=local E2E_FAKE_STAGE_ENV=local npm run e2e:fake-staging:package` PASS, `npm test` PASS 411/411, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate.
+- Implementado Product Delivery Master Plan no novo repo.
+- Commit do novo repo: `1c391bd feat: add product delivery master plan`.
+- Escopo: `docs/architecture/product-delivery-master-plan.md`, `npm run product:delivery:master-plan`, definindo a trilha da fundacao ao produto final: data foundation, SaaS runtime foundation, provider staging foundation, end-to-end Stage, product completion e production pilot.
+- Evidencia: `ready_for_supabase_staging_decision=true`, `recommended_next_candidate=approve_supabase_staging_only`, `product_delivery_execution_authorized=false`, `stage_execution_authorized=false`, `production_execution_authorized=false`, `real_provider_execution_authorized=false`, `deploy_execution_authorized=false`, `secret_sync_authorized=false`, `billing_activation_authorized=false` e `customer_data_migration_authorized=false`.
+- Validacoes atuais do novo repo: `node --test tests/architecture/product-delivery-master-plan.test.mjs` PASS 5/5, `INKFLOW_ENV=local PRODUCT_DELIVERY_ENV=local npm run product:delivery:master-plan` PASS, `npm test` PASS 416/416, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate.
 
 ### Decisoes
 
@@ -402,7 +407,8 @@
 - Provider staging agora tem evidencia operacional local consolidada; execucao real ainda depende de aprovacao humana, health check, secret sync, webhook isolation e smoke real com atores fake.
 - SaaS runtime staging agora tem evidencia operacional local consolidada; execucao real ainda depende de aprovacao humana, runtime route, bindings de staging, deploy staging e smoke runtime.
 - End-to-end fake staging package e o checkpoint local final antes de qualquer Stage real; a proxima acao e decisao humana entre manter bloqueado ou aprovar execucao Stage ordenada com checkpoints explicitos.
+- Product Delivery Master Plan fixa a ordem estrategica para agilizar sem perder qualidade: Supabase staging primeiro, SaaS runtime depois, Provider staging em terceiro, E2E Stage, Product Completion e Production Pilot.
 
 ### Proximo Passo
 
-- Parar para decisao humana de Stage: manter bloqueado, aprovar apenas Supabase staging, aprovar apenas Provider staging, aprovar apenas SaaS runtime staging ou aprovar execucao Stage ordenada com checkpoints explicitos. Nao executar secrets reais, staging, producao, provider real ou deploy automatico sem aprovacao explicita.
+- Parar para aprovacao humana especifica de Supabase staging only. Antes de executar, confirmar projeto staging, operador, timestamp, backup/export, rollback owner, fixtures fake e local de evidencia. Nao executar secrets reais, staging, producao, provider real, billing activation, customer data migration ou deploy automatico sem aprovacao explicita.
