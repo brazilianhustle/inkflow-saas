@@ -296,6 +296,11 @@
 - Escopo: `docs/architecture/provider-real-delivery-promotion-runbook.md`, `npm run provider:delivery:promotion-gate`, evidencias locais obrigatorias, secret source names, isolamento staging, smoke plan, rollback, stop conditions e bloqueios contra autorizacao automatica, production-like env, comando executavel de provider e secrets crus.
 - Evidencia: `real_provider_execution_authorized=false`, `staging_execution_authorized=false`, `production_execution_authorized=false`, `connects_to_provider=false`.
 - Validacoes atuais do novo repo: `node --test tests/architecture/provider-real-delivery-promotion-gate.test.mjs` PASS 5/5, `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:delivery:promotion-gate` PASS, `npm test` PASS 386/386, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate.
+- Implementado pacote local de prontidao para Stage no novo repo.
+- Commit do novo repo: `645e407 feat: add stage readiness package`.
+- Escopo: `docs/architecture/stage-readiness-package.md`, `npm run stage:readiness-package`, Definition of Done para as tres lacunas restantes: Supabase staging, Provider staging e SaaS runtime staging.
+- Evidencia: `stage_execution_authorized=false`, `production_execution_authorized=false`, `real_provider_execution_authorized=false`, `deploy_execution_authorized=false`, `connects_to_staging=false`, `connects_to_provider=false`, `deploys_now=false`.
+- Validacoes atuais do novo repo: `node --test tests/architecture/stage-readiness-package.test.mjs` PASS 5/5, `INKFLOW_ENV=local STAGE_ENV=local npm run stage:readiness-package` PASS, `npm test` PASS 391/391, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate.
 
 ### Decisoes
 
@@ -372,7 +377,8 @@
 - Orchestrator agora grava o contexto/ref localmente; o proximo gap estrutural e provar o roundtrip usando busca por `quote_request_ref` persistido, nao apenas metadata em memoria.
 - Roundtrip com lookup persistido fecha a cadeia local de orcamento do tatuador; o proximo passo exige Strategic Review Gate leve antes de preparar provider real.
 - Provider real promotion gate esta pronto para revisao manual, mas nao autoriza execucao. O proximo passo exige decisao explicita entre pacote de evidencias local para revisao operacional ou aprovacao humana antes de qualquer staging/provider real.
+- Stage Readiness Package fecha a definicao das tres lacunas restantes sem executar nada real; a proxima acao deve seguir a ladder: Supabase staging primeiro, depois Provider staging, depois SaaS runtime staging.
 
 ### Proximo Passo
 
-- Decidir entre montar pacote de evidencias local para revisao operacional de provider real ou aguardar aprovacao humana explicita para qualquer staging/provider real, sem secrets reais, staging, producao ou provider real automatico.
+- Atacar o primeiro item da ladder do Stage Readiness Package sem execucao real: pacote/evidencia operacional de Supabase staging ou checkpoint de aprovacao humana, sem secrets reais, staging, producao, provider real ou deploy automatico.

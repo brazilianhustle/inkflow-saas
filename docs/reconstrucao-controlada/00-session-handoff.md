@@ -30,29 +30,30 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-13f1d27 feat: add provider delivery promotion gate
+645e407 feat: add stage readiness package
 ```
 
 Bloco fechado:
 
-- runbook manual de promocao para provider real criado em `docs/architecture/provider-real-delivery-promotion-runbook.md`;
-- gate local `provider:delivery:promotion-gate` valida que a promocao esta pronta apenas para revisao humana;
-- gate exige evidencias locais: roundtrip persistido, runtime boundary, notifications local service e bot-orchestrator notifications;
-- gate bloqueia autorizacao automatica com `REAL_PROVIDER_EXECUTION_AUTHORIZED=false`, `STAGING_EXECUTION_AUTHORIZED=false` e `PRODUCTION_EXECUTION_AUTHORIZED=false`;
-- gate rejeita ambiente production-like, comandos executaveis de provider, secrets crus e runbook sem stop conditions/rollback;
+- criado `docs/architecture/stage-readiness-package.md` como pacote unico de prontidao para Stage;
+- criado gate local `stage:readiness-package`;
+- as tres lacunas agora tem Definition of Done antes de execucao: Supabase staging, Provider staging e SaaS runtime staging;
+- pacote define ladder de execucao: Supabase staging -> Provider staging -> SaaS runtime staging -> smoke fake end-to-end -> decisao humana;
+- gate bloqueia autorizacao automatica com `STAGE_EXECUTION_AUTHORIZED=false`, `PRODUCTION_EXECUTION_AUTHORIZED=false`, `REAL_PROVIDER_EXECUTION_AUTHORIZED=false` e `DEPLOY_EXECUTION_AUTHORIZED=false`;
+- gate rejeita ambiente production-like, comandos executaveis de Supabase/provider/deploy, secrets crus e package sem as tres lacunas;
 - sem WhatsApp real, Telegram real, Evolution real, Supabase remoto, migration real, secrets, staging ou deploy.
 
 Validacoes do ultimo bloco:
 
-- `node --test tests/architecture/provider-real-delivery-promotion-gate.test.mjs` PASS 5/5;
-- `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:delivery:promotion-gate` PASS, com provider real/staging/producao false;
-- `npm test` PASS 386/386;
+- `node --test tests/architecture/stage-readiness-package.test.mjs` PASS 5/5;
+- `INKFLOW_ENV=local STAGE_ENV=local npm run stage:readiness-package` PASS, com stage/provider/producao/deploy false;
+- `npm test` PASS 391/391;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
 - `git diff --check` PASS;
-- scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate, sem credencial real ou autorizacao real.
+- scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate, sem credencial real, comando executavel ou autorizacao real.
 
-Proximo passo seguro: com o runbook/gate local de provider real preparado, decidir se a proxima frente fica em evidencia local empacotada para revisao operacional ou se aguarda aprovacao humana explicita para montar staging real. Nao executar provider real automaticamente.
+Proximo passo seguro: atacar o primeiro item da ladder sem execucao real, criando o pacote/evidencia operacional de Supabase staging ou preparando o checkpoint de aprovacao humana. Nao executar staging/provider/deploy automaticamente.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 
