@@ -454,6 +454,39 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Primeiro Adapter Simulado Implementado
+
+Pacote:
+
+```text
+packages/integrations/channel-adapters
+```
+
+Commit:
+
+```text
+73e18d2 feat: implement simulated channel adapters
+```
+
+Escopo:
+
+- contratos de envelope outbound e inbound;
+- recibo de entrega;
+- adapter em memoria para WhatsApp, Telegram e internal;
+- simulacao de envio sem rede;
+- simulacao de falha de provider sem rede;
+- validacao de canal, direcao, tipo de mensagem e texto obrigatorio;
+- bloqueio de valores com cara de secret em metadata;
+- root `npm test` agora inclui `packages/integrations/*/tests/**/*.test.mjs`;
+- sem Evolution, Telegram API, WhatsApp real, Supabase, rede, secrets, storage, deploy ou provider real.
+
+Validacoes:
+
+- `npm test` PASS, 105/105;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Checkpoint antes de qualquer adapter real.
@@ -461,12 +494,12 @@ Checkpoint antes de qualquer adapter real.
 Recomendacao:
 
 ```text
-packages/integrations/* simulados ou apps/admin skeleton
+integrar bot-orchestrator com channel-adapters simulados ou iniciar apps/admin skeleton
 ```
 
 Objetivo do proximo artefato:
 
-- se seguir por integracoes: criar adapters simulados para canais/storage, ainda sem credenciais;
+- se seguir por integracoes: ligar outbox local ao adapter simulado e registrar receipts;
 - se seguir por painel: criar skeleton admin sem dados reais;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
 - validar por unit/contract antes de qualquer adapter real.

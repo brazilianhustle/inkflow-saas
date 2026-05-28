@@ -50,6 +50,9 @@
 - Implementado primeiro service local-only no novo repo: `services/bot-orchestrator`.
 - Commit do novo repo: `2de30cb feat: implement local bot orchestrator`.
 - Validacoes atuais do novo repo: `npm test` PASS 97/97, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado primeiro adapter simulado no novo repo: `packages/integrations/channel-adapters`.
+- Commit do novo repo: `73e18d2 feat: implement simulated channel adapters`.
+- Validacoes atuais do novo repo: `npm test` PASS 105/105, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -68,7 +71,8 @@
 - `packages/response-composer` foi implementado sem LLM, WhatsApp, Telegram, banco, APIs, runtime, painel, deploy ou secrets.
 - `packages/bot-runtime-contract` foi implementado sem LLM, WhatsApp, Telegram, Supabase, Evolution, banco, APIs, runtime real, painel, deploy ou secrets.
 - `services/bot-orchestrator` foi implementado como service local-only em memoria, sem LLM, WhatsApp, Telegram, Supabase, Evolution, banco, API externa, deploy ou secrets.
-- Proximo passo recomendado: checkpoint antes de qualquer adapter real; escolher entre `packages/integrations/*` simulados ou `apps/admin` skeleton.
+- `packages/integrations/channel-adapters` foi implementado como adapter simulado em memoria, sem Evolution, Telegram API, WhatsApp real, Supabase, rede, secrets, storage, deploy ou provider real.
+- Proximo passo recomendado: checkpoint antes de qualquer adapter real; escolher entre integrar `services/bot-orchestrator` com adapters simulados ou iniciar `apps/admin` skeleton.
 
 ### Proximo Passo
 
