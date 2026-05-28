@@ -258,6 +258,12 @@
 - Segurança: snapshots/result/audit nao expoem `secret_binding_id`, `secbind_*`, `vaultref_*` ou `runtime_handle_*`; nenhum parser bruto, provider real, rede, staging, producao ou secrets.
 - Limites: sem Evolution real, Telegram real, parser bruto, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
 - Validacoes atuais do novo repo: `npm test` PASS 361/361, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS.
+- Implementado artist quote Telegram adapter local-only no novo repo.
+- Commit do novo repo: `573d46d feat: normalize artist telegram quotes locally`.
+- Escopo: `services/artist-quote-telegram-adapter` valida envelope controlado de resposta Telegram, confere `reply_to_ref`, normaliza formatos estritos por item/sessao e aciona `artist-quote-intake` para entregar uma unica `quote_response` local.
+- Segurança: texto livre amplo, ref divergente, valores ausentes e duplicados falham antes do intake/delivery; snapshots/result/audit nao expoem credencial real.
+- Limites: sem Telegram real, Evolution real, parser amplo, Cloudflare Secrets, Supabase Vault, env secrets, rede, staging, producao ou deploy.
+- Validacoes atuais do novo repo: `npm test` PASS 371/371, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS com apenas guards/fixtures.
 
 ### Decisoes
 
@@ -327,7 +333,8 @@
 - Strategic Review Gate entra como freio inteligente, nao burocracia: se nao revelar gap real nem mudar plano, a decisao padrao e seguir.
 - Artist quote intake separa o contrato de orcamento normalizado do parser Telegram futuro; isso evita acoplar texto bruto de chat ao pricing/proposal.
 - Fluxo local de quote response esta provado ate delivery simulado provider-aware; o proximo gap estrutural e normalizar a resposta Telegram antes do intake ou preparar runbook real-provider sem executar.
+- Telegram quote adapter resolve o gap de normalizacao local sem liberar parser amplo nem provider real; o proximo gap estrutural e gerar/persistir o contexto/ref de quote_request localmente no fluxo do orchestrator/notifications.
 
 ### Proximo Passo
 
-- Decidir entre parser/adaptador normalizador de resposta Telegram local-only ou preparar runbook de promocao real-provider sem execucao, sem secrets reais, staging, producao ou provider real.
+- Integrar a criacao do contexto/ref de quote_request ao bot-orchestrator/notifications local-only, sem secrets reais, staging, producao ou provider real.

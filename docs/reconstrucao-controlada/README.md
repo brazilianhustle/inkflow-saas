@@ -44,7 +44,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `services/notifications` local-only para WhatsApp/Evolution simulado e Telegram simulado, bot-orchestrator integrado a notifications para quote_request e handoff_alert locais, `services/artist-quote-intake` local-only para transformar resposta normalizada do tatuador em proposta unica `quote_response` e enviar via WhatsApp simulado provider-aware, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, auth-session runtime local-only, admin conectado a auth-session local, actions administrativas protegidas por auth-session/audit, provider secret boundary local-only, summaries publicos de providers no admin, modulo/action local-only de provider metadata com auth-session/audit, schema draft/checkers Supabase alinhados a provider metadata com RLS owner/admin para tabela interna, provider runtime boundary local-only para resolver bindings apenas em runtime server-side, adapter simulado provider-aware com receipts/audit redigidos, bot-orchestrator validado com delivery provider-aware local-only, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `services/notifications` local-only para WhatsApp/Evolution simulado e Telegram simulado, bot-orchestrator integrado a notifications para quote_request e handoff_alert locais, `services/artist-quote-intake` local-only para transformar resposta normalizada do tatuador em proposta unica `quote_response` e enviar via WhatsApp simulado provider-aware, `services/artist-quote-telegram-adapter` local-only para normalizar respostas controladas do Telegram antes do intake, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, auth-session runtime local-only, admin conectado a auth-session local, actions administrativas protegidas por auth-session/audit, provider secret boundary local-only, summaries publicos de providers no admin, modulo/action local-only de provider metadata com auth-session/audit, schema draft/checkers Supabase alinhados a provider metadata com RLS owner/admin para tabela interna, provider runtime boundary local-only para resolver bindings apenas em runtime server-side, adapter simulado provider-aware com receipts/audit redigidos, bot-orchestrator validado com delivery provider-aware local-only, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness e runbook/gate local de execucao staging, com Supabase CLI + Docker local via Colima, sem canais reais, sem Supabase remoto, sem secrets e sem deploy.
 
 Local:
 
@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+573d46d feat: normalize artist telegram quotes locally
 3c784c9 feat: send artist quote responses locally
 86b1641 feat: add artist quote intake service
 2115aa1 feat: dispatch operational notifications locally
@@ -125,7 +126,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 361/361;
+- `npm test` PASS, 371/371;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
@@ -153,9 +154,10 @@ Validacoes atuais:
 - bot-orchestrator agora dispara notifications locais como side effects de `waiting_artist` e `create_handoff_package`, sem dar ao notification service autoridade sobre workflow/preco/handoff;
 - artist-quote-intake agora transforma quote normalizado do tatuador em pricing quote, proposal contract e notification `quote_response` unica, cobrindo multiplos itens e sessoes;
 - artist-quote-intake agora tem `processAndNotify`, enviando uma unica `quote_response` por WhatsApp simulado provider-aware quando o quote e valido e nao chamando notifications quando o quote falha;
+- artist-quote-telegram-adapter agora normaliza envelope controlado de resposta Telegram com `ref`, formatos estritos por item/sessao, rejeicao de texto livre/ref divergente/duplicados e entrega local unica via intake;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: decidir entre parser/adaptador normalizador de resposta Telegram local-only ou preparar runbook de promocao real-provider sem execucao, mantendo staging/producao bloqueados. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
+Proxima decisao: integrar a criacao do contexto/ref de quote_request ao bot-orchestrator/notifications local-only, mantendo staging/producao bloqueados. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 
