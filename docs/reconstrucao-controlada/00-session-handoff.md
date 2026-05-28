@@ -1007,6 +1007,39 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Supabase Schema Draft Implementado
+
+Artefatos no novo repo:
+
+```text
+docs/architecture/supabase-schema-draft.md
+infra/supabase/draft/001_initial_schema.sql
+infra/supabase/draft/001_rollback.sql
+infra/supabase/draft/fixtures/local-fixtures.json
+tests/architecture/supabase-schema-draft.test.mjs
+```
+
+Commit:
+
+```text
+8f21329 feat: add supabase schema draft
+```
+
+Escopo:
+
+- SQL draft inicial para tenancy, identity, admin, conversas, mensagens, midias, decisions, budget, quotes, proposals, billing, legal, provider metadata, outbox e receipts;
+- rollback draft correspondente;
+- fixtures locais cobrindo estilos default/restrito, roles, single tattoo, multi tattoo, quote por sessao, midia limpa/ambigua, usuario revogado e DSR;
+- teste estatico garantindo `tenant_id` nas tabelas tenant-scoped, RLS habilitado, audit append-only, ausencia de campos de secrets crus e cobertura de rollback/fixtures;
+- sem Supabase real, sem migracao executada, sem secrets, sem provider real, sem deploy e sem UI visual.
+
+Validacoes:
+
+- `npm test` PASS, 193/193;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1051,9 +1084,9 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo funcional do painel/persistencia: `supabase-schema-draft`;
+- implementar proximo fluxo estrutural: `auth-identity-contract` ou `supabase-policy-test-harness`;
 - manter tudo local e desconectado de producao;
-- transformar o contrato Supabase em SQL draft, fixtures e testes de politica;
+- decidir convite/login/roles antes de executar SQL, ou introduzir harness Supabase local somente com autorizacao explicita;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
 - validar por unit/contract antes de qualquer adapter real.
 

@@ -99,6 +99,9 @@
 - Commit do novo repo: `ba87e55 docs: add supabase local contract`.
 - Escopo do contrato: tenancy, auth identity, RLS, tabelas de bot/admin, audit, secrets boundary, storage, migrations, rollback, fixtures e gates de teste, sem Supabase real.
 - Validacoes atuais do novo repo: `npm test` PASS 187/187, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado schema draft Supabase local no novo repo: SQL draft inicial, rollback, fixtures e teste estatico em `tests/architecture/supabase-schema-draft.test.mjs`.
+- Commit do novo repo: `8f21329 feat: add supabase schema draft`.
+- Validacoes atuais do novo repo: `npm test` PASS 193/193, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -134,7 +137,8 @@
 - `apps/admin/src/modules/legal-admin` foi implementado como modulo local-only de Legal/LGPD, consentimentos, retencao, solicitações de titular e audit events, sem email real, automacao externa, Supabase, rede, secrets, deploy ou runtime real.
 - Checkpoint estrutural do admin aprovado como local-only; nao iniciar React/Vite, Supabase real, auth real, providers, deploy ou design visual sem checkpoint dedicado.
 - `supabase-local-contract` foi registrado como contrato local-only; nao iniciar SQL executavel, Supabase real, auth real, providers, deploy ou design visual sem checkpoint dedicado.
+- `supabase-schema-draft` foi implementado como artefato local-only; nao executar SQL contra Supabase real nem promover migration sem harness local, RLS tests, rollback exercitado e plano de backup/producao.
 
 ### Proximo Passo
 
-- Implementar `supabase-schema-draft`: SQL draft, fixtures locais e testes de politica ainda desconectados de producao.
+- Implementar `auth-identity-contract` antes de rodar SQL local, ou `supabase-policy-test-harness` se houver decisao explicita para introduzir Supabase local.
