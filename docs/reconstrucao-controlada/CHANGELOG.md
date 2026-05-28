@@ -65,6 +65,9 @@
 - Implementado pacote de contratos de persistencia no novo repo: `packages/persistence-contracts`.
 - Commit do novo repo: `ec76454 feat: implement persistence contracts`.
 - Validacoes atuais do novo repo: `npm test` PASS 125/125, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado skeleton inicial do painel no novo repo: `apps/admin`.
+- Commit do novo repo: `7434586 feat: scaffold admin app shell`.
+- Validacoes atuais do novo repo: `npm test` PASS 129/129, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -89,7 +92,8 @@
 - Frente futura obrigatoria registrada: `knowledge-service`/RAG por tenant para informacoes personalizadas de estudio, como biblioteca consultiva e nao autoridade de workflow.
 - Integracao do audit store local ao orchestrator foi implementada sem Supabase, banco real, arquivo, rede, secrets, storage real, provider real ou deploy.
 - `packages/persistence-contracts` foi implementado sem Supabase, banco real, arquivo, rede, secrets, storage real, provider real ou deploy.
-- Proximo passo recomendado: checkpoint antes de qualquer adapter real; iniciar `apps/admin` skeleton usando persistence contracts como base local.
+- `apps/admin` foi implementado como app estatico/skeleton sem React/Vite, Supabase, auth real, rede, secrets, canais reais, deploy ou design final.
+- Proximo passo recomendado: checkpoint antes de qualquer adapter real; evoluir `apps/admin` em slices funcionais usando persistence contracts locais.
 
 ### Proximo Passo
 

@@ -620,6 +620,40 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Admin App Skeleton Implementado
+
+App:
+
+```text
+apps/admin
+```
+
+Commit:
+
+```text
+7434586 feat: scaffold admin app shell
+```
+
+Escopo:
+
+- skeleton estatico do painel admin;
+- sem React/Vite ainda para evitar dependencias prematuras;
+- `index.html`, `main.mjs`, `styles.css`, `sample-data.mjs`, `view-model.mjs`;
+- view model derivado de `packages/persistence-contracts`;
+- secoes iniciais: visao geral, estudio, bot premium, knowledge e auditoria;
+- dados locais de exemplo via repositories em memoria;
+- root `npm test` agora inclui `apps/*/tests/**/*.test.mjs`;
+- testes de navegacao, tenant config, bot summary, knowledge, audit e metrics;
+- sem Supabase, auth real, rede, secrets, canais reais, deploy ou design final.
+
+Validacoes:
+
+- `npm test` PASS, 129/129;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- app estatico: abrir `apps/admin/index.html` no navegador e suficiente nesta fase;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Checkpoint antes de qualquer adapter real.
@@ -663,13 +697,13 @@ Limites:
 Recomendacao:
 
 ```text
-apps/admin skeleton usando persistence contracts como base
+evoluir apps/admin em slices funcionais usando persistence contracts locais
 ```
 
 Objetivo do proximo artefato:
 
-- criar skeleton admin sem dados reais;
-- usar contratos/repositories em memoria como fonte de desenvolvimento;
+- definir primeiro fluxo funcional do painel: configuracao do estudio, bot premium, knowledge ou auditoria;
+- manter dados locais via persistence contracts;
 - evitar acoplamento do painel ao Supabase real nesta fase;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
 - validar por unit/contract antes de qualquer adapter real.
