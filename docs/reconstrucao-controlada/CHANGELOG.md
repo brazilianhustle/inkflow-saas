@@ -112,6 +112,9 @@
 - Implementado guard local do Supabase policy harness no novo repo: `infra/supabase/local-policy-harness`.
 - Commit do novo repo: `33a5cb4 feat: add local policy harness guard`.
 - Validacoes atuais do novo repo: `npm test` PASS 209/209, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS.
+- Implementado dry-run local do Supabase policy harness no novo repo.
+- Commit do novo repo: `f11af8c feat: add local policy harness dry run`.
+- Validacoes atuais do novo repo: `npm test` PASS 213/213, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:dry-run` PASS com 11 cenarios.
 
 ### Decisoes
 
@@ -152,7 +155,8 @@
 - Crosswalk confirmou que o proximo risco estrutural e provar RLS/auth local antes de UI framework, Evolution real, Telegram real ou migrations reais.
 - Supabase policy harness checkpoint autoriza apenas desenho/guard local; nenhuma execucao Supabase local ou producao foi feita.
 - Local policy harness guard foi implementado antes de qualquer execucao Supabase, bloqueando URL/chaves de producao e provider secrets.
+- Local policy harness dry-run foi implementado sem executar banco; ele valida guard, schema, rollback e manifesto antes de qualquer Supabase local real.
 
 ### Proximo Passo
 
-- Decidir executor local do policy harness: Supabase CLI local preferencial, fallback Postgres/container ou teste estatico aprimorado.
+- Detectar ferramenta local para executor real do policy harness: Supabase CLI local preferencial, fallback Postgres/container ou teste estatico aprimorado.

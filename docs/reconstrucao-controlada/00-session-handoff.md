@@ -1160,6 +1160,38 @@ Validacoes:
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
 - git limpo no novo repo apos commit.
 
+## Local Policy Harness Dry-Run Implementado
+
+Artefatos no novo repo:
+
+```text
+infra/supabase/local-policy-harness/dry-run.mjs
+infra/supabase/local-policy-harness/run-dry-run.mjs
+```
+
+Commit:
+
+```text
+f11af8c feat: add local policy harness dry run
+```
+
+Escopo:
+
+- comando `npm run supabase:policy:dry-run`;
+- valida guard + schema draft + rollback + manifesto de cenarios;
+- garante que o dry-run nao executa comandos de banco;
+- adiciona teste para loader resolver arquivos dentro do repo;
+- cobre bug corrigido: dry-run estava procurando schema fora de `inkflow-platform`;
+- sem execucao Supabase, sem Docker/CLI, sem SQL real, sem secrets, sem provider real e sem deploy.
+
+Validacoes:
+
+- `npm test` PASS, 213/213;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:dry-run` PASS com 11 cenarios;
+- git limpo no novo repo apos commit.
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1204,7 +1236,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo estrutural: executor local do policy harness ou checkpoint tecnico da ferramenta local;
+- implementar proximo fluxo estrutural: detectar/decidir ferramenta de execucao local real do policy harness;
 - manter tudo local e desconectado de producao;
 - introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
