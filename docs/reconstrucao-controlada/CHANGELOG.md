@@ -291,6 +291,11 @@
 - Escopo: teste/checkpoint agora validam quote_request enviado, contexto persistido, lookup por `quote_request_ref`, Telegram adapter, artist quote intake e WhatsApp `quote_response` simulada.
 - Segurança: sem Supabase real, migration real, provider real, secrets, staging ou deploy.
 - Validacoes atuais do novo repo: `npm test` PASS 381/381, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS com apenas guards/fixtures.
+- Implementado runbook manual e gate local de promocao para provider real no novo repo.
+- Commit do novo repo: `13f1d27 feat: add provider delivery promotion gate`.
+- Escopo: `docs/architecture/provider-real-delivery-promotion-runbook.md`, `npm run provider:delivery:promotion-gate`, evidencias locais obrigatorias, secret source names, isolamento staging, smoke plan, rollback, stop conditions e bloqueios contra autorizacao automatica, production-like env, comando executavel de provider e secrets crus.
+- Evidencia: `real_provider_execution_authorized=false`, `staging_execution_authorized=false`, `production_execution_authorized=false`, `connects_to_provider=false`.
+- Validacoes atuais do novo repo: `node --test tests/architecture/provider-real-delivery-promotion-gate.test.mjs` PASS 5/5, `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:delivery:promotion-gate` PASS, `npm test` PASS 386/386, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate.
 
 ### Decisoes
 
@@ -366,7 +371,8 @@
 - Quote request context agora tem contrato de persistencia local; o proximo gap estrutural e o orchestrator gravar esse contexto no repositorio local quando emitir `quote_request`.
 - Orchestrator agora grava o contexto/ref localmente; o proximo gap estrutural e provar o roundtrip usando busca por `quote_request_ref` persistido, nao apenas metadata em memoria.
 - Roundtrip com lookup persistido fecha a cadeia local de orcamento do tatuador; o proximo passo exige Strategic Review Gate leve antes de preparar provider real.
+- Provider real promotion gate esta pronto para revisao manual, mas nao autoriza execucao. O proximo passo exige decisao explicita entre pacote de evidencias local para revisao operacional ou aprovacao humana antes de qualquer staging/provider real.
 
 ### Proximo Passo
 
-- Abrir Strategic Review Gate leve para decidir entre preparar runbook/gate de provider real ou reforcar mais um contrato local, sem secrets reais, staging, producao ou provider real.
+- Decidir entre montar pacote de evidencias local para revisao operacional de provider real ou aguardar aprovacao humana explicita para qualquer staging/provider real, sem secrets reais, staging, producao ou provider real automatico.

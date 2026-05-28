@@ -30,25 +30,29 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-95da063 test: use persisted quote context in roundtrip
+13f1d27 feat: add provider delivery promotion gate
 ```
 
 Bloco fechado:
 
-- roundtrip local atualizado para buscar `quote_request_context` persistido por `quote_request_ref`;
-- prova agora evita depender apenas da metadata em memoria retornada pela notificacao;
-- caminho validado: quote_request enviado -> contexto persistido -> lookup por ref -> Telegram adapter -> artist quote intake -> WhatsApp quote_response simulada;
-- checkpoint `artist-quote-roundtrip-local` atualizado;
-- sem Supabase real, migration real, provider real, secrets, staging ou deploy.
+- runbook manual de promocao para provider real criado em `docs/architecture/provider-real-delivery-promotion-runbook.md`;
+- gate local `provider:delivery:promotion-gate` valida que a promocao esta pronta apenas para revisao humana;
+- gate exige evidencias locais: roundtrip persistido, runtime boundary, notifications local service e bot-orchestrator notifications;
+- gate bloqueia autorizacao automatica com `REAL_PROVIDER_EXECUTION_AUTHORIZED=false`, `STAGING_EXECUTION_AUTHORIZED=false` e `PRODUCTION_EXECUTION_AUTHORIZED=false`;
+- gate rejeita ambiente production-like, comandos executaveis de provider, secrets crus e runbook sem stop conditions/rollback;
+- sem WhatsApp real, Telegram real, Evolution real, Supabase remoto, migration real, secrets, staging ou deploy.
 
 Validacoes do ultimo bloco:
 
-- `npm test` PASS 381/381;
+- `node --test tests/architecture/provider-real-delivery-promotion-gate.test.mjs` PASS 5/5;
+- `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:delivery:promotion-gate` PASS, com provider real/staging/producao false;
+- `npm test` PASS 386/386;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
-- scan focado de seguranca no roundtrip PASS apenas com guards/fixtures, sem credencial real.
+- `git diff --check` PASS;
+- scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate, sem credencial real ou autorizacao real.
 
-Proximo passo seguro: abrir Strategic Review Gate leve para decidir entre preparar runbook/gate de provider real ou reforcar mais um contrato local antes de qualquer promocao.
+Proximo passo seguro: com o runbook/gate local de provider real preparado, decidir se a proxima frente fica em evidencia local empacotada para revisao operacional ou se aguarda aprovacao humana explicita para montar staging real. Nao executar provider real automaticamente.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 
