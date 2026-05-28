@@ -124,6 +124,10 @@
 - Registrado Supabase tooling readiness checkpoint no novo repo.
 - Commit do novo repo: `00a4dba docs: add supabase tooling readiness checkpoint`.
 - Validacoes atuais do novo repo: `npm test` PASS 226/226, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado static policy coverage gate no Supabase policy harness do novo repo.
+- Commit do novo repo: `4304223 feat: add supabase static policy coverage`.
+- Escopo: gate local nao executavel para checar cobertura estatica de policies, boundaries tenant, roles/status, service_role em writes runtime, audit append-only, provider secret boundary, rollback e cenarios.
+- Validacoes atuais do novo repo: `npm test` PASS 234/234, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:static-coverage` PASS.
 
 ### Decisoes
 
@@ -169,7 +173,8 @@
 - Plano operacional definiu checkpoints para validacao real local: tooling readiness, boundary local, bootstrap DB, seed fixtures, cenarios RLS, rollback drill e evidence report.
 - Regra de double check oficializada para informacoes que podem quebrar a reconstrucao.
 - Tooling readiness checkpoint confirmou o caminho correto: Supabase CLI + Docker local. Ambiente atual permanece bloqueado por ausencia de `supabase`, `docker` e `psql`.
+- Static policy coverage foi implementado como protecao temporaria enquanto o ambiente nao tem Supabase CLI/Docker/psql; ele nao substitui validacao real de RLS.
 
 ### Proximo Passo
 
-- Se tooling puder ser habilitado, preparar Supabase CLI + Docker local com guard; se nao, implementar `static-policy-coverage-plus` temporario.
+- Se tooling puder ser habilitado, preparar Supabase CLI + Docker local com guard; se nao, seguir apenas com protecoes estaticas e manter o gate real de RLS bloqueado.

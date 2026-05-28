@@ -1299,6 +1299,38 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Supabase Static Policy Coverage
+
+Commit no novo repo:
+
+```text
+4304223 feat: add supabase static policy coverage
+```
+
+Escopo:
+
+- adiciona `infra/supabase/local-policy-harness/static-coverage.mjs`;
+- adiciona `npm run supabase:policy:static-coverage`;
+- checa schema, rollback, manifesto, tenant boundaries, roles/status, service_role em writes runtime, audit append-only e provider secret boundary;
+- registra `docs/architecture/supabase-static-coverage-checkpoint.md`;
+- explicita que nao executa SQL e nao substitui validacao real de RLS.
+
+Validacoes:
+
+- `npm test` PASS, 234/234;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:static-coverage` PASS;
+- git limpo no novo repo apos commit.
+
+Decisao:
+
+```text
+static coverage e protecao temporaria, nao gate final
+```
+
+O gate real continua sendo Supabase CLI local + Docker, com RLS executado em banco local. Enquanto `supabase=false docker=false psql=false`, nao promover migrations nem chamar isso de validacao final.
+
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
 Status:
@@ -1343,7 +1375,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo estrutural: se tooling nao puder ser habilitado agora, `static-policy-coverage-plus`; se puder, habilitar Supabase CLI + Docker com guard antes de qualquer execucao;
+- implementar proximo fluxo estrutural: se tooling puder ser habilitado, Supabase CLI + Docker local; se nao, manter apenas protecoes estaticas e gate real bloqueado;
 - manter tudo local e desconectado de producao;
 - introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
