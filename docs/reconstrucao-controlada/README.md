@@ -17,9 +17,10 @@ Ler nesta ordem:
 7. `06-contratos-plataforma.md`
 8. `07-tenant-config-contract.md`
 9. `08-data-governance-contract.md`
-10. `CHANGELOG.md`
-11. `docs/canonical/stack.md`
-12. `docs/atendimento-premium/09-session-handoff.md`
+10. `09-test-strategy-contract.md`
+11. `CHANGELOG.md`
+12. `docs/canonical/stack.md`
+13. `docs/atendimento-premium/09-session-handoff.md`
 
 Depois rodar:
 
@@ -40,9 +41,9 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: arquitetura total, plano de acao, matriz de extracao, contratos base, Tenant Config Contract e Data Governance Contract registrados antes de qualquer repo novo.
+Status: arquitetura total, plano de acao, matriz de extracao, contratos base, Tenant Config Contract, Data Governance Contract e Test Strategy Contract registrados antes de qualquer repo novo.
 
-Proxima decisao: criar o contrato de estrategia de testes.
+Proxima decisao: decidir stack e formato do novo repo.
 
 ## Limite De Ambiente
 

@@ -81,20 +81,21 @@ Sequencia obrigatoria:
 7. Ler `06-contratos-plataforma.md`.
 8. Ler `07-tenant-config-contract.md`.
 9. Ler `08-data-governance-contract.md`.
-10. Ler `CHANGELOG.md`.
-11. Checar `git status --short`.
-12. So entao propor ou executar o proximo passo.
+10. Ler `09-test-strategy-contract.md`.
+11. Ler `CHANGELOG.md`.
+12. Checar `git status --short`.
+13. So entao propor ou executar o proximo passo.
 
 ## Proximo Passo Logico
 
-Criar `09-test-strategy-contract.md`.
+Criar `10-decisao-stack-novo-repo.md`.
 
 Objetivo do proximo artefato:
 
-- definir estrategia de testes da plataforma;
-- preservar WhatsApp real como validacao definitiva para comportamento conversacional;
-- separar unit, contract, integration, eval, real smoke e security gate;
-- definir criterios de promocao antes do repo novo.
+- decidir stack e formato do novo repo;
+- comparar opcoes;
+- definir primeiro slice mecanico;
+- garantir que criar repo novo seja reversivel e sem impacto na producao atual.
 
 ## Regra Anti-Poluicao
 

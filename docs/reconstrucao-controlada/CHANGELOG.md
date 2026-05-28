@@ -14,6 +14,7 @@
 - Criados contratos base da plataforma: entidades canonicas, estados, relacoes entre modulos e validacoes obrigatorias.
 - Criado Tenant Config Contract com blocos, defaults, snapshots, invariantes, fixtures e testes obrigatorios.
 - Criado Data Governance Contract com inventario de dados, papeis, direitos do titular, retencao, suboperadores, incidentes e testes obrigatorios.
+- Criado Test Strategy Contract com niveis de teste, matriz por mudanca, gates, evidencias e stop conditions.
 
 ### Decisoes
 
@@ -25,4 +26,4 @@
 
 ### Proximo Passo
 
-- Criar `09-test-strategy-contract.md` para definir validacao profissional da plataforma antes do repo novo.
+- Criar `10-decisao-stack-novo-repo.md` para decidir stack/formato do novo repo antes da criacao.
