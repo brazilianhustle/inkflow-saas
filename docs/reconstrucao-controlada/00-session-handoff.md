@@ -30,27 +30,26 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-573d46d feat: normalize artist telegram quotes locally
+1e42140 feat: attach quote request context locally
 ```
 
 Bloco fechado:
 
-- `services/artist-quote-telegram-adapter` criado como boundary local-only antes do `artist-quote-intake`;
-- caminho provado: controlled telegram artist reply envelope -> quote ref validation -> strict value normalization -> artist quote intake -> notifications service -> provider-aware whatsapp adapter -> simulated whatsapp delivery -> redacted receipt/audit;
-- respostas por item usam linhas estritas indexadas (`1 200`, `2 400`);
-- respostas por sessao usam linhas estritas de sessao (`1 500`, `2 700` para item unico ou `1.1 500` em multi-item);
-- texto livre amplo, ref divergente, item ausente e valores duplicados falham antes do intake/delivery;
-- uma resposta valida normalizada entrega uma unica `quote_response` local ao cliente;
-- checkpoint `artist-quote-telegram-adapter-checkpoint` registrado e testado.
+- `bot-orchestrator` agora anexa `quote_request_context` e `quote_request_ref` no `quote_request` local quando recebe dados de orcamento;
+- `notifications` preserva metadata segura no result e encaminha metadata segura ao envelope simulado;
+- texto do pedido ao tatuador traz instrucoes estritas por item ou por sessao, com `ref` explicita;
+- caminho de ida e volta fica estruturalmente conectado: quote_request local -> contexto/ref -> Telegram adapter local -> intake -> quote_response local;
+- checkpoints de bot-orchestrator notifications e notifications local service atualizados e testados;
+- Telegram real, Evolution real, parser amplo, secrets, staging, producao e deploy continuam bloqueados.
 
 Validacoes do ultimo bloco:
 
-- `npm test` PASS 371/371;
+- `npm test` PASS 372/372;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
-- scan focado de seguranca em artist-quote-telegram-adapter PASS apenas com guards e fixtures de teste, sem credencial real.
+- scan focado de seguranca em bot-orchestrator/notifications PASS apenas com guards e fixtures de teste, sem credencial real.
 
-Proximo passo seguro: integrar a criacao do contexto/ref de quote_request ao bot-orchestrator/notifications local-only, mantendo Telegram real, Evolution real, staging, producao, secrets, deploy e migrations reais bloqueados.
+Proximo passo seguro: criar um teste local de ida-e-volta completo unindo quote_request context -> Telegram adapter -> artist quote intake -> WhatsApp quote_response, ainda sem provider real, staging ou secrets.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 

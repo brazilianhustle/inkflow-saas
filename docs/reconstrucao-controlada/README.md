@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+1e42140 feat: attach quote request context locally
 573d46d feat: normalize artist telegram quotes locally
 3c784c9 feat: send artist quote responses locally
 86b1641 feat: add artist quote intake service
@@ -126,7 +127,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 371/371;
+- `npm test` PASS, 372/372;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:policy:guard` PASS;
@@ -155,9 +156,10 @@ Validacoes atuais:
 - artist-quote-intake agora transforma quote normalizado do tatuador em pricing quote, proposal contract e notification `quote_response` unica, cobrindo multiplos itens e sessoes;
 - artist-quote-intake agora tem `processAndNotify`, enviando uma unica `quote_response` por WhatsApp simulado provider-aware quando o quote e valido e nao chamando notifications quando o quote falha;
 - artist-quote-telegram-adapter agora normaliza envelope controlado de resposta Telegram com `ref`, formatos estritos por item/sessao, rejeicao de texto livre/ref divergente/duplicados e entrega local unica via intake;
+- bot-orchestrator/notifications agora anexam e preservam `quote_request_context`/`quote_request_ref` seguros no pedido ao tatuador, com instrucoes estritas por item/sessao;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: integrar a criacao do contexto/ref de quote_request ao bot-orchestrator/notifications local-only, mantendo staging/producao bloqueados. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
+Proxima decisao: criar teste local de ida-e-volta completo unindo quote_request context -> Telegram adapter -> artist quote intake -> WhatsApp quote_response, mantendo staging/producao bloqueados. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 
