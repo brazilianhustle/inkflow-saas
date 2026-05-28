@@ -30,28 +30,27 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-9270f5d feat: add provider runtime boundary
+3ae484c feat: wire provider runtime to simulated adapters
 ```
 
 Bloco fechado:
 
-- provider runtime boundary local-only implementado em `packages/provider-runtime`;
-- `secret_binding_id` continua sendo metadata opaca, nao segredo;
-- browser/admin/client nao conseguem resolver binding;
-- apenas runtime server-side (`worker`, `server_service`, `background_job`) pode pedir credencial;
-- resolucao exige match de tenant, provider, connection e binding;
-- adapters recebem `runtime_handle_*`, nao `secret_binding_id`, `secbind_*` ou token bruto;
-- eventos de auditoria registram provider, connection, purpose, actor, trace e resultado sem binding id nem credential handle;
-- checkpoint `provider-runtime-boundary-checkpoint` registrado e testado.
+- `provider-runtime` integrado a adapters simulados em `packages/integrations/channel-adapters`;
+- WhatsApp mapeia para provider futuro Evolution; Telegram mapeia para provider futuro Telegram;
+- envio simulado resolve credencial runtime antes de enviar;
+- browser/admin/client sao bloqueados antes do envio simulado;
+- missing binding, mismatch e connection disabled falham antes do envio simulado;
+- receipts/snapshots/audit nao expoem `secret_binding_id`, `secbind_*`, `vaultref_*`, `binding_*` ou `runtime_handle_*`;
+- checkpoint `provider-runtime-adapter-checkpoint` registrado e testado.
 
 Validacoes do ultimo bloco:
 
-- `npm test` PASS 325/325;
+- `npm test` PASS 331/331;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
-- scan focado de seguranca em provider-runtime/checkpoint PASS sem hits.
+- scan focado de seguranca em provider-runtime/channel-adapters/checkpoints PASS sem hits.
 
-Proximo passo seguro: escolher entre integrar `provider-runtime` a um adapter simulado/notification service local-only ou consolidar o runbook de promocao para providers reais. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
+Proximo passo seguro: integrar o adapter provider-aware ao `bot-orchestrator` local-only ou consolidar um notification service local para Telegram/Evolution simulado. Staging, producao, providers reais, secrets, deploy e migrations reais continuam bloqueados.
 
 ## Terreno Confirmado
 
