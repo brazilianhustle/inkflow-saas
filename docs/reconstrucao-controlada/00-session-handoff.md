@@ -824,6 +824,42 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Admin Team Implementado
+
+Modulo:
+
+```text
+apps/admin/src/modules/team-admin
+```
+
+Commit:
+
+```text
+d7ae443 feat: add admin team module
+```
+
+Escopo:
+
+- `createStudioUser` adicionado ao dominio;
+- `studioUsers` adicionado aos persistence contracts locais;
+- modulo local-only de equipe no admin;
+- schema `team_admin_v1` com health, members, invites e access governance;
+- convites locais de membros;
+- comandos para alterar papel, desabilitar e reativar usuario;
+- audit event local para convite e mudancas de papel/status;
+- protecao contra tenant mismatch, cross-tenant access e valores com cara de secret;
+- view model integrado ao admin principal;
+- renderizacao estatica da secao Equipe;
+- testes de dominio, persistencia, resumo, convite, comando, auditoria, cross-tenant e render;
+- sem auth real, email real, Supabase, rede, secrets, deploy ou runtime real.
+
+Validacoes:
+
+- `npm test` PASS, 167/167;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Evoluir o painel em slices funcionais locais antes de qualquer adapter real.
@@ -832,10 +868,9 @@ Opcoes coerentes para o proximo slice:
 
 - `billing-contract`: estruturar plano, status de cobranca, entitlements e eventos antes de UI real.
 - `legal-contract`: estruturar LGPD, consentimento, retencao e solicitações de titular.
-- `team-contract`: estruturar usuarios, papeis, convites e auditoria de acesso.
 - `admin-app-shell-framework`: iniciar shell React/Vite somente depois de checkpoint explicito.
 
-Decisao recomendada: fazer checkpoint estrategico. A base do painel ja tem modulos locais renderizados; o proximo passo deve escolher qual frente estrutural faltante entra antes de framework visual: billing, legal/LGPD ou team.
+Decisao recomendada: atacar `billing-contract` antes de framework visual. Motivo: depois de acesso/equipe, a proxima autoridade estrutural de um SaaS e plano, status de pagamento, entitlements e bloqueios operacionais.
 
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
@@ -881,7 +916,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo funcional do painel: billing, legal/LGPD ou team contract local-only;
+- implementar proximo fluxo funcional do painel: billing contract local-only;
 - manter dados locais via persistence contracts;
 - evitar acoplamento do painel ao Supabase real nesta fase;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;

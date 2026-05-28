@@ -83,6 +83,9 @@
 - Implementada renderizacao estatica inicial dos modulos locais no novo repo: `apps/admin`.
 - Commit do novo repo: `52276de feat: render admin local modules`.
 - Validacoes atuais do novo repo: `npm test` PASS 158/158, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado modulo local de equipe/usuarios no novo repo: `apps/admin/src/modules/team-admin`, com `StudioUser` no dominio e `studioUsers` nos persistence contracts.
+- Commit do novo repo: `d7ae443 feat: add admin team module`.
+- Validacoes atuais do novo repo: `npm test` PASS 167/167, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -113,8 +116,9 @@
 - `apps/admin/src/modules/knowledge-admin` foi implementado como modulo local-only de schema/view-model/actions para governanca de conhecimento por tenant e futuro RAG consultivo, sem embeddings, vector store, LLM, WhatsApp, Telegram, Evolution, Supabase, auth real, rede, secrets, deploy ou runtime real.
 - `apps/admin/src/modules/admin-access` foi implementado como contrato local-only de rotas, papeis, permissoes, acoes perigosas e audit-required actions, sem auth real, Supabase, rede, secrets, deploy, UI final ou runtime real.
 - `apps/admin` renderiza modulos locais na UI estatica respeitando `admin-access`, sem React/Vite, auth real, Supabase, rede, providers reais, secrets ou deploy.
-- Proximo passo recomendado: checkpoint estrategico para escolher proximo contrato estrutural faltante: billing, legal/LGPD ou team.
+- `apps/admin/src/modules/team-admin` foi implementado como modulo local-only de equipe/usuarios, convites, mudanca de papel/status e audit events, sem auth real, email real, Supabase, rede, secrets, deploy ou runtime real.
+- Proximo passo recomendado: implementar `billing-contract` local-only antes de framework visual.
 
 ### Proximo Passo
 
-- Fazer checkpoint estrategico e escolher o proximo contrato local-only: billing, legal/LGPD ou team.
+- Implementar `billing-contract` local-only: planos, status de cobranca, entitlements, bloqueios e eventos.
