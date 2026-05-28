@@ -53,6 +53,9 @@
 - Implementado primeiro adapter simulado no novo repo: `packages/integrations/channel-adapters`.
 - Commit do novo repo: `73e18d2 feat: implement simulated channel adapters`.
 - Validacoes atuais do novo repo: `npm test` PASS 105/105, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Integrado `services/bot-orchestrator` com `packages/integrations/channel-adapters` em modo simulado.
+- Commit do novo repo: `87d2310 feat: wire orchestrator to simulated channel adapter`.
+- Validacoes atuais do novo repo: `npm test` PASS 107/107, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -72,7 +75,8 @@
 - `packages/bot-runtime-contract` foi implementado sem LLM, WhatsApp, Telegram, Supabase, Evolution, banco, APIs, runtime real, painel, deploy ou secrets.
 - `services/bot-orchestrator` foi implementado como service local-only em memoria, sem LLM, WhatsApp, Telegram, Supabase, Evolution, banco, API externa, deploy ou secrets.
 - `packages/integrations/channel-adapters` foi implementado como adapter simulado em memoria, sem Evolution, Telegram API, WhatsApp real, Supabase, rede, secrets, storage, deploy ou provider real.
-- Proximo passo recomendado: checkpoint antes de qualquer adapter real; escolher entre integrar `services/bot-orchestrator` com adapters simulados ou iniciar `apps/admin` skeleton.
+- Integracao simulada outbox->adapter->receipt foi implementada sem rede, provider real, storage, secrets ou deploy.
+- Proximo passo recomendado: checkpoint antes de qualquer adapter real; escolher entre storage/audit log local-only ou iniciar `apps/admin` skeleton.
 
 ### Proximo Passo
 

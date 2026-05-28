@@ -43,7 +43,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, primeiro service local-only `services/bot-orchestrator` e adapters simulados `packages/integrations/channel-adapters`, sem canais reais, sem painel, sem secrets e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados `packages/integrations/channel-adapters` e entrega simulada outbox->receipt, sem canais reais, sem painel, sem secrets e sem deploy.
 
 Local:
 
@@ -60,6 +60,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+87d2310 feat: wire orchestrator to simulated channel adapter
 73e18d2 feat: implement simulated channel adapters
 2de30cb feat: implement local bot orchestrator
 2e49930 feat: implement bot runtime contract
@@ -76,12 +77,12 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 105/105;
+- `npm test` PASS, 107/107;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - git limpo no repo novo.
 
-Proxima decisao: integrar `services/bot-orchestrator` com `packages/integrations/channel-adapters` em modo simulado ou iniciar skeleton de `apps/admin`. Nao iniciar adapter real de WhatsApp/Supabase/Telegram sem checkpoint explicito.
+Proxima decisao: iniciar storage simulado/audit log local ou skeleton de `apps/admin`. Nao iniciar adapter real de WhatsApp/Supabase/Telegram sem checkpoint explicito.
 
 ## Limite De Ambiente
 

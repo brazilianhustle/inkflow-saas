@@ -487,6 +487,40 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Integracao Simulada De Canal Implementada
+
+Area:
+
+```text
+services/bot-orchestrator -> packages/integrations/channel-adapters
+```
+
+Commit:
+
+```text
+87d2310 feat: wire orchestrator to simulated channel adapter
+```
+
+Escopo:
+
+- `services/bot-orchestrator` agora aceita `outboundAdapter` opcional;
+- mantido `receiveTurn` local e sincrono;
+- adicionado `receiveTurnAndDeliver` async para entrega simulada;
+- entrega simulada so ocorre se o turno for valido e gerar outbox;
+- outbound vira `createOutboundEnvelope`;
+- adapter simulado devolve delivery receipt;
+- snapshot do orchestrator passa a incluir `delivery_receipts`;
+- summary passa a incluir `delivery_receipt_count`;
+- teste garante que turno invalido nao chama adapter;
+- sem Evolution, Telegram API, WhatsApp real, Supabase, rede, secrets, storage, deploy ou provider real.
+
+Validacoes:
+
+- `npm test` PASS, 107/107;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Checkpoint antes de qualquer adapter real.
@@ -494,12 +528,12 @@ Checkpoint antes de qualquer adapter real.
 Recomendacao:
 
 ```text
-integrar bot-orchestrator com channel-adapters simulados ou iniciar apps/admin skeleton
+storage/audit log local-only ou apps/admin skeleton
 ```
 
 Objetivo do proximo artefato:
 
-- se seguir por integracoes: ligar outbox local ao adapter simulado e registrar receipts;
+- se seguir por dados: criar storage/audit log em memoria para runs e receipts;
 - se seguir por painel: criar skeleton admin sem dados reais;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
 - validar por unit/contract antes de qualquer adapter real.
