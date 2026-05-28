@@ -1889,6 +1889,55 @@ Proximo passo correto:
 adicionar wrappers de autorizacao em actions administrativas local-only
 ```
 
+## Admin Action Authorization Local-Only
+
+Commit do novo repo:
+
+```text
+8fbf682 feat: require auth for admin actions
+```
+
+Escopo:
+
+- adiciona `apps/admin/src/modules/admin-action-auth.mjs`;
+- writes de studio settings exigem `studio.edit_settings` + audit evidence;
+- comandos de bot control exigem `bot.execute_control` + audit evidence;
+- drafts de knowledge exigem `knowledge.edit_draft`;
+- publish/archive de knowledge exigem `knowledge.publish` + audit evidence;
+- billing exige `billing.manage` + audit evidence;
+- legal/LGPD exige `legal.manage_requests` + audit evidence;
+- team invite/role/status exige `team.manage` + audit evidence;
+- session tenant mismatch bloqueia antes de validacao de comando ou mutacao no repository;
+- testes cobrem ausencia de sessao, ausencia de audit evidence e permissao insuficiente.
+
+Limites:
+
+- sem Supabase Auth real;
+- sem JWT/cookies/browser storage;
+- sem staging remoto;
+- sem migration real;
+- sem provider real;
+- sem secrets;
+- sem deploy.
+
+Validacoes:
+
+- `npm test` PASS, 299/299;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder.
+
+Decisao:
+
+```text
+mutacoes administrativas passam por auth-session antes de tocar persistence contracts
+```
+
+Proximo passo correto:
+
+```text
+modelar provider connection settings/secrets boundary local-only
+```
+
 Recomendacao:
 
 ```text
@@ -1897,7 +1946,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- fazer writes administrativos exigirem permissao auth-session e evidencia de auditoria;
+- modelar providers/secrets sem expor credenciais ao browser ou admin view-model;
 - manter tudo local e desconectado de producao;
 - manter Supabase/staging real bloqueados sem aprovacao explicita;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;

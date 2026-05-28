@@ -180,6 +180,11 @@
 - Escopo: `createAdminViewModel` resolve `auth_session`, expoe `access_control`, deriva papel/permissoes da identidade salva, nega identidade inativa, nega role claim divergente e remove rotas/permissoes quando a sessao e invalida.
 - Limites: sem Supabase Auth real, JWT, cookies, browser storage, staging, deploy, secrets ou UI framework final.
 - Validacoes atuais do novo repo: `npm test` PASS 298/298, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
+- Implementado gate local de autorizacao para actions administrativas no novo repo.
+- Commit do novo repo: `8fbf682 feat: require auth for admin actions`.
+- Escopo: helper central `admin-action-auth`, protecao de writes de studio settings, bot control, knowledge, billing, legal e team; exige `auth-session`, permissao correta, tenant match e evidencia de auditoria para acoes sensiveis antes de mutar persistence contracts.
+- Limites: sem Supabase Auth real, JWT, cookies, browser storage, staging, deploy, secrets, providers reais ou UI framework final.
+- Validacoes atuais do novo repo: `npm test` PASS 299/299, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -237,7 +242,8 @@
 - Knowledge context agora esta integrado ao runtime/orchestrator apenas como contexto consultivo; workflow/policy/pricing seguem como autoridades.
 - `packages/auth-session` consolida a regra de acesso: provider auth pode identificar a pessoa no futuro, mas quem decide permissao e a identidade tenant-scoped persistida em `studio_users`.
 - `apps/admin` agora consome `auth-session` localmente; papel declarado nao pode abrir rotas se nao bater com `studio_users`.
+- Actions administrativas agora tem gate central de autorizacao; nenhuma mutacao local de painel deve ocorrer sem sessao/permissao/audit quando aplicavel.
 
 ### Proximo Passo
 
-- Adicionar wrappers de autorizacao em actions administrativas local-only, exigindo permissao `auth-session` e evidencia de auditoria antes de mutacao.
+- Modelar provider connection settings/secrets boundary local-only para Evolution, Telegram, pagamento e LLM, sem expor secrets ao browser/admin view-model e sem conectar providers reais.
