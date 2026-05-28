@@ -723,17 +723,53 @@ Validacoes:
 - `npm run lint` PASS placeholder;
 - git limpo no novo repo apos commit.
 
+## Admin Knowledge Implementado
+
+Modulo:
+
+```text
+apps/admin/src/modules/knowledge-admin
+```
+
+Commit:
+
+```text
+382c5a8 feat: add admin knowledge module
+```
+
+Escopo:
+
+- modulo local-only de governanca da base de conhecimento por tenant;
+- schema `knowledge_admin_v1` com secoes de library health, documents, publication queue, RAG readiness e governance;
+- draft de knowledge document com visibilidade: `public_answer`, `bot_context`, `artist_internal`;
+- actions para salvar draft, preparar comando, publicar e arquivar documento;
+- versionamento por persistence contract;
+- audit event local para publish/archive;
+- protecao contra mismatch de tenant, cross-tenant access e valores com cara de secret;
+- readiness local para futuro RAG consultivo, exigindo fontes publicadas de FAQ, policy, aftercare e commercial_rule;
+- view model integrado ao admin principal;
+- testes de secoes, resumo, draft, secrets, tenant mismatch, publish, audit, cross-tenant e readiness;
+- sem embeddings, vector store, LLM, WhatsApp, Telegram, Evolution, Supabase, auth real, rede, secrets, deploy ou runtime real.
+
+Validacoes:
+
+- `npm test` PASS, 150/150;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder;
+- git limpo no novo repo apos commit.
+
 ## Proximo Passo Logico
 
 Evoluir o painel em slices funcionais locais antes de qualquer adapter real.
 
 Opcoes coerentes para o proximo slice:
 
-- `knowledge-admin`: CRUD local de documentos do futuro RAG por tenant;
 - `studio-settings-ui`: renderizar o modulo de configuracao na tela estatica atual antes de avançar para novos modulos.
 - `bot-control-ui`: renderizar controle operacional na tela estatica atual antes de novos modulos.
+- `knowledge-admin-ui`: renderizar biblioteca, fila de publicacao e readiness na tela estatica atual.
+- `admin-shell-contract`: definir contrato de rotas/permissoes antes de migrar para React/Vite.
 
-Decisao recomendada: implementar `knowledge-admin` local-only, porque o RAG por tenant ja foi definido como frente futura obrigatoria e precisa de governanca antes de qualquer runtime real.
+Decisao recomendada: fazer checkpoint estrategico antes do proximo slice, porque os tres pilares locais do painel ja existem: configuracao, controle operacional e knowledge. O proximo ataque deve decidir entre renderizar esses modulos na UI estatica ou criar contrato de rotas/permissoes do painel antes de React/Vite.
 
 ## Frente Futura Obrigatoria - Knowledge Service / RAG
 
@@ -779,7 +815,7 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar proximo fluxo funcional do painel: knowledge admin, renderizacao completa de settings ou renderizacao de bot control;
+- implementar proximo fluxo funcional do painel: renderizacao dos modulos locais ou contrato de rotas/permissoes do admin;
 - manter dados locais via persistence contracts;
 - evitar acoplamento do painel ao Supabase real nesta fase;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
