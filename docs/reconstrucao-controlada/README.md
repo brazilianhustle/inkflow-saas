@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+95da063 test: use persisted quote context in roundtrip
 6b99dbb feat: persist quote context from orchestrator
 d113c19 feat: persist quote request contexts locally
 1d39a6d test: prove local artist quote roundtrip
@@ -163,9 +164,10 @@ Validacoes atuais:
 - roundtrip local de orcamento do tatuador provado ponta a ponta: quote_request context/ref -> Telegram adapter -> artist quote intake -> WhatsApp quote_response simulada;
 - persistence-contracts agora tem `QuoteRequestContextRepository` local tenant-scoped para salvar e buscar `quote_request_ref`/contexto seguro;
 - bot-orchestrator agora persiste `quote_request_context` local apos `quote_request` enviado com sucesso, expondo resultado no snapshot sem rollback da notificacao;
+- roundtrip local agora busca o contexto persistido por `quote_request_ref` antes do Telegram adapter;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: atualizar o roundtrip local para buscar contexto persistido por `quote_request_ref` antes do Telegram adapter, mantendo staging/producao bloqueados. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
+Proxima decisao: abrir Strategic Review Gate leve para decidir entre preparar runbook/gate de provider real ou reforcar mais um contrato local, mantendo staging/producao bloqueados. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

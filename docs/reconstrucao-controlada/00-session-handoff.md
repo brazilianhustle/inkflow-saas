@@ -30,15 +30,15 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-6b99dbb feat: persist quote context from orchestrator
+95da063 test: use persisted quote context in roundtrip
 ```
 
 Bloco fechado:
 
-- `bot-orchestrator` agora grava `quote_request_context` no `QuoteRequestContextRepository` local apos `quote_request` enviado com sucesso;
-- snapshot do orchestrator expoe `quote_request_persistence_results`;
-- falha de persistencia local fica visivel, mas nao desfaz a notificacao local ja enviada;
-- checkpoint de bot-orchestrator notifications atualizado com a nova responsabilidade;
+- roundtrip local atualizado para buscar `quote_request_context` persistido por `quote_request_ref`;
+- prova agora evita depender apenas da metadata em memoria retornada pela notificacao;
+- caminho validado: quote_request enviado -> contexto persistido -> lookup por ref -> Telegram adapter -> artist quote intake -> WhatsApp quote_response simulada;
+- checkpoint `artist-quote-roundtrip-local` atualizado;
 - sem Supabase real, migration real, provider real, secrets, staging ou deploy.
 
 Validacoes do ultimo bloco:
@@ -46,9 +46,9 @@ Validacoes do ultimo bloco:
 - `npm test` PASS 381/381;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
-- scan focado de seguranca em bot-orchestrator PASS apenas com guards/fixtures, sem credencial real.
+- scan focado de seguranca no roundtrip PASS apenas com guards/fixtures, sem credencial real.
 
-Proximo passo seguro: atualizar o roundtrip local para buscar o contexto persistido por `quote_request_ref` antes de acionar o Telegram adapter, ainda sem Supabase real, provider real, staging ou secrets.
+Proximo passo seguro: abrir Strategic Review Gate leve para decidir entre preparar runbook/gate de provider real ou reforcar mais um contrato local antes de qualquer promocao.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 

@@ -286,6 +286,11 @@
 - Escopo: apos `quote_request` enviado com sucesso, o orchestrator salva `quote_request_context` em `QuoteRequestContextRepository`; falha de persistencia e registrada no snapshot sem rollback da notificacao.
 - Segurança: sem Supabase real, migration real, provider real, secrets, staging ou deploy.
 - Validacoes atuais do novo repo: `npm test` PASS 381/381, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS com apenas guards/fixtures.
+- Atualizado roundtrip local para usar contexto persistido por ref no novo repo.
+- Commit do novo repo: `95da063 test: use persisted quote context in roundtrip`.
+- Escopo: teste/checkpoint agora validam quote_request enviado, contexto persistido, lookup por `quote_request_ref`, Telegram adapter, artist quote intake e WhatsApp `quote_response` simulada.
+- Segurança: sem Supabase real, migration real, provider real, secrets, staging ou deploy.
+- Validacoes atuais do novo repo: `npm test` PASS 381/381, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, scan focado de seguranca PASS com apenas guards/fixtures.
 
 ### Decisoes
 
@@ -360,7 +365,8 @@
 - Roundtrip local prova a cadeia funcional sem provider real; o proximo gap estrutural e decidir se o contexto/ref deve ser persistido agora ou se a frente deve preparar runbook/gate de provider real.
 - Quote request context agora tem contrato de persistencia local; o proximo gap estrutural e o orchestrator gravar esse contexto no repositorio local quando emitir `quote_request`.
 - Orchestrator agora grava o contexto/ref localmente; o proximo gap estrutural e provar o roundtrip usando busca por `quote_request_ref` persistido, nao apenas metadata em memoria.
+- Roundtrip com lookup persistido fecha a cadeia local de orcamento do tatuador; o proximo passo exige Strategic Review Gate leve antes de preparar provider real.
 
 ### Proximo Passo
 
-- Atualizar o roundtrip local para buscar contexto persistido por `quote_request_ref` antes do Telegram adapter, sem secrets reais, staging, producao ou provider real.
+- Abrir Strategic Review Gate leve para decidir entre preparar runbook/gate de provider real ou reforcar mais um contrato local, sem secrets reais, staging, producao ou provider real.
