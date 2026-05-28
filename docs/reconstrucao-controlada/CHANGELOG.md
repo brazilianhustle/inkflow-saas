@@ -161,6 +161,11 @@
 - Escopo: `docs/architecture/supabase-staging-execution-runbook.md`, `npm run supabase:staging:execution-gate`, validacao do runbook, precondicoes, backup, rollback/forward-fix, smoke RLS, aprovacao humana, stop conditions e bloqueios contra comando executavel/secret/production-like.
 - Evidencia: ready_for_manual_review=true, staging_execution_authorized=false, production_execution_authorized=false, connects_to_staging=false, connects_to_production=false.
 - Validacoes atuais do novo repo: `npm test` PASS 277/277, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, package-check PASS, staging-readiness PASS, staging-execution-gate PASS.
+- Implementado `packages/knowledge-service` local-only no novo repo.
+- Commit do novo repo: `0ffa38f feat: add knowledge service`.
+- Escopo: retrieval deterministico local por tenant, published-only, source trace, confidence, redaction, fallback seguro, bloqueio de query com secret-like value e autoridade `consultative_only`.
+- Limites: sem LLM, embeddings, vector DB, Supabase, storage, WhatsApp, Telegram, Evolution, rede, secrets ou deploy; nao decide workflow, preco, menoridade, cobertura, handoff, pagamento, agenda ou conclusao de orcamento.
+- Validacoes atuais do novo repo: `npm test` PASS 285/285, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder.
 
 ### Decisoes
 
@@ -214,7 +219,8 @@
 - Plano de staging foi registrado como checkpoint nao executavel; proximo passo ainda e checker local de readiness, nao staging real.
 - Checker de staging readiness autoriza somente revisao operacional, nao execucao. Staging real continua bloqueado sem aprovacao explicita.
 - Runbook/gate de execucao staging esta pronto para revisao manual; ele nao armazena comando executavel de staging enquanto autorizacao for false.
+- `knowledge-service` passa a ser a biblioteca consultiva local do bot/painel; o proximo passo e integracao controlada ao runtime sem entregar autoridade de estado/preco/handoff.
 
 ### Proximo Passo
 
-- Pausar para decisao operacional antes de qualquer staging real ou preparar checkpoint de aprovacao humana para staging.
+- Integrar `knowledge-service` ao bot runtime como contexto consultivo opcional, mantendo workflow/policy/pricing como autoridades.

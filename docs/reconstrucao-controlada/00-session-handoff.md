@@ -1679,7 +1679,7 @@ pausar para decisao operacional antes de qualquer staging real ou preparar check
 Status:
 
 ```text
-registrado, nao implementar agora
+implementado local-only, integrar ao runtime depois
 ```
 
 Motivo:
@@ -1710,6 +1710,59 @@ Limites:
 - RAG nao deve substituir `tenant-config`, `workflow`, `policy`, `pricing` ou `guardrails`;
 - RAG entra como biblioteca consultiva, nao como comandante do fluxo.
 
+## Knowledge Service Local-Only
+
+Commit do novo repo:
+
+```text
+0ffa38f feat: add knowledge service
+```
+
+Escopo:
+
+- adiciona `packages/knowledge-service`;
+- adiciona `docs/architecture/knowledge-service-checkpoint.md`;
+- le documentos publicados via persistence contracts;
+- filtra por tenant;
+- ignora drafts e archived;
+- aplica scoring local deterministico;
+- retorna answer text, confidence e source trace;
+- redige trechos via redaction;
+- retorna fallback quando nao ha fonte confiavel;
+- bloqueia query com valor secret-like;
+- expõe authority `consultative_only`;
+- garante `can_mutate_workflow=false`, `can_set_price=false`, `can_trigger_handoff=false`.
+
+Limites:
+
+- sem LLM;
+- sem embeddings;
+- sem vector DB;
+- sem Supabase;
+- sem storage;
+- sem WhatsApp/Telegram/Evolution;
+- sem rede;
+- sem secrets;
+- sem deploy.
+
+Validacoes:
+
+- `npm test` PASS, 285/285;
+- `npm run typecheck` PASS placeholder;
+- `npm run lint` PASS placeholder.
+
+Decisao:
+
+```text
+knowledge-service e biblioteca consultiva; nao decide workflow, preco, safety, handoff ou conclusao de orcamento
+```
+
+Proximo passo correto:
+
+```text
+integrar knowledge-service ao bot runtime como contexto consultivo opcional
+```
+
 Recomendacao:
 
 ```text
@@ -1718,9 +1771,9 @@ evoluir apps/admin em slices funcionais usando persistence contracts locais
 
 Objetivo do proximo artefato:
 
-- implementar checker/gerador local de package de migration antes de qualquer producao;
+- integrar knowledge-service ao bot runtime como contexto consultivo opcional;
 - manter tudo local e desconectado de producao;
-- introduzir Supabase local somente com autorizacao explicita e sem tocar producao;
+- manter Supabase/staging real bloqueados sem aprovacao explicita;
 - manter sem WhatsApp real, Telegram real, Supabase, Evolution, deploy, secrets e LLM real;
 - validar por unit/contract antes de qualquer adapter real.
 
