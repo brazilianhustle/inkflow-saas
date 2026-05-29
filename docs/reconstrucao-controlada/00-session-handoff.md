@@ -38,22 +38,22 @@ Bloco fechado:
 - criado checker local `supabase:staging:secret-source-check`;
 - checker valida apenas presenca local de `SUPABASE_STAGING_URL`, `SUPABASE_STAGING_ANON_KEY` e `SUPABASE_STAGING_SERVICE_ROLE_KEY`;
 - checker nunca imprime valores, nunca conecta no staging, nunca sincroniza secrets e nunca autoriza execucao;
-- no ambiente atual do Codex, os tres secrets aparecem como `missing`, o que e esperado porque valores nao devem ser enviados pela conversa;
-- checkpoint de aprovacao segue valido, mas Supabase staging real fica bloqueado ate o operador carregar secrets localmente e o checker passar;
+- operador reportou `npm run supabase:staging:secret-source-check` com `ok=true`, os tres secrets presentes e valores redigidos como `[redacted]`;
+- checkpoint de aprovacao e secret source check estao satisfeitos, mas Supabase staging real ainda exige checkpoint dedicado de execucao/backup;
 - sem deploy real, public traffic, provider traffic, secret sync, database migration, staging, billing activation, customer migration ou producao.
 
 Validacoes do ultimo bloco:
 
 - `node --test tests/architecture/supabase-staging-approval-checkpoint.test.mjs` PASS 7/7;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:approval-checkpoint` PASS, com `ready_for_human_approval=true` e todas as flags de execucao false;
-- `npm run supabase:staging:secret-source-check` FAIL esperado no ambiente atual com `missing` para os tres names, sem imprimir valores;
+- `npm run supabase:staging:secret-source-check` PASS reportado pelo operador, com `prints_secret_values=false`, `connects_to_staging=false`, `syncs_secrets=false` e valores `[redacted]`;
 - `npm test` PASS 423/423;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
 - `git diff --check` PASS;
 - scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate, sem credencial real, comando executavel ou autorizacao real.
 
-Proximo passo seguro: operador deve carregar os tres secrets localmente no shell ou secret manager e rodar `npm run supabase:staging:secret-source-check`; se passar, registrar confirmacao sem valores. Sem esse PASS, Supabase staging permanece bloqueado.
+Proximo passo seguro: abrir checkpoint dedicado de execucao Supabase staging com backup/export primeiro. Nao executar migration real sem registrar backup target, operador, rollback owner e evidence location no pacote de execucao.
 
 Nota operacional: o repo `inkflow-saas` tambem possui wrapper `npm run supabase:staging:secret-source-check`, que delega para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado.
 

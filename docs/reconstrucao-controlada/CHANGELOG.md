@@ -423,7 +423,8 @@
 - Supabase staging approval checkpoint torna a proxima mensagem humana o unico desbloqueio valido; sem `APPROVE_SUPABASE_STAGING_ONLY` e campos completos, staging real segue bloqueado.
 - Secret source check garante que o operador possa validar secrets por script local sem colar valores na conversa; sem PASS desse check, staging real segue bloqueado.
 - Wrapper no repo atual evita erro operacional de rodar o comando no diretorio errado.
+- Operador reportou `npm run supabase:staging:secret-source-check` com `ok=true`, tres secrets presentes, valores `[redacted]`, `prints_secret_values=false`, `connects_to_staging=false`, `syncs_secrets=false`, `staging_execution_authorized=false` e `production_execution_authorized=false`.
 
 ### Proximo Passo
 
-- Operador deve carregar os tres secrets localmente e rodar `npm run supabase:staging:secret-source-check`; depois confirmar PASS sem expor valores. Nao executar secrets reais, staging, producao, provider real, billing activation, customer data migration ou deploy automatico sem aprovacao explicita.
+- Abrir checkpoint dedicado de execucao Supabase staging com backup/export primeiro. Nao executar secrets reais, staging, producao, provider real, billing activation, customer data migration ou deploy automatico sem pacote de execucao/evidencia.
