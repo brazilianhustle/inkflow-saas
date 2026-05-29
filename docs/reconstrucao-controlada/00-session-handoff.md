@@ -30,31 +30,30 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-96d8dfc feat: add supabase staging approval checkpoint
+7d2ac19 feat: add supabase staging secret source check
 ```
 
 Bloco fechado:
 
-- criado `docs/architecture/supabase-staging-approval-checkpoint.md`;
-- criado gate local `supabase:staging:approval-checkpoint`;
-- checkpoint formaliza a ultima decisao antes de qualquer Supabase staging real;
-- exige frase de aprovacao `APPROVE_SUPABASE_STAGING_ONLY`;
-- exige confirmacao de staging label, package id, operador, timestamp, backup/export, rollback owner, fixtures fake, evidence location e existencia dos secret source names sem valores;
-- gate bloqueia autorizacao automatica com `SUPABASE_STAGING_EXECUTION_AUTHORIZED=false`, `SUPABASE_PRODUCTION_EXECUTION_AUTHORIZED=false`, `SUPABASE_SECRET_SYNC_AUTHORIZED=false`, `REAL_PROVIDER_EXECUTION_AUTHORIZED=false`, `DEPLOY_EXECUTION_AUTHORIZED=false`, `BILLING_ACTIVATION_AUTHORIZED=false` e `CUSTOMER_DATA_MIGRATION_AUTHORIZED=false`;
-- gate rejeita ambiente production-like, comandos executaveis de staging/provider/deploy/secret sync, secrets crus, provider real e billing capture;
+- criado checker local `supabase:staging:secret-source-check`;
+- checker valida apenas presenca local de `SUPABASE_STAGING_URL`, `SUPABASE_STAGING_ANON_KEY` e `SUPABASE_STAGING_SERVICE_ROLE_KEY`;
+- checker nunca imprime valores, nunca conecta no staging, nunca sincroniza secrets e nunca autoriza execucao;
+- no ambiente atual do Codex, os tres secrets aparecem como `missing`, o que e esperado porque valores nao devem ser enviados pela conversa;
+- checkpoint de aprovacao segue valido, mas Supabase staging real fica bloqueado ate o operador carregar secrets localmente e o checker passar;
 - sem deploy real, public traffic, provider traffic, secret sync, database migration, staging, billing activation, customer migration ou producao.
 
 Validacoes do ultimo bloco:
 
-- `node --test tests/architecture/supabase-staging-approval-checkpoint.test.mjs` PASS 5/5;
+- `node --test tests/architecture/supabase-staging-approval-checkpoint.test.mjs` PASS 7/7;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:approval-checkpoint` PASS, com `ready_for_human_approval=true` e todas as flags de execucao false;
-- `npm test` PASS 421/421;
+- `npm run supabase:staging:secret-source-check` FAIL esperado no ambiente atual com `missing` para os tres names, sem imprimir valores;
+- `npm test` PASS 423/423;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
 - `git diff --check` PASS;
 - scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate, sem credencial real, comando executavel ou autorizacao real.
 
-Proximo passo seguro: aguardar aprovacao humana formal com a frase `APPROVE_SUPABASE_STAGING_ONLY` e os campos obrigatorios. Sem essa mensagem, Supabase staging permanece bloqueado.
+Proximo passo seguro: operador deve carregar os tres secrets localmente no shell ou secret manager e rodar `npm run supabase:staging:secret-source-check`; se passar, registrar confirmacao sem valores. Sem esse PASS, Supabase staging permanece bloqueado.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 
