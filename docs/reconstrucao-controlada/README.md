@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+96d8dfc feat: add supabase staging approval checkpoint
 1c391bd feat: add product delivery master plan
 8302ebe feat: add e2e fake staging package
 3e9e9e9 feat: add saas runtime staging evidence package
@@ -138,9 +139,10 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 416/416;
+- `npm test` PASS, 421/421;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:approval-checkpoint` PASS;
 - `INKFLOW_ENV=local PRODUCT_DELIVERY_ENV=local npm run product:delivery:master-plan` PASS;
 - `INKFLOW_ENV=local E2E_FAKE_STAGE_ENV=local npm run e2e:fake-staging:package` PASS;
 - `INKFLOW_ENV=local SAAS_RUNTIME_ENV=local npm run saas:runtime:staging:evidence-package` PASS;
@@ -186,9 +188,10 @@ Validacoes atuais:
 - SaaS runtime staging operational evidence package agora consolida admin runtime, bot runtime, audit, provider boundary, tenant config, legal, billing, observabilidade e rollback em uma evidencia local unica, mantendo `SAAS_RUNTIME_STAGING_EXECUTION_AUTHORIZED=false`, `SAAS_RUNTIME_PRODUCTION_EXECUTION_AUTHORIZED=false`, `SAAS_RUNTIME_DEPLOY_AUTHORIZED=false`, `SAAS_RUNTIME_SECRET_SYNC_AUTHORIZED=false`, `connects_to_staging=false` e blockers humanos explicitos;
 - End-to-end fake staging smoke package agora consolida Stage readiness, Supabase staging evidence, Provider staging evidence e SaaS runtime staging evidence em uma decisao humana final, mantendo `E2E_FAKE_STAGING_SMOKE_AUTHORIZED=false`, `STAGE_EXECUTION_AUTHORIZED=false`, `PRODUCTION_EXECUTION_AUTHORIZED=false`, `REAL_PROVIDER_EXECUTION_AUTHORIZED=false`, `DEPLOY_EXECUTION_AUTHORIZED=false`, `SECRET_SYNC_AUTHORIZED=false` e uma fake smoke story completa sem executar staging real;
 - Product Delivery Master Plan agora define a trilha da fundacao ao produto final: data foundation, SaaS runtime foundation, provider staging foundation, end-to-end Stage, product completion e production pilot, mantendo `PRODUCT_DELIVERY_EXECUTION_AUTHORIZED=false`, `BILLING_ACTIVATION_AUTHORIZED=false` e `CUSTOMER_DATA_MIGRATION_AUTHORIZED=false`;
+- Supabase staging approval checkpoint agora e o ultimo gate local antes de qualquer Supabase staging real, exigindo `APPROVE_SUPABASE_STAGING_ONLY`, campos operacionais completos e mantendo staging/producao/secret sync/provider/deploy/billing/customer migration false;
 - git limpo no repo novo apos commit.
 
-Proxima decisao: aprovacao humana especifica para Supabase staging only. Antes de executar, confirmar projeto staging, operador, timestamp, backup/export, rollback owner, fixtures fake e local de evidencia. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
+Proxima decisao: aprovacao humana formal para Supabase staging only. A mensagem precisa incluir `APPROVE_SUPABASE_STAGING_ONLY`, projeto staging, operador, timestamp, backup/export, rollback owner, fixtures fake, local de evidencia e confirmacao de secret source names sem valores. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

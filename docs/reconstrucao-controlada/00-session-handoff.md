@@ -30,31 +30,31 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-1c391bd feat: add product delivery master plan
+96d8dfc feat: add supabase staging approval checkpoint
 ```
 
 Bloco fechado:
 
-- criado `docs/architecture/product-delivery-master-plan.md`;
-- criado gate local `product:delivery:master-plan`;
-- plano mestre define a linha de avanco da fundacao ate o produto SaaS completo;
-- linhas de entrega: data foundation, SaaS runtime foundation, provider staging foundation, end-to-end Stage, product completion e production pilot;
-- plano fixa Supabase staging como proximo candidato operacional, antes de runtime/provider, por ser a fundacao de dados/RLS/audit/rollback;
-- gate bloqueia autorizacao automatica com `PRODUCT_DELIVERY_EXECUTION_AUTHORIZED=false`, `STAGE_EXECUTION_AUTHORIZED=false`, `PRODUCTION_EXECUTION_AUTHORIZED=false`, `REAL_PROVIDER_EXECUTION_AUTHORIZED=false`, `DEPLOY_EXECUTION_AUTHORIZED=false`, `SECRET_SYNC_AUTHORIZED=false`, `BILLING_ACTIVATION_AUTHORIZED=false` e `CUSTOMER_DATA_MIGRATION_AUTHORIZED=false`;
-- gate rejeita ambiente production-like, comandos executaveis de staging/provider/deploy/secret sync, secrets crus e billing capture;
+- criado `docs/architecture/supabase-staging-approval-checkpoint.md`;
+- criado gate local `supabase:staging:approval-checkpoint`;
+- checkpoint formaliza a ultima decisao antes de qualquer Supabase staging real;
+- exige frase de aprovacao `APPROVE_SUPABASE_STAGING_ONLY`;
+- exige confirmacao de staging label, package id, operador, timestamp, backup/export, rollback owner, fixtures fake, evidence location e existencia dos secret source names sem valores;
+- gate bloqueia autorizacao automatica com `SUPABASE_STAGING_EXECUTION_AUTHORIZED=false`, `SUPABASE_PRODUCTION_EXECUTION_AUTHORIZED=false`, `SUPABASE_SECRET_SYNC_AUTHORIZED=false`, `REAL_PROVIDER_EXECUTION_AUTHORIZED=false`, `DEPLOY_EXECUTION_AUTHORIZED=false`, `BILLING_ACTIVATION_AUTHORIZED=false` e `CUSTOMER_DATA_MIGRATION_AUTHORIZED=false`;
+- gate rejeita ambiente production-like, comandos executaveis de staging/provider/deploy/secret sync, secrets crus, provider real e billing capture;
 - sem deploy real, public traffic, provider traffic, secret sync, database migration, staging, billing activation, customer migration ou producao.
 
 Validacoes do ultimo bloco:
 
-- `node --test tests/architecture/product-delivery-master-plan.test.mjs` PASS 5/5;
-- `INKFLOW_ENV=local PRODUCT_DELIVERY_ENV=local npm run product:delivery:master-plan` PASS, com `ready_for_supabase_staging_decision=true` e todas as flags de execucao false;
-- `npm test` PASS 416/416;
+- `node --test tests/architecture/supabase-staging-approval-checkpoint.test.mjs` PASS 5/5;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:approval-checkpoint` PASS, com `ready_for_human_approval=true` e todas as flags de execucao false;
+- `npm test` PASS 421/421;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
 - `git diff --check` PASS;
 - scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate, sem credencial real, comando executavel ou autorizacao real.
 
-Proximo passo seguro: decisao humana especifica para Supabase staging only. Nao executar staging real automaticamente. Antes da execucao, confirmar label do projeto staging, operador, timestamp de aprovacao, backup/export, rollback owner, fixtures fake e local de evidencia.
+Proximo passo seguro: aguardar aprovacao humana formal com a frase `APPROVE_SUPABASE_STAGING_ONLY` e os campos obrigatorios. Sem essa mensagem, Supabase staging permanece bloqueado.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 

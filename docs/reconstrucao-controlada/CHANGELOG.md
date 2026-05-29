@@ -326,6 +326,11 @@
 - Escopo: `docs/architecture/product-delivery-master-plan.md`, `npm run product:delivery:master-plan`, definindo a trilha da fundacao ao produto final: data foundation, SaaS runtime foundation, provider staging foundation, end-to-end Stage, product completion e production pilot.
 - Evidencia: `ready_for_supabase_staging_decision=true`, `recommended_next_candidate=approve_supabase_staging_only`, `product_delivery_execution_authorized=false`, `stage_execution_authorized=false`, `production_execution_authorized=false`, `real_provider_execution_authorized=false`, `deploy_execution_authorized=false`, `secret_sync_authorized=false`, `billing_activation_authorized=false` e `customer_data_migration_authorized=false`.
 - Validacoes atuais do novo repo: `node --test tests/architecture/product-delivery-master-plan.test.mjs` PASS 5/5, `INKFLOW_ENV=local PRODUCT_DELIVERY_ENV=local npm run product:delivery:master-plan` PASS, `npm test` PASS 416/416, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate.
+- Implementado Supabase staging approval checkpoint no novo repo.
+- Commit do novo repo: `96d8dfc feat: add supabase staging approval checkpoint`.
+- Escopo: `docs/architecture/supabase-staging-approval-checkpoint.md`, `npm run supabase:staging:approval-checkpoint`, formalizando a ultima decisao humana antes de qualquer Supabase staging real.
+- Evidencia: `ready_for_human_approval=true`, `approval_phrase_required=APPROVE_SUPABASE_STAGING_ONLY`, `recommended_scope=supabase_staging_only`, `supabase_staging_execution_authorized=false`, `supabase_production_execution_authorized=false`, `supabase_secret_sync_authorized=false`, `real_provider_execution_authorized=false`, `deploy_execution_authorized=false`, `billing_activation_authorized=false` e `customer_data_migration_authorized=false`.
+- Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-approval-checkpoint.test.mjs` PASS 5/5, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:approval-checkpoint` PASS, `npm test` PASS 421/421, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate e nomes de secret source sem valores.
 
 ### Decisoes
 
@@ -408,7 +413,8 @@
 - SaaS runtime staging agora tem evidencia operacional local consolidada; execucao real ainda depende de aprovacao humana, runtime route, bindings de staging, deploy staging e smoke runtime.
 - End-to-end fake staging package e o checkpoint local final antes de qualquer Stage real; a proxima acao e decisao humana entre manter bloqueado ou aprovar execucao Stage ordenada com checkpoints explicitos.
 - Product Delivery Master Plan fixa a ordem estrategica para agilizar sem perder qualidade: Supabase staging primeiro, SaaS runtime depois, Provider staging em terceiro, E2E Stage, Product Completion e Production Pilot.
+- Supabase staging approval checkpoint torna a proxima mensagem humana o unico desbloqueio valido; sem `APPROVE_SUPABASE_STAGING_ONLY` e campos completos, staging real segue bloqueado.
 
 ### Proximo Passo
 
-- Parar para aprovacao humana especifica de Supabase staging only. Antes de executar, confirmar projeto staging, operador, timestamp, backup/export, rollback owner, fixtures fake e local de evidencia. Nao executar secrets reais, staging, producao, provider real, billing activation, customer data migration ou deploy automatico sem aprovacao explicita.
+- Aguardar aprovacao humana formal de Supabase staging only com `APPROVE_SUPABASE_STAGING_ONLY`, projeto staging, operador, timestamp, backup/export, rollback owner, fixtures fake, local de evidencia e confirmacao de secret source names sem valores. Nao executar secrets reais, staging, producao, provider real, billing activation, customer data migration ou deploy automatico sem aprovacao explicita.
