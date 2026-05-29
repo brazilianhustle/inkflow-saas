@@ -336,6 +336,8 @@
 - Escopo: `npm run supabase:staging:secret-source-check`, validando presenca local de `SUPABASE_STAGING_URL`, `SUPABASE_STAGING_ANON_KEY` e `SUPABASE_STAGING_SERVICE_ROLE_KEY` sem imprimir valores, sem conectar staging, sem sync e sem autorizar execucao.
 - Evidencia: no ambiente atual do Codex o comando falha de forma esperada com os tres names `missing`; isso confirma que secrets nao foram enviados pela conversa nem carregados no ambiente do agente.
 - Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-approval-checkpoint.test.mjs` PASS 7/7, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:approval-checkpoint` PASS, `npm test` PASS 423/423, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos, nomes de secret source e fixtures redigidos.
+- Criado wrapper no repo atual `inkflow-saas`: `npm run supabase:staging:secret-source-check`, delegando para `/Users/brazilianhustler/Documents/inkflow-platform`.
+- Evidencia do wrapper: com valores fake seguros, comando retorna `ok=true` e `value_redacted=[redacted]`; sem variaveis no shell, retorna `missing` esperado sem imprimir valores.
 
 ### Decisoes
 
@@ -420,6 +422,7 @@
 - Product Delivery Master Plan fixa a ordem estrategica para agilizar sem perder qualidade: Supabase staging primeiro, SaaS runtime depois, Provider staging em terceiro, E2E Stage, Product Completion e Production Pilot.
 - Supabase staging approval checkpoint torna a proxima mensagem humana o unico desbloqueio valido; sem `APPROVE_SUPABASE_STAGING_ONLY` e campos completos, staging real segue bloqueado.
 - Secret source check garante que o operador possa validar secrets por script local sem colar valores na conversa; sem PASS desse check, staging real segue bloqueado.
+- Wrapper no repo atual evita erro operacional de rodar o comando no diretorio errado.
 
 ### Proximo Passo
 

@@ -55,6 +55,8 @@ Validacoes do ultimo bloco:
 
 Proximo passo seguro: operador deve carregar os tres secrets localmente no shell ou secret manager e rodar `npm run supabase:staging:secret-source-check`; se passar, registrar confirmacao sem valores. Sem esse PASS, Supabase staging permanece bloqueado.
 
+Nota operacional: o repo `inkflow-saas` tambem possui wrapper `npm run supabase:staging:secret-source-check`, que delega para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado.
+
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 
 ## Terreno Confirmado
