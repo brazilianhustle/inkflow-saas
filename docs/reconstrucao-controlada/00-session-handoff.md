@@ -30,28 +30,29 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-7a1469b feat: add supabase staging execution package
+ad0ebc2 docs: add secret storage architecture
 ```
 
 Bloco fechado:
 
-- criado `docs/architecture/supabase-staging-execution-package.md`;
-- criado gate local `supabase:staging:execution-package`;
-- pacote transforma a aprovacao em checklist de execucao com backup/export como primeiro checkpoint real;
-- migration staging segue bloqueada com `SUPABASE_STAGING_MIGRATION_AUTHORIZED=false` ate existir evidencia de backup/export;
-- gate exige approval checkpoint, execution gate e secret source check verdes;
-- proximo checkpoint e `capture_staging_backup_export_evidence`;
+- auditada a arquitetura de armazenamento de secrets sem imprimir valores;
+- criado `docs/architecture/secret-storage-architecture.md`;
+- criado `tests/architecture/secret-storage-architecture.test.mjs`;
+- fortalecido `.gitignore` para bloquear `.dev.vars.*`;
+- politica central agora define que codigo, docs, testes, fixtures, banco, logs, UI, auditoria e handoff nunca armazenam segredo bruto;
+- permitido apenas secret source name, binding opaco, runtime handle, valor redigido ou fixture negativa controlada;
+- browser/admin/client seguem impedidos de resolver credenciais; runtime server-side resolve apenas handle opaco;
+- Supabase staging segue com secrets validados por source names e migration bloqueada ate backup/export evidence;
 - sem deploy real, public traffic, provider traffic, secret sync, database migration, staging, billing activation, customer migration ou producao.
 
 Validacoes do ultimo bloco:
 
-- `node --test tests/architecture/supabase-staging-execution-package.test.mjs` PASS 5/5;
-- `INKFLOW_ENV=local SUPABASE_ENV=local ... npm run supabase:staging:execution-package` PASS com valores fake/redigidos;
-- `npm test` PASS 428/428;
+- `node --test tests/architecture/secret-storage-architecture.test.mjs` PASS 5/5;
+- `npm test` PASS 433/433;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
 - `git diff --check` PASS;
-- scan focado de seguranca PASS apenas com regex/fixtures negativos do proprio gate, sem credencial real, comando executavel ou autorizacao real.
+- scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados, sem credencial real.
 
 Proximo passo seguro: capturar evidencia de backup/export staging antes de qualquer migration. Nao executar migration real sem backup artifact path, timestamp, operador, command summary sem secrets, restore/reset strategy, retention window e evidence file path.
 

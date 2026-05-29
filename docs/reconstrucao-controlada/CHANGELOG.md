@@ -343,6 +343,11 @@
 - Escopo: `docs/architecture/supabase-staging-execution-package.md`, `npm run supabase:staging:execution-package`, formalizando backup/export como primeiro checkpoint real antes de qualquer migration.
 - Evidencia: `ready_for_backup_checkpoint=true`, `supabase_staging_backup_required=true`, `supabase_staging_migration_authorized=false`, gates approval/execution/secret-source true, next checkpoint `capture_staging_backup_export_evidence`.
 - Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-execution-package.test.mjs` PASS 5/5, `npm test` PASS 428/428, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos e nomes de secret source sem valores.
+- Implementada Secret Storage Architecture no novo repo.
+- Commit do novo repo: `ad0ebc2 docs: add secret storage architecture`.
+- Escopo: `docs/architecture/secret-storage-architecture.md`, teste arquitetural dedicado e `.gitignore` fortalecido para `.dev.vars.*`.
+- Evidencia: politica central da plataforma define que codigo, docs, testes, fixtures, banco, logs, UI, auditoria e handoff nunca armazenam segredo bruto; permite apenas source names, binding IDs opacos, runtime handles, redacted evidence e fixtures negativas controladas.
+- Validacoes atuais do novo repo: `node --test tests/architecture/secret-storage-architecture.test.mjs` PASS 5/5, `npm test` PASS 433/433, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados.
 
 ### Decisoes
 
@@ -430,6 +435,7 @@
 - Wrapper no repo atual evita erro operacional de rodar o comando no diretorio errado.
 - Operador reportou `npm run supabase:staging:secret-source-check` com `ok=true`, tres secrets presentes, valores `[redacted]`, `prints_secret_values=false`, `connects_to_staging=false`, `syncs_secrets=false`, `staging_execution_authorized=false` e `production_execution_authorized=false`.
 - Supabase staging execution package impede migration direta: proximo passo e backup/export evidence.
+- Secret Storage Architecture vira a regra central para qualquer frente futura que toque credenciais; nenhum painel, runtime, provider adapter, log, banco, handoff ou teste pode salvar segredo bruto.
 
 ### Proximo Passo
 

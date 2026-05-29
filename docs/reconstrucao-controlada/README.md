@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+ad0ebc2 docs: add secret storage architecture
 7a1469b feat: add supabase staging execution package
 7d2ac19 feat: add supabase staging secret source check
 96d8dfc feat: add supabase staging approval checkpoint
@@ -141,9 +142,10 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 428/428;
+- `npm test` PASS, 433/433;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
+- `node --test tests/architecture/secret-storage-architecture.test.mjs` PASS 5/5;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:execution-package` PASS com valores fake/redigidos;
 - `npm run supabase:staging:secret-source-check` FAIL esperado no ambiente atual com secrets ausentes e valores nao impressos;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:approval-checkpoint` PASS;
@@ -195,6 +197,7 @@ Validacoes atuais:
 - Supabase staging approval checkpoint agora e o ultimo gate local antes de qualquer Supabase staging real, exigindo `APPROVE_SUPABASE_STAGING_ONLY`, campos operacionais completos e mantendo staging/producao/secret sync/provider/deploy/billing/customer migration false;
 - Supabase staging secret source check agora valida presenca local dos tres secret source names sem imprimir valores, sem conectar staging, sem sync e sem autorizar execucao;
 - Supabase staging execution package agora define backup/export como primeiro checkpoint real e mantem migration bloqueada ate existir evidencia de backup;
+- Secret Storage Architecture agora centraliza a regra de armazenamento de secrets da plataforma inteira: repo, docs, testes, fixtures, banco, logs, UI, auditoria e handoff nao guardam segredo bruto; apenas source names, binding IDs opacos, runtime handles, redacted evidence ou fixtures negativas controladas;
 - git limpo no repo novo apos commit.
 
 Proxima acao: capturar evidencia de backup/export staging antes de qualquer migration. Nao executar staging migration, adapter real de WhatsApp/Supabase remoto/Telegram, deploy ou secrets sem pacote de backup/evidencia.
