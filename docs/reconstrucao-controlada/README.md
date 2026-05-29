@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+7a1469b feat: add supabase staging execution package
 7d2ac19 feat: add supabase staging secret source check
 96d8dfc feat: add supabase staging approval checkpoint
 1c391bd feat: add product delivery master plan
@@ -140,9 +141,10 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 423/423;
+- `npm test` PASS, 428/428;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
+- `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:execution-package` PASS com valores fake/redigidos;
 - `npm run supabase:staging:secret-source-check` FAIL esperado no ambiente atual com secrets ausentes e valores nao impressos;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:approval-checkpoint` PASS;
 - `INKFLOW_ENV=local PRODUCT_DELIVERY_ENV=local npm run product:delivery:master-plan` PASS;
@@ -192,9 +194,10 @@ Validacoes atuais:
 - Product Delivery Master Plan agora define a trilha da fundacao ao produto final: data foundation, SaaS runtime foundation, provider staging foundation, end-to-end Stage, product completion e production pilot, mantendo `PRODUCT_DELIVERY_EXECUTION_AUTHORIZED=false`, `BILLING_ACTIVATION_AUTHORIZED=false` e `CUSTOMER_DATA_MIGRATION_AUTHORIZED=false`;
 - Supabase staging approval checkpoint agora e o ultimo gate local antes de qualquer Supabase staging real, exigindo `APPROVE_SUPABASE_STAGING_ONLY`, campos operacionais completos e mantendo staging/producao/secret sync/provider/deploy/billing/customer migration false;
 - Supabase staging secret source check agora valida presenca local dos tres secret source names sem imprimir valores, sem conectar staging, sem sync e sem autorizar execucao;
+- Supabase staging execution package agora define backup/export como primeiro checkpoint real e mantem migration bloqueada ate existir evidencia de backup;
 - git limpo no repo novo apos commit.
 
-Proxima acao: operador deve carregar `SUPABASE_STAGING_URL`, `SUPABASE_STAGING_ANON_KEY` e `SUPABASE_STAGING_SERVICE_ROLE_KEY` localmente, rodar `npm run supabase:staging:secret-source-check` e confirmar PASS sem expor valores. Nao executar staging, adapter real de WhatsApp/Supabase remoto/Telegram, migration real, deploy ou secrets sem aprovacao explicita.
+Proxima acao: capturar evidencia de backup/export staging antes de qualquer migration. Nao executar staging migration, adapter real de WhatsApp/Supabase remoto/Telegram, deploy ou secrets sem pacote de backup/evidencia.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

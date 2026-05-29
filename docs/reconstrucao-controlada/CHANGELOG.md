@@ -338,6 +338,11 @@
 - Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-approval-checkpoint.test.mjs` PASS 7/7, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:approval-checkpoint` PASS, `npm test` PASS 423/423, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos, nomes de secret source e fixtures redigidos.
 - Criado wrapper no repo atual `inkflow-saas`: `npm run supabase:staging:secret-source-check`, delegando para `/Users/brazilianhustler/Documents/inkflow-platform`.
 - Evidencia do wrapper: com valores fake seguros, comando retorna `ok=true` e `value_redacted=[redacted]`; sem variaveis no shell, retorna `missing` esperado sem imprimir valores.
+- Implementado Supabase staging execution package no novo repo.
+- Commit do novo repo: `7a1469b feat: add supabase staging execution package`.
+- Escopo: `docs/architecture/supabase-staging-execution-package.md`, `npm run supabase:staging:execution-package`, formalizando backup/export como primeiro checkpoint real antes de qualquer migration.
+- Evidencia: `ready_for_backup_checkpoint=true`, `supabase_staging_backup_required=true`, `supabase_staging_migration_authorized=false`, gates approval/execution/secret-source true, next checkpoint `capture_staging_backup_export_evidence`.
+- Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-execution-package.test.mjs` PASS 5/5, `npm test` PASS 428/428, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com regex/fixtures negativos e nomes de secret source sem valores.
 
 ### Decisoes
 
@@ -424,7 +429,8 @@
 - Secret source check garante que o operador possa validar secrets por script local sem colar valores na conversa; sem PASS desse check, staging real segue bloqueado.
 - Wrapper no repo atual evita erro operacional de rodar o comando no diretorio errado.
 - Operador reportou `npm run supabase:staging:secret-source-check` com `ok=true`, tres secrets presentes, valores `[redacted]`, `prints_secret_values=false`, `connects_to_staging=false`, `syncs_secrets=false`, `staging_execution_authorized=false` e `production_execution_authorized=false`.
+- Supabase staging execution package impede migration direta: proximo passo e backup/export evidence.
 
 ### Proximo Passo
 
-- Abrir checkpoint dedicado de execucao Supabase staging com backup/export primeiro. Nao executar secrets reais, staging, producao, provider real, billing activation, customer data migration ou deploy automatico sem pacote de execucao/evidencia.
+- Capturar evidencia de backup/export staging antes de qualquer migration. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem pacote de backup/evidencia.
