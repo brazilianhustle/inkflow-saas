@@ -1,5 +1,27 @@
 # Changelog - Reconstrucao Controlada
 
+## 2026-05-31
+
+### Executado
+
+- Executada a Supabase staging manual migration no projeto `inkflow-staging` pelo runner oficial, apos aprovacao explicita `APPROVE_SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTION`.
+- Aplicado rollback versionado antes da execucao oficial para garantir staging limpo.
+- Usada DB URL direta apenas em memoria porque a URL pooler local falhou com `tenant/user postgres.<project-ref> not found`; nenhum segredo foi registrado em docs, output ou commit.
+- Criada e validada a evidencia `docs/evidence/supabase-staging/migration-execution-manual-2026-05-31T000000000Z.md`.
+- Validado inventario real pos-migration: 25 tabelas publicas, 49 policies e RLS ativo em 25 tabelas.
+
+### Validado
+
+- `npm run supabase:staging:manual-migration-execution-turn -- --execute` PASS com `evidence_written=true`, `evidence_validated=true` e `redacts_db_url=true`.
+- `npm run supabase:staging:validate-migration-execution-evidence -- docs/evidence/supabase-staging/migration-execution-manual-2026-05-31T000000000Z.md` PASS via wrapper do repo atual.
+- `node --test tests/architecture/supabase-staging-manual-migration-execution-turn.test.mjs` PASS 5/5.
+- `npm test` PASS 468/468 no novo repo.
+
+### Bloqueios Mantidos
+
+- Producao, secret sync, provider real, deploy, billing activation e customer data migration seguem bloqueados.
+- Proximo gate seguro: RLS smoke em staging com fixture fake e evidence propria.
+
 ## 2026-05-27
 
 ### Adicionado
@@ -471,9 +493,10 @@
 - Supabase staging migration executor plan criado e validado em modo `plan`: DB URL redigida, forward/rollback SQL identificados, evidence path definido, `execute_requested=false`, `executed=false`, `connects_to_staging=false` e `executable_database_commands=false`.
 - Revisao rigorosa do executor plan removeu formato de comando executavel (`command`/`args`) do output e oficializou somente templates nao executaveis (`command_template`/`args_template`) com `executable_now=false` em todos os passos.
 - Supabase staging migration execution evidence checkpoint criado e validado: contrato de evidencia real pos-migration esta pronto, mas a migration segue nao executada, sem conexao staging e sem comando de banco executavel.
-- Supabase staging manual migration execution turn criado e validado em modo plano: wrapper carrega secrets pelo loader seguro, plano redige DB URL, execucao real exige `--execute` e `SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTE=true`, e nenhuma migration foi rodada.
+- Supabase staging manual migration execution turn criado e validado em modo plano: wrapper carrega secrets pelo loader seguro, plano redige DB URL e execucao real exige `--execute` e `SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTE=true`.
+- Supabase staging manual migration execution turn executado apos aprovacao explicita, com rollback previo, evidencia validada e inventario real pos-migration de 25 tabelas publicas, 49 policies e 25 tabelas com RLS.
 - Cloudflare rotation registrada como follow-up: nao bloqueia Supabase staging porque nao havia token Cloudflare carregado no ambiente atual, mas deve ser feita antes de deploy/provider real/secret sync.
 
 ### Proximo Passo
 
-- Revisar se os secrets expostos ja foram rotacionados e, somente com aprovacao explicita, decidir se executa o manual migration runner em staging. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem approval/checkpoint proprio.
+- Implementar/rodar checkpoint de RLS smoke em staging com fixture fake e evidence propria. Nao executar secret sync, provider real, deploy, producao, billing activation, customer data migration ou cliente real sem approval/checkpoint proprio.

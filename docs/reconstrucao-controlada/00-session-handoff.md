@@ -30,27 +30,27 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-1ef909a docs: add supabase staging backup runbook
+d9f47d2 feat: add guarded supabase staging manual migration turn
 ```
 
 Bloco fechado:
 
-- criado runbook `docs/operations/supabase-staging-backup-export-runbook.md`;
-- runbook fixa preflight, captura manual do backup/export, geracao/validacao do evidence record e stop conditions;
-- runbook mantem `SUPABASE_STAGING_MIGRATION_AUTHORIZED=false`;
-- runbook nao contem comando executavel de migration, secret sync, deploy ou provider real;
-- sem deploy real, public traffic, provider traffic, secret sync, database migration, staging, billing activation, customer migration ou producao.
+- Supabase staging manual migration executada no projeto `inkflow-staging` pelo runner oficial, apos aprovacao explicita `APPROVE_SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTION`;
+- execucao usou DB URL direta apenas em memoria porque a URL pooler local retornou `tenant/user postgres.<project-ref> not found`;
+- antes da execucao oficial, staging foi limpo com rollback versionado `infra/supabase/draft/001_rollback.sql`;
+- evidence record criado e validado em `docs/evidence/supabase-staging/migration-execution-manual-2026-05-31T000000000Z.md`;
+- inventario real pos-migration: 25 tabelas publicas, 49 policies e RLS ativo em 25 tabelas;
+- producao, secret sync, provider real, deploy, billing activation e customer data migration seguem bloqueados.
 
 Validacoes do ultimo bloco:
 
-- `node --test tests/architecture/supabase-staging-backup-runbook.test.mjs` PASS 4/4;
-- `npm test` PASS 445/445;
-- `npm run lint` PASS placeholder;
-- `npm run typecheck` PASS placeholder;
-- `git diff --check` PASS;
-- scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados, sem credencial real.
+- `npm run supabase:staging:manual-migration-execution-turn -- --execute` PASS pelo runner oficial com `evidence_written=true`, `evidence_validated=true`, `redacts_db_url=true`;
+- `npm run supabase:staging:validate-migration-execution-evidence -- docs/evidence/supabase-staging/migration-execution-manual-2026-05-31T000000000Z.md` PASS via wrapper do repo atual;
+- inventario staging direto PASS: 25 public tables, 49 policies, 25 tabelas com RLS;
+- `node --test tests/architecture/supabase-staging-manual-migration-execution-turn.test.mjs` PASS 5/5;
+- `npm test` PASS 468/468 no novo repo.
 
-Proximo passo seguro: preparar o turno manual de execucao staging com comando operacional isolado e captura de evidencia real. Nao executar migration real automaticamente; antes de qualquer execucao, confirmar rotacao dos secrets expostos e rodar somente em staging.
+Proximo passo seguro: implementar/rodar checkpoint de RLS smoke em staging usando apenas dados fake/fixture e registrar evidencia antes de discutir provider staging, runtime staging, deploy, producao ou clientes reais.
 
 Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight`, `npm run supabase:staging:migration-execution-readiness`, `npm run supabase:staging:migration-executor-plan`, `npm run supabase:staging:migration-execution-evidence`, `npm run supabase:staging:validate-migration-execution-evidence` e `npm run supabase:staging:manual-migration-execution-turn`, que carregam `~/.inkflow-secrets/supabase-staging.env` quando existir e delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado.
 
@@ -68,10 +68,12 @@ Validacoes novas do bloco staging:
 - `npm run supabase:staging:migration-execution-evidence` PASS, `ready_for_manual_migration_execution_evidence=true`, `supabase_staging_migration_executed=false`, `supabase_staging_migration_evidence_captured=false`, `connects_to_staging=false`, `executable_database_commands=false`, `next_checkpoint=manual_staging_migration_execution_turn`;
 - `npm run supabase:staging:validate-migration-execution-evidence -- docs/evidence/supabase-staging/migration-execution-evidence.template.md` falha corretamente em negativo porque o template tem campos vazios; evidencias reais futuras precisam ser preenchidas antes de validar.
 - `npm run supabase:staging:manual-migration-execution-turn` PASS em modo plano, `execute_requested=false`, `manual_execute_flag_present=false`, `executed=false`, `evidence_written=false`, `connects_to_staging=false`, `executable_database_commands=false`, `redacts_db_url=true`, `next_checkpoint=operator_runs_manual_staging_migration_turn`;
-- runner manual real existe somente para turno aprovado futuro e exige `--execute` + `SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTE=true`; esta rodada nao executou migration.
+- runner manual real foi executado somente apos aprovacao explicita `APPROVE_SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTION`, com `--execute` + `SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTE=true`, rollback previo e DB URL direta somente em memoria;
+- evidence real: `docs/evidence/supabase-staging/migration-execution-manual-2026-05-31T000000000Z.md`;
+- inventario real pos-execucao: 25 tabelas publicas, 49 policies e RLS ativo em 25 tabelas;
 - Incidente operacional: arquivo local `~/.inkflow-secrets/supabase-staging.env` foi montado em formato invalido/multilinha e o loader antigo usava `source`, permitindo impressao do ambiente. Loader corrigido para parser estrito com whitelist, sem executar o arquivo e sem imprimir valores. Secrets expostos devem ser rotacionados antes de qualquer execucao real.
 - Decisao Cloudflare: nenhum token Cloudflare apareceu carregado no ambiente atual nem foi necessario para o gate Supabase staging. Cloudflare nao bloqueia a migration staging, mas `CLOUDFLARE_API_TOKEN`/`CF_API_TOKEN`/secrets de deploy devem entrar em rotacao planejada antes de qualquer frente de deploy, provider real, Cloudflare Pages/Workers ou secret sync.
-- migration, producao, secret sync, provider real, deploy, billing activation e customer data migration seguem bloqueados.
+- migration staging inicial esta aplicada; producao, secret sync, provider real, deploy, billing activation e customer data migration seguem bloqueados.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 
