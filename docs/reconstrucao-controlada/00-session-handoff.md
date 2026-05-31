@@ -63,6 +63,7 @@ Validacoes novas do bloco staging:
 - `npm run supabase:staging:migration-preflight` PASS, `ready_for_dedicated_migration_execution_turn=true`, `backup_evidence_validated=true`, `migration_package_validated=true`, `next_checkpoint=explicit_operator_approval_for_staging_migration_execution`;
 - `node --test tests/architecture/supabase-staging-migration-execution-readiness.test.mjs` PASS 4/4;
 - `npm run supabase:staging:migration-execution-readiness` FAIL esperado no ambiente real atual: falta `SUPABASE_STAGING_DB_URL` e falta `SUPABASE_STAGING_MIGRATION_EXECUTION_APPROVAL=APPROVE_SUPABASE_STAGING_MIGRATION_EXECUTION`;
+- Incidente operacional: arquivo local `~/.inkflow-secrets/supabase-staging.env` foi montado em formato invalido/multilinha e o loader antigo usava `source`, permitindo impressao do ambiente. Loader corrigido para parser estrito com whitelist, sem executar o arquivo e sem imprimir valores. Secrets expostos devem ser rotacionados antes de qualquer execucao real.
 - migration, producao, secret sync, provider real, deploy, billing activation e customer data migration seguem bloqueados.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
