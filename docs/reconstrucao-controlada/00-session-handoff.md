@@ -30,31 +30,30 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-ad0ebc2 docs: add secret storage architecture
+3db0218 feat: add supabase staging backup evidence checkpoint
 ```
 
 Bloco fechado:
 
-- auditada a arquitetura de armazenamento de secrets sem imprimir valores;
-- criado `docs/architecture/secret-storage-architecture.md`;
-- criado `tests/architecture/secret-storage-architecture.test.mjs`;
-- fortalecido `.gitignore` para bloquear `.dev.vars.*`;
-- politica central agora define que codigo, docs, testes, fixtures, banco, logs, UI, auditoria e handoff nunca armazenam segredo bruto;
-- permitido apenas secret source name, binding opaco, runtime handle, valor redigido ou fixture negativa controlada;
-- browser/admin/client seguem impedidos de resolver credenciais; runtime server-side resolve apenas handle opaco;
-- Supabase staging segue com secrets validados por source names e migration bloqueada ate backup/export evidence;
+- criado `docs/architecture/supabase-staging-backup-evidence-checkpoint.md`;
+- criado template `docs/evidence/supabase-staging/backup-export-evidence.template.md`;
+- criado gate local `supabase:staging:backup-evidence`;
+- checkpoint valida os campos obrigatorios da evidencia de backup/export sem conectar staging;
+- evidence record pode passar como backup capturado, mas `SUPABASE_STAGING_MIGRATION_AUTHORIZED=false` continua obrigatorio;
+- gate rejeita placeholders, secrets, texto production-like, comando de migration, secret sync, provider, deploy, billing ou customer migration;
 - sem deploy real, public traffic, provider traffic, secret sync, database migration, staging, billing activation, customer migration ou producao.
 
 Validacoes do ultimo bloco:
 
-- `node --test tests/architecture/secret-storage-architecture.test.mjs` PASS 5/5;
-- `npm test` PASS 433/433;
+- `node --test tests/architecture/supabase-staging-backup-evidence.test.mjs` PASS 5/5;
+- `INKFLOW_ENV=local SUPABASE_ENV=local ... npm run supabase:staging:backup-evidence` PASS com valores fake/redigidos;
+- `npm test` PASS 438/438;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
 - `git diff --check` PASS;
 - scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados, sem credencial real.
 
-Proximo passo seguro: capturar evidencia de backup/export staging antes de qualquer migration. Nao executar migration real sem backup artifact path, timestamp, operador, command summary sem secrets, restore/reset strategy, retention window e evidence file path.
+Proximo passo seguro: operador captura o backup/export staging real e preenche um evidence record validavel. Nao executar migration real ainda; backup evidence nao autoriza migration automaticamente.
 
 Nota operacional: o repo `inkflow-saas` tambem possui wrapper `npm run supabase:staging:secret-source-check`, que delega para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado.
 

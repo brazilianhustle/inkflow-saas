@@ -348,6 +348,11 @@
 - Escopo: `docs/architecture/secret-storage-architecture.md`, teste arquitetural dedicado e `.gitignore` fortalecido para `.dev.vars.*`.
 - Evidencia: politica central da plataforma define que codigo, docs, testes, fixtures, banco, logs, UI, auditoria e handoff nunca armazenam segredo bruto; permite apenas source names, binding IDs opacos, runtime handles, redacted evidence e fixtures negativas controladas.
 - Validacoes atuais do novo repo: `node --test tests/architecture/secret-storage-architecture.test.mjs` PASS 5/5, `npm test` PASS 433/433, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados.
+- Implementado Supabase staging backup evidence checkpoint no novo repo.
+- Commit do novo repo: `3db0218 feat: add supabase staging backup evidence checkpoint`.
+- Escopo: `docs/architecture/supabase-staging-backup-evidence-checkpoint.md`, `docs/evidence/supabase-staging/backup-export-evidence.template.md`, `npm run supabase:staging:backup-evidence`.
+- Evidencia: checkpoint pronto para capturar evidence record de backup/export; `backup_evidence_captured=false`, `supabase_staging_migration_authorized=false`, `connects_to_staging=false`, `executable_database_commands=false`, proximo checkpoint `operator_captures_backup_export_evidence_record`.
+- Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-backup-evidence.test.mjs` PASS 5/5, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:backup-evidence` PASS com valores fake/redigidos, `npm test` PASS 438/438, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados.
 
 ### Decisoes
 
@@ -436,7 +441,8 @@
 - Operador reportou `npm run supabase:staging:secret-source-check` com `ok=true`, tres secrets presentes, valores `[redacted]`, `prints_secret_values=false`, `connects_to_staging=false`, `syncs_secrets=false`, `staging_execution_authorized=false` e `production_execution_authorized=false`.
 - Supabase staging execution package impede migration direta: proximo passo e backup/export evidence.
 - Secret Storage Architecture vira a regra central para qualquer frente futura que toque credenciais; nenhum painel, runtime, provider adapter, log, banco, handoff ou teste pode salvar segredo bruto.
+- Backup evidence checkpoint separa captura de backup de execucao de migration: backup aprovado prepara o proximo checkpoint, mas nao autoriza migration automaticamente.
 
 ### Proximo Passo
 
-- Capturar evidencia de backup/export staging antes de qualquer migration. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem pacote de backup/evidencia.
+- Operador capturar backup/export staging real e preencher evidence record validavel. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem evidence record aprovado.
