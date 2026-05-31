@@ -216,11 +216,12 @@ Validacoes atuais:
 - migration execution readiness validado com `SUPABASE_STAGING_DB_URL` local e aprovacao exata no shell, mantendo `connects_to_staging=false` e `executable_database_commands=false`;
 - migration executor plan validado em modo `plan`, com DB URL redigida, `execute_requested=false`, `executed=false`, `connects_to_staging=false` e `executable_database_commands=false`;
 - revisao rigorosa do executor plan fechou o contrato para templates nao executaveis: `command_template`, `args_template`, `executable_now=false`, e teste bloqueando retorno de `command`/`args`;
+- migration execution evidence checkpoint validado com `ready_for_manual_migration_execution_evidence=true`, mantendo `supabase_staging_migration_executed=false`, `connects_to_staging=false` e `executable_database_commands=false`;
 - loader local de secrets staging agora usa parser estrito com whitelist em vez de `source`, impedindo execucao acidental do arquivo e vazamento por linha invalida;
 - Supabase staging backup export runbook agora orienta a captura manual do backup/export sem autorizar migration, secret sync, deploy ou provider real;
 - git limpo no repo novo apos commit.
 
-Proxima acao: revisar o executor dedicado e preparar checkpoint separado de evidence/execucao real. Nao executar staging migration, adapter real de WhatsApp/Supabase remoto/Telegram, deploy ou secrets sem approval/checkpoint proprio.
+Proxima acao: preparar o turno manual de execucao staging com comando operacional isolado e captura de evidencia real. Nao executar staging migration, adapter real de WhatsApp/Supabase remoto/Telegram, deploy ou secrets sem approval/checkpoint proprio.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

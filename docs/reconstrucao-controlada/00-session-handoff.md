@@ -50,9 +50,9 @@ Validacoes do ultimo bloco:
 - `git diff --check` PASS;
 - scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados, sem credencial real.
 
-Proximo passo seguro: revisar o executor dedicado de migration staging e preparar o checkpoint de evidence/execucao real separado. Nao executar migration real ainda.
+Proximo passo seguro: preparar o turno manual de execucao staging com comando operacional isolado e captura de evidencia real. Nao executar migration real automaticamente; antes de qualquer execucao, confirmar rotacao dos secrets expostos e rodar somente em staging.
 
-Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight` e `npm run supabase:staging:migration-execution-readiness`, que carregam `~/.inkflow-secrets/supabase-staging.env` quando existir e delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado.
+Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight`, `npm run supabase:staging:migration-execution-readiness`, `npm run supabase:staging:migration-executor-plan`, `npm run supabase:staging:migration-execution-evidence` e `npm run supabase:staging:validate-migration-execution-evidence`, que carregam `~/.inkflow-secrets/supabase-staging.env` quando existir e delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado.
 
 Validacoes novas do bloco staging:
 
@@ -65,6 +65,8 @@ Validacoes novas do bloco staging:
 - `npm run supabase:staging:migration-execution-readiness` PASS apos correcao do secret source local: `ready_for_dedicated_migration_executor=true`, `approval_present=true`, `migration_transport_present=true`, `backup_evidence_validated=true`, `migration_package_validated=true`, `connects_to_staging=false`, `executable_database_commands=false`;
 - `npm run supabase:staging:migration-executor-plan` PASS, `executor_plan_ready=true`, `execute_requested=false`, `executed=false`, `connects_to_staging=false`, `executable_database_commands=false`, `redacts_db_url=true`, forward SQL `infra/supabase/draft/001_initial_schema.sql`, rollback SQL `infra/supabase/draft/001_rollback.sql`;
 - Revisao rigorosa do executor plan encontrou gap de contrato: o plano estava bloqueado, mas ainda expunha formato `command`/`args`. Corrigido para `command_template`/`args_template`, com `executable_now=false` em todos os passos e teste cobrindo que `command`/`args` nao voltam.
+- `npm run supabase:staging:migration-execution-evidence` PASS, `ready_for_manual_migration_execution_evidence=true`, `supabase_staging_migration_executed=false`, `supabase_staging_migration_evidence_captured=false`, `connects_to_staging=false`, `executable_database_commands=false`, `next_checkpoint=manual_staging_migration_execution_turn`;
+- `npm run supabase:staging:validate-migration-execution-evidence -- docs/evidence/supabase-staging/migration-execution-evidence.template.md` falha corretamente em negativo porque o template tem campos vazios; evidencias reais futuras precisam ser preenchidas antes de validar.
 - Incidente operacional: arquivo local `~/.inkflow-secrets/supabase-staging.env` foi montado em formato invalido/multilinha e o loader antigo usava `source`, permitindo impressao do ambiente. Loader corrigido para parser estrito com whitelist, sem executar o arquivo e sem imprimir valores. Secrets expostos devem ser rotacionados antes de qualquer execucao real.
 - migration, producao, secret sync, provider real, deploy, billing activation e customer data migration seguem bloqueados.
 
