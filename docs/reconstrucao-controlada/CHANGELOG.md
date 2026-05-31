@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Criado Provider staging runner adapter no novo repo.
+- Adicionado wrapper `npm run provider:staging:runner-adapter` no repo atual.
+- O adaptador define o contrato injetavel compatível com o real smoke executor: default bloqueado, drivers obrigatorios injetados, fake actors, proof redigido e retorno `{ ok, quote_request_ref, steps }`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-runner-adapter.test.mjs` PASS 6/6.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:runner-adapter` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_runner_executor_integration=true`, `provider_staging_runner_adapter_plan_ready=true`, `provider_staging_runner_adapter_execution_default=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=integrate_provider_staging_runner_adapter_with_executor`.
+- Teste confirmou que o adaptador default falha seguro sem drivers injetados.
+- Teste confirmou que o adaptador roda somente com drivers simulados injetados e rejeita proof inseguro/runtime handle.
+- Varredura dos novos arquivos encontrou apenas docs de bloqueio, source names fake em testes, testes negativos e regexes de bloqueio. Nenhum valor real foi encontrado.
+- `npm test` PASS 537/537 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Proximo checkpoint seguro: integrar o adaptador ao executor em modo ainda bloqueado/simulado.
+
+### Executado
+
 - Criado Provider staging runner adapter plan no novo repo.
 - Adicionado wrapper `npm run provider:staging:runner-adapter-plan` no repo atual.
 - O checkpoint planeja o futuro adaptador do runner real de Provider staging, declarando fronteiras com bot-orchestrator, notifications service, provider runtime resolution, provider-aware channel adapter e artist-quote-telegram-adapter.
