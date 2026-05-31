@@ -4,6 +4,27 @@
 
 ### Executado
 
+- Revisado o gate final apos integracao do Provider staging real transport runner com o executor.
+- Confirmado que o proximo passo e decisao humana explicita, nao execucao automatica.
+- Mantido bloqueio de provider real ate aprovacao e runner real injetado.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-gate-review` PASS via wrapper do repo atual.
+- Resultado: `ready_for_human_provider_staging_smoke_decision=true`, `provider_staging_real_transport_runner_integrated=true`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `human_decision_required=true`, `next_checkpoint=operator_decides_provider_staging_real_smoke_execution`.
+- `node --test tests/architecture/provider-staging-real-smoke-gate-review.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-real-transport-runner-harness.test.mjs tests/architecture/provider-staging-real-transport-runner-skeleton.test.mjs tests/architecture/provider-staging-real-transport-runner-plan.test.mjs tests/architecture/provider-staging-real-smoke-execution-authorization.test.mjs` PASS 38/38.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Integrado Provider staging real transport runner ao Provider staging real smoke executor por factory explicita.
 - Adaptado o contrato do transport runner (`final-whatsapp-quote-response`) para o contrato de evidencia do smoke (`client-quote-response`).
 - Endurecido o Provider staging real smoke gate review para exigir `provider_staging_real_transport_runner_integrated=true`.
