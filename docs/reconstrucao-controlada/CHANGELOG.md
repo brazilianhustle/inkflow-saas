@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real transport ports checkpoint no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-transport-ports` no repo atual.
+- A camada define oito boundaries provider-aware aprovadas com default bloqueado e dry-run redigido.
+- O checkpoint transforma a etapa anterior de injecao em uma superficie de portas reais aprovadas, ainda sem conectar Evolution, WhatsApp ou Telegram.
+- Proximo checkpoint definido: `prepare_provider_staging_real_transport_ports_harness`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-transport-ports` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_real_transport_ports_harness=true`, `provider_staging_real_transport_runner_injection_ready=true`, `provider_staging_real_transport_ports_ready=true`, `provider_staging_real_transport_ports_execution_default=false`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `dry_run_ports_validated=true`, `next_checkpoint=prepare_provider_staging_real_transport_ports_harness`.
+- `node --test tests/architecture/provider-staging-real-transport-ports.test.mjs tests/architecture/provider-staging-real-transport-runner-injection.test.mjs tests/architecture/provider-staging-real-transport-runner-skeleton.test.mjs` PASS 18/18.
+- `npm test` PASS 609/609 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, source names fake de teste, regexes defensivas e teste negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+- Provider real segue bloqueado ate harness de portas reais e novo gate especifico.
+
+### Executado
+
 - Criado Provider staging real transport runner injection checkpoint no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-transport-runner-injection` no repo atual.
 - A ponte usa o executor real e injeta o transport runner pelo contrato correto, mas com portas simuladas e `simulation=true`.
