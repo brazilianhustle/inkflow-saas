@@ -98,6 +98,10 @@ Validacoes novas do bloco staging:
 - runbook criado em `docs/operations/provider-staging-secret-source-runbook.md`;
 - executor Provider staging smoke passou a bloquear `--execute` se o secret-source check nao estiver pronto;
 - `npm run provider:staging:secret-source-check` falha corretamente enquanto `~/.inkflow-secrets/provider-staging.env` nao existir/estiver incompleto, listando missing fields e sem imprimir valores;
+- arquivo local base `~/.inkflow-secrets/provider-staging.env` criado a partir do template seguro. Os labels atuais permitem validar formato/redaction, mas ainda devem ser confirmados como source names/handles reais antes de qualquer trafego real;
+- gap encontrado e corrigido: wrapper `provider-staging-real-smoke-executor.sh` nao carregava `load-provider-staging-env.sh`, entao o source-check passava isolado mas o executor nao via os mesmos dados;
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor` PASS em modo plano apos correcao, com `provider_staging_secret_sources_ready=true`, `connects_to_provider=false`, `executable_provider_commands=false`;
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor -- --execute` falha corretamente por `explicit_provider_staging_smoke_execute_flag_required`;
 - `node --test tests/architecture/provider-staging-secret-source-check.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 11/11;
 - `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 6/6;
 - `npm test` PASS 512/512 no novo repo;

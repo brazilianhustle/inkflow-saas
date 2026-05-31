@@ -16,6 +16,11 @@
 - `node --test tests/architecture/provider-staging-secret-source-check.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 11/11.
 - `npm run provider:staging:secret-source-check` falha corretamente sem `~/.inkflow-secrets/provider-staging.env`, listando seis campos faltantes e mantendo valores nao impressos.
 - `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor -- --execute` falha corretamente por sources faltantes e flag explicita ausente.
+- Criado arquivo local base `~/.inkflow-secrets/provider-staging.env` a partir do template seguro, para validar parser/redaction sem segredo bruto.
+- Corrigido wrapper `provider-staging-real-smoke-executor.sh` para carregar `load-provider-staging-env.sh`.
+- `npm run provider:staging:secret-source-check` PASS apos arquivo local base, com todos os valores `[redacted]`, `connects_to_provider=false`, `syncs_secrets=false`.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor` PASS em modo plano apos correcao, com `provider_staging_secret_sources_ready=true`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor -- --execute` falha corretamente por `explicit_provider_staging_smoke_execute_flag_required`.
 - `npm test` PASS 512/512 no novo repo.
 - `npm run typecheck` PASS placeholder no novo repo.
 - `npm run lint` PASS placeholder no novo repo.
@@ -25,7 +30,7 @@
 - Nenhum provider real foi chamado.
 - Nenhum webhook foi atualizado.
 - Nenhum secret foi sincronizado.
-- Proximo passo exige preencher localmente `~/.inkflow-secrets/provider-staging.env` com source names/handles reais de staging, sem segredo bruto.
+- Proximo passo exige confirmar que os labels em `~/.inkflow-secrets/provider-staging.env` correspondem aos source names/handles reais de staging, sem segredo bruto, antes de conectar runner real.
 
 ### Executado
 

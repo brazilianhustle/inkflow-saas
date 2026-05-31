@@ -14,6 +14,9 @@ if [ ! -f "$PLATFORM_DIR/package.json" ]; then
   exit 1
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/load-provider-staging-env.sh"
+
 cd "$PLATFORM_DIR"
 export INKFLOW_ENV="${INKFLOW_ENV:-local}"
 export PROVIDER_ENV="${PROVIDER_ENV:-local}"
