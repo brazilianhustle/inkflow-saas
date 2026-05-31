@@ -472,6 +472,7 @@
 - Revisao rigorosa do executor plan removeu formato de comando executavel (`command`/`args`) do output e oficializou somente templates nao executaveis (`command_template`/`args_template`) com `executable_now=false` em todos os passos.
 - Supabase staging migration execution evidence checkpoint criado e validado: contrato de evidencia real pos-migration esta pronto, mas a migration segue nao executada, sem conexao staging e sem comando de banco executavel.
 - Supabase staging manual migration execution turn criado e validado em modo plano: wrapper carrega secrets pelo loader seguro, plano redige DB URL, execucao real exige `--execute` e `SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTE=true`, e nenhuma migration foi rodada.
+- Cloudflare rotation registrada como follow-up: nao bloqueia Supabase staging porque nao havia token Cloudflare carregado no ambiente atual, mas deve ser feita antes de deploy/provider real/secret sync.
 
 ### Proximo Passo
 

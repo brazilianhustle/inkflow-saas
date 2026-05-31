@@ -219,6 +219,7 @@ Validacoes atuais:
 - migration execution evidence checkpoint validado com `ready_for_manual_migration_execution_evidence=true`, mantendo `supabase_staging_migration_executed=false`, `connects_to_staging=false` e `executable_database_commands=false`;
 - manual migration execution turn validado em modo plano, com `execute_requested=false`, `manual_execute_flag_present=false`, `connects_to_staging=false`, `executable_database_commands=false` e runner real condicionado a `--execute` + `SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTE=true`;
 - loader local de secrets staging agora usa parser estrito com whitelist em vez de `source`, impedindo execucao acidental do arquivo e vazamento por linha invalida;
+- Cloudflare rotation nao bloqueia Supabase staging porque nao havia token Cloudflare carregado no ambiente atual; registrar rotacao planejada antes de qualquer frente de deploy/provider real/secret sync;
 - Supabase staging backup export runbook agora orienta a captura manual do backup/export sem autorizar migration, secret sync, deploy ou provider real;
 - git limpo no repo novo apos commit.
 
