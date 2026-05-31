@@ -4,6 +4,30 @@
 
 ### Executado
 
+- Criado Provider staging runner dry-run no novo repo.
+- Adicionado wrapper `npm run provider:staging:runner-dry-run` no repo atual.
+- O checkpoint exercita o executor Provider staging por runner simulado, gera evidencia redigida e valida o contrato de sequencia sem Evolution, Telegram, webhook update, deploy, secret sync ou producao.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-runner-dry-run.test.mjs tests/architecture/provider-staging-runner-binding-review.test.mjs` PASS 8/8.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:runner-dry-run` PASS via wrapper do repo atual.
+- Evidencia criada em `docs/evidence/provider-staging/provider-runner-dry-run-2026-05-31T000000000Z.md`.
+- Resultado: `ready_for_provider_staging_runner_dry_run=true`, `dry_run_executed=true`, `evidence_written=true`, `evidence_validated=true`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=operator_reviews_provider_staging_dry_run_evidence`.
+- Double check da evidencia: sem URL real, token, webhook secret, runtime handle, secret binding, producao ou TODO. O unico match sensivel foi flag `PROVIDER_SECRET_SYNC_AUTHORIZED=false`.
+- `npm test` PASS 520/520 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Proximo checkpoint: revisao operacional da evidencia dry-run antes de construir/autorizar o runner real de Provider staging.
+
+### Executado
+
 - Criado Provider staging runner binding review no novo repo.
 - Adicionado wrapper `npm run provider:staging:runner-binding-review` no repo atual.
 - O checkpoint revisa o contrato do futuro runner real de staging, exigindo source-check e executor plano verdes, fake actors, quote ref fake, evidencias redigidas e bloqueios contra URL/token/runtime handle/secret binding.
