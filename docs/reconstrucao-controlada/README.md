@@ -149,7 +149,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 468/468;
+- `npm test` PASS, 475/475;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `node --test tests/architecture/supabase-staging-backup-runbook.test.mjs` PASS 4/4;
@@ -223,13 +223,16 @@ Validacoes atuais:
 - manual migration execution turn validado em modo plano, com `execute_requested=false`, `manual_execute_flag_present=false`, `connects_to_staging=false`, `executable_database_commands=false` e runner real condicionado a `--execute` + `SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTE=true`;
 - manual migration execution turn executado no Supabase staging apos aprovacao explicita `APPROVE_SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTION`, com rollback previo, DB URL direta somente em memoria, `evidence_written=true`, `evidence_validated=true`, `redacts_db_url=true` e evidencia `docs/evidence/supabase-staging/migration-execution-manual-2026-05-31T000000000Z.md`;
 - validacao cruzada pos-execucao: wrapper `npm run supabase:staging:validate-migration-execution-evidence -- docs/evidence/supabase-staging/migration-execution-manual-2026-05-31T000000000Z.md` PASS; inventario staging direto PASS com 25 public tables, 49 policies e 25 tabelas com RLS;
+- RLS smoke staging criado e executado com fixture fake, cleanup automatico e evidencia `docs/evidence/supabase-staging/rls-smoke-2026-05-31T000000000Z.md`;
+- primeiro RLS smoke real encontrou gap de grants base para `authenticated`; corrigido estruturalmente no schema draft e aplicado em staging como forward-fix antes do smoke final;
+- validacao cruzada RLS smoke: `npm run supabase:staging:validate-rls-smoke-evidence -- docs/evidence/supabase-staging/rls-smoke-2026-05-31T000000000Z.md` PASS; post-check `tables=25 policies=49 rls_tables=25 raw_secret_columns=0`; cleanup fixture tenants count 0;
 - loader local de secrets staging agora usa parser estrito com whitelist em vez de `source`, impedindo execucao acidental do arquivo e vazamento por linha invalida;
 - Cloudflare rotation nao bloqueia Supabase staging porque nao havia token Cloudflare carregado no ambiente atual; registrar rotacao planejada antes de qualquer frente de deploy/provider real/secret sync;
 - Supabase staging backup export runbook agora orienta a captura manual do backup/export sem autorizar migration, secret sync, deploy ou provider real;
-- migration staging inicial esta aplicada; producao, secret sync, provider real, deploy, billing activation e customer data migration seguem bloqueados;
+- migration staging inicial e RLS smoke staging estao aplicados/validados; producao, secret sync, provider real, deploy, billing activation e customer data migration seguem bloqueados;
 - git limpo no repo novo apos commit anterior; ha novo commit pendente de evidence/diagnostico desta execucao.
 
-Proxima acao: implementar/rodar checkpoint de RLS smoke em staging com fixture fake e evidence propria. Nao executar adapter real de WhatsApp/Telegram/Evolution, deploy, secret sync, producao, billing ou customer migration sem approval/checkpoint proprio.
+Proxima acao: preparar checkpoint de Provider staging sem provider real ainda, revisando isolamento de secrets/webhook/atores fake antes de qualquer trafego Evolution/Telegram real. Nao executar adapter real de WhatsApp/Telegram/Evolution, deploy, secret sync, producao, billing ou customer migration sem approval/checkpoint proprio.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

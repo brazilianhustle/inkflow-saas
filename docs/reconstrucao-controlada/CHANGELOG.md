@@ -495,8 +495,11 @@
 - Supabase staging migration execution evidence checkpoint criado e validado: contrato de evidencia real pos-migration esta pronto, mas a migration segue nao executada, sem conexao staging e sem comando de banco executavel.
 - Supabase staging manual migration execution turn criado e validado em modo plano: wrapper carrega secrets pelo loader seguro, plano redige DB URL e execucao real exige `--execute` e `SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTE=true`.
 - Supabase staging manual migration execution turn executado apos aprovacao explicita, com rollback previo, evidencia validada e inventario real pos-migration de 25 tabelas publicas, 49 policies e 25 tabelas com RLS.
+- Supabase staging RLS smoke criado e executado com fixture fake, cleanup automatico e evidencia `docs/evidence/supabase-staging/rls-smoke-2026-05-31T000000000Z.md`.
+- O primeiro RLS smoke real encontrou gap estrutural de grants: `authenticated` nao tinha privilegios base para consultar `tenant_configs`, entao o banco falhava antes de avaliar RLS. O schema draft recebeu grants base para `authenticated`/`service_role`, e o forward-fix foi aplicado em staging.
+- RLS smoke final passou com 13 cenarios, 9 obrigatorios, DB URL redigida, post-check `tables=25 policies=49 rls_tables=25 raw_secret_columns=0` e cleanup de fixtures fake confirmado com count 0.
 - Cloudflare rotation registrada como follow-up: nao bloqueia Supabase staging porque nao havia token Cloudflare carregado no ambiente atual, mas deve ser feita antes de deploy/provider real/secret sync.
 
 ### Proximo Passo
 
-- Implementar/rodar checkpoint de RLS smoke em staging com fixture fake e evidence propria. Nao executar secret sync, provider real, deploy, producao, billing activation, customer data migration ou cliente real sem approval/checkpoint proprio.
+- Preparar checkpoint de Provider staging sem provider real ainda, revisando isolamento de secrets/webhook/atores fake antes de qualquer trafego Evolution/Telegram real. Nao executar secret sync, provider real, deploy, producao, billing activation, customer data migration ou cliente real sem approval/checkpoint proprio.
