@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Criado Provider staging real transport runner harness no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-transport-runner-harness` no repo atual.
+- O harness prova a sequencia completa com portas simuladas, rollback proof obrigatorio e evidencia apenas em memoria.
+- Proximo checkpoint seguro definido: `prepare_provider_staging_real_transport_runner_executor_integration`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-transport-runner-harness.test.mjs` PASS 4/4.
+- `node --test tests/architecture/provider-staging-real-transport-runner-harness.test.mjs tests/architecture/provider-staging-real-transport-runner-skeleton.test.mjs tests/architecture/provider-staging-real-transport-runner-plan.test.mjs tests/architecture/provider-staging-real-smoke-execution-authorization.test.mjs tests/architecture/provider-staging-real-smoke-gate-review.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 36/36.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-transport-runner-harness` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_real_transport_runner_executor_integration=true`, `transport_runner_harness_simulated_run_executed=true`, `provider_staging_transport_runner_ready=false`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `simulated_evidence_written=false`, `next_checkpoint=prepare_provider_staging_real_transport_runner_executor_integration`.
+- Varredura dos arquivos novos encontrou apenas flags/regexes de bloqueio, source names fake em testes e teste negativo com URL fake. Nenhum valor real foi encontrado.
+- `npm test` PASS 597/597 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Criado Provider staging real transport runner skeleton no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-transport-runner-skeleton` no repo atual.
 - O skeleton define oito portas injetaveis, sequencia fixa, input fake-only, redaction contract e default bloqueado.
