@@ -16,7 +16,8 @@
     "supabase:staging:backup-evidence": "bash scripts/reconstrucao/supabase-staging-backup-evidence.sh",
     "supabase:staging:create-backup-evidence": "bash scripts/reconstrucao/supabase-staging-create-backup-evidence.sh",
     "supabase:staging:validate-backup-evidence": "bash scripts/reconstrucao/supabase-staging-validate-backup-evidence.sh",
-    "supabase:staging:migration-preflight": "bash scripts/reconstrucao/supabase-staging-migration-preflight.sh"
+    "supabase:staging:migration-preflight": "bash scripts/reconstrucao/supabase-staging-migration-preflight.sh",
+    "supabase:staging:migration-execution-readiness": "bash scripts/reconstrucao/supabase-staging-migration-execution-readiness.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",

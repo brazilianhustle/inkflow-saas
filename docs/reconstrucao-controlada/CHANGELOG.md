@@ -465,7 +465,8 @@
 - Wrapper de Supabase staging no repo atual agora carrega `~/.inkflow-secrets/supabase-staging.env` automaticamente quando existir, mantendo secrets redigidos e evitando falha operacional por esquecer `source`.
 - Supabase staging backup evidence record `docs/evidence/supabase-staging/backup-export-2026-05-31T025829067Z.md` foi gerado e validado; proximo checkpoint e preparar execucao dedicada de migration staging, ainda bloqueada.
 - Supabase staging migration preflight foi criado e validado, garantindo backup evidence + package check antes de pedir aprovacao humana. O gate prepara somente `APPROVE_SUPABASE_STAGING_MIGRATION_EXECUTION`; migration segue bloqueada.
+- Supabase staging migration execution readiness criado para verificar aprovacao exata e transporte de migration separado (`SUPABASE_STAGING_DB_URL`) antes de qualquer executor. O ambiente atual falha corretamente enquanto esses dois itens nao forem carregados no shell.
 
 ### Proximo Passo
 
-- Solicitar aprovacao humana explicita para execucao dedicada de migration staging usando `APPROVE_SUPABASE_STAGING_MIGRATION_EXECUTION`. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem approval/checkpoint proprio.
+- Obter e armazenar localmente `SUPABASE_STAGING_DB_URL`, depois repetir `npm run supabase:staging:migration-execution-readiness` com `SUPABASE_STAGING_MIGRATION_EXECUTION_APPROVAL=APPROVE_SUPABASE_STAGING_MIGRATION_EXECUTION`. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem approval/checkpoint proprio.
