@@ -39,7 +39,8 @@
     "provider:staging:driver-binding-plan": "bash scripts/reconstrucao/provider-staging-driver-binding-plan.sh",
     "provider:staging:driver-binding-skeleton": "bash scripts/reconstrucao/provider-staging-driver-binding-skeleton.sh",
     "provider:staging:driver-binding-harness": "bash scripts/reconstrucao/provider-staging-driver-binding-harness.sh",
-    "provider:staging:driver-runtime-resolution-plan": "bash scripts/reconstrucao/provider-staging-driver-runtime-resolution-plan.sh"
+    "provider:staging:driver-runtime-resolution-plan": "bash scripts/reconstrucao/provider-staging-driver-runtime-resolution-plan.sh",
+    "provider:staging:driver-runtime-resolution-skeleton": "bash scripts/reconstrucao/provider-staging-driver-runtime-resolution-skeleton.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",

@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Criado Provider staging driver runtime resolution skeleton no novo repo.
+- Adicionado wrapper `npm run provider:staging:driver-runtime-resolution-skeleton` no repo atual.
+- O skeleton expoe resolver runtime injetavel para os seis drivers, com default bloqueado, boundaries permitidas e proof redigido.
+- Proximo checkpoint seguro definido: `prepare_provider_staging_driver_runtime_resolution_harness`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-driver-runtime-resolution-skeleton.test.mjs` PASS 7/7.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:driver-runtime-resolution-skeleton` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_driver_runtime_resolution_harness=true`, `provider_staging_driver_runtime_resolution_plan_ready=true`, `provider_staging_runtime_resolution_execution_default=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=prepare_provider_staging_driver_runtime_resolution_harness`.
+- `node --test tests/architecture/provider-staging-driver-runtime-resolution-skeleton.test.mjs tests/architecture/provider-staging-driver-runtime-resolution-plan.test.mjs tests/architecture/provider-staging-driver-binding-harness.test.mjs tests/architecture/provider-staging-driver-binding-skeleton.test.mjs tests/architecture/provider-staging-driver-binding-plan.test.mjs` PASS 27/27.
+- Varredura dos arquivos novos encontrou apenas docs/flags de bloqueio, source names fake em testes, teste negativo com URL fake, prova insegura controlada em teste e regexes de bloqueio. Nenhum valor real foi encontrado.
+- `npm test` PASS 566/566 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Criado Provider staging driver runtime resolution plan no novo repo.
 - Adicionado wrapper `npm run provider:staging:driver-runtime-resolution-plan` no repo atual.
 - O plano define onde os drivers futuros podem resolver recursos runtime: apenas boundaries worker/server aprovadas, com browser, admin UI, static page, docs e test fixture bloqueados.
