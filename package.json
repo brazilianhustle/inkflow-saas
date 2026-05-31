@@ -12,7 +12,9 @@
     "inkflow-agent:eval": "node evals/inkflow-agent/_harness/run.mjs",
     "inkflow-agent:weekly": "node scripts/inkflow-agent/generate-weekly-report.mjs",
     "inkflow-agent:baseline": "node --env-file=evals/.env scripts/inkflow-agent/run-baseline.mjs",
-    "supabase:staging:secret-source-check": "bash scripts/reconstrucao/supabase-staging-secret-source-check.sh"
+    "supabase:staging:secret-source-check": "bash scripts/reconstrucao/supabase-staging-secret-source-check.sh",
+    "supabase:staging:backup-evidence": "bash scripts/reconstrucao/supabase-staging-backup-evidence.sh",
+    "supabase:staging:validate-backup-evidence": "bash scripts/reconstrucao/supabase-staging-validate-backup-evidence.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",

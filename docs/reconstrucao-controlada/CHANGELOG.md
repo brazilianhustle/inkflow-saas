@@ -353,6 +353,12 @@
 - Escopo: `docs/architecture/supabase-staging-backup-evidence-checkpoint.md`, `docs/evidence/supabase-staging/backup-export-evidence.template.md`, `npm run supabase:staging:backup-evidence`.
 - Evidencia: checkpoint pronto para capturar evidence record de backup/export; `backup_evidence_captured=false`, `supabase_staging_migration_authorized=false`, `connects_to_staging=false`, `executable_database_commands=false`, proximo checkpoint `operator_captures_backup_export_evidence_record`.
 - Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-backup-evidence.test.mjs` PASS 5/5, `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:backup-evidence` PASS com valores fake/redigidos, `npm test` PASS 438/438, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados.
+- Implementado backup evidence record validator no novo repo.
+- Commit do novo repo: `9f46143 feat: add backup evidence record validator`.
+- Escopo: `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/<record>.md`, validando arquivo preenchido sem conectar staging e sem autorizar migration.
+- Evidencia: record valido retorna `backup_evidence_captured=true`, mas mantem `supabase_staging_migration_authorized=false`, `supabase_production_execution_authorized=false`, `supabase_secret_sync_authorized=false`.
+- Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-backup-evidence.test.mjs` PASS 6/6, `npm test` PASS 439/439, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados.
+- Criados wrappers no repo atual `inkflow-saas`: `npm run supabase:staging:backup-evidence` e `npm run supabase:staging:validate-backup-evidence`, delegando para `/Users/brazilianhustler/Documents/inkflow-platform`.
 
 ### Decisoes
 
@@ -442,7 +448,8 @@
 - Supabase staging execution package impede migration direta: proximo passo e backup/export evidence.
 - Secret Storage Architecture vira a regra central para qualquer frente futura que toque credenciais; nenhum painel, runtime, provider adapter, log, banco, handoff ou teste pode salvar segredo bruto.
 - Backup evidence checkpoint separa captura de backup de execucao de migration: backup aprovado prepara o proximo checkpoint, mas nao autoriza migration automaticamente.
+- Backup evidence record validator e o gate obrigatorio entre backup real e qualquer preparacao de migration.
 
 ### Proximo Passo
 
-- Operador capturar backup/export staging real e preencher evidence record validavel. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem evidence record aprovado.
+- Operador capturar backup/export staging real, preencher evidence record e validar com `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/<record>.md`. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem evidence record aprovado.

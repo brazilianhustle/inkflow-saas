@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+9f46143 feat: add backup evidence record validator
 3db0218 feat: add supabase staging backup evidence checkpoint
 ad0ebc2 docs: add secret storage architecture
 7a1469b feat: add supabase staging execution package
@@ -143,11 +144,12 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 438/438;
+- `npm test` PASS, 439/439;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
-- `node --test tests/architecture/supabase-staging-backup-evidence.test.mjs` PASS 5/5;
+- `node --test tests/architecture/supabase-staging-backup-evidence.test.mjs` PASS 6/6;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:backup-evidence` PASS com valores fake/redigidos;
+- `npm run supabase:staging:validate-backup-evidence` sem argumento FAIL esperado com mensagem de uso;
 - `node --test tests/architecture/secret-storage-architecture.test.mjs` PASS 5/5;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:execution-package` PASS com valores fake/redigidos;
 - `npm run supabase:staging:secret-source-check` FAIL esperado no ambiente atual com secrets ausentes e valores nao impressos;
@@ -202,9 +204,11 @@ Validacoes atuais:
 - Supabase staging execution package agora define backup/export como primeiro checkpoint real e mantem migration bloqueada ate existir evidencia de backup;
 - Secret Storage Architecture agora centraliza a regra de armazenamento de secrets da plataforma inteira: repo, docs, testes, fixtures, banco, logs, UI, auditoria e handoff nao guardam segredo bruto; apenas source names, binding IDs opacos, runtime handles, redacted evidence ou fixtures negativas controladas;
 - Supabase staging backup evidence checkpoint agora valida o registro de backup/export antes de qualquer migration, sem conectar staging e sem autorizar migration automaticamente;
+- Backup evidence record validator agora permite validar o arquivo preenchido via CLI antes de preparar qualquer migration;
+- repo atual `inkflow-saas` agora tem wrappers para secret-source-check, backup-evidence e validate-backup-evidence delegando para `inkflow-platform`;
 - git limpo no repo novo apos commit.
 
-Proxima acao: operador capturar backup/export staging real e preencher evidence record validavel. Nao executar staging migration, adapter real de WhatsApp/Supabase remoto/Telegram, deploy ou secrets sem evidence record aprovado.
+Proxima acao: operador capturar backup/export staging real, preencher evidence record e validar com `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/<record>.md`. Nao executar staging migration, adapter real de WhatsApp/Supabase remoto/Telegram, deploy ou secrets sem evidence record aprovado.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 
