@@ -4,6 +4,25 @@
 
 ### Executado
 
+- Criado checkpoint local-only de Provider staging approval no novo repo.
+- Adicionado wrapper `npm run provider:staging:approval-checkpoint` no repo atual.
+- O checkpoint define o envelope de aprovacao humana para o primeiro smoke Provider staging real, exigindo fake actors, provider health evidence, webhook isolation, rollback owner, evidence location e secret source names sem valores.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-approval-checkpoint.test.mjs` PASS 5/5.
+- `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:staging:approval-checkpoint` PASS no novo repo.
+- `npm run provider:staging:approval-checkpoint` PASS via wrapper do repo atual.
+- `npm test` PASS 486/486 no novo repo.
+- Resultado do gate: `ready_for_human_approval=true`, `connects_to_provider=false`, `provider_staging_smoke_execution_authorized=false`, `provider_webhook_update_authorized=false`, `provider_secret_sync_authorized=false`, `approval_phrase_required=APPROVE_PROVIDER_STAGING_SMOKE_ONLY`.
+
+### Bloqueios Mantidos
+
+- O gate de aprovacao nao executa Evolution, WhatsApp, Telegram, webhook update, secret sync, deploy nem producao.
+- Proximo passo seguro: preparar o executor/turno de Provider staging smoke em modo plano, ainda bloqueado ate aprovacao humana especifica.
+
+### Executado
+
 - Criado checkpoint local-only de Provider staging isolation no novo repo.
 - Adicionado wrapper `npm run provider:staging:isolation-checkpoint` no repo atual.
 - O checkpoint valida pacote de evidencia Provider staging, promotion gate de provider real, evidencia RLS smoke staging, atores fake e bloqueios contra provider real, webhook update, secret sync, deploy e producao.

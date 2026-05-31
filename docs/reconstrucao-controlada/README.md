@@ -44,7 +44,7 @@ Se houver mudancas nao commitadas, entender antes de editar.
 
 ## Estado Atual
 
-Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `services/notifications` local-only para WhatsApp/Evolution simulado e Telegram simulado, bot-orchestrator integrado a notifications para quote_request e handoff_alert locais, `services/artist-quote-intake` local-only para transformar resposta normalizada do tatuador em proposta unica `quote_response` e enviar via WhatsApp simulado provider-aware, `services/artist-quote-telegram-adapter` local-only para normalizar respostas controladas do Telegram antes do intake, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, auth-session runtime local-only, admin conectado a auth-session local, actions administrativas protegidas por auth-session/audit, provider secret boundary local-only, summaries publicos de providers no admin, modulo/action local-only de provider metadata com auth-session/audit, schema draft/checkers Supabase alinhados a provider metadata com RLS owner/admin para tabela interna, provider runtime boundary local-only para resolver bindings apenas em runtime server-side, adapter simulado provider-aware com receipts/audit redigidos, bot-orchestrator validado com delivery provider-aware local-only, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness, runbook/gate local de execucao staging, runbook/gate local de promocao para provider real, pacotes locais de evidencia Stage/Supabase/Provider/SaaS runtime, checkpoint local-only de isolamento Provider staging, pacote final end-to-end fake staging smoke e Product Delivery Master Plan, com Supabase staging migration/RLS smoke validados, sem canais reais, sem provider real, sem secret sync e sem deploy.
+Status: novo repo `inkflow-platform` criado localmente com contratos funcionais isolados, `services/bot-orchestrator`, adapters simulados, entrega simulada outbox->receipt, audit store local integrado, `services/notifications` local-only para WhatsApp/Evolution simulado e Telegram simulado, bot-orchestrator integrado a notifications para quote_request e handoff_alert locais, `services/artist-quote-intake` local-only para transformar resposta normalizada do tatuador em proposta unica `quote_response` e enviar via WhatsApp simulado provider-aware, `services/artist-quote-telegram-adapter` local-only para normalizar respostas controladas do Telegram antes do intake, `packages/persistence-contracts`, skeleton inicial de `apps/admin`, modulos locais de configuracao do estudio, controle operacional do bot premium, knowledge admin, contrato de rotas/permissoes do painel, renderizacao estatica inicial, equipe/usuarios, billing/entitlements, legal/LGPD, knowledge-service local-only, knowledge context integrado ao bot runtime, auth-session runtime local-only, admin conectado a auth-session local, actions administrativas protegidas por auth-session/audit, provider secret boundary local-only, summaries publicos de providers no admin, modulo/action local-only de provider metadata com auth-session/audit, schema draft/checkers Supabase alinhados a provider metadata com RLS owner/admin para tabela interna, provider runtime boundary local-only para resolver bindings apenas em runtime server-side, adapter simulado provider-aware com receipts/audit redigidos, bot-orchestrator validado com delivery provider-aware local-only, checkpoint estrutural do admin, contrato Supabase local, schema draft local com fixtures/testes, contrato auth identity, checkpoint Supabase policy harness, guard local, dry-run, tool detection, plano operacional, tooling readiness checkpoint, static policy coverage gate, runner real local do policy harness, policy de promocao de migrations/staging/rollback, checker local de package de migration, plano de staging package, checker local de staging readiness, runbook/gate local de execucao staging, runbook/gate local de promocao para provider real, pacotes locais de evidencia Stage/Supabase/Provider/SaaS runtime, checkpoints local-only de isolamento e aprovacao Provider staging, pacote final end-to-end fake staging smoke e Product Delivery Master Plan, com Supabase staging migration/RLS smoke validados, sem canais reais, sem provider real, sem secret sync e sem deploy.
 
 Local:
 
@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+078dba7 feat: add provider staging approval checkpoint
 4dc73da feat: add provider staging isolation checkpoint
 d9f47d2 feat: add guarded supabase staging manual migration turn
 a5a2c27 feat: add supabase staging migration evidence checkpoint
@@ -150,7 +151,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 475/475;
+- `npm test` PASS, 486/486;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
 - `node --test tests/architecture/supabase-staging-backup-runbook.test.mjs` PASS 4/4;
@@ -166,6 +167,7 @@ Validacoes atuais:
 - `INKFLOW_ENV=local SAAS_RUNTIME_ENV=local npm run saas:runtime:staging:evidence-package` PASS;
 - `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:staging:evidence-package` PASS;
 - `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:staging:isolation-checkpoint` PASS;
+- `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:staging:approval-checkpoint` PASS;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:evidence-package` PASS;
 - `INKFLOW_ENV=local STAGE_ENV=local npm run stage:readiness-package` PASS;
 - `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:delivery:promotion-gate` PASS;
