@@ -469,6 +469,7 @@
 - Incidente de secret hygiene: loader local de staging deixou de usar `source` e passou a aceitar somente linhas `export NOME="valor"` com whitelist. Arquivo invalido agora falha fechado sem imprimir valores. Rotacao de secrets expostos e obrigatoria antes de qualquer migration real.
 - Supabase staging migration execution readiness passou apos correcao do secret source local: aprovacao exata presente, transporte de migration presente, backup evidence e migration package validados; ainda sem conectar staging e sem comando executavel.
 - Supabase staging migration executor plan criado e validado em modo `plan`: DB URL redigida, forward/rollback SQL identificados, evidence path definido, `execute_requested=false`, `executed=false`, `connects_to_staging=false` e `executable_database_commands=false`.
+- Revisao rigorosa do executor plan removeu formato de comando executavel (`command`/`args`) do output e oficializou somente templates nao executaveis (`command_template`/`args_template`) com `executable_now=false` em todos os passos.
 
 ### Proximo Passo
 

@@ -215,6 +215,7 @@ Validacoes atuais:
 - migration preflight staging validado com `npm run supabase:staging:migration-preflight`, preparando apenas o pedido de aprovacao explicita `APPROVE_SUPABASE_STAGING_MIGRATION_EXECUTION`;
 - migration execution readiness validado com `SUPABASE_STAGING_DB_URL` local e aprovacao exata no shell, mantendo `connects_to_staging=false` e `executable_database_commands=false`;
 - migration executor plan validado em modo `plan`, com DB URL redigida, `execute_requested=false`, `executed=false`, `connects_to_staging=false` e `executable_database_commands=false`;
+- revisao rigorosa do executor plan fechou o contrato para templates nao executaveis: `command_template`, `args_template`, `executable_now=false`, e teste bloqueando retorno de `command`/`args`;
 - loader local de secrets staging agora usa parser estrito com whitelist em vez de `source`, impedindo execucao acidental do arquivo e vazamento por linha invalida;
 - Supabase staging backup export runbook agora orienta a captura manual do backup/export sem autorizar migration, secret sync, deploy ou provider real;
 - git limpo no repo novo apos commit.
