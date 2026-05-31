@@ -4,6 +4,24 @@
 
 ### Executado
 
+- Criado Provider staging health/webhook isolation checkpoint no novo repo.
+- Adicionado wrapper `npm run provider:staging:health-webhook-isolation` no repo atual.
+- O checkpoint define as evidencias obrigatorias para o operador aprovar o primeiro smoke Provider staging real: provider health, fake Evolution/Telegram, webhook isolation, rollback path, rollback owner, fake actor confirmation, evidence location e confirmacao de que secrets nao foram impressos.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-health-webhook-isolation.test.mjs` PASS 5/5.
+- `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:staging:health-webhook-isolation` PASS no novo repo.
+- `npm run provider:staging:health-webhook-isolation` PASS via wrapper do repo atual.
+- `npm test` PASS 496/496 no novo repo.
+- Resultado do gate: `ready_for_operator_evidence_collection=true`, `connects_to_provider=false`, `executable_provider_commands=false`, `provider_staging_smoke_execution_authorized=false`, `provider_webhook_update_authorized=false`, `approval_phrase_required_after_evidence=APPROVE_PROVIDER_STAGING_SMOKE_ONLY`, `next_checkpoint=operator_provides_provider_staging_smoke_approval`.
+
+### Bloqueios Mantidos
+
+- Provider real, webhook update, secret sync, deploy, producao, billing e customer migration seguem bloqueados ate aprovacao explicita do operador.
+
+### Executado
+
 - Criado Provider staging smoke execution turn em modo plano no novo repo.
 - Adicionado wrapper `npm run provider:staging:smoke-execution-turn` no repo atual.
 - O turno gera plano redigido para a futura sequencia fake client inbound -> bot WhatsApp response -> Telegram quote request -> artist quote reply -> final WhatsApp quote response -> rollback disable check, sem comandos executaveis e sem provider real.
