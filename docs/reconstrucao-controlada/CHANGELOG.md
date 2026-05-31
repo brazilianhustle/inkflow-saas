@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Criado Provider staging real transport client adapter harness no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-transport-client-adapter-harness` no repo atual.
+- O harness usa adapters instrumentados, valida uma invocacao por adapter, adapter certo por etapa, ordem completa da sequencia, rollback antes de evidencia e output redigido.
+- Proximo checkpoint definido: `prepare_provider_staging_real_transport_runtime_binding_plan`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-transport-client-adapter-harness` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_real_transport_runtime_binding_plan=true`, `provider_staging_real_transport_client_adapters_ready=true`, `provider_staging_real_transport_client_adapter_harness_ready=true`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `instrumented_harness_executed=true`, `instrumented_evidence_written=false`, cada adapter com `invocation_count=1`, `next_checkpoint=prepare_provider_staging_real_transport_runtime_binding_plan`.
+- `node --test tests/architecture/provider-staging-real-transport-client-adapter-harness.test.mjs tests/architecture/provider-staging-real-transport-client-adapters.test.mjs tests/architecture/provider-staging-real-transport-ports-harness.test.mjs` PASS 13/13.
+- `npm test` PASS 622/622 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, source names fake de teste, regexes defensivas e teste negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+- Provider real segue bloqueado ate runtime binding plan e novo gate especifico.
+
+### Executado
+
 - Criado Provider staging real transport client adapters checkpoint no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-transport-client-adapters` no repo atual.
 - O checkpoint prepara a superficie estrutural de adapters para credenciais, Evolution inbound, observacao WhatsApp, observacao Telegram, envio de resposta do tatuador, observacao final, rollback e evidencia redigida.
