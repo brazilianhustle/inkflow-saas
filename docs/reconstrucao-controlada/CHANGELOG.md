@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Criado Provider staging secret-source check no novo repo.
+- Adicionado wrapper `npm run provider:staging:secret-source-check` no repo atual.
+- Adicionado loader estrito `scripts/reconstrucao/load-provider-staging-env.sh` para `~/.inkflow-secrets/provider-staging.env`, sem `source` direto e com whitelist.
+- Adicionado template `scripts/reconstrucao/provider-staging.env.example`.
+- Criado runbook `docs/operations/provider-staging-secret-source-runbook.md`.
+- Integrado o secret-source check ao Provider staging real smoke executor para bloquear `--execute` enquanto os sources/handles nao estiverem prontos.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-secret-source-check.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 11/11.
+- `npm run provider:staging:secret-source-check` falha corretamente sem `~/.inkflow-secrets/provider-staging.env`, listando seis campos faltantes e mantendo valores nao impressos.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor -- --execute` falha corretamente por sources faltantes e flag explicita ausente.
+- `npm test` PASS 512/512 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Proximo passo exige preencher localmente `~/.inkflow-secrets/provider-staging.env` com source names/handles reais de staging, sem segredo bruto.
+
+### Executado
+
 - Construido Provider staging real smoke executor no novo repo em `infra/provider-staging-real-smoke-executor/`.
 - Adicionado wrapper `npm run provider:staging:real-smoke-executor` no repo atual.
 - O executor valida readiness, evidencia health/webhook, aprovacao `APPROVE_PROVIDER_STAGING_SMOKE_ONLY`, fake actors, plano redigido e flag explicita antes de qualquer execucao.

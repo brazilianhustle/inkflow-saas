@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-bcb0542 docs: capture provider staging health evidence
+10e610a feat: add provider staging smoke executor
 ```
 
 Bloco fechado:
@@ -53,9 +53,9 @@ Validacoes do ultimo bloco:
 - `node --test tests/architecture/supabase-schema-draft.test.mjs tests/architecture/supabase-staging-rls-smoke.test.mjs` PASS 14/14;
 - `npm test` PASS 475/475 no novo repo.
 
-Proximo passo seguro: revisar o executor Provider staging smoke construido em modo controlado e decidir a conexao do runner real de staging. O executor `npm run provider:staging:real-smoke-executor` passa em modo plano, nao conecta provider e exige `PROVIDER_STAGING_SMOKE_EXECUTE=true` para qualquer tentativa de execucao. Mesmo com aprovacao, `--execute` falha corretamente sem a flag explicita.
+Proximo passo seguro: preencher o arquivo local `~/.inkflow-secrets/provider-staging.env` com source names/handles reais de staging, sem segredo bruto, e rodar `npm run provider:staging:secret-source-check`. O executor `npm run provider:staging:real-smoke-executor` passa em modo plano, nao conecta provider e agora exige secret-source check pronto + `PROVIDER_STAGING_SMOKE_EXECUTE=true` para qualquer tentativa de execucao.
 
-Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight`, `npm run supabase:staging:migration-execution-readiness`, `npm run supabase:staging:migration-executor-plan`, `npm run supabase:staging:migration-execution-evidence`, `npm run supabase:staging:validate-migration-execution-evidence`, `npm run supabase:staging:manual-migration-execution-turn`, `npm run supabase:staging:rls-smoke`, `npm run supabase:staging:validate-rls-smoke-evidence`, `npm run provider:staging:isolation-checkpoint`, `npm run provider:staging:approval-checkpoint`, `npm run provider:staging:smoke-execution-turn`, `npm run provider:staging:health-webhook-isolation`, `npm run provider:staging:smoke-approval-readiness` e `npm run provider:staging:real-smoke-executor`, que delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado. Os wrappers Supabase carregam `~/.inkflow-secrets/supabase-staging.env` quando existir; os wrappers Provider atuais nao carregam secrets.
+Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight`, `npm run supabase:staging:migration-execution-readiness`, `npm run supabase:staging:migration-executor-plan`, `npm run supabase:staging:migration-execution-evidence`, `npm run supabase:staging:validate-migration-execution-evidence`, `npm run supabase:staging:manual-migration-execution-turn`, `npm run supabase:staging:rls-smoke`, `npm run supabase:staging:validate-rls-smoke-evidence`, `npm run provider:staging:isolation-checkpoint`, `npm run provider:staging:approval-checkpoint`, `npm run provider:staging:smoke-execution-turn`, `npm run provider:staging:health-webhook-isolation`, `npm run provider:staging:smoke-approval-readiness`, `npm run provider:staging:real-smoke-executor` e `npm run provider:staging:secret-source-check`, que delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado. Os wrappers Supabase carregam `~/.inkflow-secrets/supabase-staging.env` quando existir; o wrapper Provider secret-source carrega `~/.inkflow-secrets/provider-staging.env` com parser estrito e whitelist, sem imprimir valores.
 
 Validacoes novas do bloco staging:
 
@@ -93,8 +93,14 @@ Validacoes novas do bloco staging:
 - Provider staging real smoke executor construido em `infra/provider-staging-real-smoke-executor/`, com doc de arquitetura, CLI, teste e wrapper no repo atual;
 - `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor` PASS em modo plano, `connects_to_provider=false`, `executable_provider_commands=false`, `redacts_provider_handles=true`, `next_checkpoint=operator_runs_provider_staging_smoke_executor`;
 - `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor -- --execute` falha corretamente por `explicit_provider_staging_smoke_execute_flag_required`, comprovando bloqueio contra execucao acidental;
+- Provider staging secret-source check criado em `infra/provider-staging-secret-source-check/`, exigindo `EVOLUTION_STAGING_SECRET_SOURCE`, `TELEGRAM_STAGING_SECRET_SOURCE`, `CLOUDFLARE_WORKER_STAGING_SECRET_SOURCE`, `EVOLUTION_STAGING_INSTANCE_LABEL`, `TELEGRAM_STAGING_BOT_LABEL` e `TELEGRAM_STAGING_CHAT_LABEL`, imprimindo apenas `[redacted]` e mantendo `connects_to_provider=false`;
+- wrapper `npm run provider:staging:secret-source-check` criado no repo atual, com loader estrito `scripts/reconstrucao/load-provider-staging-env.sh` e template `scripts/reconstrucao/provider-staging.env.example`;
+- runbook criado em `docs/operations/provider-staging-secret-source-runbook.md`;
+- executor Provider staging smoke passou a bloquear `--execute` se o secret-source check nao estiver pronto;
+- `npm run provider:staging:secret-source-check` falha corretamente enquanto `~/.inkflow-secrets/provider-staging.env` nao existir/estiver incompleto, listando missing fields e sem imprimir valores;
+- `node --test tests/architecture/provider-staging-secret-source-check.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 11/11;
 - `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 6/6;
-- `npm test` PASS 507/507 no novo repo;
+- `npm test` PASS 512/512 no novo repo;
 - `npm run typecheck` PASS placeholder no novo repo;
 - `npm run lint` PASS placeholder no novo repo;
 - Incidente operacional: arquivo local `~/.inkflow-secrets/supabase-staging.env` foi montado em formato invalido/multilinha e o loader antigo usava `source`, permitindo impressao do ambiente. Loader corrigido para parser estrito com whitelist, sem executar o arquivo e sem imprimir valores. Secrets expostos devem ser rotacionados antes de qualquer execucao real.

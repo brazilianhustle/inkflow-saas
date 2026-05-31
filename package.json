@@ -29,7 +29,8 @@
     "provider:staging:smoke-execution-turn": "bash scripts/reconstrucao/provider-staging-smoke-execution-turn.sh",
     "provider:staging:health-webhook-isolation": "bash scripts/reconstrucao/provider-staging-health-webhook-isolation.sh",
     "provider:staging:smoke-approval-readiness": "bash scripts/reconstrucao/provider-staging-smoke-approval-readiness.sh",
-    "provider:staging:real-smoke-executor": "bash scripts/reconstrucao/provider-staging-real-smoke-executor.sh"
+    "provider:staging:real-smoke-executor": "bash scripts/reconstrucao/provider-staging-real-smoke-executor.sh",
+    "provider:staging:secret-source-check": "bash scripts/reconstrucao/provider-staging-secret-source-check.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",
