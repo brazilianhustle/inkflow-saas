@@ -23,7 +23,8 @@
     "supabase:staging:validate-migration-execution-evidence": "bash scripts/reconstrucao/supabase-staging-validate-migration-execution-evidence.sh",
     "supabase:staging:manual-migration-execution-turn": "bash scripts/reconstrucao/supabase-staging-manual-migration-execution-turn.sh",
     "supabase:staging:rls-smoke": "bash scripts/reconstrucao/supabase-staging-rls-smoke.sh",
-    "supabase:staging:validate-rls-smoke-evidence": "bash scripts/reconstrucao/supabase-staging-validate-rls-smoke-evidence.sh"
+    "supabase:staging:validate-rls-smoke-evidence": "bash scripts/reconstrucao/supabase-staging-validate-rls-smoke-evidence.sh",
+    "provider:staging:isolation-checkpoint": "bash scripts/reconstrucao/provider-staging-isolation-checkpoint.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",

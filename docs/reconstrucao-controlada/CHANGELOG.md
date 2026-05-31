@@ -4,6 +4,23 @@
 
 ### Executado
 
+- Criado checkpoint local-only de Provider staging isolation no novo repo.
+- Adicionado wrapper `npm run provider:staging:isolation-checkpoint` no repo atual.
+- O checkpoint valida pacote de evidencia Provider staging, promotion gate de provider real, evidencia RLS smoke staging, atores fake e bloqueios contra provider real, webhook update, secret sync, deploy e producao.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-isolation-checkpoint.test.mjs` PASS 6/6.
+- `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:staging:isolation-checkpoint` PASS no novo repo.
+- `npm run provider:staging:isolation-checkpoint` PASS via wrapper do repo atual.
+- Resultado do gate: `connects_to_provider=false`, `provider_staging_smoke_execution_authorized=false`, `provider_webhook_update_authorized=false`, `provider_secret_sync_authorized=false`, `required_approval_phrase=APPROVE_PROVIDER_STAGING_SMOKE_ONLY`.
+
+### Bloqueios Mantidos
+
+- Evolution, WhatsApp, Telegram, webhook update, secret sync, deploy e producao seguem bloqueados ate aprovacao operacional especifica para Provider staging smoke.
+
+### Executado
+
 - Executada a Supabase staging manual migration no projeto `inkflow-staging` pelo runner oficial, apos aprovacao explicita `APPROVE_SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTION`.
 - Aplicado rollback versionado antes da execucao oficial para garantir staging limpo.
 - Usada DB URL direta apenas em memoria porque a URL pooler local falhou com `tenant/user postgres.<project-ref> not found`; nenhum segredo foi registrado em docs, output ou commit.
