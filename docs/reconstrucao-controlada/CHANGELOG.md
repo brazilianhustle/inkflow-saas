@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Criado Provider staging driver binding skeleton no novo repo.
+- Adicionado wrapper `npm run provider:staging:driver-binding-skeleton` no repo atual.
+- O skeleton expoe os seis drivers do adapter, com seis boundaries injetaveis, default bloqueado e proof redigido.
+- Proximo checkpoint seguro definido: `prepare_provider_staging_driver_binding_harness`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-driver-binding-skeleton.test.mjs` PASS 6/6.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:driver-binding-skeleton` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_driver_binding_harness=true`, `provider_staging_driver_binding_execution_default=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=prepare_provider_staging_driver_binding_harness`.
+- `node --test tests/architecture/provider-staging-driver-binding-skeleton.test.mjs tests/architecture/provider-staging-driver-binding-plan.test.mjs tests/architecture/provider-staging-runner-adapter.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 26/26.
+- Varredura dos arquivos novos encontrou apenas docs/flags de bloqueio, source names fake em testes, testes negativos e regexes de bloqueio. Nenhum valor real foi encontrado.
+- `npm test` PASS 550/550 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Criado Provider staging driver binding plan no novo repo.
 - Adicionado wrapper `npm run provider:staging:driver-binding-plan` no repo atual.
 - O plano mapeia os seis drivers do adapter para fronteiras futuras, mantendo tudo em `executable_now=false`.
