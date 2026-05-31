@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Integrado Provider staging real transport runner ao Provider staging real smoke executor por factory explicita.
+- Adaptado o contrato do transport runner (`final-whatsapp-quote-response`) para o contrato de evidencia do smoke (`client-quote-response`).
+- Endurecido o Provider staging real smoke gate review para exigir `provider_staging_real_transport_runner_integrated=true`.
+- A execucao real continua bloqueada; a integracao foi provada em simulacao.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-real-smoke-gate-review.test.mjs tests/architecture/provider-staging-real-transport-runner-harness.test.mjs tests/architecture/provider-staging-real-transport-runner-skeleton.test.mjs` PASS 29/29.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-executor` PASS via wrapper do repo atual.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-gate-review` PASS via wrapper do repo atual.
+- Resultado: `provider_staging_real_transport_runner_integrated=true`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-real-smoke-gate-review.test.mjs` PASS 17/17 apos atualizacao documental do gate.
+- Varredura dos arquivos alterados encontrou apenas flags/regexes de bloqueio, source names fake em testes, evidencia fake em testes e teste negativo com URL fake. Nenhum valor real foi encontrado.
+- `npm test` PASS 599/599 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Criado Provider staging real transport runner harness no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-transport-runner-harness` no repo atual.
 - O harness prova a sequencia completa com portas simuladas, rollback proof obrigatorio e evidencia apenas em memoria.

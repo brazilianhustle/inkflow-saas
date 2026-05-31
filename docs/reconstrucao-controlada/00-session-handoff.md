@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-8edb1f6 feat: add provider real transport runner harness
+bc5811c feat: integrate provider real transport runner with executor
 ```
 
 Bloco fechado:
@@ -53,7 +53,7 @@ Validacoes do ultimo bloco:
 - `node --test tests/architecture/supabase-schema-draft.test.mjs tests/architecture/supabase-staging-rls-smoke.test.mjs` PASS 14/14;
 - `npm test` PASS 475/475 no novo repo.
 
-Proximo passo seguro: preparar a integracao do Provider staging real transport runner com o executor. O harness do transport runner real passou em modo local-only, com portas simuladas, sequencia completa, rollback proof obrigatorio, evidencia somente em memoria, `provider_staging_transport_runner_ready=false`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false` e `next_checkpoint=prepare_provider_staging_real_transport_runner_executor_integration`. A execucao real continua bloqueada ate existir integracao controlada + gate final antes de runner real.
+Proximo passo seguro: revisar o gate final antes de qualquer nova tentativa real de Provider staging smoke. O executor agora integra o Provider staging real transport runner por factory explicita, adapta o contrato do transport runner para o contrato de evidencia do smoke e o gate review exige `provider_staging_real_transport_runner_integrated=true`. Tudo segue em plan/simulation mode, com `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false` e `executable_provider_commands=false`. A execucao real continua bloqueada ate nova decisao humana e runner real injetado.
 
 Nota de auto review: o dry-run recebeu um hardening apos revisao. O executor Provider staging agora tem modo explicito de simulacao, e o dry-run exige que esse caminho nao declare `connects_to_provider=true` nem `provider_staging_smoke_executed=true`. A evidencia dry-run tambem rejeita claims contraditorios de smoke real/captura real.
 
@@ -197,7 +197,13 @@ Validacoes novas do bloco staging:
 - wrapper `npm run provider:staging:real-transport-runner-harness` criado no repo atual e carrega `~/.inkflow-secrets/provider-staging.env`;
 - `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-transport-runner-harness` PASS via wrapper do repo atual, com `ready_for_provider_staging_real_transport_runner_executor_integration=true`, `transport_runner_harness_simulated_run_executed=true`, `provider_staging_transport_runner_ready=false`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `simulated_evidence_written=false`, `next_checkpoint=prepare_provider_staging_real_transport_runner_executor_integration`;
 - `node --test tests/architecture/provider-staging-real-transport-runner-harness.test.mjs tests/architecture/provider-staging-real-transport-runner-skeleton.test.mjs tests/architecture/provider-staging-real-transport-runner-plan.test.mjs tests/architecture/provider-staging-real-smoke-execution-authorization.test.mjs tests/architecture/provider-staging-real-smoke-gate-review.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 36/36;
-- `npm test` PASS 597/597 no novo repo;
+- Provider staging real smoke executor integrado ao Provider staging real transport runner por factory explicita, adaptando `final-whatsapp-quote-response` para o contrato `client-quote-response` da evidencia de smoke;
+- Provider staging real smoke gate review endurecido para exigir `provider_staging_real_transport_runner_integrated=true` antes de decisao humana;
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-executor` PASS via wrapper do repo atual, com `provider_staging_real_transport_runner_integrated=true`, `executed=false`, `evidence_written=false`, `connects_to_provider=false`, `executable_provider_commands=false`;
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-gate-review` PASS via wrapper do repo atual, com `provider_staging_real_transport_runner_integrated=true`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`;
+- `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-real-smoke-gate-review.test.mjs tests/architecture/provider-staging-real-transport-runner-harness.test.mjs tests/architecture/provider-staging-real-transport-runner-skeleton.test.mjs` PASS 29/29;
+- `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-real-smoke-gate-review.test.mjs` PASS 17/17 apos atualizacao documental do gate;
+- `npm test` PASS 599/599 no novo repo;
 - `node --test tests/architecture/provider-staging-runner-binding-review.test.mjs` PASS 4/4;
 - `npm test` PASS 516/516 no novo repo;
 - `node --test tests/architecture/provider-staging-secret-source-check.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 11/11;
