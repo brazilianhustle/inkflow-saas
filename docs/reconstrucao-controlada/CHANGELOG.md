@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Integrado o Provider staging real smoke executor ao runtime resolution runner no novo repo.
+- Aplicada a nova doutrina de risco: sem novo ciclo formal `plan/skeleton/harness`, porque a mudanca e integracao interna de risco medio sobre contratos ja provados.
+- O executor agora expoe factory explicita para runtime resolution runner em simulacao/futuro staging controlado.
+- O default do executor permanece bloqueado.
+- Proximo checkpoint seguro definido: `prepare_provider_staging_real_smoke_gate_review`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-driver-runtime-resolution-harness.test.mjs tests/architecture/provider-staging-driver-runtime-resolution-skeleton.test.mjs` PASS 21/21.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor` PASS via wrapper existente do repo atual.
+- Resultado: `provider_staging_runtime_resolution_integrated=true`, `execute_requested=false`, `executed=false`, `evidence_written=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=prepare_provider_staging_real_smoke_gate_review`.
+- Varredura dos arquivos tocados encontrou apenas flags/regexes de bloqueio, source names fake em testes e testes negativos de token. Nenhum valor real foi encontrado.
+- `npm test` PASS 571/571 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Criado Provider staging driver runtime resolution harness no novo repo.
 - Adicionado wrapper `npm run provider:staging:driver-runtime-resolution-harness` no repo atual.
 - O harness prova a integracao simulada runtime resolution skeleton -> runner adapter -> smoke executor, sem provider real e sem escrita real de evidencia.

@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-0869b2e feat: add provider runtime resolution harness
+4ef1d8a feat: integrate provider runtime resolution executor
 ```
 
 Bloco fechado:
@@ -53,7 +53,7 @@ Validacoes do ultimo bloco:
 - `node --test tests/architecture/supabase-schema-draft.test.mjs tests/architecture/supabase-staging-rls-smoke.test.mjs` PASS 14/14;
 - `npm test` PASS 475/475 no novo repo.
 
-Proximo passo seguro: preparar a integracao do runtime resolution com o executor Provider staging, ainda sem provider real. O harness de runtime resolution passou em simulacao local skeleton -> adapter -> executor, com `runtime_resolution_harness_simulated_run_executed=true`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `simulated_evidence_written=false` e `next_checkpoint=prepare_provider_staging_runtime_resolution_executor_integration`.
+Proximo passo seguro: preparar review de gate para o primeiro Provider staging real smoke, ainda sem executar provider real. O executor agora aceita runtime resolution runner explicito em simulacao, mantendo default bloqueado, com `provider_staging_runtime_resolution_integrated=true`, `connects_to_provider=false`, `executable_provider_commands=false`, `executed=false` em plan mode e `next_checkpoint=prepare_provider_staging_real_smoke_gate_review`.
 
 Nota de auto review: o dry-run recebeu um hardening apos revisao. O executor Provider staging agora tem modo explicito de simulacao, e o dry-run exige que esse caminho nao declare `connects_to_provider=true` nem `provider_staging_smoke_executed=true`. A evidencia dry-run tambem rejeita claims contraditorios de smoke real/captura real.
 
@@ -171,6 +171,11 @@ Validacoes novas do bloco staging:
 - `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:driver-runtime-resolution-harness` PASS via wrapper do repo atual, com `ready_for_provider_staging_runtime_resolution_executor_integration=true`, `runtime_resolution_harness_simulated_run_executed=true`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `simulated_evidence_written=false`, `next_checkpoint=prepare_provider_staging_runtime_resolution_executor_integration`;
 - `node --test tests/architecture/provider-staging-driver-runtime-resolution-harness.test.mjs tests/architecture/provider-staging-driver-runtime-resolution-skeleton.test.mjs tests/architecture/provider-staging-driver-runtime-resolution-plan.test.mjs tests/architecture/provider-staging-driver-binding-harness.test.mjs tests/architecture/provider-staging-driver-binding-skeleton.test.mjs tests/architecture/provider-staging-driver-binding-plan.test.mjs` PASS 31/31;
 - `npm test` PASS 570/570 no novo repo;
+- Provider staging real smoke executor integrado ao runtime resolution runner por factory explicita, sem criar novo ciclo formal `plan/skeleton/harness` por ser risco medio e coberto pelos contratos anteriores;
+- default do executor segue bloqueado; runtime resolution so entra por resolver injetado e foi provado em simulacao;
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor` PASS via wrapper existente, com `provider_staging_runtime_resolution_integrated=true`, `executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=prepare_provider_staging_real_smoke_gate_review`;
+- `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-driver-runtime-resolution-harness.test.mjs tests/architecture/provider-staging-driver-runtime-resolution-skeleton.test.mjs` PASS 21/21;
+- `npm test` PASS 571/571 no novo repo;
 - `node --test tests/architecture/provider-staging-runner-binding-review.test.mjs` PASS 4/4;
 - `npm test` PASS 516/516 no novo repo;
 - `node --test tests/architecture/provider-staging-secret-source-check.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 11/11;
