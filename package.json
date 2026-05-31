@@ -35,7 +35,8 @@
     "provider:staging:runner-dry-run": "bash scripts/reconstrucao/provider-staging-runner-dry-run.sh",
     "provider:staging:runner-evidence-review": "bash scripts/reconstrucao/provider-staging-runner-evidence-review.sh",
     "provider:staging:runner-adapter-plan": "bash scripts/reconstrucao/provider-staging-runner-adapter-plan.sh",
-    "provider:staging:runner-adapter": "bash scripts/reconstrucao/provider-staging-runner-adapter.sh"
+    "provider:staging:runner-adapter": "bash scripts/reconstrucao/provider-staging-runner-adapter.sh",
+    "provider:staging:driver-binding-plan": "bash scripts/reconstrucao/provider-staging-driver-binding-plan.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",

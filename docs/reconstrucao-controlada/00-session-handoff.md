@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-2868c1d feat: integrate provider runner adapter with executor
+4f6b6cb feat: add provider driver binding plan
 ```
 
 Bloco fechado:
@@ -53,11 +53,11 @@ Validacoes do ultimo bloco:
 - `node --test tests/architecture/supabase-schema-draft.test.mjs tests/architecture/supabase-staging-rls-smoke.test.mjs` PASS 14/14;
 - `npm test` PASS 475/475 no novo repo.
 
-Proximo passo seguro: preparar o plano de binding dos drivers reais de staging, ainda sem provider real. O executor agora usa o Provider staging runner adapter como fronteira oficial; o default permanece bloqueado, a simulacao passa apenas com drivers injetados e o wrapper continua em modo plano com `provider_staging_runner_adapter_integrated=true`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false` e `next_checkpoint=prepare_provider_staging_driver_binding_plan`.
+Proximo passo seguro: construir o skeleton dos driver bindings de staging, ainda sem provider real. O plano de binding passou com os seis drivers mapeados (`sendClientInbound`, `captureBotWhatsAppResponse`, `captureTelegramQuoteRequest`, `captureArtistQuoteReply`, `captureClientQuoteResponse`, `captureRollbackDisableProof`), todos `executable_now=false`, `provider_staging_runner_adapter_integrated=true`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false` e `next_checkpoint=build_provider_staging_driver_binding_skeleton`.
 
 Nota de auto review: o dry-run recebeu um hardening apos revisao. O executor Provider staging agora tem modo explicito de simulacao, e o dry-run exige que esse caminho nao declare `connects_to_provider=true` nem `provider_staging_smoke_executed=true`. A evidencia dry-run tambem rejeita claims contraditorios de smoke real/captura real.
 
-Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight`, `npm run supabase:staging:migration-execution-readiness`, `npm run supabase:staging:migration-executor-plan`, `npm run supabase:staging:migration-execution-evidence`, `npm run supabase:staging:validate-migration-execution-evidence`, `npm run supabase:staging:manual-migration-execution-turn`, `npm run supabase:staging:rls-smoke`, `npm run supabase:staging:validate-rls-smoke-evidence`, `npm run provider:staging:isolation-checkpoint`, `npm run provider:staging:approval-checkpoint`, `npm run provider:staging:smoke-execution-turn`, `npm run provider:staging:health-webhook-isolation`, `npm run provider:staging:smoke-approval-readiness`, `npm run provider:staging:real-smoke-executor`, `npm run provider:staging:secret-source-check`, `npm run provider:staging:runner-binding-review`, `npm run provider:staging:runner-dry-run`, `npm run provider:staging:runner-evidence-review`, `npm run provider:staging:runner-adapter-plan` e `npm run provider:staging:runner-adapter`, que delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado. Os wrappers Supabase carregam `~/.inkflow-secrets/supabase-staging.env` quando existir; os wrappers Provider carregam `~/.inkflow-secrets/provider-staging.env` com parser estrito e whitelist, sem imprimir valores.
+Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight`, `npm run supabase:staging:migration-execution-readiness`, `npm run supabase:staging:migration-executor-plan`, `npm run supabase:staging:migration-execution-evidence`, `npm run supabase:staging:validate-migration-execution-evidence`, `npm run supabase:staging:manual-migration-execution-turn`, `npm run supabase:staging:rls-smoke`, `npm run supabase:staging:validate-rls-smoke-evidence`, `npm run provider:staging:isolation-checkpoint`, `npm run provider:staging:approval-checkpoint`, `npm run provider:staging:smoke-execution-turn`, `npm run provider:staging:health-webhook-isolation`, `npm run provider:staging:smoke-approval-readiness`, `npm run provider:staging:real-smoke-executor`, `npm run provider:staging:secret-source-check`, `npm run provider:staging:runner-binding-review`, `npm run provider:staging:runner-dry-run`, `npm run provider:staging:runner-evidence-review`, `npm run provider:staging:runner-adapter-plan`, `npm run provider:staging:runner-adapter` e `npm run provider:staging:driver-binding-plan`, que delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado. Os wrappers Supabase carregam `~/.inkflow-secrets/supabase-staging.env` quando existir; os wrappers Provider carregam `~/.inkflow-secrets/provider-staging.env` com parser estrito e whitelist, sem imprimir valores.
 
 Validacoes novas do bloco staging:
 
@@ -141,6 +141,11 @@ Validacoes novas do bloco staging:
 - `npm test` PASS 539/539 no novo repo;
 - `npm run typecheck` PASS placeholder no novo repo;
 - `npm run lint` PASS placeholder no novo repo;
+- Provider staging driver binding plan criado em `infra/provider-staging-driver-binding-plan/`, mapeando os seis drivers do adapter para fronteiras futuras, sem provider real e sem comandos executaveis;
+- wrapper `npm run provider:staging:driver-binding-plan` criado no repo atual e carrega `~/.inkflow-secrets/provider-staging.env`;
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:driver-binding-plan` PASS via wrapper do repo atual, com `ready_for_provider_staging_driver_binding_skeleton=true`, `provider_staging_runner_adapter_integrated=true`, `provider_staging_runner_adapter_ready=true`, `provider_staging_secret_sources_ready=true`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=build_provider_staging_driver_binding_skeleton`;
+- `node --test tests/architecture/provider-staging-driver-binding-plan.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-runner-adapter.test.mjs` PASS 20/20;
+- `npm test` PASS 544/544 no novo repo;
 - `node --test tests/architecture/provider-staging-runner-binding-review.test.mjs` PASS 4/4;
 - `npm test` PASS 516/516 no novo repo;
 - `node --test tests/architecture/provider-staging-secret-source-check.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 11/11;

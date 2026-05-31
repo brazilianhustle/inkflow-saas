@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Criado Provider staging driver binding plan no novo repo.
+- Adicionado wrapper `npm run provider:staging:driver-binding-plan` no repo atual.
+- O plano mapeia os seis drivers do adapter para fronteiras futuras, mantendo tudo em `executable_now=false`.
+- Proximo checkpoint seguro definido: `build_provider_staging_driver_binding_skeleton`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-driver-binding-plan.test.mjs` PASS 5/5.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:driver-binding-plan` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_driver_binding_skeleton=true`, `provider_staging_runner_adapter_integrated=true`, `provider_staging_runner_adapter_ready=true`, `provider_staging_secret_sources_ready=true`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=build_provider_staging_driver_binding_skeleton`.
+- `node --test tests/architecture/provider-staging-driver-binding-plan.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-runner-adapter.test.mjs` PASS 20/20.
+- Varredura dos arquivos novos encontrou apenas docs/flags de bloqueio, source names fake em testes, testes negativos e regexes de bloqueio. Nenhum valor real foi encontrado.
+- `npm test` PASS 544/544 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Integrado o Provider staging runner adapter ao Provider staging real smoke executor no novo repo.
 - O executor passa a usar o adapter bloqueado como runner default.
 - Criado `createProviderStagingSmokeRunnerFromAdapter` para plugar adapter com drivers injetados por checkpoint futuro.
