@@ -4,6 +4,33 @@
 
 ### Executado
 
+- Registrada a aprovacao humana `APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION` em checkpoint local-only.
+- Criado Provider staging real smoke execution authorization no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-execution-authorization` no repo atual.
+- Confirmado que o executor real continua bloqueado sem runner injetado (`injected_driver_required`).
+- Proximo checkpoint seguro definido: `build_provider_staging_real_transport_runner_plan`.
+
+### Validado
+
+- Tentativa controlada `PROVIDER_STAGING_SMOKE_EXECUTE=true npm run provider:staging:real-smoke-executor -- --execute` falhou corretamente por `injected_driver_required`, sem provider real e sem evidencia escrita.
+- `node --test tests/architecture/provider-staging-real-smoke-execution-authorization.test.mjs` PASS 4/4.
+- `node --test tests/architecture/provider-staging-real-smoke-execution-authorization.test.mjs tests/architecture/provider-staging-real-smoke-gate-review.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 19/19.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-execution-authorization` PASS via wrapper do repo atual.
+- Resultado: `provider_staging_real_smoke_operator_approved=true`, `provider_staging_gate_review_ready=true`, `default_executor_blocked_without_runner=true`, `provider_staging_transport_runner_ready=false`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=build_provider_staging_real_transport_runner_plan`.
+- Varredura dos arquivos novos encontrou apenas flags/regexes de bloqueio, source names fake em testes e teste negativo com URL fake. Nenhum valor real foi encontrado.
+- `npm test` PASS 580/580 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Criado Provider staging real smoke gate review no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-gate-review` no repo atual.
 - O gate review e local-only: valida executor, adapter, runtime resolution, secret-source readiness e bloqueios antes de qualquer decisao humana de smoke real.

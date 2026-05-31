@@ -42,7 +42,8 @@
     "provider:staging:driver-runtime-resolution-plan": "bash scripts/reconstrucao/provider-staging-driver-runtime-resolution-plan.sh",
     "provider:staging:driver-runtime-resolution-skeleton": "bash scripts/reconstrucao/provider-staging-driver-runtime-resolution-skeleton.sh",
     "provider:staging:driver-runtime-resolution-harness": "bash scripts/reconstrucao/provider-staging-driver-runtime-resolution-harness.sh",
-    "provider:staging:real-smoke-gate-review": "bash scripts/reconstrucao/provider-staging-real-smoke-gate-review.sh"
+    "provider:staging:real-smoke-gate-review": "bash scripts/reconstrucao/provider-staging-real-smoke-gate-review.sh",
+    "provider:staging:real-smoke-execution-authorization": "bash scripts/reconstrucao/provider-staging-real-smoke-execution-authorization.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",
