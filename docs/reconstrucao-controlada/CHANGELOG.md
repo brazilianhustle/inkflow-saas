@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Criado Provider staging real transport runner skeleton no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-transport-runner-skeleton` no repo atual.
+- O skeleton define oito portas injetaveis, sequencia fixa, input fake-only, redaction contract e default bloqueado.
+- Proximo checkpoint seguro definido: `prepare_provider_staging_real_transport_runner_harness`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-transport-runner-skeleton.test.mjs` PASS 8/8.
+- `node --test tests/architecture/provider-staging-real-transport-runner-skeleton.test.mjs tests/architecture/provider-staging-real-transport-runner-plan.test.mjs tests/architecture/provider-staging-real-smoke-execution-authorization.test.mjs tests/architecture/provider-staging-real-smoke-gate-review.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 32/32.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-transport-runner-skeleton` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_real_transport_runner_harness=true`, `provider_staging_transport_runner_execution_default=false`, `provider_staging_transport_runner_ready=false`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=prepare_provider_staging_real_transport_runner_harness`.
+- Varredura dos arquivos novos encontrou apenas flags/regexes de bloqueio, source names fake em testes e teste negativo com URL fake. Nenhum valor real foi encontrado.
+- `npm test` PASS 593/593 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Criado Provider staging real transport runner plan no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-transport-runner-plan` no repo atual.
 - O plano define ownership e boundaries do runner real sem habilitar transporte real.
