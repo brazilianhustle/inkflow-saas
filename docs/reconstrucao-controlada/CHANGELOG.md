@@ -4,6 +4,26 @@
 
 ### Executado
 
+- Construido Provider staging real smoke executor no novo repo em `infra/provider-staging-real-smoke-executor/`.
+- Adicionado wrapper `npm run provider:staging:real-smoke-executor` no repo atual.
+- O executor valida readiness, evidencia health/webhook, aprovacao `APPROVE_PROVIDER_STAGING_SMOKE_ONLY`, fake actors, plano redigido e flag explicita antes de qualquer execucao.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 6/6.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor` PASS em modo plano, com `connects_to_provider=false`, `executable_provider_commands=false`, `redacts_provider_handles=true`.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor -- --execute` falha corretamente por `explicit_provider_staging_smoke_execute_flag_required`.
+- `npm test` PASS 507/507 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- O runner real de staging ainda precisa ser conectado/revisado antes de executar qualquer trafego Provider staging.
+- Provider production, webhook update, secret sync, deploy, billing e customer migration continuam bloqueados.
+
+### Executado
+
 - Capturada evidencia operacional Provider staging health/webhook em `docs/evidence/provider-staging/provider-health-webhook-isolation-2026-05-31T000000000Z.md` no novo repo.
 - A evidencia registra operador, timestamp, resultado `configured for staging smoke`, confirmacoes redigidas de Evolution/Telegram staging, isolamento de webhook, rollback owner, fake actors e confirmacao de que nenhum segredo foi impresso.
 
