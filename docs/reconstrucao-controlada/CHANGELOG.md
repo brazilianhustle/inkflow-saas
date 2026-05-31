@@ -4,6 +4,29 @@
 
 ### Executado
 
+- Corrigida revisao do Provider staging runner dry-run apos auto review.
+- O executor Provider staging agora aceita modo explicito de simulacao para exercitar o caminho interno sem declarar conexao provider nem smoke real executado.
+- A validacao de evidencia dry-run deixou de converter texto para formato smoke real por substituicao textual e passou a rejeitar qualquer claim de smoke real/captura real dentro da evidencia dry-run.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-runner-dry-run.test.mjs` PASS 6/6.
+- `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 7/7.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:runner-dry-run` PASS via wrapper do repo atual, com `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- Double check da evidencia dry-run continua sem URL real, token, webhook secret, runtime handle, secret binding, producao ou TODO. O unico match sensivel foi flag `PROVIDER_SECRET_SYNC_AUTHORIZED=false`.
+- `npm test` PASS 522/522 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- A revisao corrigiu gap de evidencia antes de qualquer gate real.
+
+### Executado
+
 - Criado Provider staging runner dry-run no novo repo.
 - Adicionado wrapper `npm run provider:staging:runner-dry-run` no repo atual.
 - O checkpoint exercita o executor Provider staging por runner simulado, gera evidencia redigida e valida o contrato de sequencia sem Evolution, Telegram, webhook update, deploy, secret sync ou producao.

@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-a42e6ae feat: add provider staging runner dry run
+d4d6a29 fix: harden provider runner dry run evidence
 ```
 
 Bloco fechado:
@@ -54,6 +54,8 @@ Validacoes do ultimo bloco:
 - `npm test` PASS 475/475 no novo repo.
 
 Proximo passo seguro: revisar a evidencia `docs/evidence/provider-staging/provider-runner-dry-run-2026-05-31T000000000Z.md` no novo repo e, se aprovada, preparar o runner real de Provider staging em gate separado. O dry-run passou com runner simulado, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false` e `next_checkpoint=operator_reviews_provider_staging_dry_run_evidence`.
+
+Nota de auto review: o dry-run recebeu um hardening apos revisao. O executor Provider staging agora tem modo explicito de simulacao, e o dry-run exige que esse caminho nao declare `connects_to_provider=true` nem `provider_staging_smoke_executed=true`. A evidencia dry-run tambem rejeita claims contraditorios de smoke real/captura real.
 
 Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight`, `npm run supabase:staging:migration-execution-readiness`, `npm run supabase:staging:migration-executor-plan`, `npm run supabase:staging:migration-execution-evidence`, `npm run supabase:staging:validate-migration-execution-evidence`, `npm run supabase:staging:manual-migration-execution-turn`, `npm run supabase:staging:rls-smoke`, `npm run supabase:staging:validate-rls-smoke-evidence`, `npm run provider:staging:isolation-checkpoint`, `npm run provider:staging:approval-checkpoint`, `npm run provider:staging:smoke-execution-turn`, `npm run provider:staging:health-webhook-isolation`, `npm run provider:staging:smoke-approval-readiness`, `npm run provider:staging:real-smoke-executor`, `npm run provider:staging:secret-source-check`, `npm run provider:staging:runner-binding-review` e `npm run provider:staging:runner-dry-run`, que delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado. Os wrappers Supabase carregam `~/.inkflow-secrets/supabase-staging.env` quando existir; os wrappers Provider carregam `~/.inkflow-secrets/provider-staging.env` com parser estrito e whitelist, sem imprimir valores.
 
@@ -112,6 +114,11 @@ Validacoes novas do bloco staging:
 - double check da evidencia dry-run: sem URL real, token, webhook secret, runtime handle, secret binding, producao ou TODO. O unico match sensivel foi flag `PROVIDER_SECRET_SYNC_AUTHORIZED=false`;
 - `node --test tests/architecture/provider-staging-runner-dry-run.test.mjs tests/architecture/provider-staging-runner-binding-review.test.mjs` PASS 8/8;
 - `npm test` PASS 520/520 no novo repo;
+- Auto review encontrou e corrigiu gap semantico: o dry-run exercitava o executor em modo interno, mas antes nao exigia explicitamente que o resultado simulado preservasse `connects_to_provider=false`. Corrigido com modo `simulation=true` e teste dedicado;
+- A validacao de evidencia dry-run deixou de converter texto para formato smoke real por substituicao textual e passou a rejeitar `PROVIDER_STAGING_SMOKE_EXECUTED=true` e `PROVIDER_STAGING_SMOKE_EVIDENCE_CAPTURED=true` em evidencia dry-run;
+- `node --test tests/architecture/provider-staging-runner-dry-run.test.mjs` PASS 6/6;
+- `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 7/7;
+- `npm test` PASS 522/522 no novo repo;
 - `node --test tests/architecture/provider-staging-runner-binding-review.test.mjs` PASS 4/4;
 - `npm test` PASS 516/516 no novo repo;
 - `node --test tests/architecture/provider-staging-secret-source-check.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 11/11;
