@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real transport client adapters checkpoint no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-transport-client-adapters` no repo atual.
+- O checkpoint prepara a superficie estrutural de adapters para credenciais, Evolution inbound, observacao WhatsApp, observacao Telegram, envio de resposta do tatuador, observacao final, rollback e evidencia redigida.
+- Default segue bloqueado; dry-run valida adapter->boundary mapping e passagem pelo runner skeleton sem trafego real.
+- Proximo checkpoint definido: `prepare_provider_staging_real_transport_client_adapter_harness`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-transport-client-adapters` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_real_transport_client_adapter_harness=true`, `provider_staging_real_transport_ports_harness_ready=true`, `provider_staging_real_transport_client_adapters_ready=true`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `dry_run_client_adapters_validated=true`, `dry_run_boundary_mapping_validated=true`, `dry_run_harness_executed=true`, `dry_run_evidence_written=false`, `next_checkpoint=prepare_provider_staging_real_transport_client_adapter_harness`.
+- `node --test tests/architecture/provider-staging-real-transport-client-adapters.test.mjs tests/architecture/provider-staging-real-transport-ports-harness.test.mjs tests/architecture/provider-staging-real-transport-ports.test.mjs` PASS 15/15.
+- `npm test` PASS 618/618 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, source names fake de teste, regexes defensivas e teste negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+- Provider real segue bloqueado ate client adapter harness e novo gate especifico.
+
+### Executado
+
 - Criado Provider staging real transport ports harness no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-transport-ports-harness` no repo atual.
 - O harness injeta boundaries provider-aware em dry-run, roda pelo runner skeleton e valida coverage, port mapping, ordem da sequencia, rollback antes da evidencia e output redigido.
