@@ -467,7 +467,8 @@
 - Supabase staging migration preflight foi criado e validado, garantindo backup evidence + package check antes de pedir aprovacao humana. O gate prepara somente `APPROVE_SUPABASE_STAGING_MIGRATION_EXECUTION`; migration segue bloqueada.
 - Supabase staging migration execution readiness criado para verificar aprovacao exata e transporte de migration separado (`SUPABASE_STAGING_DB_URL`) antes de qualquer executor. O ambiente atual falha corretamente enquanto esses dois itens nao forem carregados no shell.
 - Incidente de secret hygiene: loader local de staging deixou de usar `source` e passou a aceitar somente linhas `export NOME="valor"` com whitelist. Arquivo invalido agora falha fechado sem imprimir valores. Rotacao de secrets expostos e obrigatoria antes de qualquer migration real.
+- Supabase staging migration execution readiness passou apos correcao do secret source local: aprovacao exata presente, transporte de migration presente, backup evidence e migration package validados; ainda sem conectar staging e sem comando executavel.
 
 ### Proximo Passo
 
-- Rotacionar os secrets expostos, corrigir `~/.inkflow-secrets/supabase-staging.env` para linhas single-line permitidas, depois repetir `npm run supabase:staging:migration-execution-readiness`. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem approval/checkpoint proprio.
+- Construir executor dedicado de migration staging em modo `plan`/bloqueado, com evidence propria e sem executar SQL automaticamente. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem approval/checkpoint proprio.
