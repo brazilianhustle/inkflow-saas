@@ -51,7 +51,8 @@
     "provider:staging:real-transport-ports": "bash scripts/reconstrucao/provider-staging-real-transport-ports.sh",
     "provider:staging:real-transport-ports-harness": "bash scripts/reconstrucao/provider-staging-real-transport-ports-harness.sh",
     "provider:staging:real-transport-client-adapters": "bash scripts/reconstrucao/provider-staging-real-transport-client-adapters.sh",
-    "provider:staging:real-transport-client-adapter-harness": "bash scripts/reconstrucao/provider-staging-real-transport-client-adapter-harness.sh"
+    "provider:staging:real-transport-client-adapter-harness": "bash scripts/reconstrucao/provider-staging-real-transport-client-adapter-harness.sh",
+    "provider:staging:real-transport-runtime-binding-plan": "bash scripts/reconstrucao/provider-staging-real-transport-runtime-binding-plan.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",
