@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Criado Provider staging driver runtime resolution harness no novo repo.
+- Adicionado wrapper `npm run provider:staging:driver-runtime-resolution-harness` no repo atual.
+- O harness prova a integracao simulada runtime resolution skeleton -> runner adapter -> smoke executor, sem provider real e sem escrita real de evidencia.
+- Proximo checkpoint seguro definido: `prepare_provider_staging_runtime_resolution_executor_integration`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-driver-runtime-resolution-harness.test.mjs` PASS 4/4.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:driver-runtime-resolution-harness` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_runtime_resolution_executor_integration=true`, `provider_staging_driver_runtime_resolution_skeleton_ready=true`, `runtime_resolution_harness_simulated_run_executed=true`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `simulated_evidence_written=false`, `next_checkpoint=prepare_provider_staging_runtime_resolution_executor_integration`.
+- `node --test tests/architecture/provider-staging-driver-runtime-resolution-harness.test.mjs tests/architecture/provider-staging-driver-runtime-resolution-skeleton.test.mjs tests/architecture/provider-staging-driver-runtime-resolution-plan.test.mjs tests/architecture/provider-staging-driver-binding-harness.test.mjs tests/architecture/provider-staging-driver-binding-skeleton.test.mjs tests/architecture/provider-staging-driver-binding-plan.test.mjs` PASS 31/31.
+- Varredura dos arquivos novos encontrou apenas flags/regexes de bloqueio, source names fake em testes e teste negativo com URL fake. Nenhum valor real foi encontrado.
+- `npm test` PASS 570/570 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Criado Provider staging driver runtime resolution skeleton no novo repo.
 - Adicionado wrapper `npm run provider:staging:driver-runtime-resolution-skeleton` no repo atual.
 - O skeleton expoe resolver runtime injetavel para os seis drivers, com default bloqueado, boundaries permitidas e proof redigido.
