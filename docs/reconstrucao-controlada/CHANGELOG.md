@@ -4,6 +4,30 @@
 
 ### Executado
 
+- Criado Provider staging runner adapter plan no novo repo.
+- Adicionado wrapper `npm run provider:staging:runner-adapter-plan` no repo atual.
+- O checkpoint planeja o futuro adaptador do runner real de Provider staging, declarando fronteiras com bot-orchestrator, notifications service, provider runtime resolution, provider-aware channel adapter e artist-quote-telegram-adapter.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-runner-adapter-plan.test.mjs` PASS 5/5.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:runner-adapter-plan` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_runner_adapter_build=true`, `provider_staging_runner_evidence_review_ready=true`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `redacts_provider_handles=true`, `next_checkpoint=build_provider_staging_runner_adapter`.
+- O plano expõe apenas `command_template`, `args_template` redigido e `executable_now=false`.
+- Varredura dos novos arquivos encontrou apenas source names fake em testes, teste negativo com URL fake, flags falsas e regexes de bloqueio. Nenhum valor real foi encontrado.
+- `npm test` PASS 531/531 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Proximo checkpoint seguro: construir o adaptador do runner em modo bloqueado/injetavel, ainda sem execucao real.
+
+### Executado
+
 - Criado Provider staging runner evidence review no novo repo.
 - Adicionado wrapper `npm run provider:staging:runner-evidence-review` no repo atual.
 - O checkpoint transforma a revisao da evidencia dry-run endurecida em gate automatizado antes de qualquer plano de runner real.
