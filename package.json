@@ -27,7 +27,8 @@
     "provider:staging:isolation-checkpoint": "bash scripts/reconstrucao/provider-staging-isolation-checkpoint.sh",
     "provider:staging:approval-checkpoint": "bash scripts/reconstrucao/provider-staging-approval-checkpoint.sh",
     "provider:staging:smoke-execution-turn": "bash scripts/reconstrucao/provider-staging-smoke-execution-turn.sh",
-    "provider:staging:health-webhook-isolation": "bash scripts/reconstrucao/provider-staging-health-webhook-isolation.sh"
+    "provider:staging:health-webhook-isolation": "bash scripts/reconstrucao/provider-staging-health-webhook-isolation.sh",
+    "provider:staging:smoke-approval-readiness": "bash scripts/reconstrucao/provider-staging-smoke-approval-readiness.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",

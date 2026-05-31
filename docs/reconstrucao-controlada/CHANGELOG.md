@@ -4,6 +4,24 @@
 
 ### Executado
 
+- Criado Provider staging smoke approval readiness no novo repo.
+- Adicionado wrapper `npm run provider:staging:smoke-approval-readiness` no repo atual.
+- Criado template seguro `docs/evidence/provider-staging/provider-health-webhook-isolation.template.md`.
+- Registrada a aprovacao recebida nesta sessao: `APPROVE_PROVIDER_STAGING_SMOKE_ONLY`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-smoke-approval-readiness.test.mjs` PASS 5/5.
+- `npm test` PASS 501/501 no novo repo.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:smoke-approval-readiness` falha corretamente por `provider_health_webhook_evidence_missing`, com `approval_present=true`, `evidence_present=false`, `health_webhook_checkpoint_ready=true`, `connects_to_provider=false`, `executable_provider_commands=false`.
+
+### Bloqueios Mantidos
+
+- A aprovacao existe, mas o executor real nao deve ser construido/executado ate a evidencia operacional health/webhook ser preenchida e validada.
+- Provider real, webhook update, secret sync, deploy, producao, billing e customer migration continuam bloqueados.
+
+### Executado
+
 - Criado Provider staging health/webhook isolation checkpoint no novo repo.
 - Adicionado wrapper `npm run provider:staging:health-webhook-isolation` no repo atual.
 - O checkpoint define as evidencias obrigatorias para o operador aprovar o primeiro smoke Provider staging real: provider health, fake Evolution/Telegram, webhook isolation, rollback path, rollback owner, fake actor confirmation, evidence location e confirmacao de que secrets nao foram impressos.

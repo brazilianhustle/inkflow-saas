@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-2744017 feat: add provider staging health webhook checkpoint
+7209248 feat: add provider staging smoke approval readiness
 ```
 
 Bloco fechado:
@@ -53,9 +53,9 @@ Validacoes do ultimo bloco:
 - `node --test tests/architecture/supabase-schema-draft.test.mjs tests/architecture/supabase-staging-rls-smoke.test.mjs` PASS 14/14;
 - `npm test` PASS 475/475 no novo repo.
 
-Proximo passo seguro: operador aprovar o primeiro Provider staging smoke real somente se conseguir confirmar as evidencias listadas pelo gate `provider:staging:health-webhook-isolation`. A aprovacao exigida permanece `APPROVE_PROVIDER_STAGING_SMOKE_ONLY`; ate ela existir, provider real, webhook update, secret sync, deploy e producao seguem bloqueados.
+Proximo passo seguro: preencher/capturar a evidencia operacional `docs/evidence/provider-staging/provider-health-webhook-isolation-2026-05-31T000000000Z.md` com health check, webhook isolation, rollback owner e fake actor confirmations, sem secrets. A aprovacao `APPROVE_PROVIDER_STAGING_SMOKE_ONLY` ja foi recebida, mas o readiness gate bloqueia executor real enquanto essa evidencia nao existir/validar.
 
-Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight`, `npm run supabase:staging:migration-execution-readiness`, `npm run supabase:staging:migration-executor-plan`, `npm run supabase:staging:migration-execution-evidence`, `npm run supabase:staging:validate-migration-execution-evidence`, `npm run supabase:staging:manual-migration-execution-turn`, `npm run supabase:staging:rls-smoke`, `npm run supabase:staging:validate-rls-smoke-evidence`, `npm run provider:staging:isolation-checkpoint`, `npm run provider:staging:approval-checkpoint`, `npm run provider:staging:smoke-execution-turn` e `npm run provider:staging:health-webhook-isolation`, que delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado. Os wrappers Supabase carregam `~/.inkflow-secrets/supabase-staging.env` quando existir; os wrappers Provider atuais nao carregam secrets.
+Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight`, `npm run supabase:staging:migration-execution-readiness`, `npm run supabase:staging:migration-executor-plan`, `npm run supabase:staging:migration-execution-evidence`, `npm run supabase:staging:validate-migration-execution-evidence`, `npm run supabase:staging:manual-migration-execution-turn`, `npm run supabase:staging:rls-smoke`, `npm run supabase:staging:validate-rls-smoke-evidence`, `npm run provider:staging:isolation-checkpoint`, `npm run provider:staging:approval-checkpoint`, `npm run provider:staging:smoke-execution-turn`, `npm run provider:staging:health-webhook-isolation` e `npm run provider:staging:smoke-approval-readiness`, que delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado. Os wrappers Supabase carregam `~/.inkflow-secrets/supabase-staging.env` quando existir; os wrappers Provider atuais nao carregam secrets.
 
 Validacoes novas do bloco staging:
 
@@ -85,6 +85,9 @@ Validacoes novas do bloco staging:
 - `npm run provider:staging:smoke-execution-turn` PASS via wrapper do repo atual, com `connects_to_provider=false`, `executable_provider_commands=false`, `executed=false`, `evidence_written=false`, `redacts_provider_handles=true`, `next_checkpoint=collect_provider_health_and_webhook_isolation_evidence`;
 - checkpoint Provider staging health/webhook isolation criado: define exatamente as evidencias operacionais que o operador deve confirmar antes de aprovar o primeiro smoke real provider staging, sem chamar provider, sem atualizar webhook e sem imprimir secrets;
 - `npm run provider:staging:health-webhook-isolation` PASS via wrapper do repo atual, com `ready_for_operator_evidence_collection=true`, `connects_to_provider=false`, `executable_provider_commands=false`, `provider_staging_smoke_execution_authorized=false`, `provider_webhook_update_authorized=false`, `approval_phrase_required_after_evidence=APPROVE_PROVIDER_STAGING_SMOKE_ONLY`, `next_checkpoint=operator_provides_provider_staging_smoke_approval`;
+- Provider staging smoke approval readiness criado: separa aprovacao presente de evidencia operacional validada, inclui template seguro em `docs/evidence/provider-staging/provider-health-webhook-isolation.template.md`;
+- aprovacao do operador recebida nesta sessao: `APPROVE_PROVIDER_STAGING_SMOKE_ONLY`;
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:smoke-approval-readiness` falha corretamente por `provider_health_webhook_evidence_missing`, mantendo `approval_present=true`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=complete_provider_health_webhook_evidence`;
 - Incidente operacional: arquivo local `~/.inkflow-secrets/supabase-staging.env` foi montado em formato invalido/multilinha e o loader antigo usava `source`, permitindo impressao do ambiente. Loader corrigido para parser estrito com whitelist, sem executar o arquivo e sem imprimir valores. Secrets expostos devem ser rotacionados antes de qualquer execucao real.
 - Decisao Cloudflare: nenhum token Cloudflare apareceu carregado no ambiente atual nem foi necessario para o gate Supabase staging. Cloudflare nao bloqueia a migration staging, mas `CLOUDFLARE_API_TOKEN`/`CF_API_TOKEN`/secrets de deploy devem entrar em rotacao planejada antes de qualquer frente de deploy, provider real, Cloudflare Pages/Workers ou secret sync.
 - migration staging inicial e RLS smoke staging estao aplicados/validados; producao, secret sync, provider real, deploy, billing activation e customer data migration seguem bloqueados.
