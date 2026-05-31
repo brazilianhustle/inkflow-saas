@@ -4,6 +4,27 @@
 
 ### Executado
 
+- Recebida aprovacao humana exata `APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION`.
+- Revalidado o Provider staging real smoke gate antes da tentativa.
+- Executada tentativa controlada do Provider staging real smoke executor com flag explicita.
+- Registrada evidencia de bloqueio fail-closed no novo repo: `docs/evidence/provider-staging/provider-real-smoke-blocked-2026-05-31T223440Z.md`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-gate-review` PASS.
+- Resultado do gate: `ready_for_human_provider_staging_smoke_decision=true`, `provider_staging_real_transport_runner_integrated=true`, `provider_staging_secret_sources_ready=true`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `human_decision_required=true`.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION PROVIDER_STAGING_SMOKE_EXECUTE=true npm run provider:staging:real-smoke-executor -- --execute` falhou corretamente por `injected_driver_required`.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+- Proximo checkpoint: construir ou conectar o caminho de injecao do Provider staging real transport runner antes de qualquer nova tentativa real.
+
+### Executado
+
 - Revisado o gate final apos integracao do Provider staging real transport runner com o executor.
 - Confirmado que o proximo passo e decisao humana explicita, nao execucao automatica.
 - Mantido bloqueio de provider real ate aprovacao e runner real injetado.
