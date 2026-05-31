@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-32c8df7 feat: add provider runner adapter
+2868c1d feat: integrate provider runner adapter with executor
 ```
 
 Bloco fechado:
@@ -53,7 +53,7 @@ Validacoes do ultimo bloco:
 - `node --test tests/architecture/supabase-schema-draft.test.mjs tests/architecture/supabase-staging-rls-smoke.test.mjs` PASS 14/14;
 - `npm test` PASS 475/475 no novo repo.
 
-Proximo passo seguro: integrar o adaptador do runner ao executor em modo ainda bloqueado/simulado, sem provider real. O runner adapter passou com `ready_for_provider_staging_runner_executor_integration=true`, `provider_staging_runner_adapter_execution_default=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false` e `next_checkpoint=integrate_provider_staging_runner_adapter_with_executor`.
+Proximo passo seguro: preparar o plano de binding dos drivers reais de staging, ainda sem provider real. O executor agora usa o Provider staging runner adapter como fronteira oficial; o default permanece bloqueado, a simulacao passa apenas com drivers injetados e o wrapper continua em modo plano com `provider_staging_runner_adapter_integrated=true`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false` e `next_checkpoint=prepare_provider_staging_driver_binding_plan`.
 
 Nota de auto review: o dry-run recebeu um hardening apos revisao. O executor Provider staging agora tem modo explicito de simulacao, e o dry-run exige que esse caminho nao declare `connects_to_provider=true` nem `provider_staging_smoke_executed=true`. A evidencia dry-run tambem rejeita claims contraditorios de smoke real/captura real.
 
@@ -135,6 +135,12 @@ Validacoes novas do bloco staging:
 - `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:runner-adapter` PASS, com `ready_for_provider_staging_runner_executor_integration=true`, `provider_staging_runner_adapter_plan_ready=true`, `provider_staging_runner_adapter_execution_default=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=integrate_provider_staging_runner_adapter_with_executor`;
 - `node --test tests/architecture/provider-staging-runner-adapter.test.mjs` PASS 6/6;
 - `npm test` PASS 537/537 no novo repo;
+- Provider staging real smoke executor integrado ao Provider staging runner adapter: default runner agora usa adapter bloqueado, `createProviderStagingSmokeRunnerFromAdapter` permite plugar adapter injetado e o checkpoint passa para `prepare_provider_staging_driver_binding_plan`;
+- `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-runner-adapter.test.mjs` PASS 15/15;
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor` PASS via wrapper do repo atual, com `provider_staging_runner_adapter_integrated=true`, `provider_staging_secret_sources_ready=true`, `executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=prepare_provider_staging_driver_binding_plan`;
+- `npm test` PASS 539/539 no novo repo;
+- `npm run typecheck` PASS placeholder no novo repo;
+- `npm run lint` PASS placeholder no novo repo;
 - `node --test tests/architecture/provider-staging-runner-binding-review.test.mjs` PASS 4/4;
 - `npm test` PASS 516/516 no novo repo;
 - `node --test tests/architecture/provider-staging-secret-source-check.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 11/11;

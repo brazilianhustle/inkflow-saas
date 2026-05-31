@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Integrado o Provider staging runner adapter ao Provider staging real smoke executor no novo repo.
+- O executor passa a usar o adapter bloqueado como runner default.
+- Criado `createProviderStagingSmokeRunnerFromAdapter` para plugar adapter com drivers injetados por checkpoint futuro.
+- Proximo checkpoint seguro definido: `prepare_provider_staging_driver_binding_plan`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-runner-adapter.test.mjs` PASS 15/15.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-executor` PASS via wrapper do repo atual.
+- Resultado: `provider_staging_runner_adapter_integrated=true`, `provider_staging_secret_sources_ready=true`, `executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=prepare_provider_staging_driver_binding_plan`.
+- Teste confirmou que o runner default falha seguro por adapter bloqueado sem drivers.
+- Teste confirmou que a simulacao aceita o adapter runner contract somente com drivers simulados injetados.
+- Varredura dos arquivos tocados encontrou apenas docs/flags de bloqueio, source names fake em testes, testes negativos e regexes de bloqueio. Nenhum valor real foi encontrado.
+- `npm test` PASS 539/539 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Criado Provider staging runner adapter no novo repo.
 - Adicionado wrapper `npm run provider:staging:runner-adapter` no repo atual.
 - O adaptador define o contrato injetavel compatível com o real smoke executor: default bloqueado, drivers obrigatorios injetados, fake actors, proof redigido e retorno `{ ok, quote_request_ref, steps }`.
