@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real smoke gate review no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-gate-review` no repo atual.
+- O gate review e local-only: valida executor, adapter, runtime resolution, secret-source readiness e bloqueios antes de qualquer decisao humana de smoke real.
+- Definida a frase futura de execucao real como `APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION`.
+- Proximo checkpoint seguro definido: `operator_decides_provider_staging_real_smoke_execution`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-gate-review.test.mjs` PASS 5/5.
+- `node --test tests/architecture/provider-staging-real-smoke-gate-review.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-driver-runtime-resolution-harness.test.mjs` PASS 19/19.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:real-smoke-gate-review` PASS via wrapper do repo atual.
+- Resultado: `ready_for_human_provider_staging_smoke_decision=true`, `provider_staging_executor_plan_ready=true`, `provider_staging_runner_adapter_integrated=true`, `provider_staging_runtime_resolution_integrated=true`, `provider_staging_secret_sources_ready=true`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `human_decision_required=true`, `next_checkpoint=operator_decides_provider_staging_real_smoke_execution`.
+- Varredura dos arquivos novos encontrou apenas flags/regexes de bloqueio, source names fake em testes e teste negativo com URL fake. Nenhum valor real foi encontrado.
+- `npm test` PASS 576/576 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Integrado o Provider staging real smoke executor ao runtime resolution runner no novo repo.
 - Aplicada a nova doutrina de risco: sem novo ciclo formal `plan/skeleton/harness`, porque a mudanca e integracao interna de risco medio sobre contratos ja provados.
 - O executor agora expoe factory explicita para runtime resolution runner em simulacao/futuro staging controlado.
