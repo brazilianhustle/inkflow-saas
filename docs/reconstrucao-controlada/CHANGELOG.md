@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Criado Provider staging driver binding harness no novo repo.
+- Adicionado wrapper `npm run provider:staging:driver-binding-harness` no repo atual.
+- O harness prova a integracao local simulada skeleton -> adapter -> executor, sem provider real e sem escrita de evidencia real.
+- Proximo checkpoint seguro definido: `prepare_provider_staging_driver_runtime_resolution_plan`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-driver-binding-harness.test.mjs` PASS 4/4.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:driver-binding-harness` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_driver_runtime_resolution_plan=true`, `harness_simulated_run_executed=true`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `simulated_evidence_written=false`, `next_checkpoint=prepare_provider_staging_driver_runtime_resolution_plan`.
+- `node --test tests/architecture/provider-staging-driver-binding-harness.test.mjs tests/architecture/provider-staging-driver-binding-skeleton.test.mjs tests/architecture/provider-staging-driver-binding-plan.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 24/24.
+- Varredura dos arquivos novos encontrou apenas docs/flags de bloqueio, source names fake em testes, testes negativos e regexes de bloqueio. Nenhum valor real foi encontrado.
+- `npm test` PASS 554/554 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Criado Provider staging driver binding skeleton no novo repo.
 - Adicionado wrapper `npm run provider:staging:driver-binding-skeleton` no repo atual.
 - O skeleton expoe os seis drivers do adapter, com seis boundaries injetaveis, default bloqueado e proof redigido.
