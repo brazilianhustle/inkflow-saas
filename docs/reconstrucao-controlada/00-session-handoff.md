@@ -50,9 +50,9 @@ Validacoes do ultimo bloco:
 - `git diff --check` PASS;
 - scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados, sem credencial real.
 
-Proximo passo seguro: preparar um checkpoint dedicado de migration staging, partindo do evidence record validado `docs/evidence/supabase-staging/backup-export-2026-05-31T025829067Z.md`. Nao executar migration real ainda.
+Proximo passo seguro: solicitar aprovacao humana explicita para uma execucao dedicada de migration staging, partindo do preflight validado. Nao executar migration real sem a frase `APPROVE_SUPABASE_STAGING_MIGRATION_EXECUTION`.
 
-Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence` e `npm run supabase:staging:validate-backup-evidence`, que carregam `~/.inkflow-secrets/supabase-staging.env` quando existir e delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado.
+Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence` e `npm run supabase:staging:migration-preflight`, que carregam `~/.inkflow-secrets/supabase-staging.env` quando existir e delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado.
 
 Validacoes novas do bloco staging:
 
@@ -60,6 +60,7 @@ Validacoes novas do bloco staging:
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:backup-evidence` PASS, `ready_for_backup_evidence_capture=true`;
 - `npm run supabase:staging:create-backup-evidence` criou `docs/evidence/supabase-staging/backup-export-2026-05-31T025829067Z.md`;
 - `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/backup-export-2026-05-31T025829067Z.md` PASS, `backup_evidence_captured=true`, `next_checkpoint=prepare_dedicated_staging_migration_execution_turn`;
+- `npm run supabase:staging:migration-preflight` PASS, `ready_for_dedicated_migration_execution_turn=true`, `backup_evidence_validated=true`, `migration_package_validated=true`, `next_checkpoint=explicit_operator_approval_for_staging_migration_execution`;
 - migration, producao, secret sync, provider real, deploy, billing activation e customer data migration seguem bloqueados.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.

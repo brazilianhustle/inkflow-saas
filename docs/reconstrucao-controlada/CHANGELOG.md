@@ -464,7 +464,8 @@
 - Backup export runbook e o caminho operacional padrao para o operador executar a captura real sem pular preflight/evidence validator.
 - Wrapper de Supabase staging no repo atual agora carrega `~/.inkflow-secrets/supabase-staging.env` automaticamente quando existir, mantendo secrets redigidos e evitando falha operacional por esquecer `source`.
 - Supabase staging backup evidence record `docs/evidence/supabase-staging/backup-export-2026-05-31T025829067Z.md` foi gerado e validado; proximo checkpoint e preparar execucao dedicada de migration staging, ainda bloqueada.
+- Supabase staging migration preflight foi criado e validado, garantindo backup evidence + package check antes de pedir aprovacao humana. O gate prepara somente `APPROVE_SUPABASE_STAGING_MIGRATION_EXECUTION`; migration segue bloqueada.
 
 ### Proximo Passo
 
-- Preparar checkpoint dedicado de migration staging usando `docs/evidence/supabase-staging/backup-export-2026-05-31T025829067Z.md` como precondicao. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem approval/checkpoint proprio.
+- Solicitar aprovacao humana explicita para execucao dedicada de migration staging usando `APPROVE_SUPABASE_STAGING_MIGRATION_EXECUTION`. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem approval/checkpoint proprio.

@@ -212,10 +212,11 @@ Validacoes atuais:
 - repo atual `inkflow-saas` agora tem wrappers para secret-source-check, backup-evidence, create-backup-evidence e validate-backup-evidence delegando para `inkflow-platform`;
 - wrappers de Supabase staging no repo atual agora carregam automaticamente `~/.inkflow-secrets/supabase-staging.env` quando existir, sem imprimir valores, reduzindo erro operacional de esquecer `source`;
 - evidence record staging `docs/evidence/supabase-staging/backup-export-2026-05-31T025829067Z.md` validado com `backup_evidence_captured=true`, mantendo migration/producao/secret sync bloqueados;
+- migration preflight staging validado com `npm run supabase:staging:migration-preflight`, preparando apenas o pedido de aprovacao explicita `APPROVE_SUPABASE_STAGING_MIGRATION_EXECUTION`;
 - Supabase staging backup export runbook agora orienta a captura manual do backup/export sem autorizar migration, secret sync, deploy ou provider real;
 - git limpo no repo novo apos commit.
 
-Proxima acao: preparar checkpoint dedicado de migration staging usando o evidence record validado como precondicao. Nao executar staging migration, adapter real de WhatsApp/Supabase remoto/Telegram, deploy ou secrets sem approval/checkpoint proprio.
+Proxima acao: solicitar aprovacao humana explicita para execucao dedicada de migration staging, usando o evidence record validado e o migration preflight como precondicoes. Nao executar staging migration, adapter real de WhatsApp/Supabase remoto/Telegram, deploy ou secrets sem approval/checkpoint proprio.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 
