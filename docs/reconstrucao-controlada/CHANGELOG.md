@@ -4,6 +4,28 @@
 
 ### Executado
 
+- Criado Provider staging runner binding review no novo repo.
+- Adicionado wrapper `npm run provider:staging:runner-binding-review` no repo atual.
+- O checkpoint revisa o contrato do futuro runner real de staging, exigindo source-check e executor plano verdes, fake actors, quote ref fake, evidencias redigidas e bloqueios contra URL/token/runtime handle/secret binding.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-runner-binding-review.test.mjs` PASS 4/4.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:runner-binding-review` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_runner_dry_run=true`, `provider_staging_secret_sources_ready=true`, `provider_staging_executor_plan_ready=true`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=prepare_provider_staging_runner_dry_run`.
+- `npm test` PASS 516/516 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Proximo passo: `provider_staging_runner_dry_run`, ainda sem trafego real, para provar formato de entrada/saida e evidencia.
+
+### Executado
+
 - Criado Provider staging secret-source check no novo repo.
 - Adicionado wrapper `npm run provider:staging:secret-source-check` no repo atual.
 - Adicionado loader estrito `scripts/reconstrucao/load-provider-staging-env.sh` para `~/.inkflow-secrets/provider-staging.env`, sem `source` direto e com whitelist.
