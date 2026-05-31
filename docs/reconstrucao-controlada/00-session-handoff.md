@@ -50,7 +50,7 @@ Validacoes do ultimo bloco:
 - `git diff --check` PASS;
 - scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados, sem credencial real.
 
-Proximo passo seguro: construir o executor dedicado de migration staging em modo `plan`/bloqueado, usando o readiness aprovado como precondicao. Nao executar migration real ainda.
+Proximo passo seguro: revisar o executor dedicado de migration staging e preparar o checkpoint de evidence/execucao real separado. Nao executar migration real ainda.
 
 Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight` e `npm run supabase:staging:migration-execution-readiness`, que carregam `~/.inkflow-secrets/supabase-staging.env` quando existir e delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado.
 
@@ -63,6 +63,7 @@ Validacoes novas do bloco staging:
 - `npm run supabase:staging:migration-preflight` PASS, `ready_for_dedicated_migration_execution_turn=true`, `backup_evidence_validated=true`, `migration_package_validated=true`, `next_checkpoint=explicit_operator_approval_for_staging_migration_execution`;
 - `node --test tests/architecture/supabase-staging-migration-execution-readiness.test.mjs` PASS 4/4;
 - `npm run supabase:staging:migration-execution-readiness` PASS apos correcao do secret source local: `ready_for_dedicated_migration_executor=true`, `approval_present=true`, `migration_transport_present=true`, `backup_evidence_validated=true`, `migration_package_validated=true`, `connects_to_staging=false`, `executable_database_commands=false`;
+- `npm run supabase:staging:migration-executor-plan` PASS, `executor_plan_ready=true`, `execute_requested=false`, `executed=false`, `connects_to_staging=false`, `executable_database_commands=false`, `redacts_db_url=true`, forward SQL `infra/supabase/draft/001_initial_schema.sql`, rollback SQL `infra/supabase/draft/001_rollback.sql`;
 - Incidente operacional: arquivo local `~/.inkflow-secrets/supabase-staging.env` foi montado em formato invalido/multilinha e o loader antigo usava `source`, permitindo impressao do ambiente. Loader corrigido para parser estrito com whitelist, sem executar o arquivo e sem imprimir valores. Secrets expostos devem ser rotacionados antes de qualquer execucao real.
 - migration, producao, secret sync, provider real, deploy, billing activation e customer data migration seguem bloqueados.
 

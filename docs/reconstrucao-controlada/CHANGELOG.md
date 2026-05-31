@@ -468,7 +468,8 @@
 - Supabase staging migration execution readiness criado para verificar aprovacao exata e transporte de migration separado (`SUPABASE_STAGING_DB_URL`) antes de qualquer executor. O ambiente atual falha corretamente enquanto esses dois itens nao forem carregados no shell.
 - Incidente de secret hygiene: loader local de staging deixou de usar `source` e passou a aceitar somente linhas `export NOME="valor"` com whitelist. Arquivo invalido agora falha fechado sem imprimir valores. Rotacao de secrets expostos e obrigatoria antes de qualquer migration real.
 - Supabase staging migration execution readiness passou apos correcao do secret source local: aprovacao exata presente, transporte de migration presente, backup evidence e migration package validados; ainda sem conectar staging e sem comando executavel.
+- Supabase staging migration executor plan criado e validado em modo `plan`: DB URL redigida, forward/rollback SQL identificados, evidence path definido, `execute_requested=false`, `executed=false`, `connects_to_staging=false` e `executable_database_commands=false`.
 
 ### Proximo Passo
 
-- Construir executor dedicado de migration staging em modo `plan`/bloqueado, com evidence propria e sem executar SQL automaticamente. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem approval/checkpoint proprio.
+- Revisar o executor dedicado e preparar checkpoint separado de evidence/execucao real. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem approval/checkpoint proprio.
