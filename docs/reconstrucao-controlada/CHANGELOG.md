@@ -365,6 +365,11 @@
 - Evidencia: record gerado passa no validator, mantem `SUPABASE_STAGING_MIGRATION_AUTHORIZED=false`, aceita `--output-file` para ambiente restrito e preserva `evidence file path` canonico.
 - Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-backup-evidence.test.mjs` PASS 8/8, `npm test` PASS 441/441, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados.
 - Criado wrapper no repo atual `inkflow-saas`: `npm run supabase:staging:create-backup-evidence`, delegando para `/Users/brazilianhustler/Documents/inkflow-platform`.
+- Implementado Supabase staging backup export runbook no novo repo.
+- Commit do novo repo: `1ef909a docs: add supabase staging backup runbook`.
+- Escopo: `docs/operations/supabase-staging-backup-export-runbook.md`, cobrindo preflight, captura manual de backup/export, geracao/validacao de evidence record, required evidence e stop conditions.
+- Evidencia: runbook mantem `SUPABASE_STAGING_MIGRATION_AUTHORIZED=false`, nao armazena comando executavel de migration, nao autoriza producao, secret sync, deploy, provider real, billing ou customer migration.
+- Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-backup-runbook.test.mjs` PASS 4/4, `npm test` PASS 445/445, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados.
 
 ### Decisoes
 
@@ -456,7 +461,8 @@
 - Backup evidence checkpoint separa captura de backup de execucao de migration: backup aprovado prepara o proximo checkpoint, mas nao autoriza migration automaticamente.
 - Backup evidence record validator e o gate obrigatorio entre backup real e qualquer preparacao de migration.
 - Backup evidence generator reduz erro operacional na criacao do record, mas nao substitui a captura real do backup/export.
+- Backup export runbook e o caminho operacional padrao para o operador executar a captura real sem pular preflight/evidence validator.
 
 ### Proximo Passo
 
-- Operador capturar backup/export staging real, gerar/preencher evidence record e validar com `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/<record>.md`. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem evidence record aprovado.
+- Seguir o runbook de backup/export staging, gerar/preencher evidence record e validar com `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/<record>.md`. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem evidence record aprovado.

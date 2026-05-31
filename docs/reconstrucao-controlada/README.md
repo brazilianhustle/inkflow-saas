@@ -61,6 +61,7 @@ b815ccb chore: scaffold inkflow platform monorepo
 Commits principais do novo repo:
 
 ```text
+1ef909a docs: add supabase staging backup runbook
 6a106f9 feat: add backup evidence record generator
 9f46143 feat: add backup evidence record validator
 3db0218 feat: add supabase staging backup evidence checkpoint
@@ -145,9 +146,10 @@ b815ccb chore: scaffold inkflow platform monorepo
 
 Validacoes atuais:
 
-- `npm test` PASS, 441/441;
+- `npm test` PASS, 445/445;
 - `npm run typecheck` PASS placeholder;
 - `npm run lint` PASS placeholder;
+- `node --test tests/architecture/supabase-staging-backup-runbook.test.mjs` PASS 4/4;
 - `node --test tests/architecture/supabase-staging-backup-evidence.test.mjs` PASS 8/8;
 - `INKFLOW_ENV=local SUPABASE_ENV=local npm run supabase:staging:backup-evidence` PASS com valores fake/redigidos;
 - `npm run supabase:staging:validate-backup-evidence` sem argumento FAIL esperado com mensagem de uso;
@@ -208,9 +210,10 @@ Validacoes atuais:
 - Backup evidence record validator agora permite validar o arquivo preenchido via CLI antes de preparar qualquer migration;
 - Backup evidence record generator agora cria record padronizado via CLI antes de preencher/validar backup real;
 - repo atual `inkflow-saas` agora tem wrappers para secret-source-check, backup-evidence, create-backup-evidence e validate-backup-evidence delegando para `inkflow-platform`;
+- Supabase staging backup export runbook agora orienta a captura manual do backup/export sem autorizar migration, secret sync, deploy ou provider real;
 - git limpo no repo novo apos commit.
 
-Proxima acao: operador capturar backup/export staging real, gerar/preencher evidence record e validar com `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/<record>.md`. Nao executar staging migration, adapter real de WhatsApp/Supabase remoto/Telegram, deploy ou secrets sem evidence record aprovado.
+Proxima acao: seguir o runbook de backup/export staging, gerar/preencher evidence record e validar com `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/<record>.md`. Nao executar staging migration, adapter real de WhatsApp/Supabase remoto/Telegram, deploy ou secrets sem evidence record aprovado.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 
