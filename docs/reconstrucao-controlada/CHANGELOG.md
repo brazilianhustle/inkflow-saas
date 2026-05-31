@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real transport runner plan no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-transport-runner-plan` no repo atual.
+- O plano define ownership e boundaries do runner real sem habilitar transporte real.
+- A doutrina do proximo trecho ficou: skeleton sem provider real, harness com portas simuladas, e apenas depois injecao real controlada.
+- Proximo checkpoint seguro definido: `build_provider_staging_real_transport_runner_skeleton`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-transport-runner-plan.test.mjs` PASS 5/5.
+- `node --test tests/architecture/provider-staging-real-transport-runner-plan.test.mjs tests/architecture/provider-staging-real-smoke-execution-authorization.test.mjs tests/architecture/provider-staging-real-smoke-gate-review.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 24/24.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-transport-runner-plan` PASS via wrapper do repo atual.
+- Resultado: `provider_staging_real_transport_runner_plan_ready=true`, `provider_staging_execution_authorization_ready=true`, `default_executor_blocked_without_runner=true`, `provider_staging_transport_runner_ready=false`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `redacts_provider_handles=true`, `next_checkpoint=build_provider_staging_real_transport_runner_skeleton`.
+- Varredura dos arquivos novos encontrou apenas flags/regexes de bloqueio, source names fake em testes e teste negativo com URL fake. Nenhum valor real foi encontrado.
+- `npm test` PASS 585/585 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+
+### Executado
+
 - Registrada a aprovacao humana `APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION` em checkpoint local-only.
 - Criado Provider staging real smoke execution authorization no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-execution-authorization` no repo atual.
