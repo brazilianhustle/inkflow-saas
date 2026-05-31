@@ -2,6 +2,9 @@
 set -euo pipefail
 
 PLATFORM_DIR="${INKFLOW_PLATFORM_DIR:-/Users/brazilianhustler/Documents/inkflow-platform}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+source "$SCRIPT_DIR/load-supabase-staging-env.sh"
 
 if [ ! -d "$PLATFORM_DIR" ]; then
   echo "inkflow-platform nao encontrado em: $PLATFORM_DIR" >&2

@@ -462,7 +462,9 @@
 - Backup evidence record validator e o gate obrigatorio entre backup real e qualquer preparacao de migration.
 - Backup evidence generator reduz erro operacional na criacao do record, mas nao substitui a captura real do backup/export.
 - Backup export runbook e o caminho operacional padrao para o operador executar a captura real sem pular preflight/evidence validator.
+- Wrapper de Supabase staging no repo atual agora carrega `~/.inkflow-secrets/supabase-staging.env` automaticamente quando existir, mantendo secrets redigidos e evitando falha operacional por esquecer `source`.
+- Supabase staging backup evidence record `docs/evidence/supabase-staging/backup-export-2026-05-31T025829067Z.md` foi gerado e validado; proximo checkpoint e preparar execucao dedicada de migration staging, ainda bloqueada.
 
 ### Proximo Passo
 
-- Seguir o runbook de backup/export staging, gerar/preencher evidence record e validar com `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/<record>.md`. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem evidence record aprovado.
+- Preparar checkpoint dedicado de migration staging usando `docs/evidence/supabase-staging/backup-export-2026-05-31T025829067Z.md` como precondicao. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem approval/checkpoint proprio.
