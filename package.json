@@ -46,7 +46,8 @@
     "provider:staging:real-smoke-execution-authorization": "bash scripts/reconstrucao/provider-staging-real-smoke-execution-authorization.sh",
     "provider:staging:real-transport-runner-plan": "bash scripts/reconstrucao/provider-staging-real-transport-runner-plan.sh",
     "provider:staging:real-transport-runner-skeleton": "bash scripts/reconstrucao/provider-staging-real-transport-runner-skeleton.sh",
-    "provider:staging:real-transport-runner-harness": "bash scripts/reconstrucao/provider-staging-real-transport-runner-harness.sh"
+    "provider:staging:real-transport-runner-harness": "bash scripts/reconstrucao/provider-staging-real-transport-runner-harness.sh",
+    "provider:staging:real-transport-runner-injection": "bash scripts/reconstrucao/provider-staging-real-transport-runner-injection.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",

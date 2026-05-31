@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real transport runner injection checkpoint no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-transport-runner-injection` no repo atual.
+- A ponte usa o executor real e injeta o transport runner pelo contrato correto, mas com portas simuladas e `simulation=true`.
+- O checkpoint resolve o bloqueio arquitetural `injected_driver_required` em simulacao, sem chamar provider real.
+- Proximo checkpoint definido: `build_provider_staging_real_transport_ports`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-transport-runner-injection` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_real_transport_ports=true`, `provider_staging_real_transport_runner_harness_ready=true`, `injected_transport_runner_path_proven=true`, `injected_driver_required_resolved=true`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `in_memory_evidence_validated=true`, `next_checkpoint=build_provider_staging_real_transport_ports`.
+- `node --test tests/architecture/provider-staging-real-transport-runner-injection.test.mjs tests/architecture/provider-staging-real-transport-runner-harness.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 20/20.
+- `npm test` PASS 603/603 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, source names fake de teste, regexes defensivas e teste negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+- Provider real segue bloqueado ate existir portas reais aprovadas e novo gate especifico.
+
+### Executado
+
 - Recebida aprovacao humana exata `APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION`.
 - Revalidado o Provider staging real smoke gate antes da tentativa.
 - Executada tentativa controlada do Provider staging real smoke executor com flag explicita.
