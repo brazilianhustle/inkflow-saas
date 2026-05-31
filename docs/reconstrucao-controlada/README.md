@@ -217,11 +217,12 @@ Validacoes atuais:
 - migration executor plan validado em modo `plan`, com DB URL redigida, `execute_requested=false`, `executed=false`, `connects_to_staging=false` e `executable_database_commands=false`;
 - revisao rigorosa do executor plan fechou o contrato para templates nao executaveis: `command_template`, `args_template`, `executable_now=false`, e teste bloqueando retorno de `command`/`args`;
 - migration execution evidence checkpoint validado com `ready_for_manual_migration_execution_evidence=true`, mantendo `supabase_staging_migration_executed=false`, `connects_to_staging=false` e `executable_database_commands=false`;
+- manual migration execution turn validado em modo plano, com `execute_requested=false`, `manual_execute_flag_present=false`, `connects_to_staging=false`, `executable_database_commands=false` e runner real condicionado a `--execute` + `SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTE=true`;
 - loader local de secrets staging agora usa parser estrito com whitelist em vez de `source`, impedindo execucao acidental do arquivo e vazamento por linha invalida;
 - Supabase staging backup export runbook agora orienta a captura manual do backup/export sem autorizar migration, secret sync, deploy ou provider real;
 - git limpo no repo novo apos commit.
 
-Proxima acao: preparar o turno manual de execucao staging com comando operacional isolado e captura de evidencia real. Nao executar staging migration, adapter real de WhatsApp/Supabase remoto/Telegram, deploy ou secrets sem approval/checkpoint proprio.
+Proxima acao: revisar se os secrets expostos ja foram rotacionados e, somente com aprovacao explicita, decidir se executa o manual migration runner em staging. Nao executar adapter real de WhatsApp/Supabase remoto/Telegram, deploy ou secrets sem approval/checkpoint proprio.
 
 Regra reforcada: informacoes que podem quebrar a reconstrucao exigem double check por pelo menos dois anchors antes de virar decisao/codigo.
 

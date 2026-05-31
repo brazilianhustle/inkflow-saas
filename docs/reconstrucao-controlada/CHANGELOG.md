@@ -471,7 +471,8 @@
 - Supabase staging migration executor plan criado e validado em modo `plan`: DB URL redigida, forward/rollback SQL identificados, evidence path definido, `execute_requested=false`, `executed=false`, `connects_to_staging=false` e `executable_database_commands=false`.
 - Revisao rigorosa do executor plan removeu formato de comando executavel (`command`/`args`) do output e oficializou somente templates nao executaveis (`command_template`/`args_template`) com `executable_now=false` em todos os passos.
 - Supabase staging migration execution evidence checkpoint criado e validado: contrato de evidencia real pos-migration esta pronto, mas a migration segue nao executada, sem conexao staging e sem comando de banco executavel.
+- Supabase staging manual migration execution turn criado e validado em modo plano: wrapper carrega secrets pelo loader seguro, plano redige DB URL, execucao real exige `--execute` e `SUPABASE_STAGING_MANUAL_MIGRATION_EXECUTE=true`, e nenhuma migration foi rodada.
 
 ### Proximo Passo
 
-- Preparar o turno manual de execucao staging com comando operacional isolado e captura de evidencia real. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem approval/checkpoint proprio.
+- Revisar se os secrets expostos ja foram rotacionados e, somente com aprovacao explicita, decidir se executa o manual migration runner em staging. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem approval/checkpoint proprio.

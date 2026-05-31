@@ -20,7 +20,8 @@
     "supabase:staging:migration-execution-readiness": "bash scripts/reconstrucao/supabase-staging-migration-execution-readiness.sh",
     "supabase:staging:migration-executor-plan": "bash scripts/reconstrucao/supabase-staging-migration-executor-plan.sh",
     "supabase:staging:migration-execution-evidence": "bash scripts/reconstrucao/supabase-staging-migration-execution-evidence.sh",
-    "supabase:staging:validate-migration-execution-evidence": "bash scripts/reconstrucao/supabase-staging-validate-migration-execution-evidence.sh"
+    "supabase:staging:validate-migration-execution-evidence": "bash scripts/reconstrucao/supabase-staging-validate-migration-execution-evidence.sh",
+    "supabase:staging:manual-migration-execution-turn": "bash scripts/reconstrucao/supabase-staging-manual-migration-execution-turn.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",
