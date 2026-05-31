@@ -4,6 +4,21 @@
 
 ### Executado
 
+- Capturada evidencia operacional Provider staging health/webhook em `docs/evidence/provider-staging/provider-health-webhook-isolation-2026-05-31T000000000Z.md` no novo repo.
+- A evidencia registra operador, timestamp, resultado `configured for staging smoke`, confirmacoes redigidas de Evolution/Telegram staging, isolamento de webhook, rollback owner, fake actors e confirmacao de que nenhum segredo foi impresso.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:smoke-approval-readiness` PASS via wrapper do repo atual.
+- Resultado: `ready_for_real_provider_staging_smoke_executor_build=true`, `approval_present=true`, `evidence_present=true`, `evidence_validated=true`, `health_webhook_checkpoint_ready=true`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=build_real_provider_staging_smoke_executor`.
+
+### Bloqueios Mantidos
+
+- Provider staging smoke ainda nao foi executado.
+- Provider real execution, webhook update, secret sync, deploy, producao, billing e customer migration continuam bloqueados ate o proximo executor/gate explicito.
+
+### Executado
+
 - Criado Provider staging smoke approval readiness no novo repo.
 - Adicionado wrapper `npm run provider:staging:smoke-approval-readiness` no repo atual.
 - Criado template seguro `docs/evidence/provider-staging/provider-health-webhook-isolation.template.md`.
