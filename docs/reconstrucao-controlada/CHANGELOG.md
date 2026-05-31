@@ -359,6 +359,12 @@
 - Evidencia: record valido retorna `backup_evidence_captured=true`, mas mantem `supabase_staging_migration_authorized=false`, `supabase_production_execution_authorized=false`, `supabase_secret_sync_authorized=false`.
 - Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-backup-evidence.test.mjs` PASS 6/6, `npm test` PASS 439/439, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados.
 - Criados wrappers no repo atual `inkflow-saas`: `npm run supabase:staging:backup-evidence` e `npm run supabase:staging:validate-backup-evidence`, delegando para `/Users/brazilianhustler/Documents/inkflow-platform`.
+- Implementado backup evidence record generator no novo repo.
+- Commit do novo repo: `6a106f9 feat: add backup evidence record generator`.
+- Escopo: `npm run supabase:staging:create-backup-evidence -- --timestamp <iso-timestamp>`, criando record padronizado com path canonico e migration bloqueada.
+- Evidencia: record gerado passa no validator, mantem `SUPABASE_STAGING_MIGRATION_AUTHORIZED=false`, aceita `--output-file` para ambiente restrito e preserva `evidence file path` canonico.
+- Validacoes atuais do novo repo: `node --test tests/architecture/supabase-staging-backup-evidence.test.mjs` PASS 8/8, `npm test` PASS 441/441, `npm run typecheck` PASS placeholder, `npm run lint` PASS placeholder, `git diff --check` PASS, scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados.
+- Criado wrapper no repo atual `inkflow-saas`: `npm run supabase:staging:create-backup-evidence`, delegando para `/Users/brazilianhustler/Documents/inkflow-platform`.
 
 ### Decisoes
 
@@ -449,7 +455,8 @@
 - Secret Storage Architecture vira a regra central para qualquer frente futura que toque credenciais; nenhum painel, runtime, provider adapter, log, banco, handoff ou teste pode salvar segredo bruto.
 - Backup evidence checkpoint separa captura de backup de execucao de migration: backup aprovado prepara o proximo checkpoint, mas nao autoriza migration automaticamente.
 - Backup evidence record validator e o gate obrigatorio entre backup real e qualquer preparacao de migration.
+- Backup evidence generator reduz erro operacional na criacao do record, mas nao substitui a captura real do backup/export.
 
 ### Proximo Passo
 
-- Operador capturar backup/export staging real, preencher evidence record e validar com `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/<record>.md`. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem evidence record aprovado.
+- Operador capturar backup/export staging real, gerar/preencher evidence record e validar com `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/<record>.md`. Nao executar secrets reais, staging migration, producao, provider real, billing activation, customer data migration ou deploy automatico sem evidence record aprovado.

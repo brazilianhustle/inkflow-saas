@@ -30,32 +30,30 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-9f46143 feat: add backup evidence record validator
+6a106f9 feat: add backup evidence record generator
 ```
 
 Bloco fechado:
 
-- criado CLI `supabase:staging:validate-backup-evidence`;
-- CLI valida o arquivo preenchido de backup/export antes de qualquer migration;
-- comando informa `backup_evidence_captured=true` apenas quando o record esta completo e seguro;
-- mesmo com evidence record valido, `supabase_staging_migration_authorized=false` continua obrigatorio;
-- wrappers adicionados no repo `inkflow-saas` para `supabase:staging:backup-evidence` e `supabase:staging:validate-backup-evidence`;
+- criado CLI `supabase:staging:create-backup-evidence`;
+- gerador cria um record padronizado em `docs/evidence/supabase-staging/`;
+- record gerado ja nasce com `SUPABASE_STAGING_MIGRATION_AUTHORIZED=false`;
+- gerador aceita `--timestamp`, `--backup-artifact-path`, `--evidence-file-path` e `--output-file`;
+- wrapper adicionado no repo `inkflow-saas` para `supabase:staging:create-backup-evidence`;
 - sem deploy real, public traffic, provider traffic, secret sync, database migration, staging, billing activation, customer migration ou producao.
 
 Validacoes do ultimo bloco:
 
-- `node --test tests/architecture/supabase-staging-backup-evidence.test.mjs` PASS 6/6;
-- `INKFLOW_ENV=local SUPABASE_ENV=local ... npm run supabase:staging:backup-evidence` PASS com valores fake/redigidos;
-- `npm run supabase:staging:validate-backup-evidence` sem argumento FAIL esperado com mensagem de uso;
-- `npm test` PASS 439/439;
+- `node --test tests/architecture/supabase-staging-backup-evidence.test.mjs` PASS 8/8;
+- `npm test` PASS 441/441;
 - `npm run lint` PASS placeholder;
 - `npm run typecheck` PASS placeholder;
 - `git diff --check` PASS;
 - scan focado de seguranca PASS apenas com fixtures negativas/regex de testes e placeholders controlados, sem credencial real.
 
-Proximo passo seguro: operador captura o backup/export staging real, preenche um evidence record e valida com `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/<record>.md`. Nao executar migration real ainda.
+Proximo passo seguro: operador captura o backup/export staging real, gera/preenche um evidence record e valida com `npm run supabase:staging:validate-backup-evidence -- docs/evidence/supabase-staging/<record>.md`. Nao executar migration real ainda.
 
-Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence` e `npm run supabase:staging:validate-backup-evidence`, que delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado.
+Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence` e `npm run supabase:staging:validate-backup-evidence`, que delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado.
 
 Gate metodologico ativo: aplicar Strategic Review Gate em fechamento de bloco, troca de frente, promocao de automacao/ambiente/provider real, regressao ou repeticao de micro slices. Se os gates estiverem verdes e o proximo passo for da mesma frente, registrar a decisao no handoff/changelog e continuar, sem documento extra.
 
