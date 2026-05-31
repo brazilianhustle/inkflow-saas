@@ -32,7 +32,8 @@
     "provider:staging:real-smoke-executor": "bash scripts/reconstrucao/provider-staging-real-smoke-executor.sh",
     "provider:staging:secret-source-check": "bash scripts/reconstrucao/provider-staging-secret-source-check.sh",
     "provider:staging:runner-binding-review": "bash scripts/reconstrucao/provider-staging-runner-binding-review.sh",
-    "provider:staging:runner-dry-run": "bash scripts/reconstrucao/provider-staging-runner-dry-run.sh"
+    "provider:staging:runner-dry-run": "bash scripts/reconstrucao/provider-staging-runner-dry-run.sh",
+    "provider:staging:runner-evidence-review": "bash scripts/reconstrucao/provider-staging-runner-evidence-review.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",

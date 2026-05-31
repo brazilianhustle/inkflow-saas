@@ -4,6 +4,29 @@
 
 ### Executado
 
+- Criado Provider staging runner evidence review no novo repo.
+- Adicionado wrapper `npm run provider:staging:runner-evidence-review` no repo atual.
+- O checkpoint transforma a revisao da evidencia dry-run endurecida em gate automatizado antes de qualquer plano de runner real.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-runner-evidence-review.test.mjs` PASS 4/4.
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY npm run provider:staging:runner-evidence-review` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_runner_adapter_plan=true`, `provider_staging_runner_dry_run_ready=true`, `provider_staging_runner_evidence_validated=true`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=prepare_provider_staging_runner_adapter_plan`.
+- Varredura dos novos arquivos encontrou apenas source names fake em testes, teste negativo com URL fake, flags falsas e regexes de bloqueio. Nenhum valor real foi encontrado.
+- `npm test` PASS 526/526 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Proximo checkpoint seguro: preparar plano/adaptador do runner real de Provider staging ainda sem execucao real.
+
+### Executado
+
 - Corrigida revisao do Provider staging runner dry-run apos auto review.
 - O executor Provider staging agora aceita modo explicito de simulacao para exercitar o caminho interno sem declarar conexao provider nem smoke real executado.
 - A validacao de evidencia dry-run deixou de converter texto para formato smoke real por substituicao textual e passou a rejeitar qualquer claim de smoke real/captura real dentro da evidencia dry-run.
