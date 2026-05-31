@@ -25,7 +25,8 @@
     "supabase:staging:rls-smoke": "bash scripts/reconstrucao/supabase-staging-rls-smoke.sh",
     "supabase:staging:validate-rls-smoke-evidence": "bash scripts/reconstrucao/supabase-staging-validate-rls-smoke-evidence.sh",
     "provider:staging:isolation-checkpoint": "bash scripts/reconstrucao/provider-staging-isolation-checkpoint.sh",
-    "provider:staging:approval-checkpoint": "bash scripts/reconstrucao/provider-staging-approval-checkpoint.sh"
+    "provider:staging:approval-checkpoint": "bash scripts/reconstrucao/provider-staging-approval-checkpoint.sh",
+    "provider:staging:smoke-execution-turn": "bash scripts/reconstrucao/provider-staging-smoke-execution-turn.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",

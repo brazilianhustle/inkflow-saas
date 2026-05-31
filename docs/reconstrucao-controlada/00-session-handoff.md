@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-078dba7 feat: add provider staging approval checkpoint
+c211305 feat: add provider staging smoke execution turn
 ```
 
 Bloco fechado:
@@ -53,9 +53,9 @@ Validacoes do ultimo bloco:
 - `node --test tests/architecture/supabase-schema-draft.test.mjs tests/architecture/supabase-staging-rls-smoke.test.mjs` PASS 14/14;
 - `npm test` PASS 475/475 no novo repo.
 
-Proximo passo seguro: preparar o futuro executor/turno de Provider staging smoke em modo plano, ainda sem provider real, para transformar a aprovacao `APPROVE_PROVIDER_STAGING_SMOKE_ONLY` em um roteiro executavel seguro quando o operador confirmar fake Evolution instance, fake Telegram bot/chat, provider health, webhook isolation, evidence location e rollback owner.
+Proximo passo seguro: coletar/registrar provider health e webhook isolation evidence sem imprimir secrets e sem atualizar webhook real automaticamente. O Provider staging smoke execution turn ja existe em modo plano e aponta esse como proximo checkpoint antes de qualquer provider real.
 
-Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight`, `npm run supabase:staging:migration-execution-readiness`, `npm run supabase:staging:migration-executor-plan`, `npm run supabase:staging:migration-execution-evidence`, `npm run supabase:staging:validate-migration-execution-evidence`, `npm run supabase:staging:manual-migration-execution-turn`, `npm run supabase:staging:rls-smoke`, `npm run supabase:staging:validate-rls-smoke-evidence`, `npm run provider:staging:isolation-checkpoint` e `npm run provider:staging:approval-checkpoint`, que delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado. Os wrappers Supabase carregam `~/.inkflow-secrets/supabase-staging.env` quando existir; os wrappers Provider atuais nao carregam secrets.
+Nota operacional: o repo `inkflow-saas` possui wrappers `npm run supabase:staging:secret-source-check`, `npm run supabase:staging:backup-evidence`, `npm run supabase:staging:create-backup-evidence`, `npm run supabase:staging:validate-backup-evidence`, `npm run supabase:staging:migration-preflight`, `npm run supabase:staging:migration-execution-readiness`, `npm run supabase:staging:migration-executor-plan`, `npm run supabase:staging:migration-execution-evidence`, `npm run supabase:staging:validate-migration-execution-evidence`, `npm run supabase:staging:manual-migration-execution-turn`, `npm run supabase:staging:rls-smoke`, `npm run supabase:staging:validate-rls-smoke-evidence`, `npm run provider:staging:isolation-checkpoint`, `npm run provider:staging:approval-checkpoint` e `npm run provider:staging:smoke-execution-turn`, que delegam para `/Users/brazilianhustler/Documents/inkflow-platform` para evitar erro de repo errado. Os wrappers Supabase carregam `~/.inkflow-secrets/supabase-staging.env` quando existir; os wrappers Provider atuais nao carregam secrets.
 
 Validacoes novas do bloco staging:
 
@@ -81,6 +81,8 @@ Validacoes novas do bloco staging:
 - `npm run provider:staging:isolation-checkpoint` PASS via wrapper do repo atual, com `connects_to_provider=false`, `provider_staging_smoke_execution_authorized=false`, `provider_webhook_update_authorized=false`, `provider_secret_sync_authorized=false` e `required_approval_phrase=APPROVE_PROVIDER_STAGING_SMOKE_ONLY`;
 - checkpoint local-only de Provider staging approval criado: define envelope de aprovacao humana para o primeiro smoke real provider staging, exige fake actors, provider health evidence, webhook isolation, rollback owner, evidence location e secret source names sem valores;
 - `npm run provider:staging:approval-checkpoint` PASS via wrapper do repo atual, com `ready_for_human_approval=true`, `connects_to_provider=false`, `provider_staging_smoke_execution_authorized=false`, `provider_webhook_update_authorized=false`, `provider_secret_sync_authorized=false`, `approval_phrase_required=APPROVE_PROVIDER_STAGING_SMOKE_ONLY`;
+- Provider staging smoke execution turn criado em modo plano: gera roteiro redigido para fake client inbound, bot WhatsApp response, Telegram quote request, artist quote reply, final WhatsApp quote response e rollback disable check, todos com `executable_now=false`;
+- `npm run provider:staging:smoke-execution-turn` PASS via wrapper do repo atual, com `connects_to_provider=false`, `executable_provider_commands=false`, `executed=false`, `evidence_written=false`, `redacts_provider_handles=true`, `next_checkpoint=collect_provider_health_and_webhook_isolation_evidence`;
 - Incidente operacional: arquivo local `~/.inkflow-secrets/supabase-staging.env` foi montado em formato invalido/multilinha e o loader antigo usava `source`, permitindo impressao do ambiente. Loader corrigido para parser estrito com whitelist, sem executar o arquivo e sem imprimir valores. Secrets expostos devem ser rotacionados antes de qualquer execucao real.
 - Decisao Cloudflare: nenhum token Cloudflare apareceu carregado no ambiente atual nem foi necessario para o gate Supabase staging. Cloudflare nao bloqueia a migration staging, mas `CLOUDFLARE_API_TOKEN`/`CF_API_TOKEN`/secrets de deploy devem entrar em rotacao planejada antes de qualquer frente de deploy, provider real, Cloudflare Pages/Workers ou secret sync.
 - migration staging inicial e RLS smoke staging estao aplicados/validados; producao, secret sync, provider real, deploy, billing activation e customer data migration seguem bloqueados.

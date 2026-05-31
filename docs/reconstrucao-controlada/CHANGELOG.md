@@ -4,6 +4,25 @@
 
 ### Executado
 
+- Criado Provider staging smoke execution turn em modo plano no novo repo.
+- Adicionado wrapper `npm run provider:staging:smoke-execution-turn` no repo atual.
+- O turno gera plano redigido para a futura sequencia fake client inbound -> bot WhatsApp response -> Telegram quote request -> artist quote reply -> final WhatsApp quote response -> rollback disable check, sem comandos executaveis e sem provider real.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-smoke-execution-turn.test.mjs` PASS 5/5.
+- `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:staging:smoke-execution-turn` PASS no novo repo.
+- `npm run provider:staging:smoke-execution-turn` PASS via wrapper do repo atual.
+- `npm test` PASS 491/491 no novo repo.
+- Resultado do gate: `connects_to_provider=false`, `executable_provider_commands=false`, `executed=false`, `evidence_written=false`, `redacts_provider_handles=true`, `next_checkpoint=collect_provider_health_and_webhook_isolation_evidence`.
+
+### Bloqueios Mantidos
+
+- `--execute` e qualquer provider real continuam bloqueados neste checkpoint.
+- Proximo passo seguro: coletar/registrar provider health e webhook isolation evidence sem imprimir secrets e sem atualizar webhook real automaticamente.
+
+### Executado
+
 - Criado checkpoint local-only de Provider staging approval no novo repo.
 - Adicionado wrapper `npm run provider:staging:approval-checkpoint` no repo atual.
 - O checkpoint define o envelope de aprovacao humana para o primeiro smoke Provider staging real, exigindo fake actors, provider health evidence, webhook isolation, rollback owner, evidence location e secret source names sem valores.
