@@ -4,6 +4,33 @@
 
 ### Executado
 
+- Criado Provider staging real smoke store source runtime binding operator execution turn no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-store-source-runtime-binding-operator-execution-turn` no repo atual.
+- O turn consome as opcoes redigidas do runtime binding adapter e injeta `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile` no operator-run store-driven.
+- O modo default continua plan-only: nao chama provider, nao escreve evidencia formal, nao sincroniza secrets e nao atualiza webhook.
+- O modo execute exige `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_RUNTIME_BINDING_OPERATOR_EXECUTE=true`, `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_OPERATOR_RUN=true`, `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_EXECUTE=true`, `PROVIDER_STAGING_SMOKE_EXECUTE=true` e adapter runtime valido.
+- Ajustado o dry-run adapter para emitir registros canonicos `provider_operational_event` redigidos, em vez de eventos simples, alinhando o contrato com a fonte store-driven real.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-adapter.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-package.test.mjs` PASS 17/17 no novo repo.
+- `npm run provider:staging:real-smoke-store-source-runtime-binding-operator-execution-turn` falhou corretamente sem `INKFLOW_ENV=local`/`PROVIDER_ENV=local`, preservando o guard local.
+- `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:staging:real-smoke-store-source-runtime-binding-operator-execution-turn` PASS no novo repo com approvals, retornando `ready_for_operator_run=true`, `execute_requested=false`, `runtime_binding_operator_execute_flag_present=false`, `runtime_binding_adapter_ready=true`, `adapter_operator_run_options_prepared=true`, `executed=false`, `evidence_written=false`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- `npm test` PASS 766/766 no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, regexes defensivas, source names fake e casos negativos de teste. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo operacional e validar o wrapper do repo atual e preparar a execucao controlada apenas com flags explicitas e revisao de evidencia.
+
+### Executado
+
 - Criado Provider staging real smoke store source runtime binding adapter no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-store-source-runtime-binding-adapter` no repo atual.
 - O checkpoint valida as injeções runtime `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile` em contexto `worker` ou `server`.
