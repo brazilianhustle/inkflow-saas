@@ -4,6 +4,30 @@
 
 ### Executado
 
+- Criado Provider staging real smoke store source runtime-real binding resolver no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-store-source-runtime-real-binding-resolver` no repo atual.
+- O resolver prepara bindings `runtime-real` apenas via `createRuntimeRealRuntimeBindings(...)`, valida contexto `worker`/`server`, bloqueia browser/admin/static/docs/test-fixture e nao chama `providerSmokeBaseRunner`, `listOperationalEventRecords` nem `writeEvidenceFile`.
+- O checkpoint produz options redigidas com `providerStagingBindingMode=runtime-real` e `providerStagingBindingSource=runtime-real-factory`, mas nao chama provider, nao escreve evidencia e nao autoriza execute.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-real-binding-resolver.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-adapter.test.mjs` PASS 23/23 no novo repo.
+- `npm run provider:staging:real-smoke-store-source-runtime-real-binding-resolver` PASS no novo repo com approvals e secret source names fake, retornando `ready_for_store_source_runtime_real_operator_execution=true`, `provider_staging_binding_mode=runtime-real`, `provider_staging_binding_source=runtime-real-factory`, `evidence_written=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- `npm test` PASS 776/776 no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e casos negativos de teste. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo operacional e integrar esse resolver ao operator execution turn controlado, mantendo execute real bloqueado ate fonte operacional observavel completa.
+
+### Executado
+
 - Endurecida a origem dos bindings `runtime-real` no novo repo.
 - O adapter agora propaga `providerStagingBindingSource`; `createDryRunRuntimeBindings()` marca `dry-run-factory`.
 - Criada factory explicita `createRuntimeRealRuntimeBindings(...)`, que marca `providerStagingBindingMode=runtime-real` e `providerStagingBindingSource=runtime-real-factory`.
