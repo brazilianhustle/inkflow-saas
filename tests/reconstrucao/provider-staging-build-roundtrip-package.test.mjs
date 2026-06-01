@@ -61,7 +61,11 @@ test('build roundtrip package initializes editable source template only when req
   assert.equal(result.next_checkpoint, 'fill_provider_roundtrip_source_with_redacted_real_proofs');
   assert.equal(template.ok, false);
   assert.equal(template.operator_confirmation, 'fill_after_real_whatsapp_telegram_roundtrip');
+  assert.equal(template.source_review.real_whatsapp_telegram_roundtrip, false);
+  assert.equal(template.source_review.direct_evidence_only, false);
+  assert.equal(template.source_review.documentation_only, true);
   assert.equal(Object.keys(template.milestones).length, 6);
+  assert.equal(template.milestones['fake-client-inbound'].evidence_origin, 'whatsapp-client-observation');
   assert.doesNotMatch(templateText.replaceAll('"secrets_included": false', ''), /https?:\/\/|token|secret|password|api[_-]?key|webhook|runtime_handle_|secbind_/i);
 });
 

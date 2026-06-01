@@ -2,6 +2,13 @@
 
 > Atualizado conforme `docs/canonical/methodology/release-protocol.md` §7.3. Cada release de Worker / CF Pages / Supabase migration / n8n workflow ganha uma seção aqui com o formato definido no protocolo.
 
+## Unreleased — Provider staging roundtrip evidence gate
+
+- Adicionado `provider:staging:review-roundtrip-source` para revisar `provider-roundtrip-source.json` antes de gerar o pacote canonico.
+- O gate exige fonte operacional direta dos seis marcos WhatsApp/Telegram/rollback, bloqueando fonte apenas documental, valores crus, telefone real, URLs, tokens, secrets e paths inseguros.
+- O template `provider:staging:build-roundtrip-package -- --init-source` agora orienta `source_review`, `evidence_origin`, `evidence_path` e `observed_at` por marco, permanecendo bloqueado ate confirmacao operacional redigida.
+- Sem provider real, sem secret sync, sem deploy e sem evidencia formal automatica nesta mudanca.
+
 ## 2026-05-03 — Modo Coleta v2: Modo principal + Telegram tatuador  ⚠️ MERGEADO + DEPOIS PIVOTADO
 
 **Status atualizado (2026-05-08):** trabalho **MERGEADO em prod** via PRs #17 (refactor), #19 (v2 principal), #20 (reentrada bot via CF Pages) em 2026-05-03. Modo Coleta v2 ficou em prod por ~4 dias.

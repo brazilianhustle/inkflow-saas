@@ -167,31 +167,48 @@ export function createProviderRoundtripSourceTemplate({ now = () => new Date() }
     operator_confirmation: 'fill_after_real_whatsapp_telegram_roundtrip',
     raw_values_included: false,
     secrets_included: false,
+    source_review: {
+      real_whatsapp_telegram_roundtrip: false,
+      direct_evidence_only: false,
+      documentation_only: true,
+    },
     quote_request_ref: 'fake_quote_ref_replace_with_run_label',
     observed_at: observedAt,
     milestones: {
       'fake-client-inbound': {
         proof: 'redacted proof: client message was sent from staging sender to bot number',
+        evidence_origin: 'whatsapp-client-observation',
+        evidence_path: '.smoke-evidence/replace_with_run/redacted-whatsapp-client.txt',
         observed_at: observedAt,
       },
       'bot-whatsapp-response': {
         proof: 'redacted proof: bot answered on WhatsApp after client inbound',
+        evidence_origin: 'whatsapp-client-observation',
+        evidence_path: '.smoke-evidence/replace_with_run/redacted-whatsapp-client.txt',
         observed_at: observedAt,
       },
       'telegram-quote-request': {
         proof: 'redacted proof: quote request arrived in staging Telegram artist chat',
+        evidence_origin: 'telegram-artist-observation',
+        evidence_path: '.smoke-evidence/replace_with_run/redacted-telegram-artist.txt',
         observed_at: observedAt,
       },
       'artist-quote-reply': {
         proof: 'redacted proof: artist reply was submitted in Telegram',
+        evidence_origin: 'telegram-artist-observation',
+        evidence_path: '.smoke-evidence/replace_with_run/redacted-telegram-artist.txt',
         observed_at: observedAt,
       },
       'client-quote-response': {
         proof: 'redacted proof: final quote response reached client on WhatsApp',
+        evidence_origin: 'whatsapp-client-observation',
+        evidence_path: '.smoke-evidence/replace_with_run/redacted-whatsapp-client.txt',
         observed_at: observedAt,
       },
       'rollback-disable-check': {
         proof: 'redacted proof: rollback or disable check passed after roundtrip',
+        evidence_origin: 'operator-rollback-check',
+        evidence_path: '.smoke-evidence/replace_with_run/redacted-rollback-check.txt',
         observed_at: observedAt,
       },
     },
