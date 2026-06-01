@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Alinhado o Provider store source operator execution package no novo repo ao gate de binding source.
+- O pacote agora exige seis flags antes do execute controlado: runtime binding operator, runtime-real resolver, runtime-real binding source, operator-run, store source execute e staging smoke execute.
+- O contrato agora exige tres injeções worker/server-only: `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile`.
+- O proximo checkpoint oficial passou a ser `operator_executes_store_source_runtime_binding_operator_turn_with_binding_source`.
+- Evitado acoplamento circular: o pacote upstream declara o contrato e o checkpoint seguinte, mas nao chama o runtime binding operator turn downstream.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-operator-execution-package.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-package.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-binding-source.test.mjs tests/architecture/provider-staging-real-smoke-store-source-evidence-review.test.mjs` PASS 31/31 no novo repo.
+- CLI do `provider:staging:real-smoke-store-source-operator-execution-package` PASS em modo plano, com pacote pronto, evidence review pronta, approval ausente, provider bloqueado e proximo checkpoint de approval.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- `npm test` PASS 786/786 no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo de teste com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Operator-run direto nao e mais caminho final controlado; a execucao real precisa passar pelo runtime binding operator turn com binding source runtime-real.
+
+### Executado
+
 - Endurecido o Provider store source runtime binding operator execution turn no novo repo.
 - O execute agora exige `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_RUNTIME_REAL_BINDING_SOURCE_USE=true`, alem do resolver.
 - O caminho resolver-only agora falha corretamente: o resolver continua checkpoint tecnico, mas nao e mais suficiente para executar o operator-run.
