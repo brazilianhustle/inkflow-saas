@@ -71,7 +71,8 @@
     "provider:staging:real-smoke-runtime-writer-store-evidence-review": "bash scripts/reconstrucao/provider-staging-real-smoke-runtime-writer-store-evidence-review.sh",
     "provider:staging:real-smoke-store-source-decision": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-decision.sh",
     "provider:staging:real-smoke-store-source-execution-gate": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-execution-gate.sh",
-    "provider:staging:real-smoke-store-source-operator-run": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-operator-run.sh"
+    "provider:staging:real-smoke-store-source-operator-run": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-operator-run.sh",
+    "provider:staging:real-smoke-store-source-evidence-review": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-evidence-review.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",

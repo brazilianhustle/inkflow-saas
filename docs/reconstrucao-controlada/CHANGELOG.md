@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real smoke store source evidence review no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-store-source-evidence-review` no repo atual.
+- O checkpoint revisa a evidencia formal que sera gerada pelo operator-run real, sem executar provider e sem inferir PASS a partir de plano.
+- O validador aceita somente evidencia completa/redigida com `PROVIDER_STAGING_SMOKE_EXECUTED=true`, `PROVIDER_STAGING_SMOKE_EVIDENCE_CAPTURED=true`, fake tenant/client/artist, `fake_quote_ref_*`, seis provas do roundtrip, rollback disable passed e path sob `docs/evidence/provider-staging/`.
+- O checkpoint bloqueia evidencia ausente, milestone ausente, quote ref nao fake e conteudo inseguro.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-evidence-review.test.mjs tests/architecture/provider-staging-real-smoke-store-source-operator-run.test.mjs` PASS 12/12 no novo repo.
+- `INKFLOW_ENV=local PROVIDER_ENV=local PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION EVOLUTION_STAGING_SECRET_SOURCE=bitwarden_evolution_staging TELEGRAM_STAGING_SECRET_SOURCE=bitwarden_telegram_staging CLOUDFLARE_WORKER_STAGING_SECRET_SOURCE=cloudflare_worker_staging_bindings EVOLUTION_STAGING_INSTANCE_LABEL=fake_staging_evolution_instance TELEGRAM_STAGING_BOT_LABEL=fake_staging_telegram_bot TELEGRAM_STAGING_CHAT_LABEL=fake_staging_telegram_chat npm run provider:staging:real-smoke-store-source-evidence-review` PASS no novo repo.
+- Resultado: `ready_for_store_source_evidence_review=true`, `provider_staging_real_smoke_store_source_evidence_review_ready=true`, `provider_staging_real_smoke_store_source_operator_run_ready=true`, `review_accepts_complete_formal_evidence=true`, `review_blocks_missing_evidence=true`, `review_blocks_missing_milestone=true`, `review_blocks_non_fake_quote_ref=true`, `review_blocks_unsafe_evidence=true`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- `npm test` PASS 745/745 no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, regexes defensivas e casos negativos de teste. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- O PASS definitivo de provider real continua dependendo de operator-run real + evidencia formal revisada.
+
+### Executado
+
 - Criado Provider staging real smoke store source operator run no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-store-source-operator-run` no repo atual.
 - O checkpoint separa o run operacional real do gate anterior: em modo plano continua sem provider, mas em execute exige `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_OPERATOR_RUN=true`, `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_EXECUTE=true`, `PROVIDER_STAGING_SMOKE_EXECUTE=true`, runner runtime injetado e reader store-driven injetado.
