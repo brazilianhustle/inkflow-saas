@@ -4,6 +4,29 @@
 
 ### Executado
 
+- Ajustado no platform o `provider:staging:real-smoke-store-source-evidence-review` para exigir o contrato upstream `runtime-real operational adapters operator-turn-run`.
+- Corrigido gap estrutural: uma tentativa direta de importar o operator-turn-run dentro do evidence review criou ciclo de dependencia com `execution-package`; o revisor agora valida o contrato upstream por texto/contrato, mantendo os testes funcionais do upstream separados.
+- Mantido o wrapper existente no `inkflow-saas` para `provider:staging:real-smoke-store-source-evidence-review`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-evidence-review.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-execution-prep.test.mjs tests/architecture/provider-staging-real-smoke-store-source-operator-execution-package.test.mjs` PASS 23/23 no novo repo.
+- CLI do platform PASS em modo bloqueado com `provider_staging_real_smoke_store_source_runtime_real_operational_adapters_operator_turn_run_contract_ready=true`, `connects_to_provider=false`, `provider_staging_smoke_executed=false` e `next_checkpoint=operator_runs_runtime_real_operational_adapters_then_reviews_formal_evidence`.
+- `npm test` PASS 822/822 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo: rodar o wrapper do SaaS e preparar o operador real controlado apenas quando houver evidencia formal revisavel.
+
+### Executado
+
 - Criado no platform o gate `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run`.
 - O gate valida `execution-prep`, permanece em plan mode por padrao e so executa com flag externa + bindings operacionais runtime-real injetados.
 - O caminho de execute local escreve evidencia apenas em memoria nos testes e falha fechado quando a observacao do store fica incompleta.
