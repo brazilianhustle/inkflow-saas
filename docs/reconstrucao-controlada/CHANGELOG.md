@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Criado no platform o gate `provider:staging:real-smoke-store-source-runtime-real-operational-adapters`.
+- O gate conecta a fonte operacional runtime-real ao mapa aprovado dos adapters de transporte provider staging.
+- As tres funções operacionais (`providerSmokeBaseRunner`, `listOperationalEventRecords`, `writeEvidenceFile`) ficam preparadas, mas fail-closed neste checkpoint.
+- Criado wrapper no `inkflow-saas` para executar o novo gate sem expor valores e sem autorizar provider real.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-source.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-binding-source.test.mjs tests/architecture/provider-staging-real-transport-runtime-binding-skeleton.test.mjs` PASS 29/29 no novo repo.
+- CLI do platform PASS com `ready_for_runtime_real_operational_adapters=true`, `operational_source_ready=true`, `runtime_real_binding_source_ready=true`, `downstream_operator_turn_ready=true`, `provider_staging_smoke_executed=false`, `connects_to_provider=false` e `evidence_written=false`.
+- Wrapper do SaaS PASS com as aprovacoes explicitas em ambiente, mantendo provider bloqueado e proximo checkpoint `operator_executes_provider_staging_store_source_with_runtime_real_operational_adapters`.
+- `npm test` PASS 802/802 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- A primeira execucao real segue dependente do proximo checkpoint operador com evidencia formal e rollback verificado.
+
+### Executado
+
 - Criado no platform o gate `provider:staging:real-smoke-store-source-runtime-real-operational-source`.
 - O gate prepara as tres funções operacionais `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile` com proveniencia runtime-real por nome exato.
 - O checkpoint valida compatibilidade downstream com `runtime-real-binding-source` e `runtime-binding-operator-execution-turn` em plan mode, sem executar provider.
