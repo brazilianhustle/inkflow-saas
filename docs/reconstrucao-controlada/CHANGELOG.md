@@ -4,6 +4,29 @@
 
 ### Executado
 
+- Criado no platform o gate `provider:staging:real-smoke-store-source-wave-close`.
+- O gate consolida o checkpoint de PASS da onda Provider store-source sem declarar PASS automaticamente.
+- Criado wrapper no `inkflow-saas` para executar o novo checkpoint pelo repo correto, carregando apenas fontes seguras locais e mantendo provider real bloqueado.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-wave-close.test.mjs tests/architecture/provider-staging-real-smoke-store-source-evidence-review.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run.test.mjs` PASS 18/18 no novo repo.
+- CLI do platform PASS em modo plano com `ready_for_store_source_wave_close=true`, `provider_staging_real_smoke_store_source_pass=false`, `connects_to_provider=false`, `executable_provider_commands=false` e `next_checkpoint=operator_runs_runtime_real_operational_adapters_then_reviews_formal_evidence`.
+- `npm test` PASS 827/827 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- PASS real continua bloqueado ate execucao operacional real + evidencia formal revisada + approval de close.
+
+### Executado
+
 - Ajustado no platform o `provider:staging:real-smoke-store-source-evidence-review` para exigir o contrato upstream `runtime-real operational adapters operator-turn-run`.
 - Corrigido gap estrutural: uma tentativa direta de importar o operator-turn-run dentro do evidence review criou ciclo de dependencia com `execution-package`; o revisor agora valida o contrato upstream por texto/contrato, mantendo os testes funcionais do upstream separados.
 - Mantido o wrapper existente no `inkflow-saas` para `provider:staging:real-smoke-store-source-evidence-review`.
