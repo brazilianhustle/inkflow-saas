@@ -1,5 +1,35 @@
 # Changelog - Reconstrucao Controlada
 
+## 2026-06-01
+
+### Executado
+
+- Criado Provider staging real smoke runtime binding operational event store source no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-runtime-binding-operational-event-store-source` no repo atual.
+- O checkpoint conecta a fonte operacional ao audit store/delivery receipts, normalizando registros canonicos e receipts redigidos para os seis marcos obrigatorios.
+- O adapter exige tenant fake staging, quote ref explicita, milestone unico, prova redigida e marcador de redacao.
+- Sem store reader injetado, registro inseguro, roundtrip incompleto, milestone duplicado, quote ref divergente, quote ref ausente ou registro nao redigido, falha fechado.
+- A injeção event store source -> operational event source -> observed execution -> executor foi validada somente em simulacao, sem provider real e sem evidencia formal.
+- Proximo checkpoint definido: `operator_connects_runtime_writers_to_operational_event_store`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-runtime-binding-operational-event-store-source` PASS no novo repo.
+- Resultado: `ready_for_runtime_operational_event_writers=true`, `provider_staging_real_smoke_runtime_binding_operational_event_store_source_ready=true`, `provider_staging_real_smoke_runtime_binding_operational_event_source_ready=true`, `store_source_blocks_missing_reader=true`, `store_source_blocks_unsafe_record=true`, `store_source_blocks_incomplete_roundtrip=true`, `store_source_blocks_duplicate_milestone=true`, `store_source_blocks_mismatched_quote_ref=true`, `store_source_normalizes_canonical_records=true`, `store_source_normalizes_delivery_receipts=true`, `simulated_store_source_injection_validated=true`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- `node --test tests/architecture/provider-staging-real-smoke-runtime-binding-operational-event-store-source.test.mjs tests/architecture/provider-staging-real-smoke-runtime-binding-operational-event-source.test.mjs tests/architecture/provider-staging-real-smoke-runtime-binding-observed-execution.test.mjs` PASS 22/22.
+- `npm test` PASS 710/710 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, source names fake, regexes defensivas e testes negativos fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal de smoke real foi escrita.
+- Execucao real segue bloqueada ate conectar writers runtime reais ao operational event store.
+
 ## 2026-05-31
 
 ### Executado

@@ -65,7 +65,8 @@
     "provider:staging:real-smoke-runtime-binding-observation-probe": "bash scripts/reconstrucao/provider-staging-real-smoke-runtime-binding-observation-probe.sh",
     "provider:staging:real-smoke-runtime-binding-observation-reader": "bash scripts/reconstrucao/provider-staging-real-smoke-runtime-binding-observation-reader.sh",
     "provider:staging:real-smoke-runtime-binding-observed-execution": "bash scripts/reconstrucao/provider-staging-real-smoke-runtime-binding-observed-execution.sh",
-    "provider:staging:real-smoke-runtime-binding-operational-event-source": "bash scripts/reconstrucao/provider-staging-real-smoke-runtime-binding-operational-event-source.sh"
+    "provider:staging:real-smoke-runtime-binding-operational-event-source": "bash scripts/reconstrucao/provider-staging-real-smoke-runtime-binding-operational-event-source.sh",
+    "provider:staging:real-smoke-runtime-binding-operational-event-store-source": "bash scripts/reconstrucao/provider-staging-real-smoke-runtime-binding-operational-event-store-source.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",
