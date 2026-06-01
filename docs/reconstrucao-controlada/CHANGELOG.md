@@ -4,6 +4,30 @@
 
 ### Executado
 
+- Criada no platform a factory `createProviderStagingRuntimeRealOperationalAdapterExecutionBindings(...)`.
+- A factory monta os tres bindings exigidos pelo `operator-turn-run`: `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile`.
+- O checkpoint default dos adapters segue bloqueado por padrao; a execucao exige factory explicita com resolver worker/server, reader store-driven e writer de evidencia.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run.test.mjs` PASS 18/18 no novo repo.
+- A factory alimenta o `operator-turn-run` em teste integrado, com `executed=true`, `evidence_written=true`, `provider_staging_smoke_executed=true` e `connects_to_provider=true` apenas quando os tres bindings sao injetados.
+- A factory bloqueia contexto proibido (`browser`) e writer ausente antes de retornar bindings.
+- `npm test` PASS 831/831 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado por CLI.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal operacional real foi criada.
+- Proximo passo: plugar a factory no ambiente worker/server com adapters reais Evolution/Telegram/audit store/evidence writer e executar o `operator-turn-run` real com evidencia formal revisavel.
+
+### Executado
+
 - Habilitado no platform o CLI do `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run` para receber `--execute --evidence-file`.
 - O loader aceita somente caminho versionado em `docs/evidence/provider-staging/*.md`, bloqueando caminho absoluto, traversal, backslash e argumentos desconhecidos.
 - O modo execute agora pode ser solicitado pelo operador, mas continua dependente de bindings runtime reais injetados.

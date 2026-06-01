@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-61c85b6 feat(provider): expose operator turn run execute args
+8762f4a feat(provider): add operational adapter execution bindings
 ```
 
 Checkpoint atual Provider store-source:
@@ -44,7 +44,9 @@ Checkpoint atual Provider store-source:
 - Proximo passo operacional permanece: operador executa o runtime-real operational adapters operator turn, captura evidencia formal redigida e somente depois roda o wave-close em modo close.
 - `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run` agora tambem aceita `--execute --evidence-file docs/evidence/provider-staging/<arquivo>.md`; caminhos absolutos, traversal, backslash e arquivos fora de `docs/evidence/provider-staging/` sao bloqueados.
 - O execute CLI com approvals/flags, mas sem bindings runtime reais injetados, falha fechado por `providerSmokeBaseRunner runtime_binding_function_required`, `listOperationalEventRecords runtime_binding_function_required` e `writeEvidenceFile runtime_binding_function_required`. Isso e o comportamento correto antes de plugar o ambiente worker/server real.
-- Proximo gap real: injetar os bindings runtime reais (`providerSmokeBaseRunner`, `listOperationalEventRecords`, `writeEvidenceFile`) a partir do ambiente worker/server, sem expor secrets, para executar provider staging e escrever a evidencia formal revisavel.
+- Criada no platform a factory `createProviderStagingRuntimeRealOperationalAdapterExecutionBindings(...)`: ela transforma `providerTransportRuntimeResolver`, `listOperationalEventRecords` e `writeEvidenceFile` em bindings operacionais executaveis para o `operator-turn-run`, mantendo o checkpoint de adapters bloqueado por padrao.
+- Teste integrado provou que esses bindings alimentam o `operator-turn-run`, geram evidencia em memoria, passam pelo reader store-driven e preservam redacao/sem comandos executaveis. Isso ainda nao e evidencia operacional real do WhatsApp/Telegram; e a ponte programatica segura para o ambiente worker/server real.
+- Proximo gap real: plugar essa factory no worker/server que possui os adapters reais Evolution/Telegram/audit store/evidence writer, rodar o `operator-turn-run --execute --evidence-file ...`, revisar a evidencia formal e so depois rodar o wave close.
 
 Bloco fechado:
 
