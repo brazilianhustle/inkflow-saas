@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real smoke store source runtime binding adapter no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-store-source-runtime-binding-adapter` no repo atual.
+- O checkpoint valida as injeções runtime `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile` em contexto `worker` ou `server`.
+- O adapter prepara um pacote redigido de opções para o futuro operator execution turn, mas nao executa provider, nao chama bindings reais e nao escreve evidencia formal.
+- O adapter bloqueia contextos `browser`, `admin-ui`, `static-page`, `documentation` e `test-fixture`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-adapter.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-package.test.mjs tests/architecture/provider-staging-real-smoke-store-source-operator-execution-package.test.mjs` PASS 14/14 no novo repo.
+- `npm run provider:staging:real-smoke-store-source-runtime-binding-adapter` falhou corretamente sem `INKFLOW_ENV=local`/`PROVIDER_ENV=local`, preservando o guard local.
+- `INKFLOW_ENV=local PROVIDER_ENV=local npm run provider:staging:real-smoke-store-source-runtime-binding-adapter` PASS no novo repo com approvals, retornando `ready_for_operator_execution_turn=true`, `runtime_binding_package_ready=true`, `runtime_bindings_validated=true`, `operator_run_options_prepared=true`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- `npm test` PASS 759/759 no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo de teste. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo tecnico e construir o operator execution turn que consome o adapter.
+
+### Executado
+
 - Criado Provider staging real smoke store source runtime binding package no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-store-source-runtime-binding-package` no repo atual.
 - O checkpoint fecha o contrato das injeções runtime antes do operator-run real: `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile`.
