@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real transport runtime binding gate review no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-transport-runtime-binding-gate-review` no repo atual.
+- O gate cruza a integração do runtime binding com o gate de smoke real existente, exigindo runtime binding integrado, gate de smoke pronto e evidencia apenas em memoria/simulada.
+- O resultado mantém provider real bloqueado e transforma o próximo passo em decisão humana separada.
+- Proximo checkpoint definido: `operator_decides_provider_staging_real_smoke_execution_with_runtime_bindings`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-transport-runtime-binding-gate-review` PASS via wrapper do repo atual.
+- Resultado: `ready_for_human_provider_staging_smoke_decision_with_runtime_bindings=true`, `provider_staging_real_transport_runtime_binding_gate_review_ready=true`, `provider_staging_real_transport_runtime_binding_executor_integrated=true`, `provider_staging_real_smoke_gate_review_ready=true`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `in_memory_evidence_validated=true`, `next_checkpoint=operator_decides_provider_staging_real_smoke_execution_with_runtime_bindings`.
+- `node --test tests/architecture/provider-staging-real-transport-runtime-binding-gate-review.test.mjs tests/architecture/provider-staging-real-transport-runtime-binding-executor-integration.test.mjs tests/architecture/provider-staging-real-smoke-gate-review.test.mjs` PASS 15/15.
+- `npm test` PASS 649/649 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, source names fake de teste, regexes defensivas e teste negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+- Provider real segue bloqueado ate decisao humana explicita de execucao.
+
+### Executado
+
 - Criado Provider staging real transport runtime binding executor integration no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-transport-runtime-binding-executor-integration` no repo atual.
 - O executor agora expõe factory explicita para real transport runtime binding, usando bindings runtime simulados/injetaveis para alimentar o real transport runner skeleton e o smoke executor.
