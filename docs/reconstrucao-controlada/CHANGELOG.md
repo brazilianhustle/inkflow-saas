@@ -4,6 +4,30 @@
 
 ### Executado
 
+- Criado no platform o gate `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator`.
+- O gate consome os operational adapters e valida operational source + runtime binding operator turn em plan mode.
+- Criado wrapper no `inkflow-saas` para executar o operator gate pelo repo correto, sem expor valores e sem autorizar provider real.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-operator.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-source.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs` PASS 32/32 no novo repo.
+- CLI do platform PASS com `ready_for_runtime_real_operational_adapters_operator=true`, `operational_adapters_ready=true`, `operational_source_ready=true`, `runtime_real_binding_source_ready=true`, `downstream_operator_turn_ready=true`, `provider_staging_smoke_executed=false`, `connects_to_provider=false` e `evidence_written=false`.
+- Wrapper do SaaS PASS com as aprovacoes explicitas em ambiente, mantendo provider bloqueado e proximo checkpoint `operator_prepares_provider_staging_real_smoke_execution_with_runtime_real_operational_adapters`.
+- `npm test` PASS 807/807 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo: preparar o checkpoint de execucao real controlada com operational adapters, sem declarar PASS provider real antes da evidencia formal.
+
+### Executado
+
 - Criado no platform o gate `provider:staging:real-smoke-store-source-runtime-real-operational-adapters`.
 - O gate conecta a fonte operacional runtime-real ao mapa aprovado dos adapters de transporte provider staging.
 - As tres funções operacionais (`providerSmokeBaseRunner`, `listOperationalEventRecords`, `writeEvidenceFile`) ficam preparadas, mas fail-closed neste checkpoint.
