@@ -4,6 +4,33 @@
 
 ### Executado
 
+- Criado Provider staging real smoke runtime binding execution turn no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-runtime-binding-execution-turn` no repo atual.
+- O execution turn fica plan-only por padrao e exige duas flags para executar: `PROVIDER_STAGING_REAL_SMOKE_RUNTIME_BINDING_EXECUTE=true` e `PROVIDER_STAGING_SMOKE_EXECUTE=true`.
+- O turn tambem exige runner/resolver runtime binding injetado; sem isso, mesmo com flags, falha de forma segura com `runtime_binding_runner_or_resolver_required`.
+- Proximo checkpoint definido em plano: `operator_runs_provider_staging_real_smoke_runtime_binding_execution_turn`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-runtime-binding-execution-turn` PASS via wrapper do repo atual.
+- Resultado plan mode: `ready_for_operator_run=true`, `execute_requested=false`, `runtime_binding_runner_injected=false`, `executed=false`, `evidence_written=false`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `next_checkpoint=operator_runs_provider_staging_real_smoke_runtime_binding_execution_turn`.
+- Falha segura validada: com `PROVIDER_STAGING_SMOKE_EXECUTE=true`, `PROVIDER_STAGING_REAL_SMOKE_RUNTIME_BINDING_EXECUTE=true` e `--execute`, mas sem runner/resolver injetado, o wrapper falha corretamente com `runtime_binding_runner_or_resolver_required`.
+- `node --test tests/architecture/provider-staging-real-smoke-runtime-binding-execution-turn.test.mjs tests/architecture/provider-staging-real-smoke-runtime-binding-decision-package.test.mjs tests/architecture/provider-staging-real-transport-runtime-binding-gate-review.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 27/27.
+- `npm test` PASS 659/659 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, source names fake de teste, regexes defensivas e teste negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+- Execucao real segue bloqueada ate existir runner/resolver operacional injetado por boundary aprovado.
+
+### Executado
+
 - Criado Provider staging real smoke runtime binding decision package no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-runtime-binding-decision-package` no repo atual.
 - O pacote consolida gate review, fake actors, rollback, evidencia, stop conditions e regra anti-loop em um checkpoint finito de decisao.

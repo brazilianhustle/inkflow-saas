@@ -57,7 +57,8 @@
     "provider:staging:real-transport-runtime-binding-harness": "bash scripts/reconstrucao/provider-staging-real-transport-runtime-binding-harness.sh",
     "provider:staging:real-transport-runtime-binding-executor-integration": "bash scripts/reconstrucao/provider-staging-real-transport-runtime-binding-executor-integration.sh",
     "provider:staging:real-transport-runtime-binding-gate-review": "bash scripts/reconstrucao/provider-staging-real-transport-runtime-binding-gate-review.sh",
-    "provider:staging:real-smoke-runtime-binding-decision-package": "bash scripts/reconstrucao/provider-staging-real-smoke-runtime-binding-decision-package.sh"
+    "provider:staging:real-smoke-runtime-binding-decision-package": "bash scripts/reconstrucao/provider-staging-real-smoke-runtime-binding-decision-package.sh",
+    "provider:staging:real-smoke-runtime-binding-execution-turn": "bash scripts/reconstrucao/provider-staging-real-smoke-runtime-binding-execution-turn.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",
