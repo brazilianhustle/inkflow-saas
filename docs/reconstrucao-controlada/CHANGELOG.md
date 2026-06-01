@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Recebida a aprovacao `APPROVE_PROVIDER_STAGING_STORE_SOURCE_OPERATOR_EXECUTION` para o Provider store source operator execution package.
+- O pacote aprovado passou a retornar `ready_for_controlled_store_source_operator_execution=true` e `next_checkpoint=operator_executes_store_source_runtime_binding_operator_turn_with_binding_source`.
+- O turn de execucao foi testado com todas as flags e bloqueou corretamente porque ainda nao existe fonte runtime real injetando `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile`.
+- Endurecido o runtime binding adapter para exigir proveniencia runtime-real por funcao e por nome exato antes de aceitar `providerStagingBindingMode=runtime-real` e `providerStagingBindingSource=runtime-real-factory`.
+- Fechado o gap de falso positivo: dry-run/unmarked functions nao podem mais ser promovidas para runtime-real apenas passando pela factory.
+
+### Validado
+
+- `npm run provider:staging:real-smoke-store-source-operator-execution-package` PASS no novo repo com approval presente, provider bloqueado e proximo checkpoint correto.
+- CLI execute do `provider:staging:real-smoke-store-source-runtime-binding-operator-execution-turn -- --execute` falhou corretamente com `runtime_binding_function_required`, `runtime_real_binding_resolver_ready_required` e `runtime_real_binding_source_ready_required`.
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-adapter.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-binding-resolver.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-binding-source.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs` PASS 35/35 no novo repo.
+- `npm test` PASS 788/788 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e casos negativos com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo seguro e construir a fonte runtime real/provedor operacional que marca as tres funcoes com proveniencia runtime-real controlada.
+
+### Executado
+
 - Alinhado o Provider store source operator execution package no novo repo ao gate de binding source.
 - O pacote agora exige seis flags antes do execute controlado: runtime binding operator, runtime-real resolver, runtime-real binding source, operator-run, store source execute e staging smoke execute.
 - O contrato agora exige tres injeções worker/server-only: `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile`.
