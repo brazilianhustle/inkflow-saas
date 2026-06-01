@@ -4,6 +4,30 @@
 
 ### Executado
 
+- Endurecido o Provider store source runtime binding operator execution turn no novo repo.
+- O execute agora exige `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_RUNTIME_REAL_BINDING_SOURCE_USE=true`, alem do resolver.
+- O caminho resolver-only agora falha corretamente: o resolver continua checkpoint tecnico, mas nao e mais suficiente para executar o operator-run.
+- O operator turn consome a binding source validada para preparar `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile` antes de chamar o operator-run.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-binding-source.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-binding-resolver.test.mjs` PASS 26/26 no novo repo.
+- CLI plan mode do `provider:staging:real-smoke-store-source-runtime-binding-operator-execution-turn` PASS, com `executed=false`, `evidence_written=false`, `runtime_real_binding_source_requested=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- `npm test` PASS 786/786 no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo de teste com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo operacional e preparar o operador controlado com fonte runtime real injetada e evidence review formal.
+
+### Executado
+
 - Criada a Provider staging real smoke store source runtime-real binding source no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-store-source-runtime-real-binding-source` no repo atual.
 - A binding source valida runtime writers + runtime-real resolver, prepara `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile` como inputs do resolver e preserva `providerStagingBindingMode=runtime-real` + `providerStagingBindingSource=runtime-real-factory`.
