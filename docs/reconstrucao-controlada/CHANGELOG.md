@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Criado no platform o gate `provider:staging:real-smoke-store-source-runtime-real-operational-source`.
+- O gate prepara as tres funções operacionais `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile` com proveniencia runtime-real por nome exato.
+- O checkpoint valida compatibilidade downstream com `runtime-real-binding-source` e `runtime-binding-operator-execution-turn` em plan mode, sem executar provider.
+- Criado wrapper no `inkflow-saas` para o novo checkpoint e ampliada a allowlist local do loader Provider para aprovacoes nao secretas desta fase.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-source.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-binding-source.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-adapter.test.mjs` PASS 35/35 no novo repo.
+- CLI do platform PASS com `ready_for_runtime_real_operational_source=true`, `runtime_real_binding_inputs_prepared=true`, `runtime_real_binding_source_ready=true`, `downstream_operator_turn_ready=true`, `provider_staging_smoke_executed=false`, `connects_to_provider=false` e `evidence_written=false`.
+- Wrapper do SaaS PASS com as aprovacoes explicitas em ambiente, mantendo provider bloqueado e proximo checkpoint `operator_connects_provider_staging_runtime_real_operational_source_to_real_provider_adapters`.
+- `npm test` PASS 795/795 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Ainda falta conectar a fonte operacional runtime-real aos adapters reais Evolution/Telegram antes de qualquer PASS provider real.
+
+### Executado
+
 - Recebida a aprovacao `APPROVE_PROVIDER_STAGING_STORE_SOURCE_OPERATOR_EXECUTION` para o Provider store source operator execution package.
 - O pacote aprovado passou a retornar `ready_for_controlled_store_source_operator_execution=true` e `next_checkpoint=operator_executes_store_source_runtime_binding_operator_turn_with_binding_source`.
 - O turn de execucao foi testado com todas as flags e bloqueou corretamente porque ainda nao existe fonte runtime real injetando `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile`.
