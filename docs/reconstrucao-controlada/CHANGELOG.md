@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real smoke store source operator run no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-store-source-operator-run` no repo atual.
+- O checkpoint separa o run operacional real do gate anterior: em modo plano continua sem provider, mas em execute exige `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_OPERATOR_RUN=true`, `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_EXECUTE=true`, `PROVIDER_STAGING_SMOKE_EXECUTE=true`, runner runtime injetado e reader store-driven injetado.
+- O caminho executavel formal so marca `provider_staging_smoke_executed=true` quando runner e store observation confirmam os seis milestones e evidencia e escrita/validada.
+- Proximo checkpoint definido apos execucao real: `review_provider_staging_real_smoke_store_source_evidence`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-store-source-operator-run` PASS no novo repo em modo plano.
+- Resultado plano: `ready_for_operator_run=true`, `execute_requested=false`, `store_source_operator_run_flag_present=false`, `store_source_execute_flag_present=false`, `provider_staging_smoke_execute_flag_present=false`, `provider_smoke_base_runner_injected=false`, `operational_event_store_reader_injected=false`, `executed=false`, `evidence_written=false`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-operator-run.test.mjs tests/architecture/provider-staging-real-smoke-store-source-execution-gate.test.mjs tests/architecture/provider-staging-real-smoke-store-source-decision.test.mjs` PASS 19/19.
+- `npm test` PASS 741/741 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, regexes defensivas, teste negativo com URL falsa e evidencia formal simulada por teste in-memory. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado pelo CLI/wrapper.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Execucao real ainda exige operador, flags explicitas, runner runtime real e reader store-driven real.
+
+### Executado
+
 - Criado Provider staging real smoke store source execution gate no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-store-source-execution-gate` no repo atual.
 - O checkpoint prepara a execucao store-driven com bloqueio por padrao, exige decisao store-source aprovada, flag externa `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_EXECUTE=true`, flag interna `PROVIDER_STAGING_SMOKE_EXECUTE=true` e runner injetado.
