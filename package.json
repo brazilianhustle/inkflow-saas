@@ -81,7 +81,8 @@
     "provider:staging:real-smoke-store-source-runtime-real-binding-source": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-runtime-real-binding-source.sh",
     "provider:staging:real-smoke-store-source-runtime-real-operational-source": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-runtime-real-operational-source.sh",
     "provider:staging:real-smoke-store-source-runtime-real-operational-adapters": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-runtime-real-operational-adapters.sh",
-    "provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-operator.sh"
+    "provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-operator.sh",
+    "provider:staging:real-smoke-store-source-runtime-real-operational-adapters-execution-prep": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-execution-prep.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",

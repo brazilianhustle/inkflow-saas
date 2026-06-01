@@ -4,6 +4,30 @@
 
 ### Executado
 
+- Criado no platform o gate `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-execution-prep`.
+- O gate valida as seis flags de execucao controlada presentes, mas roda o downstream runtime binding operator turn em plan mode.
+- O gate separa upstream sem flags de execucao e downstream com flags, evitando contaminar o operator anterior e mantendo a cadeia anti-falso-PASS.
+- Criado wrapper no `inkflow-saas` para executar o novo checkpoint pelo repo correto, sem expor valores e sem autorizar provider real.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-execution-prep.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-operator.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs` PASS 31/31 no novo repo.
+- CLI do platform PASS com `ready_for_runtime_real_operational_adapters_execution_prep=true`, seis flags presentes, `runtime_real_binding_resolver_requested=true`, `runtime_real_binding_source_requested=true`, `adapter_operator_run_options_prepared=true`, `provider_staging_smoke_executed=false`, `connects_to_provider=false` e `evidence_written=false`.
+- `npm test` PASS 813/813 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo: criar o checkpoint que executa o runtime binding operator turn com operational adapters, ainda com revisao formal de evidencia antes de declarar PASS real.
+
+### Executado
+
 - Criado no platform o gate `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator`.
 - O gate consome os operational adapters e valida operational source + runtime binding operator turn em plan mode.
 - Criado wrapper no `inkflow-saas` para executar o operator gate pelo repo correto, sem expor valores e sem autorizar provider real.
