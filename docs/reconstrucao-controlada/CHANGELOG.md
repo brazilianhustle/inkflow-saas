@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Endurecido o Provider staging real smoke store source runtime binding operator execution turn no novo repo.
+- O adapter agora propaga `providerStagingBindingMode`; `createDryRunRuntimeBindings()` marca `dry-run`.
+- O execution turn em modo execute agora exige `providerStagingBindingMode=runtime-real` antes de permitir qualquer claim de provider real, smoke executado ou evidencia formal.
+- Isso corrige o gap em que bindings de dry-run podiam validar o contrato e marcar `connects_to_provider=true` em teste/execucao injetada.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-adapter.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-package.test.mjs` PASS 18/18 no novo repo.
+- CLI plan mode PASS com approvals e secret source names fake, retornando `runtime_real_bindings_present=false`, `executed=false`, `evidence_written=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`.
+- CLI execute mode com flags completas e bindings default dry-run falhou corretamente com `runtime_real_binding_mode_required`.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- `npm test` PASS 767/767 no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e casos negativos de teste. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo operacional continua exigir bindings runtime reais observaveis, explicitamente marcados como `runtime-real`, antes de rodar qualquer execute definitivo.
+
+### Executado
+
 - Criado Provider staging real smoke store source runtime binding operator execution turn no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-store-source-runtime-binding-operator-execution-turn` no repo atual.
 - O turn consome as opcoes redigidas do runtime binding adapter e injeta `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile` no operator-run store-driven.
