@@ -40,6 +40,7 @@ Checkpoint SaaS atual aguardando commit:
 - Review e build foram exercitados no estado inicial e bloquearam corretamente: `review-roundtrip-source` exige `redacted_provider_roundtrip_observed`; `build-roundtrip-package --write` não gera pacote canônico sem fonte real.
 - Checkpoints de arquitetura confirmados: `provider:staging:real-smoke-store-source-evidence-review` e `provider:staging:real-smoke-store-source-wave-close` estão prontos, mas seguem bloqueados sem evidência formal; `operator-turn-run` direto falha por flags/approvals/bindings ausentes.
 - Validação focada local: `node --test tests/reconstrucao/provider-staging-prepare-roundtrip-source.test.mjs tests/reconstrucao/provider-staging-review-roundtrip-source.test.mjs tests/reconstrucao/provider-staging-build-roundtrip-package.test.mjs tests/reconstrucao/provider-staging-operator-turn-run-from-evidence.test.mjs` PASS 23/23.
+- Validação completa local após checkpoint: `npm test` PASS 1280/1280.
 - Próximo passo correto: operador observar roundtrip real WhatsApp/Telegram/rollback, preencher somente provas redigidas no source local, rodar review, build, bridge `from-evidence`, evidence review e só então considerar wave close. Não declarar PASS provider real antes disso.
 
 - Criado no repo `inkflow-saas` o bridge `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run-from-evidence`.

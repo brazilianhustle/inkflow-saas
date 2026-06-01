@@ -15,6 +15,7 @@
 - `npm run provider:staging:real-smoke-store-source-evidence-review` PASS em modo pronto/bloqueado, com provider traffic desautorizado.
 - `npm run provider:staging:real-smoke-store-source-wave-close` PASS em modo pronto/bloqueado, sem evidência formal e sem PASS.
 - `node --test tests/reconstrucao/provider-staging-prepare-roundtrip-source.test.mjs tests/reconstrucao/provider-staging-review-roundtrip-source.test.mjs tests/reconstrucao/provider-staging-build-roundtrip-package.test.mjs tests/reconstrucao/provider-staging-operator-turn-run-from-evidence.test.mjs` PASS 23/23.
+- `npm test` PASS 1280/1280.
 
 ### Bloqueios Mantidos
 
