@@ -4,6 +4,29 @@
 
 ### Executado
 
+- Auditoria critica do contrato de eventos operacionais provider staging.
+- Gap encontrado: evento operacional sem `quote_request_ref` podia cair em fallback defensivo e ainda casar com o default em alguns caminhos.
+- Gap encontrado: milestone duplicado nao era bloqueado se todos os marcos obrigatorios tambem estivessem presentes.
+- Corrigido `operational-event-source` e `observation-reader` para exigir quote ref explicita valida e bloquear milestone duplicado.
+- Documentos de arquitetura atualizados para deixar a regra explicita.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-runtime-binding-operational-event-source.test.mjs tests/architecture/provider-staging-real-smoke-runtime-binding-observed-execution.test.mjs tests/architecture/provider-staging-real-smoke-runtime-binding-observation-reader.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 34/34.
+- `npm test` PASS 701/701 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos alterados encontrou apenas flags negativas, source names fake, regexes defensivas e testes negativos fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal de smoke real foi escrita.
+
+### Executado
+
 - Criado Provider staging real smoke runtime binding operational event source no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-runtime-binding-operational-event-source` no repo atual.
 - O checkpoint define `createProviderStagingRealSmokeOperationalEventSource` e `readProviderStagingRealSmokeOperationalEvents`.
