@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-94fc654 feat(provider): add store source wave close gate
+74ea6db feat(provider): enable store source wave close evidence file
 ```
 
 Checkpoint atual Provider store-source:
@@ -39,6 +39,8 @@ Checkpoint atual Provider store-source:
 - O checkpoint fecha a onda apenas em modo contrato: por padrao retorna pronto para close, mas `provider_staging_real_smoke_store_source_pass=false`.
 - PASS so pode ser aceito com approval explicita `APPROVE_PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_WAVE_CLOSE` + evidencia formal completa/revisada pelo `provider:staging:real-smoke-store-source-evidence-review`.
 - CLI/wrapper nao chamam Evolution, WhatsApp, Telegram, webhook, deploy, billing, secret sync ou producao; tambem nao escrevem evidencia formal em disco.
+- CLI/wrapper agora aceitam `--close --evidence-file docs/evidence/provider-staging/<arquivo>.md`; caminhos absolutos, traversal e arquivos fora de `docs/evidence/provider-staging/` sao bloqueados.
+- Um teste operacional com evidencia antiga bloqueada confirmou que o close falha sem `PROVIDER_STAGING_SMOKE_EXECUTED=true`, `PROVIDER_STAGING_SMOKE_EVIDENCE_CAPTURED=true`, fake tenant/client/artist, quote ref fake, seis provas redigidas e rollback passed.
 - Proximo passo operacional permanece: operador executa o runtime-real operational adapters operator turn, captura evidencia formal redigida e somente depois roda o wave-close em modo close.
 
 Bloco fechado:

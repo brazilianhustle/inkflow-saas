@@ -4,6 +4,30 @@
 
 ### Executado
 
+- Habilitado no platform o CLI do `provider:staging:real-smoke-store-source-wave-close` para receber `--close --evidence-file`.
+- O loader aceita somente caminho versionado em `docs/evidence/provider-staging/*.md`, bloqueando caminho absoluto, traversal, backslash e argumentos desconhecidos.
+- O wrapper existente no SaaS ja encaminha argumentos para o platform, entao nao exigiu novo script.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-wave-close.test.mjs tests/architecture/provider-staging-real-smoke-store-source-evidence-review.test.mjs` PASS 11/11 no novo repo.
+- CLI plan mode PASS com `ready_for_store_source_wave_close=true`, `provider_staging_real_smoke_store_source_pass=false`, `connects_to_provider=false`.
+- CLI close com approval e evidencia antiga bloqueada falhou corretamente por campos/provas ausentes, sem declarar PASS.
+- `npm test` PASS 828/828 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi criada.
+- PASS real segue dependente de evidencia formal capturada pelo operador real e revisada.
+
+### Executado
+
 - Criado no platform o gate `provider:staging:real-smoke-store-source-wave-close`.
 - O gate consolida o checkpoint de PASS da onda Provider store-source sem declarar PASS automaticamente.
 - Criado wrapper no `inkflow-saas` para executar o novo checkpoint pelo repo correto, carregando apenas fontes seguras locais e mantendo provider real bloqueado.
