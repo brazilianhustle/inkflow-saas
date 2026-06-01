@@ -4,6 +4,28 @@
 
 ### Executado
 
+- Criado no SaaS o bridge `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run-from-evidence`.
+- O bridge transforma um pacote redigido `provider-roundtrip.json` em bindings injetaveis para o `operator-turn-run` do platform.
+- O modo default permanece bloqueado: nao executa provider, nao escreve evidencia e aponta `next_checkpoint=provide_provider_roundtrip_evidence_package`.
+- O modo `--execute` exige pacote em `.smoke-evidence/...json` ou `docs/evidence/provider-staging/...json`, evidencia formal em `docs/evidence/provider-staging/*.md`, quote ref `fake_quote_ref_*` e os seis marcos completos do roundtrip provider.
+
+### Validado
+
+- `node --test tests/reconstrucao/provider-staging-operator-turn-run-from-evidence.test.mjs` PASS 4/4.
+- `npm test` PASS 1261/1261 no SaaS.
+- `npm run provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run-from-evidence` PASS em modo plano, com `executed=false`, `evidence_written=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`.
+- Varredura focada encontrou apenas regex defensivo, flags negativas e source labels fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi criada.
+- Nenhum PASS provider real foi declarado; o proximo checkpoint e gerar/capturar um pacote redigido de roundtrip real WhatsApp/Telegram, rodar o bridge em `--execute`, revisar evidencia formal e so depois fechar a wave.
+
+### Executado
+
 - Criada no platform a factory `createProviderStagingRuntimeRealOperationalAdapterExecutionBindings(...)`.
 - A factory monta os tres bindings exigidos pelo `operator-turn-run`: `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile`.
 - O checkpoint default dos adapters segue bloqueado por padrao; a execucao exige factory explicita com resolver worker/server, reader store-driven e writer de evidencia.

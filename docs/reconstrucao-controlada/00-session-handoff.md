@@ -33,6 +33,16 @@ Ultimo commit validado:
 8762f4a feat(provider): add operational adapter execution bindings
 ```
 
+Checkpoint SaaS atual aguardando commit:
+
+- Criado no repo `inkflow-saas` o bridge `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run-from-evidence`.
+- A funcao dele e converter um pacote redigido de roundtrip provider real em bindings seguros para o `operator-turn-run` do platform, sem aceitar PASS manual ou evidencia incompleta.
+- Por padrao o wrapper nao executa provider, nao escreve evidencia e retorna `next_checkpoint=provide_provider_roundtrip_evidence_package`.
+- Em `--execute`, ele exige `--package .smoke-evidence/.../provider-roundtrip.json` ou `docs/evidence/provider-staging/...json`, com `ok=true`, `fake_quote_ref_*`, timestamp seguro e os seis marcos: `fake-client-inbound`, `bot-whatsapp-response`, `telegram-quote-request`, `artist-quote-reply`, `client-quote-response`, `rollback-disable-check`.
+- O writer formal so aceita `docs/evidence/provider-staging/*.md`; caminhos absolutos, traversal, backslash, URL, token, secret, password, api key, service role, webhook, runtime handle, producao e customer real sao bloqueados.
+- Validacoes locais no SaaS: `npm test` PASS 1261/1261; wrapper plan mode PASS bloqueado; varredura focada encontrou apenas regex defensivo, flags negativas e source labels fake.
+- Ainda nao existe PASS provider real: falta gerar/capturar o pacote `provider-roundtrip.json` a partir de uma conversa operacional real WhatsApp/Telegram e depois rodar o bridge em `--execute`, revisar evidencia formal e so entao fechar wave.
+
 Checkpoint atual Provider store-source:
 
 - `provider:staging:real-smoke-store-source-wave-close` criado no platform e wrapper registrado no SaaS.
