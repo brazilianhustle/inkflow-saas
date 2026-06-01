@@ -4,6 +4,33 @@
 
 ### Executado
 
+- Criado Provider staging real smoke runtime binding observation probe no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-runtime-binding-observation-probe` no repo atual.
+- O checkpoint cria `createProviderStagingRealSmokeObservationProbe`, que exige reader externo `readProviderObservation` e normaliza prova redigida para o observation runner.
+- Sem reader, a probe falha com `provider_observation_reader_required`; com input/prova insegura, falha com `unsafe_provider_observation_input` ou `unsafe_provider_observation_proof`.
+- A injeção da probe no observation runner foi validada somente em simulação, sem provider real e sem evidencia formal.
+- Proximo checkpoint definido: `operator_runs_provider_staging_real_smoke_with_observation_probe`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-runtime-binding-observation-probe` PASS no novo repo.
+- Resultado: `ready_for_operator_provider_staging_real_smoke_with_observation_probe=true`, `probe_blocks_without_reader=true`, `probe_blocks_unsafe_reader_proof=true`, `probe_blocks_unsafe_input=true`, `simulated_observation_probe_injection_validated=true`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- `node --test tests/architecture/provider-staging-real-smoke-runtime-binding-observation-probe.test.mjs tests/architecture/provider-staging-real-smoke-runtime-binding-observation-runner.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 25/25.
+- `npm test` PASS 680/680 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, source names fake de teste, regexes defensivas e testes negativos com token/URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal de smoke real foi escrita.
+- Execucao real segue bloqueada ate existir reader operacional real que produza observacao redigida segura.
+
+### Executado
+
 - Criado Provider staging real smoke runtime binding observation runner no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-runtime-binding-observation-runner` no repo atual.
 - O checkpoint envolve o runner operacional e exige uma função externa `observeRealProviderRoundtrip` para marcar observação real de provider.
