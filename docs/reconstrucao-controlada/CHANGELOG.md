@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real smoke store source execution gate no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-store-source-execution-gate` no repo atual.
+- O checkpoint prepara a execucao store-driven com bloqueio por padrao, exige decisao store-source aprovada, flag externa `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_EXECUTE=true`, flag interna `PROVIDER_STAGING_SMOKE_EXECUTE=true` e runner injetado.
+- O modo execute deste checkpoint e apenas simulacao: valida runner/evidencia em memoria sem marcar smoke real, evidencia formal ou conexao provider.
+- Proximo checkpoint definido: `operator_runs_provider_staging_real_smoke_store_source_execution_gate`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-store-source-execution-gate` PASS no novo repo.
+- Resultado: `ready_for_operator_run=true`, `provider_staging_real_smoke_store_source_execution_gate_ready=true`, `execute_requested=false`, `store_source_execute_flag_present=false`, `store_source_runner_injected=false`, `executed=false`, `evidence_written=false`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-execution-gate.test.mjs tests/architecture/provider-staging-real-smoke-store-source-decision.test.mjs tests/architecture/provider-staging-real-smoke-runtime-writer-store-evidence-review.test.mjs` PASS 16/16.
+- `npm test` PASS 733/733 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, regexes defensivas, teste negativo com URL falsa e evidencia simulada do executor. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal de smoke real foi escrita.
+- Execucao real segue bloqueada ate operador rodar o gate dedicado com fonte store-driven real.
+
+### Executado
+
 - Criado Provider staging real smoke store source decision no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-store-source-decision` no repo atual.
 - O checkpoint fecha a decisao local para usar fonte store-driven no proximo gate de execucao, sem executar provider real.
