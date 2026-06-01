@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real smoke runtime binding operational resolver no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-runtime-binding-operational-resolver` no repo atual.
+- O checkpoint criou um resolver operacional worker/server-only que aceita apenas fake actors de staging, valida pares adapter/boundary aprovados e bloqueia contextos `browser`, `admin-ui`, `static-page`, `documentation` e `test-fixture`.
+- O resolver foi injetado no mesmo execution turn futuro em modo simulado, com evidencia apenas em memoria.
+- Proximo checkpoint definido: `operator_runs_provider_staging_real_smoke_with_operational_resolver`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-runtime-binding-operational-resolver` PASS via wrapper do repo atual.
+- Resultado: `ready_for_operator_provider_staging_real_smoke_with_operational_resolver=true`, `operational_resolver_injection_validated=true`, `simulated_runtime_binding_execution_validated=true`, `simulated_in_memory_evidence_validated=true`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- `node --test tests/architecture/provider-staging-real-smoke-runtime-binding-operational-resolver.test.mjs tests/architecture/provider-staging-real-smoke-runtime-binding-runner-injection.test.mjs tests/architecture/provider-staging-real-smoke-runtime-binding-execution-turn.test.mjs` PASS 14/14.
+- `npm test` PASS 667/667 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, source names fake de teste, regexes defensivas e teste negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal de smoke real foi escrita.
+- Execucao real segue dependente do turn operacional controlado pelo operador.
+
+### Executado
+
 - Criado Provider staging real smoke runtime binding runner injection no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-runtime-binding-runner-injection` no repo atual.
 - O checkpoint remove o blocker concreto de runner/resolver ausente validando a injeção por resolver simulado no mesmo execution turn futuro.
