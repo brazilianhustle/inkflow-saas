@@ -4,6 +4,36 @@
 
 ### Executado
 
+- Criado Provider staging real smoke runtime writers operational event store no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-runtime-writers-operational-event-store` no repo atual.
+- Audit store passou a aceitar `provider_operational_event` com milestones canonicos, fake quote ref obrigatoria, prova redigida, timestamp e bloqueio de conteudo inseguro.
+- Bot orchestrator escreve `fake-client-inbound` e `bot-whatsapp-response` quando o fluxo usa fake quote ref de smoke.
+- Notifications escreve `telegram-quote-request` e `client-quote-response` para `quote_request`/`quote_response` com fake quote ref.
+- Telegram quote adapter escreve `artist-quote-reply` para resposta do tatuador com fake quote ref.
+- Checkpoint local compoe bot -> notifications -> Telegram adapter -> artist quote intake -> audit store -> operational event store source e valida os seis marcos.
+- Quote refs normais seguem sem criar eventos de smoke provider.
+- Proximo checkpoint definido: `operator_reviews_runtime_writer_store_evidence_before_real_provider_smoke`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-runtime-writers-operational-event-store` PASS no novo repo.
+- Resultado: `ready_for_operator_runtime_writer_store_evidence_review=true`, `provider_staging_real_smoke_runtime_writers_operational_event_store_ready=true`, `audit_store_accepts_provider_operational_event=true`, `bot_writes_inbound_and_response_milestones=true`, `notification_writes_quote_request_and_response_milestones=true`, `telegram_adapter_writes_artist_reply_milestone=true`, `rollback_milestone_written=true`, `store_source_reads_runtime_written_milestones=true`, `normal_quote_ref_does_not_write_provider_smoke_events=true`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- `node --test tests/architecture/provider-staging-real-smoke-runtime-writers-operational-event-store.test.mjs tests/architecture/provider-staging-real-smoke-runtime-binding-operational-event-store-source.test.mjs packages/integrations/local-audit-store/tests/local-audit-store.test.mjs services/notifications/tests/notifications.test.mjs services/bot-orchestrator/tests/bot-orchestrator.test.mjs services/artist-quote-telegram-adapter/tests/artist-quote-telegram-adapter.test.mjs services/artist-quote-intake/tests/artist-quote-intake.test.mjs` PASS 58/58.
+- `npm test` PASS 717/717 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos alterados encontrou apenas flags negativas, regexes defensivas e fixtures fake/opaque de testes. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal de smoke real foi escrita.
+- Execucao real segue bloqueada ate revisar a evidencia store-driven e conectar a fonte operacional redigida no runner real.
+
+### Executado
+
 - Criado Provider staging real smoke runtime binding operational event store source no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-runtime-binding-operational-event-store-source` no repo atual.
 - O checkpoint conecta a fonte operacional ao audit store/delivery receipts, normalizando registros canonicos e receipts redigidos para os seis marcos obrigatorios.
