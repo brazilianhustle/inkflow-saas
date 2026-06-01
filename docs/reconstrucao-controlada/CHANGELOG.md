@@ -4,6 +4,28 @@
 
 ### Executado
 
+- Criado no SaaS o builder `provider:staging:build-roundtrip-package`.
+- O builder transforma `.smoke-evidence/<run>/provider-roundtrip-source.json` em `.smoke-evidence/<run>/provider-roundtrip.json` canonico, apenas quando chamado com `--write`.
+- O source exige `operator_confirmation=redacted_provider_roundtrip_observed`, `raw_values_included=false`, `secrets_included=false`, quote ref fake e os seis marcos redigidos do roundtrip.
+- O modo sem argumentos fica em plan mode bloqueado, apontando `next_checkpoint=provide_smoke_evidence_dir`.
+
+### Validado
+
+- `node --test tests/reconstrucao/provider-staging-build-roundtrip-package.test.mjs tests/reconstrucao/provider-staging-operator-turn-run-from-evidence.test.mjs` PASS 9/9.
+- `npm test` PASS 1266/1266 no SaaS.
+- `npm run provider:staging:build-roundtrip-package` PASS em modo plano, com `source_loaded=false`, `package_written=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`.
+- Varredura focada encontrou apenas regex defensivo de teste. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi criada.
+- O builder nao declara PASS; ele so prepara o pacote canonico que o bridge de operator-turn pode consumir depois.
+
+### Executado
+
 - Criado no SaaS o bridge `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run-from-evidence`.
 - O bridge transforma um pacote redigido `provider-roundtrip.json` em bindings injetaveis para o `operator-turn-run` do platform.
 - O modo default permanece bloqueado: nao executa provider, nao escreve evidencia e aponta `next_checkpoint=provide_provider_roundtrip_evidence_package`.

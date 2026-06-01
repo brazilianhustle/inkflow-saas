@@ -42,6 +42,9 @@ Checkpoint SaaS atual aguardando commit:
 - O writer formal so aceita `docs/evidence/provider-staging/*.md`; caminhos absolutos, traversal, backslash, URL, token, secret, password, api key, service role, webhook, runtime handle, producao e customer real sao bloqueados.
 - Validacoes locais no SaaS: `npm test` PASS 1261/1261; wrapper plan mode PASS bloqueado; varredura focada encontrou apenas regex defensivo, flags negativas e source labels fake.
 - Ainda nao existe PASS provider real: falta gerar/capturar o pacote `provider-roundtrip.json` a partir de uma conversa operacional real WhatsApp/Telegram e depois rodar o bridge em `--execute`, revisar evidencia formal e so entao fechar wave.
+- Criado tambem o builder `provider:staging:build-roundtrip-package`, que recebe uma pasta `.smoke-evidence/<run>` com `provider-roundtrip-source.json`, exige confirmacao `redacted_provider_roundtrip_observed`, bloqueia raw values/secrets e gera `provider-roundtrip.json` canonico apenas com `--write`.
+- O builder sem argumentos fica em plan mode bloqueado (`next_checkpoint=provide_smoke_evidence_dir`), sem provider real, sem escrita e sem evidencia formal.
+- Validacoes apos builder: `node --test tests/reconstrucao/provider-staging-build-roundtrip-package.test.mjs tests/reconstrucao/provider-staging-operator-turn-run-from-evidence.test.mjs` PASS 9/9; `npm test` PASS 1266/1266; varredura focada encontrou apenas regex defensivo de teste.
 
 Checkpoint atual Provider store-source:
 
