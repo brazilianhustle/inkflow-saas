@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Endurecida a origem dos bindings `runtime-real` no novo repo.
+- O adapter agora propaga `providerStagingBindingSource`; `createDryRunRuntimeBindings()` marca `dry-run-factory`.
+- Criada factory explicita `createRuntimeRealRuntimeBindings(...)`, que marca `providerStagingBindingMode=runtime-real` e `providerStagingBindingSource=runtime-real-factory`.
+- O operator execution turn em modo execute agora exige modo `runtime-real` e fonte `runtime-real-factory`, bloqueando o caso em que alguem sobrescreve apenas o texto do modo em bindings de dry-run.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-adapter.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-package.test.mjs` PASS 20/20 no novo repo.
+- CLI plan mode PASS com approvals e secret source names fake, retornando `runtime_real_bindings_present=false`, `runtime_real_binding_source_present=false`, `executed=false`, `evidence_written=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`.
+- CLI execute mode com flags completas e bindings default dry-run falhou corretamente com `runtime_real_binding_mode_required` e `runtime_real_binding_source_required`.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- `npm test` PASS 769/769 no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e casos negativos de teste. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo operacional continua exigir bindings runtime reais observaveis criados pela factory `runtime-real`, antes de rodar qualquer execute definitivo.
+
+### Executado
+
 - Endurecido o Provider staging real smoke store source runtime binding operator execution turn no novo repo.
 - O adapter agora propaga `providerStagingBindingMode`; `createDryRunRuntimeBindings()` marca `dry-run`.
 - O execution turn em modo execute agora exige `providerStagingBindingMode=runtime-real` antes de permitir qualquer claim de provider real, smoke executado ou evidencia formal.
