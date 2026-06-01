@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-74ea6db feat(provider): enable store source wave close evidence file
+61c85b6 feat(provider): expose operator turn run execute args
 ```
 
 Checkpoint atual Provider store-source:
@@ -42,6 +42,9 @@ Checkpoint atual Provider store-source:
 - CLI/wrapper agora aceitam `--close --evidence-file docs/evidence/provider-staging/<arquivo>.md`; caminhos absolutos, traversal e arquivos fora de `docs/evidence/provider-staging/` sao bloqueados.
 - Um teste operacional com evidencia antiga bloqueada confirmou que o close falha sem `PROVIDER_STAGING_SMOKE_EXECUTED=true`, `PROVIDER_STAGING_SMOKE_EVIDENCE_CAPTURED=true`, fake tenant/client/artist, quote ref fake, seis provas redigidas e rollback passed.
 - Proximo passo operacional permanece: operador executa o runtime-real operational adapters operator turn, captura evidencia formal redigida e somente depois roda o wave-close em modo close.
+- `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run` agora tambem aceita `--execute --evidence-file docs/evidence/provider-staging/<arquivo>.md`; caminhos absolutos, traversal, backslash e arquivos fora de `docs/evidence/provider-staging/` sao bloqueados.
+- O execute CLI com approvals/flags, mas sem bindings runtime reais injetados, falha fechado por `providerSmokeBaseRunner runtime_binding_function_required`, `listOperationalEventRecords runtime_binding_function_required` e `writeEvidenceFile runtime_binding_function_required`. Isso e o comportamento correto antes de plugar o ambiente worker/server real.
+- Proximo gap real: injetar os bindings runtime reais (`providerSmokeBaseRunner`, `listOperationalEventRecords`, `writeEvidenceFile`) a partir do ambiente worker/server, sem expor secrets, para executar provider staging e escrever a evidencia formal revisavel.
 
 Bloco fechado:
 

@@ -4,6 +4,30 @@
 
 ### Executado
 
+- Habilitado no platform o CLI do `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run` para receber `--execute --evidence-file`.
+- O loader aceita somente caminho versionado em `docs/evidence/provider-staging/*.md`, bloqueando caminho absoluto, traversal, backslash e argumentos desconhecidos.
+- O modo execute agora pode ser solicitado pelo operador, mas continua dependente de bindings runtime reais injetados.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run.test.mjs` PASS 9/9 no novo repo.
+- CLI plan mode PASS com `ready_for_operational_adapters_operator_turn_run=true`, `execute_requested=false`, `executed=false`, `evidence_written=false` e `connects_to_provider=false`.
+- CLI execute com approvals/flags e sem bindings reais falhou corretamente por `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile` com `runtime_binding_function_required`.
+- `npm test` PASS 829/829 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi criada.
+- Proximo passo: injetar bindings runtime reais worker/server-only para executar o operator-turn-run e gerar evidencia formal revisavel antes do wave close.
+
+### Executado
+
 - Habilitado no platform o CLI do `provider:staging:real-smoke-store-source-wave-close` para receber `--close --evidence-file`.
 - O loader aceita somente caminho versionado em `docs/evidence/provider-staging/*.md`, bloqueando caminho absoluto, traversal, backslash e argumentos desconhecidos.
 - O wrapper existente no SaaS ja encaminha argumentos para o platform, entao nao exigiu novo script.
