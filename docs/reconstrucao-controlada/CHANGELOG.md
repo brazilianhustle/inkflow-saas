@@ -4,6 +4,30 @@
 
 ### Executado
 
+- Criado no platform o gate `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run`.
+- O gate valida `execution-prep`, permanece em plan mode por padrao e so executa com flag externa + bindings operacionais runtime-real injetados.
+- O caminho de execute local escreve evidencia apenas em memoria nos testes e falha fechado quando a observacao do store fica incompleta.
+- Criado wrapper no `inkflow-saas` para executar o novo checkpoint pelo repo correto, sem expor valores e sem autorizar provider real.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-operational-adapters-execution-prep.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs tests/architecture/provider-staging-real-smoke-store-source-operator-run.test.mjs` PASS 35/35 no novo repo.
+- CLI do platform PASS em modo plano com `ready_for_operational_adapters_operator_turn_run=true`, `execute_requested=false`, `executed=false`, `evidence_written=false`, `connects_to_provider=false`.
+- `npm test` PASS 821/821 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e caso negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo: revisar a evidencia provider staging store-source antes de declarar qualquer PASS real.
+
+### Executado
+
 - Criado no platform o gate `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-execution-prep`.
 - O gate valida as seis flags de execucao controlada presentes, mas roda o downstream runtime binding operator turn em plan mode.
 - O gate separa upstream sem flags de execucao e downstream com flags, evitando contaminar o operator anterior e mantendo a cadeia anti-falso-PASS.
