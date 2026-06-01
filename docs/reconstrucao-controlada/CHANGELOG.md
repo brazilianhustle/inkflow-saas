@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real transport runtime binding executor integration no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-transport-runtime-binding-executor-integration` no repo atual.
+- O executor agora expõe factory explicita para real transport runtime binding, usando bindings runtime simulados/injetaveis para alimentar o real transport runner skeleton e o smoke executor.
+- A integração valida `provider_staging_real_transport_runtime_binding_integrated=true`, evidencia somente em memoria e `simulation=true`, mantendo provider real bloqueado.
+- Proximo checkpoint definido: `prepare_provider_staging_real_transport_runtime_binding_gate_review`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-transport-runtime-binding-executor-integration` PASS via wrapper do repo atual.
+- Resultado: `ready_for_provider_staging_real_transport_runtime_binding_gate_review=true`, `provider_staging_real_transport_runtime_binding_harness_ready=true`, `provider_staging_real_transport_runtime_binding_executor_integrated=true`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`, `in_memory_evidence_validated=true`, `simulated_evidence_written=false`, `next_checkpoint=prepare_provider_staging_real_transport_runtime_binding_gate_review`.
+- `node --test tests/architecture/provider-staging-real-transport-runtime-binding-executor-integration.test.mjs tests/architecture/provider-staging-real-transport-runtime-binding-harness.test.mjs tests/architecture/provider-staging-real-smoke-executor.test.mjs` PASS 22/22.
+- `npm test` PASS 644/644 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, source names fake de teste, regexes defensivas e teste negativo com URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia de smoke real foi escrita.
+- Provider real segue bloqueado ate gate review especifico.
+
+### Executado
+
 - Criado Provider staging real transport runtime binding harness no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-transport-runtime-binding-harness` no repo atual.
 - O harness injeta resolver runtime binding simulado nos 8 client adapters, passa pelo real transport runner skeleton e valida o executor em `simulation=true`.
