@@ -4,6 +4,30 @@
 
 ### Executado
 
+- Criada a Provider staging real smoke store source runtime-real binding source no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-store-source-runtime-real-binding-source` no repo atual.
+- A binding source valida runtime writers + runtime-real resolver, prepara `providerSmokeBaseRunner`, `listOperationalEventRecords` e `writeEvidenceFile` como inputs do resolver e preserva `providerStagingBindingMode=runtime-real` + `providerStagingBindingSource=runtime-real-factory`.
+- O checkpoint nao chama runner, store reader nem writer; nao escreve evidencia formal; nao conecta provider; nao atualiza webhook; nao sincroniza secrets.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-real-binding-source.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-binding-resolver.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs` PASS 25/25 no novo repo.
+- `npm run provider:staging:real-smoke-store-source-runtime-real-binding-source` PASS no novo repo com approvals e secret source names fake, retornando `ready_for_store_source_runtime_real_binding_source_operator_execution=true`, `runtime_writers_operational_event_store_ready=true`, `runtime_real_binding_resolver_ready=true`, `provider_staging_binding_mode=runtime-real`, `provider_staging_binding_source=runtime-real-factory`, `evidence_written=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- `npm test` PASS 785/785 no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e casos negativos de teste. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo operacional e integrar a binding source no caminho controlado do operator execution turn ou construir o consumo dedicado dela antes de qualquer PASS real.
+
+### Executado
+
 - Integrado o runtime-real binding resolver ao Provider store source runtime binding operator execution turn no novo repo.
 - O execute do operator turn agora exige `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_RUNTIME_REAL_BINDING_RESOLVER_USE=true`.
 - O operator turn nao aceita mais runtime-real direto como caminho final: precisa passar pelo resolver, com bindings injetados e origem `runtime-real-factory`.

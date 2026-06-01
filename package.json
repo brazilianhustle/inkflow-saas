@@ -77,7 +77,8 @@
     "provider:staging:real-smoke-store-source-runtime-binding-package": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-runtime-binding-package.sh",
     "provider:staging:real-smoke-store-source-runtime-binding-adapter": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-runtime-binding-adapter.sh",
     "provider:staging:real-smoke-store-source-runtime-binding-operator-execution-turn": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.sh",
-    "provider:staging:real-smoke-store-source-runtime-real-binding-resolver": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-runtime-real-binding-resolver.sh"
+    "provider:staging:real-smoke-store-source-runtime-real-binding-resolver": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-runtime-real-binding-resolver.sh",
+    "provider:staging:real-smoke-store-source-runtime-real-binding-source": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-runtime-real-binding-source.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",
