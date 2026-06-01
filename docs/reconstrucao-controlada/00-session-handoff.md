@@ -35,6 +35,13 @@ Ultimo commit validado:
 
 Checkpoint SaaS atual aguardando commit:
 
+- Preparado no SaaS o diretório operacional local `.smoke-evidence/provider-roundtrip-20260601T225435Z/` para capturar o próximo roundtrip provider staging.
+- O pacote contém `provider-roundtrip-source.json`, placeholders redigidos WhatsApp/Telegram/rollback e `operator-checklist.md` com a ordem segura de preenchimento.
+- Review e build foram exercitados no estado inicial e bloquearam corretamente: `review-roundtrip-source` exige `redacted_provider_roundtrip_observed`; `build-roundtrip-package --write` não gera pacote canônico sem fonte real.
+- Checkpoints de arquitetura confirmados: `provider:staging:real-smoke-store-source-evidence-review` e `provider:staging:real-smoke-store-source-wave-close` estão prontos, mas seguem bloqueados sem evidência formal; `operator-turn-run` direto falha por flags/approvals/bindings ausentes.
+- Validação focada local: `node --test tests/reconstrucao/provider-staging-prepare-roundtrip-source.test.mjs tests/reconstrucao/provider-staging-review-roundtrip-source.test.mjs tests/reconstrucao/provider-staging-build-roundtrip-package.test.mjs tests/reconstrucao/provider-staging-operator-turn-run-from-evidence.test.mjs` PASS 23/23.
+- Próximo passo correto: operador observar roundtrip real WhatsApp/Telegram/rollback, preencher somente provas redigidas no source local, rodar review, build, bridge `from-evidence`, evidence review e só então considerar wave close. Não declarar PASS provider real antes disso.
+
 - Criado no repo `inkflow-saas` o bridge `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run-from-evidence`.
 - A funcao dele e converter um pacote redigido de roundtrip provider real em bindings seguros para o `operator-turn-run` do platform, sem aceitar PASS manual ou evidencia incompleta.
 - Por padrao o wrapper nao executa provider, nao escreve evidencia e retorna `next_checkpoint=provide_provider_roundtrip_evidence_package`.

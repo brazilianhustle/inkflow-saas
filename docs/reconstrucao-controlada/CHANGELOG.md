@@ -4,6 +4,28 @@
 
 ### Executado
 
+- Preparado o diretório operacional local `.smoke-evidence/provider-roundtrip-20260601T225435Z/` com `provider-roundtrip-source.json`, placeholders redigidos e checklist.
+- Enriquecido o checklist local com regras de preenchimento, sequência de comandos e bloqueios contra raw payloads, URLs, tokens, telefones, provider handles e produção.
+- Confirmado que `.smoke-evidence/` permanece ignorado pelo git, evitando versionar captura operacional bruta.
+
+### Validado
+
+- `npm run provider:staging:review-roundtrip-source -- --evidence-dir .smoke-evidence/provider-roundtrip-20260601T225435Z` FAIL esperado, bloqueando fonte `documentation_only`.
+- `npm run provider:staging:build-roundtrip-package -- --evidence-dir .smoke-evidence/provider-roundtrip-20260601T225435Z --write` FAIL esperado, sem gerar pacote canônico.
+- `npm run provider:staging:real-smoke-store-source-evidence-review` PASS em modo pronto/bloqueado, com provider traffic desautorizado.
+- `npm run provider:staging:real-smoke-store-source-wave-close` PASS em modo pronto/bloqueado, sem evidência formal e sem PASS.
+- `node --test tests/reconstrucao/provider-staging-prepare-roundtrip-source.test.mjs tests/reconstrucao/provider-staging-review-roundtrip-source.test.mjs tests/reconstrucao/provider-staging-build-roundtrip-package.test.mjs tests/reconstrucao/provider-staging-operator-turn-run-from-evidence.test.mjs` PASS 23/23.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidência formal foi criada.
+- PASS provider real segue bloqueado até observação real WhatsApp/Telegram/rollback, source redigido revisado, package canônico, bridge `from-evidence`, evidence review e wave close.
+
+### Executado
+
 - Adicionado `--init-source` ao builder `provider:staging:build-roundtrip-package`.
 - O comando cria `.smoke-evidence/<run>/provider-roundtrip-source.json` com os seis marcos esperados e textos redigidos editaveis.
 - O template nasce bloqueado (`ok=false`, `operator_confirmation=fill_after_real_whatsapp_telegram_roundtrip`) para impedir PASS acidental antes de observacao real.
