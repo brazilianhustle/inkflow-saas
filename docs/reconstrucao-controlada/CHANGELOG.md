@@ -4,6 +4,29 @@
 
 ### Executado
 
+- Endurecido Provider staging real smoke executor com `Real Provider Observation Guard`.
+- Execucao real agora exige que o runner injete marcador explicito de observacao real de provider e prova redigida dessa observacao.
+- Runner que devolve apenas provas redigidas de sequencia passa somente em simulacao; em `simulation=false`, falha antes de escrever evidencia com `real_provider_observation_required`.
+- Evidencia de smoke real agora exige campo `real provider observation proof`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-executor.test.mjs tests/architecture/provider-staging-real-smoke-runtime-binding-execution-turn.test.mjs tests/architecture/provider-staging-real-smoke-runtime-binding-operational-resolver.test.mjs` PASS 23/23.
+- `npm test` PASS 668/668 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos alterados encontrou apenas flags negativas, source names fake de teste, regexes defensivas e testes negativos com token/URL fake. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal de smoke real foi escrita.
+- A execucao real segue bloqueada ate existir runner operacional capaz de produzir observacao real redigida.
+
+### Executado
+
 - Criado Provider staging real smoke runtime binding operational resolver no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-runtime-binding-operational-resolver` no repo atual.
 - O checkpoint criou um resolver operacional worker/server-only que aceita apenas fake actors de staging, valida pares adapter/boundary aprovados e bloqueia contextos `browser`, `admin-ui`, `static-page`, `documentation` e `test-fixture`.
