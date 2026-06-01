@@ -4,6 +4,32 @@
 
 ### Executado
 
+- Criado Provider staging real smoke runtime writer store evidence review no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-runtime-writer-store-evidence-review` no repo atual.
+- O checkpoint revisa a evidencia store-driven antes de qualquer provider real: aceita somente `provider_operational_event`, exige seis milestones, mesma fake quote ref, prova redigida e bloqueia pacote inseguro/incompleto/duplicado/divergente.
+- A revisao falha fechado se receber registros de outro tipo, evitando passar o audit store inteiro como evidencia.
+- Proximo checkpoint definido: `operator_decides_provider_staging_real_smoke_with_store_event_source`.
+
+### Validado
+
+- `PROVIDER_STAGING_SMOKE_APPROVAL=APPROVE_PROVIDER_STAGING_SMOKE_ONLY PROVIDER_STAGING_REAL_SMOKE_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_REAL_SMOKE_EXECUTION npm run provider:staging:real-smoke-runtime-writer-store-evidence-review` PASS no novo repo.
+- Resultado: `ready_for_human_provider_staging_real_smoke_store_source_decision=true`, `provider_staging_real_smoke_runtime_writer_store_evidence_review_ready=true`, `provider_staging_real_smoke_runtime_writers_operational_event_store_ready=true`, `review_accepts_complete_store_evidence=true`, `review_blocks_unexpected_record_type=true`, `review_blocks_unsafe_record=true`, `review_blocks_incomplete_milestones=true`, `review_blocks_duplicate_milestone=true`, `review_blocks_mismatched_quote_ref=true`, `review_blocks_non_fake_quote_ref=true`, `store_source_replays_reviewed_evidence=true`, `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false`, `executable_provider_commands=false`.
+- `node --test tests/architecture/provider-staging-real-smoke-runtime-writer-store-evidence-review.test.mjs tests/architecture/provider-staging-real-smoke-runtime-writers-operational-event-store.test.mjs tests/architecture/provider-staging-real-smoke-runtime-binding-operational-event-store-source.test.mjs` PASS 17/17.
+- `npm test` PASS 722/722 no novo repo.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, regexes defensivas e fixtures fake de testes. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal de smoke real foi escrita.
+- Execucao real segue bloqueada ate decisao humana com fonte operacional store-driven revisada.
+
+### Executado
+
 - Criado Provider staging real smoke runtime writers operational event store no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-runtime-writers-operational-event-store` no repo atual.
 - Audit store passou a aceitar `provider_operational_event` com milestones canonicos, fake quote ref obrigatoria, prova redigida, timestamp e bloqueio de conteudo inseguro.
