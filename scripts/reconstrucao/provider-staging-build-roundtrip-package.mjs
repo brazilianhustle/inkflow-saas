@@ -17,11 +17,16 @@ export function parseArgs(argv = []) {
   let sourcePath = '';
   let outputPath = '';
   let write = false;
+  let initSource = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === '--write') {
       write = true;
+      continue;
+    }
+    if (arg === '--init-source') {
+      initSource = true;
       continue;
     }
     if (arg === '--evidence-dir') {
@@ -61,6 +66,7 @@ export function parseArgs(argv = []) {
     errors.push(error('argv', 'invalid_smoke_evidence_dir'));
   }
   if (write && !evidenceDir) errors.push(error('argv', 'evidence_dir_required_for_write'));
+  if (initSource && !evidenceDir) errors.push(error('argv', 'evidence_dir_required_for_init_source'));
 
   sourcePath = sourcePath || (evidenceDir ? `${evidenceDir}/${DEFAULT_SOURCE_NAME}` : '');
   outputPath = outputPath || (evidenceDir ? `${evidenceDir}/${DEFAULT_OUTPUT_NAME}` : '');
@@ -84,6 +90,7 @@ export function parseArgs(argv = []) {
     sourcePath,
     outputPath,
     write,
+    initSource,
     errors,
   });
 }
@@ -97,6 +104,19 @@ export function buildProviderRoundtripPackage({
   const errors = [...parsed.errors];
   if (!parsed.ok) return result({ parsed, errors });
   if (!parsed.evidenceDir) return result({ parsed, errors });
+
+  if (parsed.initSource) {
+    writeJsonSafe({
+      cwd,
+      path: parsed.sourcePath,
+      value: createProviderRoundtripSourceTemplate({ now }),
+    });
+    return result({
+      parsed,
+      errors,
+      sourceInitialized: true,
+    });
+  }
 
   const source = readJsonSafe({ cwd, path: parsed.sourcePath });
   if (!source.ok) {
@@ -137,6 +157,44 @@ export function buildProviderRoundtripPackage({
     packageValue,
     sourceLoaded: true,
     packageWritten: parsed.write,
+  });
+}
+
+export function createProviderRoundtripSourceTemplate({ now = () => new Date() } = {}) {
+  const observedAt = now().toISOString();
+  return freeze({
+    ok: false,
+    operator_confirmation: 'fill_after_real_whatsapp_telegram_roundtrip',
+    raw_values_included: false,
+    secrets_included: false,
+    quote_request_ref: 'fake_quote_ref_replace_with_run_label',
+    observed_at: observedAt,
+    milestones: {
+      'fake-client-inbound': {
+        proof: 'redacted proof: client message was sent from staging sender to bot number',
+        observed_at: observedAt,
+      },
+      'bot-whatsapp-response': {
+        proof: 'redacted proof: bot answered on WhatsApp after client inbound',
+        observed_at: observedAt,
+      },
+      'telegram-quote-request': {
+        proof: 'redacted proof: quote request arrived in staging Telegram artist chat',
+        observed_at: observedAt,
+      },
+      'artist-quote-reply': {
+        proof: 'redacted proof: artist reply was submitted in Telegram',
+        observed_at: observedAt,
+      },
+      'client-quote-response': {
+        proof: 'redacted proof: final quote response reached client on WhatsApp',
+        observed_at: observedAt,
+      },
+      'rollback-disable-check': {
+        proof: 'redacted proof: rollback or disable check passed after roundtrip',
+        observed_at: observedAt,
+      },
+    },
   });
 }
 
@@ -182,6 +240,7 @@ function result({
   errors,
   packageValue = null,
   sourceLoaded = false,
+  sourceInitialized = false,
   packageWritten = false,
 }) {
   return freeze({
@@ -190,7 +249,9 @@ function result({
     evidence_dir: parsed.evidenceDir,
     source_path: parsed.sourcePath,
     output_path: parsed.outputPath,
+    init_source_requested: parsed.initSource,
     write_requested: parsed.write,
+    source_initialized: sourceInitialized,
     source_loaded: sourceLoaded,
     package_validated: packageValue !== null && errors.length === 0,
     package_written: packageWritten,
@@ -199,14 +260,15 @@ function result({
     connects_to_provider: false,
     executable_provider_commands: false,
     next_checkpoint: errors.length === 0
-      ? nextCheckpoint({ parsed, packageWritten })
+      ? nextCheckpoint({ parsed, sourceInitialized, packageWritten })
       : 'fix_provider_roundtrip_source',
     errors,
   });
 }
 
-function nextCheckpoint({ parsed, packageWritten }) {
+function nextCheckpoint({ parsed, sourceInitialized, packageWritten }) {
   if (!parsed.evidenceDir) return 'provide_smoke_evidence_dir';
+  if (sourceInitialized) return 'fill_provider_roundtrip_source_with_redacted_real_proofs';
   if (!packageWritten) return 'write_provider_roundtrip_package';
   return 'run_operator_turn_from_provider_roundtrip_package';
 }
@@ -225,7 +287,9 @@ function printResult(resultValue) {
     evidence_dir: resultValue.evidence_dir,
     source_path: resultValue.source_path,
     output_path: resultValue.output_path,
+    init_source_requested: resultValue.init_source_requested,
     write_requested: resultValue.write_requested,
+    source_initialized: resultValue.source_initialized,
     source_loaded: resultValue.source_loaded,
     package_validated: resultValue.package_validated,
     package_written: resultValue.package_written,

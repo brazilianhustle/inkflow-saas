@@ -33,6 +33,58 @@ test('build roundtrip package blocks missing source file', () => {
   assert.ok(result.errors.some((item) => item.code === 'provider_roundtrip_source_unreadable'));
 });
 
+test('build roundtrip package init-source requires evidence dir', () => {
+  const parsed = parseArgs(['--init-source']);
+
+  assert.equal(parsed.ok, false);
+  assert.ok(parsed.errors.some((item) => item.code === 'evidence_dir_required_for_init_source'));
+});
+
+test('build roundtrip package initializes editable source template only when requested', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'inkflow-roundtrip-builder-'));
+
+  const result = buildProviderRoundtripPackage({
+    argv: ['--evidence-dir', '.smoke-evidence/run_template', '--init-source'],
+    cwd,
+    now: () => new Date('2026-06-01T10:00:00.000Z'),
+  });
+
+  const templateText = readFileSync(
+    join(cwd, '.smoke-evidence', 'run_template', 'provider-roundtrip-source.json'),
+    'utf8',
+  );
+  const template = JSON.parse(templateText);
+
+  assert.equal(result.ok, true);
+  assert.equal(result.source_initialized, true);
+  assert.equal(result.package_validated, false);
+  assert.equal(result.next_checkpoint, 'fill_provider_roundtrip_source_with_redacted_real_proofs');
+  assert.equal(template.ok, false);
+  assert.equal(template.operator_confirmation, 'fill_after_real_whatsapp_telegram_roundtrip');
+  assert.equal(Object.keys(template.milestones).length, 6);
+  assert.doesNotMatch(templateText.replaceAll('"secrets_included": false', ''), /https?:\/\/|token|secret|password|api[_-]?key|webhook|runtime_handle_|secbind_/i);
+});
+
+test('build roundtrip package does not accept raw initialized template as pass', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'inkflow-roundtrip-builder-'));
+
+  buildProviderRoundtripPackage({
+    argv: ['--evidence-dir', '.smoke-evidence/run_template_blocked', '--init-source'],
+    cwd,
+    now: () => new Date('2026-06-01T10:00:00.000Z'),
+  });
+
+  const result = buildProviderRoundtripPackage({
+    argv: ['--evidence-dir', '.smoke-evidence/run_template_blocked'],
+    cwd,
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.source_loaded, true);
+  assert.ok(result.errors.some((item) => item.code === 'source_ok_true_required'));
+  assert.ok(result.errors.some((item) => item.code === 'redacted_provider_roundtrip_observed_required'));
+});
+
 test('build roundtrip package blocks source without operator confirmation', () => {
   const cwd = mkdtempSync(join(tmpdir(), 'inkflow-roundtrip-builder-'));
   const evidenceDir = join(cwd, '.smoke-evidence', 'run_2');

@@ -4,6 +4,27 @@
 
 ### Executado
 
+- Adicionado `--init-source` ao builder `provider:staging:build-roundtrip-package`.
+- O comando cria `.smoke-evidence/<run>/provider-roundtrip-source.json` com os seis marcos esperados e textos redigidos editaveis.
+- O template nasce bloqueado (`ok=false`, `operator_confirmation=fill_after_real_whatsapp_telegram_roundtrip`) para impedir PASS acidental antes de observacao real.
+
+### Validado
+
+- `node --test tests/reconstrucao/provider-staging-build-roundtrip-package.test.mjs tests/reconstrucao/provider-staging-operator-turn-run-from-evidence.test.mjs` PASS 12/12.
+- `npm test` PASS 1269/1269 no SaaS.
+- `npm run provider:staging:build-roundtrip-package -- --evidence-dir .smoke-evidence/provider-roundtrip-template-check --init-source` PASS com `source_initialized=true`, `package_validated=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`.
+- Varredura focada encontrou apenas regex defensivo de teste. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhum package canonico foi escrito por init-source.
+- O template inicializado nao e aceito pelo builder como PASS sem edicao operacional explicita.
+
+### Executado
+
 - Criado no SaaS o builder `provider:staging:build-roundtrip-package`.
 - O builder transforma `.smoke-evidence/<run>/provider-roundtrip-source.json` em `.smoke-evidence/<run>/provider-roundtrip.json` canonico, apenas quando chamado com `--write`.
 - O source exige `operator_confirmation=redacted_provider_roundtrip_observed`, `raw_values_included=false`, `secrets_included=false`, quote ref fake e os seis marcos redigidos do roundtrip.
