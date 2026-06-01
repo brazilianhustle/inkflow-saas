@@ -6,6 +6,7 @@
 
 - Adicionado `provider:staging:review-roundtrip-source` para revisar `provider-roundtrip-source.json` antes de gerar o pacote canonico.
 - O gate exige fonte operacional direta dos seis marcos WhatsApp/Telegram/rollback, bloqueando fonte apenas documental, valores crus, telefone real, URLs, tokens, secrets e paths inseguros.
+- Adicionado `provider:staging:prepare-roundtrip-source` para criar a pasta `.smoke-evidence/<run>` com fonte bloqueada, placeholders redigidos e checklist operacional antes da observacao real.
 - O template `provider:staging:build-roundtrip-package -- --init-source` agora orienta `source_review`, `evidence_origin`, `evidence_path` e `observed_at` por marco, permanecendo bloqueado ate confirmacao operacional redigida.
 - Sem provider real, sem secret sync, sem deploy e sem evidencia formal automatica nesta mudanca.
 
