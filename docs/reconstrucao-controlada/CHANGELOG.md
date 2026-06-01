@@ -4,6 +4,31 @@
 
 ### Executado
 
+- Integrado o runtime-real binding resolver ao Provider store source runtime binding operator execution turn no novo repo.
+- O execute do operator turn agora exige `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_RUNTIME_REAL_BINDING_RESOLVER_USE=true`.
+- O operator turn nao aceita mais runtime-real direto como caminho final: precisa passar pelo resolver, com bindings injetados e origem `runtime-real-factory`.
+- Adicionados testes negativos para bloquear execute sem resolver e execute com resolver sem bindings runtime injetados.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-operator-execution-turn.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-real-binding-resolver.test.mjs tests/architecture/provider-staging-real-smoke-store-source-runtime-binding-adapter.test.mjs` PASS 25/25 no novo repo.
+- CLI plan mode do `provider:staging:real-smoke-store-source-runtime-binding-operator-execution-turn` PASS, com `executed=false`, `evidence_written=false`, `provider_staging_smoke_executed=false`, `connects_to_provider=false`.
+- CLI execute mode com resolver flag mas sem bindings runtime injetados falhou corretamente com `runtime_binding_function_required` e `runtime_real_binding_resolver_ready_required`.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- `npm test` PASS 778/778 no novo repo.
+- Varredura focada encontrou apenas flags negativas, regexes defensivas, source names fake e casos negativos de teste. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo passo operacional e construir a fonte runtime real observavel que injeta runner, store reader e evidence writer no resolver.
+
+### Executado
+
 - Criado Provider staging real smoke store source runtime-real binding resolver no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-store-source-runtime-real-binding-resolver` no repo atual.
 - O resolver prepara bindings `runtime-real` apenas via `createRuntimeRealRuntimeBindings(...)`, valida contexto `worker`/`server`, bloqueia browser/admin/static/docs/test-fixture e nao chama `providerSmokeBaseRunner`, `listOperationalEventRecords` nem `writeEvidenceFile`.
