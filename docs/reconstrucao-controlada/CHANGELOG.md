@@ -4,6 +4,34 @@
 
 ### Executado
 
+- Criado Provider staging real smoke store source operator execution package no novo repo.
+- Adicionado wrapper `npm run provider:staging:real-smoke-store-source-operator-execution-package` no repo atual.
+- O checkpoint empacota a decisao final antes do operator-run real store-driven, sem chamar provider e sem escrever evidencia formal.
+- O pacote exige evidence review anterior, approval phrase `APPROVE_PROVIDER_STAGING_STORE_SOURCE_OPERATOR_EXECUTION`, flags futuras `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_OPERATOR_RUN=true`, `PROVIDER_STAGING_REAL_SMOKE_STORE_SOURCE_EXECUTE=true`, `PROVIDER_STAGING_SMOKE_EXECUTE=true`, runner runtime injetado e reader store-driven injetado.
+- Mesmo com approval presente, o checkpoint mantem `provider_staging_real_provider_traffic_authorized=false`, `provider_staging_smoke_execution_authorized=false`, `provider_staging_smoke_executed=false`, `provider_staging_smoke_evidence_captured=false`, `connects_to_provider=false` e `executable_provider_commands=false`.
+
+### Validado
+
+- `node --test tests/architecture/provider-staging-real-smoke-store-source-operator-execution-package.test.mjs tests/architecture/provider-staging-real-smoke-store-source-evidence-review.test.mjs` PASS 8/8 no novo repo.
+- `npm run provider:staging:real-smoke-store-source-operator-execution-package` PASS no novo repo sem approval, com `approval_present=false`, `ready_for_controlled_store_source_operator_execution=false`, `provider_staging_real_smoke_store_source_operator_execution_package_ready=true`, `next_checkpoint=operator_provides_provider_staging_store_source_operator_execution_approval`.
+- `npm run provider:staging:real-smoke-store-source-operator-execution-package` PASS no novo repo com `PROVIDER_STAGING_STORE_SOURCE_OPERATOR_EXECUTION_APPROVAL=APPROVE_PROVIDER_STAGING_STORE_SOURCE_OPERATOR_EXECUTION`, com `approval_present=true`, `ready_for_controlled_store_source_operator_execution=true`, `next_checkpoint=operator_executes_store_source_operator_run_with_real_injected_runner_and_reader`.
+- `npm run provider:staging:real-smoke-store-source-operator-execution-package` PASS via wrapper do repo atual sem approval e com approval, delegando para `/Users/brazilianhustler/Documents/inkflow-platform`.
+- `npm test` PASS 749/749 no novo repo.
+- `npm test` PASS 1257/1257 no repo atual.
+- `npm run typecheck` PASS placeholder no novo repo.
+- `npm run lint` PASS placeholder no novo repo.
+- Varredura dos arquivos novos encontrou apenas flags negativas, regexes defensivas, source names fake e casos negativos de teste. Nenhum valor real foi encontrado.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidencia formal real foi escrita em disco.
+- Proximo PASS real continua dependendo de operator-run real com runner/reader injetados e evidence review formal.
+
+### Executado
+
 - Criado Provider staging real smoke store source evidence review no novo repo.
 - Adicionado wrapper `npm run provider:staging:real-smoke-store-source-evidence-review` no repo atual.
 - O checkpoint revisa a evidencia formal que sera gerada pelo operator-run real, sem executar provider e sem inferir PASS a partir de plano.
