@@ -6,7 +6,7 @@
 
 - Criado no `inkflow-platform` o checkpoint `platform:whatsapp-webhook:worker-deploy-plan`.
 - Adicionado `services/whatsapp-webhook-runtime/src/worker.mjs` como entrypoint Worker bloqueado por padrão.
-- Adicionado `services/whatsapp-webhook-runtime/wrangler.jsonc` com `workers_dev=false`, `preview_urls=true`, sem rota real, sem secret versionado e sem env production.
+- Adicionado `services/whatsapp-webhook-runtime/wrangler.jsonc` com `workers_dev=true`, `preview_urls=true`, sem rota customizada, sem secret versionado e sem env production.
 - Documentado o plano em `docs/architecture/inkflow-platform-whatsapp-webhook-worker-deploy-plan.md`, mantendo deploy, webhook mutation, provider traffic, secret sync, billing e produção bloqueados.
 - Criado no `inkflow-platform` o pacote `services/whatsapp-webhook-runtime`.
 - O runtime implementa o handler Worker-compatible para `POST /api/whatsapp/inbound`, com dependências injetadas para resolver tenant e processar inbound.
@@ -20,6 +20,10 @@
 - Criado o wizard local `provider:staging:capture-roundtrip-wizard`.
 - O wizard guia a captura redigida dos seis marcos do roundtrip provider staging e escreve apenas `provider-roundtrip-source.json` e os artefatos `.txt` locais.
 - O comando exige `--write`, aceita `--answers-file` para execução controlada e mantém provider real, package canônico, bridge, evidence review e wave close fora do fluxo automático.
+- Atualizado o Worker do `inkflow-platform` para modo bridge temporário: valida o secret recebido da Evolution, aceita `POST /api/whatsapp/inbound` e encaminha para o runtime legado SaaS enquanto o processamento nativo do platform não substitui a ponte.
+- Deploy staging do Worker concluído em `inkflow-platform-whatsapp-webhook-staging.lmf4200.workers.dev`, com secret configurado via Wrangler sem versionar valor.
+- Snapshot de rollback capturado antes da mudança: webhook antigo da Evolution apontava para `inkflow-saas.pages.dev` em `/api/whatsapp/inbound`.
+- Webhook da Evolution para `inkflow_test_sub4` atualizado para o host do Worker do `inkflow-platform`, mantendo path `/api/whatsapp/inbound`, evento `MESSAGES_UPSERT`, `enabled=true`, `webhookBase64=true` e `webhookByEvents=false`.
 
 ### Validado
 
@@ -39,18 +43,24 @@
 - `npm test` PASS 1285/1285.
 - O wizard bloqueia ausência de `--write`, conteúdo inseguro com telefone real, confirmações incompletas e fonte sem diretório seguro.
 - A fonte capturada pelo wizard passa pelo `review-roundtrip-source` quando todos os seis marcos têm confirmação e prova redigida segura.
+- Validação focada do bridge no platform PASS 14/14.
+- `npm test` PASS 851/851 no platform após bridge Worker -> SaaS legado.
+- `npm run typecheck` PASS placeholder no platform.
+- `npm run lint` PASS placeholder no platform.
+- CI remoto do `inkflow-platform` PASS no run `26798587621` (`npm test`, `typecheck`, `lint`).
+- Teste autenticado direto no Worker retornou `202`, `forwarded=true` e `queued=true`.
+- `/webhook/find` da Evolution confirmou o novo host `inkflow-platform-whatsapp-webhook-staging.lmf4200.workers.dev`, path `/api/whatsapp/inbound` e evento `MESSAGES_UPSERT`.
 
 ### Bloqueios Mantidos
 
-- Nenhum webhook Evolution foi consultado com sucesso nem alterado; as chaves locais disponíveis retornaram 401 para `webhook/find`.
-- O novo runtime público ainda não foi implantado e ainda não recebe tráfego real.
-- O novo `wrangler.jsonc` não contém rota real nem secret; deploy segue bloqueado.
+- O webhook Evolution de teste foi alterado apenas para `inkflow_test_sub4`; nenhum webhook de produção foi atualizado.
+- O Worker staging recebe o webhook pela nova estrutura, mas ainda opera como ponte para o SaaS legado.
+- O processamento nativo completo no `inkflow-platform` ainda não substituiu a ponte.
 - Nenhum provider real foi chamado.
-- Nenhum webhook foi atualizado.
-- Nenhum secret foi sincronizado.
+- Nenhum secret foi versionado no repositório.
 - Nenhuma evidência formal foi criada.
 - Nenhum package canônico foi escrito pelo wizard.
-- PASS provider real segue bloqueado até operador observar o roundtrip real, capturar prova redigida, rodar review, build, bridge `from-evidence`, evidence review e wave close.
+- PASS provider real segue bloqueado até operador enviar mensagem real no WhatsApp, observar roundtrip real, capturar prova redigida, rodar review, build, bridge `from-evidence`, evidence review e wave close.
 
 ## 2026-06-01
 

@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-fdb4e29 feat(platform): add webhook worker deploy plan
+55124fb feat(platform): bridge whatsapp worker to legacy runtime
 ```
 
 Remote GitHub configurado:
@@ -54,6 +54,12 @@ Ultima CI do platform apos Worker deploy plan:
 PASS run 26798156199
 ```
 
+Ultima CI do platform apos bridge Worker -> SaaS legado:
+
+```text
+PASS run 26798587621
+```
+
 Checkpoint SaaS atual aguardando commit:
 
 - Preparado no SaaS o diretório operacional local `.smoke-evidence/provider-roundtrip-20260601T225435Z/` para capturar o próximo roundtrip provider staging.
@@ -75,10 +81,17 @@ Checkpoint SaaS atual aguardando commit:
 - Documentado em `docs/architecture/inkflow-platform-public-whatsapp-webhook-runtime.md` que o checkpoint mantém `INKFLOW_PLATFORM_PUBLIC_WHATSAPP_WEBHOOK_DEPLOYED=false`, `PROVIDER_WEBHOOK_UPDATE_AUTHORIZED=false` e `DEPLOY_EXECUTION_AUTHORIZED=false`.
 - Validações locais do runtime: `node --test services/whatsapp-webhook-runtime/tests/whatsapp-webhook-runtime.test.mjs` PASS 6/6; `npm test` PASS 843/843 no platform; `npm run typecheck` PASS placeholder; `npm run lint` PASS placeholder.
 - Criado no `inkflow-platform` o checkpoint `platform:whatsapp-webhook:worker-deploy-plan`.
-- Adicionado `services/whatsapp-webhook-runtime/src/worker.mjs` e `services/whatsapp-webhook-runtime/wrangler.jsonc` com `workers_dev=false`, `preview_urls=true`, sem `route`, sem secret versionado e sem env production.
+- Adicionado `services/whatsapp-webhook-runtime/src/worker.mjs` e `services/whatsapp-webhook-runtime/wrangler.jsonc` com `workers_dev=true`, `preview_urls=true`, sem `route`, sem secret versionado e sem env production.
 - O deploy plan valida doc/config/entrypoint e bloqueia rota, segredo em JSON, comando executável de deploy, ambiente production-like e entrypoint que não delega para o runtime.
 - Validações locais do deploy plan: `node --test tests/architecture/platform-whatsapp-webhook-worker-deploy-plan.test.mjs` PASS 6/6; `INKFLOW_ENV=local PROVIDER_ENV=local npm run platform:whatsapp-webhook:worker-deploy-plan` PASS; `npm test` PASS 849/849 no platform; `npm run typecheck` PASS placeholder; `npm run lint` PASS placeholder.
-- Próximo passo correto para testar pela nova estrutura: preparar o gate de preview/deploy dry-run do webhook público no `inkflow-platform`, ainda sem reconfigurar Evolution. Só depois criar um checkpoint separado de deploy/preview real e outro de webhook mutation com rollback para o SaaS legado.
+- Atualizado o Worker para modo bridge temporário: se `LEGACY_WHATSAPP_WEBHOOK_URL` estiver configurado, o Worker valida `WHATSAPP_WEBHOOK_SECRET`, limita payload e encaminha para o runtime legado SaaS. Isso permite a Evolution apontar para a nova estrutura sem quebrar o fluxo atual.
+- CI remoto do bridge passou no run `26798587621`; validações locais antes do deploy: foco PASS 14/14; `npm test` PASS 851/851; `npm run typecheck` PASS placeholder; `npm run lint` PASS placeholder.
+- Deploy real do Worker concluído em `inkflow-platform-whatsapp-webhook-staging.lmf4200.workers.dev`, version id `58c925ab-a4f6-4e14-9e2b-0df70930852a`.
+- Secret `WHATSAPP_WEBHOOK_SECRET` configurado no Worker via Wrangler sem versionar valor.
+- Teste autenticado do Worker retornou `202` com `forwarded=true` e `queued=true`.
+- Rollback registrado antes da mutation: webhook antigo da Evolution apontava para host `inkflow-saas.pages.dev` path `/api/whatsapp/inbound`.
+- Webhook da Evolution para `inkflow_test_sub4` foi atualizado com sucesso usando formato `A:nested-short`; `/webhook/find` confirmou host `inkflow-platform-whatsapp-webhook-staging.lmf4200.workers.dev`, path `/api/whatsapp/inbound`, `enabled=true`, `webhookBase64=true`, `webhookByEvents=false`, events `MESSAGES_UPSERT`.
+- Próximo passo correto: pedir ao operador enviar uma mensagem real para o bot de teste `5545999012357`, observar logs/eventos do Worker e do SaaS legado, confirmar resposta WhatsApp, e só depois iniciar checkpoint para substituir a ponte por processamento nativo do `inkflow-platform`.
 
 - Criado no repo `inkflow-saas` o bridge `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run-from-evidence`.
 - A funcao dele e converter um pacote redigido de roundtrip provider real em bindings seguros para o `operator-turn-run` do platform, sem aceitar PASS manual ou evidencia incompleta.
