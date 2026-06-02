@@ -4,6 +4,10 @@
 
 ### Executado
 
+- Criado no `inkflow-platform` o checkpoint `platform:whatsapp-webhook:worker-deploy-plan`.
+- Adicionado `services/whatsapp-webhook-runtime/src/worker.mjs` como entrypoint Worker bloqueado por padrão.
+- Adicionado `services/whatsapp-webhook-runtime/wrangler.jsonc` com `workers_dev=false`, `preview_urls=true`, sem rota real, sem secret versionado e sem env production.
+- Documentado o plano em `docs/architecture/inkflow-platform-whatsapp-webhook-worker-deploy-plan.md`, mantendo deploy, webhook mutation, provider traffic, secret sync, billing e produção bloqueados.
 - Criado no `inkflow-platform` o pacote `services/whatsapp-webhook-runtime`.
 - O runtime implementa o handler Worker-compatible para `POST /api/whatsapp/inbound`, com dependências injetadas para resolver tenant e processar inbound.
 - O normalizador aceita eventos Evolution `messages.upsert`, ignora mensagens `fromMe=true`, transforma contato WhatsApp em identificador hash redigido e bloqueia texto com formato de segredo.
@@ -19,6 +23,10 @@
 
 ### Validado
 
+- `node --test tests/architecture/platform-whatsapp-webhook-worker-deploy-plan.test.mjs` PASS 6/6 no platform.
+- `INKFLOW_ENV=local PROVIDER_ENV=local npm run platform:whatsapp-webhook:worker-deploy-plan` PASS no platform.
+- `npm test` PASS 849/849 no platform.
+- CI remoto do `inkflow-platform` PASS no run `26798156199` (`npm test`, `typecheck`, `lint`).
 - `node --test services/whatsapp-webhook-runtime/tests/whatsapp-webhook-runtime.test.mjs` PASS 6/6 no platform.
 - `npm test` PASS 843/843 no platform.
 - `npm run typecheck` PASS placeholder no platform.
@@ -36,6 +44,7 @@
 
 - Nenhum webhook Evolution foi consultado com sucesso nem alterado; as chaves locais disponíveis retornaram 401 para `webhook/find`.
 - O novo runtime público ainda não foi implantado e ainda não recebe tráfego real.
+- O novo `wrangler.jsonc` não contém rota real nem secret; deploy segue bloqueado.
 - Nenhum provider real foi chamado.
 - Nenhum webhook foi atualizado.
 - Nenhum secret foi sincronizado.
