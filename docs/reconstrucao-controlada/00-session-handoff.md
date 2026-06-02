@@ -71,6 +71,17 @@ Checkpoint formal de integracoes pronto:
 - Validações locais: `node --test tests/architecture/platform-integration-readiness-map.test.mjs` PASS 5/5 no platform; `INKFLOW_ENV=local PROVIDER_ENV=local npm run platform:integration-readiness-map` PASS no platform; `npm test` PASS 856/856 no platform; `npm run typecheck` PASS placeholder no platform; `npm run lint` PASS placeholder no platform; `npm run platform:integration-readiness-map` PASS via wrapper SaaS; `npm test` PASS 1285/1285 no SaaS.
 - Proximo checkpoint seguro: `build_platform_connection_health_contracts`. Nao iniciar OAuth, sync de secrets, deploy, billing, provider traffic ou mutation de webhook antes desse contrato.
 
+Checkpoint formal de health contracts pronto:
+
+- Criado no `inkflow-platform` o checkpoint `platform:connection-health-contracts`, convertendo as 13 conexoes do readiness map em contratos formais de health/readiness.
+- Cada contrato define `probe_surface`, `readiness_signal`, janela de stale evidence, thresholds warn/critical, evidence source redigida e se falha bloqueia o WhatsApp nativo.
+- Contratos bloqueantes para WhatsApp nativo: Cloudflare Workers, Cloudflare Pages legado, Durable session queue, GitHub CI/CD, Supabase staging, Evolution staging, Telegram staging, OpenAI runtime, Sentry, Bitwarden e VPS Evolution/n8n.
+- Mercado Pago billing e MailerLite lifecycle ficam mapeados para completude da plataforma, mas nao bloqueiam o primeiro cutover nativo WhatsApp staging.
+- O checkpoint segue estritamente local/read-only: `connects_to_provider=false`, `health_probes_executed=false`, `oauth_connection_mutation_authorized=false`, `provider_secret_sync_authorized=false`, `deploy_execution_authorized=false`, `provider_webhook_update_authorized=false`.
+- Wrapper criado no SaaS: `npm run platform:connection-health-contracts`.
+- Validacoes locais: `node --test tests/architecture/platform-connection-health-contracts.test.mjs` PASS 6/6 no platform; `INKFLOW_ENV=local PROVIDER_ENV=local npm run platform:connection-health-contracts` PASS no platform; `npm test` PASS 862/862 no platform; `npm run typecheck` PASS placeholder no platform; `npm run lint` PASS placeholder no platform; `npm run platform:connection-health-contracts` PASS via wrapper SaaS; `npm test` PASS 1285/1285 no SaaS.
+- Proximo checkpoint seguro: `build_platform_read_only_health_probe_adapters`. Ainda nao executar probes reais nem provider traffic automaticamente.
+
 Checkpoint SaaS atual aguardando commit:
 
 - Preparado no SaaS o diretório operacional local `.smoke-evidence/provider-roundtrip-20260601T225435Z/` para capturar o próximo roundtrip provider staging.

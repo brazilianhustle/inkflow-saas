@@ -8,6 +8,9 @@
 - O mapa define 13 conexoes estruturais obrigatorias para a plataforma antes do processamento WhatsApp nativo: Cloudflare Workers, Cloudflare Pages legado, Durable session queue, GitHub CI/CD, Supabase staging, Evolution WhatsApp staging, Telegram staging, OpenAI runtime, Mercado Pago, MailerLite, Sentry, Bitwarden e VPS Evolution/n8n.
 - Cada conexao passa a ter contrato local com provider, tipo, superficie runtime, fronteira de auth, binding de secret por nome, modo de health check, classe de gap de performance e necessidade antes do runtime nativo.
 - Criado o wrapper SaaS `platform:integration-readiness-map`, permitindo rodar o checkpoint do platform a partir do repo operacional atual.
+- Criado no `inkflow-platform` o checkpoint formal `platform:connection-health-contracts`.
+- O checkpoint converte as 13 conexoes em contratos com probe surface, readiness signal, stale window, thresholds warn/critical, evidence source redigida e bloqueio ou nao do WhatsApp nativo.
+- Criado o wrapper SaaS `platform:connection-health-contracts`.
 - Criado no `inkflow-platform` o checkpoint `platform:whatsapp-webhook:worker-deploy-plan`.
 - Adicionado `services/whatsapp-webhook-runtime/src/worker.mjs` como entrypoint Worker bloqueado por padrão.
 - Adicionado `services/whatsapp-webhook-runtime/wrangler.jsonc` com `workers_dev=true`, `preview_urls=true`, sem rota customizada, sem secret versionado e sem env production.
@@ -38,6 +41,13 @@
 - `npm run lint` PASS placeholder no platform.
 - `npm run platform:integration-readiness-map` PASS via wrapper SaaS.
 - `npm test` PASS 1285/1285 no SaaS.
+- `node --test tests/architecture/platform-connection-health-contracts.test.mjs` PASS 6/6 no platform.
+- `INKFLOW_ENV=local PROVIDER_ENV=local npm run platform:connection-health-contracts` PASS no platform, com `contract_count=13`, `health_probes_executed=false`, `native_whatsapp_runtime_ready=false`, `legacy_bridge_dependency_active=true` e `next_checkpoint=build_platform_read_only_health_probe_adapters`.
+- `npm test` PASS 862/862 no platform.
+- `npm run typecheck` PASS placeholder no platform.
+- `npm run lint` PASS placeholder no platform.
+- `npm run platform:connection-health-contracts` PASS via wrapper SaaS.
+- `npm test` PASS 1285/1285 no SaaS.
 - `node --test tests/architecture/platform-whatsapp-webhook-worker-deploy-plan.test.mjs` PASS 6/6 no platform.
 - `INKFLOW_ENV=local PROVIDER_ENV=local npm run platform:whatsapp-webhook:worker-deploy-plan` PASS no platform.
 - `npm test` PASS 849/849 no platform.
@@ -65,7 +75,8 @@
 ### Bloqueios Mantidos
 
 - O mapa de integracoes nao executa OAuth, nao sincroniza secrets, nao chama providers, nao faz deploy e nao altera webhook.
-- O proximo passo formal e construir `build_platform_connection_health_contracts`, ainda sem liberar trafego real automaticamente.
+- Os health contracts nao executam probes reais, nao chamam providers, nao sincronizam secrets e nao alteram webhook.
+- O proximo passo formal e construir `build_platform_read_only_health_probe_adapters`, ainda sem liberar trafego real automaticamente.
 - O webhook Evolution de teste foi alterado apenas para `inkflow_test_sub4`; nenhum webhook de produção foi atualizado.
 - O Worker staging recebe o webhook pela nova estrutura, mas ainda opera como ponte para o SaaS legado.
 - O processamento nativo completo no `inkflow-platform` ainda não substituiu a ponte.
