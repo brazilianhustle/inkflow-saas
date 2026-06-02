@@ -30,7 +30,7 @@ Novo repo:
 Ultimo commit validado:
 
 ```text
-ab9f0d5 feat(provider): add webhook cutover plan
+1c71b4c feat(platform): add whatsapp webhook runtime
 ```
 
 Remote GitHub configurado:
@@ -40,6 +40,12 @@ https://github.com/brazilianhustle/inkflow-platform
 visibility: private
 default_branch: main
 ci: PASS run 26797367301
+```
+
+Ultima CI do platform apos runtime WhatsApp:
+
+```text
+PASS run 26797758332
 ```
 
 Checkpoint SaaS atual aguardando commit:
@@ -58,7 +64,11 @@ Checkpoint SaaS atual aguardando commit:
 - Criado no platform o checkpoint `provider:staging:webhook-cutover-plan` e wrapper no SaaS. Ele fixa `TEST_BOT_NUMBER=5545999012357`, `TEST_EVO_INSTANCE=inkflow_test_sub4`, bloqueia webhook mutation/deploy/provider traffic por padrão e aponta `next_checkpoint=build_inkflow_platform_public_whatsapp_webhook_runtime`.
 - Validações do cutover plan: `node --test tests/architecture/provider-staging-webhook-cutover-plan.test.mjs` PASS 6/6; `npm run provider:staging:webhook-cutover-plan` PASS via wrapper SaaS; `npm test` PASS 837/837 no platform; `npm test` PASS 1285/1285 no SaaS.
 - Configurado remote GitHub privado para o `inkflow-platform`; `main` agora rastreia `origin/main`, primeiro push concluído e CI remoto passou (`npm test`, `typecheck`, `lint`).
-- Próximo passo correto para testar pela nova estrutura: construir o runtime público WhatsApp webhook no `inkflow-platform`, ainda sem reconfigurar Evolution. Só depois criar um checkpoint separado de deploy/preview e outro de webhook mutation com rollback para o SaaS legado.
+- Criado no `inkflow-platform` o runtime público Worker-compatible para `POST /api/whatsapp/inbound`, em `services/whatsapp-webhook-runtime/`.
+- O runtime valida secret via binding `env`, limita payload JSON, normaliza `messages.upsert`, ignora `fromMe=true`, redige contato via hash, resolve tenant por instância e processa inbound por dependências injetadas.
+- Documentado em `docs/architecture/inkflow-platform-public-whatsapp-webhook-runtime.md` que o checkpoint mantém `INKFLOW_PLATFORM_PUBLIC_WHATSAPP_WEBHOOK_DEPLOYED=false`, `PROVIDER_WEBHOOK_UPDATE_AUTHORIZED=false` e `DEPLOY_EXECUTION_AUTHORIZED=false`.
+- Validações locais do runtime: `node --test services/whatsapp-webhook-runtime/tests/whatsapp-webhook-runtime.test.mjs` PASS 6/6; `npm test` PASS 843/843 no platform; `npm run typecheck` PASS placeholder; `npm run lint` PASS placeholder.
+- Próximo passo correto para testar pela nova estrutura: preparar plano/config de deploy Worker/preview do webhook público no `inkflow-platform`, ainda sem reconfigurar Evolution. Só depois criar um checkpoint separado de deploy/preview e outro de webhook mutation com rollback para o SaaS legado.
 
 - Criado no repo `inkflow-saas` o bridge `provider:staging:real-smoke-store-source-runtime-real-operational-adapters-operator-turn-run-from-evidence`.
 - A funcao dele e converter um pacote redigido de roundtrip provider real em bindings seguros para o `operator-turn-run` do platform, sem aceitar PASS manual ou evidencia incompleta.

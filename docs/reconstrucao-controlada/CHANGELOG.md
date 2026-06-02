@@ -4,6 +4,10 @@
 
 ### Executado
 
+- Criado no `inkflow-platform` o pacote `services/whatsapp-webhook-runtime`.
+- O runtime implementa o handler Worker-compatible para `POST /api/whatsapp/inbound`, com dependências injetadas para resolver tenant e processar inbound.
+- O normalizador aceita eventos Evolution `messages.upsert`, ignora mensagens `fromMe=true`, transforma contato WhatsApp em identificador hash redigido e bloqueia texto com formato de segredo.
+- Documentado o checkpoint em `docs/architecture/inkflow-platform-public-whatsapp-webhook-runtime.md`, mantendo deploy, webhook mutation, provider traffic, secret sync, billing e produção bloqueados.
 - Criado o repositório remoto privado `brazilianhustle/inkflow-platform` no GitHub.
 - Configurado `origin` do repo local `inkflow-platform` para `https://github.com/brazilianhustle/inkflow-platform.git` e feito push da branch `main`.
 - Criado no platform o checkpoint `provider:staging:webhook-cutover-plan`.
@@ -15,6 +19,10 @@
 
 ### Validado
 
+- `node --test services/whatsapp-webhook-runtime/tests/whatsapp-webhook-runtime.test.mjs` PASS 6/6 no platform.
+- `npm test` PASS 843/843 no platform.
+- `npm run typecheck` PASS placeholder no platform.
+- `npm run lint` PASS placeholder no platform.
 - `node --test tests/architecture/provider-staging-webhook-cutover-plan.test.mjs` PASS 6/6 no platform.
 - `npm run provider:staging:webhook-cutover-plan` PASS via wrapper SaaS com `current_operational_route=inkflow-saas`, `intended_future_route=inkflow-platform`, `webhook_mutation_ready=false` e `next_checkpoint=build_inkflow_platform_public_whatsapp_webhook_runtime`.
 - `npm test` PASS 837/837 no platform.
@@ -27,6 +35,7 @@
 ### Bloqueios Mantidos
 
 - Nenhum webhook Evolution foi consultado com sucesso nem alterado; as chaves locais disponíveis retornaram 401 para `webhook/find`.
+- O novo runtime público ainda não foi implantado e ainda não recebe tráfego real.
 - Nenhum provider real foi chamado.
 - Nenhum webhook foi atualizado.
 - Nenhum secret foi sincronizado.
