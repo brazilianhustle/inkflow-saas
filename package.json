@@ -89,7 +89,8 @@
     "provider:staging:capture-roundtrip-wizard": "bash scripts/reconstrucao/provider-staging-capture-roundtrip-wizard.sh",
     "provider:staging:review-roundtrip-source": "bash scripts/reconstrucao/provider-staging-review-roundtrip-source.sh",
     "provider:staging:build-roundtrip-package": "bash scripts/reconstrucao/provider-staging-build-roundtrip-package.sh",
-    "provider:staging:real-smoke-store-source-wave-close": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-wave-close.sh"
+    "provider:staging:real-smoke-store-source-wave-close": "bash scripts/reconstrucao/provider-staging-real-smoke-store-source-wave-close.sh",
+    "provider:staging:webhook-cutover-plan": "bash scripts/reconstrucao/provider-staging-webhook-cutover-plan.sh"
   },
   "dependencies": {
     "openai": "^4.104.0",
