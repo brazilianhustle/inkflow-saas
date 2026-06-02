@@ -60,6 +60,17 @@ Ultima CI do platform apos bridge Worker -> SaaS legado:
 PASS run 26798587621
 ```
 
+Checkpoint formal de integracoes pronto:
+
+- Criado no `inkflow-platform` o checkpoint `platform:integration-readiness-map` para mapear as conexoes estruturais necessarias antes de substituir a ponte WhatsApp por processamento nativo.
+- O mapa registra 13 conexoes obrigatorias: Cloudflare Workers runtime, Cloudflare Pages legado, Durable session queue, GitHub CI/CD, Supabase staging data, Evolution staging WhatsApp, Telegram staging artist, OpenAI agent runtime, Mercado Pago billing, MailerLite lifecycle, Sentry telemetry, Bitwarden secret source e VPS Evolution/n8n health.
+- Cada conexao possui provider, tipo, superficie runtime, fronteira de auth, binding de secret por nome, modo de health check, classe de gap de performance e exigencia antes do WhatsApp nativo.
+- O checkpoint e estritamente local/read-only: `connects_to_provider=false`, `executable_provider_commands=false`, `oauth_connection_mutation_authorized=false`, `provider_secret_sync_authorized=false`, `deploy_execution_authorized=false`, `provider_webhook_update_authorized=false`.
+- Estado operacional preservado: `native_whatsapp_runtime_ready=false` e `legacy_bridge_dependency_active=true`; o Worker staging segue recebendo pela nova estrutura, mas ainda encaminha para o SaaS legado.
+- Wrapper criado no SaaS: `npm run platform:integration-readiness-map`, apontando para `/Users/brazilianhustler/Documents/inkflow-platform` via `INKFLOW_PLATFORM_DIR` opcional.
+- Validações locais: `node --test tests/architecture/platform-integration-readiness-map.test.mjs` PASS 5/5 no platform; `INKFLOW_ENV=local PROVIDER_ENV=local npm run platform:integration-readiness-map` PASS no platform; `npm test` PASS 856/856 no platform; `npm run typecheck` PASS placeholder no platform; `npm run lint` PASS placeholder no platform; `npm run platform:integration-readiness-map` PASS via wrapper SaaS; `npm test` PASS 1285/1285 no SaaS.
+- Proximo checkpoint seguro: `build_platform_connection_health_contracts`. Nao iniciar OAuth, sync de secrets, deploy, billing, provider traffic ou mutation de webhook antes desse contrato.
+
 Checkpoint SaaS atual aguardando commit:
 
 - Preparado no SaaS o diretório operacional local `.smoke-evidence/provider-roundtrip-20260601T225435Z/` para capturar o próximo roundtrip provider staging.
