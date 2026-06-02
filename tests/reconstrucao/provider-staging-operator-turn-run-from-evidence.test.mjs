@@ -69,7 +69,7 @@ test('operator turn run from evidence writes formal evidence only from complete 
     ],
     env: executeEnv,
     cwd,
-    platformDir: '/Users/brazilianhustler/Documents/inkflow-platform',
+    platformModules: createPlatformModulesStub(),
     now: () => new Date('2026-06-01T10:00:00.000Z'),
   });
 
@@ -99,6 +99,49 @@ function validPackage() {
       'artist-quote-reply': 'artist quote reply redacted provider proof captured',
       'client-quote-response': 'final WhatsApp quote response redacted provider proof captured',
       'rollback-disable-check': 'rollback disable redacted provider proof passed',
+    },
+  };
+}
+
+function createPlatformModulesStub() {
+  return {
+    createProviderStagingRuntimeRealOperationalAdapterExecutionBindings({
+      listOperationalEventRecords,
+      writeEvidenceFile,
+    }) {
+      return {
+        validate: () => ({ ok: true, errors: [] }),
+        toOperationalRuntimeBindings: () => ({
+          listOperationalEventRecords,
+          writeEvidenceFile,
+        }),
+      };
+    },
+    async runProviderStagingStoreSourceRuntimeRealOperationalAdaptersOperatorTurnRun({
+      operationalRuntimeBindings,
+      evidencePath,
+    }) {
+      const records = await operationalRuntimeBindings.listOperationalEventRecords({
+        quote_request_ref: 'fake_quote_ref_transport_runner',
+      });
+      operationalRuntimeBindings.writeEvidenceFile(evidencePath, [
+        'PROVIDER_STAGING_SMOKE_EXECUTED=true',
+        'PROVIDER_STAGING_SMOKE_EVIDENCE_CAPTURED=true',
+        'PROVIDER_SECRET_SYNC_AUTHORIZED=false',
+        'PROVIDER_WEBHOOK_UPDATE_AUTHORIZED=false',
+        'quote request reference: fake_quote_ref_transport_runner',
+        `records captured: ${records.length}`,
+      ].join('\n'));
+      return {
+        ok: true,
+        executed: true,
+        evidence_written: true,
+        evidence_validated: true,
+        provider_staging_smoke_executed: true,
+        provider_staging_smoke_evidence_captured: true,
+        connects_to_provider: false,
+        errors: [],
+      };
     },
   };
 }

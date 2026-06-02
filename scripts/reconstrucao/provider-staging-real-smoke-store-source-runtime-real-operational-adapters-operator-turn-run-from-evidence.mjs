@@ -81,6 +81,7 @@ export async function runProviderStagingOperatorTurnRunFromEvidence({
   env = process.env,
   cwd = process.cwd(),
   platformDir = env.INKFLOW_PLATFORM_DIR || DEFAULT_PLATFORM_DIR,
+  platformModules = null,
   now = () => new Date(),
 } = {}) {
   const parsed = parseArgs(argv);
@@ -100,7 +101,7 @@ export async function runProviderStagingOperatorTurnRunFromEvidence({
     });
   }
 
-  const platform = await loadPlatformModules({ platformDir });
+  const platform = platformModules || await loadPlatformModules({ platformDir });
   const bindingsFactory = platform.createProviderStagingRuntimeRealOperationalAdapterExecutionBindings({
     runtimeContext: 'server',
     providerTransportRuntimeResolver: createTransportRuntimeResolver(packageResult.package),
