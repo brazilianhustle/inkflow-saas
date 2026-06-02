@@ -1,5 +1,29 @@
 # Changelog - Reconstrucao Controlada
 
+## 2026-06-02
+
+### Executado
+
+- Criado o wizard local `provider:staging:capture-roundtrip-wizard`.
+- O wizard guia a captura redigida dos seis marcos do roundtrip provider staging e escreve apenas `provider-roundtrip-source.json` e os artefatos `.txt` locais.
+- O comando exige `--write`, aceita `--answers-file` para execução controlada e mantém provider real, package canônico, bridge, evidence review e wave close fora do fluxo automático.
+
+### Validado
+
+- `node --test tests/reconstrucao/provider-staging-capture-roundtrip-wizard.test.mjs tests/reconstrucao/provider-staging-prepare-roundtrip-source.test.mjs tests/reconstrucao/provider-staging-review-roundtrip-source.test.mjs tests/reconstrucao/provider-staging-build-roundtrip-package.test.mjs tests/reconstrucao/provider-staging-operator-turn-run-from-evidence.test.mjs` PASS 28/28.
+- `npm test` PASS 1285/1285.
+- O wizard bloqueia ausência de `--write`, conteúdo inseguro com telefone real, confirmações incompletas e fonte sem diretório seguro.
+- A fonte capturada pelo wizard passa pelo `review-roundtrip-source` quando todos os seis marcos têm confirmação e prova redigida segura.
+
+### Bloqueios Mantidos
+
+- Nenhum provider real foi chamado.
+- Nenhum webhook foi atualizado.
+- Nenhum secret foi sincronizado.
+- Nenhuma evidência formal foi criada.
+- Nenhum package canônico foi escrito pelo wizard.
+- PASS provider real segue bloqueado até operador observar o roundtrip real, capturar prova redigida, rodar review, build, bridge `from-evidence`, evidence review e wave close.
+
 ## 2026-06-01
 
 ### Executado
