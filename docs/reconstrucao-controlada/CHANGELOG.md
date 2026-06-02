@@ -4,6 +4,8 @@
 
 ### Executado
 
+- Criado o repositório remoto privado `brazilianhustle/inkflow-platform` no GitHub.
+- Configurado `origin` do repo local `inkflow-platform` para `https://github.com/brazilianhustle/inkflow-platform.git` e feito push da branch `main`.
 - Criado no platform o checkpoint `provider:staging:webhook-cutover-plan`.
 - Criado no SaaS o wrapper `provider:staging:webhook-cutover-plan`.
 - O checkpoint fixa o bot de teste `5545999012357`, a instância `inkflow_test_sub4`, reconhece que a rota atual ainda é `inkflow-saas` e bloqueia qualquer mudança de webhook até existir runtime público no `inkflow-platform`.
@@ -16,6 +18,7 @@
 - `node --test tests/architecture/provider-staging-webhook-cutover-plan.test.mjs` PASS 6/6 no platform.
 - `npm run provider:staging:webhook-cutover-plan` PASS via wrapper SaaS com `current_operational_route=inkflow-saas`, `intended_future_route=inkflow-platform`, `webhook_mutation_ready=false` e `next_checkpoint=build_inkflow_platform_public_whatsapp_webhook_runtime`.
 - `npm test` PASS 837/837 no platform.
+- CI remoto do `inkflow-platform` PASS no run `26797367301` (`npm test`, `typecheck`, `lint`).
 - `node --test tests/reconstrucao/provider-staging-capture-roundtrip-wizard.test.mjs tests/reconstrucao/provider-staging-prepare-roundtrip-source.test.mjs tests/reconstrucao/provider-staging-review-roundtrip-source.test.mjs tests/reconstrucao/provider-staging-build-roundtrip-package.test.mjs tests/reconstrucao/provider-staging-operator-turn-run-from-evidence.test.mjs` PASS 28/28.
 - `npm test` PASS 1285/1285.
 - O wizard bloqueia ausência de `--write`, conteúdo inseguro com telefone real, confirmações incompletas e fonte sem diretório seguro.
