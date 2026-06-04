@@ -106,6 +106,54 @@ test('runAgent (tattoo): surfacia analise_imagens no retorno', async () => {
   assert.equal(r.cobertura_suspeita, null);
 });
 
+test('runAgent telemetry: registra pending question e resolver esperado para auditoria', async () => {
+  const { runAgent } = await import('../../functions/api/agent/route.js');
+  const inserted = [];
+  const env = {
+    ...ENV,
+    SUPABASE_SERVICE_KEY: 'service-key',
+    _fetch: async (_url, init) => {
+      inserted.push(JSON.parse(init.body));
+      return new Response('', { status: 201 });
+    },
+  };
+
+  const r = await runAgent({
+    env,
+    tenant_id: 't',
+    telefone: '5511',
+    mensagem: 'realismo',
+    estado_atual: 'tattoo',
+    dados_acumulados: { descricao_curta: 'dragao', local_corpo: 'perna', altura_cm: 180 },
+    historico: [
+      { role: 'assistant', content: 'Qual estilo voce prefere?' },
+    ],
+    tenant: TENANT_STUB,
+    conversa: {
+      ...CONVERSA_STUB,
+      dados_coletados: { descricao_curta: 'dragao', local_corpo: 'perna', altura_cm: 180 },
+    },
+    clientContext: {},
+    openaiClient: fakeOpenAIOutput({
+      ...PERGUNTA_OUT_VISAO,
+      resposta_cliente: 'Consegue mandar uma foto do local?',
+      dados_persistidos: { estilo: 'realismo' },
+      campos_faltando: ['foto_local'],
+    }),
+  });
+
+  assert.equal(r.ok, true);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(inserted.length, 1);
+  const metadata = inserted[0].context_metadata;
+  assert.equal(metadata.agent_has_pending_question, true);
+  assert.equal(metadata.agent_pending_question_field, 'estilo');
+  assert.equal(metadata.agent_expected_resolver, 'conversation_policy.estilo');
+  assert.equal(metadata.agent_action, 'pergunta');
+  assert.deepEqual(metadata.agent_missing_fields, ['foto_local']);
+  assert.equal(metadata.agent_missing_fields_count, 1);
+});
+
 test('runAgent (tattoo): pergunta de imagem com midia nao expõe limitação visual seca', async () => {
   const { runAgent } = await import('../../functions/api/agent/route.js');
   const r = await runAgent({

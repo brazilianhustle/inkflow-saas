@@ -136,6 +136,33 @@ function preview(s, n = 200) {
   return String(s || '').slice(0, n);
 }
 
+function summarizeRouterObservation(agentOut = {}) {
+  const pendingResolution = agentOut.pending_resolution || {};
+  const pendingAnswerResolution = agentOut.pending_answer_resolution || {};
+  const multiInfoResolution = agentOut.multi_info_resolution || {};
+  const answeredField = pendingAnswerResolution.answered_field || pendingResolution.field || null;
+  const nextField = pendingAnswerResolution.next_field || multiInfoResolution.next_field || null;
+  const extractedFields = Array.isArray(multiInfoResolution.extracted_fields)
+    ? multiInfoResolution.extracted_fields
+    : Object.keys(agentOut.dados_persistidos || {}).filter(key => agentOut.dados_persistidos?.[key] != null);
+  const resolverUsed = answeredField
+    ? `conversation_policy.${answeredField}`
+    : agentOut.intent
+      ? `conversation_router.${agentOut.intent}`
+      : null;
+
+  return {
+    router_pending_question_field: answeredField,
+    router_pending_question_answered: Boolean(answeredField),
+    router_next_question_field: nextField,
+    router_resolver_used: resolverUsed,
+    router_resolver_reason: pendingResolution.reason || agentOut.reason || null,
+    router_resolver_confidence: typeof agentOut.confidence === 'number' ? agentOut.confidence : null,
+    router_extracted_fields: extractedFields,
+    router_extracted_fields_count: extractedFields.length,
+  };
+}
+
 function isGreetingOnly(text) {
   const s = String(text || '')
     .toLowerCase()
@@ -173,6 +200,8 @@ export async function processBatch(env, batch, depsOverride = {}) {
   const t0 = Date.now();
   const deps = { ...defaultDeps(env), ...depsOverride };
   let { session_id, tenantId, telefone, msgRowIds } = batch;
+  let activeConversa = null;
+  let activeEstadoAgente = null;
   // Fallback: deriva tenantId/telefone do session_id (formato `${uuid}_${telefone}`).
   // Usado so em testes/invocacao manual — o DO sempre envia tenantId+telefone no body.
   if (!tenantId || !telefone) {
@@ -263,6 +292,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
         },
       };
     }
+    activeConversa = conversa;
     const imagensParaAgent = fotoLocalPendente ? [] : imagens;
 
     // Etapa 2: EARLY-RETURN estado terminal
@@ -415,6 +445,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
     // alterar estado crítico. Confidence baixa / intent desconhecida cai no
     // runAgent atual.
     const estadoAgente = dbToAgent(conversa.estado_agente);
+    activeEstadoAgente = estadoAgente;
     const isFirstContact = historico.length === 0
       && Object.keys(conversa.dados_coletados || {}).length === 0
       && Object.keys(conversa.dados_cadastro || {}).length === 0;
@@ -586,6 +617,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
             router_has_matched_tenant_trigger: Boolean(agentOut.matched_trigger),
             router_matched_tenant_trigger: agentOut.matched_trigger || null,
             history_turns_n: historico.length,
+            ...summarizeRouterObservation(agentOut),
             ...summarizeTenantContext(baseClientContext, estadoAgente),
           },
           llm_output_parsed: agentOut,
@@ -862,6 +894,35 @@ export async function processBatch(env, batch, depsOverride = {}) {
       console.warn('[pipeline] stale batch deferred:', {
         session_id, msgRowIds, pendingMsgRowIds: e.pendingMsgRowIds || [], error: e.message,
       });
+      try {
+        deps.logAgentTurn?.({
+          conversa_id: activeConversa?.id || null,
+          tenant_id: tenantId,
+          turn_index: null,
+          agent_name: 'stale_batch_guard',
+          agent_version: env.AGENT_VERSION || '2026-05-24-stale-batch-guard',
+          estado_agente: activeEstadoAgente,
+          model: 'rules',
+          client_input_text: texto,
+          client_input_type: fotos.length > 0 ? 'text+image' : 'text',
+          prompt_full: null,
+          context_metadata: {
+            stale_batch_detected: true,
+            stale_batch_reason: e.message,
+            stale_original_msg_row_ids: msgRowIds,
+            stale_pending_msg_row_ids: e.pendingMsgRowIds || [],
+            stale_pending_count: Array.isArray(e.pendingMsgRowIds) ? e.pendingMsgRowIds.length : 0,
+          },
+          llm_output_parsed: {
+            stale_batch_detected: true,
+            pending_msg_row_ids: e.pendingMsgRowIds || [],
+          },
+          invariant_passed: true,
+          latency_total_ms: Date.now() - t0,
+        });
+      } catch (telemetryError) {
+        console.warn('[pipeline] stale telemetry failed:', telemetryError?.message || telemetryError);
+      }
       throw e;
     }
     console.error('[pipeline] batch failed:', { session_id, msgRowIds, error: e.message, stack: e.stack });

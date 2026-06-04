@@ -246,6 +246,11 @@ test('ConversationRouter Slice 1: preço genérico responde sem chamar runAgent 
   assert.equal(routerLog.context_metadata.router_intent, 'preco_generico');
   assert.equal(routerLog.context_metadata.router_reason, 'generic_price_question_without_negotiation');
   assert.equal(routerLog.context_metadata.router_can_mutate_state, false);
+  assert.equal(routerLog.context_metadata.router_pending_question_answered, false);
+  assert.equal(routerLog.context_metadata.router_resolver_used, 'conversation_router.preco_generico');
+  assert.equal(routerLog.context_metadata.router_resolver_reason, 'generic_price_question_without_negotiation');
+  assert.equal(routerLog.context_metadata.router_resolver_confidence, 0.86);
+  assert.equal(routerLog.context_metadata.router_extracted_fields_count, 0);
   assert.equal(routerLog.context_metadata.tenant_context_layer, 'tenant_context_manager');
   assert.equal(routerLog.context_metadata.tenant_context_aceita_cobertura, true);
   const workflowLog = logAgentTurnSpy.mock.calls
@@ -912,6 +917,7 @@ test('Pipeline: se chega mensagem humana mais nova durante processamento, difere
   let processedPatch = null;
   const evoCalls = [];
   const adminCalls = [];
+  const logAgentTurnSpy = mock.fn();
   const conversa = {
     id: CONVERSA_ID,
     estado_agente: 'coletando_tattoo',
@@ -939,6 +945,7 @@ test('Pipeline: se chega mensagem humana mais nova durante processamento, difere
     runAgent: runAgentSpy,
     evoSend: async (_tenant, payload) => { evoCalls.push(payload); return { ok: true }; },
     sendTelegramAdmin: async (text) => { adminCalls.push(text); return { ok: true }; },
+    logAgentTurn: logAgentTurnSpy,
   });
 
   await assert.rejects(
@@ -952,6 +959,15 @@ test('Pipeline: se chega mensagem humana mais nova durante processamento, difere
   assert.equal(processedPatch, null, 'não deve marcar o lote como processed/failed');
   assert.equal(evoCalls.length, 0, 'não deve enviar pergunta antiga no WhatsApp');
   assert.equal(adminCalls.length, 0, 'stale batch é retry controlado, sem alerta de falha');
+  assert.equal(logAgentTurnSpy.mock.callCount(), 1);
+  const staleLog = logAgentTurnSpy.mock.calls[0].arguments[0];
+  assert.equal(staleLog.agent_name, 'stale_batch_guard');
+  assert.equal(staleLog.context_metadata.stale_batch_detected, true);
+  assert.deepEqual(staleLog.context_metadata.stale_original_msg_row_ids, [101]);
+  assert.deepEqual(staleLog.context_metadata.stale_pending_msg_row_ids, [102]);
+  assert.equal(staleLog.context_metadata.stale_pending_count, 1);
+  assert.match(staleLog.context_metadata.stale_batch_reason, /stale-batch/);
+  assert.equal(staleLog.invariant_passed, true);
 });
 
 test('2. terminal aguardando_tatuador — Task 8 implementa', async () => {
@@ -1503,6 +1519,14 @@ test('5d. estilos_aceitos nao bloqueia estilo fora do foco por padrao', async ()
   assert.ok(routerLog, 'ConversationRouter deve registrar resposta pendente de estilo');
   assert.equal(routerLog.context_metadata.router_intent, 'tattoo_pending_answer');
   assert.equal(routerLog.context_metadata.router_reason, 'pending_estilo_answered');
+  assert.equal(routerLog.context_metadata.router_pending_question_field, 'estilo');
+  assert.equal(routerLog.context_metadata.router_pending_question_answered, true);
+  assert.equal(routerLog.context_metadata.router_next_question_field, 'foto_local');
+  assert.equal(routerLog.context_metadata.router_resolver_used, 'conversation_policy.estilo');
+  assert.equal(routerLog.context_metadata.router_resolver_reason, 'pending_estilo_answered');
+  assert.equal(routerLog.context_metadata.router_resolver_confidence, 0.84);
+  assert.deepEqual(routerLog.context_metadata.router_extracted_fields, ['estilo', 'tentativas_foto_local']);
+  assert.equal(routerLog.context_metadata.router_extracted_fields_count, 2);
   assert.equal(routerLog.context_metadata.tenant_context_has_style_catalog, true);
   assert.equal(routerLog.context_metadata.tenant_context_has_accepted_styles, true);
 });

@@ -22,7 +22,7 @@ import { callTool } from './_lib/call-tool.js';
 import { calcularValorSinal } from './_lib/calcular-sinal.js';
 import { formatLinkSinalMessage, formatPixSinalMessage } from './_lib/format-link-sinal-msg.js';
 import { logAgentTurn } from '../../_lib/telemetry/agent-turn-logger.js';
-import { detectBodyLocation } from '../../_lib/conversation-policy.js';
+import { detectBodyLocation, getPendingFormQuestion } from '../../_lib/conversation-policy.js';
 import { firstContactNameQuestion, firstContactSoftPrefix } from '../../_lib/conversation-voice-policy.js';
 
 const HEADERS = {
@@ -788,6 +788,7 @@ export async function runAgent({
 
   // Sub-3.3: branch transversal portfolio (qualquer agent pode emitir)
   const { urls_portfolio } = await executePortfolioIntent(finalOut, { env, tenant });
+  const pendingQuestion = getPendingFormQuestion(historico || []);
 
   // Pilar 3 InkFlow Agent — telemetria fire-and-forget
   try {
@@ -805,6 +806,12 @@ export async function runAgent({
       context_metadata: {
         dados_acumulados,
         history_turns_n: historico?.length || 0,
+        agent_pending_question_field: pendingQuestion?.field || null,
+        agent_has_pending_question: Boolean(pendingQuestion?.field),
+        agent_expected_resolver: pendingQuestion?.field ? `conversation_policy.${pendingQuestion.field}` : null,
+        agent_action: finalOut.proxima_acao || null,
+        agent_missing_fields: Array.isArray(finalOut.campos_faltando) ? finalOut.campos_faltando : [],
+        agent_missing_fields_count: Array.isArray(finalOut.campos_faltando) ? finalOut.campos_faltando.length : 0,
         ...summarizeTenantContext(mergedClientContext, estado_atual),
       },
       llm_output_parsed: finalOut,
