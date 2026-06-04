@@ -140,6 +140,49 @@ test('ConversationRouter: estilo fora do catalogo so bloqueia com flag rigida', 
   assert.doesNotMatch(out.resposta_cliente, /R\$|agendar|pagar sinal|orc_/i);
 });
 
+test('ConversationRouter: tenant_product style_policy tem paridade de produto com catalogo rigido', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'voces fazem old school?',
+    conversa: { estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} },
+    clientContext: {
+      tenant_product: {
+        style_policy: {
+          accepted_styles: ['fineline', 'blackwork'],
+          rejected_styles: [],
+          focus_styles: ['fineline', 'blackwork'],
+          out_of_catalog_behavior: 'reject',
+        },
+      },
+    },
+  });
+  assert.equal(out.intent, 'tenant_unsupported_style');
+  assert.equal(out.reason, 'tenant_style_not_accepted');
+  assert.deepEqual(out.dados_persistidos, {});
+});
+
+test('ConversationRouter: tenant_product focus_styles nao bloqueia estilo fora do foco', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'realismo',
+    historico: [{ role: 'assistant', content: 'Tu prefere qual estilo pra essa tattoo?' }],
+    conversa: { estado_agente: 'tattoo', dados_coletados: { descricao_curta: 'leao', local_corpo: 'braco', altura_cm: 180 }, dados_cadastro: {} },
+    clientContext: {
+      tenant_product: {
+        style_policy: {
+          accepted_styles: [],
+          rejected_styles: [],
+          focus_styles: ['fineline', 'blackwork'],
+          out_of_catalog_behavior: 'allow',
+        },
+      },
+    },
+  });
+  assert.equal(out.intent, 'tattoo_pending_answer');
+  assert.equal(out.reason, 'pending_estilo_answered');
+  assert.equal(out.dados_persistidos.estilo, 'realismo');
+});
+
 test('ConversationRouter: pedido explícito de humano aciona escalonamento sem coleta', () => {
   assert.equal(_test.detectIntent('quero falar com o tatuador')?.intent, 'human_requested');
   assert.equal(_test.detectIntent('me passa para um atendente')?.intent, 'human_requested');
@@ -224,6 +267,26 @@ test('ConversationRouter: tenant que nao aceita cobertura recusa sem escalonamen
   assert.doesNotMatch(out.resposta_cliente, /tatuador precisa avaliar|acionar|or[cç]amento|R\$|sinal/i);
 });
 
+test('ConversationRouter: tenant_product service_policy rejeita cobertura sem depender do legado', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quero cobrir uma tattoo antiga no braço',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    clientContext: {
+      tenant_product: {
+        service_policy: {
+          cover_up_policy: 'rejected',
+        },
+      },
+    },
+  });
+  assert.equal(out.ok, true);
+  assert.equal(out.intent, 'tenant_cover_up_not_accepted');
+  assert.equal(out.proxima_acao, 'pergunta');
+  assert.equal(out.estado_novo, 'tattoo');
+  assert.equal(out.escalation, undefined);
+});
+
 test('ConversationRouter: gatilho de handoff do tenant aciona humano antes de coleta', () => {
   const out = routeConversationTurn({
     estado_atual: 'tattoo',
@@ -248,6 +311,28 @@ test('ConversationRouter: gatilho de handoff do tenant aciona humano antes de co
   assert.deepEqual(out.dados_persistidos, {});
   assert.match(out.resposta_cliente, /tatuador|pessoa do estúdio/i);
   assert.doesNotMatch(out.resposta_cliente, /Qual tua altura|parte do corpo|estilo|valor depende/i);
+});
+
+test('ConversationRouter: tenant_product handoff_policy alimenta gatilhos do router', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'quero fazer uma tattoo no pescoco',
+    conversa: { dados_coletados: {}, dados_cadastro: {} },
+    clientContext: {
+      tenant_product: {
+        handoff_policy: {
+          triggers: ['pescoco'],
+          triggers_source: 'custom',
+        },
+      },
+      tenant_rules: {
+        gatilhos_handoff: [],
+      },
+    },
+  });
+  assert.equal(out.intent, 'tenant_handoff_trigger');
+  assert.equal(out.matched_trigger, 'pescoco');
+  assert.equal(out.estado_novo, 'aguardando_tatuador');
 });
 
 test('ConversationRouter: gatilho de tenant nao sobrescreve cobertura explicita', () => {

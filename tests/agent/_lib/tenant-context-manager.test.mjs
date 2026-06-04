@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   buildTenantContext,
   deriveTenantAssets,
+  deriveTenantProduct,
   deriveTenantProfile,
   deriveTenantRules,
   isPropostaSubstate,
@@ -47,6 +48,31 @@ test('TenantContextManager: injeta portfolio sem mutar clientContext original', 
     tenant_assets: {
       portfolio_urls_count: 1,
     },
+    tenant_product: {
+      schema_version: 'tenant_config_v1',
+      service_policy: {
+        accepted_services: ['tattoo'],
+        rejected_services: [],
+        cover_up_policy: 'artist_review',
+        minor_policy: 'artist_review',
+      },
+      style_policy: {
+        accepted_styles: [],
+        rejected_styles: [],
+        focus_styles: [],
+        out_of_catalog_behavior: 'allow',
+        style_question_policy: 'ask_when_missing',
+      },
+      pricing_policy: {
+        pricing_mode: 'artist_quote_only',
+        currency: 'BRL',
+        session_pricing_policy: 'artist_decides',
+      },
+      handoff_policy: {
+        triggers: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
+        triggers_source: 'default',
+      },
+    },
     portfolio_disponivel: true,
   });
 });
@@ -76,6 +102,31 @@ test('TenantContextManager: contexto derivado sobrescreve flags transversais ant
     },
     tenant_assets: {
       portfolio_urls_count: 0,
+    },
+    tenant_product: {
+      schema_version: 'tenant_config_v1',
+      service_policy: {
+        accepted_services: ['tattoo'],
+        rejected_services: [],
+        cover_up_policy: 'artist_review',
+        minor_policy: 'artist_review',
+      },
+      style_policy: {
+        accepted_styles: [],
+        rejected_styles: [],
+        focus_styles: [],
+        out_of_catalog_behavior: 'allow',
+        style_question_policy: 'ask_when_missing',
+      },
+      pricing_policy: {
+        pricing_mode: 'artist_quote_only',
+        currency: 'BRL',
+        session_pricing_policy: 'artist_decides',
+      },
+      handoff_policy: {
+        triggers: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
+        triggers_source: 'default',
+      },
     },
     portfolio_disponivel: false,
     eh_recorrente: true,
@@ -123,6 +174,31 @@ test('TenantContextManager: injeta contexto de proposta somente em substate de p
     tenant_assets: {
       portfolio_urls_count: 0,
     },
+    tenant_product: {
+      schema_version: 'tenant_config_v1',
+      service_policy: {
+        accepted_services: ['tattoo'],
+        rejected_services: [],
+        cover_up_policy: 'artist_review',
+        minor_policy: 'artist_review',
+      },
+      style_policy: {
+        accepted_styles: [],
+        rejected_styles: [],
+        focus_styles: [],
+        out_of_catalog_behavior: 'allow',
+        style_question_policy: 'ask_when_missing',
+      },
+      pricing_policy: {
+        pricing_mode: 'artist_quote_only',
+        currency: 'BRL',
+        session_pricing_policy: 'artist_decides',
+      },
+      handoff_policy: {
+        triggers: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
+        triggers_source: 'default',
+      },
+    },
     portfolio_disponivel: true,
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
   });
@@ -158,6 +234,24 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
     tenant_assets: {
       portfolio_urls_count: 3,
     },
+    tenant_product: {
+      schema_version: 'tenant_config_v1',
+      service_policy: {
+        cover_up_policy: 'rejected',
+      },
+      style_policy: {
+        accepted_styles: [],
+        rejected_styles: ['tribal'],
+        focus_styles: ['fineline'],
+        out_of_catalog_behavior: 'allow',
+      },
+      pricing_policy: {
+        pricing_mode: 'artist_quote_only',
+      },
+      handoff_policy: {
+        triggers: ['retoque', 'mao'],
+      },
+    },
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
     nome_cliente: 'Joao Silva',
   }, 'propondo_valor');
@@ -186,6 +280,14 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
     tenant_context_has_studio_name: true,
     tenant_context_has_persona: true,
     tenant_context_portfolio_urls_count: 3,
+    tenant_context_product_schema_version: 'tenant_config_v1',
+    tenant_context_product_cover_up_policy: 'rejected',
+    tenant_context_product_out_of_catalog_behavior: 'allow',
+    tenant_context_product_pricing_mode: 'artist_quote_only',
+    tenant_context_product_handoff_triggers_count: 2,
+    tenant_context_product_focus_styles_count: 1,
+    tenant_context_product_accepted_styles_count: 0,
+    tenant_context_product_rejected_styles_count: 1,
   });
   assert.equal(Object.hasOwn(summary, 'nome_cliente'), false);
   assert.equal(Object.hasOwn(summary, 'nome_agente'), false);
@@ -278,5 +380,59 @@ test('TenantContextManager: resume ativos do tenant sem expor URLs', () => {
 
   assert.deepEqual(deriveTenantAssets({ portfolio_urls: null }), {
     portfolio_urls_count: 0,
+  });
+});
+
+test('TenantContextManager: deriva TenantConfig canonico a partir dos campos atuais', () => {
+  assert.deepEqual(deriveTenantProduct({
+    gatilhos_handoff: ['rosto'],
+    config_agente: {
+      aceita_cobertura: false,
+      estilos_aceitos: ['fineline', 'blackwork'],
+      estilos_recusados: ['tribal'],
+      bloqueia_estilos_fora_catalogo: true,
+    },
+    config_precificacao: {
+      modo: 'exato',
+    },
+  }), {
+    schema_version: 'tenant_config_v1',
+    service_policy: {
+      accepted_services: ['tattoo'],
+      rejected_services: ['cover_up'],
+      cover_up_policy: 'rejected',
+      minor_policy: 'artist_review',
+    },
+    style_policy: {
+      accepted_styles: ['fineline', 'blackwork'],
+      rejected_styles: ['tribal'],
+      focus_styles: ['fineline', 'blackwork'],
+      out_of_catalog_behavior: 'reject',
+      style_question_policy: 'ask_when_missing',
+    },
+    pricing_policy: {
+      pricing_mode: 'auto_estimate',
+      currency: 'BRL',
+      session_pricing_policy: 'artist_decides',
+    },
+    handoff_policy: {
+      triggers: ['rosto'],
+      triggers_source: 'custom',
+    },
+  });
+
+  assert.deepEqual(deriveTenantProduct({
+    config_agente: {
+      estilos_aceitos: ['realismo'],
+    },
+    config_precificacao: {
+      pricing_mode: 'hybrid',
+    },
+  }).style_policy, {
+    accepted_styles: [],
+    rejected_styles: [],
+    focus_styles: ['realismo'],
+    out_of_catalog_behavior: 'allow',
+    style_question_policy: 'ask_when_missing',
   });
 });

@@ -32,9 +32,18 @@ export function summarizeTenantContext(context = {}, estado_atual = '') {
   const tenantRules = context.tenant_rules || {};
   const tenantProfile = context.tenant_profile || {};
   const tenantAssets = context.tenant_assets || {};
+  const tenantProduct = context.tenant_product || {};
+  const servicePolicy = tenantProduct.service_policy || {};
+  const stylePolicy = tenantProduct.style_policy || {};
+  const pricingPolicy = tenantProduct.pricing_policy || {};
+  const handoffPolicy = tenantProduct.handoff_policy || {};
   const gatilhosHandoff = Array.isArray(tenantRules.gatilhos_handoff) ? tenantRules.gatilhos_handoff : [];
   const estilosAceitos = Array.isArray(tenantRules.estilos_aceitos) ? tenantRules.estilos_aceitos : [];
   const estilosRecusados = Array.isArray(tenantRules.estilos_recusados) ? tenantRules.estilos_recusados : [];
+  const productFocusStyles = Array.isArray(stylePolicy.focus_styles) ? stylePolicy.focus_styles : [];
+  const productAcceptedStyles = Array.isArray(stylePolicy.accepted_styles) ? stylePolicy.accepted_styles : [];
+  const productRejectedStyles = Array.isArray(stylePolicy.rejected_styles) ? stylePolicy.rejected_styles : [];
+  const productHandoffTriggers = Array.isArray(handoffPolicy.triggers) ? handoffPolicy.triggers : [];
   const hasStyleCatalog = estilosAceitos.length > 0 || estilosRecusados.length > 0;
   return {
     tenant_context_layer: 'tenant_context_manager',
@@ -62,6 +71,14 @@ export function summarizeTenantContext(context = {}, estado_atual = '') {
     tenant_context_portfolio_urls_count: Number.isFinite(tenantAssets.portfolio_urls_count)
       ? tenantAssets.portfolio_urls_count
       : 0,
+    tenant_context_product_schema_version: tenantProduct.schema_version || null,
+    tenant_context_product_cover_up_policy: servicePolicy.cover_up_policy || null,
+    tenant_context_product_out_of_catalog_behavior: stylePolicy.out_of_catalog_behavior || null,
+    tenant_context_product_pricing_mode: pricingPolicy.pricing_mode || null,
+    tenant_context_product_handoff_triggers_count: productHandoffTriggers.length,
+    tenant_context_product_focus_styles_count: productFocusStyles.length,
+    tenant_context_product_accepted_styles_count: productAcceptedStyles.length,
+    tenant_context_product_rejected_styles_count: productRejectedStyles.length,
   };
 }
 
@@ -97,6 +114,46 @@ export function deriveTenantAssets(tenant = {}) {
   };
 }
 
+export function deriveTenantProduct(tenant = {}) {
+  const cfg = tenant.config_agente || {};
+  const pricing = tenant.config_precificacao || {};
+  const explicitAcceptedStyles = normalizeList(cfg.estilos_aceitos);
+  const legacyAcceptedStyles = explicitAcceptedStyles.length ? [] : normalizeList(cfg.estilo);
+  const focusStyles = explicitAcceptedStyles.length ? explicitAcceptedStyles : legacyAcceptedStyles;
+  const rejectedStyles = normalizeList(cfg.estilos_recusados);
+  const hardCatalog = cfg.bloqueia_estilos_fora_catalogo === true;
+  const coverUpPolicy = cfg.aceita_cobertura === false ? 'rejected' : 'artist_review';
+  const pricingMode = normalizeText(pricing.pricing_mode)
+    || (normalizeText(pricing.modo) === 'exato' ? 'auto_estimate' : 'artist_quote_only');
+  const customTriggers = Array.isArray(tenant.gatilhos_handoff) && tenant.gatilhos_handoff.length > 0;
+
+  return {
+    schema_version: 'tenant_config_v1',
+    service_policy: {
+      accepted_services: ['tattoo'],
+      rejected_services: cfg.aceita_cobertura === false ? ['cover_up'] : [],
+      cover_up_policy: coverUpPolicy,
+      minor_policy: 'artist_review',
+    },
+    style_policy: {
+      accepted_styles: hardCatalog ? focusStyles : [],
+      rejected_styles: rejectedStyles,
+      focus_styles: focusStyles,
+      out_of_catalog_behavior: hardCatalog ? 'reject' : 'allow',
+      style_question_policy: 'ask_when_missing',
+    },
+    pricing_policy: {
+      pricing_mode: pricingMode,
+      currency: 'BRL',
+      session_pricing_policy: 'artist_decides',
+    },
+    handoff_policy: {
+      triggers: customTriggers ? normalizeList(tenant.gatilhos_handoff) : DEFAULT_HANDOFF_TRIGGERS,
+      triggers_source: customTriggers ? 'custom' : 'default',
+    },
+  };
+}
+
 export async function buildTenantContext({
   env,
   tenant,
@@ -113,6 +170,7 @@ export async function buildTenantContext({
   context.tenant_rules = deriveTenantRules(tenant);
   context.tenant_profile = deriveTenantProfile(tenant);
   context.tenant_assets = deriveTenantAssets(tenant);
+  context.tenant_product = deriveTenantProduct(tenant);
 
   const portfolioCtx = await prefetchPortfolioFn(env, tenant);
   context = { ...context, ...portfolioCtx };

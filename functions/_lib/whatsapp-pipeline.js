@@ -11,6 +11,7 @@ import { runAgent } from '../api/agent/route.js';
 import { callTool } from '../api/agent/_lib/call-tool.js';
 import {
   deriveTenantAssets,
+  deriveTenantProduct,
   deriveTenantProfile,
   deriveTenantRules,
   summarizeTenantContext,
@@ -426,6 +427,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
       tenant_rules: deriveTenantRules(tenant),
       tenant_profile: deriveTenantProfile(tenant),
       tenant_assets: deriveTenantAssets(tenant),
+      tenant_product: deriveTenantProduct(tenant),
       portfolio_disponivel: Array.isArray(tenant.portfolio_urls) && tenant.portfolio_urls.length > 0,
       nome_cliente: conversa.dados_cadastro?.nome || conversa.dados_coletados?.nome_preferido || null,
     };

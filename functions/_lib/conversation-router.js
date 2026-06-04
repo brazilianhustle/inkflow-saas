@@ -186,13 +186,16 @@ const GENERIC_HANDOFF_TRIGGER_ALIASES = new Map([
 const ROUTER_HANDLED_HANDOFF_TRIGGERS = new Set(['cobertura']);
 
 function tenantHandoffTriggers(clientContext = {}, tenant = {}) {
+  const fromProduct = clientContext?.tenant_product?.handoff_policy?.triggers;
   const fromContext = clientContext?.tenant_rules?.gatilhos_handoff;
   const fromTenant = tenant?.gatilhos_handoff;
-  const source = Array.isArray(fromContext) && fromContext.length
-    ? fromContext
-    : Array.isArray(fromTenant) && fromTenant.length
-      ? fromTenant
-      : DEFAULT_TENANT_HANDOFF_TRIGGERS;
+  const source = Array.isArray(fromProduct) && fromProduct.length
+    ? fromProduct
+    : Array.isArray(fromContext) && fromContext.length
+      ? fromContext
+      : Array.isArray(fromTenant) && fromTenant.length
+        ? fromTenant
+        : DEFAULT_TENANT_HANDOFF_TRIGGERS;
   return source
     .map(trigger => normalize(trigger))
     .filter(Boolean);
@@ -349,9 +352,20 @@ function detectTenantUnsupportedStyle(text, clientContext = {}) {
   if (!style) return null;
   const styleNorm = normalize(style);
   const tenantRules = clientContext?.tenant_rules || {};
-  const accepted = normalizedList(tenantRules.estilos_aceitos);
-  const rejected = normalizedList(tenantRules.estilos_recusados);
-  const hardCatalog = tenantRules.bloqueia_estilos_fora_catalogo === true;
+  const stylePolicy = clientContext?.tenant_product?.style_policy || {};
+  const accepted = normalizedList(
+    Array.isArray(stylePolicy.accepted_styles) && stylePolicy.accepted_styles.length
+      ? stylePolicy.accepted_styles
+      : tenantRules.estilos_aceitos
+  );
+  const rejected = normalizedList(
+    Array.isArray(stylePolicy.rejected_styles) && stylePolicy.rejected_styles.length
+      ? stylePolicy.rejected_styles
+      : tenantRules.estilos_recusados
+  );
+  const hardCatalog = stylePolicy.out_of_catalog_behavior
+    ? stylePolicy.out_of_catalog_behavior === 'reject'
+    : tenantRules.bloqueia_estilos_fora_catalogo === true;
   if (rejected.includes(styleNorm)) {
     return {
       style,
@@ -870,7 +884,11 @@ function escalationOutput({ detected, estado_atual, intent, conversa, clientCont
     };
   }
 
-  if (intent === 'cobertura' && clientContext?.tenant_rules?.aceita_cobertura === false) {
+  const coverUpPolicy = clientContext?.tenant_product?.service_policy?.cover_up_policy;
+  const coverUpRejected = coverUpPolicy
+    ? coverUpPolicy === 'rejected'
+    : clientContext?.tenant_rules?.aceita_cobertura === false;
+  if (intent === 'cobertura' && coverUpRejected) {
     return coverUpNotAcceptedOutput({ detected, estado_atual, conversa });
   }
 
