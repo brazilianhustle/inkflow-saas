@@ -34,6 +34,16 @@ whatsapp-real-organic-continuous-burst-3-bubbles
 
 Esses cenarios agora exigem metadados reais da SessionQueue no log do router. Se o bot responder instantaneamente, se o binding da fila nao estiver ativo, ou se o processamento cair por rota direta, o smoke deve falhar.
 
+## Observador Manual
+
+Quando o operador precisa mandar as bolhas pelo WhatsApp, usar:
+
+```sh
+MIN_BUBBLES=2 SMOKE_SENDER_PHONE=5521970789797 bash scripts/smoke/observe-premium-runtime-gate.sh
+```
+
+O script nao envia WhatsApp. Ele abre uma janela de observacao, grava `poll.json`, consulta `agent-turn-logs.json` e aplica o mesmo contrato de fila: uma unica resposta AI depois do burst e `session_queue_*` no `conversation_router`.
+
 ## Regra De Avanco
 
 Enquanto esse gate nao passar em deploy + WhatsApp real, nao continuar slices de naturalidade, copy, prompt ou estilo. Ajuste pontual de texto pode mascarar a falha, mas nao corrige a arquitetura.
