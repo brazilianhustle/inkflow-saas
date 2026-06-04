@@ -12,14 +12,14 @@ const BASE_URL = 'https://inkflowbrasil.com';
 const PROCESS_BATCH_URL = `${BASE_URL}/api/whatsapp/process-batch`;
 
 // Estado persistido (única chave de storage do DO), shape:
-//   batch = { msgRowIds: number[], session_id, tenantId, telefone, firstEnqueuedAt: number }
+//   batch = { msgRowIds: number[], session_id, tenantId, telefone, firstEnqueuedAt: number, lastEnqueuedAt: number }
 const BATCH_KEY = 'batch';
 
 // Retorna um batch válido: o stored se tiver msgRowIds[] array, senão um novo vazio.
 // Defende contra registro corrompido (evita TypeError → alarm em retry infinito).
 function freshBatch(stored, { session_id, tenantId, telefone, now }) {
   if (stored && Array.isArray(stored.msgRowIds)) return stored;
-  return { msgRowIds: [], session_id, tenantId, telefone, firstEnqueuedAt: now };
+  return { msgRowIds: [], session_id, tenantId, telefone, firstEnqueuedAt: now, lastEnqueuedAt: now };
 }
 
 // Alerta admin via Telegram (mesmo padrão fail-open do notifyFailure em index.js).
@@ -61,6 +61,7 @@ export class SessionQueue {
     batch.tenantId = tenantId;
     batch.telefone = telefone;
     if (!batch.firstEnqueuedAt) batch.firstEnqueuedAt = now;
+    batch.lastEnqueuedAt = now;
     if (!batch.msgRowIds.includes(msgRowId)) batch.msgRowIds.push(msgRowId);
     await this.state.storage.put(BATCH_KEY, batch);
 
@@ -84,12 +85,28 @@ export class SessionQueue {
     }
     if (batch.msgRowIds.length === 0) return;
     const sending = [...batch.msgRowIds];
+    const processStartedAt = Date.now();
+    const queueMeta = {
+      queue_version: 'session_queue_v1',
+      debounce_ms: DEBOUNCE_MS,
+      max_wait_ms: MAX_WAIT_MS,
+      first_enqueued_at_ms: Number(batch.firstEnqueuedAt || 0),
+      last_enqueued_at_ms: Number(batch.lastEnqueuedAt || batch.firstEnqueuedAt || 0),
+      process_started_at_ms: processStartedAt,
+      queued_wait_ms: Number(batch.firstEnqueuedAt || 0)
+        ? Math.max(0, processStartedAt - Number(batch.firstEnqueuedAt || 0))
+        : null,
+      silence_wait_ms: Number(batch.lastEnqueuedAt || 0)
+        ? Math.max(0, processStartedAt - Number(batch.lastEnqueuedAt || 0))
+        : null,
+      batch_message_count: sending.length,
+    };
 
     const res = await fetch(PROCESS_BATCH_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-cron-secret': this.env.CRON_SECRET },
       body: JSON.stringify({
-        session_id: batch.session_id, tenantId: batch.tenantId, telefone: batch.telefone, msgRowIds: sending,
+        session_id: batch.session_id, tenantId: batch.tenantId, telefone: batch.telefone, msgRowIds: sending, queue_meta: queueMeta,
       }),
     });
     if (!res.ok) {
@@ -113,7 +130,7 @@ export class SessionQueue {
     if (remaining.length > 0) {
       // Sobreviventes formam um NOVO lote: firstEnqueuedAt reinicia o teto a partir de agora.
       // (Sessão de altíssimo volume pode estender o teto a cada flush — aceitável p/ o caso real.)
-      await this.state.storage.put(BATCH_KEY, { ...after, msgRowIds: remaining, firstEnqueuedAt: Date.now() });
+      await this.state.storage.put(BATCH_KEY, { ...after, msgRowIds: remaining, firstEnqueuedAt: Date.now(), lastEnqueuedAt: Date.now() });
       await this.state.storage.setAlarm(Date.now() + DEBOUNCE_MS);
     } else {
       await this.state.storage.delete(BATCH_KEY);

@@ -185,6 +185,18 @@ status: pendente commit/deploy e WhatsApp real definitivo do zero
 provas_locais: Cliente "realismo" apos pergunta de estilo -> Router persiste estilo=realismo, pede foto/local pendente, nao envia "nao esta no foco"
 ```
 
+## Corte Atual - Premium Runtime Parity Gate
+
+```text
+origem: regressao manual WhatsApp real em 2026-06-04
+problema: bot respondeu imediatamente e com forma de formulario ("Peguei a ideia... Tu imagina fazer em qual parte do corpo?")
+diagnostico: antes de avancar naturalidade/copy, provar que WhatsApp real passa pela cadeia SessionQueue -> process-batch -> pipeline -> router/workflow/escalation
+decisao: bloquear novos slices conversacionais ate gate de runtime passar com metadados reais de fila
+contrato: agent_turn_logs deve conter session_queue_observed=true, session_queue_version=session_queue_v1, batch_message_count >= bolhas humanas e silence_wait_ms >= 10000
+status: instrumentacao local em andamento; pendente testes, commit/deploy e WhatsApp real
+doc_gate: docs/atendimento-premium/81-premium-runtime-parity-gate.md
+```
+
 ## Arquivos Para Ler
 
 ```text
@@ -197,6 +209,7 @@ docs/atendimento-premium/77-level-4b-wave-51.md
 docs/atendimento-premium/78-level-4b-wave-52.md
 docs/atendimento-premium/79-level-4b-wave-53.md
 docs/atendimento-premium/80-level-4b-wave-54.md
+docs/atendimento-premium/81-premium-runtime-parity-gate.md
 docs/atendimento-premium/current-objective.md somente se precisar de historico amplo
 docs/atendimento-premium/smoke-runs.md somente se precisar de evidencia antiga
 scripts/smoke/continuity-bundle.sh
@@ -221,6 +234,7 @@ sentinel organico ausente apos nova regressao manual
 bot responder como formulario quando o cliente trouxe briefing organico
 bot ignorar fragmentos semanticamente relevantes em sequencia
 bot responder entre bolhas de um burst real antes da ultima mensagem humana
+Premium Runtime Parity Gate ausente: nao avancar naturalidade/copy sem prova real de SessionQueue
 mensagem duplicada, estado final errado ou IA depois de handoff humano
 proposta multi-orcamento enviada em duas respostas separadas
 Wave 49 marcada PASS sem Telegram real + WhatsApp real final

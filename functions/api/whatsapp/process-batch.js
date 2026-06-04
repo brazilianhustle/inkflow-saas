@@ -15,14 +15,14 @@ export async function onRequest(context) {
   }
   let body;
   try { body = await request.json(); } catch { return json({ ok: false, error: 'body-invalido' }, 400); }
-  const { session_id, msgRowIds, tenantId, telefone } = body || {};
+  const { session_id, msgRowIds, tenantId, telefone, queue_meta } = body || {};
   // Contrato do DO: sempre envia session_id + tenantId + telefone + msgRowIds[].
   // Exigimos todos na fronteira (fail-fast) em vez de depender do fallback do pipeline.
   if (!session_id || !tenantId || !telefone || !Array.isArray(msgRowIds) || msgRowIds.length === 0) {
     return json({ ok: false, error: 'bad-batch' }, 400);
   }
   try {
-    await processBatch(env, { session_id, tenantId, telefone, msgRowIds }, {
+    await processBatch(env, { session_id, tenantId, telefone, msgRowIds, queue_meta }, {
       logAgentTurn: (fields) => logAgentTurn(context, env, fields),
     });
     return json({ ok: true });

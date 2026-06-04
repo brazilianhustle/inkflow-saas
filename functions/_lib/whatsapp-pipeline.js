@@ -136,6 +136,27 @@ function preview(s, n = 200) {
   return String(s || '').slice(0, n);
 }
 
+function summarizeQueueMeta(batch = {}, actualMessageCount = 0) {
+  const meta = batch?.queue_meta && typeof batch.queue_meta === 'object' ? batch.queue_meta : {};
+  const numberOrNull = (value) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  };
+  return {
+    session_queue_version: meta.queue_version || null,
+    session_queue_observed: Boolean(meta.queue_version),
+    session_queue_debounce_ms: numberOrNull(meta.debounce_ms),
+    session_queue_max_wait_ms: numberOrNull(meta.max_wait_ms),
+    session_queue_first_enqueued_at_ms: numberOrNull(meta.first_enqueued_at_ms),
+    session_queue_last_enqueued_at_ms: numberOrNull(meta.last_enqueued_at_ms),
+    session_queue_process_started_at_ms: numberOrNull(meta.process_started_at_ms),
+    session_queue_queued_wait_ms: numberOrNull(meta.queued_wait_ms),
+    session_queue_silence_wait_ms: numberOrNull(meta.silence_wait_ms),
+    session_queue_batch_message_count: numberOrNull(meta.batch_message_count) ?? actualMessageCount,
+    session_queue_actual_message_count: actualMessageCount,
+  };
+}
+
 function summarizeRouterObservation(agentOut = {}) {
   const pendingResolution = agentOut.pending_resolution || {};
   const pendingAnswerResolution = agentOut.pending_answer_resolution || {};
@@ -226,6 +247,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
   );
   const rows = await rowsRes.json();
   if (!Array.isArray(rows) || rows.length === 0) throw new Error(`lote-vazio: ${msgRowIds.join(',')}`);
+  const queueSummary = summarizeQueueMeta(batch, rows.length);
 
   // Montagem do lote → 1 turno.
   // Lote so-foto (sem caption) → texto='' (mesmo comportamento do processMessage antigo).
@@ -617,6 +639,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
             router_has_matched_tenant_trigger: Boolean(agentOut.matched_trigger),
             router_matched_tenant_trigger: agentOut.matched_trigger || null,
             history_turns_n: historico.length,
+            ...queueSummary,
             ...summarizeRouterObservation(agentOut),
             ...summarizeTenantContext(baseClientContext, estadoAgente),
           },
@@ -693,6 +716,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
             agent_used: agentOut.agent_usado || null,
             agent_action: agentOut.proxima_acao || null,
             msg_row_ids: msgRowIds,
+            ...queueSummary,
           },
           llm_output_parsed: {
             workflow_decision: workflow.decision,
@@ -862,6 +886,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
             agent_action: agentOut.proxima_acao || null,
             final_state: agentOut.estado_novo || null,
             msg_row_ids: msgRowIds,
+            ...queueSummary,
           },
           llm_output_parsed: {
             escalation,
@@ -912,6 +937,7 @@ export async function processBatch(env, batch, depsOverride = {}) {
             stale_original_msg_row_ids: msgRowIds,
             stale_pending_msg_row_ids: e.pendingMsgRowIds || [],
             stale_pending_count: Array.isArray(e.pendingMsgRowIds) ? e.pendingMsgRowIds.length : 0,
+            ...queueSummary,
           },
           llm_output_parsed: {
             stale_batch_detected: true,

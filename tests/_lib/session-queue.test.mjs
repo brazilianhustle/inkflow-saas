@@ -77,7 +77,7 @@ test('enqueue: teto MAX_WAIT respeitado se cliente não para de digitar', async 
 
 test('alarm: POSTa o lote pro process-batch e limpa em sucesso', async () => {
   const st = fakeState();
-  await st.storage.put('batch', { msgRowIds: [101, 102], session_id: SID, tenantId: 'T', telefone: '5511', firstEnqueuedAt: 1 });
+  await st.storage.put('batch', { msgRowIds: [101, 102], session_id: SID, tenantId: 'T', telefone: '5511', firstEnqueuedAt: 1, lastEnqueuedAt: 2 });
   const calls = [];
   const orig = globalThis.fetch;
   globalThis.fetch = async (url, opts) => { calls.push({ url, opts }); return new Response('{"ok":true}', { status: 200 }); };
@@ -90,6 +90,15 @@ test('alarm: POSTa o lote pro process-batch e limpa em sucesso', async () => {
     const sent = JSON.parse(calls[0].opts.body);
     assert.deepEqual(sent.msgRowIds, [101, 102]);
     assert.equal(sent.session_id, SID);
+    assert.equal(sent.queue_meta.queue_version, 'session_queue_v1');
+    assert.equal(sent.queue_meta.debounce_ms, DEBOUNCE_MS);
+    assert.equal(sent.queue_meta.max_wait_ms, MAX_WAIT_MS);
+    assert.equal(sent.queue_meta.batch_message_count, 2);
+    assert.equal(typeof sent.queue_meta.first_enqueued_at_ms, 'number');
+    assert.equal(typeof sent.queue_meta.last_enqueued_at_ms, 'number');
+    assert.equal(typeof sent.queue_meta.process_started_at_ms, 'number');
+    assert.equal(typeof sent.queue_meta.queued_wait_ms, 'number');
+    assert.equal(typeof sent.queue_meta.silence_wait_ms, 'number');
     assert.equal(await st.storage.get('batch'), undefined, 'batch limpo após sucesso');
   } finally { globalThis.fetch = orig; }
 });

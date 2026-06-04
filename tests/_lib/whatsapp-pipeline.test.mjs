@@ -41,6 +41,21 @@ function baseBatch(overrides = {}) {
   };
 }
 
+function queueMeta(overrides = {}) {
+  return {
+    queue_version: 'session_queue_v1',
+    debounce_ms: 12000,
+    max_wait_ms: 35000,
+    first_enqueued_at_ms: 1000,
+    last_enqueued_at_ms: 3000,
+    process_started_at_ms: 15000,
+    queued_wait_ms: 14000,
+    silence_wait_ms: 12000,
+    batch_message_count: 1,
+    ...overrides,
+  };
+}
+
 // mockDeps já existente ganha resposta da Etapa 0 (tenant + rows) configurável.
 // Helper que monta um supaFetch cobrindo tenant lookup, SELECT do lote, conversa, histórico.
 function batchSupaFetch({ conversa, rows, onPatch, onPost, hist = [], newerReceived = [], tenant = TENANT }) {
@@ -140,7 +155,9 @@ test('HOTFIX: Etapa 1 select NÃO pede coluna fantasma estado_extra (mismatch sc
       return new Response('[]', { status: 200 });
     },
   });
-  await processBatch({}, baseBatch(), deps);
+  await processBatch({}, baseBatch({
+    queue_meta: queueMeta(),
+  }), deps);
   assert.ok(convSelectPath, 'select da conversa deve ter rodado');
   assert.ok(!convSelectPath.includes('estado_extra'),
     `select não deve pedir coluna inexistente estado_extra (path: ${convSelectPath})`);
@@ -166,7 +183,7 @@ test('HOTFIX: SELECT da conversa com erro 4xx → NÃO tenta INSERT cego (evita 
       return new Response('[]', { status: 200 });
     },
   });
-  await processBatch({}, baseBatch(), deps);
+  await processBatch({}, baseBatch({ queue_meta: queueMeta() }), deps);
   assert.equal(insertTentado, false, 'SELECT falho não deve disparar INSERT cego (que vira 409)');
 });
 
@@ -194,7 +211,7 @@ test('1. golden path tattoo — Task 9 implementa', async () => {
     }),
     runAgent: runAgentSpy,
   });
-  await processBatch({}, baseBatch(), deps);
+  await processBatch({}, baseBatch({ queue_meta: queueMeta() }), deps);
   assert.equal(runAgentSpy.mock.callCount(), 1);
   assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
   assert.deepEqual(conversaPatch.dados_coletados, { x: 1, ideia: 'rosa' });
@@ -235,7 +252,7 @@ test('ConversationRouter Slice 1: preço genérico responde sem chamar runAgent 
     logAgentTurn: logAgentTurnSpy,
   });
 
-  await processBatch({}, baseBatch(), deps);
+  await processBatch({}, baseBatch({ queue_meta: queueMeta() }), deps);
 
   assert.equal(runAgentSpy.mock.callCount(), 0);
   assert.equal(logAgentTurnSpy.mock.callCount(), 2);
@@ -949,7 +966,14 @@ test('Pipeline: se chega mensagem humana mais nova durante processamento, difere
   });
 
   await assert.rejects(
-    () => processBatch({ DISABLE_CONVERSATION_ROUTER: 'true' }, baseBatch({ msgRowIds: [101] }), deps),
+    () => processBatch({ DISABLE_CONVERSATION_ROUTER: 'true' }, baseBatch({
+      msgRowIds: [101],
+      queue_meta: queueMeta({
+        last_enqueued_at_ms: 1000,
+        process_started_at_ms: 13000,
+        queued_wait_ms: 12000,
+      }),
+    }), deps),
     /stale-batch/,
   );
 
@@ -966,6 +990,11 @@ test('Pipeline: se chega mensagem humana mais nova durante processamento, difere
   assert.deepEqual(staleLog.context_metadata.stale_original_msg_row_ids, [101]);
   assert.deepEqual(staleLog.context_metadata.stale_pending_msg_row_ids, [102]);
   assert.equal(staleLog.context_metadata.stale_pending_count, 1);
+  assert.equal(staleLog.context_metadata.session_queue_observed, true);
+  assert.equal(staleLog.context_metadata.session_queue_version, 'session_queue_v1');
+  assert.equal(staleLog.context_metadata.session_queue_queued_wait_ms, 12000);
+  assert.equal(staleLog.context_metadata.session_queue_silence_wait_ms, 12000);
+  assert.equal(staleLog.context_metadata.session_queue_batch_message_count, 1);
   assert.match(staleLog.context_metadata.stale_batch_reason, /stale-batch/);
   assert.equal(staleLog.invariant_passed, true);
 });
@@ -1276,7 +1305,7 @@ test('4e. tattoo cliente irritado aciona humano com marcador rastreavel', async 
     sendTelegram: sendTelegramSpy,
     logAgentTurn: logAgentTurnSpy,
   });
-  await processBatch({}, baseBatch(), deps);
+  await processBatch({}, baseBatch({ queue_meta: queueMeta() }), deps);
   assert.equal(callToolSpy.mock.callCount(), 0);
   assert.equal(sendTelegramSpy.mock.callCount(), 1);
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /\[escalation:client_upset\]/);
@@ -1341,7 +1370,7 @@ test('4f. tattoo gatilho de handoff do tenant aciona humano com observabilidade 
     sendTelegram: sendTelegramSpy,
     logAgentTurn: logAgentTurnSpy,
   });
-  await processBatch({}, baseBatch(), deps);
+  await processBatch({}, baseBatch({ queue_meta: queueMeta() }), deps);
   assert.equal(callToolSpy.mock.callCount(), 0);
   assert.equal(sendTelegramSpy.mock.callCount(), 1);
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /\[escalation:tenant_handoff_trigger\]/);
@@ -1357,6 +1386,13 @@ test('4f. tattoo gatilho de handoff do tenant aciona humano com observabilidade 
   assert.equal(routerLog.context_metadata.router_can_mutate_state, true);
   assert.equal(routerLog.context_metadata.router_has_matched_tenant_trigger, true);
   assert.equal(routerLog.context_metadata.router_matched_tenant_trigger, 'rosto');
+  assert.equal(routerLog.context_metadata.session_queue_observed, true);
+  assert.equal(routerLog.context_metadata.session_queue_version, 'session_queue_v1');
+  assert.equal(routerLog.context_metadata.session_queue_debounce_ms, 12000);
+  assert.equal(routerLog.context_metadata.session_queue_max_wait_ms, 35000);
+  assert.equal(routerLog.context_metadata.session_queue_queued_wait_ms, 14000);
+  assert.equal(routerLog.context_metadata.session_queue_silence_wait_ms, 12000);
+  assert.equal(routerLog.context_metadata.session_queue_batch_message_count, 1);
   assert.equal(routerLog.context_metadata.tenant_context_layer, 'tenant_context_manager');
   assert.equal(routerLog.context_metadata.tenant_context_handoff_triggers_source, 'custom');
   assert.equal(routerLog.context_metadata.tenant_context_has_handoff_triggers, true);
