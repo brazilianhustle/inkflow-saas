@@ -42,7 +42,7 @@ test('contextoTattoo usa tenant_product antes de config legado', () => {
   assert.match(out, /NAO ACEITA cobertura/);
   assert.match(out, /Estilos de foco do estudio: fineline/);
   assert.match(out, /Estilos que o estudio NAO faz: tribal/);
-  assert.match(out, /Estilo fora do foco exige avaliacao direta do tatuador/);
+  assert.match(out, /Estilo fora do foco exige revisao do tatuador antes de confirmar/);
   assert.doesNotMatch(out, /legacy|legacy_trigger/);
 });
 
@@ -52,7 +52,7 @@ test('contexto compartilhado usa tenant_product antes de config legado', () => {
   assert.match(out, /Sinal: 30% do valor combinado pelo tatuador/);
   assert.match(out, /Estilos em que o estudio e especializado: fineline/);
   assert.match(out, /Estilos que NAO faz: tribal/);
-  assert.match(out, /Estilo fora do foco exige avaliacao direta do tatuador/);
+  assert.match(out, /Estilo fora do foco exige revisao do tatuador antes de confirmar/);
   assert.match(out, /NAO ACEITA cobertura/);
   assert.doesNotMatch(out, /legacy/);
 });

@@ -37,7 +37,7 @@ export function contexto(tenant, conversa, clientContext) {
   if (aceitos.length) linhas.push(`- Estilos em que o estudio e especializado: ${aceitos.join(', ')}. (Outros estilos podem ser consultados.)`);
   if (recusados.length) linhas.push(`- Estilos que NAO faz: ${recusados.join(', ')}.`);
   if (stylePolicy.out_of_catalog_behavior === 'ask_artist') {
-    linhas.push('- Estilo fora do foco exige avaliacao direta do tatuador.');
+    linhas.push('- Estilo fora do foco exige revisao do tatuador antes de confirmar.');
   }
   linhas.push(`- ${aceitaCobertura ? 'ACEITA' : 'NAO ACEITA'} cobertura (cover up).`);
 

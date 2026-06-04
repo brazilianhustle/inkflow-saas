@@ -1347,7 +1347,7 @@ test('4f. tattoo gatilho de handoff do tenant aciona humano com observabilidade 
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /\[escalation:tenant_handoff_trigger\]/);
   assert.match(sendTelegramSpy.mock.calls[0].arguments[1], /gatilho de handoff do estúdio/i);
   assert.equal(conversaPatch.estado_agente, 'aguardando_tatuador');
-  assert.equal(aiInsert.message.content, 'Pra essa região ou caso, o tatuador precisa avaliar direto com segurança. Vou acionar uma pessoa do estúdio para assumir por aqui.');
+  assert.equal(aiInsert.message.content, 'Rosto eu não consigo tocar sozinho por aqui. Vou chamar o tatuador pra olhar contigo e seguir com segurança.');
 
   const logs = logAgentTurnSpy.mock.calls.map(call => call.arguments[0]);
   const routerLog = logs.find(payload => payload.agent_name === 'conversation_router');
@@ -1567,7 +1567,7 @@ test('5d. estilo fora do catalogo com flag rigida responde sem LLM e preserva es
   assert.equal(evoSpy.mock.callCount(), 1);
   assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
   assert.deepEqual(conversaPatch.dados_coletados, {});
-  assert.match(aiInsert.message.content, /nao esta no foco do estudio/i);
+  assert.match(aiInsert.message.content, /n[aã]o est[aá] no foco do est[uú]dio/i);
   const logs = logAgentTurnSpy.mock.calls.map(call => call.arguments[0]);
   const routerLog = logs.find(payload => payload.agent_name === 'conversation_router');
   assert.ok(routerLog, 'ConversationRouter deve registrar estilo fora do catalogo');
@@ -1620,7 +1620,7 @@ test('5e. tenant que nao aceita cobertura recusa sem LLM e sem handoff', async (
   assert.equal(evoSpy.mock.callCount(), 1);
   assert.equal(conversaPatch.estado_agente, 'coletando_tattoo');
   assert.deepEqual(conversaPatch.dados_coletados, {});
-  assert.match(aiInsert.message.content, /nao faz cobertura/i);
+  assert.match(aiInsert.message.content, /n[aã]o faz cobertura/i);
   assert.doesNotMatch(aiInsert.message.content, /acionar|tatuador precisa avaliar|or[cç]amento|R\$|sinal/i);
   const logs = logAgentTurnSpy.mock.calls.map(call => call.arguments[0]);
   const routerLog = logs.find(payload => payload.agent_name === 'conversation_router');

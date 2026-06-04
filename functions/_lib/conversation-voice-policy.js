@@ -8,6 +8,26 @@ function hasValue(v) {
   return v !== null && v !== undefined && v !== '';
 }
 
+function sentenceStart(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function triggerLabel(trigger) {
+  const normalized = String(trigger || '').trim().toLowerCase();
+  const labels = {
+    mao: 'Mão',
+    maos: 'Mãos',
+    pescoco: 'Pescoço',
+    rosto: 'Rosto',
+    face: 'Rosto',
+    facial: 'Rosto',
+    retoque: 'Retoque',
+  };
+  return labels[normalized] || sentenceStart(trigger);
+}
+
 export function firstName(name) {
   return String(name || '').trim().split(/\s+/)[0] || '';
 }
@@ -61,6 +81,52 @@ export function minorAgeHandoffReply() {
   return 'Como a pessoa que vai tatuar tem menos de 18 anos, vou chamar o tatuador para seguir com segurança sobre responsável legal e próximos passos.';
 }
 
+export function handoffVoiceReply({ kind, style, trigger } = {}) {
+  if (kind === 'style_artist_review') {
+    const cleanStyle = sentenceStart(style);
+    if (cleanStyle) {
+      return `${cleanStyle} eu não consigo confirmar sozinho por aqui. Vou chamar o tatuador pra olhar contigo e te dizer se rola seguir nessa linha.`;
+    }
+    return 'Esse estilo eu não consigo confirmar sozinho por aqui. Vou chamar o tatuador pra olhar contigo e te dizer se rola seguir nessa linha.';
+  }
+
+  if (kind === 'human_requested') {
+    return 'Claro. Vou chamar o tatuador pra assumir contigo por aqui.';
+  }
+
+  if (kind === 'client_upset') {
+    return 'Entendi, desculpa pela frustração. Vou chamar alguém do estúdio pra assumir contigo por aqui.';
+  }
+
+  if (kind === 'tenant_handoff_trigger') {
+    const label = triggerLabel(trigger);
+    if (label) {
+      return `${label} eu não consigo tocar sozinho por aqui. Vou chamar o tatuador pra olhar contigo e seguir com segurança.`;
+    }
+    return 'Esse caso eu não consigo tocar sozinho por aqui. Vou chamar o tatuador pra olhar contigo e seguir com segurança.';
+  }
+
+  if (kind === 'cover_up_review') {
+    return 'Cobertura eu não consigo tocar sozinho por aqui. Vou chamar o tatuador pra olhar teu caso e combinar os próximos passos contigo.';
+  }
+
+  return 'Vou chamar o tatuador pra assumir contigo por aqui.';
+}
+
+export function styleArtistReviewReply({ style } = {}) {
+  return handoffVoiceReply({ kind: 'style_artist_review', style });
+}
+
+export function tenantUnsupportedStyleReply() {
+  return 'Esse estilo não está no foco do estúdio por aqui. Se quiser adaptar pra outro estilo, eu sigo contigo.';
+}
+
+export function tenantCoverUpNotAcceptedReply() {
+  return 'Esse estúdio não faz cobertura por aqui. Se for uma tattoo nova em outro local, eu sigo contigo.';
+}
+
 export const _test = {
   hasValue,
+  sentenceStart,
+  triggerLabel,
 };

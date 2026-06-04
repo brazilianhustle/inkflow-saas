@@ -136,7 +136,7 @@ test('ConversationRouter: estilo fora do catalogo so bloqueia com flag rigida', 
   assert.equal(out.estado_novo, 'tattoo');
   assert.deepEqual(out.dados_persistidos, {});
   assert.equal(out.tenant_style_resolution.style, 'old school');
-  assert.match(out.resposta_cliente, /nao esta no foco do estudio/i);
+  assert.match(out.resposta_cliente, /n[aã]o est[aá] no foco do est[uú]dio/i);
   assert.doesNotMatch(out.resposta_cliente, /R\$|agendar|pagar sinal|orc_/i);
 });
 
@@ -206,6 +206,8 @@ test('ConversationRouter: tenant_product ask_artist escala estilo fora do catalo
   assert.equal(out.escalation.reason_code, 'tenant_style_artist_review');
   assert.equal(out.escalation.source, 'tenant_product');
   assert.deepEqual(out.dados_persistidos, {});
+  assert.equal(out.resposta_cliente, 'Old school eu não consigo confirmar sozinho por aqui. Vou chamar o tatuador pra olhar contigo e te dizer se rola seguir nessa linha.');
+  assert.doesNotMatch(out.resposta_cliente, /avalia[cç][aã]o direta|pessoa do est[uú]dio|precisa avaliar|acionar/i);
 });
 
 test('ConversationRouter: pedido explícito de humano aciona escalonamento sem coleta', () => {
@@ -225,8 +227,9 @@ test('ConversationRouter: pedido explícito de humano aciona escalonamento sem c
   assert.equal(out.estado_novo, 'aguardando_tatuador');
   assert.equal(out.escalation.reason_code, 'human_requested');
   assert.equal(out.escalation.requires_orcid, false);
-  assert.match(out.resposta_cliente, /acionar o tatuador/i);
+  assert.equal(out.resposta_cliente, 'Claro. Vou chamar o tatuador pra assumir contigo por aqui.');
   assert.doesNotMatch(out.resposta_cliente, /Qual tua altura|parte do corpo|estilo/i);
+  assert.doesNotMatch(out.resposta_cliente, /acionar|orientar direto/i);
 });
 
 test('ConversationRouter: cliente irritado aciona humano com desescalada', () => {
@@ -244,8 +247,9 @@ test('ConversationRouter: cliente irritado aciona humano com desescalada', () =>
   assert.equal(out.escalation.reason_code, 'client_upset');
   assert.equal(out.escalation.severity, 'high');
   assert.match(out.resposta_cliente, /desculpa|frustra/i);
-  assert.match(out.resposta_cliente, /pessoa do estúdio|assumir/i);
+  assert.match(out.resposta_cliente, /alguém do estúdio|assumir/i);
   assert.doesNotMatch(out.resposta_cliente, /Qual tua altura|parte do corpo|estilo/i);
+  assert.doesNotMatch(out.resposta_cliente, /pessoa do est[uú]dio|acionar/i);
 });
 
 test('ConversationRouter: cobertura textual aciona escalonamento humano sem coleta', () => {
@@ -288,7 +292,7 @@ test('ConversationRouter: tenant que nao aceita cobertura recusa sem escalonamen
   assert.equal(out.escalation, undefined);
   assert.deepEqual(out.dados_persistidos, {});
   assert.equal(out.tenant_cover_up_resolution.aceita_cobertura, false);
-  assert.match(out.resposta_cliente, /nao faz cobertura/i);
+  assert.match(out.resposta_cliente, /n[aã]o faz cobertura/i);
   assert.doesNotMatch(out.resposta_cliente, /tatuador precisa avaliar|acionar|or[cç]amento|R\$|sinal/i);
 });
 
@@ -334,8 +338,9 @@ test('ConversationRouter: gatilho de handoff do tenant aciona humano antes de co
   assert.equal(out.escalation.source, 'tenant_rules');
   assert.equal(out.escalation.requires_orcid, false);
   assert.deepEqual(out.dados_persistidos, {});
-  assert.match(out.resposta_cliente, /tatuador|pessoa do estúdio/i);
+  assert.equal(out.resposta_cliente, 'Rosto eu não consigo tocar sozinho por aqui. Vou chamar o tatuador pra olhar contigo e seguir com segurança.');
   assert.doesNotMatch(out.resposta_cliente, /Qual tua altura|parte do corpo|estilo|valor depende/i);
+  assert.doesNotMatch(out.resposta_cliente, /regi[aã]o ou caso|pessoa do est[uú]dio|precisa avaliar|acionar/i);
 });
 
 test('ConversationRouter: tenant_product handoff_policy alimenta gatilhos do router', () => {

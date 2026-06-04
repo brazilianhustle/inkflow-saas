@@ -44,7 +44,7 @@ export function contextoTattoo(tenant, conversa, clientContext) {
   if (estilosFoco.length) linhas.push(`- Estilos de foco do estudio: ${estilosFoco.join(', ')}`);
   if (estilosRecusados.length) linhas.push(`- Estilos que o estudio NAO faz: ${estilosRecusados.join(', ')}`);
   if (stylePolicy.out_of_catalog_behavior === 'ask_artist') {
-    linhas.push('- Estilo fora do foco exige avaliacao direta do tatuador.');
+    linhas.push('- Estilo fora do foco exige revisao do tatuador antes de confirmar.');
   }
   linhas.push(`- portfolio: ${ctx.portfolio_disponivel ? 'disponivel' : 'nao cadastrado'}`);
   linhas.push('');

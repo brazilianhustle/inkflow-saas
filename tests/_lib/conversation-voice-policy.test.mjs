@@ -10,8 +10,12 @@ import {
   fotoAmbiguaComoLocalCadastroQuestion,
   fotoAmbiguaComoReferenciaQuestion,
   fotoLocalRecebidaCadastroQuestion,
+  handoffVoiceReply,
   minorAgeHandoffReply,
   referenciaRecebidaCadastroQuestion,
+  styleArtistReviewReply,
+  tenantCoverUpNotAcceptedReply,
+  tenantUnsupportedStyleReply,
 } from '../../functions/_lib/conversation-voice-policy.js';
 
 test('VoicePolicy: firstName extrai primeiro nome com fallback seguro', () => {
@@ -88,4 +92,36 @@ test('VoicePolicy: menoridade preserva segurança legal sem rigidez antiga', () 
   assert.match(text, /respons[aá]vel legal/i);
   assert.doesNotMatch(text, /acionar o tatuador para orientar/i);
   assert.doesNotMatch(text, /orçamento direto/i);
+});
+
+test('VoicePolicy: familia de handoff usa tom natural e centralizado', () => {
+  const style = styleArtistReviewReply({ style: 'old school' });
+  assert.equal(style, 'Old school eu não consigo confirmar sozinho por aqui. Vou chamar o tatuador pra olhar contigo e te dizer se rola seguir nessa linha.');
+  assert.doesNotMatch(style, /avalia[cç][aã]o direta|pessoa do est[uú]dio|precisa avaliar|acionar/i);
+
+  const trigger = handoffVoiceReply({ kind: 'tenant_handoff_trigger', trigger: 'rosto' });
+  assert.equal(trigger, 'Rosto eu não consigo tocar sozinho por aqui. Vou chamar o tatuador pra olhar contigo e seguir com segurança.');
+  assert.doesNotMatch(trigger, /regi[aã]o ou caso|pessoa do est[uú]dio|precisa avaliar|acionar/i);
+
+  const human = handoffVoiceReply({ kind: 'human_requested' });
+  assert.equal(human, 'Claro. Vou chamar o tatuador pra assumir contigo por aqui.');
+  assert.doesNotMatch(human, /orientar direto|acionar/i);
+
+  const upset = handoffVoiceReply({ kind: 'client_upset' });
+  assert.equal(upset, 'Entendi, desculpa pela frustração. Vou chamar alguém do estúdio pra assumir contigo por aqui.');
+  assert.doesNotMatch(upset, /pessoa do est[uú]dio|ajudar direto|acionar/i);
+
+  const cover = handoffVoiceReply({ kind: 'cover_up_review' });
+  assert.equal(cover, 'Cobertura eu não consigo tocar sozinho por aqui. Vou chamar o tatuador pra olhar teu caso e combinar os próximos passos contigo.');
+  assert.doesNotMatch(cover, /precisa avaliar direto|te orientar pelos pr[oó]ximos passos|acionar/i);
+});
+
+test('VoicePolicy: bordas de tenant recusam sem soar como regra interna', () => {
+  const style = tenantUnsupportedStyleReply();
+  assert.equal(style, 'Esse estilo não está no foco do estúdio por aqui. Se quiser adaptar pra outro estilo, eu sigo contigo.');
+  assert.doesNotMatch(style, /acionar|avaliar direto|or[cç]amento|sinal/i);
+
+  const cover = tenantCoverUpNotAcceptedReply();
+  assert.equal(cover, 'Esse estúdio não faz cobertura por aqui. Se for uma tattoo nova em outro local, eu sigo contigo.');
+  assert.doesNotMatch(cover, /acionar|avaliar direto|or[cç]amento|sinal/i);
 });

@@ -13,7 +13,15 @@
 
 import { extractLocalAnswer, extractStyleAnswer, resolveExplicitAge, resolveHeightCm, resolvePendingFormQuestion, resolveTattooSizeCm } from './conversation-policy.js';
 import { composeRouterResponse } from './conversation-response-composer.js';
-import { cadastroResumeQuestion, firstContactSoftIntro, minorAgeHandoffReply } from './conversation-voice-policy.js';
+import {
+  cadastroResumeQuestion,
+  firstContactSoftIntro,
+  handoffVoiceReply,
+  minorAgeHandoffReply,
+  styleArtistReviewReply,
+  tenantCoverUpNotAcceptedReply,
+  tenantUnsupportedStyleReply,
+} from './conversation-voice-policy.js';
 
 const HANDLED_STATES = new Set(['tattoo', 'cadastro']);
 
@@ -705,7 +713,7 @@ function unsupportedStyleOutput({ unsupportedStyle, estado_atual, conversa }) {
       risk: 'high',
       reason: unsupportedStyle.reason,
       can_mutate_state: true,
-      resposta_cliente: 'Esse estilo precisa de avaliação direta do tatuador por aqui. Vou acionar uma pessoa do estúdio para olhar teu caso e te orientar.',
+      resposta_cliente: styleArtistReviewReply({ style: unsupportedStyle.style }),
       estado_novo: 'aguardando_tatuador',
       dados_persistidos: {},
       dados_completos: false,
@@ -741,7 +749,7 @@ function unsupportedStyleOutput({ unsupportedStyle, estado_atual, conversa }) {
     risk: 'medium',
     reason: unsupportedStyle.reason,
     can_mutate_state: false,
-    resposta_cliente: `Esse estilo nao esta no foco do estudio por aqui. Posso seguir se voce quiser adaptar pra outro estilo, ou acionar o estudio pra avaliar direto.`,
+    resposta_cliente: tenantUnsupportedStyleReply(),
     estado_novo: estado_atual,
     dados_persistidos: {},
     dados_completos: false,
@@ -771,7 +779,7 @@ function coverUpNotAcceptedOutput({ detected, estado_atual, conversa }) {
     risk: 'medium',
     reason: 'tenant_cover_up_not_accepted',
     can_mutate_state: false,
-    resposta_cliente: 'Esse estudio nao faz cobertura por aqui. Se voce pensar em uma tattoo nova em outro local, posso seguir te ajudando.',
+    resposta_cliente: tenantCoverUpNotAcceptedReply(),
     estado_novo: estado_atual,
     dados_persistidos: {},
     dados_completos: false,
@@ -837,7 +845,7 @@ function escalationOutput({ detected, estado_atual, intent, conversa, clientCont
       risk: detected.risk,
       reason: detected.reason,
       can_mutate_state: detected.can_mutate_state,
-      resposta_cliente: 'Claro. Vou acionar o tatuador para assumir por aqui e te orientar direto.',
+      resposta_cliente: handoffVoiceReply({ kind: 'human_requested' }),
       estado_novo: 'aguardando_tatuador',
       dados_persistidos: {},
       dados_completos: false,
@@ -869,7 +877,7 @@ function escalationOutput({ detected, estado_atual, intent, conversa, clientCont
       risk: detected.risk,
       reason: detected.reason,
       can_mutate_state: detected.can_mutate_state,
-      resposta_cliente: 'Entendi, desculpa pela frustração. Vou acionar uma pessoa do estúdio para assumir por aqui e te ajudar direto.',
+      resposta_cliente: handoffVoiceReply({ kind: 'client_upset' }),
       estado_novo: 'aguardando_tatuador',
       dados_persistidos: {},
       dados_completos: false,
@@ -902,7 +910,7 @@ function escalationOutput({ detected, estado_atual, intent, conversa, clientCont
       reason: detected.reason,
       can_mutate_state: detected.can_mutate_state,
       matched_trigger: detected.matched_trigger || null,
-      resposta_cliente: 'Pra essa região ou caso, o tatuador precisa avaliar direto com segurança. Vou acionar uma pessoa do estúdio para assumir por aqui.',
+      resposta_cliente: handoffVoiceReply({ kind: 'tenant_handoff_trigger', trigger: detected.matched_trigger }),
       estado_novo: 'aguardando_tatuador',
       dados_persistidos: {},
       dados_completos: false,
@@ -942,7 +950,7 @@ function escalationOutput({ detected, estado_atual, intent, conversa, clientCont
     risk: detected.risk,
     reason: detected.reason,
     can_mutate_state: detected.can_mutate_state,
-    resposta_cliente: 'Pra cobertura, o tatuador precisa avaliar direto com segurança antes de seguir. Vou acionar ele para olhar teu caso e te orientar pelos próximos passos.',
+    resposta_cliente: handoffVoiceReply({ kind: 'cover_up_review' }),
     estado_novo: 'aguardando_tatuador',
     dados_persistidos: {},
     dados_completos: false,
