@@ -186,7 +186,8 @@ const GENERIC_HANDOFF_TRIGGER_ALIASES = new Map([
 const ROUTER_HANDLED_HANDOFF_TRIGGERS = new Set(['cobertura']);
 
 function tenantHandoffTriggers(clientContext = {}, tenant = {}) {
-  const fromProduct = clientContext?.tenant_product?.handoff_policy?.triggers;
+  const fromProduct = clientContext?.tenant_product?.handoff_policy?.handoff_triggers
+    || clientContext?.tenant_product?.handoff_policy?.triggers;
   const fromContext = clientContext?.tenant_rules?.gatilhos_handoff;
   const fromTenant = tenant?.gatilhos_handoff;
   const source = Array.isArray(fromProduct) && fromProduct.length
@@ -364,18 +365,21 @@ function detectTenantUnsupportedStyle(text, clientContext = {}) {
       : tenantRules.estilos_recusados
   );
   const hardCatalog = stylePolicy.out_of_catalog_behavior
-    ? stylePolicy.out_of_catalog_behavior === 'reject'
+    ? ['reject', 'ask_artist'].includes(stylePolicy.out_of_catalog_behavior)
     : tenantRules.bloqueia_estilos_fora_catalogo === true;
   if (rejected.includes(styleNorm)) {
     return {
       style,
       reason: 'tenant_style_rejected',
+      out_of_catalog_behavior: 'reject',
     };
   }
   if (hardCatalog && accepted.length > 0 && !accepted.includes(styleNorm)) {
+    const behavior = stylePolicy.out_of_catalog_behavior || 'reject';
     return {
       style,
-      reason: 'tenant_style_not_accepted',
+      reason: behavior === 'ask_artist' ? 'tenant_style_artist_review_required' : 'tenant_style_not_accepted',
+      out_of_catalog_behavior: behavior,
     };
   }
   return null;
@@ -692,6 +696,43 @@ function portfolioOutput({ detected, estado_atual, mensagem, conversa, clientCon
 }
 
 function unsupportedStyleOutput({ unsupportedStyle, estado_atual, conversa }) {
+  if (unsupportedStyle.out_of_catalog_behavior === 'ask_artist') {
+    return {
+      ok: true,
+      handled_by: 'conversation_router',
+      intent: 'tenant_style_artist_review',
+      confidence: 0.86,
+      risk: 'high',
+      reason: unsupportedStyle.reason,
+      can_mutate_state: true,
+      resposta_cliente: 'Esse estilo precisa de avaliação direta do tatuador por aqui. Vou acionar uma pessoa do estúdio para olhar teu caso e te orientar.',
+      estado_novo: 'aguardando_tatuador',
+      dados_persistidos: {},
+      dados_completos: false,
+      campos_faltando: ['tenant_style_artist_review'],
+      campos_conflitantes: [],
+      proxima_acao: 'erro',
+      agent_usado: estado_atual === 'cadastro' ? 'cadastro' : 'conversation_router',
+      side_effects: [],
+      urls_portfolio: [],
+      payload_portfolio: null,
+      analise_imagens: null,
+      cobertura_suspeita: null,
+      escalation: {
+        required: true,
+        reason_code: 'tenant_style_artist_review',
+        reason_label: 'estilo exige avaliação do tatuador',
+        severity: 'medium',
+        source: 'tenant_product',
+        requires_orcid: false,
+      },
+      tenant_style_resolution: {
+        style: unsupportedStyle.style,
+        reason: unsupportedStyle.reason,
+        out_of_catalog_behavior: unsupportedStyle.out_of_catalog_behavior,
+      },
+    };
+  }
   return {
     ok: true,
     handled_by: 'conversation_router',
@@ -716,6 +757,7 @@ function unsupportedStyleOutput({ unsupportedStyle, estado_atual, conversa }) {
     tenant_style_resolution: {
       style: unsupportedStyle.style,
       reason: unsupportedStyle.reason,
+      out_of_catalog_behavior: unsupportedStyle.out_of_catalog_behavior || 'reject',
     },
   };
 }

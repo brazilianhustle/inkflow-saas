@@ -183,6 +183,31 @@ test('ConversationRouter: tenant_product focus_styles nao bloqueia estilo fora d
   assert.equal(out.dados_persistidos.estilo, 'realismo');
 });
 
+test('ConversationRouter: tenant_product ask_artist escala estilo fora do catalogo para humano', () => {
+  const out = routeConversationTurn({
+    estado_atual: 'tattoo',
+    mensagem: 'voces fazem old school?',
+    conversa: { estado_agente: 'tattoo', dados_coletados: {}, dados_cadastro: {} },
+    clientContext: {
+      tenant_product: {
+        style_policy: {
+          accepted_styles: ['fineline', 'blackwork'],
+          rejected_styles: [],
+          focus_styles: ['fineline', 'blackwork'],
+          out_of_catalog_behavior: 'ask_artist',
+        },
+      },
+    },
+  });
+  assert.equal(out.intent, 'tenant_style_artist_review');
+  assert.equal(out.reason, 'tenant_style_artist_review_required');
+  assert.equal(out.proxima_acao, 'erro');
+  assert.equal(out.estado_novo, 'aguardando_tatuador');
+  assert.equal(out.escalation.reason_code, 'tenant_style_artist_review');
+  assert.equal(out.escalation.source, 'tenant_product');
+  assert.deepEqual(out.dados_persistidos, {});
+});
+
 test('ConversationRouter: pedido explícito de humano aciona escalonamento sem coleta', () => {
   assert.equal(_test.detectIntent('quero falar com o tatuador')?.intent, 'human_requested');
   assert.equal(_test.detectIntent('me passa para um atendente')?.intent, 'human_requested');
@@ -321,7 +346,7 @@ test('ConversationRouter: tenant_product handoff_policy alimenta gatilhos do rou
     clientContext: {
       tenant_product: {
         handoff_policy: {
-          triggers: ['pescoco'],
+          handoff_triggers: ['pescoco'],
           triggers_source: 'custom',
         },
       },

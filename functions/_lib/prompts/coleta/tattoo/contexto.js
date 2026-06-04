@@ -6,22 +6,34 @@ export function contextoTattoo(tenant, conversa, clientContext) {
   const ctx = clientContext || {};
   const dados = conversa?.dados_coletados || {};
   const tenantRules = ctx.tenant_rules || {};
-  const aceitaCobertura = tenantRules.aceita_cobertura ?? (tenant?.config_agente?.aceita_cobertura !== false);
-  const estilosAceitos = Array.isArray(tenantRules.estilos_aceitos) && tenantRules.estilos_aceitos.length
-    ? tenantRules.estilos_aceitos
-    : Array.isArray(tenant?.config_agente?.estilos_aceitos)
-      ? tenant.config_agente.estilos_aceitos
-      : [];
-  const estilosRecusados = Array.isArray(tenantRules.estilos_recusados) && tenantRules.estilos_recusados.length
-    ? tenantRules.estilos_recusados
-    : Array.isArray(tenant?.config_agente?.estilos_recusados)
-      ? tenant.config_agente.estilos_recusados
-      : [];
-  const gatilhos = Array.isArray(tenantRules.gatilhos_handoff) && tenantRules.gatilhos_handoff.length
-    ? tenantRules.gatilhos_handoff
-    : Array.isArray(tenant?.gatilhos_handoff) && tenant.gatilhos_handoff.length
-      ? tenant.gatilhos_handoff
-      : ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'];
+  const tenantProduct = ctx.tenant_product || {};
+  const servicePolicy = tenantProduct.service_policy || {};
+  const stylePolicy = tenantProduct.style_policy || {};
+  const handoffPolicy = tenantProduct.handoff_policy || {};
+  const aceitaCobertura = servicePolicy.cover_up_policy
+    ? servicePolicy.cover_up_policy !== 'rejected'
+    : tenantRules.aceita_cobertura ?? (tenant?.config_agente?.aceita_cobertura !== false);
+  const estilosFoco = Array.isArray(stylePolicy.focus_styles) && stylePolicy.focus_styles.length
+    ? stylePolicy.focus_styles
+    : Array.isArray(tenantRules.estilos_aceitos) && tenantRules.estilos_aceitos.length
+      ? tenantRules.estilos_aceitos
+      : Array.isArray(tenant?.config_agente?.estilos_aceitos)
+        ? tenant.config_agente.estilos_aceitos
+        : [];
+  const estilosRecusados = Array.isArray(stylePolicy.rejected_styles) && stylePolicy.rejected_styles.length
+    ? stylePolicy.rejected_styles
+    : Array.isArray(tenantRules.estilos_recusados) && tenantRules.estilos_recusados.length
+      ? tenantRules.estilos_recusados
+      : Array.isArray(tenant?.config_agente?.estilos_recusados)
+        ? tenant.config_agente.estilos_recusados
+        : [];
+  const gatilhos = Array.isArray(handoffPolicy.handoff_triggers) && handoffPolicy.handoff_triggers.length
+    ? handoffPolicy.handoff_triggers
+    : Array.isArray(tenantRules.gatilhos_handoff) && tenantRules.gatilhos_handoff.length
+      ? tenantRules.gatilhos_handoff
+      : Array.isArray(tenant?.gatilhos_handoff) && tenant.gatilhos_handoff.length
+        ? tenant.gatilhos_handoff
+        : ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'];
 
   const linhas = ['# §2 CONTEXTO'];
 
@@ -29,8 +41,11 @@ export function contextoTattoo(tenant, conversa, clientContext) {
   linhas.push('## Estudio');
   linhas.push(`- Gatilhos handoff: ${gatilhos.map(g => `"${g}"`).join(', ')}`);
   linhas.push(`- ${aceitaCobertura ? 'ACEITA' : 'NAO ACEITA'} cobertura (cover-up)`);
-  if (estilosAceitos.length) linhas.push(`- Estilos de foco do estudio: ${estilosAceitos.join(', ')}`);
+  if (estilosFoco.length) linhas.push(`- Estilos de foco do estudio: ${estilosFoco.join(', ')}`);
   if (estilosRecusados.length) linhas.push(`- Estilos que o estudio NAO faz: ${estilosRecusados.join(', ')}`);
+  if (stylePolicy.out_of_catalog_behavior === 'ask_artist') {
+    linhas.push('- Estilo fora do foco exige avaliacao direta do tatuador.');
+  }
   linhas.push(`- portfolio: ${ctx.portfolio_disponivel ? 'disponivel' : 'nao cadastrado'}`);
   linhas.push('');
 

@@ -10,6 +10,88 @@ import {
   summarizeTenantContext,
 } from '../../../functions/api/agent/_lib/tenant-context-manager.js';
 
+const DEFAULT_HANDOFF_TRIGGERS = ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'];
+const DEFAULT_TENANT_PRODUCT = {
+  schema_version: 'tenant_config_v1',
+  identity: {
+    studio_display_name: null,
+    assistant_name: null,
+    city: null,
+    public_address: null,
+  },
+  voice_policy: {
+    assistant_name: null,
+    tone: 'friendly',
+    formality: 'informal',
+    emoji_policy: 'restrained',
+    greeting_policy: 'first_contact_only',
+    brevity_level: 'short',
+    forbidden_phrases: [],
+    preferred_phrases: [],
+  },
+  service_policy: {
+    accepted_services: ['tattoo'],
+    rejected_services: [],
+    cover_up_policy: 'artist_review',
+    minor_policy: 'artist_review',
+  },
+  style_policy: {
+    accepted_styles: [],
+    rejected_styles: [],
+    focus_styles: [],
+    out_of_catalog_behavior: 'allow',
+    style_question_policy: 'ask_when_missing',
+  },
+  pricing_policy: {
+    pricing_mode: 'artist_quote_only',
+    currency: 'BRL',
+    budget_item_policy: 'multi_item_allowed',
+    session_pricing_policy: 'artist_decides',
+  },
+  schedule_policy: {
+    working_hours: {},
+    appointment_duration_defaults: null,
+    booking_mode: 'manual',
+    timezone: 'America/Sao_Paulo',
+  },
+  handoff_policy: {
+    handoff_triggers: DEFAULT_HANDOFF_TRIGGERS,
+    triggers: DEFAULT_HANDOFF_TRIGGERS,
+    triggers_source: 'default',
+    auto_resume_policy: 'manual_or_timeout',
+  },
+  channel_policy: {
+    whatsapp: {
+      provider: 'evolution',
+      instance_name: null,
+    },
+    telegram: {
+      callback_mode: 'webhook',
+      has_artist_chat_id: false,
+    },
+  },
+  legal_policy: {
+    data_retention_days: null,
+    consent_required: false,
+    marketing_opt_in_required: true,
+  },
+  automation_flags: {
+    bot_enabled: true,
+    auto_handoff_enabled: true,
+    auto_quote_enabled: false,
+    auto_booking_enabled: false,
+    real_whatsapp_validation_required: true,
+    artist_reply_aggregation_enabled: true,
+  },
+  observability_policy: {
+    decision_logging_enabled: true,
+    tenant_snapshot_logging: true,
+    media_classification_logging: true,
+    telegram_trace_enabled: true,
+    redaction_level: 'standard',
+  },
+};
+
 test('TenantContextManager: identifica substates de proposta', () => {
   assert.equal(isPropostaSubstate('propondo_valor'), true);
   assert.equal(isPropostaSubstate('escolhendo_horario'), true);
@@ -48,31 +130,7 @@ test('TenantContextManager: injeta portfolio sem mutar clientContext original', 
     tenant_assets: {
       portfolio_urls_count: 1,
     },
-    tenant_product: {
-      schema_version: 'tenant_config_v1',
-      service_policy: {
-        accepted_services: ['tattoo'],
-        rejected_services: [],
-        cover_up_policy: 'artist_review',
-        minor_policy: 'artist_review',
-      },
-      style_policy: {
-        accepted_styles: [],
-        rejected_styles: [],
-        focus_styles: [],
-        out_of_catalog_behavior: 'allow',
-        style_question_policy: 'ask_when_missing',
-      },
-      pricing_policy: {
-        pricing_mode: 'artist_quote_only',
-        currency: 'BRL',
-        session_pricing_policy: 'artist_decides',
-      },
-      handoff_policy: {
-        triggers: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
-        triggers_source: 'default',
-      },
-    },
+    tenant_product: DEFAULT_TENANT_PRODUCT,
     portfolio_disponivel: true,
   });
 });
@@ -103,31 +161,7 @@ test('TenantContextManager: contexto derivado sobrescreve flags transversais ant
     tenant_assets: {
       portfolio_urls_count: 0,
     },
-    tenant_product: {
-      schema_version: 'tenant_config_v1',
-      service_policy: {
-        accepted_services: ['tattoo'],
-        rejected_services: [],
-        cover_up_policy: 'artist_review',
-        minor_policy: 'artist_review',
-      },
-      style_policy: {
-        accepted_styles: [],
-        rejected_styles: [],
-        focus_styles: [],
-        out_of_catalog_behavior: 'allow',
-        style_question_policy: 'ask_when_missing',
-      },
-      pricing_policy: {
-        pricing_mode: 'artist_quote_only',
-        currency: 'BRL',
-        session_pricing_policy: 'artist_decides',
-      },
-      handoff_policy: {
-        triggers: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
-        triggers_source: 'default',
-      },
-    },
+    tenant_product: DEFAULT_TENANT_PRODUCT,
     portfolio_disponivel: false,
     eh_recorrente: true,
   });
@@ -174,31 +208,7 @@ test('TenantContextManager: injeta contexto de proposta somente em substate de p
     tenant_assets: {
       portfolio_urls_count: 0,
     },
-    tenant_product: {
-      schema_version: 'tenant_config_v1',
-      service_policy: {
-        accepted_services: ['tattoo'],
-        rejected_services: [],
-        cover_up_policy: 'artist_review',
-        minor_policy: 'artist_review',
-      },
-      style_policy: {
-        accepted_styles: [],
-        rejected_styles: [],
-        focus_styles: [],
-        out_of_catalog_behavior: 'allow',
-        style_question_policy: 'ask_when_missing',
-      },
-      pricing_policy: {
-        pricing_mode: 'artist_quote_only',
-        currency: 'BRL',
-        session_pricing_policy: 'artist_decides',
-      },
-      handoff_policy: {
-        triggers: ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'],
-        triggers_source: 'default',
-      },
-    },
+    tenant_product: DEFAULT_TENANT_PRODUCT,
     portfolio_disponivel: true,
     horarios_livres: [{ inicio: '2026-05-25T15:00:00Z' }],
   });
@@ -284,10 +294,17 @@ test('TenantContextManager: resume contexto para telemetria sem vazar dados sens
     tenant_context_product_cover_up_policy: 'rejected',
     tenant_context_product_out_of_catalog_behavior: 'allow',
     tenant_context_product_pricing_mode: 'artist_quote_only',
+    tenant_context_product_budget_item_policy: null,
+    tenant_context_product_session_pricing_policy: null,
     tenant_context_product_handoff_triggers_count: 2,
     tenant_context_product_focus_styles_count: 1,
     tenant_context_product_accepted_styles_count: 0,
     tenant_context_product_rejected_styles_count: 1,
+    tenant_context_product_has_identity: false,
+    tenant_context_product_has_voice_policy: false,
+    tenant_context_product_schedule_booking_mode: null,
+    tenant_context_product_auto_quote_enabled: false,
+    tenant_context_product_redaction_level: null,
   });
   assert.equal(Object.hasOwn(summary, 'nome_cliente'), false);
   assert.equal(Object.hasOwn(summary, 'nome_agente'), false);
@@ -396,7 +413,7 @@ test('TenantContextManager: deriva TenantConfig canonico a partir dos campos atu
       modo: 'exato',
     },
   }), {
-    schema_version: 'tenant_config_v1',
+    ...DEFAULT_TENANT_PRODUCT,
     service_policy: {
       accepted_services: ['tattoo'],
       rejected_services: ['cover_up'],
@@ -413,11 +430,18 @@ test('TenantContextManager: deriva TenantConfig canonico a partir dos campos atu
     pricing_policy: {
       pricing_mode: 'auto_estimate',
       currency: 'BRL',
+      budget_item_policy: 'multi_item_allowed',
       session_pricing_policy: 'artist_decides',
     },
     handoff_policy: {
+      handoff_triggers: ['rosto'],
       triggers: ['rosto'],
       triggers_source: 'custom',
+      auto_resume_policy: 'manual_or_timeout',
+    },
+    automation_flags: {
+      ...DEFAULT_TENANT_PRODUCT.automation_flags,
+      auto_quote_enabled: true,
     },
   });
 

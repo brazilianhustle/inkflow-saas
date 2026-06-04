@@ -9,6 +9,7 @@ import { prefetchPropostaContext } from './prefetch-proposta.js';
 
 const PROPOSTA_SUBSTATES = new Set(['propondo_valor', 'escolhendo_horario', 'aguardando_sinal']);
 const DEFAULT_HANDOFF_TRIGGERS = ['cobertura', 'retoque', 'rosto', 'mao', 'pescoco', 'menor_idade'];
+const VALID_OUT_OF_CATALOG_BEHAVIORS = new Set(['allow', 'ask_artist', 'reject']);
 
 function normalizeList(values) {
   if (!Array.isArray(values)) return [];
@@ -20,6 +21,11 @@ function normalizeList(values) {
 function normalizeText(value) {
   const text = String(value || '').trim();
   return text || null;
+}
+
+function normalizeEnum(value, allowedValues, fallback) {
+  const text = normalizeText(value);
+  return text && allowedValues.has(text) ? text : fallback;
 }
 
 export function isPropostaSubstate(estado) {
@@ -43,7 +49,11 @@ export function summarizeTenantContext(context = {}, estado_atual = '') {
   const productFocusStyles = Array.isArray(stylePolicy.focus_styles) ? stylePolicy.focus_styles : [];
   const productAcceptedStyles = Array.isArray(stylePolicy.accepted_styles) ? stylePolicy.accepted_styles : [];
   const productRejectedStyles = Array.isArray(stylePolicy.rejected_styles) ? stylePolicy.rejected_styles : [];
-  const productHandoffTriggers = Array.isArray(handoffPolicy.triggers) ? handoffPolicy.triggers : [];
+  const productHandoffTriggers = Array.isArray(handoffPolicy.handoff_triggers)
+    ? handoffPolicy.handoff_triggers
+    : Array.isArray(handoffPolicy.triggers)
+      ? handoffPolicy.triggers
+      : [];
   const hasStyleCatalog = estilosAceitos.length > 0 || estilosRecusados.length > 0;
   return {
     tenant_context_layer: 'tenant_context_manager',
@@ -75,10 +85,17 @@ export function summarizeTenantContext(context = {}, estado_atual = '') {
     tenant_context_product_cover_up_policy: servicePolicy.cover_up_policy || null,
     tenant_context_product_out_of_catalog_behavior: stylePolicy.out_of_catalog_behavior || null,
     tenant_context_product_pricing_mode: pricingPolicy.pricing_mode || null,
+    tenant_context_product_budget_item_policy: pricingPolicy.budget_item_policy || null,
+    tenant_context_product_session_pricing_policy: pricingPolicy.session_pricing_policy || null,
     tenant_context_product_handoff_triggers_count: productHandoffTriggers.length,
     tenant_context_product_focus_styles_count: productFocusStyles.length,
     tenant_context_product_accepted_styles_count: productAcceptedStyles.length,
     tenant_context_product_rejected_styles_count: productRejectedStyles.length,
+    tenant_context_product_has_identity: Boolean(tenantProduct.identity?.studio_display_name),
+    tenant_context_product_has_voice_policy: Boolean(tenantProduct.voice_policy),
+    tenant_context_product_schedule_booking_mode: tenantProduct.schedule_policy?.booking_mode || null,
+    tenant_context_product_auto_quote_enabled: tenantProduct.automation_flags?.auto_quote_enabled === true,
+    tenant_context_product_redaction_level: tenantProduct.observability_policy?.redaction_level || null,
   };
 }
 
@@ -122,13 +139,35 @@ export function deriveTenantProduct(tenant = {}) {
   const focusStyles = explicitAcceptedStyles.length ? explicitAcceptedStyles : legacyAcceptedStyles;
   const rejectedStyles = normalizeList(cfg.estilos_recusados);
   const hardCatalog = cfg.bloqueia_estilos_fora_catalogo === true;
+  const outOfCatalogBehavior = normalizeEnum(
+    cfg.out_of_catalog_behavior || cfg.comportamento_fora_catalogo,
+    VALID_OUT_OF_CATALOG_BEHAVIORS,
+    hardCatalog ? 'reject' : 'allow'
+  );
   const coverUpPolicy = cfg.aceita_cobertura === false ? 'rejected' : 'artist_review';
   const pricingMode = normalizeText(pricing.pricing_mode)
     || (normalizeText(pricing.modo) === 'exato' ? 'auto_estimate' : 'artist_quote_only');
   const customTriggers = Array.isArray(tenant.gatilhos_handoff) && tenant.gatilhos_handoff.length > 0;
+  const handoffTriggers = customTriggers ? normalizeList(tenant.gatilhos_handoff) : DEFAULT_HANDOFF_TRIGGERS;
 
   return {
     schema_version: 'tenant_config_v1',
+    identity: {
+      studio_display_name: normalizeText(tenant.nome_estudio),
+      assistant_name: normalizeText(tenant.nome_agente),
+      city: normalizeText(tenant.cidade),
+      public_address: normalizeText(tenant.endereco),
+    },
+    voice_policy: {
+      assistant_name: normalizeText(tenant.nome_agente),
+      tone: normalizeText(cfg.tom) || 'friendly',
+      formality: normalizeText(cfg.formality) || 'informal',
+      emoji_policy: normalizeText(cfg.emoji_level) || 'restrained',
+      greeting_policy: normalizeText(cfg.greeting_policy) || 'first_contact_only',
+      brevity_level: normalizeText(cfg.brevity_level) || 'short',
+      forbidden_phrases: normalizeList(cfg.expressoes_proibidas),
+      preferred_phrases: normalizeList(cfg.frases_naturais),
+    },
     service_policy: {
       accepted_services: ['tattoo'],
       rejected_services: cfg.aceita_cobertura === false ? ['cover_up'] : [],
@@ -139,17 +178,58 @@ export function deriveTenantProduct(tenant = {}) {
       accepted_styles: hardCatalog ? focusStyles : [],
       rejected_styles: rejectedStyles,
       focus_styles: focusStyles,
-      out_of_catalog_behavior: hardCatalog ? 'reject' : 'allow',
+      out_of_catalog_behavior: outOfCatalogBehavior,
       style_question_policy: 'ask_when_missing',
     },
     pricing_policy: {
       pricing_mode: pricingMode,
       currency: 'BRL',
+      budget_item_policy: 'multi_item_allowed',
       session_pricing_policy: 'artist_decides',
     },
+    schedule_policy: {
+      working_hours: tenant.horario_funcionamento || {},
+      appointment_duration_defaults: Number.isFinite(Number(tenant.duracao_sessao_padrao_h))
+        ? Number(tenant.duracao_sessao_padrao_h)
+        : null,
+      booking_mode: normalizeText(pricing.booking_mode) || 'manual',
+      timezone: normalizeText(tenant.timezone) || 'America/Sao_Paulo',
+    },
     handoff_policy: {
-      triggers: customTriggers ? normalizeList(tenant.gatilhos_handoff) : DEFAULT_HANDOFF_TRIGGERS,
+      handoff_triggers: handoffTriggers,
+      triggers: handoffTriggers,
       triggers_source: customTriggers ? 'custom' : 'default',
+      auto_resume_policy: cfg.auto_retomar_horas === null ? 'never' : 'manual_or_timeout',
+    },
+    channel_policy: {
+      whatsapp: {
+        provider: 'evolution',
+        instance_name: normalizeText(tenant.evo_instance),
+      },
+      telegram: {
+        callback_mode: 'webhook',
+        has_artist_chat_id: Boolean(normalizeText(tenant.tatuador_telegram_chat_id)),
+      },
+    },
+    legal_policy: {
+      data_retention_days: null,
+      consent_required: false,
+      marketing_opt_in_required: true,
+    },
+    automation_flags: {
+      bot_enabled: tenant.ativo !== false,
+      auto_handoff_enabled: true,
+      auto_quote_enabled: pricingMode !== 'artist_quote_only',
+      auto_booking_enabled: false,
+      real_whatsapp_validation_required: true,
+      artist_reply_aggregation_enabled: true,
+    },
+    observability_policy: {
+      decision_logging_enabled: true,
+      tenant_snapshot_logging: true,
+      media_classification_logging: true,
+      telegram_trace_enabled: true,
+      redaction_level: 'standard',
     },
   };
 }

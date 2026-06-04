@@ -1,20 +1,31 @@
 // ── §5 CONTEXTO — extraido de generate-prompt.js linhas 327-409 ─────────────
 export function contexto(tenant, conversa, clientContext) {
   const cfg = tenant.config_precificacao || {};
+  const ctx = clientContext || {};
+  const tenantProduct = ctx.tenant_product || {};
+  const servicePolicy = tenantProduct.service_policy || {};
+  const stylePolicy = tenantProduct.style_policy || {};
+  const pricingPolicy = tenantProduct.pricing_policy || {};
   const sinalPct = cfg.sinal_percentual ?? tenant.sinal_percentual ?? 30;
   const h = tenant.horario_funcionamento || {};
-  const aceitaCobertura = tenant.config_agente?.aceita_cobertura !== false;
-  const aceitos = tenant.config_agente?.estilos_aceitos || [];
-  const recusados = tenant.config_agente?.estilos_recusados || [];
+  const aceitaCobertura = servicePolicy.cover_up_policy
+    ? servicePolicy.cover_up_policy !== 'rejected'
+    : tenant.config_agente?.aceita_cobertura !== false;
+  const aceitos = Array.isArray(stylePolicy.focus_styles) && stylePolicy.focus_styles.length
+    ? stylePolicy.focus_styles
+    : tenant.config_agente?.estilos_aceitos || [];
+  const recusados = Array.isArray(stylePolicy.rejected_styles) && stylePolicy.rejected_styles.length
+    ? stylePolicy.rejected_styles
+    : tenant.config_agente?.estilos_recusados || [];
   const estado = conversa?.estado || 'qualificando';
   const dados = conversa?.dados_coletados || {};
-  const ctx = clientContext || {};
 
   const linhas = ['# §5 CONTEXTO'];
 
   const modoCfg = cfg.modo || 'coleta';
+  const pricingMode = pricingPolicy.pricing_mode || (modoCfg === 'exato' ? 'auto_estimate' : 'artist_quote_only');
   linhas.push('## Estudio');
-  if (modoCfg === 'coleta') {
+  if (pricingMode === 'artist_quote_only' || modoCfg === 'coleta') {
     linhas.push(`- Sinal: ${sinalPct}% do valor combinado pelo tatuador.`);
   } else {
     linhas.push(`- Sinal: ${sinalPct}% do valor do orcamento.`);
@@ -25,6 +36,9 @@ export function contexto(tenant, conversa, clientContext) {
   }
   if (aceitos.length) linhas.push(`- Estilos em que o estudio e especializado: ${aceitos.join(', ')}. (Outros estilos podem ser consultados.)`);
   if (recusados.length) linhas.push(`- Estilos que NAO faz: ${recusados.join(', ')}.`);
+  if (stylePolicy.out_of_catalog_behavior === 'ask_artist') {
+    linhas.push('- Estilo fora do foco exige avaliacao direta do tatuador.');
+  }
   linhas.push(`- ${aceitaCobertura ? 'ACEITA' : 'NAO ACEITA'} cobertura (cover up).`);
 
   if (cfg.tamanho_maximo_sessao_cm) {
