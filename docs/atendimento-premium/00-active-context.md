@@ -193,7 +193,7 @@ problema: bot respondeu imediatamente e com forma de formulario ("Peguei a ideia
 diagnostico: antes de avancar naturalidade/copy, provar que WhatsApp real passa pela cadeia SessionQueue -> process-batch -> pipeline -> router/workflow/escalation
 decisao: bloquear novos slices conversacionais ate gate de runtime passar com metadados reais de fila
 contrato: agent_turn_logs deve conter session_queue_observed=true, session_queue_version=session_queue_v1, batch_message_count >= bolhas humanas e silence_wait_ms >= 10000
-status: instrumentacao local em andamento; pendente testes, commit/deploy e WhatsApp real
+status: commit/deploy PASS; pendente WhatsApp real do Premium Runtime Parity Gate
 doc_gate: docs/atendimento-premium/81-premium-runtime-parity-gate.md
 ```
 
